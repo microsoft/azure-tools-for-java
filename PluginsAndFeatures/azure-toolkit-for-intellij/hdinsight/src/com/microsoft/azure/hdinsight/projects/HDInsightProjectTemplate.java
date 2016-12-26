@@ -62,11 +62,11 @@ public class HDInsightProjectTemplate implements ProjectTemplate {
             case Scala:
                 return "HDInsight Spark blank module.";
             case JavaLocalSample:
-                return "HDInsight Spark samples written in Scala; This code sample should be executed locally.";
-            case ScalaLocalSample:
                 return "HDInsight Spark samples written in Java; This code sample should be executed locally.";
+            case ScalaLocalSample:
+                return "HDInsight Spark samples written in Scala; This code sample should be executed locally.";
             case ScalaClusterSample:
-                return "HDInsight Spark samples written in Java; This code sample should be submitted to HDInsight cluster.";
+                return "HDInsight Spark samples written in Scala; This code sample should be submitted to HDInsight cluster.";
             default:
                 return "HDInsight Tools";
         }
