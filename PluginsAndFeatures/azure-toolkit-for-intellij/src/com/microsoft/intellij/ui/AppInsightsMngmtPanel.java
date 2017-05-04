@@ -40,8 +40,6 @@ import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.AzureSettings;
 import com.microsoft.intellij.util.MethodUtils;
 import com.microsoft.intellij.util.PluginUtil;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
-
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 
@@ -53,6 +51,8 @@ import javax.swing.table.TableColumn;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
     private JPanel contentPane;
