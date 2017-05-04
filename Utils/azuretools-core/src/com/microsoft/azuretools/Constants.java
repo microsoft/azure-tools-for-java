@@ -27,7 +27,7 @@ package com.microsoft.azuretools;
  */
 public class Constants {
     //static String authority = "https://login.windows.net";
-    public static String authority = "https://login.microsoftonline.com"
+    public static String authority = "https://login.microsoftonline.com";
     //static String tenant = "common";
 //    static String resource = "https://management.core.windows.net/";
     public static String resourceGraph = "https://graph.windows.net/";
