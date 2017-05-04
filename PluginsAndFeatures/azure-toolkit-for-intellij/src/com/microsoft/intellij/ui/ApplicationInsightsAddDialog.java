@@ -26,12 +26,11 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TitlePanel;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
+import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
 import com.microsoft.intellij.AzureSettings;
 import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
 
 import javax.swing.*;
-
 import java.util.ArrayList;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
