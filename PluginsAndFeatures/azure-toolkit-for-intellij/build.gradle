@@ -1,22 +1,12 @@
 
 buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            url "https://oss.sonatype.org/content/repositories/snapshots/"
-        }
-        maven {
-            url 'http://dl.bintray.com/jetbrains/intellij-plugin-service'
-        }
-
-    }
-    dependencies {
-        classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.2.0-SNAPSHOT"
-    }
+  repositories {
+    maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
+  }
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.1.10"
+  id "org.jetbrains.intellij" version "0.2.9"
 }
 
 group 'com.microsoft.azuretools'
@@ -55,8 +45,7 @@ configurations {
 }
 
 dependencies {
-//    compile fileTree(dir: '../../Utils/azuretools-core/lib', include: ['azure-keyvault-1.0.0-beta5-SNAPSHOT.jar', 'azure-keyvault-webkey-1.0.0-beta5-SNAPSHOT.jar'])
-    compile fileTree(dir: '../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies', include: ['applicationinsights-core-1.0.3.jar', 'applicationinsights-management-1.0.3.jar', 'applicationinsights-web-1.0.3.jar', 'annotation-detector-3.0.4.jar'])
+    compile fileTree(dir: '../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies', include: ['applicationinsights-management-1.0.3.jar'])
     compile 'com.microsoft.azuretools:azuretools-core:3.0.1'
     compile 'com.microsoft.azuretools:azure-explorer-common:3.0.1'
     compile 'com.microsoft.azuretools:hdinsight-node-common:3.0.1'
