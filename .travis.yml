@@ -3,6 +3,7 @@ sudo: true
 jdk:
 - oraclejdk8
 script:
+- chmod +x gradlew
 - mvn install -f Utils/azuretools-core/pom.xml --quiet 
 - mvn install -f Utils/azure-explorer-common/pom.xml --quiet 
 - mvn install -f Utils/hdinsight-node-common/pom.xml --quiet
