@@ -6,7 +6,6 @@ script:
 - mvn install -f Utils/azuretools-core/pom.xml --quiet 
 - mvn install -f Utils/azure-explorer-common/pom.xml --quiet 
 - mvn install -f Utils/hdinsight-node-common/pom.xml --quiet
-- gradle --version
-- gradle check
-- gradle buildPlugin --project-dir PluginsAndFeatures/azure-toolkit-for-intellij --stacktrace
+- ./gradlew check --project-dir PluginsAndFeatures/azure-toolkit-for-intellij
+- ./gradlew buildPlugin --project-dir PluginsAndFeatures/azure-toolkit-for-intellij --stacktrace
 
