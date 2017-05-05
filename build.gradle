@@ -1,3 +1,12 @@
 task wrapper(type: Wrapper) {
     gradleVersion = '3.5'
 }
+
+task check << {
+    println 'check!'
+}
+
+task assemble << {
+    println 'assemble!'
+}
+
