@@ -1,7 +1,11 @@
 # Java class files
-*.class 
+*.class
 
 # generated files
 bin/
+target/
 
 *.publishsettings
+
+**/dependencies/*.jar
+**/azure-toolkit-for-eclipse/**/resources/*.jar
