@@ -22,8 +22,6 @@
 package com.microsoft.intellij;
 
 import com.intellij.ide.plugins.cl.PluginClassLoader;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -39,28 +37,28 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.FileUtil;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
-import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
-import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
+import com.microsoft.azuretools.azurecommons.util.*;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
-import com.microsoft.intellij.util.AppInsightsCustomEvent;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 
+import javax.swing.*;
 import javax.swing.event.EventListenerList;
+import java.awt.*;
+import java.awt.event.AWTEventListener;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -163,6 +161,7 @@ public class AzurePlugin extends AbstractProjectComponent {
             copyResourceFile(message("dataFileName"), dataFile);
             setValues(dataFile);
         }
+        AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
     }
 
     private void initializeAIRegistry() {
@@ -206,7 +205,7 @@ public class AzurePlugin extends AbstractProjectComponent {
             LOG.error(message("error"), ex);
         }
 
-        AppInsightsCustomEvent.create(message("telAgrEvtName"), "");
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Application, null, "Config", null);
     }
 
     /**
@@ -354,6 +353,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     public static void log(String message) {
         LOG.info(message);
     }
+
     private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";
 
     private boolean isFirstInstallationByVersion() {

@@ -20,19 +20,21 @@
 
 package com.microsoft.applicationinsights.ui.config;
 
-import org.eclipse.core.commands.AbstractHandler;
+
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.PlatformUI;
+
+import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 
 /**
  * Command handler for Application Insights menu option
  *
  */
-public class AIConfigCommandHandler extends AbstractHandler {
+public class AIConfigCommandHandler extends AzureAbstractHandler {
 
 	@Override
-	public Object execute(ExecutionEvent arg0) throws ExecutionException {
+	public Object onExecute(ExecutionEvent arg0) throws ExecutionException {
 		AIProjConfigWizardDialog dialog = new AIProjConfigWizardDialog(
 				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 		dialog.create();

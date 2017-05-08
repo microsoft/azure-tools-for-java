@@ -53,7 +53,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.core.telemetry.AppInsightsCustomEvent;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.hdinsight.Activator;
 import com.microsoft.azuretools.hdinsight.projects.HDInsightProjectNature;
@@ -502,7 +502,7 @@ public class SparkSubmissionExDialog extends Dialog {
     
     @Override
     protected void okPressed() {
-    	AppInsightsCustomEvent.create(Messages.SparkSubmissionButtonClickEvent, null);
+    	AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent, null);
     	submitModel.action(constructSubmissionParameter());
         super.okPressed();
     }

@@ -27,9 +27,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.ToolWindowKey;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
-import com.microsoft.intellij.util.AppInsightsCustomEvent;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -54,7 +54,7 @@ public class HDInsightUtil {
         hdInsightRootModule.addClickActionListener(new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                AppInsightsCustomEvent.create(HDInsightBundle.message("HDInsightExplorerHDInsightNodeExpand"), null);
+                AppInsightsClient.create(HDInsightBundle.message("HDInsightExplorerHDInsightNodeExpand"), null);
             }
         });
 

@@ -21,7 +21,6 @@
  */
 package com.microsoft.azuretools.ijidea.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
@@ -35,6 +34,7 @@ import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.ijidea.ui.ErrorWindow;
 import com.microsoft.azuretools.ijidea.ui.SubscriptionsDialog;
+import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.ManageSubscriptionsAction;
@@ -42,14 +42,14 @@ import com.microsoft.intellij.serviceexplorer.azure.ManageSubscriptionsAction;
 import javax.swing.*;
 import java.util.List;
 
-public class SelectSubscriptionsAction extends AnAction {
+public class SelectSubscriptionsAction extends AzureAnAction {
     private static final Logger LOGGER = Logger.getInstance(SelectSubscriptionsAction.class);
 
     public SelectSubscriptionsAction() {
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void onActionPerformed(AnActionEvent e) {
         Project project = DataKeys.PROJECT.getData(e.getDataContext());
         onShowSubscriptions(project);
     }

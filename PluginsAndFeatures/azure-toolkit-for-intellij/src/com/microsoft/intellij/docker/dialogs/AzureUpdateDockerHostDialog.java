@@ -22,13 +22,13 @@
 package com.microsoft.intellij.docker.dialogs;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azure.docker.model.DockerHost;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class AzureUpdateDockerHostDialog extends DialogWrapper {
+public class AzureUpdateDockerHostDialog extends AzureDialogWrapper {
   private JPanel mainPanel;
 
   private Project project;

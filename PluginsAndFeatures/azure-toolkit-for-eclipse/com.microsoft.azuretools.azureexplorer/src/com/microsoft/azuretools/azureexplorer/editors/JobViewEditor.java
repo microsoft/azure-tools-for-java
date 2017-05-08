@@ -13,7 +13,7 @@ import org.eclipse.ui.part.EditorPart;
 
 import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.azureexplorer.hdinsight.*;
-import com.microsoft.azuretools.core.telemetry.AppInsightsCustomEvent;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
@@ -25,16 +25,16 @@ public class JobViewEditor extends EditorPart {
 
 	@Override
 	public void doSave(IProgressMonitor iProgressMonitor) {
-		AppInsightsCustomEvent.create("HDInsight.Spark.CloseJobviewPage", null);
+		AppInsightsClient.create("HDInsight.Spark.CloseJobviewPage", null);
 	}
 
 	@Override
 	public void doSaveAs() {
-		AppInsightsCustomEvent.create("HDInsight.Spark.CloseJobviewPage", null);
+		AppInsightsClient.create("HDInsight.Spark.CloseJobviewPage", null);
 	}
 
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
-		AppInsightsCustomEvent.create("HDInsight.Spark.OpenJobviewPage", null);
+		AppInsightsClient.create("HDInsight.Spark.OpenJobviewPage", null);
 		setSite(site);
 		setInput(input);
 		clusterDetail = ((JobViewInput) input).getClusterDetail();

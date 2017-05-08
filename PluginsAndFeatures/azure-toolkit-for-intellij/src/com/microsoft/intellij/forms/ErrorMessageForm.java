@@ -24,6 +24,7 @@ package com.microsoft.intellij.forms;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -31,7 +32,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ErrorMessageForm extends DialogWrapper {
+public class ErrorMessageForm extends AzureDialogWrapper {
     public static final String advancedInfoText = "Show advanced info";
     private JPanel contentPane;
     private JButton buttonOK;

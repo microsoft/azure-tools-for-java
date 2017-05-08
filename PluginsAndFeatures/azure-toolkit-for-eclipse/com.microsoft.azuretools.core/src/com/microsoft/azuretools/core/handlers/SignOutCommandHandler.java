@@ -21,7 +21,6 @@
  */
 package com.microsoft.azuretools.core.handlers;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.SWT;
@@ -33,11 +32,12 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.interact.AuthMethod;
+import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 
-public class SignOutCommandHandler extends AbstractHandler {
+public class SignOutCommandHandler extends AzureAbstractHandler {
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object onExecute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
         doSignOut(window.getShell());
 

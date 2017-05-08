@@ -24,6 +24,7 @@ package com.microsoft.intellij.forms;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.intellij.helpers.LinkListener;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -35,7 +36,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class UploadBlobFileForm extends DialogWrapper {
+public class UploadBlobFileForm extends AzureDialogWrapper {
     private JPanel contentPane;
     private JLabel blobFolderLink;
     private JTextField nameTextField;
@@ -115,7 +116,6 @@ public class UploadBlobFileForm extends DialogWrapper {
         }
 
         uploadSelected.run();
-
         close(DialogWrapper.OK_EXIT_CODE, true);
     }
 

@@ -23,13 +23,13 @@ import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerImageInstance;
 import com.microsoft.azure.docker.model.DockerHost;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.docker.ui.wizards.createhost.AzureNewDockerWizard;
 import com.microsoft.azuretools.docker.ui.wizards.publish.AzureSelectDockerWizard;
 import com.microsoft.azuretools.docker.utils.AzureDockerUIResources;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
@@ -50,11 +50,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class AzureDockerHostDeployHandler extends AbstractHandler {
+public class AzureDockerHostDeployHandler extends AzureAbstractHandler {
 	private static final Logger log =  Logger.getLogger(AzureDockerHostDeployHandler.class.getName());
 
 	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
+	public Object onExecute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		ISelectionService selectionService = window.getSelectionService();
 		ISelection selection = selectionService.getSelection();

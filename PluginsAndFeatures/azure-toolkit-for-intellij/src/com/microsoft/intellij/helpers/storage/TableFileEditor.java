@@ -33,15 +33,14 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.forms.TableEntityForm;
 import com.microsoft.intellij.forms.TablesQueryDesigner;
-import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.model.storage.TableEntity;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,14 +51,21 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
-import java.util.*;
-
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class TableFileEditor implements FileEditor {
     public static final String PARTITION_KEY = "Partition key";
     public static final String ROW_KEY = "Row key";
     private static final String TIMESTAMP = "Timestamp";
+
+    private static final String EDIT = "Edit";
+    private static final String DELETE = "Delete";
+    private static final String QUERY = "Query";
+    private static final String QUERY_DESIGNER = "QueryDesigner";
+    private static final String NEW_ENTITY = "NewEntity";
 
     private ClientStorageAccount storageAccount;
     private Project project;
@@ -74,12 +80,15 @@ public class TableFileEditor implements FileEditor {
     private JTable entitiesTable;
     private List<TableEntity> tableEntities;
 
+    private FileEditorVirtualNode fileEditorVirtualNode;
+
     public TableFileEditor(final Project project) {
         this.project = project;
+        fileEditorVirtualNode = createFileEditorVirtualNode("");
         ActionListener queryActionListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                fillGrid();
+                fileEditorVirtualNode.getNodeActionByName(QUERY).fireNodeActionEvent();
             }
         };
 
@@ -89,47 +98,21 @@ public class TableFileEditor implements FileEditor {
         deleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                deleteSelection();
+                fileEditorVirtualNode.getNodeActionByName(DELETE).fireNodeActionEvent();
             }
         });
 
         newEntityButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                final TableEntityForm form = new TableEntityForm(project);
-                form.setTableName(table.getName());
-                form.setStorageAccount(storageAccount);
-                form.setTableEntity(null);
-                form.setTableEntityList(tableEntities);
-
-                form.setTitle("Add Entity");
-
-                form.setOnFinish(new Runnable() {
-                    @Override
-                    public void run() {
-                        tableEntities.add(form.getTableEntity());
-
-                        refreshGrid();
-                    }
-                });
-
-                form.show();
+                fileEditorVirtualNode.getNodeActionByName(NEW_ENTITY).fireNodeActionEvent();
             }
         });
 
         queryDesignerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                final TablesQueryDesigner form = new TablesQueryDesigner(project);
-
-                form.setOnFinish(new Runnable() {
-                    @Override
-                    public void run() {
-                        queryTextField.setText(form.getQueryText());
-                    }
-                });
-
-                form.show();
+                fileEditorVirtualNode.getNodeActionByName(QUERY_DESIGNER).fireNodeActionEvent();
             }
         });
 
@@ -184,28 +167,69 @@ public class TableFileEditor implements FileEditor {
         });
     }
 
-    private JPopupMenu createTablePopUp() {
-        JPopupMenu menu = new JPopupMenu();
-
-        JMenuItem editMenu = new JMenuItem("Edit");
-        editMenu.addActionListener(new ActionListener() {
+    private FileEditorVirtualNode createFileEditorVirtualNode(final String name) {
+        FileEditorVirtualNode fileEditorVirtualNode = new FileEditorVirtualNode(this, name);
+        fileEditorVirtualNode.addAction(EDIT, new NodeActionListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            protected void actionPerformed(NodeActionEvent e) {
                 editEntity();
             }
         });
-
-        JMenuItem deleteMenu = new JMenuItem("Delete");
-        deleteMenu.addActionListener(new ActionListener() {
+        fileEditorVirtualNode.addAction(DELETE, new NodeActionListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            protected void actionPerformed(NodeActionEvent e) {
                 deleteSelection();
             }
         });
+        fileEditorVirtualNode.addAction(QUERY, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                fillGrid();
+            }
+        });
+        fileEditorVirtualNode.addAction(QUERY_DESIGNER, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                final TablesQueryDesigner form = new TablesQueryDesigner(project);
+                form.setOnFinish(new Runnable() {
+                    @Override
+                    public void run() {
+                        queryTextField.setText(form.getQueryText());
+                    }
+                });
+                form.show();
+            }
+        });
+        fileEditorVirtualNode.addAction(NEW_ENTITY, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                final TableEntityForm form = new TableEntityForm(project);
+                form.setTableName(table.getName());
+                form.setStorageAccount(storageAccount);
+                form.setTableEntity(null);
+                form.setTableEntityList(tableEntities);
 
-        menu.add(editMenu);
-        menu.add(deleteMenu);
+                form.setTitle("Add Entity");
 
+                form.setOnFinish(new Runnable() {
+                    @Override
+                    public void run() {
+                        tableEntities.add(form.getTableEntity());
+
+                        refreshGrid();
+                    }
+                });
+
+                form.show();
+            }
+        });
+        return fileEditorVirtualNode;
+    }
+
+    private JPopupMenu createTablePopUp() {
+        JPopupMenu menu = new JPopupMenu();
+        menu.add(fileEditorVirtualNode.createJMenuItem(EDIT));
+        menu.add(fileEditorVirtualNode.createJMenuItem(DELETE));
         return menu;
     }
 
@@ -404,6 +428,7 @@ public class TableFileEditor implements FileEditor {
 
     public void setTable(Table table) {
         this.table = table;
+        this.fileEditorVirtualNode.setName(table.getName());
     }
 
     @NotNull

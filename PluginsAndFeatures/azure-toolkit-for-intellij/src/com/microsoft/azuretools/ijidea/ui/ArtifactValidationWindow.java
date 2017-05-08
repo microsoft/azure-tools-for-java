@@ -24,6 +24,7 @@ package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +36,7 @@ import java.awt.*;
 import java.net.URI;
 import java.util.List;
 
-public class ArtifactValidationWindow extends DialogWrapper {
+public class ArtifactValidationWindow extends AzureDialogWrapper {
     private JPanel contentPane;
     private JEditorPane editorPane;
 

@@ -23,13 +23,13 @@
 package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class ErrorWindow extends DialogWrapper {
+public class ErrorWindow extends AzureDialogWrapper {
     private JPanel contentPane;
     private JTextPane textPane;
 

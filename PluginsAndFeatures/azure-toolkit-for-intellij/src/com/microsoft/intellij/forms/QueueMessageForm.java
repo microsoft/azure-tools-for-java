@@ -27,6 +27,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import org.jetbrains.annotations.NotNull;
@@ -41,7 +42,7 @@ import java.util.regex.Pattern;
 
 import static java.util.regex.Pattern.compile;
 
-public class QueueMessageForm extends DialogWrapper {
+public class QueueMessageForm extends AzureDialogWrapper {
     private JPanel contentPane;
     private JTextArea messageTextArea;
     private JComboBox unitComboBox;
@@ -138,6 +139,7 @@ public class QueueMessageForm extends DialogWrapper {
             }
         });
 
+        sendTelemetry(OK_EXIT_CODE);
         close(DialogWrapper.OK_EXIT_CODE, true);
     }
 

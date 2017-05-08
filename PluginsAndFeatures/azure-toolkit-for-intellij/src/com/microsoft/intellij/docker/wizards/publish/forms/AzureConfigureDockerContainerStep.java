@@ -32,6 +32,7 @@ import com.microsoft.azure.docker.model.AzureDockerImageInstance;
 import com.microsoft.azure.docker.model.KnownDockerImages;
 import com.microsoft.azure.docker.ops.utils.AzureDockerUtils;
 import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardModel;
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardStep;
 import com.microsoft.intellij.ui.util.UIUtils;
@@ -43,9 +44,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Random;
 
-public class AzureConfigureDockerContainerStep extends AzureSelectDockerWizardStep {
+public class AzureConfigureDockerContainerStep extends AzureSelectDockerWizardStep implements TelemetryProperties {
   private static final Logger LOGGER = Logger.getInstance(AzureConfigureDockerContainerStep.class);
 
   private AzureSelectDockerWizardModel model;
@@ -357,5 +359,10 @@ public class AzureConfigureDockerContainerStep extends AzureSelectDockerWizardSt
     model.finishedOK = true;
 
     return super.onCancel();
+  }
+
+  @Override
+  public Map<String, String> toProperties() {
+    return model.toProperties();
   }
 }

@@ -24,7 +24,6 @@ package com.microsoft.intellij.docker.dialogs;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.DockerHost;
@@ -32,6 +31,7 @@ import com.microsoft.azure.docker.model.EditableDockerHost;
 import com.microsoft.intellij.docker.forms.AzureDockerHostUpdateDaemonPanel;
 import com.microsoft.intellij.docker.forms.AzureDockerHostUpdateLoginPanel;
 import com.microsoft.intellij.docker.forms.AzureDockerHostUpdateState;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,7 +40,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public class AzureEditDockerLoginCredsDialog extends DialogWrapper {
+public class AzureEditDockerLoginCredsDialog extends AzureDialogWrapper {
   private JPanel contentPane;
   private JPanel selectionPanel;
   private JPanel menuPanel;

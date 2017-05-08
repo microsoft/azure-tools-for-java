@@ -30,21 +30,20 @@ import com.microsoft.azure.docker.ops.AzureDockerImageOps;
 import com.microsoft.azure.docker.ops.AzureDockerVMOps;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.VirtualMachine;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.microsoft.azure.docker.model.DockerHost.DockerHostVMState.RUNNING;
 
-public class DockerHostNode extends AzureRefreshableNode {
+public class DockerHostNode extends AzureRefreshableNode implements TelemetryProperties {
   //TODO: Replace the icons with the real Docker host icons
   private static final String DOCKERHOST_WAIT_ICON_PATH = "DockerContainerUpdating_16.png";
   private static final String DOCKERHOST_STOP_ICON_PATH = "DockerContainerStopped_16.png";
@@ -199,6 +198,14 @@ public class DockerHostNode extends AzureRefreshableNode {
     getNodeActionByName(ACTION_RESTART).setEnabled(started);
 
     return super.getNodeActions();
+  }
+
+  @Override
+  public Map<String, String> toProperties() {
+    final Map<String, String> properties = new HashMap<>();
+    properties.put(AppInsightsConstants.SubscriptionId, this.dockerHost.sid);
+    properties.put(AppInsightsConstants.Region, this.dockerHost.hostVM.region);
+    return properties;
   }
 
   public class RestartDockerHostAction extends AzureNodeActionPromptListener {

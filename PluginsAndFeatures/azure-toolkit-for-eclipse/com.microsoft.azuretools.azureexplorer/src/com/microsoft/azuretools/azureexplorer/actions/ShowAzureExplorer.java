@@ -19,7 +19,6 @@
  */
 package com.microsoft.azuretools.azureexplorer.actions;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.PartInitException;
@@ -27,11 +26,12 @@ import org.eclipse.ui.PlatformUI;
 
 import com.microsoft.azuretools.azureexplorer.views.ServiceExplorerView;
 import com.microsoft.azuretools.core.ui.commoncontrols.Messages;
+import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 
-public class ShowAzureExplorer extends AbstractHandler {
+public class ShowAzureExplorer extends AzureAbstractHandler {
 
-	public Object execute(ExecutionEvent event) throws ExecutionException {
+	public Object onExecute(ExecutionEvent event) throws ExecutionException {
 		try {
 			ServiceExplorerView view = (ServiceExplorerView) PlatformUI
 					.getWorkbench().getActiveWorkbenchWindow()

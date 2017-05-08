@@ -23,14 +23,14 @@ package com.microsoft.intellij.ui.libraries;
 
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.wizard.WizardNavigationState;
-import com.intellij.ui.wizard.WizardStep;
+import com.microsoft.intellij.ui.components.AzureWizardStep;
 import com.microsoft.intellij.ui.components.Validatable;
 
 import javax.swing.*;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class LibraryPropertiesStep extends WizardStep<AddLibraryWizardModel> implements Validatable {
+public class LibraryPropertiesStep extends AzureWizardStep<AddLibraryWizardModel> implements Validatable {
 
     private LibraryPropertiesPanel libraryPropertiesPanel;
     private final AddLibraryWizardModel myModel;

@@ -1,17 +1,17 @@
 package com.microsoft.intellij.docker.dialogs;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.EditableDockerHost;
 import com.microsoft.intellij.docker.forms.AzureDockerHostUpdateLoginPanel;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class AzureInputDockerLoginCredsDialog extends DialogWrapper {
+public class AzureInputDockerLoginCredsDialog extends AzureDialogWrapper {
   private JPanel mainPanel;
 
   private Project project;

@@ -24,9 +24,11 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -35,10 +37,11 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class StorageNode extends RefreshableNode {
+public class StorageNode extends RefreshableNode implements TelemetryProperties {
     private static final String STORAGE_ACCOUNT_ICON_PATH = "StorageAccount_16.png";
 
     private final StorageAccount storageAccount;
@@ -51,6 +54,14 @@ public class StorageNode extends RefreshableNode {
         this.storageAccount = storageAccount;
 
         loadActions();
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
+        properties.put(AppInsightsConstants.Region, this.storageAccount.regionName());
+        return properties;
     }
 
     public class DeleteStorageAccountAction extends AzureNodeActionPromptListener {
@@ -113,4 +124,6 @@ public class StorageNode extends RefreshableNode {
         return storageAccount.name() + "\n" + storageAccount.regionName()
                 + "<br>" + storageAccount.resourceGroupName();
     }
+
+    public String getSubscriptionId() { return subscriptionId; }
 }

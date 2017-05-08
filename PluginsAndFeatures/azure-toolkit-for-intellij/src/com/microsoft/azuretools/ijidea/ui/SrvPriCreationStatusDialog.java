@@ -34,6 +34,8 @@ import com.microsoft.azuretools.authmanage.srvpri.SrvPriManager;
 import com.microsoft.azuretools.authmanage.srvpri.report.IListener;
 import com.microsoft.azuretools.authmanage.srvpri.step.Status;
 import com.microsoft.azuretools.utils.IProgressIndicator;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.azuretools.utils.IProgressIndicator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,7 +48,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class SrvPriCreationStatusDialog extends DialogWrapper {
+public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(SrvPriCreationStatusDialog.class);
 
     private JPanel contentPane;

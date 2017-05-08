@@ -35,6 +35,8 @@ import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -42,7 +44,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.util.List;
 
-public class SubscriptionsDialog extends DialogWrapper {
+public class SubscriptionsDialog extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(SubscriptionsDialog.class);
 
     private JPanel contentPane;
@@ -50,22 +52,25 @@ public class SubscriptionsDialog extends DialogWrapper {
     private JTable table;
     private List<SubscriptionDetail> sdl;
 
-    private  Project project;
+    private Project project;
 
     private static class SubscriptionTableModel extends DefaultTableModel {
-        final Class[] columnClass = new Class[] {
+        final Class[] columnClass = new Class[]{
                 Boolean.class, String.class, String.class
         };
+
         @Override
         public boolean isCellEditable(int row, int col) {
             return (col == 0);
         }
+
         @Override
-        public Class<?> getColumnClass(int columnIndex)
-        {
+        public Class<?> getColumnClass(int columnIndex) {
             return columnClass[columnIndex];
         }
-    };
+    }
+
+    ;
 
     public List<SubscriptionDetail> getSubscriptionDetails() {
         return sdl;
@@ -152,6 +157,7 @@ public class SubscriptionsDialog extends DialogWrapper {
         AnActionButton refreshAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
+                AppInsightsClient.createByType(AppInsightsClient.EventType.Subscription, "", "Refresh", null);
                 refreshSubscriptions();
             }
         };

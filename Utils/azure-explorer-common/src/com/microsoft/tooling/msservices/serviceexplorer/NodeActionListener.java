@@ -24,8 +24,12 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 
 import java.util.EventListener;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class NodeActionListener implements EventListener {
     protected static String name;
@@ -41,6 +45,23 @@ public abstract class NodeActionListener implements EventListener {
     protected void beforeActionPerformed(NodeActionEvent e) {
         // mark node as loading
 //        e.getAction().getNode().setLoading(true);
+        sendTelemetry(e);
+    }
+
+    protected void sendTelemetry(NodeActionEvent nodeActionEvent) {
+        final Map<String, String> properties = new HashMap<>();
+        Node node = nodeActionEvent.getAction().getNode();
+        properties.put("Node", node.getId());
+        properties.put("Name", node.getName());
+        if (node instanceof TelemetryProperties) {
+            properties.putAll(((TelemetryProperties) node).toProperties());
+        }
+        if (node.getParent() != null) {
+            properties.put("Parent", node.getParent().getName());
+            properties.put("ParentType", node.getParent().getClass().getSimpleName());
+        }
+
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, node.getClass().getSimpleName(), nodeActionEvent.getAction().getName(), properties);
     }
 
     protected abstract void actionPerformed(NodeActionEvent e)

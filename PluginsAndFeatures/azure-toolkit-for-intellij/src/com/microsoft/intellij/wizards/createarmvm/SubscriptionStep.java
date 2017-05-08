@@ -29,6 +29,8 @@ import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.intellij.ui.components.AzureWizardStep;
 import com.microsoft.intellij.wizards.VMWizardModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
@@ -38,9 +40,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public class SubscriptionStep extends WizardStep<VMWizardModel> {
+public class SubscriptionStep extends AzureWizardStep<VMWizardModel> implements TelemetryProperties {
     VMWizardModel model;
     private JPanel rootPanel;
     private JList createVmStepsList;
@@ -111,5 +114,10 @@ public class SubscriptionStep extends WizardStep<VMWizardModel> {
 //            } else {
 //                userInfoLabel.setText("");
 //            }
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        return model.toProperties();
     }
 }

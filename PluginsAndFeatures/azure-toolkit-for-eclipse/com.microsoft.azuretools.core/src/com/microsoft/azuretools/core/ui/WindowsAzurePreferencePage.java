@@ -37,11 +37,12 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.w3c.dom.Document;
 
+import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.azurecommons.util.GetHashMac;
 import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.core.Activator;
-import com.microsoft.azuretools.core.telemetry.AppInsightsCustomEvent;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.core.utils.FileUtil;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -146,27 +147,20 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
 						}
 					}
 					ParserXMLUtility.saveXMLFile(dataFile, doc);
-					// Its necessary to call application insights custom create event after saving data.xml
-					if (oldPrefVal != null && !oldPrefVal.isEmpty()) {
-						if (oldPrefVal.equals("false") && btnPreference.getSelection()) {
-							// Previous preference value is false and latest is true
-							// that indicates user agrees to send telemetry
-							AppInsightsCustomEvent.create(Messages.telAgrEvtName, "");
-						} else if (oldPrefVal.equals("true") && !btnPreference.getSelection()) {
-							// Previous preference value is true and latest is false
-							// that indicates user disagrees to send telemetry
-							AppInsightsCustomEvent.createTelemetryDenyEvent();
-						}
-					} else {
-						if (btnPreference.getSelection()) {
-							AppInsightsCustomEvent.create(Messages.telAgrEvtName, "");
-						} else {
-							AppInsightsCustomEvent.createTelemetryDenyEvent();
-						}
+					// Its necessary to call application insights custom create
+					// event after saving data.xml
+					final boolean acceptTelemetry = btnPreference.getSelection();
+					if (StringUtils.isNullOrEmpty(oldPrefVal) || Boolean.valueOf(oldPrefVal) != acceptTelemetry) {
+						// Boolean.valueOf(oldPrefVal) != acceptTelemetry means
+						// user changes his mind.
+						// Either from Agree to Deny, or from Deny to Agree.
+						AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "",
+								acceptTelemetry ? "Agree" : "Deny", null);
 					}
 				} else {
 					FileUtil.copyResourceFile(Messages.dataFileEntry, dataFile);
 					setValues(dataFile);
+					AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "load", btnPreference.getSelection() ? "Agree" : "Deny", null);
 				}
 			} else {
 				new File(pluginInstLoc).mkdir();
@@ -201,7 +195,7 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
 		DataOperations.updatePropertyValue(doc, Messages.prefVal, String.valueOf(btnPreference.getSelection()));
 		ParserXMLUtility.saveXMLFile(dataFile, doc);
 		if (btnPreference.getSelection()) {
-			AppInsightsCustomEvent.create(Messages.telAgrEvtName, "");
+			AppInsightsClient.create(Messages.telAgrEvtName, "");
 		}
 	}
 }

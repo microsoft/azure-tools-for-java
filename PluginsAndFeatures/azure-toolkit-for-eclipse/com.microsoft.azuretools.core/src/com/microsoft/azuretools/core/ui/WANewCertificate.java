@@ -19,7 +19,6 @@
  */
 package com.microsoft.azuretools.core.ui;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
@@ -27,14 +26,15 @@ import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.ui.commoncontrols.Messages;
 import com.microsoft.azuretools.core.ui.commoncontrols.NewCertificateDialog;
 import com.microsoft.azuretools.core.ui.commoncontrols.NewCertificateDialogData;
+import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 
 /**
  * This class creates new self signed certificates.
  */
-public class WANewCertificate extends AbstractHandler {
+public class WANewCertificate extends AzureAbstractHandler {
 
-	public Object execute(ExecutionEvent event) throws ExecutionException {
+	public Object onExecute(ExecutionEvent event) throws ExecutionException {
 		try {
 			NewCertificateDialogData data = new NewCertificateDialogData();
 			/*

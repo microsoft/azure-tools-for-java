@@ -24,6 +24,7 @@ package com.microsoft.intellij.forms;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azure.management.resources.Location;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.model.vm.VirtualNetwork;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +33,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class CreateVirtualNetworkForm extends DialogWrapper {
+public class CreateVirtualNetworkForm extends AzureDialogWrapper {
     private JPanel contentPane;
     private JTextField nameField;
     private JTextField addressSpaceField;
@@ -101,6 +102,7 @@ public class CreateVirtualNetworkForm extends DialogWrapper {
                 }
             }
         });
+        sendTelemetry(OK_EXIT_CODE);
         close(DialogWrapper.OK_EXIT_CODE, true);
 
 //        ProgressManager.getInstance().run(

@@ -21,7 +21,6 @@
  */
 package com.microsoft.intellij.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
@@ -40,6 +39,7 @@ import com.microsoft.azuretools.ijidea.ui.ArtifactValidationWindow;
 import com.microsoft.azuretools.ijidea.ui.ErrorWindow;
 import com.microsoft.azuretools.ijidea.ui.WarSelectDialog;
 import com.microsoft.azuretools.ijidea.ui.WebAppDeployDialog;
+import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 
 import javax.swing.*;
 import java.nio.file.Files;
@@ -49,10 +49,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-public class AzureWebDeployAction extends AnAction {
+public class AzureWebDeployAction extends AzureAnAction {
     private static final Logger LOGGER = Logger.getInstance(AzureWebDeployAction.class);
 
-    public void actionPerformed(AnActionEvent e) {
+    public void onActionPerformed(AnActionEvent e) {
 //        Module module = LangDataKeys.MODULE.getData(e.getDataContext());
 //        Module module1 = e.getData(LangDataKeys.MODULE);
         Project project = DataKeys.PROJECT.getData(e.getDataContext());

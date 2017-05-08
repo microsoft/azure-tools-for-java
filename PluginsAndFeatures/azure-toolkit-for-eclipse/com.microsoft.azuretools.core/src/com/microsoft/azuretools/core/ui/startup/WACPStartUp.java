@@ -34,7 +34,7 @@ import com.microsoft.azuretools.azurecommons.util.GetHashMac;
 import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.core.Activator;
-import com.microsoft.azuretools.core.telemetry.AppInsightsCustomEvent;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.core.utils.FileUtil;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -165,7 +165,7 @@ public class WACPStartUp implements IStartup {
 		ParserXMLUtility.saveXMLFile(dataFile, doc);
 		String prefVal = DataOperations.getProperty(dataFile, Messages.prefVal);
 		if (prefVal != null && !prefVal.isEmpty() && prefVal.equals("true")) {
-			AppInsightsCustomEvent.create(Messages.telAgrEvtName, "");
+			AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "", "Allow");
 		}
 	}
 }

@@ -23,16 +23,16 @@ package com.microsoft.intellij.docker.dialogs;
 
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.microsoft.intellij.ui.util.UIUtils;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class AzureExportDockerTlsKeysDialog extends DialogWrapper {
+public class AzureExportDockerTlsKeysDialog extends AzureDialogWrapper {
   private JPanel mainPanel;
   private TextFieldWithBrowseButton exportTlsPath;
 

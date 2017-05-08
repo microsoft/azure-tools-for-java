@@ -27,9 +27,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
-import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -40,44 +37,38 @@ import com.intellij.ui.*;
 import com.intellij.ui.table.JBTable;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
-import com.jcraft.jsch.Session;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerImageInstance;
 import com.microsoft.azure.docker.model.AzureDockerPreferredSettings;
 import com.microsoft.azure.docker.model.DockerHost;
 import com.microsoft.azure.docker.model.EditableDockerHost;
-import com.microsoft.azure.docker.ops.AzureDockerSSHOps;
-import com.microsoft.azure.docker.ops.AzureDockerVMOps;
 import com.microsoft.azure.docker.ops.utils.AzureDockerUtils;
+import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.intellij.docker.dialogs.AzureEditDockerLoginCredsDialog;
-import com.microsoft.intellij.docker.dialogs.AzureInputDockerLoginCredsDialog;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.intellij.docker.dialogs.AzureViewDockerDialog;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
-import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.intellij.docker.wizards.createhost.AzureNewDockerWizardDialog;
 import com.microsoft.intellij.docker.wizards.createhost.AzureNewDockerWizardModel;
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardModel;
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardStep;
-import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
-public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep {
+public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep implements TelemetryProperties {
   private static final Logger LOGGER = Logger.getInstance(AzureSelectDockerHostStep.class);
 
   private JPanel rootPanel;
@@ -324,6 +315,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep {
     AnActionButton refreshDockerHostsAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
       @Override
       public void actionPerformed(AnActionEvent anActionEvent) {
+        AppInsightsClient.createByType(AppInsightsClient.EventType.DockerContainer, "", "Refresh", null);
         onRefreshDockerHostAction();
       }
     };
@@ -397,6 +389,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep {
   }
 
   private void onAddNewDockerHostAction() {
+    AppInsightsClient.createByType(AppInsightsClient.EventType.DockerHost, "", "Add");
     AzureNewDockerWizardModel newDockerHostModel = new AzureNewDockerWizardModel(model.getProject(), dockerManager);
     AzureNewDockerWizardDialog wizard = new AzureNewDockerWizardDialog(newDockerHostModel);
     wizard.setTitle("Create Docker Host");
@@ -496,7 +489,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep {
       if (AzureDockerUtils.DEBUG) System.out.format("User canceled delete Docker host op: %d\n", option);
       return;
     }
-
+    AppInsightsClient.createByType(AppInsightsClient.EventType.DockerHost, deleteHost.name, "Remove");
     int currentRow = dockerHostsTable.getSelectedRow();
     tableModel.removeRow(currentRow);
     tableModel.fireTableDataChanged();
@@ -687,10 +680,12 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep {
   public ValidationInfo doValidate() {
     return doValidate(true);
   }
-  
+
   @Override
   public WizardStep onNext(final AzureSelectDockerWizardModel model) {
     if (dockerHostsTableSelection != null && doValidate() == null) {
+      String subscriptionId = dockerHostsTableSelection.host.hostVM.sid;
+      this.model.setSubscription(new SubscriptionDetail(subscriptionId, dockerManager.getSubscriptionsMap().get(subscriptionId).name, "", true));
       return super.onNext(model);
     } else {
       setDialogButtonsState(false);
@@ -703,19 +698,28 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep {
   @Override
   public boolean onFinish() {
     setFinishButtonState(false);
+    String subscriptionId = dockerHostsTableSelection.host.hostVM.sid;
+    this.model.setSubscription(new SubscriptionDetail(subscriptionId, dockerManager.getSubscriptionsMap().get(subscriptionId).name, null, true));
     return model.doValidate() == null && super.onFinish();
   }
 
   @Override
   public boolean onCancel() {
+    setFinishButtonState(false);
+    String subscriptionId = dockerHostsTableSelection.host.hostVM.sid;
+    this.model.setSubscription(new SubscriptionDetail(subscriptionId, dockerManager.getSubscriptionsMap().get(subscriptionId).name, null, true));
     model.finishedOK = true;
-
     return super.onCancel();
   }
 
   private class DockerHostsTableSelection {
     int row;
     DockerHost host;
+  }
+
+  @Override
+  public Map<String, String> toProperties() {
+    return model.toProperties();
   }
 
 // CREATE CUSTOM ACTION FOR DIALOG WRAPPER!!!!!

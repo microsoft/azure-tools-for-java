@@ -21,17 +21,17 @@
  */
 package com.microsoft.intellij.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleTypeId;
+import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.intellij.ui.components.DefaultDialogWrapper;
 import com.microsoft.intellij.ui.libraries.ApplicationInsightsPanel;
 
-public class ApplicatioInsightsAction extends AnAction {
+public class ApplicatioInsightsAction extends AzureAnAction {
     @Override
-    public void actionPerformed(AnActionEvent event) {
+    public void onActionPerformed(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
         DefaultDialogWrapper dialog = new DefaultDialogWrapper(module.getProject(), new ApplicationInsightsPanel(module));
         dialog.show();

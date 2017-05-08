@@ -27,14 +27,18 @@ import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class StorageAccountNode extends RefreshableNode {
+public class StorageAccountNode extends RefreshableNode implements TelemetryProperties {
     private static final String STORAGE_ACCOUNT_MODULE_ID = StorageAccountNode.class.getName();
     private static final String ICON_PATH = CommonConst.StorageAccountIConPath;
     private static final String ADLS_ICON_PATH = CommonConst.ADLS_STORAGE_ACCOUNT_ICON_PATH;
@@ -70,6 +74,13 @@ public class StorageAccountNode extends RefreshableNode {
         } else {
             return ICON_PATH;
         }
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(AppInsightsConstants.SubscriptionId, this.storageAccount.getSubscriptionId());
+        return properties;
     }
 }
 

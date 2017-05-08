@@ -58,7 +58,7 @@ import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.core.telemetry.AppInsightsCustomEvent;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.core.ui.ErrorWindow;
 import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -578,7 +578,7 @@ public class WebAppDeployDialog extends TitleAreaDialog {
                         }
                     });
                 }
-                AppInsightsCustomEvent.create("Deploy as WebApp", "", postEventProperties);
+                AppInsightsClient.create("Deploy as WebApp", "", postEventProperties);
                 return Status.OK_STATUS;
             }
         };

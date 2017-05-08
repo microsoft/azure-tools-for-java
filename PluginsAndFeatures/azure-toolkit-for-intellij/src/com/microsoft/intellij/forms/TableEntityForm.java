@@ -26,16 +26,13 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBoxTableRenderer;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
 import com.microsoft.intellij.helpers.DatePickerCellEditor;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.helpers.storage.TableFileEditor;
-import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.TableEntity;
 import org.jetbrains.annotations.NotNull;
@@ -54,10 +51,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-
-public class TableEntityForm extends DialogWrapper {
+public class TableEntityForm extends AzureDialogWrapper {
     private JPanel contentPane;
     private JButton addPropertyButton;
     private JTable propertiesTable;

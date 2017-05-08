@@ -25,13 +25,14 @@ package com.microsoft.azuretools.ijidea.ui;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.packaging.artifacts.Artifact;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
 
-public class WarSelectDialog extends DialogWrapper {
+public class WarSelectDialog extends AzureDialogWrapper {
     private JPanel contentPane;
     private JTable table;
 

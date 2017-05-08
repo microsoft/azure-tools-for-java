@@ -25,6 +25,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.intellij.helpers.LinkListener;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 //import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -36,7 +37,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.ArrayList;
 
-public class ExternalStorageAccountForm extends DialogWrapper {
+public class ExternalStorageAccountForm extends AzureDialogWrapper {
     public static final String HTTP = "http";
     public static final String HTTPS = "https";
     private JPanel contentPane;
@@ -161,6 +162,7 @@ public class ExternalStorageAccountForm extends DialogWrapper {
             onFinish.run();
         }
 
+        sendTelemetry(OK_EXIT_CODE);
         close(DialogWrapper.OK_EXIT_CODE, true);
     }
 

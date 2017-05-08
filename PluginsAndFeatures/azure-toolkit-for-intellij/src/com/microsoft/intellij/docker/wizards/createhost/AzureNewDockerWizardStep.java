@@ -21,14 +21,14 @@
  */
 package com.microsoft.intellij.docker.wizards.createhost;
 
-import com.intellij.ui.wizard.WizardStep;
 import com.microsoft.intellij.docker.wizards.AzureDockerValidatable;
+import com.microsoft.intellij.ui.components.AzureWizardStep;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public abstract class AzureNewDockerWizardStep extends WizardStep<AzureNewDockerWizardModel> implements AzureDockerValidatable {
+public abstract class AzureNewDockerWizardStep extends AzureWizardStep<AzureNewDockerWizardModel> implements AzureDockerValidatable {
 
   protected AzureNewDockerWizardStep(String title, String explanation) {
     super(title, explanation, null);

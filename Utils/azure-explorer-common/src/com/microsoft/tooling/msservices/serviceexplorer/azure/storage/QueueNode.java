@@ -22,7 +22,10 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
 import com.google.common.collect.ImmutableMap;
+import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
@@ -32,9 +35,18 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public class QueueNode extends Node {
+public class QueueNode extends Node implements TelemetryProperties{
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(AppInsightsConstants.SubscriptionId, ResourceId.fromString(this.storageAccount.id()).subscriptionId());
+        properties.put(AppInsightsConstants.Region, this.storageAccount.regionName());
+        return properties;
+    }
+
     public class RefreshAction extends NodeActionListener {
         @Override
         public void actionPerformed(NodeActionEvent e) {

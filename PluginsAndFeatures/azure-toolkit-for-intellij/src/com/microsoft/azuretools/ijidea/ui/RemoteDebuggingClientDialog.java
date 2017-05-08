@@ -6,13 +6,13 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.management.appservice.PlatformArchitecture;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginHelper;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 
-public class RemoteDebuggingClientDialog  extends DialogWrapper {
+public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(SignInWindow.class);
 
     private JPanel contentPane;
@@ -209,7 +209,7 @@ public class RemoteDebuggingClientDialog  extends DialogWrapper {
 
     private void updatePlatformCurrent() {
         // get platform
-        String  platformVal = webApp.inner().siteConfig().use32BitWorkerProcess()
+        String platformVal = webApp.inner().siteConfig().use32BitWorkerProcess()
                 ? P32BITS
                 : P64BITS;
         platformCurrentValueLabel.setText(platformVal);
@@ -236,6 +236,7 @@ public class RemoteDebuggingClientDialog  extends DialogWrapper {
 
     @Override
     protected void doHelpAction() {
+        sendTelemetry(HELP_CODE);
         JXHyperlink link = new JXHyperlink();
         link.setURI(URI.create("https://github.com/Azure/azure-websites-java-remote-debugging"));
         link.doClick();
@@ -254,7 +255,7 @@ public class RemoteDebuggingClientDialog  extends DialogWrapper {
         try {
             pb.start();
         } catch (IOException ex) {
-           ex.printStackTrace();
+            ex.printStackTrace();
         }
 
         super.doOKAction();
@@ -276,7 +277,7 @@ public class RemoteDebuggingClientDialog  extends DialogWrapper {
     @Nullable
     @Override
     protected ValidationInfo doValidate() {
-        if (portTextField.getText().isEmpty() ||  !portTextField.getText().matches("^[0-9]*[0-9]$")) {
+        if (portTextField.getText().isEmpty() || !portTextField.getText().matches("^[0-9]*[0-9]$")) {
             return new ValidationInfo("Enter a valid Port value.", portTextField);
         }
         if (serverTextField.getText().isEmpty()) {
@@ -315,6 +316,7 @@ public class RemoteDebuggingClientDialog  extends DialogWrapper {
 
     interface IWorker {
         void work(ProgressIndicator progressIndicator) throws Exception;
+
         void rollBack(ProgressIndicator progressIndicator) throws Exception;
     }
 
@@ -326,7 +328,7 @@ public class RemoteDebuggingClientDialog  extends DialogWrapper {
                 progressIndicator.setIndeterminate(true);
                 try {
                     worker.work(progressIndicator);
-                } catch(Exception ex) {
+                } catch (Exception ex) {
                     ex.printStackTrace();
                     //LOGGER.error("work@IWorker@run@ProgressManager@runWithProgress@RemoteDebuggingClientDialog", ex);
                     ApplicationManager.getApplication().invokeLater(new Runnable() {

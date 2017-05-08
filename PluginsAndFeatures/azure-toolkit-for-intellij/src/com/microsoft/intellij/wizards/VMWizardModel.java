@@ -33,6 +33,7 @@ import com.microsoft.azure.management.network.PublicIPAddress;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.intellij.wizards.createarmvm.MachineSettingsStep;
 import com.microsoft.intellij.wizards.createarmvm.SelectImageStep;
 import com.microsoft.intellij.wizards.createarmvm.SettingsStep;
@@ -45,8 +46,10 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.HashMap;
+import java.util.Map;
 
-public class VMWizardModel extends WizardModel {
+public class VMWizardModel extends WizardModel implements TelemetryProperties {
     private Location region;
     private VirtualMachineImage virtualMachineImage;
     private boolean isKnownMachineImage;
@@ -287,5 +290,19 @@ public class VMWizardModel extends WizardModel {
 
     public void setWithNewAvailabilitySet(boolean withNewAvailabilitySet) {
         this.withNewAvailabilitySet = withNewAvailabilitySet;
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        if (this.getSize() != null) properties.put("Size", this.getSize());
+        if (this.getSubnet() != null) properties.put("Subnet", this.getSubnet());
+        if (this.getSubscription() != null) {
+            properties.put("SubscriptionName", this.getSubscription().getSubscriptionName());
+            properties.put("SubscriptionId", this.getSubscription().getSubscriptionId());
+        }
+        if (this.getName() != null) properties.put("Name", this.getName());
+        if (this.getRegion() != null) properties.put("Region", this.getRegion().name());
+        return properties;
     }
 }

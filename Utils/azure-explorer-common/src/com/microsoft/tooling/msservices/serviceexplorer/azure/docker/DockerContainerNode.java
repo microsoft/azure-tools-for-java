@@ -27,18 +27,19 @@ import com.microsoft.azure.docker.model.DockerHost;
 import com.microsoft.azure.docker.model.DockerImage;
 import com.microsoft.azure.docker.ops.AzureDockerContainerOps;
 import com.microsoft.azure.docker.ops.AzureDockerImageOps;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
-import java.awt.*;
-import java.net.URI;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.microsoft.azure.docker.ops.utils.AzureDockerUtils.checkDockerContainerUrlAvailability;
 
-public class DockerContainerNode extends AzureRefreshableNode {
+public class DockerContainerNode extends AzureRefreshableNode implements TelemetryProperties {
   //TODO: Replace the icons with the real Docker host icons
   private static final String DOCKER_CONTAINER_ICON_PATH = "DockerInstance2_16.png";
   private static final String DOCKER_CONTAINER_WEB_RUN_ICON = "DockerInstanceRunning2_16.png";
@@ -204,6 +205,14 @@ public class DockerContainerNode extends AzureRefreshableNode {
     });
     addAction(ACTION_DELETE, ACTION_DELETE_ICON, new DeleteDockerContainerAction());
     super.loadActions();
+  }
+
+  @Override
+  public Map<String, String> toProperties() {
+    final Map<String, String> properties = new HashMap<>();
+    properties.put(AppInsightsConstants.SubscriptionId, this.dockerHost.sid);
+    properties.put(AppInsightsConstants.Region, this.dockerHost.hostVM.region);
+    return properties;
   }
 
   public class DeleteDockerContainerAction extends AzureNodeActionPromptListener {

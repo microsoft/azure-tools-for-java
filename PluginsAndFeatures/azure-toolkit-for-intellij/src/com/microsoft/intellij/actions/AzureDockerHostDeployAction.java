@@ -28,7 +28,6 @@ import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -36,9 +35,9 @@ import com.intellij.util.PlatformUtils;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerImageInstance;
 import com.microsoft.azure.docker.model.DockerHost;
-import com.microsoft.azure.docker.ops.utils.AzureDockerUtils;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
+import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardDialog;
@@ -52,10 +51,10 @@ import static com.intellij.projectImport.ProjectImportBuilder.getCurrentProject;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
-public class AzureDockerHostDeployAction extends AnAction {
+public class AzureDockerHostDeployAction extends AzureAnAction {
   private static final Logger LOGGER = Logger.getInstance(AzureDockerHostDeployAction.class);
 
-  public void actionPerformed(AnActionEvent actionEvent) {
+  public void onActionPerformed(AnActionEvent actionEvent) {
     try {
         Project project = getCurrentProject();
         if (!AzureSignInAction.doSignIn( AuthMethodManager.getInstance(), project)) return;

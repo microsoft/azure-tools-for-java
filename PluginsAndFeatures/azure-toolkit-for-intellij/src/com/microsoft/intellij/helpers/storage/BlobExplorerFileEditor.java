@@ -33,21 +33,23 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.ISubscriptionSelectionListener;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.intellij.forms.UploadBlobFileForm;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.CallableSingleArg;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.model.storage.BlobDirectory;
 import com.microsoft.tooling.msservices.model.storage.BlobFile;
 import com.microsoft.tooling.msservices.model.storage.BlobItem;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import sun.misc.IOUtils;
@@ -67,16 +69,21 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class BlobExplorerFileEditor implements FileEditor {
+public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
+    static final String OPEN = "Open";
+    static final String COPY_URL = "Copy URL";
+    static final String SAVE_AS = "Save As";
+    static final String DELETE = "Delete";
+    static final String UPLOAD = "Upload";
+    static final String QUERY = "Query";
+
     private JPanel mainPanel;
     private JTextField queryTextField;
     private JTable blobListTable;
@@ -98,6 +105,7 @@ public class BlobExplorerFileEditor implements FileEditor {
     private List<BlobItem> blobItems;
 
     private ISubscriptionSelectionListener subscriptionListener;
+    private FileEditorVirtualNode fileEditorVirtualNode;
 
     public BlobExplorerFileEditor(Project project) {
         this.project = project;
@@ -135,6 +143,8 @@ public class BlobExplorerFileEditor implements FileEditor {
         tableHeader.setPreferredSize(headerSize);
         tableHeader.setReorderingAllowed(false);
         tableHeader.setResizingAllowed(true);
+
+        fileEditorVirtualNode = createVirtualNode("");
 
         blobListTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -259,7 +269,7 @@ public class BlobExplorerFileEditor implements FileEditor {
         ActionListener queryAction = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                fillGrid();
+                fileEditorVirtualNode.getNodeActionByName(QUERY).fireNodeActionEvent();
             }
         };
 
@@ -269,28 +279,28 @@ public class BlobExplorerFileEditor implements FileEditor {
         deleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                deleteSelectedFile();
+                fileEditorVirtualNode.getNodeActionByName(DELETE).fireNodeActionEvent();
             }
         });
 
         saveAsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                saveAsSelectedFile();
+                fileEditorVirtualNode.getNodeActionByName(SAVE_AS).fireNodeActionEvent();
             }
         });
 
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                downloadSelectedFile(true);
+                fileEditorVirtualNode.getNodeActionByName(OPEN).fireNodeActionEvent();
             }
         });
 
         uploadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                uploadFile();
+                fileEditorVirtualNode.getNodeActionByName(UPLOAD).fireNodeActionEvent();
             }
         });
 
@@ -443,45 +453,59 @@ public class BlobExplorerFileEditor implements FileEditor {
         }
     }
 
-    private JPopupMenu createTablePopUp() {
-        JPopupMenu menu = new JPopupMenu();
-
-        JMenuItem openMenu = new JMenuItem("Open");
-        openMenu.addActionListener(new ActionListener() {
+    private FileEditorVirtualNode createVirtualNode(final String name) {
+        final FileEditorVirtualNode node = new FileEditorVirtualNode(this, name);
+        node.addAction(OPEN, new NodeActionListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            protected void actionPerformed(NodeActionEvent e) {
                 downloadSelectedFile(true);
             }
         });
 
-        JMenuItem saveAsMenu = new JMenuItem("Save As");
-        saveAsMenu.addActionListener(new ActionListener() {
+        node.addAction(SAVE_AS, new NodeActionListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            protected void actionPerformed(NodeActionEvent e) {
                 saveAsSelectedFile();
             }
         });
 
-        JMenuItem copyMenu = new JMenuItem("Copy URL");
-        copyMenu.addActionListener(new ActionListener() {
+        node.addAction(COPY_URL, new NodeActionListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            protected void actionPerformed(NodeActionEvent e) {
                 copyURLSelectedFile();
             }
         });
 
-        JMenuItem deleteMenu = new JMenuItem("Delete");
-        deleteMenu.addActionListener(new ActionListener() {
+        node.addAction(DELETE, new NodeActionListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            protected void actionPerformed(NodeActionEvent e) {
                 deleteSelectedFile();
             }
         });
 
-        menu.add(openMenu);
-        menu.add(saveAsMenu);
-        menu.add(copyMenu);
-        menu.add(deleteMenu);
+        node.addAction(UPLOAD, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                uploadFile();
+            }
+        });
+
+        node.addAction(QUERY, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                fillGrid();
+            }
+        });
+
+        return node;
+    }
+
+    private JPopupMenu createTablePopUp() {
+        final JPopupMenu menu = new JPopupMenu();
+        menu.add(fileEditorVirtualNode.createJMenuItem(OPEN));
+        menu.add(fileEditorVirtualNode.createJMenuItem(SAVE_AS));
+        menu.add(fileEditorVirtualNode.createJMenuItem(COPY_URL));
+        menu.add(fileEditorVirtualNode.createJMenuItem(DELETE));
 
         return menu;
     }
@@ -878,6 +902,7 @@ public class BlobExplorerFileEditor implements FileEditor {
 
     public void setBlobContainer(BlobContainer blobContainer) {
         this.blobContainer = blobContainer;
+        this.fileEditorVirtualNode.setName(blobContainer.getName());
     }
 
     public void setStorageAccount(String storageAccountName) {
@@ -907,5 +932,12 @@ public class BlobExplorerFileEditor implements FileEditor {
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
         }
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("Container", this.getName());
+        return properties;
     }
 }

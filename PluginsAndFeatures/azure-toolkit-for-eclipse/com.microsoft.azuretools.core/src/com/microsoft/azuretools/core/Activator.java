@@ -65,9 +65,11 @@ import com.microsoft.azuretools.azurecommons.deploy.UploadProgressEventListener;
 import com.microsoft.azuretools.azurecommons.util.GetHashMac;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.core.azureexplorer.helpers.IDEHelperImpl;
+import com.microsoft.azuretools.core.telemetry.AppInsightsConfigurationImpl;
 import com.microsoft.azuretools.core.ui.UIFactory;
 import com.microsoft.azuretools.core.ui.views.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
@@ -144,6 +146,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             }
             CommonSettings.settingsBaseDir = dirPath.toString();
             initAzureToolsCoreLibsLoggerFileHandler();
+            initTelemetryClient();
         } catch (IOException e) {
             e.printStackTrace();
             log("initAzureToolsCoreLibsSettings@Activator", e);
@@ -165,6 +168,10 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             e.printStackTrace();
             log("initAzureToolsCoreLibsLoggerFileHandler@Activator", e);
         }
+    }
+    
+    private void initTelemetryClient(){
+    	AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
     }
 
     private String getMachineId() {

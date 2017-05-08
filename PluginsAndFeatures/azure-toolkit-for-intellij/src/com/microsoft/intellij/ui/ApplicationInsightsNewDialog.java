@@ -21,7 +21,6 @@
  */
 package com.microsoft.intellij.ui;
 
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TitlePanel;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
@@ -30,6 +29,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
@@ -37,12 +37,12 @@ import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class ApplicationInsightsNewDialog extends DialogWrapper {
+public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
     private JPanel contentPane;
     private JTextField txtName;
     private JComboBox comboSub;

@@ -22,21 +22,20 @@
 package com.microsoft.intellij.ui;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TitlePanel;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
-import com.microsoft.intellij.AzureSettings;
-import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
+import com.microsoft.intellij.AzureSettings;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.intellij.util.PluginUtil;
 
 import javax.swing.*;
-
 import java.util.ArrayList;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class ApplicationInsightsAddDialog extends DialogWrapper  {
+public class ApplicationInsightsAddDialog extends AzureDialogWrapper {
     private JPanel contentPane;
     private JTextField txtName;
     private JTextField txtKey;

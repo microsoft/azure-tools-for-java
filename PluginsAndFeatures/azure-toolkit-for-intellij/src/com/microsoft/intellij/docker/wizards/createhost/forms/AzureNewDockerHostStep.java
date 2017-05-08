@@ -36,6 +36,8 @@ import com.microsoft.azure.docker.ops.utils.AzureDockerUtils;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.VirtualMachineSize;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
 import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.intellij.docker.wizards.createhost.AzureNewDockerWizardModel;
@@ -49,12 +51,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URI;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
-import java.util.Vector;
 
-public class AzureNewDockerHostStep extends AzureNewDockerWizardStep {
+public class AzureNewDockerHostStep extends AzureNewDockerWizardStep implements TelemetryProperties {
   private JPanel rootConfigureContainerPanel;
   private JLabel dockerHostNameLabel;
   private JTextField dockerHostNameTextField;
@@ -872,6 +872,7 @@ public class AzureNewDockerHostStep extends AzureNewDockerWizardStep {
   @Override
   public WizardStep onNext(final AzureNewDockerWizardModel model) {
     if (doValidate() == null) {
+      model.setSubscription((AzureDockerSubscription)dockerSubscriptionComboBox.getSelectedItem());
       return super.onNext(model);
     } else {
       return this;
@@ -880,13 +881,19 @@ public class AzureNewDockerHostStep extends AzureNewDockerWizardStep {
 
   @Override
   public boolean onFinish() {
+    model.setSubscription((AzureDockerSubscription)dockerSubscriptionComboBox.getSelectedItem());
     return model.doValidate() == null && super.onFinish();
   }
 
   @Override
   public boolean onCancel() {
+    model.setSubscription((AzureDockerSubscription)dockerSubscriptionComboBox.getSelectedItem());
     model.finishedOK = true;
-
     return super.onCancel();
+  }
+
+  @Override
+  public Map<String, String> toProperties() {
+    return model.toProperties();
   }
 }

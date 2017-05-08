@@ -27,7 +27,7 @@ import org.osgi.framework.BundleContext;
 
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.core.telemetry.AppInsightsCustomEvent;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.hdinsight.util.HDInsightJobViewUtils;
 import com.microsoft.azuretools.hdinsight.util.Messages;
 
@@ -57,7 +57,7 @@ public class Activator extends AbstractUIPlugin {
 		plugin = this;
 		String enabledProperty = DefaultLoader.getIdeHelper().getProperty(Messages.HDInsightFeatureEnabled);
 		if(StringHelper.isNullOrWhiteSpace(enabledProperty)) {
-			AppInsightsCustomEvent.create(Messages.HDInsightFeatureEnabled, context.getBundle().getVersion().toString());
+			AppInsightsClient.create(Messages.HDInsightFeatureEnabled, context.getBundle().getVersion().toString());
 			DefaultLoader.getIdeHelper().setProperty(Messages.HDInsightFeatureEnabled, "true");
 		}
 		HDInsightJobViewUtils.checkInitlize();

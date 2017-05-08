@@ -40,7 +40,7 @@ import org.eclipse.ui.PlatformUI;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.azuretools.core.telemetry.AppInsightsCustomEvent;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.hdinsight.Activator;
 import com.microsoft.azuretools.hdinsight.util.Messages;
 
@@ -149,7 +149,7 @@ public class SparkLibraryOptionsPanel extends Composite {
 			@Override
 			public void widgetSelected(SelectionEvent event) {
 				try {
-					AppInsightsCustomEvent.create(Messages.HDInsightDownloadSparkLibrary, null);
+					AppInsightsClient.create(Messages.HDInsightDownloadSparkLibrary, null);
 					PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(event.text));
 				} catch (Exception ex) {
 					/*

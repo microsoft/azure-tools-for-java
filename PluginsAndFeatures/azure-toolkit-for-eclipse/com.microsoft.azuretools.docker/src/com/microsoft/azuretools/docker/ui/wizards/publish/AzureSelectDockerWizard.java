@@ -36,7 +36,7 @@ import com.microsoft.azure.management.compute.VirtualMachine;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
-import com.microsoft.azuretools.core.telemetry.AppInsightsCustomEvent;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.docker.ui.dialogs.AzureInputDockerLoginCredsDialog;
@@ -393,7 +393,7 @@ public class AzureSelectDockerWizard extends Wizard {
 			            com.microsoft.azuretools.core.Activator.removeDeploymentEventListener(undeployListnr);
 					} catch (Exception ignored) { }
 					progressMonitor.done();
-					AppInsightsCustomEvent.create("Deploy as DockerContainer", "", postEventProperties);
+					AppInsightsClient.create("Deploy as DockerContainer", "", postEventProperties);
 					return Status.OK_STATUS;
 				} catch (Exception e) {
 					String msg = "An error occurred while attempting to publish a Docker container!" + "\n" + e.getMessage();

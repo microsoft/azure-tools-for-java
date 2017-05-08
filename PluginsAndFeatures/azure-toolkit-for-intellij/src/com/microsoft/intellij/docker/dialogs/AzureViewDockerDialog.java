@@ -22,24 +22,21 @@
 package com.microsoft.intellij.docker.dialogs;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.packaging.impl.artifacts.ArtifactUtil;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.DockerHost;
 import com.microsoft.azure.docker.ops.AzureDockerCertVaultOps;
-import com.microsoft.azuretools.utils.AzureUIRefreshCore;
-import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class AzureViewDockerDialog extends DialogWrapper {
+public class AzureViewDockerDialog extends AzureDialogWrapper {
   private final String defaultTitle = "Viewing %s";
   public static final int OK_EXIT_CODE = 0;
   public static final int CANCEL_EXIT_CODE = 1;
@@ -81,6 +78,7 @@ public class AzureViewDockerDialog extends DialogWrapper {
     setTextField(dockerHostNameTextField, dockerHost.name);
     setTextField(dockerHostUrlTextField, dockerHost.apiUrl);
     setTextField(dockerHostSidTextField, dockerHost.sid);
+    setSubscription(new SubscriptionDetail(dockerHost.sid, null, null, true));
     setTextField(dockerHostLocationTextField, dockerHost.hostVM.region);
     setTextField(dockerHostStatusTextField, (updating != null) ?
         dockerHost.state.toString() + updating :

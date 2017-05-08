@@ -21,7 +21,6 @@
  */
 package com.microsoft.azuretools.ijidea.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
@@ -33,13 +32,14 @@ import com.microsoft.azuretools.authmanage.interact.AuthMethod;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.ijidea.ui.ErrorWindow;
 import com.microsoft.azuretools.ijidea.ui.SignInWindow;
+import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class AzureSignInAction extends AnAction {
+public class AzureSignInAction extends AzureAnAction {
     private static final Logger LOGGER = Logger.getInstance(AzureSignInAction.class);
     private static final String SIGN_IN = "Azure Sign In...";
     private static final String SIGN_OUT = "Azure Sign Out...";
@@ -53,7 +53,7 @@ public class AzureSignInAction extends AnAction {
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void onActionPerformed(AnActionEvent e) {
         Project project = DataKeys.PROJECT.getData(e.getDataContext());
         onAzureSignIn(project);
     }

@@ -23,7 +23,6 @@ package com.microsoft.intellij.helpers.storage;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.ide.structureView.StructureViewBuilder;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
@@ -33,16 +32,14 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.forms.QueueMessageForm;
 import com.microsoft.intellij.forms.ViewMessageForm;
-import com.microsoft.intellij.helpers.UIHelperImpl;
-import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.QueueMessage;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,12 +49,15 @@ import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeListener;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
-
 public class QueueFileEditor implements FileEditor {
+    static final String OPEN = "Open";
+    static final String DEQUEUE = "Dequeue";
+    static final String ADD_MESSAGE = "Add Message";
+    static final String CLEAR_QUEUE = "Clear Queue";
+    static final String REFRESH = "Refresh";
+
     private Project project;
     private ClientStorageAccount storageAccount;
     private Queue queue;
@@ -69,8 +69,11 @@ public class QueueFileEditor implements FileEditor {
     private JTable queueTable;
     private List<QueueMessage> queueMessages;
 
+    private FileEditorVirtualNode fileEditorVirtualNode;
+
     public QueueFileEditor(final Project project) {
         this.project = project;
+        fileEditorVirtualNode = createFileEditorVirtualNode("");
         queueTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         DefaultTableModel model = new DefaultTableModel() {
@@ -155,20 +158,49 @@ public class QueueFileEditor implements FileEditor {
         refreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                fillGrid();
+                fileEditorVirtualNode.getNodeActionByName(REFRESH).fireNodeActionEvent();
             }
         });
 
         dequeueMessageButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                dequeueFirstMessage();
+                fileEditorVirtualNode.getNodeActionByName(DEQUEUE).fireNodeActionEvent();
             }
         });
 
         addMessageButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                fileEditorVirtualNode.getNodeActionByName(ADD_MESSAGE).fireNodeActionEvent();
+            }
+        });
+
+        clearQueueButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                fileEditorVirtualNode.getNodeActionByName(CLEAR_QUEUE).fireNodeActionEvent();
+            }
+        });
+    }
+
+    private FileEditorVirtualNode createFileEditorVirtualNode(final String name) {
+        FileEditorVirtualNode fileEditorVirtualNode = new FileEditorVirtualNode(this, name);
+        fileEditorVirtualNode.addAction(REFRESH, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                fillGrid();
+            }
+        });
+        fileEditorVirtualNode.addAction(DEQUEUE, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                dequeueFirstMessage();
+            }
+        });
+        fileEditorVirtualNode.addAction(ADD_MESSAGE, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
                 QueueMessageForm queueMessageForm = new QueueMessageForm(project);
                 queueMessageForm.setQueue(queue);
                 queueMessageForm.setStorageAccount(storageAccount);
@@ -183,11 +215,9 @@ public class QueueFileEditor implements FileEditor {
                 queueMessageForm.show();
             }
         });
-
-
-        clearQueueButton.addActionListener(new ActionListener() {
+        fileEditorVirtualNode.addAction(CLEAR_QUEUE, new NodeActionListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            protected void actionPerformed(NodeActionEvent e) {
                 int optionDialog = JOptionPane.showOptionDialog(null,
                         "Are you sure you want to clear the queue \"" + queue.getName() + "\"?",
                         "Azure Explorer",
@@ -220,6 +250,13 @@ public class QueueFileEditor implements FileEditor {
                 }
             }
         });
+        fileEditorVirtualNode.addAction(OPEN, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                viewMessageText();
+            }
+        });
+        return fileEditorVirtualNode;
     }
 
     public void fillGrid() {
@@ -266,25 +303,9 @@ public class QueueFileEditor implements FileEditor {
 
     private JPopupMenu createTablePopUp(boolean isFirstRow) {
         JPopupMenu menu = new JPopupMenu();
-
-        JMenuItem openMenu = new JMenuItem("Open");
-        openMenu.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                viewMessageText();
-            }
-        });
-
-        JMenuItem dequeueMenu = new JMenuItem("Dequeue");
-        dequeueMenu.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                dequeueFirstMessage();
-            }
-        });
+        menu.add(fileEditorVirtualNode.createJMenuItem(OPEN));
+        JMenuItem dequeueMenu = fileEditorVirtualNode.createJMenuItem(DEQUEUE);
         dequeueMenu.setEnabled(isFirstRow);
-
-        menu.add(openMenu);
         menu.add(dequeueMenu);
 
         return menu;

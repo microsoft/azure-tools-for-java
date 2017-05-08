@@ -38,8 +38,8 @@ import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
-import com.microsoft.intellij.util.AppInsightsCustomEvent;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.helpers.CallableSingleArg;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
@@ -159,7 +159,7 @@ public class SparkSubmitHelper {
 
             if (isKilledJob) {
                 postEventProperty.put("IsKilled", "true");
-                AppInsightsCustomEvent.create(HDInsightBundle.message("SparkSubmissionButtonClickEvent"), null, postEventProperty);
+                AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionButtonClickEvent"), null, postEventProperty);
                 return;
             }
 
@@ -171,13 +171,13 @@ public class SparkSubmitHelper {
                 HDInsightUtil.getSparkSubmissionToolWindowManager(project).setInfo("The Spark application completed successfully");
             }
 
-            AppInsightsCustomEvent.create(HDInsightBundle.message("SparkSubmissionButtonClickEvent"), null, postEventProperty);
+            AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionButtonClickEvent"), null, postEventProperty);
         } catch (Exception e) {
             if (HDInsightUtil.getSparkSubmissionToolWindowManager(project).getJobStatusManager().isJobKilled() == false) {
                 HDInsightUtil.getSparkSubmissionToolWindowManager(project).setError("Error : Failed to getting running log. Exception : " + e.toString());
             } else {
                 postEventProperty.put("IsKilled", "true");
-                AppInsightsCustomEvent.create(HDInsightBundle.message("SparkSubmissionButtonClickEvent"), null, postEventProperty);
+                AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionButtonClickEvent"), null, postEventProperty);
             }
         }
     }

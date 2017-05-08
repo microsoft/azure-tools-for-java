@@ -41,8 +41,8 @@ import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveTableModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
-import com.microsoft.intellij.util.AppInsightsCustomEvent;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import javax.swing.*;
@@ -180,7 +180,7 @@ public class SparkSubmitModel {
                             } else {
                                 postEventProperty.put("IsSubmitSucceed", "true");
                                 postEventProperty.put("SubmitFailedReason", "CompileSuccess");
-                                AppInsightsCustomEvent.create(HDInsightBundle.message("SparkProjectCompileSuccess"), null, postEventProperty);
+                                AppInsightsClient.create(HDInsightBundle.message("SparkProjectCompileSuccess"), null, postEventProperty);
 
                                 HDInsightUtil.showInfoOnSubmissionMessageWindow(project, String.format("Info : Build %s successfully.", artifact.getOutputFile()));
                                 submit();
@@ -195,7 +195,7 @@ public class SparkSubmitModel {
     private void showCompilerErrorMessage(@NotNull CompileContext compileContext) {
         postEventProperty.put("IsSubmitSucceed", "false");
         postEventProperty.put("SubmitFailedReason", "CompileFailed");
-        AppInsightsCustomEvent.create(HDInsightBundle.message("SparkProjectCompileFailed"), null, postEventProperty);
+        AppInsightsClient.create(HDInsightBundle.message("SparkProjectCompileFailed"), null, postEventProperty);
 
         CompilerMessage[] errorMessages= compileContext.getMessages(CompilerMessageCategory.ERROR);
         for(CompilerMessage message : errorMessages) {
@@ -251,7 +251,7 @@ public class SparkSubmitModel {
                     String.format("Error : Failed to submit to spark cluster. error code : %d, reason :  %s.", response.getCode(), response.getContent()));
             postEventProperty.put("IsSubmitSucceed", "false");
             postEventProperty.put("SubmitFailedReason", response.getContent());
-            AppInsightsCustomEvent.create(HDInsightBundle.message("SparkSubmissionButtonClickEvent"), null, postEventProperty);
+            AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionButtonClickEvent"), null, postEventProperty);
         }
     }
 
@@ -259,7 +259,7 @@ public class SparkSubmitModel {
         HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, "Error : Failed to submit application to spark cluster. Exception : " + exception.getMessage());
         postEventProperty.put("IsSubmitSucceed", "false");
         postEventProperty.put("SubmitFailedReason", exception.toString());
-        AppInsightsCustomEvent.create(HDInsightBundle.message("SparkSubmissionButtonClickEvent"), null, postEventProperty);
+        AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionButtonClickEvent"), null, postEventProperty);
     }
 
     private void writeJobLogToLocal() {

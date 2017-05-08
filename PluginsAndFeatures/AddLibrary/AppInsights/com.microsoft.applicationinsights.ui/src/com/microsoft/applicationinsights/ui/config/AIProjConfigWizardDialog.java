@@ -68,7 +68,7 @@ import com.microsoft.applicationinsights.preference.ApplicationInsightsPreferenc
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
 import com.microsoft.applicationinsights.ui.activator.Activator;
 import com.microsoft.applicationinsights.util.AILibraryUtil;
-import com.microsoft.azuretools.core.telemetry.AppInsightsCustomEvent;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -482,7 +482,7 @@ public class AIProjConfigWizardDialog extends TitleAreaDialog {
 			Bundle bundle = Activator.getDefault().getBundle();
 			if (bundle != null) {
 				PluginUtil.showBusy(true, getShell());
-				AppInsightsCustomEvent.create("Application Insights",
+				AppInsightsClient.create("Application Insights",
 						bundle.getVersion().toString());
 				PluginUtil.showBusy(false, getShell());
 			}

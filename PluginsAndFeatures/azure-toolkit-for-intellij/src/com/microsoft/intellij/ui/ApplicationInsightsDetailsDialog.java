@@ -21,14 +21,14 @@
  */
 package com.microsoft.intellij.ui;
 
-import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 
 import javax.swing.*;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class ApplicationInsightsDetailsDialog extends DialogWrapper {
+public class ApplicationInsightsDetailsDialog extends AzureDialogWrapper {
     private JTextField txtName;
     private JTextField txtKey;
     private JTextField txtSub;

@@ -23,7 +23,8 @@ package com.microsoft.azure.hdinsight.serverexplore.hdinsightnode;
 
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.hdinsight.common.CommonConst;
-import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
@@ -31,9 +32,10 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public class BlobContainerNode extends Node {
+public class BlobContainerNode extends Node implements TelemetryProperties{
     private static final String CONTAINER_MODULE_ID = BlobContainerNode.class.getName();
     private static final String ICON_PATH = CommonConst.BlobContainerIConPath;
     private static final String DEFAULT_CONTAINER_FLAG = "(default)";
@@ -49,6 +51,13 @@ public class BlobContainerNode extends Node {
         super(CONTAINER_MODULE_ID, isDefaultContainer ? blobContainer.getName() + DEFAULT_CONTAINER_FLAG : blobContainer.getName(), parent, ICON_PATH);
         this.storageAccount = storageAccount;
         this.blobContainer = blobContainer;
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(AppInsightsConstants.SubscriptionId, this.storageAccount.getSubscriptionId());
+        return properties;
     }
 
     public class RefreshAction extends NodeActionListener {

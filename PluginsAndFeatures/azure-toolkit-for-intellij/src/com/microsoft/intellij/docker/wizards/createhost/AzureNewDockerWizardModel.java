@@ -25,12 +25,17 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.wizard.WizardModel;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
+import com.microsoft.azure.docker.model.AzureDockerSubscription;
 import com.microsoft.azure.docker.model.DockerHost;
 import com.microsoft.azure.docker.ops.utils.AzureDockerUtils;
 import com.microsoft.intellij.docker.wizards.createhost.forms.AzureNewDockerHostStep;
 import com.microsoft.intellij.docker.wizards.createhost.forms.AzureNewDockerLoginStep;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 
-public class AzureNewDockerWizardModel extends WizardModel {
+import java.util.HashMap;
+import java.util.Map;
+
+public class AzureNewDockerWizardModel extends WizardModel implements TelemetryProperties {
   private Project project;
 
   private AzureNewDockerHostStep newDockerHostStep;
@@ -40,6 +45,7 @@ public class AzureNewDockerWizardModel extends WizardModel {
   private AzureDockerHostsManager dockerManager;
   public DockerHost newHost;
   public boolean finishedOK;
+  private AzureDockerSubscription subscription;
 
   public AzureNewDockerWizardModel(final Project project, AzureDockerHostsManager dockerManager) {
 //    super("Create a virtual machine as a Docker host");
@@ -102,6 +108,22 @@ public class AzureNewDockerWizardModel extends WizardModel {
 
   public void DialogShaker(ValidationInfo info) {
     newDockerWizardDialog.DialogShaker(info);
+  }
+
+  public void setSubscription(AzureDockerSubscription subscription) { this.subscription = subscription; }
+
+  public AzureDockerSubscription getSubscription() { return subscription; }
+
+  @Override
+  public Map<String, String> toProperties() {
+    final Map<String, String> properties = new HashMap<>();
+
+    if(this.subscription != null) {
+      properties.put("SubscriptionName", this.getSubscription().name);
+      properties.put("SubscriptionId", this.getSubscription().id);
+    }
+
+    return properties;
   }
 
 }

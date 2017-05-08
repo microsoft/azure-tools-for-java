@@ -24,7 +24,7 @@ package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.ui.DialogWrapper;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -40,7 +40,7 @@ import java.awt.event.WindowEvent;
 /**
  * Created by vlashch on 10/17/16.
  */
-class LoginWindow extends DialogWrapper {
+class LoginWindow extends AzureDialogWrapper {
     public final String redirectUri;
     public final String requestUri;
     private String res = null;

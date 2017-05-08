@@ -1,6 +1,5 @@
 package com.microsoft.azuretools.core.ui.commoncontrols;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.SWT;
@@ -9,10 +8,12 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Widget;
 
-public class DropDownHandler extends AbstractHandler {
+import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
+
+public class DropDownHandler extends AzureAbstractHandler {
 
 	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
+	public Object onExecute(ExecutionEvent event) throws ExecutionException {
 		if (event.getTrigger() != null && (event.getTrigger() instanceof Event)) {
 			pullDropdown((Event) event.getTrigger());
 		}

@@ -34,7 +34,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitResponse;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.core.telemetry.AppInsightsCustomEvent;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.hdinsight.SparkSubmissionToolWindowView;
 import com.microsoft.azuretools.hdinsight.common2.HDInsightUtil;
 import com.microsoft.azuretools.hdinsight.util.Messages;
@@ -317,7 +317,7 @@ public class SparkSubmitModel {
                     String.format("Error : Failed to submit to spark cluster. error code : %d, reason :  %s.", response.getCode(), response.getContent()));
             postEventProperty.put("IsSubmitSucceed", "false");
             postEventProperty.put("SubmitFailedReason", response.getContent());
-            AppInsightsCustomEvent.create(Messages.SparkSubmissionButtonClickEvent, null, postEventProperty);
+            AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent, null, postEventProperty);
         }
     }
 
@@ -325,7 +325,7 @@ public class SparkSubmitModel {
         HDInsightUtil.showErrorMessageOnSubmissionMessageWindow("Error : Failed to submit application to spark cluster. Exception : " + exception.getMessage());
         postEventProperty.put("IsSubmitSucceed", "false");
         postEventProperty.put("SubmitFailedReason", exception.toString());
-        AppInsightsCustomEvent.create(Messages.SparkSubmissionButtonClickEvent, null, postEventProperty);
+        AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent, null, postEventProperty);
 //        TelemetryManager.postEvent(TelemetryCommon.SparkSubmissionButtonClickEvent, postEventProperty, null);
     }
 

@@ -30,8 +30,8 @@ import com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionExDialog;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
-import com.microsoft.intellij.util.AppInsightsCustomEvent;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import java.util.HashSet;
@@ -51,7 +51,7 @@ public class SubmitAction extends AnAction {
             }
 
             isActionPerformedSet.add(project);
-            AppInsightsCustomEvent.create(HDInsightBundle.message("SparkSubmissionRightClickProject"), null);
+            AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionRightClickProject"), null);
             DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
                 @Override
                 public void run() {

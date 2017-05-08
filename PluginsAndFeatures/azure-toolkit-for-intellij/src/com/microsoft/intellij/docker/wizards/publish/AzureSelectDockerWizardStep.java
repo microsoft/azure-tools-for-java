@@ -21,14 +21,14 @@
  */
 package com.microsoft.intellij.docker.wizards.publish;
 
-import com.intellij.ui.wizard.WizardStep;
 import com.microsoft.intellij.docker.wizards.AzureDockerValidatable;
+import com.microsoft.intellij.ui.components.AzureWizardStep;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public abstract class AzureSelectDockerWizardStep extends WizardStep<AzureSelectDockerWizardModel> implements AzureDockerValidatable {
+public abstract class AzureSelectDockerWizardStep extends AzureWizardStep<AzureSelectDockerWizardModel> implements AzureDockerValidatable {
 
   protected AzureSelectDockerWizardStep(String title, String explanation) {
       super(title, explanation, null);

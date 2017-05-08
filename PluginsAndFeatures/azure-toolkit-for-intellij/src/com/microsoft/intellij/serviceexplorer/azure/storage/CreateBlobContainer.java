@@ -22,6 +22,7 @@
 package com.microsoft.intellij.serviceexplorer.azure.storage;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.intellij.forms.CreateBlobContainerForm;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
@@ -50,7 +51,9 @@ public class CreateBlobContainer extends NodeActionListener {
             form.setConnectionString(StorageClientSDKManager.getConnectionString(((BlobModule) parent).getStorageAccount()));
         } else if (parent instanceof StorageNode) {
             form.setConnectionString(StorageClientSDKManager.getConnectionString(((StorageNode) parent).getStorageAccount()));
+            form.setSubscription(new SubscriptionDetail(((StorageNode)parent).getSubscriptionId(), null, null, true));
         }
+
         form.setOnCreate(new Runnable() {
             @Override
             public void run() {

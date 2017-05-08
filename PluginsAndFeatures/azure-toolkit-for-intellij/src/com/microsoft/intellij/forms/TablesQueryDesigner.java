@@ -29,6 +29,7 @@ import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
 import com.microsoft.intellij.helpers.DatePickerCellEditor;
 import com.microsoft.intellij.helpers.UIHelperImpl;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -46,7 +47,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class TablesQueryDesigner extends DialogWrapper {
+public class TablesQueryDesigner extends AzureDialogWrapper {
     private JPanel contentPane;
     private JButton addClauseButton;
     private JTextArea queryTextArea;
@@ -183,6 +184,7 @@ public class TablesQueryDesigner extends DialogWrapper {
     @Override
     protected void doOKAction() {
         onFinish.run();
+        sendTelemetry(OK_EXIT_CODE);
         close(DialogWrapper.OK_EXIT_CODE, true);
     }
 

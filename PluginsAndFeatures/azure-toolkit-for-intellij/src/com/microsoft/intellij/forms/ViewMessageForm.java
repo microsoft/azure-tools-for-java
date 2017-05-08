@@ -23,13 +23,13 @@
 package com.microsoft.intellij.forms;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class ViewMessageForm extends DialogWrapper {
+public class ViewMessageForm extends AzureDialogWrapper {
     private JPanel contentPane;
     private JTextArea messageTextArea;
 

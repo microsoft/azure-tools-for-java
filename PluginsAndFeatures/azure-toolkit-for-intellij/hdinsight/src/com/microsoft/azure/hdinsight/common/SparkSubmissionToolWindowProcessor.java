@@ -31,9 +31,9 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitHelper;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.IToolWindowProcessor;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
-import com.microsoft.intellij.util.AppInsightsCustomEvent;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
@@ -50,7 +50,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,7 +110,7 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
                     @Override
                     public void run() {
                         if (clusterDetail != null) {
-                            AppInsightsCustomEvent.create(HDInsightBundle.message("SparkSubmissionStopButtionClickEvent"), null);
+                            AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionStopButtionClickEvent"), null);
                             try {
                                 HttpResponse deleteResponse = SparkBatchSubmission.getInstance().killBatchJob(SparkSubmitHelper.getLivyConnectionURL(clusterDetail), batchId);
                                 if (deleteResponse.getCode() == 201 || deleteResponse.getCode() == 200) {

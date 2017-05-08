@@ -21,26 +21,37 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm;
 
-
-import java.util.List;
-
 import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.compute.InstanceViewStatus;
 import com.microsoft.azure.management.compute.VirtualMachine;
+import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
-public class VMNode extends RefreshableNode {
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class VMNode extends RefreshableNode implements TelemetryProperties {
     private static String RUNNING_STATUS = "PowerState/running";
     private static String STOPPED = "stopped";
+
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(AppInsightsConstants.SubscriptionId, ResourceId.fromString(this.virtualMachine.id()).subscriptionId());
+        properties.put(AppInsightsConstants.Region, this.virtualMachine.regionName());
+        return properties;
+    }
 
     public class DeleteVMAction extends AzureNodeActionPromptListener {
         public DeleteVMAction() {

@@ -21,21 +21,21 @@
  */
 package com.microsoft.intellij.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.libraries.LibrariesConfigurationDialog;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class LibraryConfigurationAction extends AnAction {
+public class LibraryConfigurationAction extends AzureAnAction {
 
-    public void actionPerformed(AnActionEvent event) {
+    public void onActionPerformed(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
         List<AzureLibrary> currentLibs = new ArrayList<AzureLibrary>();
         for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {

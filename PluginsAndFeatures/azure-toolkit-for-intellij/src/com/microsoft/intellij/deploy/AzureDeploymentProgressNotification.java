@@ -39,12 +39,12 @@ import com.microsoft.azure.management.compute.VirtualMachine;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.activitylog.ActivityLogToolWindowFactory;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
-import com.microsoft.intellij.util.AppInsightsCustomEvent;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -139,7 +139,7 @@ public final class AzureDeploymentProgressNotification {
         Date startDate = new Date();
         Map<String, String> postEventProperties = new HashMap<String, String>();
         postEventProperties.put("DockerFileOption", dockerImageInstance.predefinedDockerfile);
-        String descriptionTask =  String.format("Publishing %s into Docker host %s at port(s) %s", new File(dockerImageInstance.artifactPath).getName(), dockerImageInstance.host.name, dockerImageInstance.dockerPortSettings);
+        String descriptionTask = String.format("Publishing %s into Docker host %s at port(s) %s", new File(dockerImageInstance.artifactPath).getName(), dockerImageInstance.host.name, dockerImageInstance.dockerPortSettings);
         try {
             String msg = String.format("Publishing %s to Docker host %s ...", new File(dockerImageInstance.artifactPath).getName(), dockerImageInstance.host.name);
             notifyProgress(descriptionTask, startDate, null, 5, msg);
@@ -259,6 +259,6 @@ public final class AzureDeploymentProgressNotification {
             postEventProperties.put("PublishError", ee.getMessage());
             notifyProgress(descriptionTask, startDate, url, 100, "Error: %s", ee.getMessage());
         }
-        AppInsightsCustomEvent.create("Deploy as DockerContainer", "", postEventProperties);
+        AppInsightsClient.createByType(AppInsightsClient.EventType.DockerContainer, null, "Deploy", postEventProperties);
     }
 }

@@ -28,6 +28,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -36,7 +37,7 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.util.List;
 
-public class SrvPriSettingsDialog extends DialogWrapper {
+public class SrvPriSettingsDialog extends AzureDialogWrapper {
     private JPanel contentPane;
     private JTable table;
     private JTextPane selectSubscriptionCommentTextPane;

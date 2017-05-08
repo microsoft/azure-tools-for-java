@@ -27,11 +27,16 @@ import com.intellij.ui.wizard.WizardModel;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerImageInstance;
 import com.microsoft.azure.docker.model.DockerHost;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.intellij.docker.wizards.publish.forms.AzureConfigureDockerContainerStep;
 import com.microsoft.intellij.docker.wizards.publish.forms.AzureSelectDockerHostStep;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
-public class AzureSelectDockerWizardModel extends WizardModel {
+import java.util.HashMap;
+import java.util.Map;
+
+public class AzureSelectDockerWizardModel extends WizardModel implements TelemetryProperties {
   private Project project;
   private AzureSelectDockerHostStep selectDockerHostForm;
   private AzureConfigureDockerContainerStep configureDockerContainerForm;
@@ -40,6 +45,7 @@ public class AzureSelectDockerWizardModel extends WizardModel {
   private AzureDockerHostsManager dockerManager;
 
   private AzureDockerImageInstance dockerImageDescription;
+  private SubscriptionDetail subscription;
   public boolean finishedOK;
 
   public AzureSelectDockerWizardModel(final Project project, AzureDockerHostsManager uiManager, AzureDockerImageInstance dockerImageInstance) {
@@ -119,6 +125,22 @@ public class AzureSelectDockerWizardModel extends WizardModel {
     if (selectDockerHostForm != null) {
       selectDockerHostForm.selectDefaultDockerHost(dockerHost, selectOtherHosts);
     }
+  }
+
+  public void setSubscription(SubscriptionDetail subscription) { this.subscription = subscription; }
+
+  public SubscriptionDetail getSubscription() { return subscription; }
+
+  @Override
+  public Map<String, String> toProperties() {
+    final Map<String, String> properties = new HashMap<>();
+
+    if(this.subscription != null) {
+        properties.put("SubscriptionName", this.getSubscription().getSubscriptionName());
+        properties.put("SubscriptionId", this.getSubscription().getSubscriptionId());
+    }
+
+    return properties;
   }
 
 }

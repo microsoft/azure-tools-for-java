@@ -53,7 +53,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
 import com.microsoft.sqljdbc4.ui.activator.Activator;
-import com.microsoft.azuretools.core.telemetry.AppInsightsCustomEvent;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 
 /**
@@ -204,7 +204,7 @@ public class ClasspathContainerPage extends WizardPage implements
             	Bundle bundle = Activator.getDefault().getBundle();
             	if (bundle != null) {
             		PluginUtil.showBusy(true, getShell());
-            		AppInsightsCustomEvent.create("JDBC Driver",
+            		AppInsightsClient.create("JDBC Driver",
             				bundle.getVersion().toString());
             		PluginUtil.showBusy(false, getShell());
             	}

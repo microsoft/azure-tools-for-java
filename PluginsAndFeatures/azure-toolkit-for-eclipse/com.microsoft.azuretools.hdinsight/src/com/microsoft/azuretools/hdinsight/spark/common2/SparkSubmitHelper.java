@@ -58,7 +58,7 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
-import com.microsoft.azuretools.core.telemetry.AppInsightsCustomEvent;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.hdinsight.Activator;
 import com.microsoft.azuretools.hdinsight.common2.HDInsightUtil;
@@ -172,7 +172,7 @@ public class SparkSubmitHelper {
 
             if (isKilledJob) {
                 postEventProperty.put("IsKilled", "true");
-                AppInsightsCustomEvent.create(Messages.SparkSubmissionButtonClickEvent, Activator.getDefault().getBundle().getVersion().toString(), postEventProperty);
+                AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent, Activator.getDefault().getBundle().getVersion().toString(), postEventProperty);
                 return;
             }
 
@@ -184,14 +184,14 @@ public class SparkSubmitHelper {
                 HDInsightUtil.getSparkSubmissionToolWindowView().setInfo("The Spark application completed successfully");
             }
 
-            AppInsightsCustomEvent.create(Messages.SparkSubmissionButtonClickEvent, Activator.getDefault().getBundle().getVersion().toString(), postEventProperty);
+            AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent, Activator.getDefault().getBundle().getVersion().toString(), postEventProperty);
         } catch (Exception e) {
             if (HDInsightUtil.getSparkSubmissionToolWindowView().getJobStatusManager().isJobKilled() == false) {
                 HDInsightUtil.getSparkSubmissionToolWindowView().setError("Error : Failed to getting running log. Exception : " + e.toString());
             } else {
                 postEventProperty.put("IsKilled", "true");
             }
-            AppInsightsCustomEvent.create(Messages.SparkSubmissionButtonClickEvent, Activator.getDefault().getBundle().getVersion().toString(), postEventProperty);
+            AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent, Activator.getDefault().getBundle().getVersion().toString(), postEventProperty);
         }
     }
 

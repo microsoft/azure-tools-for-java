@@ -21,20 +21,28 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage.asm;
 
-import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ClientStorageNode;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public class StorageNode extends ClientStorageNode {
+public class StorageNode extends ClientStorageNode implements TelemetryProperties {
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(AppInsightsConstants.SubscriptionId, this.storageAccount.getSubscriptionId());
+        return properties;
+    }
+
     public class DeleteStorageAccountAction extends AzureNodeActionPromptListener {
         public DeleteStorageAccountAction() {
             super(StorageNode.this,

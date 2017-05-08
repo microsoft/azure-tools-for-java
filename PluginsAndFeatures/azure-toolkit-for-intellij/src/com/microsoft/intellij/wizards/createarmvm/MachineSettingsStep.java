@@ -40,8 +40,8 @@ import com.microsoft.azure.management.compute.OperatingSystemTypes;
 import com.microsoft.azure.management.compute.VirtualMachineSize;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.intellij.ui.components.AzureWizardStep;
 import com.microsoft.intellij.wizards.VMWizardModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jdesktop.swingx.JXHyperlink;
@@ -50,8 +50,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -60,11 +58,10 @@ import java.awt.event.ItemListener;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 
-public class MachineSettingsStep extends WizardStep<VMWizardModel> {
+public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implements TelemetryProperties {
     private JPanel rootPanel;
     private JList createVmStepsList;
     private JTextField vmNameTextField;
@@ -334,5 +331,10 @@ public class MachineSettingsStep extends WizardStep<VMWizardModel> {
                         || (certificateCheckBox.isSelected() && certificateField.getText().isEmpty()));
 
         model.getCurrentNavigationState().NEXT.setEnabled(allFieldsCompleted);
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        return model.toProperties();
     }
 }

@@ -46,13 +46,14 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.CanceledByUserException;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification;
-import com.microsoft.intellij.util.AppInsightsCustomEvent;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -74,7 +75,7 @@ import java.util.Map;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class WebAppDeployDialog extends DialogWrapper {
+public class WebAppDeployDialog extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(WebAppDeployDialog.class);
 
     private JPanel contentPane;
@@ -86,6 +87,8 @@ public class WebAppDeployDialog extends DialogWrapper {
 
     private final Project project;
     private final Artifact artifact;
+
+    private Map<String, String> trackableProperties = new HashMap<String, String>();
 
     private void createUIComponents() {
         DefaultTableModel tableModel = new DefaultTableModel() {
@@ -196,6 +199,7 @@ public class WebAppDeployDialog extends DialogWrapper {
         setModal(true);
         setTitle("Deploy Web App");
         setOKButtonText("Deploy");
+        trackableProperties.put("Java App Name", project.getName());
 
         editorPaneAppServiceDetails.addHyperlinkListener(new HyperlinkListener() {
             @Override
@@ -223,6 +227,18 @@ public class WebAppDeployDialog extends DialogWrapper {
         dm.getDataVector().removeAllElements();
         webAppWebAppDetailsMap.clear();
         dm.fireTableDataChanged();
+    }
+
+    @Override
+    protected void addCancelTelemetryProperties(final Map<String, String> properties) {
+        super.addCancelTelemetryProperties(properties);
+        properties.putAll(trackableProperties);
+    }
+
+    @Override
+    protected void addOKTelemetryProperties(final Map<String, String> properties) {
+        super.addOKTelemetryProperties(properties);
+        properties.putAll(trackableProperties);
     }
 
     @Nullable
@@ -341,6 +357,7 @@ public class WebAppDeployDialog extends DialogWrapper {
     }
 
     private void createAppService() {
+        AppInsightsClient.createByType(AppInsightsClient.EventType.WebApp, "", "Create");
         AppServiceCreateDialog d = AppServiceCreateDialog.go(project);
         if (d == null) {
             // something went wrong - report an error!
@@ -353,6 +370,7 @@ public class WebAppDeployDialog extends DialogWrapper {
     }
 
     private void refreshAppServices() {
+        AppInsightsClient.createByType(AppInsightsClient.EventType.WebApp, "", "Refresh");
         cleanTable();
         editorPaneAppServiceDetails.setText("");
         AzureModel.getInstance().setResourceGroupToWebAppMap(null);
@@ -407,8 +425,8 @@ public class WebAppDeployDialog extends DialogWrapper {
             if (choice == JOptionPane.NO_OPTION) {
                 return;
             }
-
-            try{
+            AppInsightsClient.createByType(AppInsightsClient.EventType.WebApp, appServiceName, "Delete");
+            try {
                 ProgressManager.getInstance().run(new Task.Modal(project, "Delete App Service Progress", true) {
                     @Override
                     public void run(ProgressIndicator progressIndicator) {
@@ -416,7 +434,7 @@ public class WebAppDeployDialog extends DialogWrapper {
                             progressIndicator.setIndeterminate(true);
                             progressIndicator.setText("Deleting App Service...");
                             WebAppUtils.deleteAppService(wad);
-                            ApplicationManager.getApplication().invokeAndWait( new Runnable() {
+                            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
                                 @Override
                                 public void run() {
                                     tableModel.removeRow(selectedRow);
@@ -489,7 +507,7 @@ public class WebAppDeployDialog extends DialogWrapper {
         }
         DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
         WebAppDetails wad = webAppWebAppDetailsMap.get(tableModel.getValueAt(selectedRow, 0));
-        if (wad.webApp.javaVersion()  == JavaVersion.OFF ) {
+        if (wad.webApp.javaVersion() == JavaVersion.OFF) {
             return new ValidationInfo("Please select java based App Service", table);
         }
 
@@ -508,8 +526,6 @@ public class WebAppDeployDialog extends DialogWrapper {
         WebAppDetails wad = webAppWebAppDetailsMap.get(tableModel.getValueAt(selectedRow, 0));
         WebApp webApp = wad.webApp;
         boolean isDeployToRoot = deployToRootCheckBox.isSelected();
-        Map<String, String> postEventProperties = new HashMap<String, String>();
-        postEventProperties.put("Java App Name", project.getName());
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Deploy Web App Progress", true) {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
@@ -538,7 +554,7 @@ public class WebAppDeployDialog extends DialogWrapper {
                             try {
                                 for (int step = 0; step < stepLimit; ++step) {
 
-                                    if (WebAppUtils.isUrlAccessible(sitePath))  { // warm up
+                                    if (WebAppUtils.isUrlAccessible(sitePath)) { // warm up
                                         break;
                                     }
                                     Thread.sleep(sleepMs);
@@ -557,7 +573,6 @@ public class WebAppDeployDialog extends DialogWrapper {
                     azureDeploymentProgressNotification.notifyProgress(webApp.name(), startDate, sitePath, 100, message("runStatus"));
                     showLink(sitePath);
                 } catch (IOException | InterruptedException ex) {
-                    postEventProperties.put("PublishError", ex.getMessage());
                     ex.printStackTrace();
                     //LOGGER.error("deploy", ex);
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -567,7 +582,6 @@ public class WebAppDeployDialog extends DialogWrapper {
                         }
                     });
                 }
-                AppInsightsCustomEvent.create("Deploy as WebApp", "", postEventProperties);
             }
         });
     }
@@ -583,8 +597,7 @@ public class WebAppDeployDialog extends DialogWrapper {
                         JOptionPane.QUESTION_MESSAGE,
                         null, null, null);
 
-                if (choice == JOptionPane.YES_OPTION)
-                {
+                if (choice == JOptionPane.YES_OPTION) {
                     JXHyperlink hl = new JXHyperlink();
                     hl.setURI(URI.create(link));
                     hl.doClick();

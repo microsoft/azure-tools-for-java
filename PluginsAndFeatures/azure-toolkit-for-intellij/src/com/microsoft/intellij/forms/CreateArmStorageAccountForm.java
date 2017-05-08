@@ -41,6 +41,7 @@ import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.helpers.LinkListener;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import com.microsoft.tooling.msservices.model.ReplicationTypes;
@@ -59,7 +60,7 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class CreateArmStorageAccountForm extends DialogWrapper {
+public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     private JPanel contentPane;
     private JComboBox<SubscriptionDetail> subscriptionComboBox;
     private JTextField nameTextField;
@@ -94,7 +95,7 @@ public class CreateArmStorageAccountForm extends DialogWrapper {
         setModal(true);
         setTitle("Create Storage Account");
 
-        // this opton is not supported by SDK yet
+        // this option is not supported by SDK yet
         encriptonComboBox.setVisible(false);
         encriptonLabel.setVisible(false);
 
@@ -219,6 +220,7 @@ public class CreateArmStorageAccountForm extends DialogWrapper {
 //        storageAccount.setAccessTier((AccessTier)accessTeirComboBox.getSelectedItem());
 //        storageAccount.setEnableEncription((Boolean)encriptonComboBox.getSelectedItem());
         // creating from Azure Explorer directly
+        setSubscription((SubscriptionDetail)subscriptionComboBox.getSelectedItem());
         if (subscription == null) {
             ProgressManager.getInstance().run(new Task.Backgroundable(project,
                     "Creating storage account " + nameTextField.getText() + "...", false) {
@@ -228,6 +230,7 @@ public class CreateArmStorageAccountForm extends DialogWrapper {
                     createStorageAccount();
                 }
             });
+            sendTelemetry(OK_EXIT_CODE);
             close(DialogWrapper.OK_EXIT_CODE, true);
         } else { //creating from 'create vm'
             newStorageAccount =
@@ -244,6 +247,7 @@ public class CreateArmStorageAccountForm extends DialogWrapper {
             if (onCreate != null) {
                 onCreate.run();
             }
+            sendTelemetry(OK_EXIT_CODE);
             close(DialogWrapper.OK_EXIT_CODE, true);
         }
 //        ProgressManager.getInstance().run(

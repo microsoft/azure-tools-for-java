@@ -22,13 +22,13 @@
 package com.microsoft.intellij.docker.dialogs;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class AzureSelectKeyVault extends DialogWrapper{
+public class AzureSelectKeyVault extends AzureDialogWrapper {
   private JPanel rootPanel;
   private JComboBox<String> dockerKeyvaultsComboBox;
 

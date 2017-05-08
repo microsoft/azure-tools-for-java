@@ -23,18 +23,14 @@ package com.microsoft.intellij.ui.components;
 
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TitlePanel;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.intellij.ui.AzureAbstractPanel;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
-
-public class DefaultDialogWrapper extends DialogWrapper {
+public class DefaultDialogWrapper extends AzureDialogWrapper {
     private AzureAbstractPanel contentPanel;
 
     public DefaultDialogWrapper(Project project, AzureAbstractPanel panel) {

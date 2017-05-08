@@ -25,18 +25,18 @@ import com.intellij.openapi.fileChooser.FileChooserFactory;
 import com.intellij.openapi.fileChooser.FileSaverDescriptor;
 import com.intellij.openapi.fileChooser.FileSaverDialog;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.TitlePanel;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
-import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.wacommon.commoncontrols.NewCertificateDialogData;
-import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
 import com.microsoft.azuretools.azurecommons.util.CerPfxUtil;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.wacommon.commoncontrols.NewCertificateDialogData;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class NewCertificateDialog extends DialogWrapper {
+public class NewCertificateDialog extends AzureDialogWrapper {
     private JPanel contentPane;
     private JPasswordField txtPwd;
     private JPasswordField txtConfirmPwd;
