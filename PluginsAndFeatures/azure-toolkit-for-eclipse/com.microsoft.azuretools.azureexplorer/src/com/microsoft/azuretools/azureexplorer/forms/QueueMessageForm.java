@@ -21,6 +21,7 @@ package com.microsoft.azuretools.azureexplorer.forms;
 
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azureexplorer.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
@@ -34,7 +35,7 @@ import org.eclipse.swt.widgets.*;
 
 import java.util.GregorianCalendar;
 
-public class QueueMessageForm extends Dialog {
+public class QueueMessageForm extends AzureDialogWrapper {
     private static String[] PERIODS = {"Days", "Hours", "Minutes", "Seconds"};
     private Button buttonOK;
     private Label messageLabel;

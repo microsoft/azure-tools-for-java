@@ -22,6 +22,7 @@ package com.microsoft.azuretools.azureexplorer.forms;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.azureexplorer.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +37,7 @@ import org.eclipse.ui.PlatformUI;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class ExternalStorageAccountForm extends Dialog {
+public class ExternalStorageAccountForm extends AzureDialogWrapper {
     public static final String HTTP = "http";
     public static final String HTTPS = "https";
 

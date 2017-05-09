@@ -29,13 +29,14 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 
 import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.azureexplorer.components.AzureDialogWrapper;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-public class UploadBlobFileForm extends Dialog {
+public class UploadBlobFileForm extends AzureDialogWrapper {
     private Link blobFolderLink;
     private Label nameLabel;
     private Text nameTextField;
