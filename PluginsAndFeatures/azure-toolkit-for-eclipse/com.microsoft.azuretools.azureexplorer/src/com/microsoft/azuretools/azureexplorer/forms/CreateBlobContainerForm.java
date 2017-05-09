@@ -22,6 +22,7 @@ package com.microsoft.azuretools.azureexplorer.forms;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.azureexplorer.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
@@ -40,7 +41,7 @@ import org.eclipse.ui.PlatformUI;
 import java.net.URL;
 import java.util.Calendar;
 
-public class CreateBlobContainerForm extends Dialog {
+public class CreateBlobContainerForm extends AzureDialogWrapper {
     private static String NAMING_GUIDELINES_LINK = "<a href=\"http://go.microsoft.com/fwlink/?LinkId=255555\">Naming Guidelines</a>";
 
     private Label nameLabel;

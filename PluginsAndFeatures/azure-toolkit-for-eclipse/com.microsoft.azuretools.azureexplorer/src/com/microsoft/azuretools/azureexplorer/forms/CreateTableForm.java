@@ -22,6 +22,7 @@ package com.microsoft.azuretools.azureexplorer.forms;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.azureexplorer.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.*;
 import org.eclipse.jface.dialogs.Dialog;
@@ -38,7 +39,7 @@ import org.eclipse.ui.PlatformUI;
 
 import java.net.URL;
 
-public class CreateTableForm extends Dialog {
+public class CreateTableForm extends AzureDialogWrapper {
     private static String NAMING_GUIDELINES_LINK = "<a href=\"http://go.microsoft.com/fwlink/?LinkId=267429\">Naming Guidelines</a>";
     private Button buttonOK;
     private Label nameLabel;

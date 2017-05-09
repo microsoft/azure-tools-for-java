@@ -1,5 +1,6 @@
 package com.microsoft.azuretools.azureexplorer.actions;
 
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azureexplorer.forms.CreateBlobContainerForm;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.helpers.Name;
@@ -31,7 +32,7 @@ public class CreateBlobContainer extends NodeActionListener {
     		connectionString = StorageClientSDKManager.getConnectionString(((StorageNode) parent).getStorageAccount());
     	}
         CreateBlobContainerForm form = new CreateBlobContainerForm(PluginUtil.getParentShell(), connectionString);
-
+        if(parent instanceof StorageNode) { form.setSubscription(new SubscriptionDetail(((StorageNode)parent).getSubscriptionId(), null, null, true)); }
         form.setOnCreate(new Runnable() {
             @Override
             public void run() {

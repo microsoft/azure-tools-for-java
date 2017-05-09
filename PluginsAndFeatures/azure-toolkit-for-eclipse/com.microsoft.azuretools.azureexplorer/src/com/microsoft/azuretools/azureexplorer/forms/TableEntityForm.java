@@ -21,6 +21,7 @@ package com.microsoft.azuretools.azureexplorer.forms;
 
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azureexplorer.components.AzureDialogWrapper;
 import com.microsoft.azuretools.azureexplorer.editors.TableFileEditor;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
@@ -34,7 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
-public class TableEntityForm extends Dialog {
+public class TableEntityForm extends AzureDialogWrapper {
     private Button buttonOK;
     private Button buttonCancel;
     private Button addPropertyButton;

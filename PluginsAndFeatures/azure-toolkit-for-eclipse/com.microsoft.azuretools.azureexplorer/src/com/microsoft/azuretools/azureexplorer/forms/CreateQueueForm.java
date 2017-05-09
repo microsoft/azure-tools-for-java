@@ -22,6 +22,7 @@ package com.microsoft.azuretools.azureexplorer.forms;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.azureexplorer.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
@@ -40,7 +41,7 @@ import org.eclipse.ui.PlatformUI;
 import java.net.URL;
 
 
-public class CreateQueueForm extends Dialog {
+public class CreateQueueForm extends AzureDialogWrapper {
     private static String NAMING_GUIDELINES_LINK = "<a href=\"http://go.microsoft.com/fwlink/?LinkId=255557\">Naming Guidelines</a>";
     private static final String NAME_REGEX = "^[a-z0-9](?!.*--)[a-z0-9-]+[a-z0-9]$";
     private static final int NAME_MAX = 63;

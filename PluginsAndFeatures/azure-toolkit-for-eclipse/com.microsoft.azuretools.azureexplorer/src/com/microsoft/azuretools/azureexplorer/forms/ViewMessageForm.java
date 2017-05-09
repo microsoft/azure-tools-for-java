@@ -26,7 +26,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
-public class ViewMessageForm extends Dialog {
+import com.microsoft.azuretools.azureexplorer.components.AzureDialogWrapper;
+
+public class ViewMessageForm extends AzureDialogWrapper {
     private String content;
     private Text messageTextArea;
 

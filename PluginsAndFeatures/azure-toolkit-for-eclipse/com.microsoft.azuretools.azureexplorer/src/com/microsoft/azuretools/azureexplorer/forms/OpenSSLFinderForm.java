@@ -20,6 +20,7 @@
 package com.microsoft.azuretools.azureexplorer.forms;
 
 
+import com.microsoft.azuretools.azureexplorer.components.AzureDialogWrapper;
 import com.microsoft.azuretools.core.ui.commoncontrols.Messages;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
@@ -36,7 +37,7 @@ import org.eclipse.swt.widgets.*;
 
 import java.io.File;
 
-public class OpenSSLFinderForm extends Dialog {
+public class OpenSSLFinderForm extends AzureDialogWrapper {
     private Button buttonOK;
     private Button buttonCancel;
     private Label notFoundLabel;
