@@ -37,7 +37,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.microsoft.applicationinsights.web.internal.ApplicationInsightsHttpResponseWrapper;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.azureexplorer.telemetry.TelemetryProperties;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 
 public abstract class AzureDialogWrapper extends Dialog implements TelemetryProperties{
