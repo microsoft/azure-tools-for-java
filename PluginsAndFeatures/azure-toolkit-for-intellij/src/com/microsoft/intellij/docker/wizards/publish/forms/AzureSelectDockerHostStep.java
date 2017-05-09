@@ -118,7 +118,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
 //    artifact = null;
 //
 //    for (Artifact item : ArtifactUtil.getArtifactWithOutputPaths(model.getProject())) {
-//      if (item.getArtifactType().getPresentableName().equals("Web Application: Archive") ||
+//      if (item.getArtifactType().getPresentableName().equals("Web Plugin: Archive") ||
 //          item.getArtifactType().getPresentableName().equals("JAR")) {
 //        artifact = item;
 //        break;

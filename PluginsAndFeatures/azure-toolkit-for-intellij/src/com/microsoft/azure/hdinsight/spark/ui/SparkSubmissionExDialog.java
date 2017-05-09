@@ -386,7 +386,7 @@ public class SparkSubmissionExDialog extends JDialog {
 
     private void addMainClassNameLineItem() {
         JLabel sparkMainClassLabel = new JLabel("Main class name");
-        sparkMainClassLabel.setToolTipText("Application's java/spark main class");
+        sparkMainClassLabel.setToolTipText("Plugin's java/spark main class");
         GridBagConstraints c31 = new GridBagConstraints();
         c31.gridx = 0;
         c31.gridy = 2;
@@ -399,7 +399,7 @@ public class SparkSubmissionExDialog extends JDialog {
                         new Insets(margin, margin, 0, 0), 0, 0));
 
         mainClassTextField = new TextFieldWithBrowseButton();
-        mainClassTextField.setToolTipText("Application's java/spark main class");
+        mainClassTextField.setToolTipText("Plugin's java/spark main class");
         ManifestFileUtil.setupMainClassField(project, mainClassTextField);
 
         contentPane.add(mainClassTextField,

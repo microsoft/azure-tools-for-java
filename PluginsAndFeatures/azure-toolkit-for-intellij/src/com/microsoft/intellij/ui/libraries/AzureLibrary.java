@@ -73,7 +73,7 @@ public class AzureLibrary {
                     "azure-mgmt-cdn-1.0.0.jar",
                     "azure-mgmt-sql-1.0.0.jar"
             });
-    public static AzureLibrary APP_INSIGHTS = new AzureLibrary("Application Insights for Java",
+    public static AzureLibrary APP_INSIGHTS = new AzureLibrary("Plugin Insights for Java",
             null,
             new String[]{
                     "applicationinsights-core-1.0.3.jar",

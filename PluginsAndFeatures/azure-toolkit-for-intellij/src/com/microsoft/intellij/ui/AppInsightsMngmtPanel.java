@@ -64,7 +64,7 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
     private JButton detailsButton;
     private JButton addButton;
     private Project myProject;
-    private static final String DISPLAY_NAME = "Application Insights";
+    private static final String DISPLAY_NAME = "Plugin Insights";
 
     public AppInsightsMngmtPanel(Project project) {
         this.myProject = project;

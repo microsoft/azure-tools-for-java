@@ -41,7 +41,7 @@ public class AppInsightsClient {
         DockerContainer,
         DockerHost,
         WebApp,
-        Application,
+        Plugin,
         Subscription
     }
 
@@ -62,7 +62,13 @@ public class AppInsightsClient {
         if (!isAppInsightsClientAvailable())
             return;
 
-        boolean force = eventType == EventType.Telemetry && "Deny".equalsIgnoreCase(action);
+        createByType(eventType, objectName, action, properties, false);
+    }
+
+    public static void createByType(final EventType eventType, final String objectName, final String action, final Map<String, String> properties, final boolean force) {
+        if (!isAppInsightsClientAvailable())
+            return;
+
         final StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(configuration.eventNamePrefix()).append(eventType.name());
         if (!StringUtils.isNullOrEmpty(objectName))

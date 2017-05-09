@@ -84,14 +84,14 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                 String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
                 if (version == null || version.isEmpty()) {
                     DataOperations.updatePropertyValue(doc, message("pluginVersion"), AzurePlugin.PLUGIN_VERSION);
+                } else if (!AzurePlugin.PLUGIN_VERSION.equalsIgnoreCase(version)) {
+                    DataOperations.updatePropertyValue(doc, message("pluginVersion"), AzurePlugin.PLUGIN_VERSION);
+                    AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
                 }
                 String instID = DataOperations.getProperty(dataFile, message("instID"));
-                if (instID == null || instID.isEmpty()) {
+                if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
                     DataOperations.updatePropertyValue(doc, message("instID"), GetHashMac.GetHashMac());
-                } else {
-                    if (!GetHashMac.IsValidHashMacFormat(instID)) {
-                        DataOperations.updatePropertyValue(doc, message("instID"), GetHashMac.GetHashMac());
-                    }
+                    AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
                 }
                 ParserXMLUtility.saveXMLFile(dataFile, doc);
                 // Its necessary to call application insights custom create event after saving data.xml
@@ -100,13 +100,11 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                     // Boolean.valueOf(oldPrefVal) != acceptTelemetry means user changes his mind.
                     // Either from Agree to Deny, or from Deny to Agree.
                     final String action = acceptTelemetry ? AppInsightsConstants.Allow : AppInsightsConstants.Deny;
-                    AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "", action, null);
+                    AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "", action, null, true);
                 }
             } else {
                 AzurePlugin.copyResourceFile(message("dataFileName"), dataFile);
                 setValues(dataFile);
-                final String action = checkBox1.isSelected() ? AppInsightsConstants.Allow : AppInsightsConstants.Deny;
-                AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, AppInsightsConstants.LoadPlugin, action, null);
             }
         } catch (Exception ex) {
             AzurePlugin.log(ex.getMessage(), ex);

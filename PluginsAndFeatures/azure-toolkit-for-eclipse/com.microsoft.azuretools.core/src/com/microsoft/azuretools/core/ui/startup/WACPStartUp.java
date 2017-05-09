@@ -34,7 +34,9 @@ import com.microsoft.azuretools.azurecommons.util.GetHashMac;
 import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.telemetry.AppInsightsConfigurationImpl;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.core.utils.FileUtil;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -76,6 +78,9 @@ public class WACPStartUp implements IStartup {
 			String pluginInstLoc = String.format("%s%s%s", PluginUtil.pluginFolder, File.separator,
 					Messages.commonPluginID);
 			final String dataFile = String.format("%s%s%s", pluginInstLoc, File.separator, Messages.dataFileName);
+			
+			boolean install = false;
+			boolean upgrade = false;
 			if (new File(pluginInstLoc).exists()) {
 				if (new File(dataFile).exists()) {
 					String version = DataOperations.getProperty(dataFile, Messages.version);
@@ -97,18 +102,14 @@ public class WACPStartUp implements IStartup {
 									|| StringHelper.isNullOrWhiteSpace(hdinsightPrefValue)) {
 								setValues(dataFile, StringHelper.isNullOrWhiteSpace(prefValue),
 										StringHelper.isNullOrWhiteSpace(hdinsightPrefValue));
-							} else if (instID == null || instID.isEmpty()) {
+							} else if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
+								install = true;
 								Document doc = ParserXMLUtility.parseXMLFile(dataFile);
 								DataOperations.updatePropertyValue(doc, Messages.instID, _hashmac);
 								ParserXMLUtility.saveXMLFile(dataFile, doc);
-							} else if (instID != null && !instID.isEmpty()) {
-								if (!GetHashMac.IsValidHashMacFormat(instID)) {
-									Document doc = ParserXMLUtility.parseXMLFile(dataFile);
-									DataOperations.updatePropertyValue(doc, Messages.instID, _hashmac);
-									ParserXMLUtility.saveXMLFile(dataFile, doc);
-								}
 							}
 						} else {
+							upgrade = true;
 							// proceed with setValues method. Case of new plugin installation
 							setValues(dataFile);
 						}
@@ -123,6 +124,12 @@ public class WACPStartUp implements IStartup {
 				FileUtil.copyResourceFile(Messages.dataFileEntry, dataFile);
 				setValues(dataFile);
 			}
+			
+			AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
+			if (install)
+	            AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
+	        if (upgrade)
+	            AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
 		} catch (Exception ex) {
 			Activator.getDefault().log(ex.getMessage(), ex);
 		}
@@ -163,9 +170,5 @@ public class WACPStartUp implements IStartup {
 				Activator.getDefault().getBundle().getVersion().toString());
 		DataOperations.updatePropertyValue(doc, Messages.instID, _hashmac);
 		ParserXMLUtility.saveXMLFile(dataFile, doc);
-		String prefVal = DataOperations.getProperty(dataFile, Messages.prefVal);
-		if (prefVal != null && !prefVal.isEmpty() && prefVal.equals("true")) {
-			AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "", "Allow");
-		}
 	}
 }

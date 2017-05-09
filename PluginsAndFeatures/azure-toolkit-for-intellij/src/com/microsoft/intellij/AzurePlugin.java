@@ -40,6 +40,7 @@ import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.azurecommons.util.*;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
@@ -49,12 +50,7 @@ import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 
-import javax.swing.*;
 import javax.swing.event.EventListenerList;
-import java.awt.*;
-import java.awt.event.AWTEventListener;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
@@ -125,6 +121,9 @@ public class AzurePlugin extends AbstractProjectComponent {
     }
 
     private void initializeTelemetry() throws Exception {
+        boolean install = false;
+        boolean upgrade = false;
+
         if (new File(dataFile).exists()) {
             String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
             if (version == null || version.isEmpty()) {
@@ -140,18 +139,14 @@ public class AzurePlugin extends AbstractProjectComponent {
                     String instID = DataOperations.getProperty(dataFile, message("instID"));
                     if (prefValue == null || prefValue.isEmpty()) {
                         setValues(dataFile);
-                    } else if (instID == null || instID.isEmpty()) {
+                    } else if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
+                        install = true;
                         Document doc = ParserXMLUtility.parseXMLFile(dataFile);
                         DataOperations.updatePropertyValue(doc, message("instID"), _hashmac);
                         ParserXMLUtility.saveXMLFile(dataFile, doc);
-                    } else if (instID != null && !instID.isEmpty()) {
-                        if (!GetHashMac.IsValidHashMacFormat(instID)) {
-                            Document doc = ParserXMLUtility.parseXMLFile(dataFile);
-                            DataOperations.updatePropertyValue(doc, message("instID"), _hashmac);
-                            ParserXMLUtility.saveXMLFile(dataFile, doc);
-                        }
                     }
                 } else {
+                    upgrade = true;
                     // proceed with setValues method. Case of new plugin installation
                     setValues(dataFile);
                 }
@@ -162,6 +157,10 @@ public class AzurePlugin extends AbstractProjectComponent {
             setValues(dataFile);
         }
         AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
+        if (install)
+            AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
+        if (upgrade)
+            AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
     }
 
     private void initializeAIRegistry() {
@@ -204,8 +203,6 @@ public class AzurePlugin extends AbstractProjectComponent {
         } catch (Exception ex) {
             LOG.error(message("error"), ex);
         }
-
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Application, null, "Config", null);
     }
 
     /**

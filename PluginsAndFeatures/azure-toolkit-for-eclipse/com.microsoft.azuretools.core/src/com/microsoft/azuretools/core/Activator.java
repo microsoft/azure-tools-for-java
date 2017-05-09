@@ -146,7 +146,6 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             }
             CommonSettings.settingsBaseDir = dirPath.toString();
             initAzureToolsCoreLibsLoggerFileHandler();
-            initTelemetryClient();
         } catch (IOException e) {
             e.printStackTrace();
             log("initAzureToolsCoreLibsSettings@Activator", e);
@@ -168,10 +167,6 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             e.printStackTrace();
             log("initAzureToolsCoreLibsLoggerFileHandler@Activator", e);
         }
-    }
-    
-    private void initTelemetryClient(){
-    	AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
     }
 
     private String getMachineId() {
