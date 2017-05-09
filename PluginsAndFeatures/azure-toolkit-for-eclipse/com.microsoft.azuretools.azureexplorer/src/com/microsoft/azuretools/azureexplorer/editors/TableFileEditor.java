@@ -62,11 +62,17 @@ import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManage
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.model.storage.TableEntity;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
 public class TableFileEditor extends EditorPart {
     public static final String PARTITION_KEY = "Partition key";
     public static final String ROW_KEY = "Row key";
     private static final String TIMESTAMP = "Timestamp";
+    
+    private static final String EXECUTE = "Execute";
+	private static final String DELETE = "Delete";
+	private static final String REFRESH = "Refresh";
 
     private ClientStorageAccount storageAccount;
     private Table table;
@@ -81,6 +87,8 @@ public class TableFileEditor extends EditorPart {
     private List<TableEntity> tableEntities;
     private Map<String, List<String>> columnData;
     private List<String> data;
+    
+    private FileEditorVirtualNode<EditorPart> fileEditorVirtualNode;
 
     @Override
     public void doSave(IProgressMonitor iProgressMonitor) {
@@ -97,6 +105,7 @@ public class TableFileEditor extends EditorPart {
 //        storageAccount = ((StorageEditorInput) input).getStorageAccount();
         table = (Table) ((StorageEditorInput) input).getItem();
         setPartName(table.getName() + " [Table]");
+        fileEditorVirtualNode = createVirtualNode(table.getName());
     }
 
     @Override
@@ -109,6 +118,26 @@ public class TableFileEditor extends EditorPart {
         return false;
     }
 
+    private FileEditorVirtualNode<EditorPart> createVirtualNode(final String name){
+    	final FileEditorVirtualNode<EditorPart> node = new FileEditorVirtualNode<EditorPart>(this, name);
+   	
+    	node.addAction(DELETE, new NodeActionListener() {
+			@Override
+			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+				deleteSelection();
+			}
+		});
+    	
+    	node.addAction(REFRESH, new NodeActionListener() {
+			@Override
+			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+				fillGrid();				
+			}
+		});
+    	    	
+    	return node;
+    }
+    
     @Override
     public void createPartControl(Composite composite) {
         composite.setLayout(new GridLayout());
@@ -139,11 +168,11 @@ public class TableFileEditor extends EditorPart {
 
         queryButton = new Button(buttonsContainer, SWT.PUSH);
         queryButton.setImage(Activator.getImageDescriptor("icons/Start.png").createImage());
-        queryButton.setToolTipText("Execute");
+        queryButton.setToolTipText(EXECUTE);
 
         refreshButton = new Button(buttonsContainer, SWT.PUSH);
         refreshButton.setImage(Activator.getImageDescriptor("icons/storagerefresh.png").createImage());
-        refreshButton.setToolTipText("Refresh");
+        refreshButton.setToolTipText(REFRESH);
 
 //        newEntityButton = new Button(buttonsContainer, SWT.PUSH);
 //        newEntityButton.setImage(Activator.getImageDescriptor("icons/add_entity.png").createImage());
@@ -151,7 +180,7 @@ public class TableFileEditor extends EditorPart {
 
         deleteButton = new Button(buttonsContainer, SWT.PUSH);
         deleteButton.setImage(Activator.getImageDescriptor("icons/storagedelete.png").createImage());
-        deleteButton.setToolTipText("Delete");
+        deleteButton.setToolTipText(DELETE);
         deleteButton.setEnabled(false);
 
 //        queryDesignerButton = new Button(buttonsContainer, SWT.PUSH);
@@ -159,7 +188,7 @@ public class TableFileEditor extends EditorPart {
         SelectionListener queryActionListener = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                fillGrid();
+                fileEditorVirtualNode.doAction(REFRESH);
             }
         };
 
@@ -169,7 +198,7 @@ public class TableFileEditor extends EditorPart {
         deleteButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                deleteSelection();
+            	fileEditorVirtualNode.doAction(DELETE);
             }
         });
 
