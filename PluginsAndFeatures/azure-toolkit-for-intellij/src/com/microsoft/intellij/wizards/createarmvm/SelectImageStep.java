@@ -28,7 +28,6 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.wizard.WizardNavigationState;
-import com.intellij.ui.wizard.WizardStep;
 import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.*;
@@ -394,25 +393,6 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
         //validation might be delayed, so lets check if we are still on this screen
         if (customImageBtn.isSelected() && model.getCurrentStep().equals(this)) {
             model.getCurrentNavigationState().NEXT.setEnabled(false);
-        }
-    }
-
-    @Override
-    protected void addExtraTelemetryProperties(final Map<String, String> properties) {
-        if (this.regionComboBox.getSelectedItem() instanceof Location) {
-            properties.put("region", ((Location) this.regionComboBox.getSelectedItem()).displayName());
-        }
-        if (knownImageBtn.isSelected()) {
-            properties.put("image", knownImageComboBox.getSelectedItem().toString());
-        } else if (customImageBtn.isSelected()) {
-            VirtualMachineImage virtualMachineImage = (VirtualMachineImage) imageLabelList.getSelectedValue();
-            if (virtualMachineImage != null) {
-                properties.put("publisher", virtualMachineImage.publisherName());
-                properties.put("offer", virtualMachineImage.offer());
-                properties.put("Sku", virtualMachineImage.sku());
-                properties.put("version", virtualMachineImage.version());
-                properties.put("id", virtualMachineImage.id());
-            }
         }
     }
 
