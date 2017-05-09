@@ -8,13 +8,13 @@
       <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/Test" isTestSource="true" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="IntelliJ IDEA IU-171.3780.107" jdkType="IDEA JDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="hdinsight" />
-    <orderEntry type="module" module-name="common" />
     <orderEntry type="module" module-name="azure-explorer-common" />
     <orderEntry type="module" module-name="azuretools-core" />
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.5" level="project" />
+    <orderEntry type="module" module-name="hdinsight-node-common" />
+    <orderEntry type="library" name="Maven: com.microsoft.azure:azure-mgmt-appservice:1.0.0" level="project" />
   </component>
   <component name="POM File Configuration" pomFile="" />
 </module>
