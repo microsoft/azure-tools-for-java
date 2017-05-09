@@ -6,17 +6,17 @@
 		<relativePath>../pom.xml</relativePath>
 		<groupId>com.microsoft.azuretools.wap4ej.build</groupId>
 		<artifactId>parent</artifactId>
-		<version>3.0.1-SNAPSHOT</version>
+		<version>3.0.2-SNAPSHOT</version>
 	</parent>
 	<groupId>com.microsoft.azuretools.wap4ej.build</groupId>
 	<artifactId>com.microsoft.azuretools.core</artifactId>
-	<version>3.0.1-SNAPSHOT</version>
+	<version>3.0.2-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 	<!--<dependencies>
         <dependency>
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>azuretools-core</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.2</version>
         </dependency>
     </dependencies>-->
 </project>
