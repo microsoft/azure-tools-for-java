@@ -19,38 +19,22 @@
  */
 package com.microsoft.azuretools.azureexplorer.components;
 
-import java.awt.List;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.window.IShellProvider;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
-import com.microsoft.applicationinsights.web.internal.ApplicationInsightsHttpResponseWrapper;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
 
-public abstract class AzureDialogWrapper extends Dialog implements AzureDialogGetProterties, TelemetryProperties {
+public abstract class AzureTitleAreaDialogWrapper extends TitleAreaDialog implements AzureDialogGetProterties, TelemetryProperties{
+	public AzureTitleAreaDialogWrapper(Shell parentShell) {
+		super(parentShell);
+	}
 	private SubscriptionDetail subscription;
 
-	protected AzureDialogWrapper(Shell parentShell) {
-		super(parentShell);
-	}
-	 
-	protected AzureDialogWrapper(IShellProvider parentShell) {
-		super(parentShell);
-	}
-	
 	@Override
 	protected void okPressed() {
 		sentTelemetry(OK);
