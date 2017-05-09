@@ -1,4 +1,3 @@
-<<<<<<< e319b13f813c924923fa2cd3533daf800f1097f5
 /**
  * Copyright (c) Microsoft Corporation
  * <p/>
@@ -20,8 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-=======
->>>>>>> implement client telemetry for Intellij plugin
 package com.microsoft.azuretools.telemetry;
 
 import java.util.Map;

@@ -51,13 +51,6 @@ public class BlobContainerNode extends Node{
         this.blobContainer = blobContainer;
     }
 
-    @Override
-    public Map<String, String> toProperties() {
-        final Map<String, String> properties = new HashMap<>();
-        properties.put(AppInsightsConstants.SubscriptionId, this.storageAccount.getSubscriptionId());
-        return properties;
-    }
-
     public class RefreshAction extends NodeActionListener {
         @Override
         public void actionPerformed(NodeActionEvent e) {
