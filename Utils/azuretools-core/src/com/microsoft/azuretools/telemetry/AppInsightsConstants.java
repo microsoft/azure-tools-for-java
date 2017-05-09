@@ -23,9 +23,13 @@
 package com.microsoft.azuretools.telemetry;
 
 public final class AppInsightsConstants {
+    // telemetry preferences
     public static String Allow = "Allow";
     public static String Deny = "Deny";
-    public static String LoadPlugin = "Load";
+    public static String Upgrade = "Upgrade";
+    public static String Install = "Install";
+
+    // azure
     public static String SubscriptionId = "SubscriptionId";
     public static String Region = "Region";
 }

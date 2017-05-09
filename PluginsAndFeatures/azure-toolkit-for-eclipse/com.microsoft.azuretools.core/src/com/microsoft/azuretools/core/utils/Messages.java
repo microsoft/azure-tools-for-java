@@ -32,7 +32,6 @@ public final class Messages extends NLS {
 	public static String commonPluginID;
 	public static String dataFileName;
 	public static String dataFileEntry;
-	public static String telAgrEvtName;
 	public static String preferenceQueMsg;
 	public static String preferenceQueTtl;
 	public static String lnkOpenErrMsg;

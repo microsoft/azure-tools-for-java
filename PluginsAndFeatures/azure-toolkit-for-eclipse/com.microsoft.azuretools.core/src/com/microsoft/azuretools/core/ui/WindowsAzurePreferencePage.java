@@ -43,6 +43,7 @@ import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.core.utils.FileUtil;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -133,18 +134,20 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
 					String oldPrefVal = DataOperations.getProperty(dataFile, Messages.prefVal);
 					DataOperations.updatePropertyValue(doc, Messages.prefVal,
 							String.valueOf(btnPreference.getSelection()));
-					String version = DataOperations.getProperty(dataFile, Messages.version);
+					
+					final String version = DataOperations.getProperty(dataFile, Messages.version);
+					final String newVersion = Activator.getDefault().getBundle().getVersion().toString(); 
 					if (version == null || version.isEmpty()) {
-						DataOperations.updatePropertyValue(doc, Messages.version,
-								Activator.getDefault().getBundle().getVersion().toString());
-					}
+						DataOperations.updatePropertyValue(doc, Messages.version, newVersion);
+					} else if (!Activator.getDefault().getBundle().getVersion().toString().equalsIgnoreCase(version)) {
+						DataOperations.updatePropertyValue(doc, Messages.version, newVersion);
+	                    AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
+	                }
+					
 					String instID = DataOperations.getProperty(dataFile, Messages.instID);
-					if (instID == null || instID.isEmpty()) {
+					if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
 						DataOperations.updatePropertyValue(doc, Messages.instID, GetHashMac.GetHashMac());
-					} else {
-						if (!GetHashMac.IsValidHashMacFormat(instID)) {
-							DataOperations.updatePropertyValue(doc, Messages.instID, GetHashMac.GetHashMac());
-						}
+						AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
 					}
 					ParserXMLUtility.saveXMLFile(dataFile, doc);
 					// Its necessary to call application insights custom create
@@ -154,17 +157,16 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
 						// Boolean.valueOf(oldPrefVal) != acceptTelemetry means
 						// user changes his mind.
 						// Either from Agree to Deny, or from Deny to Agree.
-						AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "",
-								acceptTelemetry ? "Agree" : "Deny", null);
+						final String action = acceptTelemetry ? AppInsightsConstants.Allow : AppInsightsConstants.Deny;
+						 AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "", action, null, true);
 					}
 				} else {
 					FileUtil.copyResourceFile(Messages.dataFileEntry, dataFile);
 					setValues(dataFile);
-					AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "load", btnPreference.getSelection() ? "Agree" : "Deny", null);
 				}
 			} else {
 				new File(pluginInstLoc).mkdir();
-				FileUtil.copyResourceFile(Messages.dataFileEntry, dataFile);
+				FileUtil.copyResourceFile(Messages.dataFileEntry, dataFile);				
 				setValues(dataFile);
 			}
 		} catch (Exception ex) {
@@ -194,8 +196,5 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
 		DataOperations.updatePropertyValue(doc, Messages.instID, GetHashMac.GetHashMac());
 		DataOperations.updatePropertyValue(doc, Messages.prefVal, String.valueOf(btnPreference.getSelection()));
 		ParserXMLUtility.saveXMLFile(dataFile, doc);
-		if (btnPreference.getSelection()) {
-			AppInsightsClient.create(Messages.telAgrEvtName, "");
-		}
 	}
 }
