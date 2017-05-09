@@ -39,8 +39,8 @@ intellij {
 
 sourceSets {
     main {
-        java.srcDirs 'src', 'common/src', 'hdinsight/src'
-        resources.srcDirs 'resources', 'common/resources', 'hdinsight/resources'
+        java.srcDirs 'src'
+        resources.srcDirs 'resources'
     }
 }
 
