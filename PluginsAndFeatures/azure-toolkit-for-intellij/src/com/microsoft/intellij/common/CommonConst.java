@@ -25,5 +25,5 @@ public class CommonConst {
     public static final String SPARK_SUBMISSION_WINDOW_ID = "HDInsight Spark Submission";
     public static final String PLUGIN_ID = "com.microsoft.tooling.msservices.intellij.azure";
     public static final String PLUGIN_NAME = "azure-toolkit-for-intellij";
-    public static final String PLUGIN_VERISON = "3.0.1";
+    public static final String PLUGIN_VERISON = "3.0.2";
 }

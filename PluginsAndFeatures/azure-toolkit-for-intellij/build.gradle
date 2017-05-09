@@ -56,9 +56,9 @@ configurations {
 
 dependencies {
     compile fileTree(dir: '../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies', include: ['applicationinsights-management-1.0.3.jar'])
-    compile 'com.microsoft.azuretools:azuretools-core:3.0.1'
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.0.1'
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.0.1'
+    compile 'com.microsoft.azuretools:azuretools-core:3.0.2'
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.0.2'
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.0.2'
     runtime 'com.microsoft.azure:azure-client-runtime:1.0.2'
     runtime 'com.microsoft.azure:azure-client-authentication:1.0.2'
 }
