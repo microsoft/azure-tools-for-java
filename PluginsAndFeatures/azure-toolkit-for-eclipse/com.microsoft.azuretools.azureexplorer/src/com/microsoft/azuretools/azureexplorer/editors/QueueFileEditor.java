@@ -61,8 +61,15 @@ import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManage
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.QueueMessage;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
 public class QueueFileEditor extends EditorPart {
+	private static final String OPEN = "Open";
+	private static final String DEQUEUE = "Dequeue";
+	private static final String REFRESH = "Refresh";
+	private static final String ADD = "Add";
+	private static final String CLEAR_QUEUE = "Clear queue";
 
     private ClientStorageAccount storageAccount;
     private Queue queue;
@@ -73,6 +80,8 @@ public class QueueFileEditor extends EditorPart {
     private Table queueTable;
     private TableViewer tableViewer;
     private List<QueueMessage> queueMessages;
+    
+    private FileEditorVirtualNode<EditorPart> fileEditorVirtualNode;
 
     @Override
     public void doSave(IProgressMonitor iProgressMonitor) {
@@ -89,6 +98,7 @@ public class QueueFileEditor extends EditorPart {
         storageAccount = ((StorageEditorInput) input).getStorageAccount();
         queue = (Queue) ((StorageEditorInput) input).getItem();
         setPartName(queue.getName() + " [Queue]");*/
+    	fileEditorVirtualNode = createVirtualNode("");
     }
 
     @Override
@@ -109,6 +119,78 @@ public class QueueFileEditor extends EditorPart {
         createTablePopUp(composite);
     }
 
+    private FileEditorVirtualNode<EditorPart> createVirtualNode(final String name){
+    	final FileEditorVirtualNode<EditorPart> node = new FileEditorVirtualNode<EditorPart>(this, name);
+    	node.addAction(REFRESH, new NodeActionListener() {
+			@Override
+			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+				fillGrid();			
+			}
+		});
+    	
+    	node.addAction(DEQUEUE, new NodeActionListener() {
+			@Override
+			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+				dequeueFirstMessage();			
+			}
+		});
+    	
+    	node.addAction(ADD, new NodeActionListener() {
+			@Override
+			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+				QueueMessageForm queueMessageForm = new QueueMessageForm(PluginUtil.getParentShell(), storageAccount, queue);
+                queueMessageForm.setOnAddedMessage(new Runnable() {
+                    @Override
+                    public void run() {
+                        fillGrid();
+                    }
+                });
+
+                queueMessageForm.open();				
+			}
+		});
+    	
+    	node.addAction(CLEAR_QUEUE, new NodeActionListener() {
+			@Override
+			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+				boolean optionDialog = DefaultLoader.getUIHelper().showConfirmation(
+                        "Are you sure you want to clear the queue \"" + queue.getName() + "\"?",
+                        "Service explorer",
+                        new String[]{"Yes", "No"},
+                        null);
+
+                if (optionDialog) {
+                    DefaultLoader.getIdeHelper().runInBackground(null, "Clearing queue messages", false, true, "Clearing queue messages", new Runnable() {
+                        public void run() {
+                            /*try {
+
+                                StorageClientSDKManager.getManager().clearQueue(storageAccount, queue);
+
+                                DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        fillGrid();
+                                    }
+                                });
+                            } catch (AzureCmdException e) {
+                                DefaultLoader.getUIHelper().showException("Error clearing queue messages", e, "Service Explorer", false, true);
+                            }*/
+                        }
+                    });
+                }	
+			}
+		});
+    	
+    	node.addAction(OPEN, new NodeActionListener() {
+			@Override
+			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+				viewMessageText();				
+			}
+		});
+    	
+    	return node;
+    }
+    
     private void createToolbar(Composite parent) {
         GridLayout gridLayout = new GridLayout(1, false);
         GridData gridData = new GridData();
@@ -147,58 +229,25 @@ public class QueueFileEditor extends EditorPart {
         refreshButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                fillGrid();
+                fileEditorVirtualNode.doAction(REFRESH);
             }
         });
         dequeueMessageButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                dequeueFirstMessage();
+            	fileEditorVirtualNode.doAction(DEQUEUE);
             }
         });
         addMessageButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                QueueMessageForm queueMessageForm = new QueueMessageForm(PluginUtil.getParentShell(), storageAccount, queue);
-                queueMessageForm.setOnAddedMessage(new Runnable() {
-                    @Override
-                    public void run() {
-                        fillGrid();
-                    }
-                });
-
-                queueMessageForm.open();
-
+            	fileEditorVirtualNode.doAction(ADD);
             }
         });
         clearQueueButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                boolean optionDialog = DefaultLoader.getUIHelper().showConfirmation(
-                        "Are you sure you want to clear the queue \"" + queue.getName() + "\"?",
-                        "Service explorer",
-                        new String[]{"Yes", "No"},
-                        null);
-
-                if (optionDialog) {
-                    DefaultLoader.getIdeHelper().runInBackground(null, "Clearing queue messages", false, true, "Clearing queue messages", new Runnable() {
-                        public void run() {
-                            /*try {
-
-                                StorageClientSDKManager.getManager().clearQueue(storageAccount, queue);
-
-                                DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        fillGrid();
-                                    }
-                                });
-                            } catch (AzureCmdException e) {
-                                DefaultLoader.getUIHelper().showException("Error clearing queue messages", e, "Service Explorer", false, true);
-                            }*/
-                        }
-                    });
-                }
+            	fileEditorVirtualNode.doAction(CLEAR_QUEUE);
             }
         });
     }
@@ -249,19 +298,8 @@ public class QueueFileEditor extends EditorPart {
                     return;
                 }
                 if (tableViewer.getSelection() instanceof IStructuredSelection) {
-                    Action action = new Action("Open") {
-                        @Override
-                        public void run() {
-                            viewMessageText();
-                        }
-                    };
-                    manager.add(action);
-                    action = new Action("Dequeue") {
-                        @Override
-                        public void run() {
-                            dequeueFirstMessage();
-                        }
-                    };
+                    manager.add(fileEditorVirtualNode.createPopupAction(OPEN));
+                    Action action = fileEditorVirtualNode.createPopupAction(DEQUEUE);
                     if (queueTable.getSelectionIndex() != 0) {
                         action.setEnabled(false);
                     }

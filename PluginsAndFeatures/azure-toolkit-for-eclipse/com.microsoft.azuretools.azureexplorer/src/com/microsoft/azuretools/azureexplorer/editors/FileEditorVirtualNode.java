@@ -1,0 +1,48 @@
+package com.microsoft.azuretools.azureexplorer.editors;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.eclipse.jface.action.Action;
+import org.eclipse.ui.part.EditorPart;
+
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
+
+public class FileEditorVirtualNode<T extends EditorPart> extends Node implements TelemetryProperties {
+    private T editorPart;
+
+    public FileEditorVirtualNode(final T t, final String name) {
+        super(t.getClass().getSimpleName(), name);
+        this.editorPart = t;
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        if (editorPart instanceof TelemetryProperties) {
+            properties.putAll(((TelemetryProperties) editorPart).toProperties());
+        }
+        return properties;
+    }
+
+    protected Action createPopupAction(final String actionName) {
+    	return new Action(actionName) {
+    		@Override
+    		public void run(){
+    			final NodeAction nodeAction = getNodeActionByName(actionName);
+    			if(nodeAction != null){
+    				nodeAction.fireNodeActionEvent();
+    			}
+    		}
+		};
+    }
+    
+    protected void doAction(final String actionName){
+    	final NodeAction nodeAction = getNodeActionByName(actionName);
+		if(nodeAction != null){
+			nodeAction.fireNodeActionEvent();
+		}
+    }
+}

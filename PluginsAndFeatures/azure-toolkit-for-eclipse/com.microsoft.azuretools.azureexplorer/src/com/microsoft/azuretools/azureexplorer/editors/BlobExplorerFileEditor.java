@@ -29,13 +29,14 @@ import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -80,17 +81,27 @@ import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.azureexplorer.forms.UploadBlobFileForm;
 import com.microsoft.azuretools.azureexplorer.helpers.UIHelperImpl;
 import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.model.storage.BlobDirectory;
 import com.microsoft.tooling.msservices.model.storage.BlobFile;
 import com.microsoft.tooling.msservices.model.storage.BlobItem;
-import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
 import sun.misc.IOUtils;
 
-public class BlobExplorerFileEditor extends EditorPart {
+public class BlobExplorerFileEditor extends EditorPart implements TelemetryProperties {
+	private static final String COPY_URL = "Copy URL";
+	private static final String SAVE_AS = "Save As";
+	private static final String DELETE = "Delete";
+	private static final String SEARCH = "Search";
+	private static final String REFRESH = "Refresh";
+	private static final String UPLOAD_BLOB = "Upload Blob";
+	private static final String DELETE_SELECTED_BLOB = "Delete Selected Blob";
+	
     private Text queryTextField;
     private Button queryButton;
     private Button refreshButton;
@@ -109,6 +120,7 @@ public class BlobExplorerFileEditor extends EditorPart {
 
     private LinkedList<BlobDirectory> directoryQueue = new LinkedList<BlobDirectory>();
     private java.util.List<BlobItem> blobItems = new ArrayList<BlobItem>();
+    private FileEditorVirtualNode<EditorPart> fileEditorVirtualNode;
 
     @Override
     public void doSave(IProgressMonitor iProgressMonitor) {
@@ -125,6 +137,7 @@ public class BlobExplorerFileEditor extends EditorPart {
         connectionString = ((StorageEditorInput) input).getConnectionString();
         blobContainer = (BlobContainer) ((StorageEditorInput) input).getItem();
         setPartName(blobContainer.getName() + " [Container]");
+        fileEditorVirtualNode = createVirtualNode(blobContainer.getName());
 //        fillGrid();
     }
 
@@ -145,6 +158,46 @@ public class BlobExplorerFileEditor extends EditorPart {
         createTable(composite);
         createTablePopup(composite);
     }
+    
+    private FileEditorVirtualNode<EditorPart> createVirtualNode(final String name){
+    	final FileEditorVirtualNode<EditorPart> node = new FileEditorVirtualNode<EditorPart>(this, name);
+    	node.addAction(COPY_URL, new NodeActionListener() {
+			@Override
+			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+				copyURLSelectedFile();				
+			}
+		});
+    	
+    	node.addAction(SAVE_AS, new NodeActionListener() {
+			@Override
+			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+				saveAsSelectedFile();				
+			}
+		});
+    	
+    	node.addAction(DELETE, new NodeActionListener() {
+			@Override
+			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+				deleteSelectedFile();				
+			}
+		});
+    	
+    	node.addAction(SEARCH, new NodeActionListener() {
+			@Override
+			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+				fillGrid();				
+			}
+		});
+    	
+    	node.addAction(UPLOAD_BLOB, new NodeActionListener() {
+			@Override
+			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+				uploadFile();				
+			}
+		});
+    	
+    	return node;
+    }
 
     private void createTablePopup(Composite composite) {
         MenuManager menuMgr = new MenuManager("#PopupMenu");
@@ -155,27 +208,9 @@ public class BlobExplorerFileEditor extends EditorPart {
                     return;
                 }
                 if (tableViewer.getSelection() instanceof IStructuredSelection) {
-                    Action action = new Action("Save As") {
-                        @Override
-                        public void run() {
-                            saveAsSelectedFile();
-                        }
-                    };
-                    manager.add(action);
-                    action = new Action("Copy URL") {
-                        @Override
-                        public void run() {
-                            copyURLSelectedFile();
-                        }
-                    };
-                    manager.add(action);
-                    action = new Action("Delete") {
-                        @Override
-                        public void run() {
-                            deleteSelectedFile();
-                        }
-                    };
-                    manager.add(action);
+                	manager.add(fileEditorVirtualNode.createPopupAction(COPY_URL));
+                	manager.add(fileEditorVirtualNode.createPopupAction(SAVE_AS));
+                	manager.add(fileEditorVirtualNode.createPopupAction(DELETE));
                 }
             }
         });
@@ -210,19 +245,19 @@ public class BlobExplorerFileEditor extends EditorPart {
         
         queryButton = new Button(container, SWT.PUSH);
         queryButton.setImage(Activator.getImageDescriptor("icons/Start.png").createImage());
-        queryButton.setToolTipText("Search");
+        queryButton.setToolTipText(SEARCH);
 
         refreshButton = new Button(container, SWT.PUSH);
         refreshButton.setImage(Activator.getImageDescriptor("icons/storagerefresh.png").createImage());
-        refreshButton.setToolTipText("Refresh");
+        refreshButton.setToolTipText(REFRESH);
 
         uploadButton = new Button(container, SWT.PUSH);
         uploadButton.setImage(Activator.getImageDescriptor("icons/storageupload.png").createImage());
-        uploadButton.setToolTipText("Upload Blob");
+        uploadButton.setToolTipText(UPLOAD_BLOB);
 
         deleteButton = new Button(container, SWT.PUSH);
         deleteButton.setImage(Activator.getImageDescriptor("icons/storagedelete.png").createImage());
-        deleteButton.setToolTipText("Delete Selected Blob");
+        deleteButton.setToolTipText(DELETE_SELECTED_BLOB);
         deleteButton.setEnabled(false);
 
 //        openButton = new Button(container, SWT.PUSH);
@@ -232,13 +267,13 @@ public class BlobExplorerFileEditor extends EditorPart {
 
         saveAsButton = new Button(container, SWT.PUSH);
         saveAsButton.setImage(Activator.getImageDescriptor("icons/storagesaveas.png").createImage());
-        saveAsButton.setToolTipText("Save As");
+        saveAsButton.setToolTipText(SAVE_AS);
         saveAsButton.setEnabled(false);
 
         SelectionListener queryAction = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                fillGrid();
+                fileEditorVirtualNode.doAction(SEARCH);
             }
         };
 
@@ -248,14 +283,14 @@ public class BlobExplorerFileEditor extends EditorPart {
         deleteButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                deleteSelectedFile();
+            	fileEditorVirtualNode.doAction(DELETE);
             }
         });
 
         saveAsButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                saveAsSelectedFile();
+            	fileEditorVirtualNode.doAction(SAVE_AS);
             }
         });
 
@@ -269,7 +304,7 @@ public class BlobExplorerFileEditor extends EditorPart {
         uploadButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                uploadFile();
+            	fileEditorVirtualNode.doAction(UPLOAD_BLOB);
             }
         });
     }
@@ -804,5 +839,11 @@ public class BlobExplorerFileEditor extends EditorPart {
         }
     }
 
-
+	@Override
+	public Map<String, String> toProperties() {
+		final Map<String, String> properties = new HashMap<>();
+        properties.put("Container", this.blobContainer.getName());
+        properties.put("Storage", this.storageAccount);
+        return properties;
+	}
 }
