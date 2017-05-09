@@ -24,7 +24,6 @@ package com.microsoft.intellij.ui.components;
 
 import com.intellij.ui.wizard.WizardModel;
 import com.intellij.ui.wizard.WizardStep;
-import com.microsoft.applicationinsights.telemetry.Telemetry;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 
@@ -57,19 +56,7 @@ public abstract class AzureWizardStep<T extends WizardModel> extends WizardStep<
         super(title, explanation, icon, helpId);
     }
 
-    /*
-    Override this method if more additional properties to be sent.
-     */
-    protected void addExtraTelemetryProperties(final Map<String, String> properties) {
-
-    }
-
-    protected void sendTelemetryOnNext(final String action) {
-        //if( )
-        sendTelemetryOnAction(action, null);
-    }
-
-    protected void sendTelemetryOnAction(final String action, final T model) {
+    protected void sendTelemetryOnAction(final String action) {
         final Map<String, String> properties = new HashMap<>();
         properties.put("WizardStep", this.getClass().getSimpleName());
         properties.put("Action", action);
@@ -79,31 +66,30 @@ public abstract class AzureWizardStep<T extends WizardModel> extends WizardStep<
             properties.putAll(((TelemetryProperties) this).toProperties());
         }
 
-        //addExtraTelemetryProperties(properties);
         AppInsightsClient.createByType(AppInsightsClient.EventType.WizardStep, this.getClass().getSimpleName(), action, properties);
     }
 
     @Override
     public WizardStep onNext(T model) {
-        sendTelemetryOnAction("Next", model);
+        sendTelemetryOnAction("Next");
         return super.onNext(model);
     }
 
     @Override
     public boolean onFinish() {
-        sendTelemetryOnNext("Finish");
+        sendTelemetryOnAction("Finish");
         return super.onFinish();
     }
 
     @Override
     public boolean onCancel() {
-        sendTelemetryOnNext("Cancel");
+        sendTelemetryOnAction("Cancel");
         return super.onCancel();
     }
 
     @Override
     public WizardStep onPrevious(T model) {
-        sendTelemetryOnAction("Previous", model);
+        sendTelemetryOnAction("Previous");
         return super.onPrevious(model);
     }
 }
