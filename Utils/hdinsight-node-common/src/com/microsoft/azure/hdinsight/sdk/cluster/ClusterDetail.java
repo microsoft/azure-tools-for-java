@@ -84,6 +84,11 @@ public class ClusterDetail implements IClusterDetail {
             return null;
         }
 
+        // HDI and Spark version map
+        // HDI 3.3   <-> Spark 1.5.2
+        // HDI 3.4   <-> Spark 1.6.2
+        // HDI 3.5   <-> Spark 1.6.2 & Spark 2.0.2
+        // HDI 3.6   <-> Spark 2.0.0 & Spark 2.1.0
         String clusterVersion = clusterProperties.getClusterVersion();
         if(clusterVersion.startsWith("3.3")){
             return "1.5.2";
@@ -92,8 +97,10 @@ public class ClusterDetail implements IClusterDetail {
         } else if(clusterVersion.startsWith("3.5")){
             ComponentVersion componentVersion = clusterProperties.getClusterDefinition().getComponentVersion();
             return componentVersion == null ? "1.6.2" : componentVersion.getSpark();
+        } else {
+            ComponentVersion componentVersion = clusterProperties.getClusterDefinition().getComponentVersion();
+            return componentVersion == null ? null : componentVersion.getSpark();
         }
-        return null;
     }
 
     public String getState(){
