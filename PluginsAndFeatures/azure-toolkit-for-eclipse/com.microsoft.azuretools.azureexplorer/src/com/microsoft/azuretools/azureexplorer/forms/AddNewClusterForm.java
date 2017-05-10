@@ -19,9 +19,10 @@ import com.microsoft.azure.hdinsight.serverexplore.AddHDInsightAdditionalCluster
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.azuretools.azureexplorer.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 
-public class AddNewClusterForm extends TitleAreaDialog {
+public class AddNewClusterForm extends AzureTitleAreaDialogWrapper {
 	
     private String clusterName;
     private String userName;

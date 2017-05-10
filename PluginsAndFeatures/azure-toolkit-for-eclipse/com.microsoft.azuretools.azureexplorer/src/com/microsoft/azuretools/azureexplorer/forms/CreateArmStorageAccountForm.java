@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -42,6 +43,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.azureexplorer.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -57,7 +59,7 @@ import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuTier;
 import com.microsoft.azure.management.storage.StorageAccount;
 
-public class CreateArmStorageAccountForm extends TitleAreaDialog {
+public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
     private static final String PRICING_LINK = "<a href=\"http://go.microsoft.com/fwlink/?LinkID=400838\">Read more about replication services and pricing details</a>";
     private static Map<String, Kind> ACCOUNT_KIND = new TreeMap<>();
     static {
@@ -318,6 +320,7 @@ public class CreateArmStorageAccountForm extends TitleAreaDialog {
 			String name = nameTextField.getText();
 			AccessTier accessTier = (AccessTier) accessTierComboBox.getData(accessTierComboBox.getText());
 			SubscriptionDetail subscriptionDetail = (SubscriptionDetail) subscriptionComboBox.getData(subscriptionComboBox.getText());
+			setSubscription(subscriptionDetail);
 			DefaultLoader.getIdeHelper().runInBackground(null, "Creating storage account", false, true,
 					"Creating storage account " + name + "...", new Runnable() {
 						@Override
@@ -575,5 +578,25 @@ public class CreateArmStorageAccountForm extends TitleAreaDialog {
 		boolean isBlobKind = (Kind)kindCombo.getData(kindCombo.getText()) == Kind.BLOB_STORAGE;
 		accessTierComboBox.setVisible(isBlobKind);
 		accessTierLabel.setVisible(isBlobKind);
+	}
+	
+	public SubscriptionDetail getSubscription() {
+		return subscription;
+	}
+	
+	public void setSubscription(SubscriptionDetail subscription) {
+		this.subscription = subscription;
+	}
+	
+	@Override
+	public Map<String, String> toProperties() {
+		final Map<String, String> properties = new HashMap<>();
+
+        if (this.getSubscription() != null) {
+            if(this.getSubscription().getSubscriptionName() != null)  properties.put("SubscriptionName", this.getSubscription().getSubscriptionName());
+            if(this.getSubscription().getSubscriptionId() != null)  properties.put("SubscriptionId", this.getSubscription().getSubscriptionId());
+        }
+
+        return properties;
 	}
 }

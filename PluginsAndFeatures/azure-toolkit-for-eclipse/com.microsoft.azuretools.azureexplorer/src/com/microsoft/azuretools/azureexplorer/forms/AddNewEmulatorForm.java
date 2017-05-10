@@ -37,8 +37,9 @@ import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.azuretools.azureexplorer.components.AzureTitleAreaDialogWrapper;
 
-public class AddNewEmulatorForm extends TitleAreaDialog {
+public class AddNewEmulatorForm extends AzureTitleAreaDialogWrapper {
 
 	private HDInsightRootModule hdInsightModule;
 	private String errorMessage;

@@ -57,7 +57,7 @@ public interface AzureDialogGetProterties {
 				}
 				if(c instanceof Combo) {
 					int idx = ((Combo) c).getSelectionIndex();
-					properties.put("JComboBox." + ((Combo) c).getText() + ".Selected", ((Combo) c).getItem(idx));
+					properties.put("JComboBox." + ((Combo) c).getText() + ".Selected", String.valueOf(((Combo) c).getItem(idx)));
 				}
 			}
 		}

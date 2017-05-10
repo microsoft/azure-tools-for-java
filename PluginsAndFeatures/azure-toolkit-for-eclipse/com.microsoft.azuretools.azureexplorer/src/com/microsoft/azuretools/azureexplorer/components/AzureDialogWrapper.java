@@ -19,29 +19,15 @@
  */
 package com.microsoft.azuretools.azureexplorer.components;
 
-import java.awt.List;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.window.IShellProvider;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
-import com.microsoft.applicationinsights.web.internal.ApplicationInsightsHttpResponseWrapper;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
 
 public abstract class AzureDialogWrapper extends Dialog implements AzureDialogGetProterties, TelemetryProperties {
-	private SubscriptionDetail subscription;
 
 	protected AzureDialogWrapper(Shell parentShell) {
 		super(parentShell);
@@ -63,23 +49,9 @@ public abstract class AzureDialogWrapper extends Dialog implements AzureDialogGe
 		super.cancelPressed();
 	}
 	
-	public SubscriptionDetail getSubscription() {
-		return subscription;
-	}
-	
-	public void setSubscription(SubscriptionDetail subscription) {
-		this.subscription = subscription;
-	}
 	
 	@Override
 	public Map<String, String> toProperties() {
-		final Map<String, String> properties = new HashMap<>();
-
-        if (this.getSubscription() != null) {
-            if(this.getSubscription().getSubscriptionName() != null)  properties.put("SubscriptionName", this.getSubscription().getSubscriptionName());
-            if(this.getSubscription().getSubscriptionId() != null)  properties.put("SubscriptionId", this.getSubscription().getSubscriptionId());
-        }
-
-        return properties;
+        return null;
 	}
 }
