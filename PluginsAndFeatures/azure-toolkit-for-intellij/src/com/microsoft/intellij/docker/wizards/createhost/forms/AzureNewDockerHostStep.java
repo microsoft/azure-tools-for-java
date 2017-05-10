@@ -33,13 +33,12 @@ import com.microsoft.azure.PagedList;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.*;
 import com.microsoft.azure.docker.ops.utils.AzureDockerUtils;
+import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.VirtualMachineSize;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
-import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.intellij.docker.wizards.createhost.AzureNewDockerWizardModel;
 import com.microsoft.intellij.docker.wizards.createhost.AzureNewDockerWizardStep;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -135,6 +134,8 @@ public class AzureNewDockerHostStep extends AzureNewDockerWizardStep implements 
     AzureDockerSubscription currentSubscription = (AzureDockerSubscription) dockerSubscriptionComboBox.getSelectedItem();
     dockerSubscriptionIdLabel.setVisible(currentSubscription != null);
     dockerSubscriptionIdTextField.setText(currentSubscription != null ? currentSubscription.id : "");
+    dockerSubscriptionIdTextField.setName("dockerSubscriptionIdTextField");
+    dockerLocationComboBox.setName("dockerLocationComboBox");
     dockerSubscriptionComboBox.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
@@ -244,6 +245,7 @@ public class AzureNewDockerHostStep extends AzureNewDockerWizardStep implements 
       }
     });
 
+    dockerHostVMSizeComboBox.setName("dockerHostVMSizeComboBox");
     dockerHostVMSizeComboBox.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
@@ -326,6 +328,7 @@ public class AzureNewDockerHostStep extends AzureNewDockerWizardStep implements 
     dockerHostRGGroup.add(dockerHostNewRGRadioButton);
     dockerHostRGGroup.add(dockerHostSelectRGRadioButton);
     dockerHostNewRGRadioButton.setSelected(true);
+    dockerHostVMSizeComboBox.setName("dockerHostVMSizeComboBox");
     dockerHostNewRGRadioButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {

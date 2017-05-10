@@ -152,6 +152,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
 
         regionComboBox.addItemListener(validateListener);
         resourceGrpCombo.addItemListener(validateListener);
+        resourceGrpCombo.setName("ResourceGroup");
         regionComboBox.addItemListener(e -> loadGroups());
 
         accoountKindCombo.setRenderer(new ListCellRendererWrapper<Kind>() {
