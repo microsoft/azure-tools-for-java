@@ -19,21 +19,17 @@
  */
 package com.microsoft.azuretools.azureexplorer.components;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.TitleAreaDialog;
-import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.widgets.Shell;
 
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 
 public abstract class AzureTitleAreaDialogWrapper extends TitleAreaDialog implements AzureDialogGetProterties, TelemetryProperties{
 	public AzureTitleAreaDialogWrapper(Shell parentShell) {
 		super(parentShell);
 	}
-	private SubscriptionDetail subscription;
 
 	@Override
 	protected void okPressed() {
@@ -47,23 +43,8 @@ public abstract class AzureTitleAreaDialogWrapper extends TitleAreaDialog implem
 		super.cancelPressed();
 	}
 	
-	public SubscriptionDetail getSubscription() {
-		return subscription;
-	}
-	
-	public void setSubscription(SubscriptionDetail subscription) {
-		this.subscription = subscription;
-	}
-	
 	@Override
 	public Map<String, String> toProperties() {
-		final Map<String, String> properties = new HashMap<>();
-
-        if (this.getSubscription() != null) {
-            if(this.getSubscription().getSubscriptionName() != null)  properties.put("SubscriptionName", this.getSubscription().getSubscriptionName());
-            if(this.getSubscription().getSubscriptionId() != null)  properties.put("SubscriptionId", this.getSubscription().getSubscriptionId());
-        }
-
-        return properties;
+		return null;
 	}
 }

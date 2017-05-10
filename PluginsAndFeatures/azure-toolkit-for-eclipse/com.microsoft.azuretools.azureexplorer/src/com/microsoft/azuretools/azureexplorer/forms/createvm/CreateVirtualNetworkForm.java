@@ -11,11 +11,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import com.microsoft.azuretools.azureexplorer.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.model.vm.VirtualNetwork;
 
-public class CreateVirtualNetworkForm extends TitleAreaDialog {
+public class CreateVirtualNetworkForm extends AzureTitleAreaDialogWrapper {
 	private Text nameField;
     private Text addressSpaceField;
     private Text subnetNameField;

@@ -20,6 +20,7 @@
 package com.microsoft.azuretools.azureexplorer.forms;
 
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.azureexplorer.components.AzureDialogWrapper;
@@ -40,6 +41,8 @@ import org.eclipse.ui.PlatformUI;
 
 import java.net.URL;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CreateBlobContainerForm extends AzureDialogWrapper {
     private static String NAMING_GUIDELINES_LINK = "<a href=\"http://go.microsoft.com/fwlink/?LinkId=255555\">Naming Guidelines</a>";
@@ -55,6 +58,7 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
     private static final String NAME_REGEX = "^[a-z0-9](?!.*--)[a-z0-9-]+[a-z0-9]$";
     private static final int NAME_MAX = 63;
     private static final int NAME_MIN = 3;
+    private SubscriptionDetail subscription;
 
     public CreateBlobContainerForm(Shell parentShell, String connectionString) {
         super(parentShell);
@@ -171,4 +175,24 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
     public void setOnCreate(Runnable onCreate) {
         this.onCreate = onCreate;
     }
+    
+    public SubscriptionDetail getSubscription() {
+		return subscription;
+	}
+	
+	public void setSubscription(SubscriptionDetail subscription) {
+		this.subscription = subscription;
+	}
+	
+	@Override
+	public Map<String, String> toProperties() {
+		final Map<String, String> properties = new HashMap<>();
+
+        if (this.getSubscription() != null) {
+            if(this.getSubscription().getSubscriptionName() != null)  properties.put("SubscriptionName", this.getSubscription().getSubscriptionName());
+            if(this.getSubscription().getSubscriptionId() != null)  properties.put("SubscriptionId", this.getSubscription().getSubscriptionId());
+        }
+
+        return properties;
+	}
 }
