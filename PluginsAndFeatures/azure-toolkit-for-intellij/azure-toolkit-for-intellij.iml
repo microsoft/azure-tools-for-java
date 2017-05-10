@@ -15,6 +15,15 @@
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.5" level="project" />
     <orderEntry type="module" module-name="hdinsight-node-common" />
     <orderEntry type="library" name="Maven: com.microsoft.azure:azure-mgmt-appservice:1.0.0" level="project" />
+    <orderEntry type="module-library" scope="PROVIDED">
+    <library>
+      <CLASSES>
+        <root url="jar://$APPLICATION_PLUGINS_DIR$/Scala/lib/scala-plugin.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+  </orderEntry>
   </component>
   <component name="POM File Configuration" pomFile="" />
 </module>
