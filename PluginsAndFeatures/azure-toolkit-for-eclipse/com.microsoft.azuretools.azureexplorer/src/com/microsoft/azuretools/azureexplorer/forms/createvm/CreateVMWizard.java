@@ -33,6 +33,7 @@ import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -47,6 +48,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.SWT;
@@ -56,7 +59,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
 
-public class CreateVMWizard extends Wizard {
+public class CreateVMWizard extends Wizard implements TelemetryProperties {
     private VMArmModule node;
 
 	protected SubscriptionDetail subscription;
@@ -399,5 +402,22 @@ public class CreateVMWizard extends Wizard {
 
 	public void setSize(VirtualMachineSize size) {
 	    this.size = size;
-	}	
+	}
+
+	@Override
+	public Map<String, String> toProperties() {
+		final Map<String, String> properties = new HashMap<>();
+		if(this.getSubnet() != null) properties.put("Size", this.getSubnet());
+		if(this.getSubscription() != null) {
+			properties.put("SubscriptionName", this.getSubscription().getSubscriptionName());
+			properties.put("SubscriptionId", this.getSubscription().getSubscriptionId());
+		}
+		if(this.getName() != null) properties.put("Name", this.getName());
+		if(this.getRegion() != null) properties.put("Region", this.getRegion().displayName());
+		if(this.getSize() != null) properties.put("Size", this.getSize().name());
+		
+		return properties;
+	}
+	
+	
 }

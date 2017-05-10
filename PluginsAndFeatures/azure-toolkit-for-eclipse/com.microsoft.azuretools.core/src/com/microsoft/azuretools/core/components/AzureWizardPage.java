@@ -19,6 +19,39 @@
  */
 package com.microsoft.azuretools.core.components;
 
-public class WizardDialog<T extends node> {
+import org.eclipse.core.runtime.Assert;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.widgets.Composite;
+
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+
+public abstract class AzureWizardPage extends WizardPage implements TelemetryProperties{
+	protected AzureWizardPage(String pageName) {
+		super(pageName);
+	}
+	
+	protected AzureWizardPage(String pageName, String title, ImageDescriptor titleImage) {
+        super(pageName, title, titleImage);
+    }
+	
+	public void sendTelemetryOnAction(final String action) {
+		
+	}
+	
+	@Override
+	public IWizardPage getNextPage() {
+		sendTelemetryOnAction("Next");
+		return super.getNextPage();
+	}
+	
+	@Override
+	public IWizardPage getPreviousPage() {
+		sendTelemetryOnAction("Previos");
+		return super.getPreviousPage();
+	}
 
 }
