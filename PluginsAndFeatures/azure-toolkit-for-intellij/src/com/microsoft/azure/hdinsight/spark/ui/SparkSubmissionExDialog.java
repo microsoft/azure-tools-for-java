@@ -36,12 +36,12 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveRenderer;
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveTableModel;
 import com.microsoft.azure.hdinsight.spark.common.*;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -51,6 +51,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -292,7 +293,7 @@ public class SparkSubmissionExDialog extends JDialog {
 
 
         intelliJArtifactRadioButton = new JRadioButton("Artifact from IntelliJ project:", true);
-        localArtifactRadioButton = new JRadioButton("Artifact from hard disk:", false);
+        localArtifactRadioButton = new JRadioButton("Artifact from local disk:", false);
 
         intelliJArtifactRadioButton.addItemListener(new ItemListener() {
             @Override
@@ -436,15 +437,92 @@ public class SparkSubmissionExDialog extends JDialog {
                         new Insets(0, margin, 0, margin), 0, 0));
     }
 
+    private TextFieldWithBrowseButton localConfigFileTextButton;
+
+    private JRadioButton tableConfigRadioButton;
+    private JRadioButton localConfigRadioButton;
+
     private void addConfigurationLineItem() {
         JLabel jobConfigurationLabel = new JLabel("Job configurations");
 
         contentPane.add(jobConfigurationLabel,
                 new GridBagConstraints(0, ++row,
-                        1, 1,
-                        1, 0,
-                        GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
+                        0, 1,
+                        0, 0,
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
                         new Insets(margin, margin, 0, 0), 0, 0));
+
+        localConfigFileTextButton = new TextFieldWithBrowseButton();
+        localConfigFileTextButton = new TextFieldWithBrowseButton();
+        localConfigFileTextButton.setToolTipText("Job Configuration from local file.");
+        localConfigFileTextButton.setEditable(true);
+        localConfigFileTextButton.setEnabled(false);
+        localConfigFileTextButton.getButton().addActionListener((e)-> {
+            FileChooserDescriptor chooserDescriptor = new FileChooserDescriptor(true,
+                    false,
+                    false,
+                    false,
+                    true,
+                    false);
+            chooserDescriptor.setTitle("Select Local Configuration File");
+            VirtualFile chooseFile = FileChooser.chooseFile(chooserDescriptor, null, null);
+            if (chooseFile != null) {
+                String path = chooseFile.getPath();
+                localConfigFileTextButton.setText(path);
+            }
+        });
+
+
+        localConfigFileTextButton.getTextField().getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                localConfigurationValidate();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                localConfigurationValidate();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                localConfigurationValidate();
+            }
+        });
+
+        tableConfigRadioButton = new JRadioButton("Dynamic Configuration", true);
+        localConfigRadioButton = new JRadioButton("Configuration from local disk:", false);
+
+        tableConfigRadioButton.addItemListener((event)->{
+            if (event.getStateChange() == ItemEvent.SELECTED) {
+                jobConfigurationTable.setEnabled(true);
+                localConfigFileTextButton.setEnabled(false);
+                setVisibleForFixedErrorMessageLabel(ErrorMessageLabelTag.JobConfiguration.ordinal(), false);
+            }
+        });
+
+        localConfigRadioButton.addItemListener((event)->{
+            if(event.getStateChange() == ItemEvent.SELECTED) {
+                jobConfigurationTable.setEnabled(false);
+                localConfigFileTextButton.setEnabled(true);
+
+                // refresh to trigger data validate
+                String text = localConfigFileTextButton.getText();
+                localConfigFileTextButton.setText(text);
+            }
+        });
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(tableConfigRadioButton);
+        group.add(localConfigRadioButton);
+
+        contentPane.add(tableConfigRadioButton,
+                new GridBagConstraints(0, ++row,
+                        1, 1,
+                        0, 0,
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(margin / 3, margin * 3, 0, margin), 0, 0));
+
 
         String[] columns = {"Key", "Value", ""};
 
@@ -457,38 +535,60 @@ public class SparkSubmissionExDialog extends JDialog {
         JBScrollPane scrollPane = new JBScrollPane(jobConfigurationTable);
         jobConfigurationTable.setFillsViewportHeight(true);
 
-        jobConfigurationTable.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ((evt.getPropertyName() == "tableCellEditor" || evt.getPropertyName() == "model") && jobConfigurationTable.getModel() instanceof SubmissionTableModel) {
-                    SubmissionTableModel model = (SubmissionTableModel) jobConfigurationTable.getModel();
-                    setVisibleForFixedErrorMessageLabel(ErrorMessageLabelTag.JobConfiguration.ordinal(), false);
+        jobConfigurationTable.addPropertyChangeListener((evt)-> {
+            if ((evt.getPropertyName().equals("tableCellEditor") || evt.getPropertyName().equals("model")) && jobConfigurationTable.getModel() instanceof SubmissionTableModel) {
+                SubmissionTableModel model = (SubmissionTableModel) jobConfigurationTable.getModel();
+                setVisibleForFixedErrorMessageLabel(ErrorMessageLabelTag.JobConfiguration.ordinal(), false);
 
-                    SparkSubmissionJobConfigCheckResult result = model.getFirstCheckResults();
-                    if (result != null) {
-                        setStatusForMessageLabel(ErrorMessageLabelTag.JobConfiguration.ordinal(), true, result.getMessaqge(), result.getStatus() == SparkSubmissionJobConfigCheckStatus.Warning);
-                    }
+                SparkSubmissionJobConfigCheckResult result = model.getFirstCheckResults();
+                if (result != null) {
+                    setStatusForMessageLabel(ErrorMessageLabelTag.JobConfiguration.ordinal(), true, result.getMessaqge(), result.getStatus() == SparkSubmissionJobConfigCheckStatus.Warning);
                 }
             }
         });
 
         contentPane.add(scrollPane,
                 new GridBagConstraints(1, row,
-                        1, 1,
+                        0, 1,
                         1, 0,
-                        GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-                        new Insets(margin, margin, 0, margin), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(margin / 3, margin, 0, margin), 0, 0));
 
         errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()] = new JLabel();
         errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()].setForeground(DarkThemeManager.getInstance().getErrorMessageColor());
         errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()].setVisible(false);
 
+        contentPane.add(localConfigRadioButton,
+                new GridBagConstraints(0, ++row,
+                        1, 1,
+                        0, 0,
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(margin / 3, margin * 3, 0, margin), 0, 0));
+
+        contentPane.add(localConfigFileTextButton,
+                new GridBagConstraints(1, row,
+                        0, 1,
+                        0, 0,
+                        GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
+                        new Insets(margin / 3, margin, 0, margin), 0, 0));
+
         contentPane.add(errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()],
                 new GridBagConstraints(1, ++row,
                         0, 1,
                         1, 0,
-                        GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
+                        GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
                         new Insets(0, margin, 0, margin), 0, 0));
+    }
+
+    private void localConfigurationValidate () {
+        final String fileName = localConfigFileTextButton.getText();
+        final File file = new File(fileName);
+        if(!file.exists() || file.isDirectory()) {
+            setStatusForMessageLabel(ErrorMessageLabelTag.JobConfiguration.ordinal(), true, "Configuration file not found!", false);
+        }
+        else {
+            setStatusForMessageLabel(ErrorMessageLabelTag.JobConfiguration.ordinal(), false,"");
+        }
     }
 
     private void addCommandlineArgsLineItem() {
