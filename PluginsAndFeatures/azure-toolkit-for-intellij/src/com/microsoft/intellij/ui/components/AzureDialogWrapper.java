@@ -24,6 +24,7 @@ package com.microsoft.intellij.ui.components;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -89,20 +90,23 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
 
             if (component instanceof JRadioButton) {
                 JRadioButton jRadioButton = (JRadioButton) component;
-                String name = jRadioButton.getName() == null ? jRadioButton.getText() : jRadioButton.getName();
+                String name = jRadioButton.getName() == null ? jRadioButton.getText().replaceAll("[\\s+.]", "") : jRadioButton.getName();
                 properties.put("JRadioButton." + name + ".Selected", String.valueOf(jRadioButton.isSelected()));
             } else if (component instanceof JCheckBox) {
                 JCheckBox jCheckBox = (JCheckBox) component;
-                String name = jCheckBox.getName() == null ? jCheckBox.getText() : jCheckBox.getName();
+                String name = jCheckBox.getName() == null ? jCheckBox.getText().replaceAll("[\\s+.]", "") : jCheckBox.getName();
                 properties.put("JCheckBox." + name + ".Selected", String.valueOf(jCheckBox.isSelected()));
             } else if (component instanceof JComboBox) {
                 JComboBox comboBox = (JComboBox) component;
                 StringBuilder stringBuilder = new StringBuilder();
+                String name = comboBox.getName();
                 for (final Object object : comboBox.getSelectedObjects()) {
                     stringBuilder.append(object.toString());
                     stringBuilder.append(";");
+                    if(StringUtils.isNullOrEmpty(name)){
+                        name = object.getClass().getSimpleName();
+                    }
                 }
-                String name = comboBox.getName() == null ? comboBox.getLocation().toString() : comboBox.getName();
                 properties.put("JComboBox." + name + ".Selected", stringBuilder.toString());
             }
         }
@@ -123,7 +127,8 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
         final Map<String, String> properties = new HashMap<>();
         String action = "OK";
         properties.put("Window", this.getClass().getSimpleName());
-        properties.put("Title", this.getTitle());
+        if(!StringUtils.isNullOrEmpty(this.getTitle()))
+            properties.put("Title", this.getTitle());
         if (this instanceof TelemetryProperties) {
             properties.putAll(((TelemetryProperties) this).toProperties());
         }
