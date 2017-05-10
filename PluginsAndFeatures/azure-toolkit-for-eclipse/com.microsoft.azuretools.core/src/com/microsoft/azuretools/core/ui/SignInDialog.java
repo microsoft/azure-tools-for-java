@@ -65,10 +65,11 @@ import com.microsoft.azuretools.authmanage.interact.AuthMethod;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 import org.eclipse.swt.widgets.Link;
 
-public class SignInDialog extends TitleAreaDialog {
+public class SignInDialog extends AzureTitleAreaDialogWrapper {
 	private static ILog LOG = Activator.getDefault().getLog();
     private Text textAuthenticationFilePath;
     private Button rbtnInteractive;

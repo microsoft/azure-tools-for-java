@@ -50,9 +50,10 @@ import org.eclipse.swt.widgets.TableItem;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
 
-public class SubscriptionsDialog extends TitleAreaDialog {
+public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
 	private static ILog LOG = Activator.getDefault().getLog();
     
     private Table table;

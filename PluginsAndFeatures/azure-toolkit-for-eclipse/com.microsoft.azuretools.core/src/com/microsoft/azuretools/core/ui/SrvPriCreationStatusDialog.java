@@ -51,13 +51,14 @@ import com.microsoft.azuretools.authmanage.srvpri.SrvPriManager;
 import com.microsoft.azuretools.authmanage.srvpri.report.IListener;
 import com.microsoft.azuretools.authmanage.srvpri.step.Status;
 import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
 
-public class SrvPriCreationStatusDialog extends TitleAreaDialog {
+public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
     private static ILog LOG = Activator.getDefault().getLog();
     private Table table;
     org.eclipse.swt.widgets.List listCreatedFiles;

@@ -24,6 +24,7 @@ import com.microsoft.azure.docker.model.AzureDockerCertVault;
 import com.microsoft.azure.docker.model.EditableDockerHost;
 import com.microsoft.azure.docker.ops.AzureDockerCertVaultOps;
 import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import java.util.logging.Logger;
@@ -53,7 +54,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.swt.widgets.Shell;
 
-public class AzureInputDockerLoginCredsDialog extends TitleAreaDialog {
+public class AzureInputDockerLoginCredsDialog extends AzureTitleAreaDialogWrapper {
 	private static final Logger log =  Logger.getLogger(AzureInputDockerLoginCredsDialog.class.getName());
 
 	private Button copyFromAzureKeyButton;

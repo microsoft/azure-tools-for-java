@@ -9,9 +9,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+
 import org.eclipse.swt.layout.FillLayout;
 
-public class ErrorWindow extends TitleAreaDialog {
+public class ErrorWindow extends AzureTitleAreaDialogWrapper {
     private Text text;
     
     public static void go(Shell parentShell, String errorDescription, String title) {

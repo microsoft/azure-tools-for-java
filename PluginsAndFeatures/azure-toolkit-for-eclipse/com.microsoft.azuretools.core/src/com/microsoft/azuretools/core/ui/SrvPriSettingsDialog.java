@@ -44,8 +44,9 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 
-public class SrvPriSettingsDialog extends TitleAreaDialog {
+public class SrvPriSettingsDialog extends AzureTitleAreaDialogWrapper {
     private Table table;
     private Text textDestinationFolderPath;
     

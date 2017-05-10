@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 
 import com.microsoft.azuretools.azureexplorer.Activator;
-import com.microsoft.azuretools.azureexplorer.components.AzureDialogWrapper;
+import com.microsoft.azuretools.core.components.AzureDialogWrapper;
 
 import java.io.File;
 import java.net.URI;

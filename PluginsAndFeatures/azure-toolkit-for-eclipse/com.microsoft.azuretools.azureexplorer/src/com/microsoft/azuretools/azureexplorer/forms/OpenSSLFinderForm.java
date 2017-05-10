@@ -20,7 +20,7 @@
 package com.microsoft.azuretools.azureexplorer.forms;
 
 
-import com.microsoft.azuretools.azureexplorer.components.AzureDialogWrapper;
+import com.microsoft.azuretools.core.components.AzureDialogWrapper;
 import com.microsoft.azuretools.core.ui.commoncontrols.Messages;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 

@@ -17,20 +17,27 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
  * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.azuretools.azureexplorer.components;
+package com.microsoft.azuretools.core.components;
 
+import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.widgets.Shell;
 
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 
-public abstract class AzureTitleAreaDialogWrapper extends TitleAreaDialog implements AzureDialogGetProterties, TelemetryProperties{
-	public AzureTitleAreaDialogWrapper(Shell parentShell) {
+public abstract class AzureDialogWrapper extends Dialog implements AzureDialogProtertiesHelper, TelemetryProperties {
+
+	protected AzureDialogWrapper(Shell parentShell) {
 		super(parentShell);
 	}
-
+	 
+	protected AzureDialogWrapper(IShellProvider parentShell) {
+		super(parentShell);
+	}
+	
 	@Override
 	protected void okPressed() {
 		sentTelemetry(OK);
@@ -43,8 +50,9 @@ public abstract class AzureTitleAreaDialogWrapper extends TitleAreaDialog implem
 		super.cancelPressed();
 	}
 	
+	
 	@Override
 	public Map<String, String> toProperties() {
-		return null;
+        return new HashMap<>();
 	}
 }

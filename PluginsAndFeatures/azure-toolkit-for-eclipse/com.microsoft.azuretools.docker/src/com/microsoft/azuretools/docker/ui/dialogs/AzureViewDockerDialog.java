@@ -38,6 +38,7 @@ import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.DockerHost;
 import com.microsoft.azure.docker.model.DockerHost.DockerHostVMState;
 import com.microsoft.azure.docker.ops.AzureDockerCertVaultOps;
+import com.microsoft.azuretools.core.components.AzureDialogWrapper;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 
 import org.eclipse.swt.layout.GridLayout;
@@ -51,7 +52,7 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
-public class AzureViewDockerDialog extends Dialog {
+public class AzureViewDockerDialog extends AzureDialogWrapper {
 	private static final Logger log =  Logger.getLogger(AzureViewDockerDialog.class.getName());
 	public static final int OK_EXIT_CODE = 0;
 	public static final int CANCEL_EXIT_CODE = 1;

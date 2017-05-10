@@ -40,6 +40,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.components.AzureDialogWrapper;
 
 public class LoginWindow implements com.microsoft.azuretools.adauth.IWebUi {
     private static ILog LOG = Activator.getDefault().getLog();
@@ -105,7 +106,7 @@ public class LoginWindow implements com.microsoft.azuretools.adauth.IWebUi {
     }
 }
 
-class LoginDialog extends Dialog {
+class LoginDialog extends AzureDialogWrapper {
     
     final String redirectUriStr;
     final String requestUriStr;
