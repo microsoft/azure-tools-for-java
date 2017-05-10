@@ -47,10 +47,11 @@ import org.eclipse.ui.PlatformUI;
 
 import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
 import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 
-public class NewCertificateDialog extends TitleAreaDialog {
+public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
 
     private Text txtPwd;
     private Text txtConfirmPwd;

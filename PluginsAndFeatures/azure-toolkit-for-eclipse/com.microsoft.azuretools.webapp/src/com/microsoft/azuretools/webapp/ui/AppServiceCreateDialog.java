@@ -76,6 +76,7 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.ui.ErrorWindow;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
@@ -87,7 +88,7 @@ import com.microsoft.azuretools.utils.StorageAccoutUtils;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.webapp.Activator;
 
-public class AppServiceCreateDialog extends TitleAreaDialog {
+public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     private static ILog LOG = Activator.getDefault().getLog();
 
     private Text textAppName;

@@ -48,7 +48,9 @@ import org.eclipse.ui.forms.ManagedForm;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 
-public class AzureExportDockerTlsKeysDialog extends TitleAreaDialog {
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+
+public class AzureExportDockerTlsKeysDialog extends AzureTitleAreaDialogWrapper {
 	private static final Logger log =  Logger.getLogger(AzureExportDockerTlsKeysDialog.class.getName());
 	
 	private final String pathToolTip = "Directory to save/export TLS file certificates into:";

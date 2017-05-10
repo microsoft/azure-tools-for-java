@@ -17,7 +17,7 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
  * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.microsoft.azuretools.azureexplorer.components;
+package com.microsoft.azuretools.core.components;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +34,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 
-public interface AzureDialogGetProterties {
+public interface AzureDialogProtertiesHelper {
 
 	default void addCancelTelemetryProperties(final Map<String, String> properties) {
 		
@@ -49,15 +49,15 @@ public interface AzureDialogGetProterties {
 			for(Control c : controlsList) {
 				if(c instanceof Button) {
 					if((c.getStyle() & SWT.CHECK) != 0) {
-						properties.put("JCheckBox." + ((Button) c).getText() + ".Selected", String.valueOf(((Button) c).getSelection()));
+						properties.put("JCheckBox." + String.valueOf(((Button) c).getLocation()) + ".Selected", String.valueOf(((Button) c).getSelection()));
 					}
 					else if((c.getStyle() & SWT.RADIO) != 0) {
-						properties.put("JRadioButton." + ((Button) c).getText() + ".Selected", String.valueOf(((Button) c).getSelection()));
+						properties.put("JRadioButton." + String.valueOf(((Button) c).getLocation()) + ".Selected", String.valueOf(((Button) c).getSelection()));
 					}
 				}
 				if(c instanceof Combo) {
 					int idx = ((Combo) c).getSelectionIndex();
-					properties.put("JComboBox." + ((Combo) c).getText() + ".Selected", String.valueOf(((Combo) c).getItem(idx)));
+					properties.put("JComboBox." + String.valueOf(((Combo) c).getLocation()) + ".Selected", String.valueOf(((Combo) c).getItem(idx)));
 				}
 			}
 		}

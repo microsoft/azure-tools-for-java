@@ -14,10 +14,11 @@ import org.eclipse.swt.widgets.Text;
 
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 
 import org.eclipse.swt.widgets.Button;
 
-public class FtpCredentialsWindow extends TitleAreaDialog {
+public class FtpCredentialsWindow extends AzureTitleAreaDialogWrapper {
 	private Text textHost;
 	private Text textUsername;
 	private Text textPassword;

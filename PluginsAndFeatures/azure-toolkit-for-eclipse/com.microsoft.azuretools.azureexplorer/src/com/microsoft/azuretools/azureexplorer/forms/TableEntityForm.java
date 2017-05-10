@@ -21,8 +21,8 @@ package com.microsoft.azuretools.azureexplorer.forms;
 
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.azureexplorer.components.AzureDialogWrapper;
 import com.microsoft.azuretools.azureexplorer.editors.TableFileEditor;
+import com.microsoft.azuretools.core.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.TableEntity;

@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
 import com.microsoft.azure.docker.AzureDockerHostsManager;
+import com.microsoft.azuretools.core.components.AzureDialogWrapper;
 
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
@@ -38,7 +39,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
-public class AzureSelectKeyVault extends Dialog {
+public class AzureSelectKeyVault extends AzureDialogWrapper {
 	private static final Logger log =  Logger.getLogger(AzureSelectKeyVault.class.getName());
 
 	private AzureDockerHostsManager dockerManager;

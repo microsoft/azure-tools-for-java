@@ -36,6 +36,7 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 
 import com.microsoft.azure.docker.model.AzureDockerCertVault;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.HyperlinkSettings;
@@ -51,7 +52,7 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
-public class AzureExportDockerSshKeysDialog extends TitleAreaDialog {
+public class AzureExportDockerSshKeysDialog extends AzureTitleAreaDialogWrapper {
 	private static final Logger log =  Logger.getLogger(AzureExportDockerSshKeysDialog.class.getName());
 	
 	private final String pathToolTip = "Directory to save/export \"id_rsa\" and \"id_rsa.pub\" file keys into:";

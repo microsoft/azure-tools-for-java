@@ -59,6 +59,7 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.ui.ErrorWindow;
 import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -73,7 +74,7 @@ import com.microsoft.azuretools.webapp.Activator;
 
 
 @SuppressWarnings("restriction")
-public class WebAppDeployDialog extends TitleAreaDialog {
+public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
     private static ILog LOG = Activator.getDefault().getLog();
     
     private Table table;
