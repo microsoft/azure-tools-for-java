@@ -58,7 +58,7 @@ public final class RedisCacheNode extends Node {
     }
     @Override
     protected void loadActions() {
-        addAction(ACTION_PROPERTIES, REDISCACHE_ICON_PATH, new NodeActionListener() {
+        addAction(ACTION_PROPERTIES, null, new NodeActionListener() {
             @Override
             public void actionPerformed(NodeActionEvent e) {
                 DefaultLoader.getIdeHelper().runInBackground(null, "Getting properties", false, true, "Getting properties...", new Runnable() {

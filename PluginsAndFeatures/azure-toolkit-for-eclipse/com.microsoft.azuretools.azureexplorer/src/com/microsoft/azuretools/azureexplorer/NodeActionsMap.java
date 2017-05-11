@@ -31,7 +31,7 @@ import com.microsoft.azuretools.azureexplorer.actions.CreateArmStorageAccountAct
 import com.microsoft.azuretools.azureexplorer.actions.CreateArmVMAction;
 import com.microsoft.azuretools.azureexplorer.actions.CreateBlobContainer;
 import com.microsoft.azuretools.azureexplorer.actions.CreateQueueAction;
-//import com.microsoft.azuretools.azureexplorer.actions.CreateRedisCacheAction;
+import com.microsoft.azuretools.azureexplorer.actions.CreateRedisCacheAction;
 import com.microsoft.azuretools.azureexplorer.actions.CreateTableAction;
 import com.microsoft.azuretools.azureexplorer.actions.OpenWebappAction;
 import com.microsoft.azuretools.azureexplorer.actions.docker.CreateNewDockerHostAction;
@@ -44,7 +44,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
-//import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapps.WebappNode;
@@ -54,7 +54,7 @@ public class NodeActionsMap {
             new HashMap<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>>();
     static {
         node2Actions.put(VMArmModule.class, new ImmutableList.Builder().add(CreateArmVMAction.class).build());
-        //node2Actions.put(RedisCacheModule.class, new ImmutableList.Builder().add(CreateRedisCacheAction.class).build());
+        node2Actions.put(RedisCacheModule.class, new ImmutableList.Builder().add(CreateRedisCacheAction.class).build());
         node2Actions.put(TableModule.class, new ImmutableList.Builder().add(CreateTableAction.class).build());
         node2Actions.put(QueueModule.class, new ImmutableList.Builder().add(CreateQueueAction.class).build());
         node2Actions.put(BlobModule.class, new ImmutableList.Builder().add(CreateBlobContainer.class).build());
