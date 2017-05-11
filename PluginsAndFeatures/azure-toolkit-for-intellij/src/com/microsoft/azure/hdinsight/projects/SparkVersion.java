@@ -26,18 +26,14 @@ public enum SparkVersion {
     SPARK_1_6("Spark 1.6"),
     SPARK_2_0("Spark 2.0");
 
-    private final String myName;
+    private final String presentationName;
 
     SparkVersion(String name) {
-        myName = name;
-    }
-
-    public String getName() {
-        return myName;
+         presentationName = name;
     }
 
     @Override
     public String toString() {
-        return myName;
+        return presentationName;
     }
 }
