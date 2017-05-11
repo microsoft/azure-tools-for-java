@@ -58,7 +58,7 @@ import java.util.List;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class ApplicationInsightsPanel implements AzureAbstractPanel {
-    private static final String DISPLAY_NAME = "Choose Plugin Insights Telemetry key";
+    private static final String DISPLAY_NAME = "Choose Application Insights Telemetry key";
     private JPanel rootPanel;
     private JCheckBox aiCheck;
     private JXHyperlink lnkInstrumentationKey;
@@ -111,7 +111,7 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
 
     private class ApplicationInsightsAction extends AbstractAction {
         private ApplicationInsightsAction() {
-            super("Plugin Insights...");
+            super("Application Insights...");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -259,7 +259,7 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
                 String path = createFileIfNotExists(message("depFileName"), message("depDirLoc"), message("aiWebXmlResFileLoc"));
                 handler.parseWebXmlPath(path);
             } else {
-                throw new Exception(": Plugin Insights cannot be configured without creating web.xml ");
+                throw new Exception(": Application Insights cannot be configured without creating web.xml ");
             }
         }
     }

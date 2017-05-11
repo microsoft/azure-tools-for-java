@@ -184,8 +184,8 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
         } else {
             boolean isNewGroup = createNewBtn.isSelected();
             String resourceGroup = isNewGroup ? textGrp.getText() : (String) comboGrp.getSelectedItem();
-            DefaultLoader.getIdeHelper().runInBackground(null,"Creating Plugin Insights Resource " + txtName.getText(), false, true,
-                    "Creating Plugin Insights Resource " + txtName.getText(), new Runnable() {
+            DefaultLoader.getIdeHelper().runInBackground(null,"Creating Application Insights Resource " + txtName.getText(), false, true,
+                    "Creating Application Insights Resource " + txtName.getText(), new Runnable() {
                         @Override
                         public void run() {
                             try {
