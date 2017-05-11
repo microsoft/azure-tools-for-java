@@ -19,6 +19,9 @@
  */
 package com.microsoft.azuretools.core.components;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -26,32 +29,52 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Composite;
 
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-public abstract class AzureWizardPage extends WizardPage implements TelemetryProperties{
-	protected AzureWizardPage(String pageName) {
-		super(pageName);
+public abstract class AzureWizard extends Wizard{
+	protected AzureWizard() {
+		super();
 	}
-	
-	protected AzureWizardPage(String pageName, String title, ImageDescriptor titleImage) {
-        super(pageName, title, titleImage);
-    }
 	
 	public void sendTelemetryOnAction(final String action) {
+		Map<String, String> properties = new HashMap<>();
+		properties.put("WizardStep", this.getContainer().getCurrentPage().getClass().getSimpleName());
+		properties.put("Action", action);
+		properties.put("Title", this.getContainer().getCurrentPage().getName());
 		
+		if(this instanceof TelemetryProperties) {
+			properties.putAll(((TelemetryProperties) this).toProperties());
+		}
+		
+		AppInsightsClient.createByType(AppInsightsClient.EventType.WizardStep, this.getClass().getSimpleName(), action, properties);
 	}
 	
 	@Override
-	public IWizardPage getNextPage() {
-		sendTelemetryOnAction("Next");
-		return super.getNextPage();
+	public IWizardPage getNextPage(IWizardPage page) {
+		IWizardPage nextPage = super.getNextPage(page);
+		if(nextPage != null) { sendTelemetryOnAction("Next"); }
+		return nextPage;
 	}
 	
 	@Override
-	public IWizardPage getPreviousPage() {
-		sendTelemetryOnAction("Previos");
-		return super.getPreviousPage();
+	public IWizardPage getPreviousPage(IWizardPage page) {
+		IWizardPage previousPage = super.getPreviousPage(page);
+		if(previousPage != null) { sendTelemetryOnAction("Previos"); }
+		return previousPage;
+	}
+	
+	@Override
+	public boolean performCancel() {
+		sendTelemetryOnAction("Cancel");
+        return super.performCancel();
+    }
+	
+	@Override
+	public boolean performFinish() {
+		sendTelemetryOnAction("Finish");
+		return true;
 	}
 
 }
