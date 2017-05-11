@@ -1,4 +1,4 @@
-package hdinsight.projectsample.java;
+package sample;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
@@ -15,10 +15,9 @@ import java.util.List;
  * This is adapted from Apache Spark GitHub: https://github.com/apache/spark/blob/master/examples/src/main/java/org/apache/spark/examples/JavaSparkPi.java
  */
 public final class JavaSparkPi {
-
     public static void main(String[] args) throws Exception {
-        //use this line if you want to run your application in the cluster
-        //SparkConf sparkConf = new SparkConf().setAppName("JavaSparkPi");
+        // use this line if you want to run your application in the cluster
+        // SparkConf sparkConf = new SparkConf().setAppName("JavaSparkPi");
         SparkConf sparkConf = new SparkConf().setAppName("JavaSparkPi").setMaster("local[2]");
         JavaSparkContext jsc = new JavaSparkContext(sparkConf);
 
@@ -50,4 +49,3 @@ public final class JavaSparkPi {
         jsc.stop();
     }
 }
-
