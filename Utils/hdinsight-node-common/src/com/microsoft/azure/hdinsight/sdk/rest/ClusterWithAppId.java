@@ -19,19 +19,26 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.jobs.yarn;
+package com.microsoft.azure.hdinsight.sdk.rest;
 
-/**
- * Created by ltian on 5/6/2017.
- */
-public class Priority {
-    private String priority;
 
-    public String getPriority() {
-        return priority;
+public class ClusterWithAppId {
+    private String clusterName;
+    private String appId;
+
+    public String getClusterName() {
+        return clusterName;
     }
 
-    public void setPriority(String priority) {
-        this.priority = priority;
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
     }
 }

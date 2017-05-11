@@ -19,22 +19,39 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.jobs.yarn;
+package com.microsoft.azure.hdinsight.sdk.rest.spark.executor;
 
-import java.util.List;
+import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
 /**
- * Created by ltian on 5/6/2017.
+ * executor Log
+ * Based on Spark 2.1.0, refer to http://spark.apache.org/docs/latest/monitoring.html
  *
+ *   http://<spark http address:port>/applications/[app-id]/executors
+ *
+ * HTTP Operations Supported
+ *   GET
+ *
+ * Query Parameters Supported
+ *   None
  */
-public class YarnApplication {
-    private List<App> app;
+public class ExecutorLog implements IConvertible {
+    private String stdout;
+    private String stderr;
 
-    public List<App> getApp() {
-        return app;
+    public String getStdout() {
+        return stdout;
     }
 
-    public void setApp(List<App> apps) {
-        this.app = apps;
+    public void setStdout(String stdout) {
+        this.stdout = stdout;
+    }
+
+    public String getStderr() {
+        return stderr;
+    }
+
+    public void setStderr(String stderr) {
+        this.stderr = stderr;
     }
 }

@@ -19,11 +19,14 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.jobs.yarn;
+package com.microsoft.azure.hdinsight.sdk.rest.yarn.rm;
+
+import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
+
 /**
  * Created by ltian on 5/6/2017.
  */
-public class ClusterInfo
+public class ClusterInfo implements IConvertible
 {
     private String id;
 

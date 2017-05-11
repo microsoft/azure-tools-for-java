@@ -19,38 +19,21 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.jobs.spark.stage;
+package com.microsoft.azure.hdinsight.sdk.rest;
 
-/**
- * Created by ltian on 5/6/2017.
+import java.util.Optional;
+
+/*
+
  */
-public class AccumulatorUpdate {
-    private int id;
-    private String name;
-    private String value;
-
-    public int getId() {
-        return id;
+public interface IConvertible {
+    // serialize an object to xml-format string
+    default Optional<String> convertToXml() {
+        return ObjectConvertUtils.convertObjectToJsonString(this);
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
+    // serialize an object to json-format string
+    default Optional<String> convertToJson() {
+        return ObjectConvertUtils.convertObjectToJsonString(this);
     }
 }
-

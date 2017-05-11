@@ -19,14 +19,40 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.jobs.spark.executor;
+package com.microsoft.azure.hdinsight.sdk.rest.spark.executor;
+
+import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
+import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
+import com.microsoft.azure.hdinsight.sdk.rest.spark.job.Job;
+import com.microsoft.azure.hdinsight.sdk.rest.spark.stage.Stage;
+import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppResponse;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
- * Created by ltian on 5/6/2017.
- }
+ * An executor resource contains information about a particular application that was submitted to a cluster.
+ *
+ * Based on Spark 2.1.0, refer to http://spark.apache.org/docs/latest/monitoring.html
+ *
+ *   http://<spark http address:port>/applications/[app-id]/executors
+ *
+ * HTTP Operations Supported
+ *   GET
+ *
+ * Query Parameters Supported
+ *   None
  */
-
-public class Executor {
+public class Executor implements IConvertible {
     private String id;
     private String hostPort;
     private boolean isActive;
@@ -201,5 +227,21 @@ public class Executor {
 
     public void setExecutorLogs(ExecutorLog executorLog) {
         this.executorLogs = executorLog;
+    }
+
+    public static void main(String[] args) throws Exception {
+
+
+        CredentialsProvider provider = new BasicCredentialsProvider();
+        provider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials("admin", "Pa$$w0rd1234"));
+        HttpClient client = HttpClients.custom().setDefaultCredentialsProvider(provider).build();
+        String id = "application_1491222722583_0007";
+        HttpResponse response = client.execute(new HttpGet("https://spark2withblob.azurehdinsight.net/sparkhistory/api/v1/applications/application_1491222722583_0008/1/jobs"));
+        String res = EntityUtils.toString(response.getEntity());
+        //List<Executor> response1 = ObjectConvertUtils.convertJsonToList(res, Executor.class).get();
+        List<Job> stages = ObjectConvertUtils.convertJsonToList(res, Job.class).get();
+        //Optional<Executor[]> v = ObjectConvertUtils.convertJsonToObject(res, Executor[].class);
+        int a = 1;
+
     }
 }

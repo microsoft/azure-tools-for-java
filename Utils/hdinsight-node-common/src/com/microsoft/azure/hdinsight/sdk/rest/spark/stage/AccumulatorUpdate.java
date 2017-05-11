@@ -19,28 +19,37 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.jobs.spark.executor;
+package com.microsoft.azure.hdinsight.sdk.rest.spark.stage;
 
-/**
- * Created by ltian on 5/6/2017.
- */
-public class ExecutorLog {
-    private String stdout;
-    private String stderr;
+import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
-    public String getStdout() {
-        return stdout;
+public class AccumulatorUpdate implements IConvertible {
+    private int id;
+    private String name;
+    private String value;
+
+    public int getId() {
+        return id;
     }
 
-    public void setStdout(String stdout) {
-        this.stdout = stdout;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getStderr() {
-        return stderr;
+    public String getName() {
+        return name;
     }
 
-    public void setStderr(String stderr) {
-        this.stderr = stderr;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }
+

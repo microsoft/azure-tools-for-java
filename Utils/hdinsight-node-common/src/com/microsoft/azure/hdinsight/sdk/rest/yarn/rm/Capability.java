@@ -19,12 +19,11 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.jobs.yarn;
+package com.microsoft.azure.hdinsight.sdk.rest.yarn.rm;
 
-/**
- * Created by ltian on 5/6/2017.
- */
-public class Capability {
+import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
+
+public class Capability implements IConvertible {
     private String virtualCores;
 
     private String memorySize;

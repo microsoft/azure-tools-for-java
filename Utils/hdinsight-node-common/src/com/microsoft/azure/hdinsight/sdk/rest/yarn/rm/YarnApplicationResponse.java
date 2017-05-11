@@ -19,32 +19,20 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.jobs;
+package com.microsoft.azure.hdinsight.sdk.rest.yarn.rm;
 
-/**
- * Created by ltian on 5/6/2017.
- */
-public class Cluster {
-    private String clusterName;
-    private String sshUserName;
-    private String sshPassword;
+import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
-    public String getUserName() {
-        return sshUserName;
+public class YarnApplicationResponse implements IConvertible {
+    private YarnApplications apps;
+
+    public YarnApplications getApps() {
+        return apps;
     }
 
-    public String getPassword() {
-        return sshPassword;
+    public void setApps(YarnApplications apps) {
+        this.apps = apps;
     }
 
-    public Cluster(String name, String userName, String sshPassword) {
-        this.clusterName = name;
-        this.sshUserName = userName;
-        this.sshPassword = sshPassword;
-    }
-
-    public String getClusterName() {
-        return clusterName;
-    }
 
 }

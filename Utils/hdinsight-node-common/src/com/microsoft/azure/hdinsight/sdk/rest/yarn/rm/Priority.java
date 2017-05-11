@@ -19,56 +19,18 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.jobs.spark;
+package com.microsoft.azure.hdinsight.sdk.rest.yarn.rm;
 
+import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
-import com.microsoft.azure.hdinsight.sdk.jobs.AttemptWithAppId;
+public class Priority implements IConvertible {
+    private String priority;
 
-import java.util.List;
-
-public class Application
-{
-    private String id;
-
-    private List<Attempt> attempts;
-
-    private String name;
-
-    public String getId ()
-    {
-        return id;
+    public String getPriority() {
+        return priority;
     }
 
-    public void setId (String id)
-    {
-        this.id = id;
-    }
-
-    public List<Attempt> getAttempts ()
-    {
-        return attempts;
-    }
-
-    public void setAttempts (List<Attempt> attempts)
-    {
-        this.attempts = attempts;
-    }
-
-    public String getName ()
-    {
-        return name;
-    }
-
-    public void setName (String name)
-    {
-        this.name = name;
-    }
-
-    public AttemptWithAppId getLastAttemptWithAppId() {
-        final int attemptTimes = attempts.size();
-        Attempt lastAttempt = attempts.stream().filter(attempt -> {
-            return Integer.valueOf(attempt.getAttemptId()) == attemptTimes;
-        }).findFirst().get();
-        return new AttemptWithAppId("spark2withblob",getId(), lastAttempt);
+    public void setPriority(String priority) {
+        this.priority = priority;
     }
 }

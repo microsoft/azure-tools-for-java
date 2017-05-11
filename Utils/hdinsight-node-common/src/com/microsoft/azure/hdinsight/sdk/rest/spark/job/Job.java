@@ -19,9 +19,24 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.jobs.spark.job;
+package com.microsoft.azure.hdinsight.sdk.rest.spark.job;
 
-public class Job {
+import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
+
+/**
+ * An spark job resource contains information about a particular application that was submitted to a cluster.
+ *
+ * Based on Spark 2.1.0, refer to http://spark.apache.org/docs/latest/monitoring.html
+ *
+ *   http://<spark http address:port>/applications/[app-id]/jobs
+ *
+ * HTTP Operations Supported
+ *   GET
+ *
+ * Query Parameters Supported
+ *   None
+ */
+public class Job implements IConvertible {
     private int jobId;
     private String name;
     private String submissionTime;

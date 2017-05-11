@@ -19,29 +19,34 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.jobs;
+package com.microsoft.azure.hdinsight.sdk.rest.yarn.rm;
+
+import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
+
+import java.util.List;
 
 /**
- * Created by ltian on 5/6/2017.
+ * An application resource contains information about a particular application that was submitted to a cluster.
+ *
+ * Based on Hadoop 3.0.0, refer to https://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/ResourceManagerRest.html#Cluster_Application_API
+ *
+ * Use the following URI to obtain an apps list,
+ *   http://<rm http address:port>/ws/v1/cluster/apps
+ *
+ * HTTP Operations Supported
+ *   GET
+ *
+ * Query Parameters Supported
+ *   None
  */
-public
-class ClusterWithAppId {
-    private String clusterName;
-    private String appId;
+public class YarnApplications implements IConvertible {
+    private List<App> app;
 
-    public String getClusterName() {
-        return clusterName;
+    public List<App> getApp() {
+        return app;
     }
 
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
-    }
-
-    public String getAppId() {
-        return appId;
-    }
-
-    public void setAppId(String appId) {
-        this.appId = appId;
+    public void setApp(List<App> apps) {
+        this.app = apps;
     }
 }

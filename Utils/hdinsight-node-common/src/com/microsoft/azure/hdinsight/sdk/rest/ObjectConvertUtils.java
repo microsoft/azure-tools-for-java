@@ -19,40 +19,57 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.jobs;
+package com.microsoft.azure.hdinsight.sdk.rest;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by ltian on 5/6/2017.
- */
+
 public class ObjectConvertUtils {
     private static JsonFactory jsonFactory = new JsonFactory();
     private static ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
     private static XmlMapper xmlMapper = new XmlMapper();
-    //List<Application> apps =
-    // objectMapper.readValue(json, TypeFactory.defaultInstance().constructType(List.class, Application.class));
-    public static  <T> Optional<T> convertJsonToObject(String str, Class<T> tClass) {
+
+    public static  <T> Optional<T> convertJsonToObject(String jsonString, Class<T> tClass) throws IOException {
+        return Optional.ofNullable(objectMapper.readValue(jsonString, tClass));
+    }
+
+    public static <T> Optional<List<T>> convertJsonToList(String jsonString, Class<T> tClass) throws IOException {
+        List<T> myLists = objectMapper.readValue(jsonString, TypeFactory.defaultInstance().constructCollectionType(List.class, tClass));
+        return Optional.ofNullable(myLists);
+    }
+
+    public static <T> Optional<List<T>> convertXmlToList(String jsonString, Class<T> tClass) throws IOException {
+        List<T> myLists = xmlMapper.readValue(jsonString, TypeFactory.defaultInstance().constructCollectionType(List.class, tClass));
+        return Optional.ofNullable(myLists);
+    }
+
+    public static <T> Optional<String> convertObjectToJsonString(T obj) {
         try {
-            return Optional.ofNullable(objectMapper.readValue(str, tClass));
-        } catch (IOException e) {
+            return Optional.ofNullable(objectMapper.writeValueAsString(obj));
+        } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
         return Optional.empty();
     }
 
-    public static <T> Optional<T> convertXmlToObject(String url, Class<T> tClass) {
-        T info = null;
+    public static <T> Optional<String> convertObjectToXmlString(T obj) {
         try {
-            info = xmlMapper.readValue(url, tClass);
-        } catch (IOException e) {
+            return Optional.ofNullable(xmlMapper.writeValueAsString(obj));
+        } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        return Optional.ofNullable(info);
+        return Optional.empty();
+    }
+
+    public static <T> Optional<T> convertXmlToObject(String xmlString, Class<T> tClass) throws IOException {
+        return Optional.ofNullable(xmlMapper.readValue(xmlString, tClass));
     }
 }

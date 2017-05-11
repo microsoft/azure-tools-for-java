@@ -19,13 +19,10 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.jobs;
+package com.microsoft.azure.hdinsight.sdk.rest;
 
-import com.microsoft.azure.hdinsight.sdk.jobs.spark.Attempt;
+import com.microsoft.azure.hdinsight.sdk.rest.spark.Attempt;
 
-/**
- * Created by ltian on 5/6/2017.
- */
 public class AttemptWithAppId {
     private final String appId;
     private final Attempt attempt;
