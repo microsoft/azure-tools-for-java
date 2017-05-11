@@ -22,28 +22,14 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.redis.DayOfWeek;
-import com.microsoft.azure.management.redis.RebootType;
-import com.microsoft.azure.management.redis.RedisAccessKeys;
 import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.azure.management.redis.RedisCachePremium;
-import com.microsoft.azure.management.redis.RedisKeyType;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azure.management.resources.fluentcore.model.Creatable;
-import com.microsoft.azure.management.resources.fluentcore.model.CreatedResources;
-import com.microsoft.azure.management.resources.ResourceGroup;
-
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.tooling.msservices.helpers.ParallelExecutor;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -58,7 +44,7 @@ public final class RedisCacheModule extends AzureRefreshableNode {
 
     public RedisCacheModule(Node parent) {
         super(REDIS_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
-        }
+    }
     @Override
     protected void refreshItems() throws AzureCmdException {
         List<Pair<String, String>> failedSubscriptions = new ArrayList<>();

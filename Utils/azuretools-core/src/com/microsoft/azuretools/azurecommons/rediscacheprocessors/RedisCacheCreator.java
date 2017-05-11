@@ -59,7 +59,6 @@ public final class RedisCacheCreator {
     	}
     }
     public RedisCacheCreator(RedisCaches redisCaches, String dnsName, String regionName, String groupName) {
-        // TODO: C0 - C5 Basic, C0 - C5 Std, P1 - P4 Premium Processors
     	initCreatorsForBasicTier(redisCaches, dnsName, regionName, groupName, new int[] {0, 1, 2, 3, 4, 6});
     	initCreatorsForStdTier(redisCaches, dnsName, regionName, groupName, new int[] {0, 1, 2, 3, 4, 6});
     	initCreatorsForPremiumTier(redisCaches, dnsName, regionName, groupName, new int[] {1, 2, 3, 4});

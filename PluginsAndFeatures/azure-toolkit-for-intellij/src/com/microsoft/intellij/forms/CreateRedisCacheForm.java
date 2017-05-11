@@ -28,9 +28,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -43,7 +41,6 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.util.HashSet;
@@ -71,9 +68,9 @@ public class CreateRedisCacheForm extends DialogWrapper {
     private JCheckBox noSSLCheckBox;
     private JComboBox UseExistComboBox;
 
-    protected final AzureManager azureManager;
-    protected List<SubscriptionDetail> allSubs;
-    protected Set<String> allResGrpsofCurrentSub;
+    private final AzureManager azureManager;
+    private List<SubscriptionDetail> allSubs;
+    private Set<String> allResGrpsOfCurrentSub;
     private SubscriptionDetail currentSub;
     private boolean noSSLPort = false;
     private boolean newResGrp = true;
@@ -96,7 +93,7 @@ public class CreateRedisCacheForm extends DialogWrapper {
 
         azureManager = getInstance().getAzureManager();
         allSubs = azureManager.getSubscriptionManager().getSubscriptionDetails();
-        allResGrpsofCurrentSub = new HashSet<String>();
+        allResGrpsOfCurrentSub = new HashSet<String>();
         currentSub = null;
         skus = RedisCacheUtil.initSkus();
 
@@ -170,7 +167,7 @@ public class CreateRedisCacheForm extends DialogWrapper {
             public void focusGained(FocusEvent e) {
                 if (UseExistComboBox != null && UseExistComboBox.isVisible()) {
                     UseExistComboBox.removeAllItems();
-                    allResGrpsofCurrentSub.forEach((String resGrp) -> {
+                    allResGrpsOfCurrentSub.forEach((String resGrp) -> {
                         UseExistComboBox.addItem(resGrp);
                     });
                     UseExistComboBox.updateUI();
@@ -254,7 +251,7 @@ public class CreateRedisCacheForm extends DialogWrapper {
 
     private void doRetriveResourceGroups()
     {
-        allResGrpsofCurrentSub.clear();
+        allResGrpsOfCurrentSub.clear();
         ProgressManager.getInstance().run(new Task.Modal(project, "Loading Resource Groups...", true) {
             @Override
             public void run(ProgressIndicator progressIndicator) {
@@ -263,7 +260,7 @@ public class CreateRedisCacheForm extends DialogWrapper {
                     if(currentSub != null) {
                         azureManager.getAzure(currentSub.getSubscriptionId()).resourceGroups().list().forEach(
                                 (ResourceGroup group) -> {
-                                    allResGrpsofCurrentSub.add(group.name());
+                                    allResGrpsOfCurrentSub.add(group.name());
                                 });
                     }
                 } catch (Exception ex) {
