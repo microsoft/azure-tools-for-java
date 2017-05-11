@@ -45,7 +45,6 @@ import com.microsoft.azure.docker.model.EditableDockerHost;
 import com.microsoft.azure.docker.ops.utils.AzureDockerUtils;
 import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.intellij.docker.dialogs.AzureViewDockerDialog;
@@ -283,6 +282,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
               if (dockerHostsTableSelection == null) {
                 dockerHostsTableSelection = currentSelection;
                 dockerHostsTableSelection.host = dockerManager.getDockerHostForURL((String) tableModel.getValueAt(currentSelection.row, 4));
+                model.setSubscription(dockerManager.getSubscriptionsMap().get(dockerHostsTableSelection.host.sid));
               } else {
                 int oldRow = dockerHostsTableSelection.row;
                 dockerHostsTableSelection = null;
@@ -291,6 +291,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
                   tableModel.setValueAt(false, oldRow, 0);
                   dockerHostsTableSelection = currentSelection;
                   dockerHostsTableSelection.host = dockerManager.getDockerHostForURL((String) tableModel.getValueAt(dockerHostsTable.getSelectedRow(), 4));
+                  model.setSubscription(dockerManager.getSubscriptionsMap().get(dockerHostsTableSelection.host.sid));
                 }
               }
               setFinishButtonState(doValidate(false) == null);
@@ -403,6 +404,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
       dockerImageDescription.host = host;
       dockerImageDescription.hasNewDockerHost = true;
       dockerImageDescription.sid = host.sid;
+      model.setSubscription(this.dockerManager.getSubscriptionsMap().get(host.sid));
 
       AzureDockerPreferredSettings dockerPrefferedSettings = dockerManager.getDockerPreferredSettings();
       if (dockerPrefferedSettings == null) {
@@ -451,6 +453,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
         dockerHostsTableSelection = new DockerHostsTableSelection();
         dockerHostsTableSelection.host = dockerHost;
         dockerHostsTableSelection.row = i;
+        model.setSubscription(dockerManager.getSubscriptionsMap().get(dockerHostsTableSelection.host.sid));
         break;
       }
     }

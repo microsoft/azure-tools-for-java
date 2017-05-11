@@ -26,11 +26,12 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.wizard.WizardModel;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerImageInstance;
+import com.microsoft.azure.docker.model.AzureDockerSubscription;
 import com.microsoft.azure.docker.model.DockerHost;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.intellij.docker.wizards.publish.forms.AzureConfigureDockerContainerStep;
 import com.microsoft.intellij.docker.wizards.publish.forms.AzureSelectDockerHostStep;
-import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import java.util.HashMap;
@@ -45,7 +46,7 @@ public class AzureSelectDockerWizardModel extends WizardModel implements Telemet
   private AzureDockerHostsManager dockerManager;
 
   private AzureDockerImageInstance dockerImageDescription;
-  private SubscriptionDetail subscription;
+  private AzureDockerSubscription subscription;
   public boolean finishedOK;
 
   public AzureSelectDockerWizardModel(final Project project, AzureDockerHostsManager uiManager, AzureDockerImageInstance dockerImageInstance) {
@@ -127,17 +128,15 @@ public class AzureSelectDockerWizardModel extends WizardModel implements Telemet
     }
   }
 
-  public void setSubscription(SubscriptionDetail subscription) { this.subscription = subscription; }
-
-  public SubscriptionDetail getSubscription() { return subscription; }
+  public void setSubscription(AzureDockerSubscription subscription) { this.subscription = subscription; }
 
   @Override
   public Map<String, String> toProperties() {
     final Map<String, String> properties = new HashMap<>();
 
     if(this.subscription != null) {
-        properties.put("SubscriptionName", this.getSubscription().getSubscriptionName());
-        properties.put("SubscriptionId", this.getSubscription().getSubscriptionId());
+        properties.put(AppInsightsConstants.SubscriptionName, this.subscription.name);
+        properties.put(AppInsightsConstants.SubscriptionId, this.subscription.id);
     }
 
     return properties;
