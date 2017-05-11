@@ -32,6 +32,7 @@ import com.microsoft.azure.docker.ops.utils.AzureDockerUtils;
 import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.components.AzureWizardDialog;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.docker.ui.dialogs.AzureInputDockerLoginCredsDialog;
 import com.microsoft.azuretools.docker.ui.wizards.publish.AzureSelectDockerWizard;
@@ -433,7 +434,7 @@ public class AzureDockerUIResources {
 			DockerHost dockerHost = (host != null) ? host : (dockerManager.getDockerPreferredSettings() != null) ? dockerManager.getDockerHostForURL(dockerManager.getDockerPreferredSettings().dockerApiName) : null;
 			AzureDockerImageInstance dockerImageDescription = dockerManager.getDefaultDockerImageDescription(project.getName(), dockerHost);
 			AzureSelectDockerWizard selectDockerWizard = new AzureSelectDockerWizard(project, dockerManager, dockerImageDescription);
-			WizardDialog selectDockerHostDialog = new WizardDialog(shell, selectDockerWizard);
+			WizardDialog selectDockerHostDialog = new AzureWizardDialog(shell, selectDockerWizard);
 
 			if (dockerHost != null) {
 				selectDockerWizard.selectDefaultDockerHost(dockerHost, true);

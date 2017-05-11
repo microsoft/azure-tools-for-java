@@ -20,6 +20,8 @@
 package com.microsoft.azuretools.docker.ui.wizards.createhost;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,17 +38,23 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerPreferredSettings;
+import com.microsoft.azure.docker.model.AzureDockerSubscription;
 import com.microsoft.azure.docker.model.DockerHost;
 import com.microsoft.azure.docker.ops.AzureDockerVMOps;
 import com.microsoft.azure.docker.ops.utils.AzureDockerUtils;
 import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.VirtualMachine;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.docker.utils.AzureDockerUIResources;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 
-public class AzureNewDockerWizard extends Wizard {
+public class AzureNewDockerWizard extends Wizard implements TelemetryProperties {
 	private static final Logger log =  Logger.getLogger(AzureNewDockerWizard.class.getName());
 	
 	private AzureNewDockerConfigPage azureNewDockerConfigPage;
@@ -55,6 +63,7 @@ public class AzureNewDockerWizard extends Wizard {
 	private IProject project;
 	private AzureDockerHostsManager dockerManager;
 	private DockerHost newHost;
+	private AzureDockerSubscription subscription;
 
 	public AzureNewDockerWizard(final IProject project, AzureDockerHostsManager dockerManager) {
 	    this.project = project;
@@ -274,6 +283,25 @@ public class AzureNewDockerWizard extends Wizard {
 		}
 		
 		return 1;
+	}
+	
+	public void setSubscription(AzureDockerSubscription subscription) {
+    	this.subscription = subscription;
+    }
+	
+	public AzureDockerSubscription getSubscription() {
+	    return subscription;
+	}
+	
+	@Override
+	public Map<String, String> toProperties() {
+		final Map<String, String> properties = new HashMap<>();
+		if(this.getSubscription() != null) {
+			properties.put("SubscriptionName", this.getSubscription().name);
+			properties.put("SubscriptionId", this.getSubscription().id);
+		}
+		
+		return properties;
 	}
 	
 }

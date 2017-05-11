@@ -31,6 +31,7 @@ import com.microsoft.azure.docker.ops.utils.AzureDockerUtils;
 import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.components.AzureWizardDialog;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.docker.ui.dialogs.AzureInputDockerLoginCredsDialog;
 import com.microsoft.azuretools.docker.ui.dialogs.AzureViewDockerDialog;
@@ -396,7 +397,7 @@ public class AzureSelectDockerHostPage extends WizardPage {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				AzureNewDockerWizard newDockerWizard = new AzureNewDockerWizard(project, dockerManager);
-				WizardDialog createNewDockerHostDialog = new WizardDialog(mainContainer.getShell(), newDockerWizard);
+				WizardDialog createNewDockerHostDialog = new AzureWizardDialog(mainContainer.getShell(), newDockerWizard);
 				if (createNewDockerHostDialog.open() == Window.OK) {
 					DockerHost host = newDockerWizard.getDockerHost();
 					dockerImageDescription.host = host;

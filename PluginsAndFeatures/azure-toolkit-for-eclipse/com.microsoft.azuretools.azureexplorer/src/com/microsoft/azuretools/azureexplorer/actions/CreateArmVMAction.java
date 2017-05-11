@@ -22,6 +22,7 @@ package com.microsoft.azuretools.azureexplorer.actions;
 import org.eclipse.jface.wizard.WizardDialog;
 
 import com.microsoft.azuretools.azureexplorer.forms.createvm.CreateVMWizard;
+import com.microsoft.azuretools.core.components.AzureWizardDialog;
 import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.helpers.Name;
@@ -39,7 +40,7 @@ public class CreateArmVMAction extends NodeActionListener {
     public void actionPerformed(NodeActionEvent e) {
         if (!SignInCommandHandler.doSignIn(PluginUtil.getParentShell())) return;	
         CreateVMWizard createVMWizard = new CreateVMWizard((VMArmModule) e.getAction().getNode());
-        WizardDialog dialog = new WizardDialog(PluginUtil.getParentShell(), createVMWizard);
+        WizardDialog dialog = new AzureWizardDialog(PluginUtil.getParentShell(), createVMWizard);
         dialog.setTitle("Create new Virtual Machine");
 //        dialog.setPageSize(400, 500);
         dialog.create();

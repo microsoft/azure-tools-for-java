@@ -38,7 +38,6 @@ import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azureexplorer.Activator;
-import com.microsoft.azuretools.core.components.AzureWizard;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
@@ -60,7 +59,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
 
-public class CreateVMWizard extends AzureWizard implements TelemetryProperties {
+public class CreateVMWizard extends Wizard implements TelemetryProperties {
     private VMArmModule node;
 
 	protected SubscriptionDetail subscription;
@@ -191,7 +190,7 @@ public class CreateVMWizard extends AzureWizard implements TelemetryProperties {
                 }
             }
         });
-        return super.performFinish();
+        return true;
     }
 
     @Override
