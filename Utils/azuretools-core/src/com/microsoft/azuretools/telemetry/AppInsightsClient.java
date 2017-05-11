@@ -42,7 +42,8 @@ public class AppInsightsClient {
         DockerHost,
         WebApp,
         Plugin,
-        Subscription
+        Subscription,
+        Azure
     }
 
     public static void setAppInsightsConfiguration(AppInsightsConfiguration appInsightsConfiguration) {

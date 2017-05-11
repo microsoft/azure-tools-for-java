@@ -36,6 +36,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManagerPersist;
+import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
 import com.microsoft.rest.RestClient;
@@ -93,7 +94,9 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
 
                 return Azure.authenticate(restClient, credentials.domain());
         } else {
-            Azure.Configurable azureConfigurable = Azure.configure().withUserAgent(CommonSettings.USER_AGENT);
+            Azure.Configurable azureConfigurable = Azure.configure()
+                    .withInterceptor(new TelemetryInterceptor())
+                    .withUserAgent(CommonSettings.USER_AGENT);
             return (atc == null)
                 ? azureConfigurable.authenticate(credFile)
                 : azureConfigurable.authenticate(atc);
