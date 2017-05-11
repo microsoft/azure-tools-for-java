@@ -23,6 +23,7 @@ import com.jcraft.jsch.Session;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerImageInstance;
 import com.microsoft.azure.docker.model.AzureDockerPreferredSettings;
+import com.microsoft.azure.docker.model.AzureDockerSubscription;
 import com.microsoft.azure.docker.model.DockerHost;
 import com.microsoft.azure.docker.model.EditableDockerHost;
 import com.microsoft.azure.docker.ops.AzureDockerContainerOps;
@@ -37,6 +38,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.docker.ui.dialogs.AzureInputDockerLoginCredsDialog;
@@ -69,7 +71,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
-public class AzureSelectDockerWizard extends Wizard {
+public class AzureSelectDockerWizard extends Wizard implements TelemetryProperties{
 	private static final Logger log =  Logger.getLogger(AzureSelectDockerWizard.class.getName());
 	
 	private AzureSelectDockerHostPage azureSelectDockerHostPage;
@@ -78,6 +80,7 @@ public class AzureSelectDockerWizard extends Wizard {
 	private IProject project;
 	private AzureDockerHostsManager dockerManager;
 	private AzureDockerImageInstance dockerImageDescription;
+	private AzureDockerSubscription subscription;
 
 	public AzureSelectDockerWizard(final IProject project, AzureDockerHostsManager dockerManager, AzureDockerImageInstance dockerImageDescription) {
 	    this.project = project;
@@ -421,6 +424,25 @@ public class AzureSelectDockerWizard extends Wizard {
 				}
 			}
 		});
+	}
+	
+	public void setSubscription(AzureDockerSubscription subscription) {
+    	this.subscription = subscription;
+    }
+	
+	public AzureDockerSubscription getSubscription() {
+	    return subscription;
+	}
+	
+	@Override
+	public Map<String, String> toProperties() {
+		final Map<String, String> properties = new HashMap<>();
+		if(this.getSubscription() != null) {
+			properties.put("SubscriptionName", this.getSubscription().name);
+			properties.put("SubscriptionId", this.getSubscription().id);
+		}
+		
+		return properties;
 	}
 	
 	

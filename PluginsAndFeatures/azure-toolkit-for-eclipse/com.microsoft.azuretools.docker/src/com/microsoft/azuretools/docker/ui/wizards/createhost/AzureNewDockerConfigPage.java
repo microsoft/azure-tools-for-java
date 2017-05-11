@@ -392,6 +392,7 @@ public class AzureNewDockerConfigPage extends WizardPage {
                 if (selection.size() > 0){
                 	AzureDockerSubscription currentSubscription = (AzureDockerSubscription) selection.getFirstElement();
                     dockerSubscriptionIdTextField.setText(currentSubscription != null ? currentSubscription.id : "");
+                    wizard.setSubscription(currentSubscription);
 					errDispatcher.removeMessage("dockerSubscriptionCombo", dockerSubscriptionCombo);
 			        updateDockerLocationComboBox(mainContainer, currentSubscription);
 			        updateDockerHostSelectRGComboBox(mainContainer, currentSubscription);
@@ -412,6 +413,7 @@ public class AzureNewDockerConfigPage extends WizardPage {
 		if (dockerManager.getSubscriptionsList() != null && dockerManager.getSubscriptionsList().size() > 0) {
 			dockerSubscriptionCombo.select(0);			
 			dockerSubscriptionIdTextField.setText(((AzureDockerSubscription) ((StructuredSelection) dockerSubscriptionComboViewer.getSelection()).getFirstElement()).id);
+			wizard.setSubscription((AzureDockerSubscription) ((StructuredSelection) dockerSubscriptionComboViewer.getSelection()).getFirstElement());
 		}
 	}
 	

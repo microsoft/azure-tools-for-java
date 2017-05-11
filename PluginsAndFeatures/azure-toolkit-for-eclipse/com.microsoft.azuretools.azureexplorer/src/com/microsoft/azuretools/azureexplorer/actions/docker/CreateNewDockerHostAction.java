@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.components.AzureWizardDialog;
 import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.docker.ui.wizards.createhost.AzureNewDockerWizard;
@@ -90,7 +91,7 @@ public class CreateNewDockerHostAction extends NodeActionListener {
 			}
 
 			AzureNewDockerWizard newDockerWizard = new AzureNewDockerWizard(project, dockerManager);
-			WizardDialog createNewDockerHostDialog = new WizardDialog(shell, newDockerWizard);
+			WizardDialog createNewDockerHostDialog = new AzureWizardDialog(shell, newDockerWizard);
 			if (createNewDockerHostDialog.open() == Window.OK) {
 				newDockerWizard.createHost();
 			}
