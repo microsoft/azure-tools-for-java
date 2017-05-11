@@ -31,5 +31,6 @@ public final class AppInsightsConstants {
 
     // azure
     public static String SubscriptionId = "SubscriptionId";
+    public static String SubscriptionName = "SubscriptionName";
     public static String Region = "Region";
 }
