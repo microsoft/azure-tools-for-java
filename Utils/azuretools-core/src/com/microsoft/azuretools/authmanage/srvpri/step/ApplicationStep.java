@@ -65,14 +65,14 @@ public class ApplicationStep implements IStep {
         reporter.report("identifierUri: " + identifierUri);
         reporter.report("password: " + password);
 
-        reporter.report("Creating ADD Plugin...");
+        reporter.report("Creating ADD Application...");
         ApplicationRet app = createAadApplication(
                 displayName,
                 homePage,
                 new String[]{identifierUri},
                 password);
         reporter.report("Done.");
-        reporter.report(String.format("Checking ADD Plugin availability..."));
+        reporter.report(String.format("Checking ADD Application availability..."));
         final int RETRY_QNTY = 5;
         final int SLEEP_SEC = 10;
         int retry_count = 0;
@@ -88,7 +88,7 @@ public class ApplicationStep implements IStep {
         }
 
         if ((retry_count >= RETRY_QNTY)) {
-            String errorDetails = String.format("The AD Plugin (appId: %s) is not available after %s retries", app.appId, RETRY_QNTY);
+            String errorDetails = String.format("The AD Application (appId: %s) is not available after %s retries", app.appId, RETRY_QNTY);
             CommonParams.getStatusReporter().report(new Status(
                     getName(),
                     Status.Result.FAILED,
@@ -122,7 +122,7 @@ public class ApplicationStep implements IStep {
 
     // helpers
 
-    // Create AAD Plugin
+    // Create AAD Application
     private ApplicationRet createAadApplication (
             String displayName,
             String homePage,
