@@ -39,7 +39,7 @@ import com.intellij.packaging.elements.CompositePackagingElement;
 import com.intellij.packaging.elements.PackagingElementFactory;
 import com.intellij.packaging.impl.artifacts.JarArtifactType;
 import com.microsoft.azure.hdinsight.common.CommonConst;
-import com.microsoft.azure.hdinsight.projects.samples.MavenSampleUtil;
+import com.microsoft.azure.hdinsight.projects.samples.MavenProjectGenerator;
 import com.microsoft.azure.hdinsight.projects.template.CustomHDInsightTemplateItem;
 import com.microsoft.azure.hdinsight.projects.template.CustomModuleWizardSetup;
 import com.microsoft.azure.hdinsight.projects.template.CustomTemplateInfo;
@@ -151,7 +151,7 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
         } else {
             module.setOption(UniqueKeyName, UniqueKeyValue);
             createDefaultArtifact(module);
-            MavenSampleUtil.generateMavenSample(module, templatesType, sparkVersion);
+            new MavenProjectGenerator(module, templatesType, sparkVersion).generate();
         }
 
         CheckSDK(templatesType);

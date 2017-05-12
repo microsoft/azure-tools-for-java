@@ -31,31 +31,43 @@ import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.projects.HDInsightTemplatesType;
 import com.microsoft.azure.hdinsight.projects.SparkVersion;
 import com.intellij.openapi.util.io.FileUtil;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 
-public class MavenSampleUtil {
-    public static void generateMavenSample(@NotNull Module module, HDInsightTemplatesType templatesType, SparkVersion version) {
-        String root = ProjectSampleUtil.getRootOrSourceFolder(module, false);
+public class MavenProjectGenerator {
+    private Module module;
+    private HDInsightTemplatesType templatesType;
+    private SparkVersion sparkVersion;
+
+    public MavenProjectGenerator(@NotNull Module module,
+                                 @NotNull HDInsightTemplatesType templatesType,
+                                 @NotNull SparkVersion sparkVersion) {
+        this.module = module;
+        this.templatesType = templatesType;
+        this.sparkVersion = sparkVersion;
+    }
+
+    public void generate() {
+        String root = ProjectSampleUtil.getRootOrSourceFolder(this.module, false);
 
         try {
-            createDirectories(root, templatesType);
-            createPom(root, version);
-            copySamples(root, templatesType);
-            importMavenProject(module.getProject());
+            createDirectories(root);
+            createPom(root);
+            copySamples(root);
+            importMavenProject();
         } catch (Exception e) {
             DefaultLoader.getUIHelper().showError("Failed to create project", "Create Sample Project");
             e.printStackTrace();
         }
     }
 
-    private static void createDirectories(String root, HDInsightTemplatesType templatesType) throws IOException {
-        switch (templatesType) {
+    private void createDirectories(String root) throws IOException {
+        switch (this.templatesType) {
             case JavaLocalSample:
             case Java:
                 VfsUtil.createDirectories(root + "/src/main/java/sample");
@@ -72,9 +84,9 @@ public class MavenSampleUtil {
         }
     }
 
-    private static void createPom(String root, SparkVersion version) throws Exception {
+    private void createPom(String root) throws Exception {
         File file = null;
-        switch (version) {
+        switch (this.sparkVersion) {
             case SPARK_1_6:
                 file = StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_1_6_pom.xml");
                 break;
@@ -90,8 +102,8 @@ public class MavenSampleUtil {
         }
     }
 
-    private static void copySamples(String root, HDInsightTemplatesType templatesType) throws Exception {
-        switch (templatesType) {
+    private void copySamples(String root) throws Exception {
+        switch (this.templatesType) {
             case JavaLocalSample:
                 ProjectSampleUtil.copyFileToPath(new String[]{
                         "/hdinsight/templates/java/JavaSparkPi.java"
@@ -117,7 +129,8 @@ public class MavenSampleUtil {
         }
     }
 
-    private static void importMavenProject(@NotNull Project project) throws ConfigurationException {
+    private void importMavenProject() throws ConfigurationException {
+        Project project = this.module.getProject();
         String baseDirPath = project.getBasePath();
         MavenProjectsManager manager = MavenProjectsManager.getInstance(project);
 
