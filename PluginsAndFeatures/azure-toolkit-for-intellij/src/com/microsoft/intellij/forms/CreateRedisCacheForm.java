@@ -28,28 +28,29 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessorBase;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.util.FormUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azuretools.authmanage.AuthMethodManager.getInstance;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
@@ -59,14 +60,14 @@ public class CreateRedisCacheForm extends DialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(CreateRedisCacheForm.class);
     private JPanel contentPane;
     private JTextField DNSNameTextField;
-    private JComboBox SubscriptionsComboBox;
+    private JComboBox<SubscriptionDetail> SubscriptionsComboBox;
     private JRadioButton CreateNewRadioButton;
     private JRadioButton UseExistRadioButton;
     private JTextField NewResGrpTextField;
-    private JComboBox LocationsComboBox;
-    private JComboBox PricingTierComboBox;
+    private JComboBox<Location> LocationsComboBox;
+    private JComboBox<String> PricingTierComboBox;
     private JCheckBox noSSLCheckBox;
-    private JComboBox UseExistComboBox;
+    private JComboBox<String> UseExistComboBox;
 
     private final AzureManager azureManager;
     private List<SubscriptionDetail> allSubs;
@@ -97,23 +98,32 @@ public class CreateRedisCacheForm extends DialogWrapper {
         currentSub = null;
         skus = RedisCacheUtil.initSkus();
 
+        List<SubscriptionDetail> selectedSubscriptions = allSubs.stream().filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
+
+        SubscriptionsComboBox.setModel(new DefaultComboBoxModel<>(selectedSubscriptions.toArray(new SubscriptionDetail[selectedSubscriptions.size()])));
+        if (selectedSubscriptions.size() > 0) {
+            Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
+            SubscriptionDetail selectedSub = (SubscriptionDetail) SubscriptionsComboBox.getSelectedItem();
+            currentSub = selectedSub;
+            if (subscription2Location == null || subscription2Location.get(selectedSub) == null) {
+                FormUtils.loadLocationsAndResourceGrps(project);
+                fillLocationsAndResourceGrps(selectedSub);
+            } else {
+                fillLocationsAndResourceGrps(selectedSub);
+            }
+        }
+
+        SubscriptionsComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+
         SubscriptionsComboBox.addFocusListener(new FocusAdapter() {
             @Override
-            public void focusGained(FocusEvent e) {
-                SubscriptionsComboBox.removeAllItems();
-                for (SubscriptionDetail subDetail : allSubs) {
-                    if (subDetail.isSelected()) {
-                        SubscriptionsComboBox.addItem(subDetail.getSubscriptionName());
-                    }
-                    SubscriptionsComboBox.updateUI();
-                }
-            }
-            @Override
             public void focusLost(FocusEvent e) {
-                allSubs.forEach((SubscriptionDetail s) -> {
-                    if (SubscriptionsComboBox.getSelectedItem().equals(s.getSubscriptionName()))
-                        currentSub = s;
-                });
+                currentSub = (SubscriptionDetail) SubscriptionsComboBox.getSelectedItem();
             }
         });
 
@@ -154,25 +164,15 @@ public class CreateRedisCacheForm extends DialogWrapper {
             @Override
             public void mouseClicked(MouseEvent e) {
                 CreateNewRadioButton.setSelected(false);
+                CreateNewRadioButton.updateUI();
                 UseExistRadioButton.setSelected(true);
                 NewResGrpTextField.setVisible(false);
                 UseExistComboBox.setVisible(true);
                 newResGrp = false;
-                doRetriveResourceGroups();
             }
         });
 
         UseExistComboBox.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                if (UseExistComboBox != null && UseExistComboBox.isVisible()) {
-                    UseExistComboBox.removeAllItems();
-                    allResGrpsOfCurrentSub.forEach((String resGrp) -> {
-                        UseExistComboBox.addItem(resGrp);
-                    });
-                    UseExistComboBox.updateUI();
-                }
-            }
 
             @Override
             public void focusLost(FocusEvent e) {
@@ -184,24 +184,16 @@ public class CreateRedisCacheForm extends DialogWrapper {
             }
         });
 
-        LocationsComboBox.addFocusListener(new FocusAdapter() {
+        LocationsComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
-            public void focusGained(FocusEvent e) {
-                LocationsComboBox.removeAllItems();
-                for (Region r : Region.values()) {
-                    //Redis unavailable in Azure China Cloud, Azure German Cloud, Azure Government Cloud
-                    if (!r.name().equals(Region.CHINA_NORTH.name()) &&
-                            !r.name().equals(Region.CHINA_EAST.name()) &&
-                            !r.name().equals(Region.GERMANY_CENTRAL.name()) &&
-                            !r.name().equals(Region.GERMANY_NORTHEAST.name()) &&
-                            !r.name().equals(Region.GOV_US_VIRGINIA.name()) &&
-                            !r.name().equals(Region.GOV_US_IOWA.name())) {
-                        LocationsComboBox.addItem(r.label());
-                    }
+            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+                if (o != null && (o instanceof Location)) {
+                    setText("  " + ((Location)o).displayName());
                 }
-                LocationsComboBox.updateUI();
             }
+        });
 
+        LocationsComboBox.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
                 if (LocationsComboBox.getSelectedItem() != null) {
@@ -249,27 +241,15 @@ public class CreateRedisCacheForm extends DialogWrapper {
         init();
     }
 
-    private void doRetriveResourceGroups()
-    {
-        allResGrpsOfCurrentSub.clear();
-        ProgressManager.getInstance().run(new Task.Modal(project, "Loading Resource Groups...", true) {
-            @Override
-            public void run(ProgressIndicator progressIndicator) {
-                try {
-                    progressIndicator.setIndeterminate(true);
-                    if(currentSub != null) {
-                        azureManager.getAzure(currentSub.getSubscriptionId()).resourceGroups().list().forEach(
-                                (ResourceGroup group) -> {
-                                    allResGrpsOfCurrentSub.add(group.name());
-                                });
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    LOGGER.error("doRetriveResourceGroups", ex);
-                }
-            }
-        });
+    private void fillLocationsAndResourceGrps(SubscriptionDetail selectedSub) {
+        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub)
+                .stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
+        LocationsComboBox.setModel(new DefaultComboBoxModel(locations.toArray()));
+        List<ResourceGroup> groups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(selectedSub);
+        List<String> sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
+        UseExistComboBox.setModel(new DefaultComboBoxModel<>(sortedGroups.toArray(new String[sortedGroups.size()])));
     }
+
 
     @Nullable
     @Override
