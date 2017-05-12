@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.telemetry;
 
-import com.intellij.openapi.util.text.StringUtil;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.Request;
@@ -30,7 +29,6 @@ import okhttp3.Response;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class TelemetryInterceptor implements Interceptor {
@@ -70,8 +68,8 @@ public class TelemetryInterceptor implements Interceptor {
         if (httpUrl.pathSegments().contains(PROVIDERS)) {
             int index = httpUrl.pathSegments().indexOf(PROVIDERS);
             if (index + 1 < httpUrl.pathSegments().size()) {
-                List<String> resource = httpUrl.pathSegments().subList(index, httpUrl.pathSegments().size());
-                properties.put(RESOURCE_PATH, StringUtil.join(resource, "/"));
+                String path = httpUrl.encodedPath();
+                properties.put(RESOURCE_PATH, path.substring(path.indexOf(PROVIDERS)));
                 return httpUrl.pathSegments().get(index + 1);
             }
         }
