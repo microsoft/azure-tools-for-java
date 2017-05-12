@@ -9,6 +9,6 @@ script:
 - mvn install -f Utils/azure-explorer-common/pom.xml -q
 - mvn install -f Utils/hdinsight-node-common/pom.xml -q
 - touch PluginsAndFeatures/AddLibrary/JDBCLibrary/JavaEE6/com.microsoft.sqljdbc4/sqljdbc42.jar
-- mvn package -f PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml -q
+- mvn install -f PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml -q
 - ./gradlew buildPlugin --project-dir PluginsAndFeatures/azure-toolkit-for-intellij -s -Pintellij_version=IU-2016.3 -Pdep_plugins=org.intellij.scala:2016.3.5 
 - ./gradlew buildPlugin --project-dir PluginsAndFeatures/azure-toolkit-for-intellij -s
