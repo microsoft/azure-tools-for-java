@@ -62,7 +62,6 @@ public class MavenProjectGenerator {
             importMavenProject();
         } catch (Exception e) {
             DefaultLoader.getUIHelper().showError("Failed to create project", "Create Sample Project");
-            e.printStackTrace();
         }
     }
 
