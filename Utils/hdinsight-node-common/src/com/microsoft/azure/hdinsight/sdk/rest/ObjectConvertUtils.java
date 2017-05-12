@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,21 +38,21 @@ public class ObjectConvertUtils {
     private static ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
     private static XmlMapper xmlMapper = new XmlMapper();
 
-    public static  <T> Optional<T> convertJsonToObject(String jsonString, Class<T> tClass) throws IOException {
+    public static  <T> Optional<T> convertJsonToObject(@NotNull String jsonString, Class<T> tClass) throws IOException {
         return Optional.ofNullable(objectMapper.readValue(jsonString, tClass));
     }
 
-    public static <T> Optional<List<T>> convertJsonToList(String jsonString, Class<T> tClass) throws IOException {
+    public static <T> Optional<List<T>> convertJsonToList(@NotNull String jsonString, Class<T> tClass) throws IOException {
         List<T> myLists = objectMapper.readValue(jsonString, TypeFactory.defaultInstance().constructCollectionType(List.class, tClass));
         return Optional.ofNullable(myLists);
     }
 
-    public static <T> Optional<List<T>> convertXmlToList(String jsonString, Class<T> tClass) throws IOException {
+    public static <T> Optional<List<T>> convertXmlToList(@NotNull String jsonString, Class<T> tClass) throws IOException {
         List<T> myLists = xmlMapper.readValue(jsonString, TypeFactory.defaultInstance().constructCollectionType(List.class, tClass));
         return Optional.ofNullable(myLists);
     }
 
-    public static <T> Optional<String> convertObjectToJsonString(T obj) {
+    public static <T> Optional<String> convertObjectToJsonString(@NotNull T obj) {
         try {
             return Optional.ofNullable(objectMapper.writeValueAsString(obj));
         } catch (JsonProcessingException e) {
@@ -60,7 +61,7 @@ public class ObjectConvertUtils {
         return Optional.empty();
     }
 
-    public static <T> Optional<String> convertObjectToXmlString(T obj) {
+    public static <T> Optional<String> convertObjectToXmlString(@NotNull T obj) {
         try {
             return Optional.ofNullable(xmlMapper.writeValueAsString(obj));
         } catch (JsonProcessingException e) {
@@ -69,7 +70,7 @@ public class ObjectConvertUtils {
         return Optional.empty();
     }
 
-    public static <T> Optional<T> convertXmlToObject(String xmlString, Class<T> tClass) throws IOException {
+    public static <T> Optional<T> convertXmlToObject(@NotNull String xmlString, Class<T> tClass) throws IOException {
         return Optional.ofNullable(xmlMapper.readValue(xmlString, tClass));
     }
 }
