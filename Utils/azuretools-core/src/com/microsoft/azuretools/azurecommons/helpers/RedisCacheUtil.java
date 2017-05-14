@@ -86,7 +86,7 @@ public final class RedisCacheUtil {
     		JOptionPane.showMessageDialog(null, REQUIRE_SUBSCRIPTION, "Alert", JOptionPane.ERROR_MESSAGE, null);
     		return false;
     	}
-    	if (dnsNameValue == null || dnsNameValue.isEmpty() || !dnsNameValue.matches("^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$")) {
+    	if (dnsNameValue == null || dnsNameValue.isEmpty() || !dnsNameValue.matches("^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$") || dnsNameValue.length() > 63) {
     		JOptionPane.showMessageDialog(null, INVALID_REDIS_CACHE_NAME, "Alert", JOptionPane.ERROR_MESSAGE, null);
     		return false;
     	}
