@@ -49,6 +49,7 @@ public class SparkSubmissionParameter {
      * archives	        Archives to be uncompressed in the executor working directory (YARN mode only)	list of paths
      * queue	            The YARN queue to submit too (YARN mode only)	string
      * name	            Name of the application	string
+     * conf             Spark configuration properties  Map of key=val
      */
     private String file = "";
     private String className = "";
@@ -76,6 +77,9 @@ public class SparkSubmissionParameter {
 
     public static final String ExecutorCores = "executorCores";
     public static final String ExecutorCoresDefaultValue = "1";
+
+    public static final String Conf = "conf";   // 	Spark configuration properties
+    public static final Map<String, Object> ConfDefaultValue = new HashMap<String, Object>();
 
     public static final String NAME = "name";
 
@@ -245,6 +249,12 @@ public class SparkSubmissionParameter {
 
             if (jobConfig.containsKey(NumExecutors) && !StringHelper.isNullOrWhiteSpace(jobConfig.get(NumExecutors).toString())) {
                 map.put(NumExecutors, jobConfig.get(NumExecutors));
+            }
+
+            if (jobConfig.containsKey(Conf) &&
+                    jobConfig.get(Conf) != null &&
+                    !StringHelper.isNullOrWhiteSpace(jobConfig.get(Conf).toString())) {
+                map.put(Conf, jobConfig.get(Conf));
             }
 
             if (jobConfig.containsKey(NAME)) {
