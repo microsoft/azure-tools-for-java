@@ -76,9 +76,5 @@ fabric.properties
 
 # End of https://www.gitignore.io/api/intellij
 
-# Eclipse buildship
-.settings/
-.project
-
 # Gradle local files
 .gradle/
