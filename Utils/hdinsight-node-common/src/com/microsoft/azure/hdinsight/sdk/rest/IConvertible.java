@@ -23,9 +23,6 @@ package com.microsoft.azure.hdinsight.sdk.rest;
 
 import java.util.Optional;
 
-/*
-
- */
 public interface IConvertible {
     // serialize an object to xml-format string
     default Optional<String> convertToXml() {
