@@ -32,17 +32,14 @@ import javax.swing.*;
 public class SparkJavaSettingsStep extends ModuleWizardStep {
     private HDInsightModuleBuilder builder;
     private ModuleWizardStep javaStep;
-    private SparkLibraryOptionsPanel sparkLibraryOptionsPanel;
-    private LibrariesContainer librariesContainer;
+    private SparkVersionOptionsPanel sparkVersionOptionsPanel;
 
-    public SparkJavaSettingsStep(HDInsightModuleBuilder builder, SettingsStep settingsStep, LibrariesContainer librariesContainer) {
+    public SparkJavaSettingsStep(HDInsightModuleBuilder builder, SettingsStep settingsStep) {
         this.builder = builder;
         this.javaStep = StdModuleTypes.JAVA.modifyProjectTypeStep(settingsStep, builder);
-        this.librariesContainer = librariesContainer;
 
-        sparkLibraryOptionsPanel = new SparkLibraryOptionsPanel(settingsStep.getContext().getProject(), librariesContainer, new SparkLibraryDescription());
-        settingsStep.addSettingsField("Spark S\u001BDK:", sparkLibraryOptionsPanel);
-        settingsStep.addSettingsField("", ProjectUtil.createSparkSDKTipsPanel());
+        this.sparkVersionOptionsPanel = new SparkVersionOptionsPanel();
+        settingsStep.addSettingsField("Spark \u001BVersion:", sparkVersionOptionsPanel);
     }
 
     @Override
@@ -53,7 +50,7 @@ public class SparkJavaSettingsStep extends ModuleWizardStep {
     @Override
     public void updateDataModel() {
         javaStep.updateDataModel();
-        this.builder.setSparkCompositionSettings(sparkLibraryOptionsPanel.apply());
+        this.builder.setSparkVersion(this.sparkVersionOptionsPanel.apply());
     }
 
     @Override

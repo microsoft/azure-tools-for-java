@@ -39,7 +39,7 @@ import com.intellij.packaging.elements.CompositePackagingElement;
 import com.intellij.packaging.elements.PackagingElementFactory;
 import com.intellij.packaging.impl.artifacts.JarArtifactType;
 import com.microsoft.azure.hdinsight.common.CommonConst;
-import com.microsoft.azure.hdinsight.projects.samples.ProjectSampleUtil;
+import com.microsoft.azure.hdinsight.projects.samples.MavenSampleUtil;
 import com.microsoft.azure.hdinsight.projects.template.CustomHDInsightTemplateItem;
 import com.microsoft.azure.hdinsight.projects.template.CustomModuleWizardSetup;
 import com.microsoft.azure.hdinsight.projects.template.CustomTemplateInfo;
@@ -60,9 +60,8 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
     private HDInsightTemplateItem selectedTemplate;
     private LibrariesContainer librariesContainer;
     private LibraryCompositionSettings scalaLibraryCompositionSettings;
-    private LibraryCompositionSettings sparkLibraryCompositionSettings;
+    private SparkVersion sparkVersion;
 
-    private boolean isSparkSdkIncluded = false;
     private boolean isScalaSdkIncluded = false;
 
     public static final String UniqueKeyName = "UniqueKey";
@@ -74,17 +73,6 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
             @Override
             public void update(Module module, ModifiableRootModel modifiableRootModel) {
                 int librarySize = getOrderEntriesLength(modifiableRootModel);
-
-                if(sparkLibraryCompositionSettings != null){
-                    sparkLibraryCompositionSettings.addLibraries(modifiableRootModel, new ArrayList<Library>(), librariesContainer);
-                    if (getOrderEntriesLength(modifiableRootModel) != librarySize) {
-                        isSparkSdkIncluded = true;
-                        librarySize = getOrderEntriesLength(modifiableRootModel);
-                    }
-                } else {
-                    isSparkSdkIncluded = true;
-                }
-
                 if (scalaLibraryCompositionSettings != null) {
                     scalaLibraryCompositionSettings.addLibraries(modifiableRootModel, new ArrayList<Library>(), librariesContainer);
                     if (getOrderEntriesLength(modifiableRootModel) != librarySize) {
@@ -101,17 +89,12 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
         this.selectedTemplate = selectedTemplate;
     }
 
-    public void setSparkCompositionSettings(LibraryCompositionSettings sparkCompositionSettings) {
-        this.sparkLibraryCompositionSettings = sparkCompositionSettings;
-    }
-
     public void setScalaLibraryCompositionSettings(LibraryCompositionSettings scalaLibraryCompositionSettings) {
         this.scalaLibraryCompositionSettings = scalaLibraryCompositionSettings;
     }
 
-    public void setLibraryCompositionSettings(LibraryCompositionSettings scalalibraryCompositionSettings, LibraryCompositionSettings sparkLibraryCompositionSettings) {
-        this.scalaLibraryCompositionSettings= scalalibraryCompositionSettings;
-        this.sparkLibraryCompositionSettings = sparkLibraryCompositionSettings;
+    public void setSparkVersion(SparkVersion sparkVersion) {
+        this.sparkVersion = sparkVersion;
     }
 
     @Override
@@ -146,7 +129,6 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
 
     @Override
     public ModuleWizardStep modifySettingsStep(SettingsStep settingsStep) {
-
         this.librariesContainer = LibrariesContainerFactory.createContainer(settingsStep.getContext().getProject());
 
         if (this.selectedTemplate.getType() == HDInsightTemplatesType.CustomTemplate) {
@@ -156,7 +138,7 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
                 this.selectedTemplate.getType() == HDInsightTemplatesType.ScalaLocalSample) {
             return new SparkScalaSettingsStep(this, settingsStep, this.librariesContainer);
         } else {
-            return new SparkJavaSettingsStep(this, settingsStep, this.librariesContainer);
+            return new SparkJavaSettingsStep(this, settingsStep);
         }
     }
 
@@ -169,11 +151,7 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
         } else {
             module.setOption(UniqueKeyName, UniqueKeyValue);
             createDefaultArtifact(module);
-            if (templatesType == HDInsightTemplatesType.JavaLocalSample ||
-                    templatesType == HDInsightTemplatesType.ScalaClusterSample ||
-                    templatesType == HDInsightTemplatesType.ScalaLocalSample) {
-                ProjectSampleUtil.copyFileToPath(module, templatesType);
-            }
+            MavenSampleUtil.generateMavenSample(module, templatesType, sparkVersion);
         }
 
         CheckSDK(templatesType);
@@ -188,14 +166,11 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
     }
 
     private void CheckSDK(HDInsightTemplatesType templatesType) {
-        if (templatesType == HDInsightTemplatesType.Java || templatesType == HDInsightTemplatesType.JavaLocalSample) {
-            if (!isSparkSdkIncluded) {
-                showErrorMessageWithLink(withoutSparkSDKErrorMessage, "Project SDK Check", sparkDownloadLink);
-            }
-        } else if (templatesType == HDInsightTemplatesType.Scala ||
+        if (templatesType == HDInsightTemplatesType.Scala ||
                 templatesType == HDInsightTemplatesType.ScalaClusterSample ||
                 templatesType == HDInsightTemplatesType.ScalaLocalSample) {
-            if(!isScalaSdkIncluded || !isSparkSdkIncluded) {
+            if (!isScalaSdkIncluded) {
+                // TODO update error message
                 showErrorMessageWithLink(withoutSParkOrScalaSDKErrorMessage, "Project SDK Check", sparkDownloadLink);
             }
         }
@@ -227,7 +202,6 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
     }
 
     private static String sparkDownloadLink = "http://go.microsoft.com/fwlink/?LinkId=723585";
-    private static String withoutSparkSDKErrorMessage = String.format("<HTML>Failed to load Spark SDK and you need to add Spark SDK manually. Please download the Spark assembly from <FONT color=\\\"#000099\\\"><U>%s</U></FONT> and then add it manually.</HTML>", sparkDownloadLink);
     private static String withoutSParkOrScalaSDKErrorMessage = String.format("<HTML>Failed to load Spark SDK and you need to add Scala/Spark SDK manually. Please download the Spark assembly from <FONT color=\\\"#000099\\\"><U>%s</U></FONT> and then add it manually.</HTML>", sparkDownloadLink);
 
     private void showErrorMessageWithLink(String message, String title, final String link){

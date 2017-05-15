@@ -18,7 +18,9 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */package com.microsoft.azure.hdinsight.projects;
+ */
+
+package com.microsoft.azure.hdinsight.projects;
 
 import com.intellij.facet.impl.ui.libraries.LibraryOptionsPanel;
 import com.intellij.framework.library.FrameworkLibraryVersionFilter;
@@ -36,20 +38,20 @@ public class SparkScalaSettingsStep extends ModuleWizardStep {
     private HDInsightModuleBuilder builder;
     private ModuleWizardStep javaStep;
     private LibraryOptionsPanel libraryPanel;
-    private SparkLibraryOptionsPanel sparkLibraryOptionsPanel;
+    private SparkVersionOptionsPanel sparkVersionOptionsPanel;
 
     public SparkScalaSettingsStep(HDInsightModuleBuilder builder, SettingsStep settingsStep,
                                   LibrariesContainer librariesContainer) {
         this.builder = builder;
         this.javaStep = StdModuleTypes.JAVA.modifyProjectTypeStep(settingsStep, builder);
+
         this.libraryPanel = new LibraryOptionsPanel(ScalaLibraryDescription$.MODULE$, "",
                 FrameworkLibraryVersionFilter.ALL, librariesContainer, false);
-        ((JButton)libraryPanel.getSimplePanel().getComponent(1)).setText("Select...");
-        settingsStep.addSettingsField("Scala S\u001BDK:", libraryPanel.getSimplePanel());
+        ((JButton) libraryPanel.getSimplePanel().getComponent(1)).setText("Select...");
 
-        sparkLibraryOptionsPanel = new SparkLibraryOptionsPanel(settingsStep.getContext().getProject(), librariesContainer, new SparkLibraryDescription());
-        settingsStep.addSettingsField("Spark S\u001BDK:", sparkLibraryOptionsPanel);
-        settingsStep.addSettingsField("", ProjectUtil.createSparkSDKTipsPanel());
+        this.sparkVersionOptionsPanel = new SparkVersionOptionsPanel();
+        settingsStep.addSettingsField("Scala S\u001BDK:", libraryPanel.getSimplePanel());
+        settingsStep.addSettingsField("Spark \u001BVersion:", this.sparkVersionOptionsPanel);
     }
 
     @Override
@@ -59,7 +61,8 @@ public class SparkScalaSettingsStep extends ModuleWizardStep {
 
     @Override
     public void updateDataModel() {
-        this.builder.setLibraryCompositionSettings(libraryPanel.apply(), sparkLibraryOptionsPanel.apply());
+        this.builder.setScalaLibraryCompositionSettings(libraryPanel.apply());
+        this.builder.setSparkVersion(this.sparkVersionOptionsPanel.apply());
 
         javaStep.updateDataModel();
     }
