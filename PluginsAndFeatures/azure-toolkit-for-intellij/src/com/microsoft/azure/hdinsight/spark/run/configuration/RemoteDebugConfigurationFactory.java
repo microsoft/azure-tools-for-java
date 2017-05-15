@@ -25,10 +25,10 @@ import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
-import org.jetbrains.annotations.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 public class RemoteDebugConfigurationFactory extends ConfigurationFactory{
-    private static final String Name = "Spark Remote Debug";
+    private static final String NAME = "Spark Remote Debug";
 
     protected RemoteDebugConfigurationFactory(@NotNull ConfigurationType type) {
         super(type);
@@ -42,6 +42,6 @@ public class RemoteDebugConfigurationFactory extends ConfigurationFactory{
     @NotNull
     @Override
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-        return new RemoteDebugRunConfiguration(project, this, Name);
+        return new RemoteDebugRunConfiguration(project, this, NAME);
     }
 }
