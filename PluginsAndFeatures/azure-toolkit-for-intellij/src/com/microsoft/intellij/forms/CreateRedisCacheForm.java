@@ -96,11 +96,8 @@ public class CreateRedisCacheForm extends DialogWrapper {
 
     public CreateRedisCacheForm(Project project) throws IOException {
         super(project, true);
-
         initFormContents(project);
-
         initWidgetListeners();
-
         init();
     }
 
@@ -171,7 +168,7 @@ public class CreateRedisCacheForm extends DialogWrapper {
                             try {
                                 processor.waitForCompletion("PRODUCE");
                             } catch (InterruptedException ex) {
-                                String msg = "An error occurred while attempting to call waitForCompletion." + "\n" + String.format(message("rediscacheExpMsg"), ex.getMessage());
+                                String msg = "An error occurred while attempting to call waitForCompletion." + "\n" + ex.getMessage();
                                 PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
                             }
                         }
@@ -201,7 +198,7 @@ public class CreateRedisCacheForm extends DialogWrapper {
                         // notify the waitting thread the thread being waited incurred exception to clear blocking queue
                         processorInner.notifyCompletion();
                     } catch (InterruptedException ex) {
-                        String msg = "An error occurred while attempting to call notifyCompletion." + "\n" + String.format(message("rediscacheExpMsg"), ex.getMessage());
+                        String msg = "An error occurred while attempting to call notifyCompletion." + "\n" + ex.getMessage();
                         PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
                     }
                 }
@@ -218,6 +215,9 @@ public class CreateRedisCacheForm extends DialogWrapper {
     private void initFormContents(Project project) throws IOException {
         setModal(true);
         setTitle("New Redis Cache");
+        final ButtonGroup btnGrp = new ButtonGroup();
+        btnGrp.add(createNewRdoBtn);
+        btnGrp.add(useExistRdoBtn);
         createNewRdoBtn.setSelected(true);
         useExistRdoBtn.setSelected(false);
         newResGrpTxt.setVisible(true);
@@ -272,8 +272,6 @@ public class CreateRedisCacheForm extends DialogWrapper {
         createNewRdoBtn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                createNewRdoBtn.setSelected(true);
-                useExistRdoBtn.setSelected(false);
                 newResGrpTxt.setVisible(true);
                 useExistCmb.setVisible(false);
                 newResGrp = true;
@@ -301,8 +299,6 @@ public class CreateRedisCacheForm extends DialogWrapper {
         useExistRdoBtn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                createNewRdoBtn.setSelected(false);
-                useExistRdoBtn.setSelected(true);
                 newResGrpTxt.setVisible(false);
                 useExistCmb.setVisible(true);
                 newResGrp = false;

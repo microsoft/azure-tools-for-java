@@ -110,7 +110,6 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
     private Label lblSubscription;
     private Label lblResourceGroup;
     private Label lblSuffix;
-    private Label label_4;
 
     private Button btnUnblockPort;
     private Button btnUseExisting;
@@ -141,6 +140,7 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
         setTitle("New Redis Cache");
         setMessage("Please enter Redis Cache details.");
         Composite area = (Composite) super.createDialogArea(parent);
+        
         Composite container = new Composite(area, SWT.NONE);
         container.setFont(SWTResourceManager.getFont("Segoe UI", 8, SWT.NORMAL));
         container.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
@@ -241,14 +241,6 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
             }
         });
         comboPricetiers.setBounds(10, 340, 469, 28);
-
-        label_4 = new Label(container, SWT.NONE);
-        label_4.setFont(SWTResourceManager.getFont("Segoe UI", 8, SWT.NORMAL));
-        label_4.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-        label_4.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
-        label_4.setBounds(10, 0, 9, 20);
-        label_4.setText("* ");
-
 
         lblSuffix = new Label(container, SWT.NONE);
         lblSuffix.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
@@ -360,33 +352,40 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
         });
         dnsName.setBounds(10, 23, 469, 26);
         
-        Label label_0 = new Label(container, SWT.NONE);
-        label_0.setText("* ");
-        label_0.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
-        label_0.setFont(SWTResourceManager.getFont("Segoe UI", 8, SWT.NORMAL));
-        label_0.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-        label_0.setBounds(10, 81, 9, 20);
+        Label requireSubsLbl = new Label(container, SWT.NONE);
+        requireSubsLbl.setText("* ");
+        requireSubsLbl.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
+        requireSubsLbl.setFont(SWTResourceManager.getFont("Segoe UI", 8, SWT.NORMAL));
+        requireSubsLbl.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+        requireSubsLbl.setBounds(10, 81, 9, 20);
         
-        Label label_1 = new Label(container, SWT.NONE);
-        label_1.setText("* ");
-        label_1.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
-        label_1.setFont(SWTResourceManager.getFont("Segoe UI", 8, SWT.NORMAL));
-        label_1.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-        label_1.setBounds(10, 151, 9, 20);
+        Label requireResourceGrpLbl = new Label(container, SWT.NONE);
+        requireResourceGrpLbl.setText("* ");
+        requireResourceGrpLbl.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
+        requireResourceGrpLbl.setFont(SWTResourceManager.getFont("Segoe UI", 8, SWT.NORMAL));
+        requireResourceGrpLbl.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+        requireResourceGrpLbl.setBounds(10, 151, 9, 20);
         
-        Label label_2 = new Label(container, SWT.NONE);
-        label_2.setText("* ");
-        label_2.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
-        label_2.setFont(SWTResourceManager.getFont("Segoe UI", 8, SWT.NORMAL));
-        label_2.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-        label_2.setBounds(10, 245, 9, 20);
+        Label requireLocationLbl = new Label(container, SWT.NONE);
+        requireLocationLbl.setText("* ");
+        requireLocationLbl.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
+        requireLocationLbl.setFont(SWTResourceManager.getFont("Segoe UI", 8, SWT.NORMAL));
+        requireLocationLbl.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+        requireLocationLbl.setBounds(10, 245, 9, 20);
         
-        Label label_3 = new Label(container, SWT.NONE);
-        label_3.setText("* ");
-        label_3.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
-        label_3.setFont(SWTResourceManager.getFont("Segoe UI", 8, SWT.NORMAL));
-        label_3.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-        label_3.setBounds(10, 314, 9, 20);
+        Label requirePriceLbl = new Label(container, SWT.NONE);
+        requirePriceLbl.setText("* ");
+        requirePriceLbl.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
+        requirePriceLbl.setFont(SWTResourceManager.getFont("Segoe UI", 8, SWT.NORMAL));
+        requirePriceLbl.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+        requirePriceLbl.setBounds(10, 314, 9, 20);
+        
+        Label requireDnsNameLbl = new Label(container, SWT.NONE);
+        requireDnsNameLbl.setFont(SWTResourceManager.getFont("Segoe UI", 8, SWT.NORMAL));
+        requireDnsNameLbl.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+        requireDnsNameLbl.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
+        requireDnsNameLbl.setBounds(10, 0, 9, 20);
+        requireDnsNameLbl.setText("* ");
 
         return area;
     }
