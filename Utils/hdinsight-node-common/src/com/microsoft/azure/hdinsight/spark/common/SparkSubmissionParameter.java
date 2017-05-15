@@ -27,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -180,10 +181,6 @@ public class SparkSubmissionParameter {
                     messageList.add(new SparkSubmissionJobConfigCheckResult(SparkSubmissionJobConfigCheckStatus.Warning,
                             "Warning : Empty value(s) will be override by default value(s) of system"));
                 }
-            } else {
-                messageList.add(new SparkSubmissionJobConfigCheckResult(SparkSubmissionJobConfigCheckStatus.Error,
-                        String.format("Error : Key \"%s\" is invalid. It should be one of \"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"",
-                                entryKey, DriverMemory, DriverCores, ExecutorMemory, NumExecutors, ExecutorCores, NAME)));
             }
         }
 
@@ -276,4 +273,14 @@ public class SparkSubmissionParameter {
             new Pair<String, String>(SparkSubmissionParameter.ExecutorCores, SparkSubmissionParameter.ExecutorCoresDefaultValue),
             new Pair<String, String>(SparkSubmissionParameter.NumExecutors, SparkSubmissionParameter.NumExecutorsDefaultValue)
     };
+
+    /**
+     * Checks whether the key is one of Spark Job submission parameters or not
+     *
+     * @param key the key string to check
+     * @return true if the key is a member of submission parameters; false otherwise
+     */
+    public static boolean isSubmissionParameter(String key) {
+        return Arrays.stream(SparkSubmissionParameter.parameterList).anyMatch(key::equals);
+    }
 }
