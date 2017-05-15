@@ -23,8 +23,11 @@
 package com.microsoft.azure.hdinsight.projects;
 
 public enum SparkVersion {
-    SPARK_1_6("Spark 1.6"),
-    SPARK_2_0("Spark 2.0");
+    SPARK_1_5_2("Spark 1.5.2"),
+    SPARK_1_6_2("Spark 1.6.2"),
+    SPARK_1_6_3("Spark 1.6.3"),
+    SPARK_2_0_2("Spark 2.0.2"),
+    SPARK_2_1_0("Spark 2.1.0");
 
     private final String presentationName;
 
