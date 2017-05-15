@@ -1,8 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <relativePath>../pom.xml</relativePath>
+        <groupId>com.microsoft.azuretools</groupId>
+        <artifactId>utils</artifactId>
+        <version>3.0.2</version>
+    </parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>hdinsight-node-common</artifactId>
-    <version>3.0.2</version>
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
         <hdinsight.htmlcopy.enabled>false</hdinsight.htmlcopy.enabled>
@@ -137,7 +142,7 @@
         <dependency>
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>azuretools-core</artifactId>
-            <version>3.0.2</version>
+            <version>${azuretool.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
@@ -147,22 +152,19 @@
         <dependency>
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>azure-explorer-common</artifactId>
-            <version>3.0.2</version>
+            <version>${azuretool.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.5</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.7</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.7.2</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
@@ -177,17 +179,14 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-mgmt-storage</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
-            <version>2.7.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.3.6</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
