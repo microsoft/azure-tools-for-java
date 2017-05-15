@@ -36,8 +36,11 @@ public class SparkVersionOptionsPanel extends JPanel {
 
     public SparkVersionOptionsPanel() {
         comboBox = new ComboBox();
-        comboBox.addItem(SparkVersion.SPARK_2_0);
-        comboBox.addItem(SparkVersion.SPARK_1_6);
+        comboBox.addItem(SparkVersion.SPARK_2_0_2);
+        comboBox.addItem(SparkVersion.SPARK_1_5_2);
+        comboBox.addItem(SparkVersion.SPARK_1_6_2);
+        comboBox.addItem(SparkVersion.SPARK_1_6_3);
+        comboBox.addItem(SparkVersion.SPARK_2_1_0);
         GridBagLayout layout = new GridBagLayout();
         setLayout(layout);
         add(comboBox);

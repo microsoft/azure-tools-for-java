@@ -86,11 +86,20 @@ public class MavenProjectGenerator {
     private void createPom(String root) throws Exception {
         File file = null;
         switch (this.sparkVersion) {
-            case SPARK_1_6:
-                file = StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_1_6_pom.xml");
+            case SPARK_1_5_2:
+                file = StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_1_5_2_pom.xml");
                 break;
-            case SPARK_2_0:
-                file = StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_2_0_pom.xml");
+            case SPARK_1_6_2:
+                file = StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_1_6_2_pom.xml");
+                break;
+            case SPARK_1_6_3:
+                file = StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_1_6_3_pom.xml");
+                break;
+            case SPARK_2_0_2:
+                file = StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_2_0_2_pom.xml");
+                break;
+            case SPARK_2_1_0:
+                file = StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_2_1_0_pom.xml");
                 break;
         }
 
