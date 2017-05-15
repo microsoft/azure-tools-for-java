@@ -139,7 +139,7 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
 					final String newVersion = Activator.getDefault().getBundle().getVersion().toString(); 
 					if (version == null || version.isEmpty()) {
 						DataOperations.updatePropertyValue(doc, Messages.version, newVersion);
-					} else if (!Activator.getDefault().getBundle().getVersion().toString().equalsIgnoreCase(version)) {
+					} else if (!newVersion.equalsIgnoreCase(version)) {
 						DataOperations.updatePropertyValue(doc, Messages.version, newVersion);
 	                    AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
 	                }

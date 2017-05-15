@@ -104,10 +104,10 @@ public class AppInsightsClient {
                 Map<String, String> properties = myProperties == null ? new HashMap<String, String>() : new HashMap<String, String>(myProperties);
                 properties.put("SessionId", configuration.sessionId());
 
-                // Telemetry client doesn't accept null value.
+                // Telemetry client doesn't accept null value for ConcurrentHashMap doesn't accept null as key or value..
                 for (Iterator<Map.Entry<String, String>> iter = properties.entrySet().iterator(); iter.hasNext(); ) {
                     Map.Entry<String, String> entry = iter.next();
-                    if (StringUtils.isNullOrEmpty(entry.getKey())) {
+                    if (StringUtils.isNullOrEmpty(entry.getKey()) || StringUtils.isNullOrEmpty(entry.getValue())) {
                         iter.remove();
                     }
                 }
