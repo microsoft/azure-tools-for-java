@@ -5,8 +5,6 @@
       <module fileurl="file://$PROJECT_DIR$/../../Utils/azure-explorer-common/azure-explorer-common.iml" filepath="$PROJECT_DIR$/../../Utils/azure-explorer-common/azure-explorer-common.iml" />
       <module fileurl="file://$PROJECT_DIR$/azure-toolkit-for-intellij.iml" filepath="$PROJECT_DIR$/azure-toolkit-for-intellij.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../Utils/azuretools-core/azuretools-core.iml" filepath="$PROJECT_DIR$/../../Utils/azuretools-core/azuretools-core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/common/common.iml" filepath="$PROJECT_DIR$/common/common.iml" />
-      <module fileurl="file://$PROJECT_DIR$/hdinsight/hdinsight.iml" filepath="$PROJECT_DIR$/hdinsight/hdinsight.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../Utils/hdinsight-node-common/hdinsight-node-common.iml" filepath="$PROJECT_DIR$/../../Utils/hdinsight-node-common/hdinsight-node-common.iml" />
     </modules>
   </component>
