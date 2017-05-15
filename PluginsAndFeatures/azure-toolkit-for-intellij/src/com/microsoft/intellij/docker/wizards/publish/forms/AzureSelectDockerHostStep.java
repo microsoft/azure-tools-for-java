@@ -687,8 +687,6 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
   @Override
   public WizardStep onNext(final AzureSelectDockerWizardModel model) {
     if (dockerHostsTableSelection != null && doValidate() == null) {
-      String subscriptionId = dockerHostsTableSelection.host.hostVM.sid;
-      this.model.setSubscription(new SubscriptionDetail(subscriptionId, dockerManager.getSubscriptionsMap().get(subscriptionId).name, "", true));
       return super.onNext(model);
     } else {
       setDialogButtonsState(false);
@@ -701,8 +699,6 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
   @Override
   public boolean onFinish() {
     setFinishButtonState(false);
-    String subscriptionId = dockerHostsTableSelection.host.hostVM.sid;
-    this.model.setSubscription(new SubscriptionDetail(subscriptionId, dockerManager.getSubscriptionsMap().get(subscriptionId).name, null, true));
     return model.doValidate() == null && super.onFinish();
   }
 
