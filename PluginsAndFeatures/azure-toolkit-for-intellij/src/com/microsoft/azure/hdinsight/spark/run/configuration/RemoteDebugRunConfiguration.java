@@ -27,8 +27,8 @@ import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 public class RemoteDebugRunConfiguration extends RunConfigurationBase {
     public RemoteDebugRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {

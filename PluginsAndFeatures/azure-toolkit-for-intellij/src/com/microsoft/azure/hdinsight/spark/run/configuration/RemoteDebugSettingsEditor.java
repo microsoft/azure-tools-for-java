@@ -24,7 +24,7 @@ package com.microsoft.azure.hdinsight.spark.run.configuration;
 
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
-import org.jetbrains.annotations.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import javax.swing.*;
 

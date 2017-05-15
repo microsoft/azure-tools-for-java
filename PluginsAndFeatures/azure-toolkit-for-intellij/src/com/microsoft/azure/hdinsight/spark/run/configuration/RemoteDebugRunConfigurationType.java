@@ -27,7 +27,7 @@ import com.intellij.openapi.util.IconLoader;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.intellij.util.PluginUtil;
-import org.jetbrains.annotations.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import javax.swing.*;
 
