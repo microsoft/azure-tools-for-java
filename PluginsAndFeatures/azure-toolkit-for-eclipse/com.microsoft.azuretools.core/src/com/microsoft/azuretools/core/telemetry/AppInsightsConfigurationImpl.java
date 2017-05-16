@@ -34,6 +34,7 @@ public class AppInsightsConfigurationImpl implements AppInsightsConfiguration{
 	static String dataFile = String.format("%s%s%s", pluginInstLoc, File.separator, Messages.dataFileName);
 	static String key = "824aaa4c-052b-4c43-bdcb-48f915d71b3f";
 	static String sessionId = UUID.randomUUID().toString();
+	static String buildId = "Eclipse " + System.getProperty("eclipse.buildId");
 	
 	@Override
 	public String appInsightsKey() {
@@ -68,6 +69,11 @@ public class AppInsightsConfigurationImpl implements AppInsightsConfiguration{
 	@Override
 	public String eventNamePrefix() {
 		return EVENT_NAME_PREFIX;
+	}
+	
+	@Override
+	public String ide(){
+		return buildId;
 	}
 
 }

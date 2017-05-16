@@ -103,6 +103,7 @@ public class AppInsightsClient {
                 telemetry.getContext().setInstrumentationKey(configuration.appInsightsKey());
                 Map<String, String> properties = myProperties == null ? new HashMap<String, String>() : new HashMap<String, String>(myProperties);
                 properties.put("SessionId", configuration.sessionId());
+                properties.put("IDE", configuration.ide());
 
                 // Telemetry client doesn't accept null value for ConcurrentHashMap doesn't accept null as key or value..
                 for (Iterator<Map.Entry<String, String>> iter = properties.entrySet().iterator(); iter.hasNext(); ) {

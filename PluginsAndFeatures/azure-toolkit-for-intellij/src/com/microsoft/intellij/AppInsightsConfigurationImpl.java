@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij;
 
+import com.intellij.openapi.application.ApplicationInfo;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsConfiguration;
 import com.microsoft.intellij.ui.messages.AzureBundle;
@@ -35,6 +36,7 @@ public class AppInsightsConfigurationImpl implements AppInsightsConfiguration {
     static String key = "9ee9694d-128e-4c2b-903f-dbe694548bf0";
     static String sessionId = UUID.randomUUID().toString();
     static String dataFile = PluginHelper.getTemplateFile(AzureBundle.message("dataFileName"));
+    static String ide = ApplicationInfo.getInstance().getVersionName() + " " + ApplicationInfo.getInstance().getFullVersion();
 
     @Override
     public String appInsightsKey() {
@@ -69,5 +71,10 @@ public class AppInsightsConfigurationImpl implements AppInsightsConfiguration {
     @Override
     public String eventNamePrefix() {
         return EVENT_NAME_PREFIX_INTELLIJ;
+    }
+
+    @Override
+    public String ide() {
+        return ide;
     }
 }

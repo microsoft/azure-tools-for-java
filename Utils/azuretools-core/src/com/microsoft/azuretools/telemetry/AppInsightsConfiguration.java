@@ -36,4 +36,8 @@ public interface AppInsightsConfiguration {
     boolean validated();
 
     String eventNamePrefix();
+
+    default String ide() {
+        return "";
+    }
 }
