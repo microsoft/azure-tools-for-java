@@ -46,7 +46,9 @@ public class SubmissionTableModel extends InteractiveTableModel{
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return columnIndex == 0 ? false : super.isCellEditable(rowIndex, columnIndex);
+        return columnIndex == 0 ? !
+                SparkSubmissionParameter.isSubmissionParameter((String) this.getValueAt(rowIndex, 0)) :
+                super.isCellEditable(rowIndex, columnIndex);
     }
 
     @Override
@@ -58,10 +60,23 @@ public class SubmissionTableModel extends InteractiveTableModel{
     @NotNull
     public Map<String, Object> getJobConfigMap() {
         Map<String, Object> jobConfigMap = new HashMap<>();
+        Map<String, Object> sparkConfigMap = new HashMap<>();
+
         for (int index = 0; index < this.getRowCount(); index++) {
-            if (!StringHelper.isNullOrWhiteSpace((String) this.getValueAt(index, 0))) {
-                jobConfigMap.put((String) this.getValueAt(index, 0), this.getValueAt(index, 1));
+            String key = (String) this.getValueAt(index, 0);
+
+            if (!StringHelper.isNullOrWhiteSpace(key)) {
+                // Separate the submission and Spark conf parameters
+                if (SparkSubmissionParameter.isSubmissionParameter(key)) {
+                    jobConfigMap.put(key, this.getValueAt(index, 1));
+                } else {
+                    sparkConfigMap.put(key, this.getValueAt(index, 1));
+                }
             }
+        }
+
+        if (!sparkConfigMap.isEmpty()) {
+            jobConfigMap.put(SparkSubmissionParameter.Conf, sparkConfigMap);
         }
 
         return jobConfigMap;

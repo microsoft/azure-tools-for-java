@@ -42,6 +42,14 @@ sourceSets {
         java.srcDirs 'src'
         resources.srcDirs 'resources'
     }
+    test {
+        java {
+            srcDir 'Test/java'
+        }
+        resources {
+            srcDir 'Test/resources'
+        }
+    }
 }
 
 repositories {
@@ -52,15 +60,53 @@ repositories {
 
 configurations {
     compile.exclude module:'slf4j-api'
+    cucumberRuntime {
+        extendsFrom testRuntime
+    }
 }
+
+apply plugin: 'java'
 
 dependencies {
     compile fileTree(dir: '../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies', include: ['applicationinsights-management-1.0.3.jar'])
     compile 'com.microsoft.azuretools:azuretools-core:3.0.2'
     compile 'com.microsoft.azuretools:azure-explorer-common:3.0.2'
     compile 'com.microsoft.azuretools:hdinsight-node-common:3.0.2'
+    testCompile 'junit:junit:4.12'
+    testCompile 'info.cukes:cucumber-junit:1.2.5'
+    testCompile 'info.cukes:cucumber-java:1.2.5'
+    testCompile 'org.mockito:mockito-core:2.7.22'
+    testCompile 'org.assertj:assertj-swing-junit:3.5.0'
     runtime 'com.microsoft.azure:azure-client-runtime:1.0.2'
     runtime 'com.microsoft.azure:azure-client-authentication:1.0.2'
 }
 
+task cucumberPackJar(type: Jar) {
+    appendix = 'pathing'
 
+    doFirst {
+        manifest {
+            attributes "Class-Path": configurations.cucumberRuntime.files.collect {
+                it.toURL().toString().replaceFirst(/file:\/+/, '/')
+            }.join(' ')
+        }
+    }
+}
+
+task cucumber() {
+    dependsOn assemble, compileTestJava, cucumberPackJar
+    doLast {
+        javaexec {
+            main = "cucumber.api.cli.Main"
+            classpath = files(sourceSets.main.output, sourceSets.test.output, cucumberPackJar.archivePath)
+            args = [
+                '--plugin', 'pretty',
+                '--glue', 'com.microsoft.azure.hdinsight.spark.common',
+                'Test/resources']
+        }
+    }
+}
+
+test.dependsOn cucumber
+
+defaultTasks 'buildPlugin', 'test'

@@ -172,6 +172,9 @@ public class SparkSubmissionExDialog extends JDialog {
         hidden.setPreferredWidth(2);
         hidden.setMaxWidth(2);
         hidden.setCellRenderer(new InteractiveRenderer(InteractiveTableModel.HIDDEN_INDEX));
+
+        TableColumn keyColumn = jobConfigurationTable.getColumnModel().getColumn(InteractiveTableModel.KEY_INDEX);
+        keyColumn.setCellRenderer(new InteractiveRenderer(InteractiveTableModel.KEY_INDEX));
         this.pack();
     }
 

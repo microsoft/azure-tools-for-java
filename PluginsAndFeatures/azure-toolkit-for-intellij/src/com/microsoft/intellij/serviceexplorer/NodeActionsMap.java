@@ -27,13 +27,17 @@ import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewEmulatorAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.*;
-import com.microsoft.intellij.serviceexplorer.azure.storage.*;
+import com.microsoft.intellij.serviceexplorer.azure.storage.ConfirmDialogAction;
+import com.microsoft.intellij.serviceexplorer.azure.storage.CreateBlobContainer;
+import com.microsoft.intellij.serviceexplorer.azure.storage.CreateQueueAction;
+import com.microsoft.intellij.serviceexplorer.azure.storage.ModifyExternalStorageAccountAction;
 import com.microsoft.intellij.serviceexplorer.azure.webapps.OpenWebappAction;
 import com.microsoft.intellij.serviceexplorer.azure.webapps.RemoteDebugAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapps.WebappNode;
@@ -51,6 +55,7 @@ public class NodeActionsMap {
         node2Actions.put(TableModule.class, new ImmutableList.Builder().add(com.microsoft.intellij.serviceexplorer.azure.storage.CreateTableAction.class).build());
         node2Actions.put(BlobModule.class, new ImmutableList.Builder().add(CreateBlobContainer.class).build());
         node2Actions.put(StorageModule.class, new ImmutableList.Builder().add(com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAccountAction.class).build());
+        node2Actions.put(RedisCacheModule.class, new ImmutableList.Builder().add(com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction.class).build());
         node2Actions.put(StorageNode.class, new ImmutableList.Builder().add(CreateBlobContainer.class).build());
         // todo: what is ConfirmDialogAction?
         node2Actions.put(ExternalStorageNode.class, new ImmutableList.Builder().add(ConfirmDialogAction.class, ModifyExternalStorageAccountAction.class).build());
