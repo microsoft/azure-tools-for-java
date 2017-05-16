@@ -32,7 +32,6 @@ import java.util.List;
 
 public final class RedisCacheNode extends Node {
     private final RedisCache redisCache;
-    private static final String ACTION_PROPERTIES = "Properties";
 
     private static final String REDISCACHE_ICON_PATH = "RedisCache.png";
 
@@ -41,24 +40,11 @@ public final class RedisCacheNode extends Node {
         this.redisCache = redisCache;
         loadActions();
     }
-    @Override
-    protected void loadActions() {
-        addAction(ACTION_PROPERTIES, null, new NodeActionListener() {
-            @Override
-            public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, "Getting properties", false, true, "Getting properties...", new Runnable() {
-                    @Override
-                    public void run() {
-                        //todo
-                    }
-                });
-            }
-        });
-        super.loadActions();
-    }
+
+    //TODO: add properties action
+
     @Override
     public List<NodeAction> getNodeActions() {
-        getNodeActionByName(ACTION_PROPERTIES).setEnabled(true);
 
         return super.getNodeActions();
     }
