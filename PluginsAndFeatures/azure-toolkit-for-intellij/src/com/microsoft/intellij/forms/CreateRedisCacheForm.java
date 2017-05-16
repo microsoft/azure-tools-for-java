@@ -38,6 +38,7 @@ import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessorBase;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.intellij.helpers.LinkListener;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.FormUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -57,7 +58,7 @@ import java.util.stream.Collectors;
 import static com.microsoft.azuretools.authmanage.AuthMethodManager.getInstance;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class CreateRedisCacheForm extends DialogWrapper {
+public class CreateRedisCacheForm extends AzureDialogWrapper {
 
     // LOGGER
     private static final Logger LOGGER = Logger.getInstance(CreateRedisCacheForm.class);
@@ -93,6 +94,7 @@ public class CreateRedisCacheForm extends DialogWrapper {
     // Const Strings
     private static final String PRICING_LINK = "https://azure.microsoft.com/en-us/pricing/details/cache";
     private static final String INVALID_REDIS_CACHE_NAME = "Invalid Redis Cache name. The name can only contain letters, numbers and hyphens. The first and last characters must each be a letter or a number. Consecutive hyphens are not allowed.";
+    private static final String dnsNameRegex = "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$";
 
     public CreateRedisCacheForm(Project project) throws IOException {
         super(project, true);
@@ -124,7 +126,7 @@ public class CreateRedisCacheForm extends DialogWrapper {
         selectedLocationValue = ((Location) cbLocations.getSelectedItem()).inner().name();
         selectedPriceTierValue = cbPricing.getSelectedItem().toString();
 
-        if (redisCacheNameValue.length() > 63 || !redisCacheNameValue.matches("^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$")) {
+        if (redisCacheNameValue.length() > 63 || !redisCacheNameValue.matches(dnsNameRegex)) {
             return new ValidationInfo(INVALID_REDIS_CACHE_NAME, txtRedisName);
         }
 
@@ -182,6 +184,7 @@ public class CreateRedisCacheForm extends DialogWrapper {
     private void onOK() {
         try {
             Azure azure = azureManager.getAzure(currentSub.getSubscriptionId());
+            setSubscription(currentSub);
             ProcessingStrategy processor = RedisCacheUtil.doGetProcessor(azure, skus, redisCacheNameValue, selectedLocationValue, selectedResGrpValue, selectedPriceTierValue, noSSLPort, newResGrp);
             ExecutorService executor = Executors.newSingleThreadExecutor();
             ListeningExecutorService executorService = MoreExecutors.listeningDecorator(executor);
@@ -190,6 +193,7 @@ public class CreateRedisCacheForm extends DialogWrapper {
             Futures.addCallback(futureTask, new FutureCallback<Void>() {
                 @Override
                 public void onSuccess(Void arg0) {
+                    sendTelemetry(OK_EXIT_CODE);
                 }
                 @Override
                 public void onFailure(Throwable throwable) {
