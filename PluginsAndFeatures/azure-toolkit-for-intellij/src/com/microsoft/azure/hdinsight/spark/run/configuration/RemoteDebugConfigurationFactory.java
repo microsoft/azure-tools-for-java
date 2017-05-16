@@ -28,7 +28,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 public class RemoteDebugConfigurationFactory extends ConfigurationFactory{
-    private static final String NAME = "Spark Remote Debug";
+    private static final String NAME = "Submit Spark Job";
 
     protected RemoteDebugConfigurationFactory(@NotNull ConfigurationType type) {
         super(type);

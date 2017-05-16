@@ -38,7 +38,7 @@ public class RemoteDebugRunConfiguration extends RunConfigurationBase {
     @NotNull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new RemoteDebugSettingsEditor();
+        return new RemoteDebugSettingsEditor(this);
     }
 
     @Override

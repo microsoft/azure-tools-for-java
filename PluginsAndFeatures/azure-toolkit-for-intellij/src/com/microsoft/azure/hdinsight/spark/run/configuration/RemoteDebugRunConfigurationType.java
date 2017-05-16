@@ -33,9 +33,9 @@ import javax.swing.*;
 
 public class RemoteDebugRunConfigurationType implements ConfigurationType {
 
-    private static final String DISPLAY_NAME = "Spark Remote Debug";
-    private static final String ID = "SparkRemoteDebug_Run_Configuration";
-    private static final String DESCRIPTION = "Spark Remote Debug Run Configuration Type";
+    private static final String DISPLAY_NAME = "Submit Spark Job";
+    private static final String ID = "SubmitSparkJob_Run_Configuration";
+    private static final String DESCRIPTION = "Submit Spark Job Run Configuration Type";
 
     @Override
     public String getDisplayName() {
@@ -60,6 +60,6 @@ public class RemoteDebugRunConfigurationType implements ConfigurationType {
 
     @Override
     public ConfigurationFactory[] getConfigurationFactories() {
-        return new ConfigurationFactory[0];
+        return new ConfigurationFactory[]{ new RemoteDebugConfigurationFactory(this)};
     }
 }

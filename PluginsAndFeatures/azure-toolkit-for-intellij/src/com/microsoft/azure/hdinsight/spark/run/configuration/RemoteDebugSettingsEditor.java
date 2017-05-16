@@ -24,11 +24,27 @@ package com.microsoft.azure.hdinsight.spark.run.configuration;
 
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ex.ProjectManagerEx;
+import com.microsoft.azure.hdinsight.common.CallBack;
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
+import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel;
+import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionExDialog;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import javax.swing.*;
+import java.util.List;
+
+import static com.intellij.codeInsight.daemon.impl.HighlightInfoType.TODO;
 
 public class RemoteDebugSettingsEditor extends SettingsEditor<RemoteDebugRunConfiguration> {
+    private JPanel myPanel;
+    private RemoteDebugRunConfiguration myRunConfiguration;
+
+    public RemoteDebugSettingsEditor(final RemoteDebugRunConfiguration runConfiguration){
+        myRunConfiguration = runConfiguration;
+    }
     @Override
     protected void resetEditorFrom(@NotNull RemoteDebugRunConfiguration remoteDebugRunConfiguration) {
 
@@ -42,6 +58,17 @@ public class RemoteDebugSettingsEditor extends SettingsEditor<RemoteDebugRunConf
     @NotNull
     @Override
     protected JComponent createEditor() {
-        return new JPanel();
+
+        Project project = myRunConfiguration.getProject();
+        List<IClusterDetail> cachedClusterDetails = ClusterManagerEx.getInstance().getClusterDetailsWithoutAsync(true, project);
+        SparkSubmissionContentPanel submissionPanel = new SparkSubmissionContentPanel(project, cachedClusterDetails, new CallBack() {
+            @Override
+            public void run() {
+                // TODO Add logic to resize the window and enable/disable button
+
+            }
+        });
+
+        return submissionPanel;
     }
 }

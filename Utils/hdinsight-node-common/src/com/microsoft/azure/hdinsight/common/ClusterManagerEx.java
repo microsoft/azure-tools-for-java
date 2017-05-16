@@ -147,15 +147,6 @@ public class ClusterManagerEx {
         } catch (AggregatedException aggregateException) {
             if (dealWithAggregatedException(aggregateException)) {
                 DefaultLoader.getUIHelper().showError("Falied to get HDInsight Cluster, Please make sure there's no login problem first","List HDInsight Cluster Error");
-//                if (isAuthSuccess()) {
-//                    subscriptionList = AzureManagerImpl.getManager().getSubscriptionList();
-//                    try {
-//                        cachedClusterDetails.addAll(ClusterManager.getInstance().getHDInsightCausersWithSpecificType(subscriptionList, ClusterType.spark, OSTYPE));
-//                        isListClusterSuccess = true;
-//                    } catch (Exception exception) {
-//                        DefaultLoader.getUIHelper().showError("Failed to list HDInsight cluster", "List HDInsight Cluster Error");
-//                    }
-//                }
             }
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().showError("Falied to get HDInsight Clusters","List HDInsight Cluster Error");
