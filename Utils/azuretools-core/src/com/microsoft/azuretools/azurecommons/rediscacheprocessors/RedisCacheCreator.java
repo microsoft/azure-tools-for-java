@@ -59,8 +59,8 @@ public final class RedisCacheCreator {
     	}
     }
     public RedisCacheCreator(RedisCaches redisCaches, String dnsName, String regionName, String groupName) {
-    	initCreatorsForBasicTier(redisCaches, dnsName, regionName, groupName, new int[] {0, 1, 2, 3, 4, 6});
-    	initCreatorsForStdTier(redisCaches, dnsName, regionName, groupName, new int[] {0, 1, 2, 3, 4, 6});
+    	initCreatorsForBasicTier(redisCaches, dnsName, regionName, groupName, new int[] {0, 1, 2, 3, 4, 5, 6});
+    	initCreatorsForStdTier(redisCaches, dnsName, regionName, groupName, new int[] {0, 1, 2, 3, 4, 5, 6});
     	initCreatorsForPremiumTier(redisCaches, dnsName, regionName, groupName, new int[] {1, 2, 3, 4});
     }
     
