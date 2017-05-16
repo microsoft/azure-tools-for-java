@@ -63,17 +63,17 @@ public class CreateRedisCacheForm extends DialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(CreateRedisCacheForm.class);
 
     // Widgets
-    private JPanel contentPnl;
-    private JTextField redisNameTxt;
-    private JComboBox<SubscriptionDetail> subscriptionsCmb;
-    private JRadioButton createNewRdoBtn;
-    private JTextField newResGrpTxt;
-    private JRadioButton useExistRdoBtn;
-    private JComboBox<String> useExistCmb;
-    private JComboBox<Location> locationsCmb;
-    private JComboBox<String> pricingCmb;
-    private JCheckBox noSSLChk;
-    private JLabel pricingLbl;
+    private JPanel pnlContent;
+    private JTextField txtRedisName;
+    private JComboBox<SubscriptionDetail> cbSubs;
+    private JRadioButton rdoCreateNewGrp;
+    private JTextField txtNewResGrp;
+    private JRadioButton rdoUseExist;
+    private JComboBox<String> cbUseExist;
+    private JComboBox<Location> cbLocations;
+    private JComboBox<String> cbPricing;
+    private JCheckBox chkNoSSL;
+    private JLabel lblPricing;
 
     // Util Variables
     private AzureManager azureManager;
@@ -104,34 +104,34 @@ public class CreateRedisCacheForm extends DialogWrapper {
     @Nullable
     @Override
     protected JComponent createCenterPanel() {
-        return contentPnl;
+        return pnlContent;
     }
 
     private void validateEmptyFields() {
         boolean allFieldsCompleted = !(
-                redisNameTxt.getText().trim().isEmpty() || locationsCmb.getSelectedObjects().length == 0
-                        || (createNewRdoBtn.isSelected() && newResGrpTxt.getText().trim().isEmpty())
-                        || (useExistRdoBtn.isSelected() && useExistCmb.getSelectedObjects().length == 0)
-                        || subscriptionsCmb.getSelectedObjects().length == 0);
+                txtRedisName.getText().trim().isEmpty() || cbLocations.getSelectedObjects().length == 0
+                        || (rdoCreateNewGrp.isSelected() && txtNewResGrp.getText().trim().isEmpty())
+                        || (rdoUseExist.isSelected() && cbUseExist.getSelectedObjects().length == 0)
+                        || cbSubs.getSelectedObjects().length == 0);
         setOKActionEnabled(allFieldsCompleted);
     }
 
     @Nullable
     @Override
     protected ValidationInfo doValidate() {
-        redisCacheNameValue = redisNameTxt.getText();
-        selectedResGrpValue = newResGrp ? newResGrpTxt.getText() : useExistCmb.getSelectedItem().toString();
-        selectedLocationValue = ((Location) locationsCmb.getSelectedItem()).inner().name();
-        selectedPriceTierValue = pricingCmb.getSelectedItem().toString();
+        redisCacheNameValue = txtRedisName.getText();
+        selectedResGrpValue = newResGrp ? txtNewResGrp.getText() : cbUseExist.getSelectedItem().toString();
+        selectedLocationValue = ((Location) cbLocations.getSelectedItem()).inner().name();
+        selectedPriceTierValue = cbPricing.getSelectedItem().toString();
 
         if (redisCacheNameValue.length() > 63 || !redisCacheNameValue.matches("^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$")) {
-            return new ValidationInfo(INVALID_REDIS_CACHE_NAME, redisNameTxt);
+            return new ValidationInfo(INVALID_REDIS_CACHE_NAME, txtRedisName);
         }
 
         try {
             for (RedisCache existingRedisCache : azureManager.getAzure(currentSub.getSubscriptionId()).redisCaches().list()) {
                 if (existingRedisCache.name().equals(redisCacheNameValue)) {
-                    return new ValidationInfo("The name " + redisCacheNameValue + " is not available", redisNameTxt);
+                    return new ValidationInfo("The name " + redisCacheNameValue + " is not available", txtRedisName);
                 }
             }
         } catch (IOException e) {
@@ -216,21 +216,21 @@ public class CreateRedisCacheForm extends DialogWrapper {
         setModal(true);
         setTitle("New Redis Cache");
         final ButtonGroup btnGrp = new ButtonGroup();
-        btnGrp.add(createNewRdoBtn);
-        btnGrp.add(useExistRdoBtn);
-        createNewRdoBtn.setSelected(true);
-        useExistRdoBtn.setSelected(false);
-        newResGrpTxt.setVisible(true);
-        useExistCmb.setVisible(false);
+        btnGrp.add(rdoCreateNewGrp);
+        btnGrp.add(rdoUseExist);
+        rdoCreateNewGrp.setSelected(true);
+        rdoUseExist.setSelected(false);
+        txtNewResGrp.setVisible(true);
+        cbUseExist.setVisible(false);
         setOKActionEnabled(false);
 
         azureManager = getInstance().getAzureManager();
         allSubs = azureManager.getSubscriptionManager().getSubscriptionDetails();
         List<SubscriptionDetail> selectedSubscriptions = allSubs.stream().filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
-        subscriptionsCmb.setModel(new DefaultComboBoxModel<>(selectedSubscriptions.toArray(new SubscriptionDetail[selectedSubscriptions.size()])));
+        cbSubs.setModel(new DefaultComboBoxModel<>(selectedSubscriptions.toArray(new SubscriptionDetail[selectedSubscriptions.size()])));
         if (selectedSubscriptions.size() > 0) {
             Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
-            SubscriptionDetail selectedSub = (SubscriptionDetail) subscriptionsCmb.getSelectedItem();
+            SubscriptionDetail selectedSub = (SubscriptionDetail) cbSubs.getSelectedItem();
             currentSub = selectedSub;
             if (subscription2Location == null || subscription2Location.get(selectedSub) == null) {
                 FormUtils.loadLocationsAndResourceGrps(project);
@@ -239,11 +239,11 @@ public class CreateRedisCacheForm extends DialogWrapper {
         }
 
         skus = RedisCacheUtil.initSkus();
-        pricingCmb.setModel(new DefaultComboBoxModel(skus.keySet().toArray()));
+        cbPricing.setModel(new DefaultComboBoxModel(skus.keySet().toArray()));
     }
 
     private void initWidgetListeners() {
-        redisNameTxt.getDocument().addDocumentListener(new DocumentListener() {
+        txtRedisName.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent documentEvent) {
                 validateEmptyFields();
@@ -260,26 +260,26 @@ public class CreateRedisCacheForm extends DialogWrapper {
             }
         });
 
-        subscriptionsCmb.addActionListener(new ActionListener() {
+        cbSubs.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                currentSub = (SubscriptionDetail) subscriptionsCmb.getSelectedItem();
+                currentSub = (SubscriptionDetail) cbSubs.getSelectedItem();
                 fillLocationsAndResourceGrps(currentSub);
                 validateEmptyFields();
             }
         });
 
-        createNewRdoBtn.addMouseListener(new MouseAdapter() {
+        rdoCreateNewGrp.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                newResGrpTxt.setVisible(true);
-                useExistCmb.setVisible(false);
+                txtNewResGrp.setVisible(true);
+                cbUseExist.setVisible(false);
                 newResGrp = true;
                 validateEmptyFields();
             }
         });
 
-        newResGrpTxt.getDocument().addDocumentListener(new DocumentListener() {
+        txtNewResGrp.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent documentEvent) {
                 validateEmptyFields();
@@ -296,17 +296,17 @@ public class CreateRedisCacheForm extends DialogWrapper {
             }
         });
 
-        useExistRdoBtn.addMouseListener(new MouseAdapter() {
+        rdoUseExist.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                newResGrpTxt.setVisible(false);
-                useExistCmb.setVisible(true);
+                txtNewResGrp.setVisible(false);
+                cbUseExist.setVisible(true);
                 newResGrp = false;
                 validateEmptyFields();
             }
         });
 
-        useExistCmb.addActionListener(new ActionListener() {
+        cbUseExist.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 validateEmptyFields();
@@ -314,27 +314,27 @@ public class CreateRedisCacheForm extends DialogWrapper {
         });
 
 
-        locationsCmb.addActionListener(new ActionListener() {
+        cbLocations.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 validateEmptyFields();
             }
         });
 
-        pricingLbl.addMouseListener(new LinkListener(PRICING_LINK));
+        lblPricing.addMouseListener(new LinkListener(PRICING_LINK));
 
 
-        pricingCmb.addActionListener(new ActionListener() {
+        cbPricing.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 validateEmptyFields();
             }
         });
 
-        noSSLChk.addMouseListener(new MouseAdapter() {
+        chkNoSSL.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (noSSLChk.isSelected()) {
+                if (chkNoSSL.isSelected()) {
                     noSSLPort = true;
                 } else {
                     noSSLPort = false;
@@ -342,7 +342,7 @@ public class CreateRedisCacheForm extends DialogWrapper {
             }
         });
 
-        locationsCmb.setRenderer(new ListCellRendererWrapper<Object>() {
+        cbLocations.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
             public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
                 if (o != null && (o instanceof Location)) {
@@ -355,9 +355,9 @@ public class CreateRedisCacheForm extends DialogWrapper {
     private void fillLocationsAndResourceGrps(SubscriptionDetail selectedSub) {
         List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub)
                 .stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
-        locationsCmb.setModel(new DefaultComboBoxModel(locations.toArray()));
+        cbLocations.setModel(new DefaultComboBoxModel(locations.toArray()));
         List<ResourceGroup> groups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(selectedSub);
         List<String> sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
-        useExistCmb.setModel(new DefaultComboBoxModel<>(sortedGroups.toArray(new String[sortedGroups.size()])));
+        cbUseExist.setModel(new DefaultComboBoxModel<>(sortedGroups.toArray(new String[sortedGroups.size()])));
     }
 }
