@@ -18,7 +18,7 @@ import org.w3c.dom.Node;
 
 // Run the program via the cli command "java VersionHelper 2016.3"
 // This program will append intellij version to the plugin version.
-public class VersionHelper {
+public class IntellijVersionHelper {
 
 	public static void main(String argv[]) {
 		if (argv.length < 1) {
@@ -28,7 +28,7 @@ public class VersionHelper {
 
 		try {
 			// Read the content from xml file
-			String filepath = "resources/META-INF/plugin.xml";
+			String filepath = "../PluginsAndFeatures/azure-toolkit-for-intellij/resources/META-INF/plugin.xml";
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 			Document doc = docBuilder.parse(filepath);
