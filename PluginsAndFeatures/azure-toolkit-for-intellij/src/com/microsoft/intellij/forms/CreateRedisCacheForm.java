@@ -92,9 +92,13 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     private String selectedPriceTierValue = null;
 
     // Const Strings
+    private static final String DIALOG_TITLE = "New Redis Cache";
     private static final String PRICING_LINK = "https://azure.microsoft.com/en-us/pricing/details/cache";
     private static final String INVALID_REDIS_CACHE_NAME = "Invalid Redis Cache name. The name can only contain letters, numbers and hyphens. The first and last characters must each be a letter or a number. Consecutive hyphens are not allowed.";
-    private static final String dnsNameRegex = "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$";
+    private static final String DNS_NAME_REGEX = "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$";
+    private static final String VALIDATION_FORMAT = "The name %s is not available %s.";
+    private static final String CREATING_INDICATOR = "Creating Redis Cache %s ...";
+    private static final String CREATING_ERROR_INDICATOR = "An error occurred while attempting to %s.\n%s";
 
     public CreateRedisCacheForm(Project project) throws IOException {
         super(project, true);
@@ -126,14 +130,14 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         selectedLocationValue = ((Location) cbLocations.getSelectedItem()).inner().name();
         selectedPriceTierValue = cbPricing.getSelectedItem().toString();
 
-        if (redisCacheNameValue.length() > 63 || !redisCacheNameValue.matches(dnsNameRegex)) {
+        if (redisCacheNameValue.length() > 63 || !redisCacheNameValue.matches(DNS_NAME_REGEX)) {
             return new ValidationInfo(INVALID_REDIS_CACHE_NAME, txtRedisName);
         }
 
         try {
             for (RedisCache existingRedisCache : azureManager.getAzure(currentSub.getSubscriptionId()).redisCaches().list()) {
                 if (existingRedisCache.name().equals(redisCacheNameValue)) {
-                    return new ValidationInfo("The name " + redisCacheNameValue + " is not available", txtRedisName);
+                    return new ValidationInfo(String.format(VALIDATION_FORMAT, redisCacheNameValue, txtRedisName));
                 }
             }
         } catch (IOException e) {
@@ -152,25 +156,25 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         this.onCreate = onCreate;
     }
 
-    class MyCallable implements Callable<Void> {
+    class CreateRedisCallable implements Callable<Void> {
         private ProcessingStrategy processor;
-        public MyCallable(ProcessingStrategy processor) {
+        public CreateRedisCallable(ProcessingStrategy processor) {
             this.processor = processor;
         }
         public Void call() throws Exception {
             DefaultLoader.getIdeHelper().runInBackground(
                     null,
-                    "Creating Redis Cache " + ((ProcessorBase) processor).DNSName() + "...",
+                    String.format(CREATING_INDICATOR, ((ProcessorBase) processor).DNSName()),
                     false,
                     true,
-                    "Creating Redis Cache " + ((ProcessorBase) processor).DNSName() + "...",
+                    String.format(CREATING_INDICATOR, ((ProcessorBase) processor).DNSName()),
                     new Runnable() {
                         @Override
                         public void run() {
                             try {
                                 processor.waitForCompletion("PRODUCE");
                             } catch (InterruptedException ex) {
-                                String msg = "An error occurred while attempting to call waitForCompletion." + "\n" + ex.getMessage();
+                                String msg = String.format(CREATING_ERROR_INDICATOR, "waitForCompletion", ex.getMessage());
                                 PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
                             }
                         }
@@ -188,7 +192,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
             ProcessingStrategy processor = RedisCacheUtil.doGetProcessor(azure, skus, redisCacheNameValue, selectedLocationValue, selectedResGrpValue, selectedPriceTierValue, noSSLPort, newResGrp);
             ExecutorService executor = Executors.newSingleThreadExecutor();
             ListeningExecutorService executorService = MoreExecutors.listeningDecorator(executor);
-            ListenableFuture<Void> futureTask =  executorService.submit(new MyCallable(processor));
+            ListenableFuture<Void> futureTask =  executorService.submit(new CreateRedisCallable(processor));
             final ProcessingStrategy processorInner = processor;
             Futures.addCallback(futureTask, new FutureCallback<Void>() {
                 @Override
@@ -202,7 +206,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
                         // notify the waitting thread the thread being waited incurred exception to clear blocking queue
                         processorInner.notifyCompletion();
                     } catch (InterruptedException ex) {
-                        String msg = "An error occurred while attempting to call notifyCompletion." + "\n" + ex.getMessage();
+                        String msg = String.format(CREATING_ERROR_INDICATOR, "notifyCompletion", ex.getMessage());
                         PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
                     }
                 }
@@ -218,7 +222,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
 
     private void initFormContents(Project project) throws IOException {
         setModal(true);
-        setTitle("New Redis Cache");
+        setTitle(DIALOG_TITLE);
         final ButtonGroup btnGrp = new ButtonGroup();
         btnGrp.add(rdoCreateNewGrp);
         btnGrp.add(rdoUseExist);
