@@ -144,11 +144,8 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         allSubs = azureManager.getSubscriptionManager().getSubscriptionDetails();
         selectedSubscriptions = allSubs.stream().filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
         if (selectedSubscriptions.size() > 0) {
-        	Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
-        	currentSub = selectedSubscriptions.get(0);
-        	if (subscription2Location == null || subscription2Location.get(currentSub) == null) {
-                FormUtils.loadLocationsAndResourceGrps(parentShell);
-            }
+            currentSub = selectedSubscriptions.get(0);
+            FormUtils.loadLocationsAndResourceGrps(parentShell);
         }
         allResGrpsofCurrentSub = new HashSet<String>();
         skus = RedisCacheUtil.initSkus();
@@ -174,23 +171,23 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         
         txtDnsName = new Text(container, SWT.BORDER);
         txtDnsName.addModifyListener(new ModifyListener() {
-        	ControlDecoration decorator;
-        	{
+            ControlDecoration decorator;
+            {
                 decorator = new ControlDecoration(txtDnsName, SWT.CENTER);
                 decorator.setDescriptionText(DECORACTOR_DNS);
                 Image image = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR).getImage();
                 decorator.setImage(image);
             }
-			@Override
-			public void modifyText(ModifyEvent arg0) {
-				dnsNameValue = txtDnsName.getText();
-				if (dnsNameValue.length() > REDIS_CACHE_MAX_NAME_LENGTH || !dnsNameValue.matches(DNS_NAME_REGEX)) {
-					decorator.show();
-		        } else {
-		        	decorator.hide();
-		        }
-				validateFields();
-			}
+            @Override
+            public void modifyText(ModifyEvent arg0) {
+                dnsNameValue = txtDnsName.getText();
+                if (dnsNameValue.length() > REDIS_CACHE_MAX_NAME_LENGTH || !dnsNameValue.matches(DNS_NAME_REGEX)) {
+                    decorator.show();
+                } else {
+                    decorator.hide();
+                }
+                validateFields();
+            }
         });
         txtDnsName.setBounds(10, 23, 469, 26);
         
@@ -216,7 +213,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             }
         });
         if (selectedSubscriptions.size() > 0) {
-        	cbSubs.select(0);
+            cbSubs.select(0);
         }
         cbSubs.setBounds(10, 107, 469, 28);
         
@@ -258,11 +255,11 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         txtNewResGrpName = new Text(container, SWT.BORDER);
         txtNewResGrpName.addModifyListener(new ModifyListener() {
 
-			@Override
-			public void modifyText(ModifyEvent arg0) {
-				selectedResGrpValue = txtNewResGrpName.getText();
-				validateFields();
-			}
+            @Override
+            public void modifyText(ModifyEvent arg0) {
+                selectedResGrpValue = txtNewResGrpName.getText();
+                validateFields();
+            }
         });
         txtNewResGrpName.setVisible(true);
         txtNewResGrpName.setBounds(10, 203, 469, 28);
@@ -274,8 +271,8 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         cbUseExisting.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	selectedResGrpValue = cbUseExisting.getText();
-            	validateFields();
+                selectedResGrpValue = cbUseExisting.getText();
+                validateFields();
             }
         });
         cbUseExisting.setVisible(false);
@@ -291,22 +288,22 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         cbvLocations.setLabelProvider(new LabelProvider() {
             @Override
             public String getText(Object element) {
-            	if (element == null) {
-            		return "";
-            	}
-            	if (element instanceof Location) {
-            		Location loc = (Location) element;
+                if (element == null) {
+                    return "";
+                }
+                if (element instanceof Location) {
+                    Location loc = (Location) element;
                     return loc.displayName();
-            	}
-            	return element.toString();
+                }
+                return element.toString();
             }
         });
         cbLocations = cbvLocations.getCombo();
         cbLocations.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	selectedLocationValue = sortedLocations.get(cbLocations.getSelectionIndex()).name();
-            	validateFields();
+                selectedLocationValue = sortedLocations.get(cbLocations.getSelectionIndex()).name();
+                validateFields();
             }
         });
         cbLocations.setBounds(10, 271, 469, 28);
@@ -330,8 +327,8 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         cbvPriceTiers.setInput(skus.keySet());
         cbvPriceTiers.refresh();
         if (skus.keySet().size() > 0) {
-        	cbPricetiers.select(0);
-        	selectedPriceTierValue = cbPricetiers.getText();
+            cbPricetiers.select(0);
+            selectedPriceTierValue = cbPricetiers.getText();
         }
         cbPricetiers.setBounds(10, 340, 469, 28);
 
@@ -363,14 +360,14 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
 
         public Void call() throws Exception {
             DefaultLoader.getIdeHelper().runInBackground(null,
-            		String.format(CREATING_INDICATOR_FORMAT, ((ProcessorBase) processor).DNSName()), false, true,
-            		String.format(CREATING_INDICATOR_FORMAT, ((ProcessorBase) processor).DNSName()), new Runnable() {
+                    String.format(CREATING_INDICATOR_FORMAT, ((ProcessorBase) processor).DNSName()), false, true,
+                    String.format(CREATING_INDICATOR_FORMAT, ((ProcessorBase) processor).DNSName()), new Runnable() {
                         @Override
                         public void run() {
                             try {
                                 processor.waitForCompletion("PRODUCE");
                             } catch (InterruptedException ex) {
-                            	LOG.log("Error occurred while waitForCompletion in RedisCache.", ex);
+                                LOG.log("Error occurred while waitForCompletion in RedisCache.", ex);
                             }
                         }
                     });
@@ -381,35 +378,35 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     }
     
     private void fillLocationsAndResourceGrps(SubscriptionDetail selectedSub) {
-    	List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub);
-    	if (locations != null) {
-    		sortedLocations = locations.stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
+        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub);
+        if (locations != null) {
+            sortedLocations = locations.stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
             cbvLocations.setInput(sortedLocations);
             cbvLocations.refresh();
             if (sortedLocations.size() > 0) {
-            	cbLocations.select(0);
-            	selectedLocationValue = sortedLocations.get(0).name();
+                cbLocations.select(0);
+                selectedLocationValue = sortedLocations.get(0).name();
             }
-    	}
+        }
         
         List<ResourceGroup> groups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(selectedSub);
         if (groups != null) {
-        	sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
+            sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
             cbvUseExisting.setInput(sortedGroups);
-        	cbvUseExisting.refresh();
-        	if (sortedGroups.size() > 0) {
-        		cbUseExisting.select(0);
-        		selectedResGrpValue = sortedGroups.get(0);
-        	}
+            cbvUseExisting.refresh();
+            if (sortedGroups.size() > 0) {
+                cbUseExisting.select(0);
+                selectedResGrpValue = sortedGroups.get(0);
+            }
         }
     }
 
     @Override
     protected Control createButtonBar(Composite parent) {
-		Control ctrl = super.createButtonBar(parent);
-		btnOK = getButton(IDialogConstants.OK_ID);
-		btnOK.setEnabled(false);
-		btnOK.setText(BUTTON_CREATE);
+        Control ctrl = super.createButtonBar(parent);
+        btnOK = getButton(IDialogConstants.OK_ID);
+        btnOK.setEnabled(false);
+        btnOK.setText(BUTTON_CREATE);
         return ctrl;
     }
     
@@ -449,18 +446,18 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
                 @Override
                 public void onFailure(Throwable throwable) {
                     JOptionPane.showMessageDialog(null, throwable.getMessage(),
-                    		String.format(CREATING_ERROR_INDICATOR_FORMAT, dnsNameValue), JOptionPane.ERROR_MESSAGE,
+                            String.format(CREATING_ERROR_INDICATOR_FORMAT, dnsNameValue), JOptionPane.ERROR_MESSAGE,
                             null);
                     try {
                         processorInner.notifyCompletion();
                     } catch (InterruptedException ex) {
-                    	LOG.log("Error occurred while notifyCompletion in RedisCache.", ex);
+                        LOG.log("Error occurred while notifyCompletion in RedisCache.", ex);
                     }
                 }
             });
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, ex.getMessage(),
-            		String.format(CREATING_ERROR_INDICATOR_FORMAT, dnsNameValue), JOptionPane.ERROR_MESSAGE,
+                    String.format(CREATING_ERROR_INDICATOR_FORMAT, dnsNameValue), JOptionPane.ERROR_MESSAGE,
                     null);
             LOG.log(String.format(CREATING_ERROR_INDICATOR_FORMAT, dnsNameValue), ex);
         }
@@ -469,8 +466,8 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     
     private void validateFields() {
         boolean allFieldsCompleted = !(dnsNameValue == null || dnsNameValue.isEmpty() || dnsNameValue.length() > REDIS_CACHE_MAX_NAME_LENGTH || !dnsNameValue.matches(DNS_NAME_REGEX)
-        		|| selectedLocationValue == null ||selectedLocationValue.isEmpty() || selectedResGrpValue == null 
-        		|| selectedResGrpValue.isEmpty() || selectedPriceTierValue == null || selectedPriceTierValue.isEmpty());
+                || selectedLocationValue == null ||selectedLocationValue.isEmpty() || selectedResGrpValue == null 
+                || selectedResGrpValue.isEmpty() || selectedPriceTierValue == null || selectedPriceTierValue.isEmpty());
 
         btnOK.setEnabled(allFieldsCompleted);
     }
