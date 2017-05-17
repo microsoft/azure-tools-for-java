@@ -192,6 +192,8 @@ public class SparkSubmissionContentPanel extends JPanel{
         addReferencedJarsLineItem();
         //TODO: ReferencedFiles Parameter Valid Check
         addReferencedFilesLineItem();
+
+        addAdvancedConfigLineItem();
     }
 
     private void initializeModel() {
@@ -669,6 +671,27 @@ public class SparkSubmissionContentPanel extends JPanel{
                         1, 0,
                         GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
                         new Insets(margin, margin, 0, margin), 0, 0));
+    }
+
+    private void addAdvancedConfigLineItem() {
+        JButton advancedConfigButton = new JButton("Advanced configuration");
+        advancedConfigButton.setToolTipText("Specify advanced configuration, for example, enabling Spark remote debug");
+
+        add(advancedConfigButton,
+                new GridBagConstraints(0, ++displayLayoutCurrentRow,
+                        0, 1,
+                        1, 0,
+                        GridBagConstraints.SOUTHEAST, GridBagConstraints.NONE,
+                        new Insets(margin, margin, 0, 0), 0, 0));
+
+        advancedConfigButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SparkSubmissionAdvancedConfigDialog advancedConfigDialog = new SparkSubmissionAdvancedConfigDialog();
+                advancedConfigDialog.setModal(true);
+                advancedConfigDialog.setVisible(true);
+            }
+        });
     }
 
     private void addReferencedFilesLineItem() {
