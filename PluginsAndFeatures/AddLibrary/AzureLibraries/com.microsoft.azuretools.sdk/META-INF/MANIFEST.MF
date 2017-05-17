@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.microsoft.azuretools.sdk;singleton:=true
 Bundle-Version: 3.0.2.qualifier
 Bundle-Vendor: Microsoft Corp.
 Bundle-ClassPath: .,
- azure-1.0.0.jar,
+ dependencies/azure-1.0.0.jar,
  dependencies/adal4j-1.1.2.jar,
  dependencies/adapter-rxjava-2.1.0.jar,
  dependencies/annotation-detector-3.0.4.jar,
