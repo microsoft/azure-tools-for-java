@@ -79,7 +79,7 @@ import java.util.stream.Collectors;
 
 public class CreateRedisCacheForm extends TitleAreaDialog {
 
-    private static ILog LOG = Activator.getDefault().getLog();
+    private static Activator LOG = Activator.getDefault();
     protected final AzureManager azureManager;
     protected List<SubscriptionDetail> allSubs;
     private List<SubscriptionDetail> selectedSubscriptions;
@@ -145,7 +145,7 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
         	Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
         	currentSub = selectedSubscriptions.get(0);
         	if (subscription2Location == null || subscription2Location.get(currentSub) == null) {
-                FormUtils.loadLocationsAndResourceGrps(LOG, parentShell);
+                FormUtils.loadLocationsAndResourceGrps(parentShell);
             }
         }
         allResGrpsofCurrentSub = new HashSet<String>();
@@ -362,7 +362,7 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
                             try {
                                 processor.waitForCompletion("PRODUCE");
                             } catch (InterruptedException ex) {
-                                Activator.getDefault().log("Error occurred while waitForCompletion in RedisCache.", ex);
+                            	LOG.log("Error occurred while waitForCompletion in RedisCache.", ex);
                             }
                         }
                     });
@@ -446,7 +446,7 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
                     try {
                         processorInner.notifyCompletion();
                     } catch (InterruptedException ex) {
-                    	Activator.getDefault().log("Error occurred while notifyCompletion in RedisCache.", ex);
+                    	LOG.log("Error occurred while notifyCompletion in RedisCache.", ex);
                     }
                 }
             });
@@ -454,7 +454,7 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
             JOptionPane.showMessageDialog(null, ex.getMessage(),
             		String.format(CREATING_ERROR_INDICATOR_FORMAT, dnsNameValue), JOptionPane.ERROR_MESSAGE,
                     null);
-            Activator.getDefault().log(String.format(CREATING_ERROR_INDICATOR_FORMAT, dnsNameValue), ex);
+            LOG.log(String.format(CREATING_ERROR_INDICATOR_FORMAT, dnsNameValue), ex);
         }
         super.okPressed();
     }
