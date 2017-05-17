@@ -48,7 +48,9 @@ public class CreateRedisCacheAction extends NodeActionListener {
             createRedisCacheForm.setOnCreate(new Runnable() {
                 @Override
                 public void run() {
-                    redisCacheModule.load(false);
+                    if (redisCacheModule != null) {
+                        redisCacheModule.load(false);
+                    }
                 }
             });
             createRedisCacheForm.open();
