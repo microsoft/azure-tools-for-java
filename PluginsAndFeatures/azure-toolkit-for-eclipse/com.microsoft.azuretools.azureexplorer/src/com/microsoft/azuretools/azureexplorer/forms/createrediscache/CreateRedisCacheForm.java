@@ -22,7 +22,7 @@
 package com.microsoft.azuretools.azureexplorer.forms.createrediscache;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,14 +30,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -57,12 +55,13 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessorBase;
-import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.azureexplorer.forms.FormUtils;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.ParallelExecutor;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Button;
@@ -70,10 +69,9 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import javax.swing.JOptionPane;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -84,7 +82,9 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
     private static ILog LOG = Activator.getDefault().getLog();
     protected final AzureManager azureManager;
     protected List<SubscriptionDetail> allSubs;
-    private Map<String, SubscriptionDetail> selectedSubsMap;
+    private List<SubscriptionDetail> selectedSubscriptions;
+    private List<Location> locations;
+    private List<String> sortedGroups;
     protected Set<String> allResGrpsofCurrentSub;
     private SubscriptionDetail currentSub;
     private boolean noSSLPort = false;
@@ -92,30 +92,43 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
     private final LinkedHashMap<String, String> skus;
 
     private String dnsNameValue;
-    private String selectedRegionValue;
+    private String selectedLocationValue;
     private String selectedResGrpValue;
     private String selectedPriceTierValue;
 
     private Combo cbSubs;
     private Combo cbUseExisting;
+    private ComboViewer cbvUseExisting;
     private Combo cbLocations;
+    private ComboViewer cbvLocations;
     private Combo cbPricetiers;
 
-    private Label lblPricingTier;
-    private Label lblLocation;
-    private Label lblDnsName;
-    private Label lblSubscription;
-    private Label lblResourceGroup;
-    private Label lblSuffix;
+    private Label lblDnsSuffix;
 
-    private Button btnUnblockPort;
-    private Button btnUseExisting;
-    private Button btnCreateNew;
+    private Button chkUnblockPort;
+    private Button rdoUseExisting;
+    private Button rdoCreateNew;
+    private Button btnOK;
 
     private Text txtDnsName;
     private Text txtNewResGrpName;
 
-    private static final String subsComboItemStrFormat = "%s (%s)";
+    private static final String DIALOG_TITLE = "New Redis Cache";
+    private static final String DIALOG_MESSAGE = "Please enter Redis Cache details.";
+    private static final String LABEL_DNS_NAME = "* DNS name";
+    private static final String LABEL_SUBSCRIPTION = "* Subscription";
+    private static final String LABEL_RESOURCE_GRP = "* Resource group";
+    private static final String RADIOBUTTON_USE_EXIST_GRP = "Use existing";
+    private static final String RADIOBUTTON_NEW_GRP = "Create new";
+    private static final String LABEL_LOCTION = "* Location";
+    private static final String LABEL_PRICING = "* Pricing tier";
+    private static final String CHECKBOX_SSL = "Unblock port 6379 (not SSL encrypted)";
+    private static final String BUTTON_CREATE = "Create";
+    private static final String SUBS_COMBO_ITEMS_FORMAT = "%s (%s)";
+    private static final String DNS_NAME_REGEX = "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$";
+    private static final String CREATING_INDICATOR_FORMAT = "Creating Redis Cache %s ...";
+    private static final String CREATING_ERROR_INDICATOR_FORMAT = "Error occurred when creating Redis Cache: %s";
+    private static final String DECORACTOR_DNS = "Invalid Redis Cache name. The name can only contain letters, numbers and hyphens. The first and last characters must each be a letter or a number. Consecutive hyphens are not allowed.";
 
     /**
      * Create the dialog.
@@ -127,11 +140,15 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
         super(parentShell);
         azureManager = AuthMethodManager.getInstance().getAzureManager();
         allSubs = azureManager.getSubscriptionManager().getSubscriptionDetails();
-        selectedSubsMap = allSubs.stream().filter(SubscriptionDetail::isSelected).collect(Collectors.toMap(
-                sub -> String.format(subsComboItemStrFormat, sub.getSubscriptionName(), sub.getSubscriptionId()),
-                sub -> sub));
+        selectedSubscriptions = allSubs.stream().filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
+        if (selectedSubscriptions.size() > 0) {
+        	Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
+        	currentSub = selectedSubscriptions.get(0);
+        	if (subscription2Location == null || subscription2Location.get(currentSub) == null) {
+                FormUtils.loadLocationsAndResourceGrps(LOG, parentShell);
+            }
+        }
         allResGrpsofCurrentSub = new HashSet<String>();
-        currentSub = null;
         skus = RedisCacheUtil.initSkus();
     }
 
@@ -142,96 +159,156 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
      */
     @Override
     protected Control createDialogArea(Composite parent) {
-        setTitle("New Redis Cache");
-        setMessage("Please enter Redis Cache details.");
+        setTitle(DIALOG_TITLE);
+        setMessage(DIALOG_MESSAGE);
         
         Composite container = new Composite(parent, SWT.FILL);
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
         
+        // Dns name
         Label lblRequireDnsName = new Label(container, SWT.NONE);
-        lblRequireDnsName.setBounds(10, 0, 9, 20);
-        lblRequireDnsName.setText("* ");
-        
-        lblDnsName = new Label(container, SWT.NONE);
-        lblDnsName.setBounds(22, 0, 70, 20);
-        lblDnsName.setText("DNS name");
+        lblRequireDnsName.setBounds(10, 0, 90, 20);
+        lblRequireDnsName.setText(LABEL_DNS_NAME);
         
         txtDnsName = new Text(container, SWT.BORDER);
-        txtDnsName.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                dnsNameValue = txtDnsName.getText();
+        txtDnsName.addModifyListener(new ModifyListener() {
+        	ControlDecoration decorator;
+        	{
+                decorator = new ControlDecoration(txtDnsName, SWT.CENTER);
+                decorator.setDescriptionText(DECORACTOR_DNS);
+                Image image = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR).getImage();
+                decorator.setImage(image);
             }
+			@Override
+			public void modifyText(ModifyEvent arg0) {
+				dnsNameValue = txtDnsName.getText();
+				if (dnsNameValue.length() > 63 || !dnsNameValue.matches(DNS_NAME_REGEX)) {
+					decorator.show();
+		        } else {
+		        	decorator.hide();
+		        }
+				validateFields();
+			}
         });
         txtDnsName.setBounds(10, 23, 469, 26);
         
-        lblSuffix = new Label(container, SWT.NONE);
-        lblSuffix.setBounds(311, 55, 168, 20);
-        lblSuffix.setText(".redis.cache.windows.net");
-        
+        lblDnsSuffix = new Label(container, SWT.NONE);
+        lblDnsSuffix.setBounds(311, 55, 168, 20);
+        lblDnsSuffix.setText(".redis.cache.windows.net");
+
+        //Subscription
         Label lblRequireSubs = new Label(container, SWT.NONE);
-        lblRequireSubs.setText("* ");
-        lblRequireSubs.setBounds(10, 81, 9, 20);
+        lblRequireSubs.setText(LABEL_SUBSCRIPTION);
+        lblRequireSubs.setBounds(10, 81, 90, 20);
         
-        lblSubscription = new Label(container, SWT.NONE);
-        lblSubscription.setText("Subscription");
-        lblSubscription.setBounds(22, 81, 81, 20);
-
         cbSubs = new Combo(container, SWT.DROP_DOWN | SWT.READ_ONLY);
-        for (String key : selectedSubsMap.keySet()) {
-            cbSubs.add(key);
+        for (SubscriptionDetail sub : selectedSubscriptions) {
+            cbSubs.add(String.format(SUBS_COMBO_ITEMS_FORMAT, sub.getSubscriptionName(), sub.getSubscriptionId()));
         }
-        cbSubs.select(0);
-
+        
         cbSubs.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
-                currentSub = selectedSubsMap.get(cbSubs.getText());
+                currentSub = selectedSubscriptions.get(cbSubs.getSelectionIndex());
+                fillLocationsAndResourceGrps(currentSub);
+                validateFields();
             }
         });
+        if (selectedSubscriptions.size() > 0) {
+        	cbSubs.select(0);
+        }
         cbSubs.setBounds(10, 107, 469, 28);
-
-        cbLocations = new Combo(container, SWT.DROP_DOWN | SWT.READ_ONLY);
-        cbLocations.addFocusListener(new FocusAdapter() {
+        
+        // Resource Group
+        Label lblRequireResourceGrp = new Label(container, SWT.NONE);
+        lblRequireResourceGrp.setText(LABEL_RESOURCE_GRP);
+        lblRequireResourceGrp.setBounds(10, 151, 90, 20);
+        
+        rdoCreateNew = new Button(container, SWT.RADIO);
+        rdoCreateNew.setSelection(true);
+        rdoCreateNew.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void focusGained(FocusEvent e) {
-                for (Region r : Region.values()) {
-                    // Redis unavailable in Azure China Cloud, Azure German
-                    // Cloud, Azure Government Cloud
-                    if (!r.name().equals(Region.CHINA_NORTH.name()) && !r.name().equals(Region.CHINA_EAST.name())
-                            && !r.name().equals(Region.GERMANY_CENTRAL.name())
-                            && !r.name().equals(Region.GERMANY_NORTHEAST.name())
-                            && !r.name().equals(Region.GOV_US_VIRGINIA.name())
-                            && !r.name().equals(Region.GOV_US_IOWA.name())) {
-                        cbLocations.add(r.label());
-                    }
-                }
+            public void widgetSelected(SelectionEvent e) {
+                txtNewResGrpName.setVisible(true);
+                cbUseExisting.setVisible(false);
+                newResGrp = true;
+                validateFields();
             }
+        });
+        rdoCreateNew.setBounds(10, 177, 111, 20);
+        rdoCreateNew.setSelection(true);
+        rdoCreateNew.setText(RADIOBUTTON_NEW_GRP);
 
+        rdoUseExisting = new Button(container, SWT.RADIO);
+        rdoUseExisting.setSelection(false);
+        rdoUseExisting.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void focusLost(FocusEvent e) {
-                selectedRegionValue = cbLocations.getText();
+            public void widgetSelected(SelectionEvent e) {
+                txtNewResGrpName.setVisible(false);
+                cbUseExisting.setVisible(true);
+                newResGrp = false;
+                validateFields();
+            }
+        });
+        rdoUseExisting.setText(RADIOBUTTON_USE_EXIST_GRP);
+        rdoUseExisting.setSelection(false);
+        rdoUseExisting.setBounds(127, 177, 111, 20);
+        
+        txtNewResGrpName = new Text(container, SWT.BORDER);
+        txtNewResGrpName.addModifyListener(new ModifyListener() {
+
+			@Override
+			public void modifyText(ModifyEvent arg0) {
+				selectedResGrpValue = txtNewResGrpName.getText();
+				validateFields();
+			}
+        });
+        txtNewResGrpName.setVisible(true);
+        txtNewResGrpName.setBounds(10, 203, 469, 28);
+        
+        cbvUseExisting = new ComboViewer(container, SWT.READ_ONLY);
+        cbvUseExisting.setContentProvider(ArrayContentProvider.getInstance());
+        cbUseExisting = cbvUseExisting.getCombo();
+        cbUseExisting.setVisible(false);
+        cbUseExisting.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+            	selectedResGrpValue = cbUseExisting.getText();
+            	validateFields();
+            }
+        });
+        cbUseExisting.setVisible(false);
+        cbUseExisting.setBounds(10, 203, 469, 28);
+
+        // Location
+        Label lblRequireLocation = new Label(container, SWT.NONE);
+        lblRequireLocation.setText(LABEL_LOCTION);
+        lblRequireLocation.setBounds(10, 245, 90, 20);
+        
+        cbvLocations = new ComboViewer(container, SWT.READ_ONLY);
+        cbvLocations.setContentProvider(ArrayContentProvider.getInstance());
+        cbvLocations.setLabelProvider(new LabelProvider() {
+            @Override
+            public String getText(Object element) {
+            	Location loc = (Location) element;
+                return loc.displayName();
+            }
+        });
+        cbLocations = cbvLocations.getCombo();
+        cbLocations.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+            	selectedLocationValue = locations.get(cbLocations.getSelectionIndex()).name();
+            	validateFields();
             }
         });
         cbLocations.setBounds(10, 271, 469, 28);
-
-        ComboViewer useExistingComboViewer = new ComboViewer(container, SWT.READ_ONLY);
-        useExistingComboViewer.setContentProvider(ArrayContentProvider.getInstance());
-        cbUseExisting = useExistingComboViewer.getCombo();
-        cbUseExisting.setVisible(false);
-        cbUseExisting.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                useExistingComboViewer.setInput(allResGrpsofCurrentSub);
-                useExistingComboViewer.refresh();
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                selectedResGrpValue = cbUseExisting.getText();
-            }
-        });
-        cbUseExisting.setBounds(10, 203, 469, 28);
-
+        fillLocationsAndResourceGrps(currentSub);
+        
+        // Price
+        Label lblRequirePrice = new Label(container, SWT.NONE);
+        lblRequirePrice.setText(LABEL_PRICING);
+        lblRequirePrice.setBounds(10, 314, 90, 20);
+        
         ComboViewer comboPricetiersViewer = new ComboViewer(container, SWT.READ_ONLY);
         comboPricetiersViewer.setContentProvider(ArrayContentProvider.getInstance());
         cbPricetiers = comboPricetiersViewer.getCombo();
@@ -239,63 +316,20 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 selectedPriceTierValue = cbPricetiers.getText();
+                validateFields();
             }
         });
-        cbPricetiers.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                comboPricetiersViewer.setInput(skus.keySet());
-                comboPricetiersViewer.refresh();
-            }
-        });
+        comboPricetiersViewer.setInput(skus.keySet());
+        comboPricetiersViewer.refresh();
+        if (skus.keySet().size() > 0) {
+        	cbPricetiers.select(0);
+        	selectedPriceTierValue = cbPricetiers.getText();
+        }
         cbPricetiers.setBounds(10, 340, 469, 28);
 
-        lblResourceGroup = new Label(container, SWT.NONE);
-        lblResourceGroup.setText("Resource group");
-        lblResourceGroup.setBounds(22, 151, 105, 20);
-
-        lblLocation = new Label(container, SWT.NONE);
-        lblLocation.setText("Location");
-        lblLocation.setBounds(22, 245, 81, 20);
-
-        lblPricingTier = new Label(container, SWT.NONE);
-        lblPricingTier.setText("Pricing tier");
-        lblPricingTier.setBounds(22, 314, 81, 20);
-
-        btnCreateNew = new Button(container, SWT.RADIO);
-        btnCreateNew.setSelection(true);
-        btnCreateNew.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                txtNewResGrpName.setVisible(true);
-                cbUseExisting.setVisible(false);
-                newResGrp = true;
-            }
-        });
-        btnCreateNew.setBounds(10, 177, 111, 20);
-        btnCreateNew.setText("Create new");
-
-        btnUseExisting = new Button(container, SWT.RADIO);
-        btnUseExisting.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseUp(MouseEvent e) {
-                doRetriveResourceGroups();
-            }
-        });
-        btnUseExisting.setSelection(false);
-        btnUseExisting.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                txtNewResGrpName.setVisible(false);
-                cbUseExisting.setVisible(true);
-                newResGrp = false;
-            }
-        });
-        btnUseExisting.setText("Use existing");
-        btnUseExisting.setBounds(127, 177, 111, 20);
-
-        btnUnblockPort = new Button(container, SWT.CHECK);
-        btnUnblockPort.addSelectionListener(new SelectionAdapter() {
+        // SSL
+        chkUnblockPort = new Button(container, SWT.CHECK);
+        chkUnblockPort.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 Button btn = (Button) e.getSource();
@@ -306,57 +340,29 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
                 }
             }
         });
-        btnUnblockPort.setBounds(10, 380, 320, 20);
-        btnUnblockPort.setText("Unblock port 6379 (not SSL encrypted)");
-
-        txtNewResGrpName = new Text(container, SWT.BORDER);
-        txtNewResGrpName.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                selectedResGrpValue = txtNewResGrpName.getText();
-            }
-        });
-        txtNewResGrpName.setBounds(10, 203, 469, 28);
-
-        Label lblRequireResourceGrp = new Label(container, SWT.NONE);
-        lblRequireResourceGrp.setText("* ");
-        lblRequireResourceGrp.setBounds(10, 151, 9, 20);
-
-        Label lblRequireLocation = new Label(container, SWT.NONE);
-        lblRequireLocation.setText("* ");
-        lblRequireLocation.setBounds(10, 245, 9, 20);
-
-        Label lblRequirePrice = new Label(container, SWT.NONE);
-        lblRequirePrice.setText("* ");
-        lblRequirePrice.setBounds(10, 314, 9, 20);
-
-        btnCreateNew.setSelection(true);
-        btnUseExisting.setSelection(false);
-        txtNewResGrpName.setVisible(true);
-        cbUseExisting.setVisible(false);
+        chkUnblockPort.setBounds(10, 380, 320, 20);
+        chkUnblockPort.setText(CHECKBOX_SSL);
 
         return super.createDialogArea(parent);
     }
 
-    class MyCallable implements Callable<Void> {
+    class CreateRedisCacheCallable implements Callable<Void> {
         private ProcessingStrategy processor;
 
-        public MyCallable(ProcessingStrategy processor) {
+        public CreateRedisCacheCallable(ProcessingStrategy processor) {
             this.processor = processor;
         }
 
         public Void call() throws Exception {
             DefaultLoader.getIdeHelper().runInBackground(null,
-                    "Creating Redis Cache " + ((ProcessorBase) processor).DNSName() + "...", false, true,
-                    "Creating Redis Cache " + ((ProcessorBase) processor).DNSName() + "...", new Runnable() {
+            		String.format(CREATING_INDICATOR_FORMAT, ((ProcessorBase) processor).DNSName()), false, true,
+            		String.format(CREATING_INDICATOR_FORMAT, ((ProcessorBase) processor).DNSName()), new Runnable() {
                         @Override
                         public void run() {
                             try {
                                 processor.waitForCompletion("PRODUCE");
                             } catch (InterruptedException ex) {
-                                System.out.println("processor.wait@call@MyCallable: " + ex.getMessage());
-                                LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "processor.wait@call@MyCallable",
-                                        ex));
+                                Activator.getDefault().log("Error occurred while waitForCompletion in RedisCache.", ex);
                             }
                         }
                     });
@@ -366,98 +372,37 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
         }
     }
 
-    /**
-     * Create contents of the button bar.
-     * 
-     * @param parent
-     */
-    @Override
-    protected void createButtonsForButtonBar(Composite parent) {
-        Button button = createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-        button.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                try {
-                    if (!RedisCacheUtil.doValidate(azureManager, currentSub, dnsNameValue, selectedRegionValue,
-                            selectedResGrpValue, selectedPriceTierValue)) {
-                        return;
-                    }
-                    Azure azure = azureManager.getAzure(currentSub.getSubscriptionId());
-                    ProcessingStrategy processor = RedisCacheUtil.doGetProcessor(azure, skus, dnsNameValue,
-                            selectedRegionValue, selectedResGrpValue, selectedPriceTierValue, noSSLPort, newResGrp);
-                    ExecutorService executor = Executors.newSingleThreadExecutor();
-                    ListeningExecutorService executorService = MoreExecutors.listeningDecorator(executor);
-                    ListenableFuture<Void> futureTask = executorService.submit(new MyCallable(processor));
-                    final ProcessingStrategy processorInner = processor;
-                    Futures.addCallback(futureTask, new FutureCallback<Void>() {
-                        @Override
-                        public void onSuccess(Void arg0) {
-                        }
-
-                        @Override
-                        public void onFailure(Throwable throwable) {
-                            JOptionPane.showMessageDialog(null, throwable.getMessage(),
-                                    "Error occurred when creating Redis Cache: " + dnsNameValue,
-                                    JOptionPane.ERROR_MESSAGE, null);
-                            try {
-                                // notify the waitting thread the thread being
-                                // waited incurred exception to clear blocking
-                                // queue
-                                processorInner.notifyCompletion();
-                            } catch (InterruptedException ex) {
-                                System.out.println(
-                                        "processor.pulse@onFailure@createButtonsForButtonBar: " + ex.getMessage());
-                                LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                                        "processor.pulse@onFailure@createButtonsForButtonBar", ex));
-                            }
-                        }
-                    });
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(null, ex.getMessage(),
-                            "Error occurred when creating Redis Cache: " + dnsNameValue, JOptionPane.ERROR_MESSAGE,
-                            null);
-                }
-            }
-        });
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-    }
-
-    private void doRetriveResourceGroups() {
-        allResGrpsofCurrentSub.clear();
-        IRunnableWithProgress op = new IRunnableWithProgress() {
-            @Override
-            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                monitor.beginTask("Getting Resource Groups for Selected Subscription...", IProgressMonitor.UNKNOWN);
-                try {
-                    if (currentSub != null) {
-                        ParallelExecutor.For(
-                                azureManager.getAzure(currentSub.getSubscriptionId()).resourceGroups().list(),
-                                // The operation to perform with each item
-                                new ParallelExecutor.Operation<ResourceGroup>() {
-                                    public void perform(ResourceGroup group) {
-                                        allResGrpsofCurrentSub.add(group.name());
-                                    };
-                                });
-                    }
-                } catch (Exception ex) {
-                    System.out.println(
-                            "run@ProgressDialog@doRetriveResourceGroups@CreateRedisCacheForm: " + ex.getMessage());
-                    LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                            "run@ProgressDialog@doRetriveResourceGroups@CreateRedisCacheForm", ex));
-                }
-            }
-        };
-        try {
-            new ProgressMonitorDialog(this.getShell()).run(true, false, op);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "doRetriveResourceGroups@CreateRedisCacheForm", ex));
+    private void fillLocationsAndResourceGrps(SubscriptionDetail selectedSub) {
+        locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub)
+                .stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
+        cbvLocations.setInput(locations);
+        cbvLocations.refresh();
+        if (locations.size() > 0) {
+        	cbLocations.select(0);
+        	selectedLocationValue = locations.get(0).name();
         }
+        
+        
+        List<ResourceGroup> groups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(selectedSub);
+        sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
+        cbvUseExisting.setInput(sortedGroups);
+    	cbvUseExisting.refresh();
+    	if (sortedGroups.size() > 0) {
+    		cbUseExisting.select(0);
+    		selectedResGrpValue = sortedGroups.get(0);
+    	}
+        
     }
 
-    /**
-     * Return the initial size of the dialog.
-     */
+    @Override
+    protected Control createButtonBar(Composite parent) {
+		Control ctrl = super.createButtonBar(parent);
+		btnOK = getButton(IDialogConstants.OK_ID);
+		btnOK.setEnabled(false);
+		btnOK.setText(BUTTON_CREATE);
+        return ctrl;
+    }
+    
     @Override
     protected Point getInitialSize() {
         return new Point(495, 596);
@@ -475,6 +420,50 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
 
     @Override
     protected void okPressed() {
+        try {
+            if (!RedisCacheUtil.doValidate(azureManager, currentSub, dnsNameValue, selectedLocationValue,
+                    selectedResGrpValue, selectedPriceTierValue)) {
+                return;
+            }
+            Azure azure = azureManager.getAzure(currentSub.getSubscriptionId());
+            ProcessingStrategy processor = RedisCacheUtil.doGetProcessor(azure, skus, dnsNameValue,
+                    selectedLocationValue, selectedResGrpValue, selectedPriceTierValue, noSSLPort, newResGrp);
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            ListeningExecutorService executorService = MoreExecutors.listeningDecorator(executor);
+            ListenableFuture<Void> futureTask = executorService.submit(new CreateRedisCacheCallable(processor));
+            final ProcessingStrategy processorInner = processor;
+            Futures.addCallback(futureTask, new FutureCallback<Void>() {
+                @Override
+                public void onSuccess(Void arg0) {
+                	//TODO: send telemetry
+                }
+
+                @Override
+                public void onFailure(Throwable throwable) {
+                    JOptionPane.showMessageDialog(null, throwable.getMessage(),
+                    		String.format(CREATING_ERROR_INDICATOR_FORMAT, dnsNameValue), JOptionPane.ERROR_MESSAGE,
+                            null);
+                    try {
+                        processorInner.notifyCompletion();
+                    } catch (InterruptedException ex) {
+                    	Activator.getDefault().log("Error occurred while notifyCompletion in RedisCache.", ex);
+                    }
+                }
+            });
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex.getMessage(),
+            		String.format(CREATING_ERROR_INDICATOR_FORMAT, dnsNameValue), JOptionPane.ERROR_MESSAGE,
+                    null);
+            Activator.getDefault().log(String.format(CREATING_ERROR_INDICATOR_FORMAT, dnsNameValue), ex);
+        }
         super.okPressed();
+    }
+    
+    private void validateFields() {
+        boolean allFieldsCompleted = !(dnsNameValue == null || dnsNameValue.isEmpty() || dnsNameValue.length() > 63 || !dnsNameValue.matches(DNS_NAME_REGEX)
+        		|| selectedLocationValue == null ||selectedLocationValue.isEmpty() || selectedResGrpValue == null 
+        		|| selectedResGrpValue.isEmpty() || selectedPriceTierValue == null || selectedPriceTierValue.isEmpty());
+
+        btnOK.setEnabled(allFieldsCompleted);
     }
 }
