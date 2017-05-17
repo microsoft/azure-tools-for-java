@@ -112,6 +112,8 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
 
     private Text txtDnsName;
     private Text txtNewResGrpName;
+    
+    private Runnable onCreate;
 
     private static final Integer REDIS_CACHE_MAX_NAME_LENGTH = 63;
     private static final String DIALOG_TITLE = "New Redis Cache";
@@ -441,7 +443,11 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             final ProcessingStrategy processorInner = processor;
             Futures.addCallback(futureTask, new FutureCallback<Void>() {
                 @Override
-                public void onSuccess(Void arg0) {}
+                public void onSuccess(Void arg0) {
+                    if (onCreate != null) {
+                        onCreate.run();
+                    }
+                }
 
                 @Override
                 public void onFailure(Throwable throwable) {
@@ -480,6 +486,10 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             if(currentSub.getSubscriptionId() != null)  properties.put("SubscriptionId", currentSub.getSubscriptionId());
         }
         return properties;
+    }
+    
+    public void setOnCreate(Runnable onCreate) {
+        this.onCreate = onCreate;
     }
     
 }

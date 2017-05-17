@@ -22,22 +22,25 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public final class RedisCacheNode extends Node {
+public final class RedisCacheNode extends Node implements TelemetryProperties {
     private final RedisCache redisCache;
+    private String subscriptionId;
 
     private static final String REDISCACHE_ICON_PATH = "RedisCache.png";
 
     public RedisCacheNode(Node parent, String subscriptionId, RedisCache redisCache) {
         super(subscriptionId + redisCache.name(), redisCache.name(), parent, REDISCACHE_ICON_PATH, true);
         this.redisCache = redisCache;
+        this.subscriptionId = subscriptionId;
         loadActions();
     }
 
@@ -45,7 +48,13 @@ public final class RedisCacheNode extends Node {
 
     @Override
     public List<NodeAction> getNodeActions() {
-
         return super.getNodeActions();
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
+        return properties;
     }
 }

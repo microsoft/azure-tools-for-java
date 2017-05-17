@@ -55,7 +55,6 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -204,7 +203,11 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
             final ProcessingStrategy processorInner = processor;
             Futures.addCallback(futureTask, new FutureCallback<Void>() {
                 @Override
-                public void onSuccess(Void arg0) {}
+                public void onSuccess(Void arg0) {
+                    if (onCreate != null) {
+                        onCreate.run();
+                    }
+                }
                 @Override
                 public void onFailure(Throwable throwable) {
                     JOptionPane.showMessageDialog(null, throwable.getMessage(), "Error occurred when creating Redis Cache: " + redisCacheNameValue, JOptionPane.ERROR_MESSAGE, null);
@@ -217,9 +220,6 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
                     }
                 }
             });
-            if (onCreate != null) {
-                onCreate.run();
-            }
             close(DialogWrapper.OK_EXIT_CODE, true);
         } catch (Exception ex) {
             ex.printStackTrace();

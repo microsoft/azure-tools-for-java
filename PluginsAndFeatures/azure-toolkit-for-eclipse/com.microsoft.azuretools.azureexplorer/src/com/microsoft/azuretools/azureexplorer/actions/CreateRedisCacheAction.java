@@ -32,17 +32,26 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCa
 
 @Name("Create Redis Cache")
 public class CreateRedisCacheAction extends NodeActionListener {
-    public CreateRedisCacheAction(RedisCacheModule node) {
-        super(node);
+
+    private RedisCacheModule redisCacheModule;
+
+    public CreateRedisCacheAction(RedisCacheModule redisCacheModule) {
+        this.redisCacheModule = redisCacheModule;
     }
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
         if (!SignInCommandHandler.doSignIn(PluginUtil.getParentShell())) return;
         try {
-            CreateRedisCacheForm dialog = new CreateRedisCacheForm(PluginUtil.getParentShell());
-            dialog.create();
-            dialog.open();
+            CreateRedisCacheForm createRedisCacheForm = new CreateRedisCacheForm(PluginUtil.getParentShell());
+            createRedisCacheForm.create();
+            createRedisCacheForm.setOnCreate(new Runnable() {
+                @Override
+                public void run() {
+                    redisCacheModule.load(false);
+                }
+            });
+            createRedisCacheForm.open();
         } catch (IOException ex) {
              ex.printStackTrace();
         }
