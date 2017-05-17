@@ -45,7 +45,7 @@ public class CreateRedisCacheAction extends NodeActionListener {
         Project project = (Project) redisCacheModule.getProject();
         try {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return;
-            CreateRedisCacheForm createRedisCacheForm = new CreateRedisCacheForm((Project) redisCacheModule.getProject());
+            CreateRedisCacheForm createRedisCacheForm = new CreateRedisCacheForm(project);
             createRedisCacheForm.setOnCreate(new Runnable() {
                 @Override
                 public void run() {
