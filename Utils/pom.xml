@@ -38,6 +38,31 @@
         <module>./azure-explorer-common</module>
         <module>./hdinsight-node-common</module>
     </modules>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>com.microsoft.azure</groupId>
+                            <artifactId>applicationinsights-management</artifactId>
+                            <version>1.0.3</version>
+                            <packaging>jar</packaging>
+                            <file>${basedir}/lib/applicationinsights-management-1.0.3.jar</file>
+                        </configuration>
+                    </execution>
+                </executions>
+                <inherited>false</inherited>
+            </plugin>
+        </plugins>
+    </build>
     <dependencyManagement>
         <dependencies>
             <dependency>

@@ -10,7 +10,7 @@
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>azure-explorer-common</artifactId>
     <properties>
-        <artifict.name>${artifactId}-${version}.jar</artifict.name>
+        <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
     </properties>
     <build>
         <sourceDirectory>src</sourceDirectory>
@@ -32,7 +32,7 @@
                         <phase>package</phase>
                         <configuration>
                             <target>
-                                <copy file="${basedir}/target/${artifict.name}" tofile="${basedir}/../../PluginsAndFeatures/azure-toolkit-for-eclipse/com.microsoft.azuretools.core/resources/${artifict.name}" overwrite="true" />
+                                <copy file="${basedir}/target/${artifact.name}" tofile="${basedir}/../../PluginsAndFeatures/azure-toolkit-for-eclipse/com.microsoft.azuretools.core/resources/${artifact.name}" overwrite="true" />
                             </target>
                         </configuration>
                         <goals>
@@ -128,8 +128,6 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>applicationinsights-management</artifactId>
             <version>1.0.3</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../PluginsAndFeatures/AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies/applicationinsights-management-1.0.3.jar</systemPath>
         </dependency>
     </dependencies>
 </project>

@@ -34,7 +34,7 @@
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>azuretools-core</artifactId>
     <properties>
-        <artifact.name>${artifactId}-${version}.jar</artifact.name>
+        <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
     </properties>
     <build>
         <sourceDirectory>src</sourceDirectory>
@@ -159,8 +159,6 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>applicationinsights-management</artifactId>
             <version>1.0.3</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../PluginsAndFeatures/AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies/applicationinsights-management-1.0.3.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
