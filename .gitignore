@@ -1,3 +1,8 @@
+# Editor-specific files
+.swp
+.swo
+.vscode/
+
 # Java class files
 *.class
 
@@ -6,7 +11,6 @@ bin/
 target/
 
 *.publishsettings
-
 **/dependencies/*.jar
 **/azure-toolkit-for-eclipse/**/resources/*.jar
 
@@ -78,3 +82,13 @@ fabric.properties
 
 # Gradle local files
 .gradle/
+
+## Eclipse
+.settings/
+
+# Eclipse Core
+project
+
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
