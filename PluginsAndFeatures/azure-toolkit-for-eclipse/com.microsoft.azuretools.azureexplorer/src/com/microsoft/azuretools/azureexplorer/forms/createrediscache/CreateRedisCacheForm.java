@@ -23,6 +23,7 @@ package com.microsoft.azuretools.azureexplorer.forms.createrediscache;
 
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.swt.SWT;
@@ -55,6 +55,7 @@ import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessorBase;
 import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.azureexplorer.forms.FormUtils;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureModel;
@@ -76,7 +77,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class CreateRedisCacheForm extends TitleAreaDialog {
+public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
 
     private static Activator LOG = Activator.getDefault();
     protected final AzureManager azureManager;
@@ -378,7 +379,7 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
             return null;
         }
     }
-
+    
     private void fillLocationsAndResourceGrps(SubscriptionDetail selectedSub) {
     	List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub);
     	if (locations != null) {
@@ -443,9 +444,7 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
             final ProcessingStrategy processorInner = processor;
             Futures.addCallback(futureTask, new FutureCallback<Void>() {
                 @Override
-                public void onSuccess(Void arg0) {
-                	//TODO: send telemetry
-                }
+                public void onSuccess(Void arg0) {}
 
                 @Override
                 public void onFailure(Throwable throwable) {
@@ -475,4 +474,15 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
 
         btnOK.setEnabled(allFieldsCompleted);
     }
+    
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        if (currentSub != null) {
+            if(currentSub.getSubscriptionName() != null)  properties.put("SubscriptionName", currentSub.getSubscriptionName());
+            if(currentSub.getSubscriptionId() != null)  properties.put("SubscriptionId", currentSub.getSubscriptionId());
+        }
+        return properties;
+    }
+    
 }

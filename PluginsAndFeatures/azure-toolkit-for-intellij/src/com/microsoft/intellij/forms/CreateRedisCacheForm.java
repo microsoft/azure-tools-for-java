@@ -39,17 +39,23 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.intellij.helpers.LinkListener;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
-import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.FormUtils;
+import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -92,6 +98,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     private String selectedPriceTierValue = null;
 
     // Const Strings
+    private static final Integer REDIS_CACHE_MAX_NAME_LENGTH = 63;
     private static final String DIALOG_TITLE = "New Redis Cache";
     private static final String PRICING_LINK = "https://azure.microsoft.com/en-us/pricing/details/cache";
     private static final String INVALID_REDIS_CACHE_NAME = "Invalid Redis Cache name. The name can only contain letters, numbers and hyphens. The first and last characters must each be a letter or a number. Consecutive hyphens are not allowed.";
@@ -130,7 +137,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         selectedLocationValue = ((Location) cbLocations.getSelectedItem()).inner().name();
         selectedPriceTierValue = cbPricing.getSelectedItem().toString();
 
-        if (redisCacheNameValue.length() > 63 || !redisCacheNameValue.matches(DNS_NAME_REGEX)) {
+        if (redisCacheNameValue.length() > REDIS_CACHE_MAX_NAME_LENGTH || !redisCacheNameValue.matches(DNS_NAME_REGEX)) {
             return new ValidationInfo(INVALID_REDIS_CACHE_NAME, txtRedisName);
         }
 
@@ -150,6 +157,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     @Override
     protected void doOKAction() {
         onOK();
+        super.doOKAction();
     }
 
     public void setOnCreate(Runnable onCreate) {
@@ -196,9 +204,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
             final ProcessingStrategy processorInner = processor;
             Futures.addCallback(futureTask, new FutureCallback<Void>() {
                 @Override
-                public void onSuccess(Void arg0) {
-                    sendTelemetry(OK_EXIT_CODE);
-                }
+                public void onSuccess(Void arg0) {}
                 @Override
                 public void onFailure(Throwable throwable) {
                     JOptionPane.showMessageDialog(null, throwable.getMessage(), "Error occurred when creating Redis Cache: " + redisCacheNameValue, JOptionPane.ERROR_MESSAGE, null);
