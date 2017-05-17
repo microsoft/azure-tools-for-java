@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import org.eclipse.core.runtime.ILog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.fieldassist.ControlDecoration;
@@ -83,7 +82,7 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
     protected final AzureManager azureManager;
     protected List<SubscriptionDetail> allSubs;
     private List<SubscriptionDetail> selectedSubscriptions;
-    private List<Location> locations;
+    private List<Location> sortedLocations;
     private List<String> sortedGroups;
     protected Set<String> allResGrpsofCurrentSub;
     private SubscriptionDetail currentSub;
@@ -113,9 +112,11 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
     private Text txtDnsName;
     private Text txtNewResGrpName;
 
+    private static final Integer REDIS_CACHE_MAX_NAME_LENGTH = 63;
     private static final String DIALOG_TITLE = "New Redis Cache";
     private static final String DIALOG_MESSAGE = "Please enter Redis Cache details.";
     private static final String LABEL_DNS_NAME = "* DNS name";
+    private static final String LABEL_DNS_SUFFIX = ".redis.cache.windows.net";
     private static final String LABEL_SUBSCRIPTION = "* Subscription";
     private static final String LABEL_RESOURCE_GRP = "* Resource group";
     private static final String RADIOBUTTON_USE_EXIST_GRP = "Use existing";
@@ -182,7 +183,7 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
 			@Override
 			public void modifyText(ModifyEvent arg0) {
 				dnsNameValue = txtDnsName.getText();
-				if (dnsNameValue.length() > 63 || !dnsNameValue.matches(DNS_NAME_REGEX)) {
+				if (dnsNameValue.length() > REDIS_CACHE_MAX_NAME_LENGTH || !dnsNameValue.matches(DNS_NAME_REGEX)) {
 					decorator.show();
 		        } else {
 		        	decorator.hide();
@@ -194,7 +195,7 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
         
         lblDnsSuffix = new Label(container, SWT.NONE);
         lblDnsSuffix.setBounds(311, 55, 168, 20);
-        lblDnsSuffix.setText(".redis.cache.windows.net");
+        lblDnsSuffix.setText(LABEL_DNS_SUFFIX);
 
         //Subscription
         Label lblRequireSubs = new Label(container, SWT.NONE);
@@ -289,15 +290,21 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
         cbvLocations.setLabelProvider(new LabelProvider() {
             @Override
             public String getText(Object element) {
-            	Location loc = (Location) element;
-                return loc.displayName();
+            	if (element == null) {
+            		return "";
+            	}
+            	if (element instanceof Location) {
+            		Location loc = (Location) element;
+                    return loc.displayName();
+            	}
+            	return element.toString();
             }
         });
         cbLocations = cbvLocations.getCombo();
         cbLocations.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	selectedLocationValue = locations.get(cbLocations.getSelectionIndex()).name();
+            	selectedLocationValue = sortedLocations.get(cbLocations.getSelectionIndex()).name();
             	validateFields();
             }
         });
@@ -309,9 +316,9 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
         lblRequirePrice.setText(LABEL_PRICING);
         lblRequirePrice.setBounds(10, 314, 90, 20);
         
-        ComboViewer comboPricetiersViewer = new ComboViewer(container, SWT.READ_ONLY);
-        comboPricetiersViewer.setContentProvider(ArrayContentProvider.getInstance());
-        cbPricetiers = comboPricetiersViewer.getCombo();
+        ComboViewer cbvPriceTiers = new ComboViewer(container, SWT.READ_ONLY);
+        cbvPriceTiers.setContentProvider(ArrayContentProvider.getInstance());
+        cbPricetiers = cbvPriceTiers.getCombo();
         cbPricetiers.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -319,8 +326,8 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
                 validateFields();
             }
         });
-        comboPricetiersViewer.setInput(skus.keySet());
-        comboPricetiersViewer.refresh();
+        cbvPriceTiers.setInput(skus.keySet());
+        cbvPriceTiers.refresh();
         if (skus.keySet().size() > 0) {
         	cbPricetiers.select(0);
         	selectedPriceTierValue = cbPricetiers.getText();
@@ -373,25 +380,27 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
     }
 
     private void fillLocationsAndResourceGrps(SubscriptionDetail selectedSub) {
-        locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub)
-                .stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
-        cbvLocations.setInput(locations);
-        cbvLocations.refresh();
-        if (locations.size() > 0) {
-        	cbLocations.select(0);
-        	selectedLocationValue = locations.get(0).name();
-        }
-        
-        
-        List<ResourceGroup> groups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(selectedSub);
-        sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
-        cbvUseExisting.setInput(sortedGroups);
-    	cbvUseExisting.refresh();
-    	if (sortedGroups.size() > 0) {
-    		cbUseExisting.select(0);
-    		selectedResGrpValue = sortedGroups.get(0);
+    	List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub);
+    	if (locations != null) {
+    		sortedLocations = locations.stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
+            cbvLocations.setInput(sortedLocations);
+            cbvLocations.refresh();
+            if (sortedLocations.size() > 0) {
+            	cbLocations.select(0);
+            	selectedLocationValue = sortedLocations.get(0).name();
+            }
     	}
         
+        List<ResourceGroup> groups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(selectedSub);
+        if (groups != null) {
+        	sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
+            cbvUseExisting.setInput(sortedGroups);
+        	cbvUseExisting.refresh();
+        	if (sortedGroups.size() > 0) {
+        		cbUseExisting.select(0);
+        		selectedResGrpValue = sortedGroups.get(0);
+        	}
+        }
     }
 
     @Override
@@ -460,7 +469,7 @@ public class CreateRedisCacheForm extends TitleAreaDialog {
     }
     
     private void validateFields() {
-        boolean allFieldsCompleted = !(dnsNameValue == null || dnsNameValue.isEmpty() || dnsNameValue.length() > 63 || !dnsNameValue.matches(DNS_NAME_REGEX)
+        boolean allFieldsCompleted = !(dnsNameValue == null || dnsNameValue.isEmpty() || dnsNameValue.length() > REDIS_CACHE_MAX_NAME_LENGTH || !dnsNameValue.matches(DNS_NAME_REGEX)
         		|| selectedLocationValue == null ||selectedLocationValue.isEmpty() || selectedResGrpValue == null 
         		|| selectedResGrpValue.isEmpty() || selectedPriceTierValue == null || selectedPriceTierValue.isEmpty());
 
