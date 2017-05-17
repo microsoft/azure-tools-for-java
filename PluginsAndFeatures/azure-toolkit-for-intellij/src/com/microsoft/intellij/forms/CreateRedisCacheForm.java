@@ -243,13 +243,9 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         List<SubscriptionDetail> selectedSubscriptions = allSubs.stream().filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
         cbSubs.setModel(new DefaultComboBoxModel<>(selectedSubscriptions.toArray(new SubscriptionDetail[selectedSubscriptions.size()])));
         if (selectedSubscriptions.size() > 0) {
-            Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
-            SubscriptionDetail selectedSub = (SubscriptionDetail) cbSubs.getSelectedItem();
-            currentSub = selectedSub;
-            if (subscription2Location == null || subscription2Location.get(selectedSub) == null) {
-                FormUtils.loadLocationsAndResourceGrps(project);
-            }
-            fillLocationsAndResourceGrps(selectedSub);
+            currentSub = (SubscriptionDetail) cbSubs.getSelectedItem();
+            FormUtils.loadLocationsAndResourceGrps(project);
+            fillLocationsAndResourceGrps(currentSub);
         }
 
         skus = RedisCacheUtil.initSkus();
@@ -367,11 +363,15 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     }
 
     private void fillLocationsAndResourceGrps(SubscriptionDetail selectedSub) {
-        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub)
-                .stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
-        cbLocations.setModel(new DefaultComboBoxModel(locations.toArray()));
+        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub);
+        if (locations != null) {
+            List<Location> sortedLocations = locations.stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
+            cbLocations.setModel(new DefaultComboBoxModel(sortedLocations.toArray()));
+        }
         List<ResourceGroup> groups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(selectedSub);
-        List<String> sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
-        cbUseExist.setModel(new DefaultComboBoxModel<>(sortedGroups.toArray(new String[sortedGroups.size()])));
+        if (groups != null) {
+            List<String> sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
+            cbUseExist.setModel(new DefaultComboBoxModel<>(sortedGroups.toArray(new String[sortedGroups.size()])));
+        }
     }
 }
