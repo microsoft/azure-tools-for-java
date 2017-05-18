@@ -183,7 +183,8 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
 
     @Override
     public String getAccessToken(String tid) throws IOException {
-        return atc.getToken(getManagementURI());
+        String uri = getManagementURI();
+        return atc.getToken(uri);
     }
 
     @Override
