@@ -113,8 +113,11 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
     }
 
     protected java.util.List<Component> getAllComponents(final Container c) {
-        Component[] comps = c.getComponents();
         java.util.List<Component> compList = new ArrayList<Component>();
+        if (c == null) {
+            return compList;
+        }
+        Component[] comps = c.getComponents();
         for (Component comp : comps) {
             compList.add(comp);
             if (comp instanceof Container)
