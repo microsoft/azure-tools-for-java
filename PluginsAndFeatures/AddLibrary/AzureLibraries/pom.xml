@@ -80,8 +80,10 @@
             <Bundle-Version>${project.version}.qualifier</Bundle-Version>
             <Embed-Dependency>*</Embed-Dependency>
             <Embed-Transitive>true</Embed-Transitive>
-            <Bundle-ClassPath>{maven-dependencies}</Bundle-ClassPath>
-            <Export-Package>*</Export-Package>
+            <Bundle-ClassPath>.;{maven-dependencies}</Bundle-ClassPath>
+            <!-- It is a workaround to speed up eclipse plugin installation -->
+            <!-- tricky way to clear default value of `version` and `uses:` -->
+            <Export-Package>*;version=0.0.0;uses:=.</Export-Package>
             <Import-Package>!*</Import-Package>
             <Embed-Directory>dependencies</Embed-Directory>
           </instructions>
@@ -95,7 +97,7 @@
                 <phase>package</phase>		
                   <configuration>		
                     <target>		
-                      <copy file="${build.outputDirectory}/META-INF/MANIFEST.MF" tofile="${basedir}/com.microsoft.azuretools.sdk/META-INF/MANIFEST.MF" overwrite="true" />		
+                      <copy file="${project.build.outputDirectory}/META-INF/MANIFEST.MF" tofile="${project.basedir}/com.microsoft.azuretools.sdk/META-INF/MANIFEST.MF" overwrite="true" />
                     </target>		
                   </configuration>		
                 <goals>		
