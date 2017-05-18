@@ -25,7 +25,6 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.CallBack;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitHelper;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -38,7 +37,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.URI;
-import java.util.List;
 
 public class SparkSubmissionExDialog extends JDialog {
     private SparkSubmissionContentPanel contentPane;
@@ -52,11 +50,10 @@ public class SparkSubmissionExDialog extends JDialog {
     private SparkSubmitModel submitModel;
     private CallBack callBack;
 
-    public SparkSubmissionExDialog(@NotNull Project project, @NotNull List<IClusterDetail> cachedClusterDetails, @Nullable CallBack callBack) {
+    public SparkSubmissionExDialog(@NotNull Project project, @Nullable CallBack callBack) {
         this.project = project;
         this.callBack = callBack;
-
-        submitModel = new SparkSubmitModel(project, cachedClusterDetails);
+        submitModel = new SparkSubmitModel(project);
 
         initializeComponents();
         setSubmitButtonStatus();

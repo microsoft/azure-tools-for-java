@@ -52,37 +52,15 @@ public class SubmitAction extends AnAction {
 
             isActionPerformedSet.add(project);
             AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionRightClickProject"), null);
-            DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
+
+            SparkSubmissionExDialog dialog = new SparkSubmissionExDialog(anActionEvent.getProject(), new CallBack() {
                 @Override
                 public void run() {
-                    HDInsightUtil.showInfoOnSubmissionMessageWindow(project, "List spark clusters ...", true);
-
-                    cachedClusterDetails = ClusterManagerEx.getInstance().getClusterDetailsWithoutAsync(true, project);
-                    if(!ClusterManagerEx.getInstance().isSelectedSubscriptionExist()) {
-                        HDInsightUtil.showWarningMessageOnSubmissionMessageWindow(project, "No selected subscription(s), Please go to HDInsight Explorer to sign in....");
-                    }
-
-                    if (ClusterManagerEx.getInstance().isListClusterSuccess()) {
-                        HDInsightUtil.showInfoOnSubmissionMessageWindow(project, "List spark clusters successfully");
-                    } else {
-                        HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, "Error : Failed to list spark clusters.");
-                    }
-                    if (ClusterManagerEx.getInstance().isLIstAdditionalClusterSuccess()) {
-                        HDInsightUtil.showInfoOnSubmissionMessageWindow(project, "List additional spark clusters successfully");
-                    } else {
-                        HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, "Error: Failed to list additional cluster");
-                    }
-
-                    SparkSubmissionExDialog dialog = new SparkSubmissionExDialog(anActionEvent.getProject(), cachedClusterDetails, new CallBack() {
-                        @Override
-                        public void run() {
-                            isActionPerformedSet.remove(anActionEvent.getProject());
-                        }
-                    });
-
-                    dialog.setVisible(true);
+                    isActionPerformedSet.remove(anActionEvent.getProject());
                 }
             });
+
+            dialog.setVisible(true);
         }
     }
 

@@ -75,8 +75,8 @@ public class SparkSubmitModel {
     private final Map<String, String> postEventProperty = new HashMap<>();
 
 
-    public SparkSubmitModel(@NotNull Project project, @NotNull List<IClusterDetail> cachedClusterDetails) {
-        this.cachedClusterDetails = cachedClusterDetails;
+    public SparkSubmitModel(@NotNull Project project) {
+        this.cachedClusterDetails = new ArrayList();
         this.project = project;
 
         this.clusterComboBoxModel = new DefaultComboBoxModel<>();

@@ -31,10 +31,7 @@ import com.intellij.packaging.impl.elements.ManifestFileUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
-import com.microsoft.azure.hdinsight.common.CallBack;
-import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
-import com.microsoft.azure.hdinsight.common.DarkThemeManager;
-import com.microsoft.azure.hdinsight.common.StreamUtil;
+import com.microsoft.azure.hdinsight.common.*;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveRenderer;
@@ -42,6 +39,7 @@ import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveTableModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -60,8 +58,8 @@ import java.util.List;
 import java.util.Map;
 
 public class SparkSubmissionContentPanel extends JPanel{
-    public SparkSubmissionContentPanel(@NotNull Project project, @NotNull List<IClusterDetail> cachedClusterDetails, @Nullable CallBack updateCallBack){
-        this.submitModel = new SparkSubmitModel(project, cachedClusterDetails);
+    public SparkSubmissionContentPanel(@NotNull Project project, @Nullable CallBack updateCallBack){
+        this.submitModel = new SparkSubmitModel(project);
         this.updateCallBack = updateCallBack;
 
         initialize();
@@ -198,15 +196,30 @@ public class SparkSubmissionContentPanel extends JPanel{
     }
 
     private void initializeModel() {
-        if (submitModel.getClusterComboBoxModel().getSize() == 0) {
-            Cursor cursor = getCursor();
-            setCursor(new Cursor(Cursor.WAIT_CURSOR));
-            List<IClusterDetail> clusterDetails = ClusterManagerEx.getInstance().getClusterDetails(submitModel.getProject());
-            setCursor(cursor);
-            submitModel.setClusterComboBoxModel(clusterDetails);
-        }
+        DefaultLoader.getIdeHelper().executeOnPooledThread(() -> {
+            Project project = submitModel.getProject();
 
-        clustersListComboBox.getComboBox().setModel(submitModel.getClusterComboBoxModel());
+            HDInsightUtil.showInfoOnSubmissionMessageWindow(submitModel.getProject(), "List spark clusters ...", true);
+            List<IClusterDetail> cachedClusters = ClusterManagerEx.getInstance().getClusterDetailsWithoutAsync(true, submitModel.getProject());
+
+            if (!ClusterManagerEx.getInstance().isSelectedSubscriptionExist()) {
+                HDInsightUtil.showWarningMessageOnSubmissionMessageWindow(project, "No selected subscription(s), Please go to HDInsight Explorer to sign in....");
+            }
+            if (ClusterManagerEx.getInstance().isListClusterSuccess()) {
+                HDInsightUtil.showInfoOnSubmissionMessageWindow(project, "List spark clusters successfully");
+            } else {
+                HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, "Error : Failed to list spark clusters.");
+            }
+            if (ClusterManagerEx.getInstance().isLIstAdditionalClusterSuccess()) {
+                HDInsightUtil.showInfoOnSubmissionMessageWindow(project, "List additional spark clusters successfully");
+            } else {
+                HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, "Error: Failed to list additional cluster");
+            }
+
+            submitModel.setClusterComboBoxModel(cachedClusters);
+            clustersListComboBox.getComboBox().setModel(submitModel.getClusterComboBoxModel());
+        });
+
         selectedArtifactComboBox.setModel(submitModel.getArtifactComboBoxModel());
         jobConfigurationTable.setModel(submitModel.getTableModel());
     }
