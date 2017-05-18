@@ -196,6 +196,8 @@ public class SparkSubmissionContentPanel extends JPanel{
     }
 
     private void initializeModel() {
+        clustersListComboBox.getButton().setEnabled(false);
+
         DefaultLoader.getIdeHelper().executeOnPooledThread(() -> {
             Project project = submitModel.getProject();
 
@@ -218,6 +220,7 @@ public class SparkSubmissionContentPanel extends JPanel{
 
             submitModel.setClusterComboBoxModel(cachedClusters);
             clustersListComboBox.getComboBox().setModel(submitModel.getClusterComboBoxModel());
+            clustersListComboBox.getButton().setEnabled(true);
         });
 
         selectedArtifactComboBox.setModel(submitModel.getArtifactComboBoxModel());
