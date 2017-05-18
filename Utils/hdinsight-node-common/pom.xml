@@ -80,60 +80,13 @@
         </testResources>
         <defaultGoal>install</defaultGoal>
         <plugins>
-        <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.3</version>
-            <configuration>
-                <source>1.8</source>
-                <target>1.8</target>
-            </configuration>
-        </plugin>
-        <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <version>2.6</version>
-            <executions>
-                <execution>
-                    <id>copy-jar-to-eclipse</id>
-                    <phase>install</phase>
-                    <goals>
-                        <goal>copy-resources</goal>
-                    </goals>
-                    <configuration>
-                        <encoding>UTF-8</encoding>
-                        <outputDirectory>${project.basedir}/../../PluginsAndFeatures/azure-toolkit-for-eclipse/com.microsoft.azuretools.core/resources/</outputDirectory>
-                        <resources>
-                            <resource>
-                                <directory>${project.basedir}/target/</directory>
-                                <includes>
-                                    <include>${artifact.name}</include>
-                                </includes>
-                            </resource>
-                        </resources>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.1</version>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/../../PluginsAndFeatures/AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies
-                            </outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>false</overWriteSnapshots>
-                            <overWriteIfNewer>true</overWriteIfNewer>
-                            <excludeArtifactIds>azuretools-core,azure-explorer-common</excludeArtifactIds>
-                        </configuration>
-                    </execution>
-                </executions>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -23,46 +23,6 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.8</version>
-                <executions>
-                    <execution>
-                        <!--... phase=package, goal=run-->
-                        <phase>package</phase>
-                        <configuration>
-                            <target>
-                                <copy file="${basedir}/target/${artifact.name}" tofile="${basedir}/../../PluginsAndFeatures/azure-toolkit-for-eclipse/com.microsoft.azuretools.core/resources/${artifact.name}" overwrite="true" />
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.1</version>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/../../PluginsAndFeatures/AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies
-                            </outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>false</overWriteSnapshots>
-                            <overWriteIfNewer>true</overWriteIfNewer>
-                            <excludeArtifactIds>azuretools-core,azure</excludeArtifactIds>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
     <dependencies>

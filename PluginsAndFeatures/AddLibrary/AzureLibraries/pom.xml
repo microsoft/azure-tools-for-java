@@ -1,0 +1,145 @@
+<!--
+  ~ /**
+  ~  * Copyright (c) Microsoft Corporation
+  ~  * <p/>
+  ~  * All rights reserved.
+  ~  * <p/>
+  ~  * MIT License
+  ~  * <p/>
+  ~  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+  ~  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+  ~  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+  ~  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+  ~  * <p/>
+  ~  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+  ~  * the Software.
+  ~  * <p/>
+  ~  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+  ~  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  ~  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+  ~  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  ~  * SOFTWARE.
+  ~  */
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.microsoft.azuretools</groupId>
+    <artifactId>com.microsoft.azuretools.sdk.lib</artifactId>
+    <version>3.0.3</version>
+    <packaging>bundle</packaging>
+    <name>Package for Microsoft Azure Libraries for Java Plugin</name>
+    <organization><name>Microsoft Corp.</name></organization>
+    <parent>
+        <groupId>com.microsoft.azuretools</groupId>
+        <artifactId>utils</artifactId>
+        <version>3.0.3</version>
+    </parent>
+    <properties>
+        <azuretool.version>3.0.3</azuretool.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>com.microsoft.azuretools</groupId>
+            <artifactId>azuretools-core</artifactId>
+            <version>${azuretool.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azuretools</groupId>
+            <artifactId>azure-explorer-common</artifactId>
+            <version>${azuretool.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azuretools</groupId>
+            <artifactId>hdinsight-node-common</artifactId>
+            <version>${azuretool.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>3.3.0</version>
+        <extensions>true</extensions>
+        <executions>
+            <execution>
+            <id>bundle-manifest</id>
+            <phase>process-classes</phase>
+            <goals>    
+                <goal>manifest</goal>
+            </goals>   
+            </execution>
+        </executions>
+        <configuration>
+          <excludeDependencies>azuretools-core,azure-explorer-common,hdinsight-node-common</excludeDependencies>
+          <instructions>
+            <Bundle-SymbolicName>com.microsoft.azuretools.sdk;singleton:=true</Bundle-SymbolicName>
+            <Bundle-Version>${project.version}.qualifier</Bundle-Version>
+            <Embed-Dependency>*</Embed-Dependency>
+            <Embed-Transitive>true</Embed-Transitive>
+            <Bundle-ClassPath>{maven-dependencies}</Bundle-ClassPath>
+            <Export-Package>*</Export-Package>
+            <Import-Package>!*</Import-Package>
+            <Embed-Directory>dependencies</Embed-Directory>
+          </instructions>
+        </configuration>
+      </plugin>
+      <plugin>		
+        <artifactId>maven-antrun-plugin</artifactId>		
+          <version>1.8</version>		
+            <executions>		
+              <execution>			
+                <phase>package</phase>		
+                  <configuration>		
+                    <target>		
+                      <copy file="${build.outputDirectory}/META-INF/MANIFEST.MF" tofile="${basedir}/com.microsoft.azuretools.sdk/META-INF/MANIFEST.MF" overwrite="true" />		
+                    </target>		
+                  </configuration>		
+                <goals>		
+                  <goal>run</goal>		
+                </goals>		
+              </execution>		
+            </executions>		
+         </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.1</version>
+        <executions>
+            <execution>
+                <id>copy-dependencies</id>
+                <phase>package</phase>
+                <goals>
+                    <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                    <outputDirectory>./com.microsoft.azuretools.sdk/dependencies</outputDirectory>
+                    <overWriteReleases>false</overWriteReleases>
+                    <overWriteSnapshots>false</overWriteSnapshots>
+                    <overWriteIfNewer>true</overWriteIfNewer>
+                    <excludeArtifactIds>azuretools-core,azure-explorer-common,hdinsight-node-common</excludeArtifactIds>
+                </configuration>
+            </execution>
+            <execution>
+                <id>copy-eclipse-resources</id>
+                <phase>package</phase>
+                <goals>
+                    <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                    <outputDirectory>${project.basedir}/../../azure-toolkit-for-eclipse/com.microsoft.azuretools.core/resources</outputDirectory>
+                    <overWriteReleases>false</overWriteReleases>
+                    <overWriteSnapshots>false</overWriteSnapshots>
+                    <overWriteIfNewer>true</overWriteIfNewer>
+                    <includeArtifactIds>azuretools-core,azure-explorer-common,hdinsight-node-common</includeArtifactIds>
+                </configuration>
+            </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
