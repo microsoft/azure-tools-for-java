@@ -6,10 +6,10 @@
 	<relativePath>../pom.xml</relativePath>
     <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
     <artifactId>parent</artifactId>
-    <version>3.0.2-SNAPSHOT</version>
+    <version>3.0.3-SNAPSHOT</version>
   </parent>
   <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
   <artifactId>com.microsoft.azuretools.docker</artifactId>
-  <version>3.0.2-SNAPSHOT</version>
+  <version>3.0.3-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>

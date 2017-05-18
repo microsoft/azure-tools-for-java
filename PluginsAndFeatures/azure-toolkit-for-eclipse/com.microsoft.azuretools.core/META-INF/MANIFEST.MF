@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Azure Core Plugin Library
 Bundle-SymbolicName: com.microsoft.azuretools.core;singleton:=true
-Bundle-Version: 3.0.2.qualifier
+Bundle-Version: 3.0.3.qualifier
 Bundle-Activator: com.microsoft.azuretools.core.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -13,15 +13,15 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.wst.common.frameworks;bundle-version="1.2.0";resolution:=optional,
  org.eclipse.jst.j2ee;bundle-version="1.1.802";resolution:=optional,
  org.eclipse.jst.j2ee.web;bundle-version="1.1.810";resolution:=optional,
- com.microsoft.azuretools.sdk;bundle-version="3.0.2",
+ com.microsoft.azuretools.sdk;bundle-version="3.0.3",
  com.jcraft.jsch;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: Microsoft Corp.
 Bundle-ClassPath: .,
- resources/azuretools-core-3.0.2.jar,
- resources/azure-explorer-common-3.0.2.jar,
- resources/hdinsight-node-common-3.0.2.jar,
+ resources/azuretools-core-3.0.3.jar,
+ resources/azure-explorer-common-3.0.3.jar,
+ resources/hdinsight-node-common-3.0.3.jar,
  icons/
 Export-Package: com.microsoft.applicationinsights.preference,
  com.microsoft.azure.docker,
