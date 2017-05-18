@@ -58,6 +58,7 @@ public class SparkSubmitModel {
     private  static final String SparkYarnLogUrlFormat = "%s/yarnui/hn/cluster/app/%s";
 
     private static Map<Project, SparkSubmissionParameter> submissionParameterMap = new HashMap<>();
+    private static Map<Project, SparkSubmitAdvancedConfigModel> submissionAdvancedConfigModelMap = new HashMap<>();
 
     private final Project project;
     private final List<IClusterDetail> cachedClusterDetails;
@@ -66,6 +67,7 @@ public class SparkSubmitModel {
     private Map<String, Artifact> artifactHashMap = new HashMap<>();
 
     private SparkSubmissionParameter submissionParameter;
+    private SparkSubmitAdvancedConfigModel advancedConfigModel;
 
     private DefaultComboBoxModel<String> clusterComboBoxModel;
     private DefaultComboBoxModel<String> artifactComboBoxModel;
@@ -80,6 +82,7 @@ public class SparkSubmitModel {
         this.clusterComboBoxModel = new DefaultComboBoxModel<>();
         this.artifactComboBoxModel = new DefaultComboBoxModel<>();
         this.submissionParameter = submissionParameterMap.get(project);
+        this.advancedConfigModel = submissionAdvancedConfigModelMap.get(project);
 
         setClusterComboBoxModel(cachedClusterDetails);
         int index = -1;
@@ -111,6 +114,13 @@ public class SparkSubmitModel {
 
     public SparkSubmissionParameter getSubmissionParameter() {
         return submissionParameter;
+    }
+
+    public SparkSubmitAdvancedConfigModel getAdvancedConfigModel() { return advancedConfigModel; }
+
+    public void setAdvancedConfigModel(SparkSubmitAdvancedConfigModel advancedConfigModel) {
+        this.advancedConfigModel = advancedConfigModel;
+        submissionAdvancedConfigModelMap.put(project, this.advancedConfigModel);
     }
 
     @NotNull
@@ -157,6 +167,7 @@ public class SparkSubmitModel {
         HDInsightUtil.getJobStatusManager(project).setJobRunningState(true);
         this.submissionParameter = submissionParameter;
         submissionParameterMap.put(project, submissionParameter);
+        submissionAdvancedConfigModelMap.put(project, advancedConfigModel);
         postEventAction();
 
         if (isLocalArtifact()) {
@@ -213,7 +224,7 @@ public class SparkSubmitModel {
                 return getCluserTitle(clusterDetail);
             }
         }
-        return "unknow";
+        return "unknown";
     }
 
     private void uploadFileToCluster(@NotNull final IClusterDetail selectedClusterDetail, @NotNull final String selectedArtifactName) throws Exception{

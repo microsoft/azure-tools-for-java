@@ -26,6 +26,8 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.hdinsight.common.CallBack;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -37,7 +39,11 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 public class SparkSubmissionAdvancedConfigDialog extends JDialog{
-    public SparkSubmissionAdvancedConfigDialog() {
+    public SparkSubmissionAdvancedConfigDialog(SparkSubmitAdvancedConfigModel advancedConfigModel, CallBack updateCallBack) {
+        this.advancedConfigModel = advancedConfigModel;
+
+        this.updateCallBack = updateCallBack;
+
         setTitle("Spark Submission Advanced Configuration");
 
         setLayout(new GridBagLayout());
@@ -46,23 +52,40 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
 
         addOperationPanel();
 
+        loadParameters();
+
         pack();
     }
 
-    private final int margin = 10;
+    public SparkSubmitAdvancedConfigModel getAdvancedConfigModel() {
+        return advancedConfigModel;
+    }
+
+    private SparkSubmitAdvancedConfigModel advancedConfigModel;
+
+    private final int margin = 12;
 
     private int displayLayoutCurrentRow = 0;
+    JCheckBox enableRemoteDebugCheckBox;
     JTextField sshUserNameTextField;
+    ButtonGroup sshPasswordButtonGroup;
+    JRadioButton sshPasswordUseArtifactRadioButtion;
+    JRadioButton sshPasswordUsePasswordRadioButton;
+    JRadioButton sshPasswordUseKeyFileRadioButton;
+    JPasswordField sshPasswordUsePasswordField;
+    TextFieldWithBrowseButton sshPasswordUseKeyFileTextField;
+
+    private CallBack updateCallBack;
 
     private void addRemoteDebugLineItem() {
-        JCheckBox enableRemoteDebugCheckBox = new JCheckBox("Enable Spark remote debug", true);
+        enableRemoteDebugCheckBox = new JCheckBox("Enable Spark remote debug", true);
         enableRemoteDebugCheckBox.setToolTipText("Enable Spark remote debug, use with caution since this might override data previously generated");
         add(enableRemoteDebugCheckBox,
                 new GridBagConstraints(0, ++displayLayoutCurrentRow,
                         1, 1,
                         1, 0,
                         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-                        new Insets(margin / 5, margin / 3, 0, 0), 0, 0));
+                        new Insets(margin / 6, 0, 0, 0), 0, 0));
 
         String sshUserNameToolTipText = "Secure shell (SSH) user name used in Spark remote debugging, by default using sshuser";
         JLabel sshUserNameLabel = new JLabel("Secure Shell (SSH) User Name:");
@@ -86,19 +109,19 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
         JLabel sshPasswordKeyLabel = new JLabel("Secure Shell (SSH) Password or Key");
         sshPasswordKeyLabel.setToolTipText("Secure shell (SSH) password or key used in Spark remote debugging, by default use the artifact from IntelliJ project");
 
-        JRadioButton sshPasswordUseArtifactRadioButtion = new JRadioButton("Use the artifact from IntelliJ project", false);
+        sshPasswordUseArtifactRadioButtion = new JRadioButton("Use the artifact from IntelliJ project", false);
         sshPasswordUseArtifactRadioButtion.setToolTipText("For secure shell (SSH) password, use the artifact stored in IntelliJ project");
 
-        JRadioButton sshPasswordUsePasswordRadioButton = new JRadioButton("Use secure shell (SSH) password:", false);
+        sshPasswordUsePasswordRadioButton = new JRadioButton("Use secure shell (SSH) password:", false);
         String sshPasswordUsePasswordToolTip = "For secure shell (SSH) password, use the password specified here";
         sshPasswordUsePasswordRadioButton.setToolTipText(sshPasswordUsePasswordToolTip);
-        JPasswordField sshPasswordUsePasswordField = new JPasswordField();
+        sshPasswordUsePasswordField = new JPasswordField();
         sshPasswordUsePasswordField.setToolTipText(sshPasswordUsePasswordToolTip);
 
-        JRadioButton sshPasswordUseKeyFileRadioButton = new JRadioButton("Use private key file:", false);
+        sshPasswordUseKeyFileRadioButton = new JRadioButton("Use private key file:", false);
         String sshPasswordUseKeyFileToolTip = "For secure shell (SSH) password, use the key file specified here";
         sshPasswordUseKeyFileRadioButton.setToolTipText(sshPasswordUseKeyFileToolTip);
-        TextFieldWithBrowseButton sshPasswordUseKeyFileTextField = new TextFieldWithBrowseButton();
+        sshPasswordUseKeyFileTextField = new TextFieldWithBrowseButton();
         sshPasswordUseKeyFileTextField.setToolTipText(sshPasswordUseKeyFileToolTip);
         sshPasswordUseKeyFileTextField.getButton().addActionListener(new ActionListener() {
             @Override
@@ -119,7 +142,7 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
             }
         });
 
-        ButtonGroup sshPasswordButtonGroup = new ButtonGroup();
+        sshPasswordButtonGroup = new ButtonGroup();
         sshPasswordButtonGroup.add(sshPasswordUseArtifactRadioButtion);
         sshPasswordButtonGroup.add(sshPasswordUsePasswordRadioButton);
         sshPasswordButtonGroup.add(sshPasswordUseKeyFileRadioButton);
@@ -269,7 +292,78 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
                         new Insets(0, margin, 0, 0), 0, 0));
     }
 
+    private void loadParameters() {
+        if (advancedConfigModel != null) {
+            if (advancedConfigModel.sshPassword != null && advancedConfigModel.sshPassword.length() > 0) {
+                sshPasswordUsePasswordField.setText(advancedConfigModel.sshPassword);
+            }
+
+            if (advancedConfigModel.sshKyeFile != null && advancedConfigModel.sshKyeFile.length() > 0) {
+                sshPasswordUseKeyFileTextField.setText(advancedConfigModel.sshKyeFile);
+            }
+
+            switch (advancedConfigModel.sshPasswordKeyOrLabel)
+            {
+                case UseArtifact:
+                    sshPasswordUseArtifactRadioButtion.setSelected(true);
+                    break;
+                case UsePassword:
+                    sshPasswordUsePasswordRadioButton.setSelected(true);
+                    break;
+                case UseKeyFile:
+                    sshPasswordUseKeyFileRadioButton.setSelected(true);
+                    break;
+
+            }
+
+            if (advancedConfigModel.sshUserName != null && advancedConfigModel.sshUserName.length() > 0){
+                sshUserNameTextField.setText(advancedConfigModel.sshUserName);
+            }
+
+            enableRemoteDebugCheckBox.setSelected(advancedConfigModel.enableRemoteDebug);
+        }
+    }
+
+    private void saveParameters() {
+        if (advancedConfigModel == null){
+            advancedConfigModel = new SparkSubmitAdvancedConfigModel();
+        }
+
+        if (sshPasswordUsePasswordField.getPassword() != null && sshPasswordUsePasswordField.getPassword().length > 0) {
+            advancedConfigModel.sshPassword = new String(sshPasswordUsePasswordField.getPassword());
+        }
+
+        if (sshPasswordUseKeyFileTextField.getText() != null && sshPasswordUseKeyFileTextField.getText().length() > 0) {
+            advancedConfigModel.sshKyeFile = sshPasswordUseKeyFileTextField.getText();
+        }
+
+        if (sshPasswordUseArtifactRadioButtion.isSelected())
+        {
+            advancedConfigModel.sshPasswordKeyOrLabel = SparkSubmitAdvancedConfigModel.SSHPasswordKeyOrLabel.UseArtifact;
+        }
+        else if (sshPasswordUsePasswordRadioButton.isSelected())
+        {
+            advancedConfigModel.sshPasswordKeyOrLabel = SparkSubmitAdvancedConfigModel.SSHPasswordKeyOrLabel.UsePassword;
+        }
+        else if (sshPasswordUseKeyFileRadioButton.isSelected())
+        {
+            advancedConfigModel.sshPasswordKeyOrLabel = SparkSubmitAdvancedConfigModel.SSHPasswordKeyOrLabel.UseKeyFile;
+        }
+
+        if (sshUserNameTextField.getText() != null && sshUserNameTextField.getText().length() > 0){
+            advancedConfigModel.sshUserName = sshUserNameTextField.getText();
+        }
+
+        advancedConfigModel.enableRemoteDebug = enableRemoteDebugCheckBox.isSelected();
+    }
+
     private void onOk() {
+        saveParameters();
+
+        if (updateCallBack != null) {
+            updateCallBack.run();
+        }
+
         dispose();
     }
 

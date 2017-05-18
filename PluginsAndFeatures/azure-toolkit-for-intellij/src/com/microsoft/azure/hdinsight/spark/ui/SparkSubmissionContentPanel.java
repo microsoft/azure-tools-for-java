@@ -145,6 +145,7 @@ public class SparkSubmissionContentPanel extends JPanel{
     private JRadioButton tableConfigRadioButton;
     private JRadioButton localConfigRadioButton;
     private final JLabel[] errorMessageLabels = new JLabel[5];
+    private SparkSubmissionAdvancedConfigDialog advancedConfigDialog;
 
     private enum ErrorMessageLabelTag {
         ClusterName,
@@ -687,7 +688,17 @@ public class SparkSubmissionContentPanel extends JPanel{
         advancedConfigButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SparkSubmissionAdvancedConfigDialog advancedConfigDialog = new SparkSubmissionAdvancedConfigDialog();
+                advancedConfigDialog = new SparkSubmissionAdvancedConfigDialog(
+                        submitModel.getAdvancedConfigModel(),
+                        new CallBack() {
+                            @Override
+                            public void run() {
+                                if (null != advancedConfigDialog){
+                                    submitModel.setAdvancedConfigModel(advancedConfigDialog.getAdvancedConfigModel());
+                                }
+                            }
+                        }
+                );
                 advancedConfigDialog.setModal(true);
                 advancedConfigDialog.setVisible(true);
             }

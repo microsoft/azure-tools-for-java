@@ -55,6 +55,7 @@ public class SparkSubmissionExDialog extends JDialog {
     public SparkSubmissionExDialog(@NotNull Project project, @NotNull List<IClusterDetail> cachedClusterDetails, @Nullable CallBack callBack) {
         this.project = project;
         this.callBack = callBack;
+
         submitModel = new SparkSubmitModel(project, cachedClusterDetails);
 
         initializeComponents();
