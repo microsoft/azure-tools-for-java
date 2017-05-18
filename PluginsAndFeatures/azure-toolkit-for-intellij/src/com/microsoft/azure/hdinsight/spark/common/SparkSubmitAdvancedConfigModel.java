@@ -21,17 +21,19 @@
  */
 package com.microsoft.azure.hdinsight.spark.common;
 
+import java.io.File;
+
 public class SparkSubmitAdvancedConfigModel {
 
     public boolean enableRemoteDebug = false;
 
     public String sshUserName = "sshuser";
 
-    public SSHPasswordKeyOrLabel sshPasswordKeyOrLabel = SSHPasswordKeyOrLabel.UseArtifact;
-    public String sshKyeFile = "";
+    public SSHAuthType sshAuthType = SSHAuthType.UseArtifact;
+    public File sshKyeFile;
     public String sshPassword = "";
 
-    public enum SSHPasswordKeyOrLabel {
+    public enum SSHAuthType {
         UseArtifact,
         UsePassword,
         UseKeyFile
