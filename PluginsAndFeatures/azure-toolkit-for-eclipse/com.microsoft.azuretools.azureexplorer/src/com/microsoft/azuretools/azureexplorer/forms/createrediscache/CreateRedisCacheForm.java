@@ -118,14 +118,14 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     private static final Integer REDIS_CACHE_MAX_NAME_LENGTH = 63;
     private static final String DIALOG_TITLE = "New Redis Cache";
     private static final String DIALOG_MESSAGE = "Please enter Redis Cache details.";
-    private static final String LABEL_DNS_NAME = "* DNS name";
+    private static final String LABEL_DNS_NAME = "DNS name";
     private static final String LABEL_DNS_SUFFIX = ".redis.cache.windows.net";
-    private static final String LABEL_SUBSCRIPTION = "* Subscription";
-    private static final String LABEL_RESOURCE_GRP = "* Resource group";
+    private static final String LABEL_SUBSCRIPTION = "Subscription";
+    private static final String LABEL_RESOURCE_GRP = "Resource group";
     private static final String RADIOBUTTON_USE_EXIST_GRP = "Use existing";
     private static final String RADIOBUTTON_NEW_GRP = "Create new";
-    private static final String LABEL_LOCTION = "* Location";
-    private static final String LABEL_PRICING = "* Pricing tier";
+    private static final String LABEL_LOCTION = "Location";
+    private static final String LABEL_PRICING = "Pricing tier";
     private static final String CHECKBOX_SSL = "Unblock port 6379 (not SSL encrypted)";
     private static final String BUTTON_CREATE = "Create";
     private static final String SUBS_COMBO_ITEMS_FORMAT = "%s (%s)";
@@ -191,10 +191,10 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
                 validateFields();
             }
         });
-        txtDnsName.setBounds(10, 23, 469, 26);
+        txtDnsName.setBounds(10, 23, 519, 26);
         
-        lblDnsSuffix = new Label(container, SWT.NONE);
-        lblDnsSuffix.setBounds(311, 55, 168, 20);
+        lblDnsSuffix = new Label(container, SWT.RIGHT);
+        lblDnsSuffix.setBounds(361, 55, 168, 20);
         lblDnsSuffix.setText(LABEL_DNS_SUFFIX);
 
         //Subscription
@@ -217,7 +217,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         if (selectedSubscriptions.size() > 0) {
             cbSubs.select(0);
         }
-        cbSubs.setBounds(10, 107, 469, 28);
+        cbSubs.setBounds(10, 107, 519, 28);
         
         // Resource Group
         Label lblRequireResourceGrp = new Label(container, SWT.NONE);
@@ -264,7 +264,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             }
         });
         txtNewResGrpName.setVisible(true);
-        txtNewResGrpName.setBounds(10, 203, 469, 28);
+        txtNewResGrpName.setBounds(10, 203, 519, 28);
         
         cbvUseExisting = new ComboViewer(container, SWT.READ_ONLY);
         cbvUseExisting.setContentProvider(ArrayContentProvider.getInstance());
@@ -278,7 +278,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             }
         });
         cbUseExisting.setVisible(false);
-        cbUseExisting.setBounds(10, 203, 469, 28);
+        cbUseExisting.setBounds(10, 203, 519, 28);
 
         // Location
         Label lblRequireLocation = new Label(container, SWT.NONE);
@@ -308,7 +308,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
                 validateFields();
             }
         });
-        cbLocations.setBounds(10, 271, 469, 28);
+        cbLocations.setBounds(10, 271, 519, 28);
         fillLocationsAndResourceGrps(currentSub);
         
         // Price
@@ -332,7 +332,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             cbPricetiers.select(0);
             selectedPriceTierValue = cbPricetiers.getText();
         }
-        cbPricetiers.setBounds(10, 340, 469, 28);
+        cbPricetiers.setBounds(10, 340, 519, 28);
 
         // SSL
         chkUnblockPort = new Button(container, SWT.CHECK);
@@ -414,7 +414,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     
     @Override
     protected Point getInitialSize() {
-        return new Point(495, 596);
+        return new Point(550, 596);
     }
 
     @Override
