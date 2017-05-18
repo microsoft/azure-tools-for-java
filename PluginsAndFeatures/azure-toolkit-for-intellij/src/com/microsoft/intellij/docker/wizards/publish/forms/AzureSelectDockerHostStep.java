@@ -282,7 +282,9 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
               if (dockerHostsTableSelection == null) {
                 dockerHostsTableSelection = currentSelection;
                 dockerHostsTableSelection.host = dockerManager.getDockerHostForURL((String) tableModel.getValueAt(currentSelection.row, 4));
-                model.setSubscription(dockerManager.getSubscriptionsMap().get(dockerHostsTableSelection.host.sid));
+                if(dockerHostsTableSelection.host != null) {
+                  model.setSubscription(dockerManager.getSubscriptionsMap().get(dockerHostsTableSelection.host.sid));
+                }
               } else {
                 int oldRow = dockerHostsTableSelection.row;
                 dockerHostsTableSelection = null;
@@ -291,7 +293,9 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
                   tableModel.setValueAt(false, oldRow, 0);
                   dockerHostsTableSelection = currentSelection;
                   dockerHostsTableSelection.host = dockerManager.getDockerHostForURL((String) tableModel.getValueAt(dockerHostsTable.getSelectedRow(), 4));
-                  model.setSubscription(dockerManager.getSubscriptionsMap().get(dockerHostsTableSelection.host.sid));
+                  if (dockerHostsTableSelection.host != null) {
+                    model.setSubscription(dockerManager.getSubscriptionsMap().get(dockerHostsTableSelection.host.sid));
+                  }
                 }
               }
               setFinishButtonState(doValidate(false) == null);
