@@ -116,6 +116,11 @@ public class SparkSubmitModel {
         return submissionParameter;
     }
 
+    public void setSubmissionParameters(SparkSubmissionParameter submissionParameters){
+        this.submissionParameter = submissionParameter;
+        submissionParameterMap.put(project, submissionParameter);
+    }
+
     public SparkSubmitAdvancedConfigModel getAdvancedConfigModel() { return advancedConfigModel; }
 
     public void setAdvancedConfigModel(SparkSubmitAdvancedConfigModel advancedConfigModel) {
@@ -165,9 +170,9 @@ public class SparkSubmitModel {
 
     public void action(@NotNull SparkSubmissionParameter submissionParameter) {
         HDInsightUtil.getJobStatusManager(project).setJobRunningState(true);
-        this.submissionParameter = submissionParameter;
-        submissionParameterMap.put(project, submissionParameter);
-        submissionAdvancedConfigModelMap.put(project, advancedConfigModel);
+
+        setSubmissionParameters(submissionParameter);
+
         postEventAction();
 
         if (isLocalArtifact()) {
