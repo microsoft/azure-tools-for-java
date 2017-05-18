@@ -198,6 +198,14 @@ public class SparkSubmissionContentPanel extends JPanel{
     }
 
     private void initializeModel() {
+        if (submitModel.getClusterComboBoxModel().getSize() == 0) {
+            Cursor cursor = getCursor();
+            setCursor(new Cursor(Cursor.WAIT_CURSOR));
+            List<IClusterDetail> clusterDetails = ClusterManagerEx.getInstance().getClusterDetails(submitModel.getProject());
+            setCursor(cursor);
+            submitModel.setClusterComboBoxModel(clusterDetails);
+        }
+
         clustersListComboBox.getComboBox().setModel(submitModel.getClusterComboBoxModel());
         selectedArtifactComboBox.setModel(submitModel.getArtifactComboBoxModel());
         jobConfigurationTable.setModel(submitModel.getTableModel());
