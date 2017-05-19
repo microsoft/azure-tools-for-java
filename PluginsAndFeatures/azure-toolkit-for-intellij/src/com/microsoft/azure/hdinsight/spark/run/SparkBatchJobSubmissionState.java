@@ -44,7 +44,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 
 /**
- * Created by zhwe on 5/18/2017.
+ * Spark Batch Job Submission Run profile state
  */
 public class SparkBatchJobSubmissionState implements RunProfileState, RemoteState {
     private final Project myProject;
