@@ -9,11 +9,12 @@ cd $SCRIPTPATH
 ARTIFACTS_DIR="artifacts"
 # check dir exists
 if [ ! -d  "$ARTIFACTS_DIR" ]; then
-    echo "Creating directory $ARTIFACTS_DIR"
+    echo "Creating artifacts directory $ARTIFACTS_DIR"
     mkdir -p $ARTIFACTS_DIR
-else
-    echo "Directory $ARTIFACTS_DIR exists"
 fi
+
+# echo shell commands when they are executed.
+set -x
 
 # Build Utils
 mvn install -f $SCRIPTPATH/Utils/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $1
@@ -33,4 +34,4 @@ cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-too
 ./gradlew buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2017.zip
 
-echo "BUILD SUCCESSFUL"
+echo "ALL BUILD SUCCESSFUL"
