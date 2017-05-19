@@ -33,24 +33,27 @@ import com.intellij.packaging.impl.compiler.ArtifactCompileScope;
 import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
+import com.microsoft.azure.hdinsight.common.JobStatusManager;
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
+import com.microsoft.azure.hdinsight.sdk.common.NotSupportExecption;
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveTableModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.lang.StringUtils;
+import rx.Observable;
+import rx.Single;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.URISyntaxException;
+import java.util.*;
 
 public class SparkSubmitModel {
 
@@ -116,8 +119,8 @@ public class SparkSubmitModel {
         return submissionParameter;
     }
 
-    public void setSubmissionParameters(SparkSubmissionParameter submissionParameter){
-        this.submissionParameter = submissionParameter;
+    public void setSubmissionParameters(SparkSubmissionParameter submissionParameters){
+        this.submissionParameter = submissionParameters;
         submissionParameterMap.put(project, submissionParameter);
     }
 
@@ -208,6 +211,56 @@ public class SparkSubmitModel {
         }
     }
 
+    public Single<Artifact> remoteDebugCompileRxOp(@NotNull SparkSubmissionParameter submissionParameter) {
+        Optional<JobStatusManager> jsmOpt = Optional.ofNullable(HDInsightUtil.getJobStatusManager(project));
+
+        return Single.fromEmitter(em -> {
+            jsmOpt.ifPresent((jsm) -> jsm.setJobRunningState(true));
+            postEventAction();
+
+            if (isLocalArtifact()) {
+                em.onError(new NotSupportExecption());
+                return;
+            }
+
+            final Artifact artifact = artifactHashMap.get(submissionParameter.getArtifactName());
+            final List<Artifact> artifacts = Collections.singletonList(artifact);
+
+            ArtifactsWorkspaceSettings.getInstance(project).setArtifactsToBuild(artifacts);
+            ApplicationManager.getApplication().invokeAndWait(() -> {
+                final CompileScope scope = ArtifactCompileScope.createArtifactsScope(
+                        project,
+                        artifacts,
+                        true);
+
+                CompilerManager.getInstance(project).make(
+                        scope,
+                        (aborted, errors, warnings, compileContext) -> {
+                            if (aborted || errors != 0) {
+                                showCompilerErrorMessage(compileContext);
+                                jsmOpt.ifPresent((jsm) -> jsm.setJobRunningState(false));
+                                em.onError(new CompilationException(StringUtils.join(
+                                        compileContext.getMessages(CompilerMessageCategory.ERROR),
+                                        "\\n")));
+                            } else {
+                                postEventProperty.put("IsSubmitSucceed", "true");
+                                postEventProperty.put("SubmitFailedReason", "CompileSuccess");
+
+                                AppInsightsClient.create(
+                                        HDInsightBundle.message("SparkProjectCompileSuccess"),
+                                        null,
+                                        postEventProperty);
+
+                                //FIXME!!! Sometimes, the submission message window not ready
+                                //   HDInsightUtil.showInfoOnSubmissionMessageWindow(project, String.format("Info : Build %s successfully.", artifact.getOutputFile()));
+
+                                em.onSuccess(artifact);
+                            }
+                });
+            }, ModalityState.defaultModalityState());
+        });
+    }
+
     private void showCompilerErrorMessage(@NotNull CompileContext compileContext) {
         postEventProperty.put("IsSubmitSucceed", "false");
         postEventProperty.put("SubmitFailedReason", "CompileFailed");
@@ -269,6 +322,49 @@ public class SparkSubmitModel {
             postEventProperty.put("SubmitFailedReason", response.getContent());
             AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionButtonClickEvent"), null, postEventProperty);
         }
+    }
+
+    public SparkBatchRemoteDebugJob tryToCreateBatchSparkDebugJob(@NotNull final IClusterDetail selectedClusterDetail) throws HDIException,IOException {
+        SparkBatchSubmission.getInstance().setCredentialsProvider(selectedClusterDetail.getHttpUserName(), selectedClusterDetail.getHttpPassword());
+
+        try {
+            SparkBatchRemoteDebugJob debugJob = SparkBatchRemoteDebugJob.factory(SparkSubmitHelper.getLivyConnectionURL(selectedClusterDetail), submissionParameter, SparkBatchSubmission.getInstance());
+
+            debugJob.createBatchSparkJobWithDriverDebugging();
+
+            return debugJob;
+        } catch (URISyntaxException ex) {
+            throw new HDIException(
+                    "Bad Livy Connection URL " + SparkSubmitHelper.getLivyConnectionURL(selectedClusterDetail),
+                    ex);
+        }
+
+        // FIXME!!! the message needs to be post
+        /*
+        if (response.getCode() == 201 || response.getCode() == 200) {
+            HDInsightUtil.showInfoOnSubmissionMessageWindow(project, "Info : Submit to spark cluster successfully.");
+            postEventProperty.put("IsSubmitSucceed", "true");
+
+            String jobLink = selectedClusterDetail.isEmulator() ?
+                    ((EmulatorClusterDetail)selectedClusterDetail).getSparkHistoryEndpoint() :
+                    String.format("%s/sparkhistory", selectedClusterDetail.getConnectionUrl());
+            HDInsightUtil.getSparkSubmissionToolWindowManager(project).setHyperLinkWithText("See spark job view from ", jobLink, jobLink);
+            SparkSubmitResponse sparkSubmitResponse = new Gson().fromJson(response.getMessage(), new TypeToken<SparkSubmitResponse>() {
+            }.getType());
+
+            // Set submitted spark application id and http request info for stopping running application
+            HDInsightUtil.getSparkSubmissionToolWindowManager(project).setSparkApplicationStopInfo(selectedClusterDetail, sparkSubmitResponse.getId());
+            HDInsightUtil.getSparkSubmissionToolWindowManager(project).setStopButtonState(true);
+            HDInsightUtil.getSparkSubmissionToolWindowManager(project).getJobStatusManager().resetJobStateManager();
+            SparkSubmitHelper.getInstance().printRunningLogStreamingly(project, sparkSubmitResponse.getId(), selectedClusterDetail, postEventProperty);
+        } else {
+            HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project,
+                    String.format("Error : Failed to submit to spark cluster. error code : %d, reason :  %s.", response.getCode(), response.getContent()));
+            postEventProperty.put("IsSubmitSucceed", "false");
+            postEventProperty.put("SubmitFailedReason", response.getContent());
+            AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionButtonClickEvent"), null, postEventProperty);
+        }
+        */
     }
 
     private void showFailedSubmitErrorMessage(Exception exception) {
@@ -358,6 +454,48 @@ public class SparkSubmitModel {
                     HDInsightUtil.getJobStatusManager(project).setJobRunningState(false);
                 }
             }
+        });
+    }
+
+    public Single<IClusterDetail> deployArtifactRxOp(IClusterDetail clusterDetail, String artifactName) {
+        return Single.fromEmitter(em -> {
+            DefaultLoader.getIdeHelper().executeOnPooledThread(() -> {
+                //may get a new clusterDetail reference if cluster credentials expired
+                IClusterDetail selectedClusterDetail = getClusterConfiguration(clusterDetail, true);
+
+                if (selectedClusterDetail == null) {
+                    String errorMessage = "Selected Cluster can not found. Please login in first in HDInsight Explorer and try submit job again";
+
+                    HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, errorMessage);
+                    em.onError(new HDIException(errorMessage));
+                    return;
+                }
+
+                try {
+                    uploadFileToCluster(selectedClusterDetail, artifactName);
+                    em.onSuccess(selectedClusterDetail);
+                } catch (Exception exception) {
+                    showFailedSubmitErrorMessage(exception);
+                    em.onError(exception);
+                } finally {
+                    // FIXME!!! Need to clean up when debug is cancel.
+//                        HDInsightUtil.getSparkSubmissionToolWindowManager(project).setStopButtonState(false);
+//                        HDInsightUtil.getSparkSubmissionToolWindowManager(project).setBrowserButtonState(false);
+//
+//                        if (HDInsightUtil.getSparkSubmissionToolWindowManager(project).getJobStatusManager().isApplicationGenerated()) {
+//                            String applicationId = HDInsightUtil.getSparkSubmissionToolWindowManager(project).getJobStatusManager().getApplicationId();
+//
+//                            // ApplicationYarnUrl example : https://sparklivylogtest.azurehdinsight.net/yarnui/hn/cluster/app/application_01_111
+//                            String applicationYarnUrl = String.format(SparkYarnLogUrlFormat, selectedClusterDetail.getConnectionUrl(), applicationId);
+//                            HDInsightUtil.getSparkSubmissionToolWindowManager(project).setHyperLinkWithText("See detailed job information from ", applicationYarnUrl, applicationYarnUrl);
+//
+//                            writeJobLogToLocal();
+//                        }
+//
+//                        HDInsightUtil.getJobStatusManager(project).setJobRunningState(false);
+                }
+            });
+
         });
     }
 

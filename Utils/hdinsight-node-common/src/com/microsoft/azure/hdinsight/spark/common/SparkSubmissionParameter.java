@@ -106,6 +106,26 @@ public class SparkSubmissionParameter {
         this.args = args;
     }
 
+    public void setFile(String file) {
+        this.file = file;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
+
+    public void setLocalArtifact(boolean localArtifact) {
+        isLocalArtifact = localArtifact;
+    }
+
+    public void setArtifactName(String artifactName) {
+        this.artifactName = artifactName;
+    }
+
     public String getClusterName() {
         return clusterName;
     }

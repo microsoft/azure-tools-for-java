@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownServiceException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -461,7 +462,7 @@ public class SparkBatchRemoteDebugJob implements ISparkBatchDebugJob, ILogger {
             SparkBatchSubmission submission) throws DebugParameterDefinedException, URISyntaxException {
         final String driverDebugOption = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=0";
         final String sparkJobDriverJvmOptionConfKey = "spark.driver.extraJavaOptions";
-        final String jvmDebugOptionPattern = ".*\\bsuspend=(?<isSuspend>[yn]),address=(?<port>\\d+)\\s.*";
+        final String jvmDebugOptionPattern = ".*\\bsuspend=(?<isSuspend>[yn]),address=(?<port>\\d+).*";
 
         Map<String, Object> jobConfig = submissionParameter.getJobConfig();
         SparkConfigures sparkConf = (SparkConfigures)jobConfig.get(SparkSubmissionParameter.Conf);
@@ -482,8 +483,23 @@ public class SparkBatchRemoteDebugJob implements ISparkBatchDebugJob, ILogger {
 
         // Append or overwrite the Spark job driver JAVA option
         driverOption = (carriedDriverOption.trim() + " " + driverDebugOption).trim();
-        sparkConf.put(sparkJobDriverJvmOptionConfKey, driverOption);
+        HashMap<String, Object> jobConfigWithDebug = new HashMap<>(submissionParameter.getJobConfig());
+        SparkConfigures sparkConfigWithDebug = new SparkConfigures(sparkConf);
+        sparkConfigWithDebug.put(sparkJobDriverJvmOptionConfKey, driverOption);
+        jobConfigWithDebug.put(SparkSubmissionParameter.Conf, sparkConfigWithDebug);
+        SparkSubmissionParameter debugSubmissionParameter = new SparkSubmissionParameter(
+                submissionParameter.getClusterName(),
+                submissionParameter.isLocalArtifact(),
+                submissionParameter.getArtifactName(),
+                submissionParameter.getLocalArtifactPath(),
+                submissionParameter.getFile(),
+                submissionParameter.getMainClassName(),
+                submissionParameter.getReferencedFiles(),
+                submissionParameter.getReferencedFiles(),
+                submissionParameter.getArgs(),
+                jobConfigWithDebug
+        );
 
-        return new SparkBatchRemoteDebugJob(new URI(connectUrl), submissionParameter, submission);
+        return new SparkBatchRemoteDebugJob(new URI(connectUrl), debugSubmissionParameter, submission);
     }
 }

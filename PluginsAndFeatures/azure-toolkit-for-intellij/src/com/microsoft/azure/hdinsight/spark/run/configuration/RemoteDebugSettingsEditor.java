@@ -24,41 +24,42 @@ package com.microsoft.azure.hdinsight.spark.run.configuration;
 
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
-import com.intellij.openapi.project.Project;
-import com.microsoft.azure.hdinsight.common.CallBack;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import javax.swing.*;
 
 public class RemoteDebugSettingsEditor extends SettingsEditor<RemoteDebugRunConfiguration> {
-    private JPanel myPanel;
-    private RemoteDebugRunConfiguration myRunConfiguration;
+    private SparkSubmissionContentPanel submissionPanel;
+    private RemoteDebugRunConfiguration runConfiguration;
+
+    public RemoteDebugRunConfiguration getRunConfiguration() {
+        return runConfiguration;
+    }
 
     public RemoteDebugSettingsEditor(final RemoteDebugRunConfiguration runConfiguration){
-        myRunConfiguration = runConfiguration;
+        this.runConfiguration = runConfiguration;
     }
+
     @Override
     protected void resetEditorFrom(@NotNull RemoteDebugRunConfiguration remoteDebugRunConfiguration) {
-
+        // FIXME: to reset settings of editor
     }
 
     @Override
     protected void applyEditorTo(@NotNull RemoteDebugRunConfiguration remoteDebugRunConfiguration) throws ConfigurationException {
+        remoteDebugRunConfiguration.getSubmitModel().setSubmissionParameters(submissionPanel.constructSubmissionParameter());
 
     }
 
     @NotNull
     @Override
     protected JComponent createEditor() {
-        Project project = myRunConfiguration.getProject();
-        SparkSubmissionContentPanel submissionPanel = new SparkSubmissionContentPanel(project, new CallBack() {
-            @Override
-            public void run() {
-                // TODO Add logic to resize the window and enable/disable button
-
-            }
-        });
+        submissionPanel = new SparkSubmissionContentPanel(
+                this.getRunConfiguration().getSubmitModel(),
+                () -> {
+                    // TODO Add logic to resize the window and enable/disable button
+                });
 
         return submissionPanel;
     }

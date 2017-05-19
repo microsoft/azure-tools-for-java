@@ -38,4 +38,23 @@ public class SparkSubmitAdvancedConfigModel {
         UsePassword,
         UseKeyFile
     }
+
+    public static class UnknownSSHAuthTypeException extends SparkJobException {
+
+        public UnknownSSHAuthTypeException(String message) {
+            super(message);
+        }
+
+        public UnknownSSHAuthTypeException(String message, int errorCode) {
+            super(message, errorCode);
+        }
+
+        public UnknownSSHAuthTypeException(String message, String errorLog) {
+            super(message, errorLog);
+        }
+
+        public UnknownSSHAuthTypeException(String message, Throwable throwable) {
+            super(message, throwable);
+        }
+    }
 }

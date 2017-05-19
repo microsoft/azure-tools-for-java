@@ -125,6 +125,10 @@ public class SparkSubmissionContentPanel extends JPanel{
 
     private CallBack updateCallBack;
 
+    public SparkSubmitModel getSubmitModel() {
+        return submitModel;
+    }
+
     private SparkSubmitModel submitModel;
     private final int margin = 10;
     private static final String REFRESH_BUTTON_PATH = "/icons/refresh.png";
