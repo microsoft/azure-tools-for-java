@@ -116,7 +116,7 @@ public class SparkSubmitModel {
         return submissionParameter;
     }
 
-    public void setSubmissionParameters(SparkSubmissionParameter submissionParameters){
+    public void setSubmissionParameters(SparkSubmissionParameter submissionParameter){
         this.submissionParameter = submissionParameter;
         submissionParameterMap.put(project, submissionParameter);
     }
