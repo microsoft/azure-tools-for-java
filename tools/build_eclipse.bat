@@ -9,13 +9,10 @@ CD %~dp0\..
 CALL mvn -v
 IF NOT %ERRORLEVEL% EQU 0 ECHO Maven not found. Please install Maven first. && EXIT /b 1
 
-CALL :MAVEN_BUILD azuretools-core .\Utils\azuretools-core
+CALL :MAVEN_BUILD common-utils .\Utils
 IF NOT %ERRORLEVEL% EQU 0 GOTO EOF
 
-CALL :MAVEN_BUILD azure-explorer-common .\Utils\azure-explorer-common
-IF NOT %ERRORLEVEL% EQU 0 GOTO EOF
-
-CALL :MAVEN_BUILD hdinsight-node-common .\Utils\hdinsight-node-common
+CALL :MAVEN_BUILD libraries-for-azuretools-sdk .\PluginsAndFeatures\AddLibrary\AzureLibraries
 IF NOT %ERRORLEVEL% EQU 0 GOTO EOF
 
 CALL :MAVEN_BUILD azure-toolkit-for-eclipse .\PluginsAndFeatures\azure-toolkit-for-eclipse
