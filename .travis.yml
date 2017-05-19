@@ -7,4 +7,4 @@ before_install:
 - chmod +x ./BuildDevint
 script:
 - touch PluginsAndFeatures/AddLibrary/JDBCLibrary/JavaEE6/com.microsoft.sqljdbc4/sqljdbc42.jar
-- ./BuildDevint
+- ./BuildDevint -q
