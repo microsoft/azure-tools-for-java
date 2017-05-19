@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -e
+
+SCRIPT=$(readlink -f "$0")
+SCRIPTPATH=$(dirname "$SCRIPT")
+cd $SCRIPTPATH
+
+ARTIFACTS_DIR="artifacts"
+# check dir exists
+if [ ! -d  "$ARTIFACTS_DIR" ]; then
+    echo "Creating directory $ARTIFACTS_DIR"
+    mkdir -p $ARTIFACTS_DIR
+else
+    echo "Directory $ARTIFACTS_DIR exists"
+fi
+
+# Build Utils
+mvn install -f $SCRIPTPATH/Utils/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $1
+mvn install -f $SCRIPTPATH/PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $1
+
+# Build eclipse plugin
+mvn package -f $SCRIPTPATH/PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml $1
+cp ./PluginsAndFeatures/azure-toolkit-for-eclipse/WindowsAzurePlugin4EJ/target/WindowsAzurePlugin4EJ*.zip ./$ARTIFACTS_DIR/WindowsAzurePlugin4EJ.zip
+
+# Build intellij 2016 plugin
+./gradlew buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Pintellij_version=IU-2016.3
+cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2016.zip
+
+# Build intellij 2017 plugin
+./gradlew buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s
+cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2017.zip
+
+echo "BUILD SUCCESSFUL"
