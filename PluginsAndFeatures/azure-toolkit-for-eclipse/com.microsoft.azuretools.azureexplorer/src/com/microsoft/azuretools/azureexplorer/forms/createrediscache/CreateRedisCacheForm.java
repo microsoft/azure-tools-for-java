@@ -38,6 +38,7 @@ import javax.swing.JOptionPane;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -109,6 +110,8 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
 
     private Text txtDnsName;
     private Text txtNewResGrpName;
+    
+    private ControlDecoration decoratorDnsName;
 
     private Runnable onCreate;
 
@@ -191,6 +194,14 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
 
         txtDnsName = new Text(container, SWT.BORDER);
         txtDnsName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        
+        decoratorDnsName = new ControlDecoration(txtDnsName, SWT.CENTER);
+        decoratorDnsName.setDescriptionText(resourceBundle.getString(DECORACTOR_DNS));
+        FieldDecoration fieldDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
+        if (fieldDecoration != null) {
+            Image image = fieldDecoration.getImage();
+            decoratorDnsName.setImage(image);
+        }
 
         Label lblDnsSuffix = new Label(container, SWT.NONE);
         lblDnsSuffix.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
@@ -266,23 +277,15 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         chkUnblockPort.setText(resourceBundle.getString(CHECKBOX_SSL));
 
         txtDnsName.addModifyListener(new ModifyListener() {
-            ControlDecoration decorator;
-            {
-                decorator = new ControlDecoration(txtDnsName, SWT.CENTER);
-                decorator.setDescriptionText(resourceBundle.getString(DECORACTOR_DNS));
-                Image image = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR)
-                        .getImage();
-                decorator.setImage(image);
-            }
 
             @Override
             public void modifyText(ModifyEvent arg0) {
                 dnsNameValue = txtDnsName.getText();
                 if (dnsNameValue.length() > REDIS_CACHE_MAX_NAME_LENGTH
                         || !dnsNameValue.matches(DNS_NAME_REGEX)) {
-                    decorator.show();
+                	decoratorDnsName.show();
                 } else {
-                    decorator.hide();
+                	decoratorDnsName.hide();
                 }
                 validateFields();
             }

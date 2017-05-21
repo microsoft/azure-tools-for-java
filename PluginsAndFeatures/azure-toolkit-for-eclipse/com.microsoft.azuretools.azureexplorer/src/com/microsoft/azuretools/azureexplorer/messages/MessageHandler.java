@@ -33,6 +33,7 @@ public class MessageHandler {
     
     private static final String BUNDLE_PACKAGE_NAME = "com.microsoft.azuretools.azureexplorer.messages.%s";
     private static final String CANNOT_FIND_BUNDLE_ERROR = "Cannot find package: %s";
+    private static final String CANNOT_FIND_KEY_ERROR = "Cannot find key: %s";
     
     public static ResourceBundle getResourceBundle(String module) {
         String fullBundleName = String.format(BUNDLE_PACKAGE_NAME, module);
@@ -46,6 +47,15 @@ public class MessageHandler {
     }
     
     public static String getCommonStr(String key) {
-        return commonResourceBundle.getString(key);
+    	if (key == null) {
+    		return "";
+    	}
+    	try {
+    		return commonResourceBundle.getString(key);
+    	} catch (Exception ex) {
+    		LOG.log(String.format(CANNOT_FIND_KEY_ERROR, key), ex);
+    		return key;
+    	}
+        
     }
 }
