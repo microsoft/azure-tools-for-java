@@ -236,7 +236,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         Label lblPricingTier = new Label(container, SWT.READ_ONLY);
         lblPricingTier.setText(resourceBundle.getString(LABEL_PRICING));
 
-        cbPricetiers = new Combo(container, SWT.NONE);
+        cbPricetiers = new Combo(container, SWT.READ_ONLY);
         cbPricetiers.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
         if (skus.keySet().size() > 0) {
@@ -296,7 +296,9 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         cbSubs.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
                 currentSub = selectedSubscriptions.get(cbSubs.getSelectionIndex());
-                fillLocationsAndResourceGrps(currentSub);
+                if (loaded) {
+                	fillLocationsAndResourceGrps(currentSub);
+                }
                 validateFields();
             }
         });
