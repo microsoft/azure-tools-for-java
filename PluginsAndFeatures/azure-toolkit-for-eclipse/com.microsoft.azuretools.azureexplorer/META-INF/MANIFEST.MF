@@ -26,4 +26,5 @@ Export-Package: com.microsoft.azuretools.azureexplorer,
  com.microsoft.azuretools.azureexplorer.forms.createvm,
  com.microsoft.azuretools.azureexplorer.hdinsight,
  com.microsoft.azuretools.azureexplorer.helpers,
- com.microsoft.azuretools.azureexplorer.views
+ com.microsoft.azuretools.azureexplorer.views,
+ com.microsoft.azuretools.azureexplorer.messages 

@@ -28,11 +28,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-import java.util.ResourceBundle;
 
 import javax.swing.JOptionPane;
 
@@ -47,11 +47,14 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
@@ -66,19 +69,15 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
-import com.microsoft.azuretools.azurecommons.messagehandler.MessageHandler;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessorBase;
+import com.microsoft.azuretools.azureexplorer.messages.MessageHandler;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Link;
 
 public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
 
@@ -121,6 +120,8 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     private static final Integer INITIAL_HEIGHT = 450;
     private static final Integer REDIS_CACHE_MAX_NAME_LENGTH = 63;
     private static final String MODULE_NAME = "rediscache";
+    private static final String SUBS_COMBO_ITEMS_FORMAT = "%s (%s)";
+    private static final String DNS_NAME_REGEX = "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$";
 
     // const for widgets
     private static final String DIALOG_TITLE = "DIALOG_TITLE";
@@ -137,8 +138,6 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     private static final String CHECKBOX_SSL = "CHECKBOX_SSL";
 
     // const for creating information
-    private static final String SUBS_COMBO_ITEMS_FORMAT = "SUBS_COMBO_ITEMS_FORMAT";
-    private static final String DNS_NAME_REGEX = "DNS_NAME_REGEX";
     private static final String LOADING_LOCATION_AND_GRPS = "LOADING_LOCATION_AND_GRPS";
     private static final String LOADING = "LOADING";
     private static final String DECORACTOR_DNS = "DECORACTOR_DNS";
@@ -280,7 +279,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             public void modifyText(ModifyEvent arg0) {
                 dnsNameValue = txtDnsName.getText();
                 if (dnsNameValue.length() > REDIS_CACHE_MAX_NAME_LENGTH
-                        || !dnsNameValue.matches(resourceBundle.getString(DNS_NAME_REGEX))) {
+                        || !dnsNameValue.matches(DNS_NAME_REGEX)) {
                     decorator.show();
                 } else {
                     decorator.hide();
@@ -290,7 +289,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         });
 
         for (SubscriptionDetail sub : selectedSubscriptions) {
-            cbSubs.add(String.format(resourceBundle.getString(SUBS_COMBO_ITEMS_FORMAT), sub.getSubscriptionName(),
+            cbSubs.add(String.format(SUBS_COMBO_ITEMS_FORMAT, sub.getSubscriptionName(),
                     sub.getSubscriptionId()));
         }
 
@@ -495,7 +494,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     private void validateFields() {
         boolean allFieldsCompleted = loaded && !(dnsNameValue == null || dnsNameValue.isEmpty()
                 || dnsNameValue.length() > REDIS_CACHE_MAX_NAME_LENGTH
-                || !dnsNameValue.matches(resourceBundle.getString(DNS_NAME_REGEX)) || selectedLocationValue == null
+                || !dnsNameValue.matches(DNS_NAME_REGEX) || selectedLocationValue == null
                 || selectedLocationValue.isEmpty() || selectedResGrpValue == null || selectedResGrpValue.isEmpty()
                 || selectedPriceTierValue == null || selectedPriceTierValue.isEmpty());
 
