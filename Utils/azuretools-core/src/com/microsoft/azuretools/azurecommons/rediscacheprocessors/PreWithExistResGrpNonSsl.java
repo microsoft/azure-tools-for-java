@@ -16,7 +16,8 @@ public class PreWithExistResGrpNonSsl extends ProcessorBaseImpl {
     public ProcessingStrategy process() {
         Creatable<RedisCache> redisCacheDefinition = withDNSNameAndRegionDefinition()
                 .withExistingResourceGroup(this.ResourceGroupName())
-                .withPremiumSku(this.Capacity());
+                .withPremiumSku(this.Capacity())
+                .withNonSslPort();
         this.RedisCachesInstance().create(redisCacheDefinition);
         return this;
     }
