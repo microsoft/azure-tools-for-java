@@ -23,11 +23,13 @@ package com.microsoft.azuretools.azurecommons.messagehandler;
 
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import com.microsoft.azuretools.core.Activator; 
 
 
 public class MessageHandler {
     
-    static ResourceBundle commonResourceBundle = ResourceBundle.getBundle("com.microsoft.azuretools.azurecommons.messagehandler.common");
+	private static Activator LOG = Activator.getDefault();
+    private static ResourceBundle commonResourceBundle = ResourceBundle.getBundle("com.microsoft.azuretools.azurecommons.messagehandler.common");
     
     private static final String BUNDLE_PACKAGE_NAME = "com.microsoft.azuretools.azurecommons.messagehandler.%s";
     private static final String CANNOT_FIND_BUNDLE_ERROR = "Cannot find package: %s";
@@ -38,6 +40,7 @@ public class MessageHandler {
             return ResourceBundle.getBundle(fullBundleName);
         } catch (MissingResourceException ex){
             //TODO : Exceoption handler
+        	LOG.log(String.format(CANNOT_FIND_BUNDLE_ERROR, fullBundleName), ex);
         }
         return null;
     }
