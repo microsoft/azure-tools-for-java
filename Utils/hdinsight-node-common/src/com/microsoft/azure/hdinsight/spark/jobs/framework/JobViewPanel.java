@@ -37,7 +37,7 @@ import netscape.javascript.JSObject;
 
 public final class JobViewPanel extends JFXPanel {
 
-    private final Object jobUtil;
+    private final JobUtils jobUtil;
     private final String rootPath;
     private final String id;
     private WebView webView;
@@ -52,42 +52,24 @@ public final class JobViewPanel extends JFXPanel {
     }
 
     private void init(final JFXPanel panel) {
-        String value = System.getProperty("my.debug");
         String url = rootPath + "/com.microsoft.hdinsight/hdinsight/job/html/index.html";
-        if(!StringHelper.isNullOrWhiteSpace(value)) {
-            url = "C:/Users/ltian/project/toolkit-branch2/Utils/HDInsightNodeCommon/resources/htmlResources/hdinsight/job/html/index.html";
-        }
         url = url.replace("\\", "/");
         final String queryString = "?projectid=" + id + "&engintype=javafx";
         final String weburl = "file:///" + url + queryString;
 
         Platform.setImplicitExit(false);
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                webView = new WebView();
-                panel.setScene(new Scene(webView));
-                webEngine = webView.getEngine();
-                webEngine.setJavaScriptEnabled(true);
+        Platform.runLater(()-> {
+            webView = new WebView();
+            webEngine = webView.getEngine();
+            webEngine.setJavaScriptEnabled(true);
+            JSObject win = (JSObject) webEngine.executeScript("window");
+            win.setMember("JobUtils", jobUtil);
+            panel.setScene(new Scene(webView));
 
-                if (!alreadyLoad) {
-                    webEngine.load(weburl);
-                    alreadyLoad = true;
-                    webEngine.getLoadWorker().stateProperty().addListener(
-                            new ChangeListener<Worker.State>() {
-                                @Override
-                                public void changed(ObservableValue<? extends Worker.State> ov,
-                                                    Worker.State oldState, Worker.State newState) {
-                                    if (newState == Worker.State.SUCCEEDED) {
-                                        JSObject win = (JSObject) webEngine.executeScript("window");
-                                        win.setMember("JobUtils", jobUtil);
-                                    }
-                                }
-                            }
-                    );
-                }
+            if (!alreadyLoad) {
+                webEngine.load(weburl);
+                alreadyLoad = true;
             }
         });
     }
-
 }
