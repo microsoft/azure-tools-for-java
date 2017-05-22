@@ -497,7 +497,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             if (sortedGroups.size() > 0) {
                 cbUseExisting.select(0);
                 if (rdoUseExisting.getSelection()) {
-                    newResGrp = true;
+                    newResGrp = false;
                     selectedResGrpValue = sortedGroups.get(0);
                 }
             }
