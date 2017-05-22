@@ -41,23 +41,30 @@ public interface AzureDialogProtertiesHelper {
 	}
 	
 	default void addOKTelemetryProperties(final Map<String, String> properties) {
-		if(!(this instanceof Dialog)) return;
+
+	    if(!(this instanceof Dialog)) return;
 		Control[] controls = ((Dialog) this).getShell().getChildren();
 		java.util.List<Control> controlsList = new ArrayList<Control>();
 		for(Control control : controls) {
 			controlsList = getAllControls(control);
 			for(Control c : controlsList) {
 				if(c instanceof Button) {
+				    Button button = (Button) c;
+                    String btnInfoString = button.getText();
+                    if (btnInfoString == null || btnInfoString.trim().isEmpty()) {
+                        btnInfoString = button.getLocation() == null ? "" : String.valueOf(button.getLocation());
+                    }
 					if((c.getStyle() & SWT.CHECK) != 0) {
-						properties.put("JCheckBox." + String.valueOf(((Button) c).getLocation()) + ".Selected", String.valueOf(((Button) c).getSelection()));
+						properties.put("JCheckBox." + btnInfoString + ".Selected", String.valueOf(button.getSelection()));
 					}
 					else if((c.getStyle() & SWT.RADIO) != 0) {
-						properties.put("JRadioButton." + String.valueOf(((Button) c).getLocation()) + ".Selected", String.valueOf(((Button) c).getSelection()));
+						properties.put("JRadioButton." + btnInfoString + ".Selected", String.valueOf(button.getSelection()));
 					}
 				}
 				if(c instanceof Combo) {
-					int idx = ((Combo) c).getSelectionIndex();
-					properties.put("JComboBox." + String.valueOf(((Combo) c).getLocation()) + ".Selected", String.valueOf(((Combo) c).getItem(idx)));
+				    Combo combo = (Combo) c;
+					int idx = combo.getSelectionIndex();
+					properties.put("JComboBox." + String.valueOf(combo.getLocation()) + ".Selected", String.valueOf(combo.getItem(idx)));
 				}
 			}
 		}
