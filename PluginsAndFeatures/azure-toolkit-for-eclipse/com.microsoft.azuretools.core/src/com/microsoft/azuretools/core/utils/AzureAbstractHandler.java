@@ -39,7 +39,7 @@ public abstract class AzureAbstractHandler extends AbstractHandler {
 
 		final Map<String, String> properties = new HashMap<>();
 		try {
-			Command cmd = event.getCommand();
+			final Command cmd = event.getCommand();
 			String handlerName = this.getClass().getSimpleName();
 			
 			if (cmd != null) {
