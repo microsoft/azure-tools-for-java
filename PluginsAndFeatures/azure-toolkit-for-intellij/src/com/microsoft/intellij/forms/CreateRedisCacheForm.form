@@ -7,7 +7,7 @@
     </constraints>
     <properties>
       <minimumSize width="500" height="540"/>
-      <preferredSize width="460" height="500"/>
+      <preferredSize width="500" height="540"/>
     </properties>
     <border type="none" title="New Redis Cache"/>
     <children>

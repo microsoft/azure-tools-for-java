@@ -102,7 +102,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     private static final String PRICING_LINK = "https://azure.microsoft.com/en-us/pricing/details/cache";
     private static final String INVALID_REDIS_CACHE_NAME = "Invalid Redis Cache name. The name can only contain letters, numbers and hyphens. The first and last characters must each be a letter or a number. Consecutive hyphens are not allowed.";
     private static final String DNS_NAME_REGEX = "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$";
-    private static final String VALIDATION_FORMAT = "The name %s is not available %s.";
+    private static final String VALIDATION_FORMAT = "The name %s is not available.";
     private static final String CREATING_INDICATOR = "Creating Redis Cache %s ...";
     private static final String CREATING_ERROR_INDICATOR = "An error occurred while attempting to %s.\n%s";
 
@@ -143,7 +143,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         try {
             for (RedisCache existingRedisCache : azureManager.getAzure(currentSub.getSubscriptionId()).redisCaches().list()) {
                 if (existingRedisCache.name().equals(redisCacheNameValue)) {
-                    return new ValidationInfo(String.format(VALIDATION_FORMAT, redisCacheNameValue, txtRedisName));
+                    return new ValidationInfo(String.format(VALIDATION_FORMAT, redisCacheNameValue), txtRedisName);
                 }
             }
         } catch (IOException e) {
