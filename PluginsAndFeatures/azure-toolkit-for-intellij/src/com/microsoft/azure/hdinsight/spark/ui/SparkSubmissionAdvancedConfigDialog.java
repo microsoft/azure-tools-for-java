@@ -68,7 +68,6 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
     JCheckBox enableRemoteDebugCheckBox;
     JTextField sshUserNameTextField;
     ButtonGroup sshPasswordButtonGroup;
-    JRadioButton sshPasswordUseArtifactRadioButtion;
     JRadioButton sshPasswordUsePasswordRadioButton;
     JRadioButton sshPasswordUseKeyFileRadioButton;
     JPasswordField sshPasswordUsePasswordField;
@@ -106,10 +105,7 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
                         new Insets(margin, margin, 0, margin), 0, 0));
 
         JLabel sshAuthTypeLabel = new JLabel("Secure Shell (SSH) Auth Type");
-        sshAuthTypeLabel.setToolTipText("Secure shell (SSH) authentication type used in Spark remote debugging, by default use the artifact from IntelliJ project");
-
-        sshPasswordUseArtifactRadioButtion = new JRadioButton("Use the artifact from IntelliJ project", false);
-        sshPasswordUseArtifactRadioButtion.setToolTipText("For secure shell (SSH) password, use the artifact stored in IntelliJ project");
+        sshAuthTypeLabel.setToolTipText("Secure shell (SSH) authentication type used in Spark remote debugging, by default using the password");
 
         sshPasswordUsePasswordRadioButton = new JRadioButton("Use secure shell (SSH) password:", false);
         String sshPasswordUsePasswordToolTip = "For secure shell (SSH) password, use the password specified here";
@@ -142,19 +138,8 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
         });
 
         sshPasswordButtonGroup = new ButtonGroup();
-        sshPasswordButtonGroup.add(sshPasswordUseArtifactRadioButtion);
         sshPasswordButtonGroup.add(sshPasswordUsePasswordRadioButton);
         sshPasswordButtonGroup.add(sshPasswordUseKeyFileRadioButton);
-
-        sshPasswordUseArtifactRadioButtion.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED){
-                    sshPasswordUsePasswordField.setEnabled(false);
-                    sshPasswordUseKeyFileTextField.setEnabled(false);
-                }
-            }
-        });
 
         sshPasswordUsePasswordRadioButton.addItemListener(new ItemListener() {
             @Override
@@ -184,7 +169,6 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
                     sshUserNameLabel.setEnabled(true);
                     sshAuthTypeLabel.setEnabled(true);
 
-                    sshPasswordUseArtifactRadioButtion.setEnabled(true);
                     sshPasswordUsePasswordRadioButton.setEnabled(true);
                     sshPasswordUseKeyFileRadioButton.setEnabled(true);
 
@@ -193,7 +177,7 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
 
                     ButtonModel currentSelection = sshPasswordButtonGroup.getSelection();
                     sshPasswordUsePasswordRadioButton.setSelected(true);
-                    sshPasswordUseArtifactRadioButtion.setSelected(true);
+                    sshPasswordUseKeyFileRadioButton.setSelected(true);
                     currentSelection.setSelected(true);
                 }
                 else
@@ -202,7 +186,6 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
                     sshUserNameLabel.setEnabled(false);
                     sshAuthTypeLabel.setEnabled(false);
 
-                    sshPasswordUseArtifactRadioButtion.setEnabled(false);
                     sshPasswordUsePasswordRadioButton.setEnabled(false);
                     sshPasswordUseKeyFileRadioButton.setEnabled(false);
 
@@ -218,13 +201,6 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
                         0, 0,
                         GridBagConstraints.WEST, GridBagConstraints.NONE,
                         new Insets(margin, margin, 0, margin), 0, 0));
-
-        add(sshPasswordUseArtifactRadioButtion,
-                new GridBagConstraints(0, ++displayLayoutCurrentRow,
-                        0, 1,
-                        0, 0,
-                        GridBagConstraints.WEST, GridBagConstraints.NONE,
-                        new Insets(margin / 3, margin * 3, 0, margin), 0, 0));
 
         add(sshPasswordUsePasswordRadioButton,
                 new GridBagConstraints(0, ++displayLayoutCurrentRow,
@@ -254,7 +230,7 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
                         GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
                         new Insets(margin / 3, margin, 0, margin), 0, 0));
 
-        sshPasswordUseArtifactRadioButtion.setSelected(true);
+        sshPasswordUsePasswordRadioButton.setSelected(true);
         enableRemoteDebugCheckBox.setSelected(false);
     }
 
@@ -301,11 +277,9 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
                 sshPasswordUseKeyFileTextField.setText(advancedConfigModel.sshKyeFile.getAbsolutePath());
             }
 
+            sshPasswordUsePasswordRadioButton.setSelected(true);
             switch (advancedConfigModel.sshAuthType)
             {
-                case UseArtifact:
-                    sshPasswordUseArtifactRadioButtion.setSelected(true);
-                    break;
                 case UsePassword:
                     sshPasswordUsePasswordRadioButton.setSelected(true);
                     break;
@@ -339,11 +313,7 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
             }
         }
 
-        if (sshPasswordUseArtifactRadioButtion.isSelected())
-        {
-            advancedConfigModel.sshAuthType = SparkSubmitAdvancedConfigModel.SSHAuthType.UseArtifact;
-        }
-        else if (sshPasswordUsePasswordRadioButton.isSelected())
+        if (sshPasswordUsePasswordRadioButton.isSelected())
         {
             advancedConfigModel.sshAuthType = SparkSubmitAdvancedConfigModel.SSHAuthType.UsePassword;
         }

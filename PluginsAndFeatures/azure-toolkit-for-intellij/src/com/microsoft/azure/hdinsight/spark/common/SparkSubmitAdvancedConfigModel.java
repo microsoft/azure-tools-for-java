@@ -29,12 +29,11 @@ public class SparkSubmitAdvancedConfigModel {
 
     public String sshUserName = "sshuser";
 
-    public SSHAuthType sshAuthType = SSHAuthType.UseArtifact;
+    public SSHAuthType sshAuthType = SSHAuthType.UsePassword;
     public File sshKyeFile;
     public String sshPassword = "";
 
     public enum SSHAuthType {
-        UseArtifact,
         UsePassword,
         UseKeyFile
     }

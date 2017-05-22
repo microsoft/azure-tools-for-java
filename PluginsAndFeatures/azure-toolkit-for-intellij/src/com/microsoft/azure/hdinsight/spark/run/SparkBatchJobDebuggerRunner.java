@@ -102,7 +102,6 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                             case UseKeyFile:
                                 session.setPrivateKeyFile(advModel.sshKyeFile);
                                 break;
-                            case UseArtifact:
                             case UsePassword:
                                 session.setPassword(advModel.sshPassword);
                                 break;
