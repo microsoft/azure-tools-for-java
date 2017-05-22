@@ -25,6 +25,7 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.FixedSizeButton;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.impl.elements.ManifestFileUtil;
@@ -550,13 +551,16 @@ public class SparkSubmissionContentPanel extends JPanel{
                         new Insets(margin, margin, 0, margin), 0, 0));
 
         JButton loadJobConfigurationButton = new JButton("...");
-        add(loadJobConfigurationButton,
+        loadJobConfigurationButton.setPreferredSize(selectedArtifactTextField.getButton().getPreferredSize());
+        FixedSizeButton loadJobConfigurationFixedSizeButton = new FixedSizeButton(loadJobConfigurationButton);
+
+        add(loadJobConfigurationFixedSizeButton,
                 new GridBagConstraints(2, displayLayoutCurrentRow,
                         0, 1,
                         0, 0,
                         GridBagConstraints.NORTHEAST, GridBagConstraints.NONE,
                         new Insets(margin, margin, 0, margin), 0, 0));
-        loadJobConfigurationButton.addActionListener(new ActionListener() {
+        loadJobConfigurationFixedSizeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true,
