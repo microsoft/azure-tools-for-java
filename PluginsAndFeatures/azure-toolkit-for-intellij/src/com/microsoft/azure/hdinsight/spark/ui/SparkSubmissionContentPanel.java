@@ -594,13 +594,15 @@ public class SparkSubmissionContentPanel extends JPanel{
         String[] columns = {"Key", "Value", ""};
 
         jobConfigurationTable = new JBTable();
-        jobConfigurationTable.setPreferredScrollableViewportSize(new Dimension(300, 100));
+        Dimension jobConfigurationTableSize = new Dimension(300, 100);
+        jobConfigurationTable.setPreferredScrollableViewportSize(jobConfigurationTableSize);
 
         jobConfigurationTable.setSurrendersFocusOnKeystroke(true);
         jobConfigurationTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jobConfigurationTable.setColumnSelectionAllowed(true);
         JBScrollPane scrollPane = new JBScrollPane(jobConfigurationTable);
         jobConfigurationTable.setFillsViewportHeight(true);
+        scrollPane.setMinimumSize(jobConfigurationTableSize);
 
         jobConfigurationTable.addPropertyChangeListener((evt)-> {
             if ((evt.getPropertyName().equals("tableCellEditor") || evt.getPropertyName().equals("model")) && jobConfigurationTable.getModel() instanceof SubmissionTableModel) {
