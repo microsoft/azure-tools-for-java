@@ -534,6 +534,27 @@ public class SparkSubmitModel {
                 tableModel.addRow(SparkSubmissionParameter.parameterList[i], configs.containsKey(SparkSubmissionParameter.parameterList[i]) ?
                         configs.get(SparkSubmissionParameter.parameterList[i]) : "");
             }
+
+            for (Map.Entry<String, Object> jobConfigEntry : configs.entrySet()) {
+                String jobConfigKey = jobConfigEntry.getKey();
+                Object jobConfigValue = jobConfigEntry.getValue();
+
+                if (!StringHelper.isNullOrWhiteSpace(jobConfigKey) && !SparkSubmissionParameter.isSubmissionParameter(jobConfigKey)) {
+                    if (jobConfigKey == SparkSubmissionParameter.Conf) {
+                        Map<String, Object> sparkConfigMap;
+
+                        if (jobConfigValue instanceof Map && (sparkConfigMap = (Map<String, Object>)(jobConfigValue)) != null) {
+                            for (Map.Entry<String, Object> sparkConfigEntry : sparkConfigMap.entrySet()) {
+                                if (!StringHelper.isNullOrWhiteSpace(sparkConfigEntry.getKey())) {
+                                    tableModel.addRow(sparkConfigEntry.getKey(), sparkConfigEntry.getValue());
+                                }
+                            }
+                        }
+                    } else {
+                        tableModel.addRow(jobConfigKey, jobConfigValue);
+                    }
+                }
+            }
         }
 
         if (!tableModel.hasEmptyRow()) {
