@@ -485,7 +485,9 @@ public class SparkBatchRemoteDebugJob implements ISparkBatchDebugJob, ILogger {
         driverOption = (carriedDriverOption.trim() + " " + driverDebugOption).trim();
         HashMap<String, Object> jobConfigWithDebug = new HashMap<>(submissionParameter.getJobConfig());
         SparkConfigures sparkConfigWithDebug = new SparkConfigures(sparkConf);
+
         sparkConfigWithDebug.put(sparkJobDriverJvmOptionConfKey, driverOption);
+        sparkConfigWithDebug.put("spark.yarn.maxAppAttempts", "1");
         jobConfigWithDebug.put(SparkSubmissionParameter.Conf, sparkConfigWithDebug);
         SparkSubmissionParameter debugSubmissionParameter = new SparkSubmissionParameter(
                 submissionParameter.getClusterName(),

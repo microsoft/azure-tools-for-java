@@ -137,6 +137,18 @@ public class SparkBatchRemoteDebugJobScenario {
         assertEquals(expectedDriverJvmOption, submittedDriverJavaOption);
     }
 
+    @Then("^the Spark driver max retries should be '(.+)'$")
+    public void checkSparkDriverMaxRetries(String expectedMaxRetries) throws Throwable {
+        assertNull(caught);
+
+        String maxRetries =
+                ((SparkConfigures) submissionParameterArgumentCaptor.getValue().getJobConfig()
+                        .getOrDefault("conf", new SparkConfigures()))
+                        .get("spark.yarn.maxAppAttempts").toString();
+
+        assertEquals(expectedMaxRetries, maxRetries);
+    }
+
     @Given("^setup a mock livy service for (.+) request '(.+)' to return '(.+)' with status code (\\d+)$")
     public void mockLivyService(String action, String serviceUrl, String response, int statusCode) throws Throwable {
         URI mockUri = new URI(serviceUrl);

@@ -8,6 +8,7 @@ Feature: Spark Batch Remote Debug Job Testing
     And create batch Spark Job with driver debugging for 'http://localhost:8998/batches' with following parameters
       | spark.driver.extraJavaOptions | -head |
     Then the Spark driver JVM option should be '-head -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=0'
+    Then the Spark driver max retries should be '1'
 
     And create batch Spark Job with driver debugging for 'http://localhost:8998/batches' with following parameters
       | | |
