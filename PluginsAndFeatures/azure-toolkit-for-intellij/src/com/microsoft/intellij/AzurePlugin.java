@@ -262,9 +262,10 @@ public class AzurePlugin extends AbstractProjectComponent {
         return "MSOpenTechTools.AzurePlugin";
     }
 
-    // plugin will be installed into plugins-sandbox in debug model
+    // currently we didn't have a better way to know if it is in debug model.
+    // the code suppose we are under debug model if the plugin root path contains 'sandbox' for Gradle default debug path
     private boolean isDebugModel() {
-        return PluginUtil.getPluginRootDirectory().contains("plugins-sandbox");
+        return PluginUtil.getPluginRootDirectory().contains("sandbox");
     }
 
     /**
@@ -273,20 +274,18 @@ public class AzurePlugin extends AbstractProjectComponent {
      */
     private void copyPluginComponents() {
         try {
-            if (!isDebugModel()) {
-                for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
-                    if (azureLibrary.getLocation() != null) {
-                        if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
-                            for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator + CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
-                                new File(pluginFolder + File.separator + entryName).getParentFile().mkdirs();
-                                copyResourceFile(entryName, pluginFolder + File.separator + entryName);
-                            }
+            extractJobViewResource();
+            for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
+                if (azureLibrary.getLocation() != null) {
+                    if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
+                        for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator + CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
+                            new File(pluginFolder + File.separator + entryName).getParentFile().mkdirs();
+                            copyResourceFile(entryName, pluginFolder + File.separator + entryName);
                         }
                     }
                 }
             }
 
-            extractJobViewResource();
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
