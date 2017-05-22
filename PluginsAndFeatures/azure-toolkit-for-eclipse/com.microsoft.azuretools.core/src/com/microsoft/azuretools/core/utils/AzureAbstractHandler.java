@@ -23,10 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.common.NotDefinedException;
-import org.eclipse.swt.widgets.Event;
 
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 
@@ -39,12 +39,19 @@ public abstract class AzureAbstractHandler extends AbstractHandler {
 
 		final Map<String, String> properties = new HashMap<>();
 		try {
-			properties.put("CategoryId", event.getCommand().getCategory().getId());
-			properties.put("Category", event.getCommand().getCategory().getName());
-			properties.put("CommandId", event.getCommand().getId());
-			properties.put("Text", event.getCommand().getName());
+			Command cmd = event.getCommand();
+			String handlerName = this.getClass().getSimpleName();
 			
-			AppInsightsClient.createByType(AppInsightsClient.EventType.Action, event.getCommand().getName(),	null, properties);
+			if (cmd != null) {
+				properties.put("CategoryId", cmd.getCategory().getId());
+				properties.put("Category", cmd.getCategory().getName());
+				properties.put("CommandId", cmd.getId());
+				properties.put("Text", cmd.getName());
+				if(null == handlerName || handlerName.isEmpty()) {
+					handlerName = cmd.getName();
+				}
+			}			
+			AppInsightsClient.createByType(AppInsightsClient.EventType.Action, handlerName, null, properties);
 		} catch (NotDefinedException ignore) {
 		}
 
