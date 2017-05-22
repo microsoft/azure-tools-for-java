@@ -275,6 +275,8 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         chkUnblockPort = new Button(container, SWT.CHECK);
         chkUnblockPort.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 4, 1));
         chkUnblockPort.setText(MessageHandler.getResourceString(resourceBundle,CHECKBOX_SSL));
+        
+        this.setHelpAvailable(false);
 
         txtDnsName.addModifyListener(new ModifyListener() {
 
@@ -283,9 +285,9 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
                 dnsNameValue = txtDnsName.getText();
                 if (dnsNameValue.length() > REDIS_CACHE_MAX_NAME_LENGTH
                         || !dnsNameValue.matches(DNS_NAME_REGEX)) {
-                	decoratorDnsName.show();
+                    decoratorDnsName.show();
                 } else {
-                	decoratorDnsName.hide();
+                    decoratorDnsName.hide();
                 }
                 validateFields();
             }
@@ -300,7 +302,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             public void widgetSelected(SelectionEvent e) {
                 currentSub = selectedSubscriptions.get(cbSubs.getSelectionIndex());
                 if (loaded) {
-                	fillLocationsAndResourceGrps(currentSub);
+                    fillLocationsAndResourceGrps(currentSub);
                 }
                 validateFields();
             }
@@ -315,6 +317,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
                 txtNewResGrpName.setEnabled(true);
                 cbUseExisting.setEnabled(false);
                 newResGrp = true;
+                selectedResGrpValue = txtNewResGrpName.getText();
                 validateFields();
             }
         });
@@ -389,6 +392,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
                                     fillLocationsAndResourceGrps(currentSub);
                                     cbLocations.setEnabled(true);
                                     loaded = true;
+                                    validateFields();
                                 }
                             });
                         } catch (Exception ex) {
@@ -492,6 +496,10 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             }
             if (sortedGroups.size() > 0) {
                 cbUseExisting.select(0);
+                if (rdoUseExisting.getSelection()) {
+                    newResGrp = true;
+                    selectedResGrpValue = sortedGroups.get(0);
+                }
             }
         }
     }
