@@ -22,9 +22,14 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveTableModel;
+import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 public class SubmissionTableModel extends InteractiveTableModel{
@@ -80,6 +85,45 @@ public class SubmissionTableModel extends InteractiveTableModel{
         }
 
         return jobConfigMap;
+    }
+
+    public void loadJobConfigMapFromPropertyFile(String propertyFilePath) {
+        Properties prop = new Properties();
+        InputStream input = null;
+
+        try {
+            input = new FileInputStream(propertyFilePath);
+
+            prop.load(input);
+
+            removeAllRows();
+
+            Enumeration<?> e = prop.propertyNames();
+            while (e.hasMoreElements()) {
+                String key = (String) e.nextElement();
+                String value = prop.getProperty(key);
+
+                if (!StringUtils.isNullOrWhiteSpace(key)) {
+                    super.addRow(key, value);
+                }
+            }
+
+            if (!hasEmptyRow()) {
+                addEmptyRow();
+            }
+
+            checkParameter();
+        } catch (Exception ex) {
+            DefaultLoader.getUIHelper().logError("Fail to read Spark property file: " + propertyFilePath, ex);
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException ex) {
+                    DefaultLoader.getUIHelper().logError("Fail to close Spark property file: " + propertyFilePath, ex);
+                }
+            }
+        }
     }
 
     private void checkParameter() {

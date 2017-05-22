@@ -52,10 +52,11 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 public class SparkSubmissionContentPanel extends JPanel{
     public SparkSubmissionContentPanel(@NotNull Project project, @Nullable CallBack updateCallBack){
@@ -143,9 +144,6 @@ public class SparkSubmissionContentPanel extends JPanel{
     private JTextField referencedFilesTextField;
     private JRadioButton intelliJArtifactRadioButton;
     private JRadioButton localArtifactRadioButton;
-    private TextFieldWithBrowseButton localConfigFileTextButton;
-    private JRadioButton tableConfigRadioButton;
-    private JRadioButton localConfigRadioButton;
     private final JLabel[] errorMessageLabels = new JLabel[5];
     private SparkSubmissionAdvancedConfigDialog advancedConfigDialog;
 
@@ -514,82 +512,10 @@ public class SparkSubmissionContentPanel extends JPanel{
 
         add(jobConfigurationLabel,
                 new GridBagConstraints(0, ++displayLayoutCurrentRow,
-                        0, 1,
-                        0, 0,
-                        GridBagConstraints.WEST, GridBagConstraints.NONE,
-                        new Insets(margin, margin, 0, 0), 0, 0));
-
-        localConfigFileTextButton = new TextFieldWithBrowseButton();
-        localConfigFileTextButton = new TextFieldWithBrowseButton();
-        localConfigFileTextButton.setToolTipText("Job Configuration from local file.");
-        localConfigFileTextButton.setEditable(true);
-        localConfigFileTextButton.setEnabled(false);
-        localConfigFileTextButton.getButton().addActionListener((e)-> {
-            FileChooserDescriptor chooserDescriptor = new FileChooserDescriptor(true,
-                    false,
-                    false,
-                    false,
-                    true,
-                    false);
-            chooserDescriptor.setTitle("Select Local Configuration File");
-            VirtualFile chooseFile = FileChooser.chooseFile(chooserDescriptor, null, null);
-            if (chooseFile != null) {
-                String path = chooseFile.getPath();
-                localConfigFileTextButton.setText(path);
-            }
-        });
-
-
-        localConfigFileTextButton.getTextField().getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                localConfigurationValidate();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                localConfigurationValidate();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                localConfigurationValidate();
-            }
-        });
-
-        tableConfigRadioButton = new JRadioButton("Dynamic Configuration", true);
-        localConfigRadioButton = new JRadioButton("Configuration from local disk:", false);
-
-        tableConfigRadioButton.addItemListener((event)->{
-            if (event.getStateChange() == ItemEvent.SELECTED) {
-                jobConfigurationTable.setEnabled(true);
-                localConfigFileTextButton.setEnabled(false);
-                setVisibleForFixedErrorMessageLabel(ErrorMessageLabelTag.JobConfiguration.ordinal(), false);
-            }
-        });
-
-        localConfigRadioButton.addItemListener((event)->{
-            if(event.getStateChange() == ItemEvent.SELECTED) {
-                jobConfigurationTable.setEnabled(false);
-                localConfigFileTextButton.setEnabled(true);
-
-                // refresh to trigger data validate
-                String text = localConfigFileTextButton.getText();
-                localConfigFileTextButton.setText(text);
-            }
-        });
-
-        ButtonGroup group = new ButtonGroup();
-        group.add(tableConfigRadioButton);
-        group.add(localConfigRadioButton);
-
-        add(tableConfigRadioButton,
-                new GridBagConstraints(0, ++displayLayoutCurrentRow,
                         1, 1,
-                        0, 0,
-                        GridBagConstraints.WEST, GridBagConstraints.NONE,
-                        new Insets(margin / 3, margin * 3, 0, margin), 0, 0));
-
+                        1, 0,
+                        GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
+                        new Insets(margin, margin, 0, 0), 0, 0));
 
         String[] columns = {"Key", "Value", ""};
 
@@ -618,47 +544,49 @@ public class SparkSubmissionContentPanel extends JPanel{
 
         add(scrollPane,
                 new GridBagConstraints(1, displayLayoutCurrentRow,
-                        0, 1,
+                        1, 1,
                         1, 0,
-                        GridBagConstraints.WEST, GridBagConstraints.NONE,
-                        new Insets(margin / 3, margin, 0, margin), 0, 0));
+                        GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
+                        new Insets(margin, margin, 0, margin), 0, 0));
+
+        JButton loadJobConfigurationButton = new JButton("...");
+        add(loadJobConfigurationButton,
+                new GridBagConstraints(2, displayLayoutCurrentRow,
+                        0, 1,
+                        0, 0,
+                        GridBagConstraints.NORTHEAST, GridBagConstraints.NONE,
+                        new Insets(margin, margin, 0, margin), 0, 0));
+        loadJobConfigurationButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false);
+
+                fileChooserDescriptor.setTitle("Select Spark property file");
+
+                VirtualFile chooseFile = FileChooser.chooseFile(fileChooserDescriptor, null, null);
+                if (chooseFile != null) {
+                    submitModel.loadJobConfigMapFromPropertyFile(chooseFile.getCanonicalPath());
+                }
+            }
+        });
+
 
         errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()] = new JLabel();
         errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()].setForeground(DarkThemeManager.getInstance().getErrorMessageColor());
         errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()].setVisible(false);
 
-        add(localConfigRadioButton,
-                new GridBagConstraints(0, ++displayLayoutCurrentRow,
-                        1, 1,
-                        0, 0,
-                        GridBagConstraints.WEST, GridBagConstraints.NONE,
-                        new Insets(margin / 3, margin * 3, 0, margin), 0, 0));
-
-        add(localConfigFileTextButton,
-                new GridBagConstraints(1, displayLayoutCurrentRow,
-                        0, 1,
-                        0, 0,
-                        GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
-                        new Insets(margin / 3, margin, 0, margin), 0, 0));
-
         add(errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()],
                 new GridBagConstraints(1, ++displayLayoutCurrentRow,
                         0, 1,
                         1, 0,
-                        GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
+                        GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
                         new Insets(0, margin, 0, margin), 0, 0));
-    }
 
-    private void localConfigurationValidate () {
-        final String fileName = localConfigFileTextButton.getText();
-        final File file = new File(fileName);
-        if (!file.exists()) {
-            setStatusForMessageLabel(ErrorMessageLabelTag.JobConfiguration.ordinal(), true, "Configuration file not found!", false);
-        } else if (file.isDirectory()) {
-            setStatusForMessageLabel(ErrorMessageLabelTag.JobConfiguration.ordinal(), true, "Configuration file not found!", false);
-        } else {
-            setStatusForMessageLabel(ErrorMessageLabelTag.JobConfiguration.ordinal(), false, "");
-        }
     }
 
     private void addCommandlineArgsLineItem() {

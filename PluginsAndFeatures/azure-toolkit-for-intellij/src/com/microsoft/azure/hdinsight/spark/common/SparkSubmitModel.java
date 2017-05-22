@@ -525,6 +525,8 @@ public class SparkSubmitModel {
         return tableModel.getJobConfigMap();
     }
 
+    public void loadJobConfigMapFromPropertyFile(String propertyFilePath) { tableModel.loadJobConfigMapFromPropertyFile(propertyFilePath);}
+
     private void initializeTableModel(final InteractiveTableModel tableModel) {
         if (submissionParameter == null) {
             for (int i = 0; i < SparkSubmissionParameter.defaultParameters.length; ++i) {

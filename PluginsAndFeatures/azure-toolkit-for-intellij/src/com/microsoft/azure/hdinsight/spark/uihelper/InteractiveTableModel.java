@@ -113,6 +113,11 @@ public class InteractiveTableModel extends AbstractTableModel {
         fireTableCellUpdated(rowIndex, columnIndex);
     }
 
+    public void removeAllRows() {
+        dataRecords.clear();
+        fireTableDataChanged();
+    }
+
     public boolean hasEmptyRow() {
         int rowCount = getRowCount();
         if (rowCount == 0) {
