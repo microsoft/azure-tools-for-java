@@ -25,6 +25,8 @@ import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.ijidea.ui.RemoteDebuggingClientDialog;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -44,6 +46,8 @@ public class RemoteDebugAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
+        AppInsightsClient.create(HDInsightBundle.message("SparkRemoteDebugButtonClick"), null);
+
         WebApp webApp = webappNode.getWebApp();
         try {
             // TODO
