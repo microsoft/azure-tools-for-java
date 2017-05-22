@@ -40,7 +40,6 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
@@ -76,8 +75,9 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.applicationinsights.AILibraryHandler;
 import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsPreferences;
 import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsResourceRegistryEclipse;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 
-public class AIProjConfigWizardDialog extends TitleAreaDialog {
+public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
 	private Button aiCheck;
 	private Label lblInstrumentationKey;
 	private Combo comboInstrumentationKey;

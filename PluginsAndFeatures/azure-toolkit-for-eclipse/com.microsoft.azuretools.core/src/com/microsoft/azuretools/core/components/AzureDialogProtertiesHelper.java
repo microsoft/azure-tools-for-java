@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 
@@ -80,18 +79,12 @@ public interface AzureDialogProtertiesHelper {
 	default void sentTelemetry(int code) {
 		if(!(this instanceof Dialog)) return;
 		final Map<String, String> properties = new HashMap<>();
-		String action = "OK";
-		
-		properties.put("Window", ((Dialog) this).getClass().getSimpleName());
-		properties.put("Title", ((Dialog) this).getShell().getText());
-		
-		if(this instanceof TelemetryProperties) {
-			properties.putAll(((TelemetryProperties) this).toProperties());
-		}
+		String action = "";
 		
 		switch (code) {
 		case org.eclipse.jface.window.Window.OK:
 			addOKTelemetryProperties(properties);
+			action = "OK";
 			break;
 			
 		case org.eclipse.jface.window.Window.CANCEL:
@@ -102,7 +95,12 @@ public interface AzureDialogProtertiesHelper {
 		default:
 			return;
 		}
-		
+
+		properties.put("Window", ((Dialog) this).getClass().getSimpleName());
+		properties.put("Title", ((Dialog) this).getShell().getText());
+		if(this instanceof TelemetryProperties) {
+			properties.putAll(((TelemetryProperties) this).toProperties());
+		}
 		AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, this.getClass().getSimpleName(), action, properties);
 	}
 }
