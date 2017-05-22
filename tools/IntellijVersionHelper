@@ -6,6 +6,8 @@ SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 cd $SCRIPTPATH
 
-git checkout -- ../PluginsAndFeatures/azure-toolkit-for-intellij/resources/META-INF/plugin.xml
-javac IntellijVersionHelper.java
-java IntellijVersionHelper $1
+XMLFile="../PluginsAndFeatures/azure-toolkit-for-intellij/resources/META-INF/plugin.xml"
+
+git checkout -- $XMLFile
+javac XMLHelper.java
+java XMLHelper $XMLFile '//idea-plugin/version/text()' "-${1}" "JOIN" "true"
