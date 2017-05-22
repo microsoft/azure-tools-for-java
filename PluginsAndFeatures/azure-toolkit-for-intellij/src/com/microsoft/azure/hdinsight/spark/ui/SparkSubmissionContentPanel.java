@@ -521,7 +521,7 @@ public class SparkSubmissionContentPanel extends JPanel{
         String[] columns = {"Key", "Value", ""};
 
         jobConfigurationTable = new JBTable();
-        Dimension jobConfigurationTableSize = new Dimension(300, 100);
+        Dimension jobConfigurationTableSize = new Dimension(320, 100);
         jobConfigurationTable.setPreferredScrollableViewportSize(jobConfigurationTableSize);
 
         jobConfigurationTable.setSurrendersFocusOnKeystroke(true);
@@ -547,8 +547,8 @@ public class SparkSubmissionContentPanel extends JPanel{
                 new GridBagConstraints(1, displayLayoutCurrentRow,
                         1, 1,
                         1, 0,
-                        GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-                        new Insets(margin, margin, 0, margin), 0, 0));
+                        GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
+                        new Insets(margin, margin, 0, 0), 0, 0));
 
         JButton loadJobConfigurationButton = new JButton("...");
         loadJobConfigurationButton.setPreferredSize(selectedArtifactTextField.getButton().getPreferredSize());
@@ -559,7 +559,9 @@ public class SparkSubmissionContentPanel extends JPanel{
                         0, 1,
                         0, 0,
                         GridBagConstraints.NORTHEAST, GridBagConstraints.NONE,
-                        new Insets(margin, margin, 0, margin), 0, 0));
+                        new Insets(margin, margin / 2, 0, margin), 0, 0));
+        loadJobConfigurationFixedSizeButton.setToolTipText("Load Spark config from property file");
+
         loadJobConfigurationFixedSizeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
