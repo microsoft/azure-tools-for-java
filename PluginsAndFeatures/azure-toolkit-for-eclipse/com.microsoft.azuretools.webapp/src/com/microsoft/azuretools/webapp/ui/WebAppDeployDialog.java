@@ -114,7 +114,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         super.configureShell(newShell);
         Image image = PluginUtil.getImage("icons/large/DeploytoAzureWizard.png");
         if (image != null) {
-        	setTitleImage(image);
+            setTitleImage(image);
         }
     }
     
@@ -165,8 +165,8 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         btnCreate.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	sendTelemetry("CREATE");
-            	createAppService();
+                sendTelemetry("CREATE");
+                createAppService();
                 //cleanError();
             }
         });
@@ -178,7 +178,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         btnDelete.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	sendTelemetry("DELETE");
+                sendTelemetry("DELETE");
                 deleteAppService();
                 //cleanError();
             }
@@ -190,7 +190,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         btnRefresh.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	sendTelemetry("REFRESH");
+                sendTelemetry("REFRESH");
                 //cleanError();
                 table.removeAll();
                 //browserAppServiceDetailes.setText("");
@@ -570,7 +570,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 100, successMessage);
                 } catch (IOException | InterruptedException ex) {
                     //threadParams.put("sitePath", null);
-                	postEventProperties.put("PublishError", ex.getMessage());
+                    postEventProperties.put("PublishError", ex.getMessage());
                     ex.printStackTrace();
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@deploy@AppServiceCreateDialog", ex));
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1, errorMessage);
@@ -717,9 +717,9 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
     }
     
     private void sendTelemetry(String action){
-    	final Map<String, String> properties = new HashMap<>();
-    	properties.put("Window", this.getClass().getSimpleName());
-		properties.put("Title", this.getShell().getText());
-    	AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, this.getClass().getSimpleName(), action, properties);
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("Window", this.getClass().getSimpleName());
+        properties.put("Title", this.getShell().getText());
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, this.getClass().getSimpleName(), action, properties);
     }
 }
