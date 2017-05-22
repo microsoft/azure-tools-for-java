@@ -48,20 +48,12 @@ import java.util.ArrayList;
  */
 public class SparkBatchJobSubmissionState implements RunProfileState, RemoteState {
     private final Project myProject;
-    private SparkSubmissionParameter submissionParameter;
     private SparkSubmitModel submitModel;
     private RemoteConnection remoteConnection;
 
-    private SparkSubmitAdvancedConfigModel submitAdvancedConfigModel;
-
-    private IClusterDetail clusterDetail;
-
-    public SparkBatchJobSubmissionState(Project project, SparkSubmissionParameter submissionParameter, SparkSubmitModel submitModel, IClusterDetail detail, SparkSubmitAdvancedConfigModel advModel) {
+    public SparkBatchJobSubmissionState(Project project, SparkSubmitModel submitModel) {
         this.myProject = project;
-        this.submissionParameter = submissionParameter;
         this.submitModel = submitModel;
-        this.clusterDetail = detail;
-        this.submitAdvancedConfigModel = advModel;
     }
 
     public void setRemoteConnection(RemoteConnection remoteConnection) {
@@ -70,20 +62,6 @@ public class SparkBatchJobSubmissionState implements RunProfileState, RemoteStat
 
     public SparkSubmitModel getSubmitModel() {
         return submitModel;
-    }
-
-    public IClusterDetail getClusterDetail() {
-        return clusterDetail;
-    }
-
-    public SparkSubmitAdvancedConfigModel getSubmitAdvancedConfigModel() {
-        return submitAdvancedConfigModel;
-    }
-
-
-
-    public SparkSubmissionParameter getSubmissionParameter() {
-        return submissionParameter;
     }
 
     @Nullable

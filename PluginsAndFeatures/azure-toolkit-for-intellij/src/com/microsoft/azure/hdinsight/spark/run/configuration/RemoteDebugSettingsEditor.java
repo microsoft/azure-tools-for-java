@@ -48,8 +48,11 @@ public class RemoteDebugSettingsEditor extends SettingsEditor<RemoteDebugRunConf
 
     @Override
     protected void applyEditorTo(@NotNull RemoteDebugRunConfiguration remoteDebugRunConfiguration) throws ConfigurationException {
-        remoteDebugRunConfiguration.getSubmitModel().setSubmissionParameters(submissionPanel.constructSubmissionParameter());
+        this.runConfiguration = remoteDebugRunConfiguration;
 
+        // Set the parameters from view to model
+        this.runConfiguration.getSubmitModel().setSubmissionParameters(
+                submissionPanel.constructSubmissionParameter());
     }
 
     @NotNull

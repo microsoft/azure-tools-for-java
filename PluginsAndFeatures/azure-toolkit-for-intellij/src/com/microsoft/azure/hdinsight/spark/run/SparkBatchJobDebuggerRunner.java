@@ -68,10 +68,9 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
     protected void execute(@NotNull ExecutionEnvironment environment, @Nullable Callback callback, @NotNull RunProfileState state) throws ExecutionException {
         SparkBatchJobSubmissionState submissionState = (SparkBatchJobSubmissionState) state;
         SparkSubmitModel submitModel = submissionState.getSubmitModel();
-        SparkSubmissionParameter submissionParameter = submissionState.getSubmissionParameter();
-        IClusterDetail clusterDetail = ((SparkBatchJobSubmissionState) state).getClusterDetail();
-        SparkSubmitAdvancedConfigModel advModel =
-                ((SparkBatchJobSubmissionState) state).getSubmitAdvancedConfigModel();
+        SparkSubmissionParameter submissionParameter = submitModel.getSubmissionParameter();
+        IClusterDetail clusterDetail = submitModel.getSelectedClusterDetail();
+        SparkSubmitAdvancedConfigModel advModel = submitModel.getAdvancedConfigModel();
 
         submitModel
                 .remoteDebugCompileRxOp(submissionParameter)
