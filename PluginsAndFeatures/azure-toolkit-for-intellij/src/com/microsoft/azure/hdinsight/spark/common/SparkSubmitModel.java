@@ -47,7 +47,6 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang.StringUtils;
-import rx.Observable;
 import rx.Single;
 
 import javax.swing.*;
@@ -64,8 +63,8 @@ public class SparkSubmitModel {
     private static Map<Project, SparkSubmitAdvancedConfigModel> submissionAdvancedConfigModelMap = new HashMap<>();
 
     private final Project project;
-    private final List<IClusterDetail> cachedClusterDetails;
 
+    private List<IClusterDetail> cachedClusterDetails;
     private Map<String, IClusterDetail> mapClusterNameToClusterDetail = new HashMap<>();
     private Map<String, Artifact> artifactHashMap = new HashMap<>();
 
@@ -87,16 +86,6 @@ public class SparkSubmitModel {
         this.submissionParameter = submissionParameterMap.get(project);
         this.advancedConfigModel = submissionAdvancedConfigModelMap.get(project);
 
-        setClusterComboBoxModel(cachedClusterDetails);
-        int index = -1;
-        if(submissionParameter != null) {
-            String title = getCluserTitle(submissionParameter.getClusterName());
-            index = clusterComboBoxModel.getIndexOf(title);
-            if (index != -1) {
-                clusterComboBoxModel.setSelectedItem(getCluserTitle(submissionParameter.getClusterName()));
-            }
-        }
-
         final List<Artifact> artifacts = ArtifactUtil.getArtifactWithOutputPaths(project);
 
         for (Artifact artifact : artifacts) {
@@ -107,7 +96,7 @@ public class SparkSubmitModel {
             }
         }
 
-        index = submissionParameter != null ? artifactComboBoxModel.getIndexOf(submissionParameter.getArtifactName()) : -1;
+        int index = submissionParameter != null ? artifactComboBoxModel.getIndexOf(submissionParameter.getArtifactName()) : -1;
         if (index != -1) {
             artifactComboBoxModel.setSelectedItem(submissionParameter.getArtifactName());
         }
@@ -157,16 +146,23 @@ public class SparkSubmitModel {
     }
 
     public void setClusterComboBoxModel(List<IClusterDetail> cachedClusterDetails) {
+        this.cachedClusterDetails = cachedClusterDetails;
+
         clusterComboBoxModel.removeAllElements();
         mapClusterNameToClusterDetail.clear();
 
         for (IClusterDetail clusterDetail : cachedClusterDetails) {
-
             String title = getCluserTitle(clusterDetail);
             mapClusterNameToClusterDetail.put(title, clusterDetail);
             clusterComboBoxModel.addElement(title);
-            if (clusterComboBoxModel.getSize() == 0) {
-                clusterComboBoxModel.setSelectedItem(title);
+        }
+
+        int index = -1;
+        if(submissionParameter != null) {
+            String title = getCluserTitle(submissionParameter.getClusterName());
+            index = clusterComboBoxModel.getIndexOf(title);
+            if (index != -1) {
+                clusterComboBoxModel.setSelectedItem(getCluserTitle(submissionParameter.getClusterName()));
             }
         }
     }
