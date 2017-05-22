@@ -241,6 +241,11 @@
                 <artifactId>applicationinsights-web</artifactId>
                 <version>1.0.3</version>
             </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-data-lake-store-sdk</artifactId>
+                <version>2.1.5</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

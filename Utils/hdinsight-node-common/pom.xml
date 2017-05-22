@@ -171,5 +171,9 @@
             <artifactId>wiremock</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-data-lake-store-sdk</artifactId>
+        </dependency>
     </dependencies>
 </project>

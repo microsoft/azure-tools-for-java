@@ -342,7 +342,7 @@ public class SparkSubmitHelper {
 
     private static String getFormatPathByDate() {
         int year = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.YEAR);
-        int month = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.MONTH);
+        int month = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.MONTH) + 1;
         int day = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.DAY_OF_MONTH);
 
         String uniqueFolderId = UUID.randomUUID().toString();

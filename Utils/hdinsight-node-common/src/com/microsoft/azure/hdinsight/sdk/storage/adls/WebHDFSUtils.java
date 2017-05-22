@@ -21,12 +21,18 @@
  */
 package com.microsoft.azure.hdinsight.sdk.storage.adls;
 
+import com.microsoft.azure.datalake.store.ADLException;
+import com.microsoft.azure.datalake.store.ADLStoreClient;
+import com.microsoft.azure.datalake.store.IfExists;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
+import com.microsoft.azure.management.dns.HttpStatusCode;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -38,6 +44,8 @@ import org.apache.http.impl.client.HttpClients;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 public class WebHDFSUtils {
     private static String getUserAgent() {
@@ -47,77 +55,30 @@ public class WebHDFSUtils {
         return userAgentSource + installID;
     }
 
-    public static final String ADLS_REST_API_PATH = "https://{store.name}.azuredatalakestore.net/webhdfs/v1/{store.path}?op={store.operator}";
-
-    public static final HttpClient ADLS_CLIENT = HttpClients.custom().setUserAgent(getUserAgent()).build();
-
     public static void uploadFileToADLS(@NotNull IHDIStorageAccount storageAccount, @NotNull File localFile, @NotNull String remotePath, boolean overWrite) throws Exception {
-
-        String commonRestUrl = ADLS_REST_API_PATH.replace(UrlConfEnum.STORENAME.toString(), storageAccount.getName())
-                .replace(UrlConfEnum.STOREPATH.toString(), remotePath);
-
-        HttpResponse createResponse = createFileOnADLS(getAccessToken(storageAccount), getUrlWithOperatorConf(commonRestUrl, RestOperatorEnum.CREATE));
-        int createResponseCode = createResponse.getStatusLine().getStatusCode();
-        if(createResponseCode == 403) {
-            throw new HDIException("Forbidden. Attached Azure DataLake Store is not supported in Automated login model. Please logout first and try Interactive login model", createResponseCode);
-        }
-
-        if(createResponseCode != 200 && createResponseCode != 201) {
-            throw new HDIException(createResponse.getStatusLine().getReasonPhrase(), createResponseCode);
-        }
-
-        HttpResponse appendResponse = appendFileToADLS(getAccessToken(storageAccount), getUrlWithOperatorConf(commonRestUrl, RestOperatorEnum.APPEND), localFile);
-        int appendResponseCode = appendResponse.getStatusLine().getStatusCode();
-        if(appendResponseCode != 200 && appendResponseCode != 201) {
-            throw new HDIException(appendResponse.getStatusLine().getReasonPhrase(), appendResponseCode);
-        }
-    }
-
-    private static String getUrlWithOperatorConf(String restUrl, RestOperatorEnum operatorEnum) {
-        if(operatorEnum == RestOperatorEnum.CREATE) {
-            restUrl = restUrl.replace(UrlConfEnum.STOREOPERATOR.toString(), RestOperatorEnum.CREATE.toString());
-            restUrl = restUrl + "&overwrite=true&write=true";
-        } else {
-            restUrl = restUrl.replace(UrlConfEnum.STOREOPERATOR.toString(), RestOperatorEnum.APPEND.toString());
-            restUrl = restUrl + "&append=true";
-        }
-        return restUrl;
-    }
-
-    private static HttpResponse createFileOnADLS(@NotNull String accessToken, String url) throws IOException {
-        HttpPut httpPut = new HttpPut(url);
-        httpPut.addHeader("Content-Type ", "application/json");
-        httpPut.addHeader("Authorization", "Bearer " + accessToken);
-        return ADLS_CLIENT.execute(httpPut);
-    }
-
-    private static HttpResponse appendFileToADLS(@NotNull String accessToken, String url, File localFile) throws IOException {
-        HttpPost httpPost = new HttpPost(url);
-        httpPost.addHeader("Content-Type", "application/json");
-        httpPost.addHeader("Authorization", "Bearer " + accessToken);
-        httpPost.setEntity(new InputStreamEntity(new FileInputStream(localFile), ContentType.APPLICATION_OCTET_STREAM));
-        return ADLS_CLIENT.execute(httpPost);
-    }
-
-    private static String getAccessToken(@NotNull IHDIStorageAccount storageAccount) throws Exception {
         com.microsoft.azuretools.sdkmanage.AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
         String tid = manager.getSubscriptionManager().getSubscriptionTenant(storageAccount.getSubscriptionId());
-        return manager.getAccessToken(tid);
-    }
+        String accessToken = manager.getAccessToken(tid);
 
-     enum UrlConfEnum {
-        STORENAME("{store.name}"),
-        STOREPATH("{store.path}"),
-        STOREOPERATOR("{store.operator}");
-
-        private final String name;
-        UrlConfEnum(String name) {
-            this.name = name;
+        // TODO: accountFQDN should work for Mooncake
+        String storageName = storageAccount.getName();
+        ADLStoreClient client = ADLStoreClient.createClient(String.format("%s.azuredatalakestore.net", storageName), accessToken);
+        OutputStream stream = null;
+        try {
+            stream = client.createFile(remotePath, IfExists.OVERWRITE);
+        } catch (ADLException e) {
+            // ADLS operation may get a 403 when 'user' didn't have access to ADLS under Service Principle model
+            // currently we didn't have a good way to solve this problem
+            // we just popup the exception message for customers to guide customers login under interactive model
+            if (e.httpResponseCode == 403 || HttpStatusCode.valueOf(e.httpResponseMessage) == HttpStatusCode.FORBIDDEN) {
+                throw new HDIException("Forbidden. Attached Azure DataLake Store is not supported in Automated login model. Please logout first and try Interactive login model", 403);
+            }
+        } finally {
+            IOUtils.closeQuietly(stream);
         }
 
-        @Override
-        public String toString() {
-            return name;
-        }
+        IOUtils.copy(new FileInputStream(localFile), stream);
+        stream.flush();
+        stream.close();
     }
 }
