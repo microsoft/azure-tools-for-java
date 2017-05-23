@@ -33,4 +33,6 @@ public class AppResponse implements IConvertible {
     public void setApp(App app) {
         this.app = app;
     }
+
+    public static final AppResponse EMPTY = new AppResponse();
 }

@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.sdk.rest.yarn.rm;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
 import java.util.List;
@@ -41,7 +42,6 @@ import java.util.List;
  *   None
  */
 public class YarnApplications implements IConvertible {
-
     @JsonProperty(value = "app")
     private List<App> apps;
 

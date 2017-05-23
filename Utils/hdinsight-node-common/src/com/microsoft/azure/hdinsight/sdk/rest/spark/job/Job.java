@@ -23,6 +23,9 @@ package com.microsoft.azure.hdinsight.sdk.rest.spark.job;
 
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * An spark job resource contains information about a particular application that was submitted to a cluster.
  *
@@ -174,4 +177,7 @@ public class Job implements IConvertible {
     public void setNumFailedStages(int numFailedStages) {
         this.numFailedStages = numFailedStages;
     }
+
+    public static final List<Job> EMPTY_LIST = new ArrayList<>(0);
+    public static final Job[] EMPTY_ARRAY = new Job[0];
 }

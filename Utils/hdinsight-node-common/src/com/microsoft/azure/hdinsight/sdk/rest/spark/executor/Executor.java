@@ -36,6 +36,8 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -229,19 +231,6 @@ public class Executor implements IConvertible {
         this.executorLogs = executorLog;
     }
 
-    public static void main(String[] args) throws Exception {
+    public static final List<Executor> EMPTY_LIST = Collections.unmodifiableList(new ArrayList<>(0));
 
-
-        CredentialsProvider provider = new BasicCredentialsProvider();
-        provider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials("admin", "Pa$$w0rd1234"));
-        HttpClient client = HttpClients.custom().setDefaultCredentialsProvider(provider).build();
-        String id = "application_1491222722583_0007";
-        HttpResponse response = client.execute(new HttpGet("https://spark2withblob.azurehdinsight.net/sparkhistory/api/v1/applications/application_1491222722583_0008/1/jobs"));
-        String res = EntityUtils.toString(response.getEntity());
-        //List<Executor> response1 = ObjectConvertUtils.convertJsonToList(res, Executor.class).get();
-        List<Job> stages = ObjectConvertUtils.convertJsonToList(res, Job.class).get();
-        //Optional<Executor[]> v = ObjectConvertUtils.convertJsonToObject(res, Executor[].class);
-        int a = 1;
-
-    }
 }

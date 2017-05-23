@@ -23,6 +23,10 @@ package com.microsoft.azure.hdinsight.sdk.rest.spark.stage;
 
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * An spark stage resource contains information about a particular application that was submitted to a cluster.
  *
@@ -257,4 +261,6 @@ public class Stage implements IConvertible {
     public void setInputRecords(long inputRecords) {
         this.inputRecords = inputRecords;
     }
+
+    public static final List<Stage> EMPTY_LIST = Collections.unmodifiableList(new ArrayList<>(0));
 }

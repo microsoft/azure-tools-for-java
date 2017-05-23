@@ -19,30 +19,34 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.rest.yarn.rm;
+package com.microsoft.azure.hdinsight.spark.jobs.framework;
 
-import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
-import java.util.List;
-import java.util.Optional;
+public enum RequestTypeEnum {
+    SparkRest("spark"),
+    YarnRest("yarn"),
+    YarnHistory("yarn-history"),
+    LivyBatchesRest("livy"),
+    MultiTask("multi-task"),
+    None("NONE");
 
-public class YarnApplicationResponse implements IConvertible {
-    private YarnApplications apps;
+    private final String type;
 
-    public YarnApplications getApps() {
-        return apps;
+    private RequestTypeEnum(@NotNull String type) {
+        this.type = type;
     }
 
-    public void setApps(YarnApplications apps) {
-        this.apps = apps;
+    public String getText() {
+        return type;
     }
 
-    public static YarnApplicationResponse EMPTY = new YarnApplicationResponse();
-
-    public Optional<List<App>> getAllApplication() {
-        if(apps != null) {
-            return Optional.ofNullable(apps.getApps());
+    public static RequestTypeEnum fromString(String text) {
+        for (RequestTypeEnum element : RequestTypeEnum.values()) {
+            if (element.type.equalsIgnoreCase(text)) {
+                return element;
+            }
         }
-        return Optional.empty();
+        return None;
     }
 }

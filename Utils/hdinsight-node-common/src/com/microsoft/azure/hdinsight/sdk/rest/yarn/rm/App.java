@@ -23,6 +23,8 @@ package com.microsoft.azure.hdinsight.sdk.rest.yarn.rm;
 
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -364,5 +366,16 @@ public class App implements IConvertible {
 
         return state.equals("FINISHED") || state.equals("FAILED") || state.equals("KILLED");
     }
+
+    /**
+     * Check if it is job submit from livy.
+     *
+     * @return true for livy job.
+     */
+    public boolean isLivyJob() {
+        return getUser().equalsIgnoreCase("livy");
+    }
+
+    public static final List<App> EMPTY_LIST = Collections.unmodifiableList(new ArrayList<>(0));
 }
 

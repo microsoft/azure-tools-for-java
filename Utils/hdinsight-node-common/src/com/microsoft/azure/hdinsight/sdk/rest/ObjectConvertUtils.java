@@ -27,19 +27,46 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.tooling.msservices.helpers.azure.rest.RestServiceManager;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 
-public class ObjectConvertUtils {
+public final class ObjectConvertUtils {
     private static JsonFactory jsonFactory = new JsonFactory();
     private static ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
     private static XmlMapper xmlMapper = new XmlMapper();
 
-    public static  <T> Optional<T> convertJsonToObject(@NotNull String jsonString, Class<T> tClass) throws IOException {
+    public static  <T> Optional<T> convertJsonToObject(@NotNull String jsonString, @NotNull Class<T> tClass) throws IOException {
         return Optional.ofNullable(objectMapper.readValue(jsonString, tClass));
+    }
+
+    public static <T> Optional<T> convertEntityToObject(@NotNull HttpEntity entity, @NotNull Class<T> tClass) throws IOException {
+        final String type = entity.getContentType().getValue().toLowerCase();
+
+        switch (type) {
+            case "application/json" :
+                return convertJsonToObject(EntityUtils.toString(entity), tClass);
+            case "application/xml" :
+                return convertXmlToObject(EntityUtils.toString(entity), tClass);
+        }
+        return Optional.empty();
+    }
+
+    public static <T> Optional<List<T>> convertEntityToList(@NotNull HttpEntity entity, @NotNull Class<T> tClass) throws IOException {
+        final String type = entity.getContentType().getValue().toLowerCase();
+        switch (type) {
+            case "application/json" :
+                return convertJsonToList(EntityUtils.toString(entity), tClass);
+            case "application/xml" :
+                return convertJsonToList(EntityUtils.toString(entity), tClass);
+        }
+        return Optional.empty();
     }
 
     public static <T> Optional<List<T>> convertJsonToList(@NotNull String jsonString, Class<T> tClass) throws IOException {

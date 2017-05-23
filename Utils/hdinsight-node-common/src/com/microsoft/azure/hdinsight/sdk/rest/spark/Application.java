@@ -25,7 +25,10 @@ package com.microsoft.azure.hdinsight.sdk.rest.spark;
 import com.microsoft.azure.hdinsight.sdk.rest.AttemptWithAppId;
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class Application implements IConvertible
 {
@@ -65,11 +68,23 @@ public class Application implements IConvertible
         this.name = name;
     }
 
+    public int getLastAttemptId() {
+        return attempts.size();
+    }
+
     public AttemptWithAppId getLastAttemptWithAppId() {
         final int attemptTimes = attempts.size();
-        Attempt lastAttempt = attempts.stream().filter(attempt -> {
-            return Integer.valueOf(attempt.getAttemptId()) == attemptTimes;
-        }).findFirst().get();
-        return new AttemptWithAppId("spark2withblob",getId(), lastAttempt);
+        Optional<Attempt> lastAttempt = attempts.stream()
+                .filter(attempt -> Integer.valueOf(attempt.getAttemptId()) == attemptTimes)
+                .findFirst();
+
+        if (lastAttempt.isPresent()) {
+            return new AttemptWithAppId("spark2withblob",getId(), lastAttempt.get());
+        }
+
+        return null;
     }
+
+    public static final List<Application> EMPTY_LIST = Collections.unmodifiableList(new ArrayList<>(0));
+    public static final Application[] EMPTY_ARRAY = new Application[0];
 }

@@ -21,7 +21,8 @@
  */
 package com.microsoft.azure.hdinsight.common;
 
-import com.microsoft.azure.hdinsight.spark.jobs.SparkJobInfo;
+import com.microsoft.azure.hdinsight.sdk.rest.spark.Application;
+import com.microsoft.azure.hdinsight.spark.jobs.ApplicationKey;
 import com.microsoft.azure.hdinsight.spark.jobs.framework.JobViewPanel;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -29,18 +30,37 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import javafx.util.Pair;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class JobViewManager {
-    private static Map<String, IClusterDetail> jobViewPanelMap = new HashMap<String, IClusterDetail>();
+    private static Map<String, IClusterDetail> jobViewPanelMap = new HashMap<>();
+    private static Map<String, List<Application>> sparkApplicationMap = new HashMap<>();
+
+    public synchronized static void registerApplications(@NotNull String clusterName, @NotNull List<Application> apps) {
+        sparkApplicationMap.put(clusterName, apps);
+    }
+
+    public synchronized static Application getCachedApp(@NotNull ApplicationKey key) {
+        final String clusterName = key.getClusterDetails().getName();
+        final String appId = key.getAppId();
+        if(sparkApplicationMap.containsKey(clusterName)) {
+            return sparkApplicationMap.get(clusterName)
+                    .stream()
+                    .filter(app-> app.getId().equalsIgnoreCase(appId))
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
+    }
 
     public synchronized static void registerJovViewNode(@NotNull String uuid, @NotNull IClusterDetail clusterDetail) {
         jobViewPanelMap.put(uuid, clusterDetail);
     }
 
     @Nullable
-    public static IClusterDetail getCluster(@NotNull String uuid) {
-        return jobViewPanelMap.get(uuid);
+    public synchronized static IClusterDetail getCluster(@NotNull String clusterName) {
+        return jobViewPanelMap.get(clusterName);
     }
 
     public synchronized static void unRegisterJobView(@NotNull String uuid) {

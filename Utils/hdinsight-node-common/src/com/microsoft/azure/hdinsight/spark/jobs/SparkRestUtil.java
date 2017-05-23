@@ -21,63 +21,68 @@
  */
 package com.microsoft.azure.hdinsight.spark.jobs;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
+import com.microsoft.azure.hdinsight.common.JobViewManager;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
+import com.microsoft.azure.hdinsight.sdk.rest.AttemptWithAppId;
+import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
+import com.microsoft.azure.hdinsight.sdk.rest.spark.Application;
+import com.microsoft.azure.hdinsight.sdk.rest.spark.executor.Executor;
+import com.microsoft.azure.hdinsight.sdk.rest.spark.job.Job;
+import com.microsoft.azure.hdinsight.sdk.rest.spark.stage.Stage;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class SparkRestUtil {
-    private static String defaultYarnUIHistoryFormat = "https://%s.azurehdinsight.net/yarnui/hn/cluster";
-    private static String yarnUIHisotryFormat = "https://%s.azurehdinsight.net/yarnui/hn/cluster/app/%s";
+    public static final String SPARK_REST_API_ENDPOINT = "%s/sparkhistory/api/v1/%s";
 
-    private static String sparkUIHistoryFormat = "https://%s.azurehdinsight.net/sparkhistory/history/%s/jobs";
-    public static final String  SPARK_REST_API_ENDPOINT = "https://%s.azurehdinsight.net/sparkhistory/api/v1/%s";
-    private static CredentialsProvider provider = new BasicCredentialsProvider();
-    private static JsonFactory jsonFactory = new JsonFactory();
-    private static ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
+    @NotNull
+    public static List<Application> getSparkApplications(@NotNull IClusterDetail clusterDetail) throws HDIException, IOException {
+        HttpEntity entity = getSparkRestEntity(clusterDetail, "applications");
+        Optional<List<Application>> apps = ObjectConvertUtils.convertEntityToList(entity, Application.class);
 
-//    @Nullable
-//    public static List<Application> getApplications(@NotNull ClusterDetail clusterDetail) throws HDIException, IOException {
-//        HttpEntity entity = getEntity(clusterDetail, "applications");
-//        String entityType = entity.getContentType().getValue();
-//        if( entityType.equals("application/json")){
-//            String json = EntityUtils.toString(entity);
-//            List<Application> apps = objectMapper.readValue(json, TypeFactory.defaultInstance().constructType(List.class, Application.class));
-//            return apps;
-//        }
-//        return null;
-//    }
+        // spark job has at least one attempt
+        return apps.orElse(Application.EMPTY_LIST)
+                .stream()
+                .filter(app -> app.getAttempts().size() != 0 && app.getAttempts().get(0).getAttemptId() != null)
+                .collect(Collectors.toList());
+    }
 
-    public static HttpEntity getEntity(@NotNull IClusterDetail clusterDetail, @NotNull String restUrl) throws HDIException, IOException {
-        provider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(clusterDetail.getHttpUserName(),clusterDetail.getHttpPassword()));
-        HttpClient client = HttpClients.custom().setDefaultCredentialsProvider(provider).build();
-        String url = String.format(SPARK_REST_API_ENDPOINT, clusterDetail.getName(), restUrl);
-        HttpGet get = new HttpGet(url);
-        HttpResponse response = client.execute(get);
-        int code = response.getStatusLine().getStatusCode();
-        if(code == HttpStatus.SC_OK || code == HttpStatus.SC_CREATED) {
-            return response.getEntity();
-        } else {
-            throw new HDIException(response.getStatusLine().getReasonPhrase(),response.getStatusLine().getStatusCode());
-        }
+    public static List<Executor> getAllExecutorFromApp(@NotNull ApplicationKey key) throws IOException, HDIException {
+        final Application app = JobViewManager.getCachedApp(key);
+        final AttemptWithAppId attemptWithAppId = app.getLastAttemptWithAppId();
+        final HttpEntity entity = getSparkRestEntity(key.getClusterDetails(), String.format("/%s/%s/executors", app.getId(), app.getLastAttemptId()));
+        Optional<List<Executor>> executors = ObjectConvertUtils.convertEntityToList(entity, Executor.class);
+        return executors.orElse(Executor.EMPTY_LIST);
+    }
+
+    public static List<Stage> getAllStageFromApp(@NotNull ApplicationKey key) throws IOException, HDIException {
+        final Application app = JobViewManager.getCachedApp(key);
+        final HttpEntity entity = getSparkRestEntity(key.getClusterDetails(), String.format("/%s/%s/jobs", app.getId(), app.getLastAttemptId()));
+        final Optional<List<Stage>> stages = ObjectConvertUtils.convertEntityToList(entity, Stage.class);
+        return stages.orElse(Stage.EMPTY_LIST);
+    }
+
+    public static List<Job> getLastAttemptJobsFromApp(@NotNull ApplicationKey key) throws IOException, HDIException {
+        final Application app = JobViewManager.getCachedApp(key);
+        AttemptWithAppId attemptWithAppId = app.getLastAttemptWithAppId();
+        return getSparkJobsFromApp(key.getClusterDetails(), key.getAppId(), attemptWithAppId.getAttemptId());
+    }
+
+    public static List<Job> getSparkJobsFromApp(@NotNull IClusterDetail clusterDetail, @NotNull String appId, @NotNull String attemptId) throws IOException, HDIException {
+        HttpEntity entity = getSparkRestEntity(clusterDetail, String.format("/%s/%s/jobs", appId, attemptId));
+        Optional<List<Job>> apps = ObjectConvertUtils.convertEntityToList(entity, Job.class);
+        return apps.orElse(Job.EMPTY_LIST);
+    }
+
+    private static HttpEntity getSparkRestEntity(@NotNull IClusterDetail clusterDetail, @NotNull String restUrl) throws HDIException, IOException {
+        final String url = String.format(SPARK_REST_API_ENDPOINT, clusterDetail.getConnectionUrl(), restUrl);
+        return JobUtils.getEntity(clusterDetail, url);
     }
 }

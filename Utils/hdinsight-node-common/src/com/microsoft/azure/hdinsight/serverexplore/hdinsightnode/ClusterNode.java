@@ -140,9 +140,8 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
     @Override
     protected void refreshItems() {
         if(!clusterDetail.isEmulator()) {
-            final String uuid = UUID.randomUUID().toString();
-            JobViewManager.registerJovViewNode(uuid, clusterDetail);
-            JobViewNode jobViewNode = new JobViewNode(this, uuid);
+            JobViewManager.registerJovViewNode(clusterDetail.getName(), clusterDetail);
+            JobViewNode jobViewNode = new JobViewNode(this, clusterDetail.getName());
             boolean isIntelliJ = HDInsightLoader.getHDInsightHelper().isIntelliJPlugin();
             boolean isLinux = System.getProperty("os.name").toLowerCase().contains("linux");
             if(isIntelliJ || !isLinux) {
