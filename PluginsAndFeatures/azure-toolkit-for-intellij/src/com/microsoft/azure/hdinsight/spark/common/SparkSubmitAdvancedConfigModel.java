@@ -56,4 +56,11 @@ public class SparkSubmitAdvancedConfigModel {
             super(message, throwable);
         }
     }
+
+    public static class NotAdvancedConfig extends SparkJobException {
+
+        public NotAdvancedConfig(String message) {
+            super(message);
+        }
+    }
 }

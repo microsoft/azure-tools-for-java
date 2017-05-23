@@ -38,11 +38,13 @@ import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Single;
+import rx.exceptions.CompositeException;
 import rx.exceptions.Exceptions;
 import rx.schedulers.Schedulers;
 
@@ -50,6 +52,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
     @Override
@@ -75,6 +82,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
         SparkSubmitModel submitModel = submissionState.getSubmitModel();
         SparkSubmissionParameter submissionParameter = submitModel.getSubmissionParameter();
         IClusterDetail clusterDetail = submitModel.getSelectedClusterDetail();
+        Map<String, String> postEventProperty = new HashMap<>();
 
         submitModel
                 .buildArtifactObservable(submissionParameter.getArtifactName())
@@ -90,6 +98,18 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                 })
                 .flatMap((remoteDebugJob) ->
                     startDebuggerObservable(environment, callback, submissionState, remoteDebugJob)
+                            .doOnError(err -> {
+                                try {
+                                    HDInsightUtil.showInfoOnSubmissionMessageWindow(
+                                            submitModel.getProject(),
+                                            "Error : Spark batch debugging job is killed, got exception " + err);
+
+                                    remoteDebugJob.killBatchJob();
+                                } catch (IOException ignore) {
+                                } finally {
+                                    throw Exceptions.propagate(err);
+                                }
+                            })
                             .subscribeOn(Schedulers.computation())
                             .zipWith( // Block with getting the job log from cluster
                                     submitModel.jobLogObservable(
@@ -104,9 +124,35 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                                     "Info : Debugging Spark batch job in cluster is done.");
 
                             sparkBatchDebugSession.close();
+
+                            postEventProperty.put("IsSubmitSucceed", "true");
+                            AppInsightsClient.create(
+                                    HDInsightBundle.message("SparkRunConfigDebugButtonClick"), null,
+                                    postEventProperty);
                         },
-                        (exception) -> {
-                            DefaultLoader.getUIHelper().logError("Spark batch Job remote debug failed, got exception: ", exception);
+                        (throwable) -> {
+                            String errorMessage = null;
+
+                            if (throwable instanceof CompositeException) {
+                                CompositeException exceptions = (CompositeException) throwable;
+
+                                errorMessage = exceptions.getExceptions().stream()
+                                        .map(Throwable::getMessage)
+                                        .collect(Collectors.joining("; "));
+                            } else {
+                                errorMessage = throwable.getMessage();
+                            }
+
+                            HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(
+                                    submitModel.getProject(),
+                                    "Spark batch Job remote debug failed, got exception: " + errorMessage);
+
+                            postEventProperty.put("IsSubmitSucceed", "false");
+                            postEventProperty.put("SubmitFailedReason", errorMessage);
+                            AppInsightsClient.create(
+                                    HDInsightBundle.message("SparkRunConfigDebugButtonClick"),
+                                    null,
+                                    postEventProperty);
                         });
     }
 
@@ -141,8 +187,13 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
             SparkSubmitModel submitModel,
             SparkBatchRemoteDebugJob remoteDebugJob
     )
-            throws URISyntaxException, JSchException, IOException, SparkSubmitAdvancedConfigModel.UnknownSSHAuthTypeException {
+            throws URISyntaxException, JSchException, IOException, SparkJobException {
         SparkSubmitAdvancedConfigModel advModel = submitModel.getAdvancedConfigModel();
+
+        if (advModel == null) {
+            throw new SparkSubmitAdvancedConfigModel.NotAdvancedConfig("SSH authentication not set");
+        }
+
         String sshServer = getSshHost(connectionUrl);
         SparkBatchDebugSession session = SparkBatchDebugSession.factory(sshServer, advModel.sshUserName);
         String driverHost = remoteDebugJob.getSparkDriverHost();
