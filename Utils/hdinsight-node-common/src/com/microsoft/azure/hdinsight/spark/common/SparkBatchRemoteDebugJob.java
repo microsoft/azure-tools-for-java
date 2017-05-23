@@ -462,6 +462,7 @@ public class SparkBatchRemoteDebugJob implements ISparkBatchDebugJob, ILogger {
             SparkBatchSubmission submission) throws DebugParameterDefinedException, URISyntaxException {
         final String driverDebugOption = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=0";
         final String sparkJobDriverJvmOptionConfKey = "spark.driver.extraJavaOptions";
+        final String sparkJobDriverRetriesConfKey = "spark.yarn.maxAppAttempts";
         final String jvmDebugOptionPattern = ".*\\bsuspend=(?<isSuspend>[yn]),address=(?<port>\\d+).*";
 
         Map<String, Object> jobConfig = submissionParameter.getJobConfig();
@@ -476,6 +477,12 @@ public class SparkBatchRemoteDebugJob implements ISparkBatchDebugJob, ILogger {
                         "The driver Debug parameter is defined in Spark job configuration: " +
                                 sparkConf.get(sparkJobDriverJvmOptionConfKey));
             }
+
+            if (sparkConf.get(sparkJobDriverRetriesConfKey) != null) {
+                throw new DebugParameterDefinedException(
+                        "The driver max app attempts parameter is defined in Spark job configuration: " +
+                                sparkConf.get(sparkJobDriverRetriesConfKey));
+            }
         } else {
             sparkConf = new SparkConfigures();
             jobConfig.put(SparkSubmissionParameter.Conf, sparkConf);
@@ -487,7 +494,7 @@ public class SparkBatchRemoteDebugJob implements ISparkBatchDebugJob, ILogger {
         SparkConfigures sparkConfigWithDebug = new SparkConfigures(sparkConf);
 
         sparkConfigWithDebug.put(sparkJobDriverJvmOptionConfKey, driverOption);
-        sparkConfigWithDebug.put("spark.yarn.maxAppAttempts", "1");
+        sparkConfigWithDebug.put(sparkJobDriverRetriesConfKey, "1");
         jobConfigWithDebug.put(SparkSubmissionParameter.Conf, sparkConfigWithDebug);
         SparkSubmissionParameter debugSubmissionParameter = new SparkSubmissionParameter(
                 submissionParameter.getClusterName(),

@@ -6,6 +6,10 @@ Feature: Spark Batch Remote Debug Job Testing
     Then throw exception 'com.microsoft.azure.hdinsight.spark.common.DebugParameterDefinedException' with message 'The driver Debug parameter is defined in Spark job configuration: -head -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1234 -tail'
 
     And create batch Spark Job with driver debugging for 'http://localhost:8998/batches' with following parameters
+      | spark.yarn.maxAppAttempts | 3 |
+    Then throw exception 'com.microsoft.azure.hdinsight.spark.common.DebugParameterDefinedException' with message 'The driver max app attempts parameter is defined in Spark job configuration: 3'
+
+    And create batch Spark Job with driver debugging for 'http://localhost:8998/batches' with following parameters
       | spark.driver.extraJavaOptions | -head |
     Then the Spark driver JVM option should be '-head -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=0'
     Then the Spark driver max retries should be '1'
