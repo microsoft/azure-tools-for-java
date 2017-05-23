@@ -23,30 +23,59 @@
 package com.microsoft.azure.hdinsight.projects;
 
 import com.intellij.openapi.ui.ComboBox;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import javax.swing.JPanel;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 
 public class SparkVersionOptionsPanel extends JPanel {
-    private ComboBox comboBox;
+    private static final String SPARK_VERSION_KEY = "com.microsoft.azure.hdinsight.SparkVersion";
+    private static final SparkVersion[] sparkVersions = new SparkVersion[]{
+            SparkVersion.SPARK_1_5_2,
+            SparkVersion.SPARK_1_6_2,
+            SparkVersion.SPARK_1_6_3,
+            SparkVersion.SPARK_2_0_2,
+            SparkVersion.SPARK_2_1_0,
+    };
+    private ComboBox sparkVersionComboBox;
 
     public SparkVersion apply() {
-        return (SparkVersion) comboBox.getSelectedItem();
+        return (SparkVersion) sparkVersionComboBox.getSelectedItem();
     }
 
     public SparkVersionOptionsPanel() {
-        comboBox = new ComboBox();
-        comboBox.addItem(SparkVersion.SPARK_2_0_2);
-        comboBox.addItem(SparkVersion.SPARK_1_5_2);
-        comboBox.addItem(SparkVersion.SPARK_1_6_2);
-        comboBox.addItem(SparkVersion.SPARK_1_6_3);
-        comboBox.addItem(SparkVersion.SPARK_2_1_0);
+        sparkVersionComboBox = new ComboBox();
+        for (SparkVersion sv : sparkVersions) {
+            sparkVersionComboBox.addItem(sv);
+        }
+
+        String cachedSparkVersion = DefaultLoader.getIdeHelper().getApplicationProperty(SPARK_VERSION_KEY);
+        if (cachedSparkVersion != null) {
+            useCachedSparkVersion(cachedSparkVersion);
+        }
+
+        sparkVersionComboBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                DefaultLoader.getIdeHelper().setApplicationProperty(SPARK_VERSION_KEY, e.getItem().toString());
+            }
+        });
+
+        add(sparkVersionComboBox);
+
         GridBagLayout layout = new GridBagLayout();
-        setLayout(layout);
-        add(comboBox);
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.weightx = 1;
         constraints.fill = GridBagConstraints.HORIZONTAL;
-        layout.setConstraints(comboBox, constraints);
+        layout.setConstraints(sparkVersionComboBox, constraints);
+        setLayout(layout);
+    }
+
+    private void useCachedSparkVersion(String cachedSparkVersion) {
+        for(int i = 0; i < this.sparkVersionComboBox.getModel().getSize(); i++) {
+            if (this.sparkVersionComboBox.getModel().getElementAt(i).toString().equals(cachedSparkVersion)) {
+                this.sparkVersionComboBox.getModel().setSelectedItem(this.sparkVersionComboBox.getModel().getElementAt(i));
+            }
+        }
     }
 }
