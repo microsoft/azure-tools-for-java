@@ -1,4 +1,4 @@
-# azure-tools-for-java [![Build Status](http://13.88.12.33:8080/job/AzureToolsManager-public/badge/icon)](http://13.88.12.33:8080/job/AzureToolsManager-public/)
+# azure-tools-for-java [![Travis CI](https://travis-ci.org/Microsoft/azure-tools-for-java.svg?branch=develop)](https://travis-ci.org/Microsoft/azure-tools-for-java)
 This is the repository for the open source-licensed portions of:
 * [Azure Toolkit for Eclipse](#azure-toolkit-for-eclipse)
 * [Azure Toolkit for IntelliJ IDEA](#azure-toolkit-for-intellij-idea)
