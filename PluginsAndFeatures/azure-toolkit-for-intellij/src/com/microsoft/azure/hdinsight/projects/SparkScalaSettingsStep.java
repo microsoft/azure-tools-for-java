@@ -56,6 +56,9 @@ public class SparkScalaSettingsStep extends ModuleWizardStep {
 
     @Override
     public boolean validate() throws ConfigurationException {
+        if (this.builder.getScalaPluginStatus() != ScalaPluginStatus.INSTALLED) {
+            return false;
+        }
         return super.validate() && (javaStep == null || javaStep.validate());
     }
 
