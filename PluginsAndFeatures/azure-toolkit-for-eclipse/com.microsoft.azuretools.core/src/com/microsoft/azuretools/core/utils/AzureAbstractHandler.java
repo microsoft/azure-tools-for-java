@@ -34,33 +34,33 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 
 public abstract class AzureAbstractHandler extends AbstractHandler {
 
-    public abstract Object onExecute(ExecutionEvent event) throws ExecutionException;
+	public abstract Object onExecute(ExecutionEvent event) throws ExecutionException;
 
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+	@Override
+	public Object execute(ExecutionEvent event) throws ExecutionException {
 
-        final Map<String, String> properties = new HashMap<>();
-        try {
-            final Command cmd = event.getCommand();
-            String handlerName = this.getClass().getSimpleName();
-            
-            final Collection<?> callingMenus = HandlerUtil.getActiveMenus(event);
-            boolean fromProjectMenu = callingMenus != null && callingMenus.contains("org.eclipse.ui.navigator.ProjectExplorer#PopupMenu");
-            properties.put("FromProjectMenu", String.valueOf(fromProjectMenu));
-            
-            if (cmd != null) {
-                properties.put("CategoryId", cmd.getCategory().getId());
-                properties.put("Category", cmd.getCategory().getName());
-                properties.put("CommandId", cmd.getId());
-                properties.put("Text", cmd.getName());
-                if(null == handlerName || handlerName.isEmpty()) {
-                    handlerName = cmd.getName();
-                }
-            }            
-            AppInsightsClient.createByType(AppInsightsClient.EventType.Action, handlerName, null, properties);
-        } catch (NotDefinedException ignore) {
-        }
+		final Map<String, String> properties = new HashMap<>();
+		try {
+			final Command cmd = event.getCommand();
+			String handlerName = this.getClass().getSimpleName();
+			
+			final Collection<?> callingMenus = HandlerUtil.getActiveMenus(event);
+			boolean fromProjectMenu = callingMenus != null && callingMenus.contains("org.eclipse.ui.navigator.ProjectExplorer#PopupMenu");
+			properties.put("FromProjectMenu", String.valueOf(fromProjectMenu));
+			
+			if (cmd != null) {
+				properties.put("CategoryId", cmd.getCategory().getId());
+				properties.put("Category", cmd.getCategory().getName());
+				properties.put("CommandId", cmd.getId());
+				properties.put("Text", cmd.getName());
+				if(null == handlerName || handlerName.isEmpty()) {
+					handlerName = cmd.getName();
+				}
+			}			
+			AppInsightsClient.createByType(AppInsightsClient.EventType.Action, handlerName, null, properties);
+		} catch (NotDefinedException ignore) {
+		}
 
-        return onExecute(event);
-    }
+		return onExecute(event);
+	}
 }
