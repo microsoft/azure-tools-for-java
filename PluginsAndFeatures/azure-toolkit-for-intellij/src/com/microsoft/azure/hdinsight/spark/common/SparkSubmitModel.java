@@ -325,7 +325,6 @@ public class SparkSubmitModel {
 
     public Single<String> jobLogObservable(int batchId, @NotNull final IClusterDetail selectedClusterDetail) {
         return Single.create(em -> {
-            DefaultLoader.getIdeHelper().executeOnPooledThread(() -> {
                 HDInsightUtil.showInfoOnSubmissionMessageWindow(
                         project, "Info : Submit to spark cluster for debugging successfully.");
 
@@ -340,9 +339,8 @@ public class SparkSubmitModel {
 
                     em.onSuccess("done");
                 } catch (IOException ex) {
-                    em.onError(ex);
+                    em.onSuccess(ex.getMessage());
                 }
-            });
         });
     }
 
@@ -467,7 +465,7 @@ public class SparkSubmitModel {
     }
 
     public Single<IClusterDetail> deployArtifactObservable(Artifact artifact, IClusterDetail clusterDetail) {
-        return Single.create(em -> DefaultLoader.getIdeHelper().executeOnPooledThread(() -> {
+        return Single.create(em -> {
             //may get a new clusterDetail reference if cluster credentials expired
             IClusterDetail selectedClusterDetail = getClusterConfiguration(clusterDetail, true);
 
@@ -486,7 +484,7 @@ public class SparkSubmitModel {
                 showFailedSubmitErrorMessage(exception);
                 em.onError(exception);
             }
-        }));
+        });
     }
 
     private void postEventAction() {

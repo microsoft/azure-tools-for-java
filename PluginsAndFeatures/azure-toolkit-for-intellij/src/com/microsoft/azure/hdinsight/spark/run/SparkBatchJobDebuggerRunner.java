@@ -78,7 +78,8 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
 
         submitModel
                 .buildArtifactObservable(submissionParameter.getArtifactName())
-                .flatMap((artifact) -> submitModel.deployArtifactObservable(artifact, clusterDetail))
+                .flatMap((artifact) -> submitModel.deployArtifactObservable(artifact, clusterDetail)
+                                                  .subscribeOn(Schedulers.io()))
                 .map((selectedClusterDetail) -> {
                     // Create Batch Spark Debug Job
                     try {
