@@ -66,6 +66,9 @@ public class WebHDFSUtils {
         OutputStream stream = null;
         try {
             stream = client.createFile(remotePath, IfExists.OVERWRITE);
+            IOUtils.copy(new FileInputStream(localFile), stream);
+            stream.flush();
+            stream.close();
         } catch (ADLException e) {
             // ADLS operation may get a 403 when 'user' didn't have access to ADLS under Service Principle model
             // currently we didn't have a good way to solve this problem
@@ -76,9 +79,5 @@ public class WebHDFSUtils {
         } finally {
             IOUtils.closeQuietly(stream);
         }
-
-        IOUtils.copy(new FileInputStream(localFile), stream);
-        stream.flush();
-        stream.close();
     }
 }
