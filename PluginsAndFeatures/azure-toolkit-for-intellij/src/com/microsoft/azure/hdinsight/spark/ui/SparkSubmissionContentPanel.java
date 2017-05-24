@@ -41,6 +41,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -82,7 +83,7 @@ public class SparkSubmissionContentPanel extends JPanel{
         String className = mainClassTextField.getText().trim();
         String commandLine = commandLineTextField.getText().trim();
         String localArtifactPath = selectedArtifactTextField.getText();
-        String selectedClusterName = selectedClusterDetail.getName();
+        String selectedClusterName = selectedClusterDetail != null ? selectedClusterDetail.getName() : "";
 
         java.util.List<String> referencedFileList = new ArrayList<>();
         for (String singleReferencedFile : referencedFilesTextField.getText().split(";")) {
