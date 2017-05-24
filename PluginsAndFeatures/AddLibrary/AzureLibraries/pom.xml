@@ -80,7 +80,7 @@
             <Bundle-Version>${project.version}.qualifier</Bundle-Version>
             <Embed-Dependency>*</Embed-Dependency>
             <Embed-Transitive>true</Embed-Transitive>
-            <Bundle-ClassPath>.;{maven-dependencies}</Bundle-ClassPath>
+            <Bundle-ClassPath>.;dependencies;{maven-dependencies}</Bundle-ClassPath>
             <!-- It is a workaround to speed up eclipse plugin installation -->
             <!-- tricky way to clear default value of `version` and `uses:` -->
             <Export-Package>*;version=0.0.0;uses:=.</Export-Package>
