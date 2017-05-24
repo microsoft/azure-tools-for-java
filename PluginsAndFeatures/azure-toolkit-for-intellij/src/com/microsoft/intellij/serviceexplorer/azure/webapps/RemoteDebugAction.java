@@ -46,8 +46,6 @@ public class RemoteDebugAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        AppInsightsClient.create(HDInsightBundle.message("SparkRemoteDebugButtonClick"), null);
-
         WebApp webApp = webappNode.getWebApp();
         try {
             // TODO

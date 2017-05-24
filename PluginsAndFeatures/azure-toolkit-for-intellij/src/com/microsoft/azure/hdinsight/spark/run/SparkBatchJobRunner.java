@@ -28,6 +28,8 @@ import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.runners.DefaultProgramRunner;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import org.jetbrains.annotations.NotNull;
 
 public class SparkBatchJobRunner extends DefaultProgramRunner {
@@ -44,5 +46,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner {
 
     public void submitJob(SparkSubmitModel submitModel) {
         submitModel.action(submitModel.getSubmissionParameter());
+
+        AppInsightsClient.create(HDInsightBundle.message("SparkRunConfigRunButtonClick"), null);
     }
 }
