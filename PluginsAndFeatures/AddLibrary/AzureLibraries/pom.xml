@@ -83,9 +83,12 @@
             <Bundle-ClassPath>.;dependencies;{maven-dependencies}</Bundle-ClassPath>
             <!-- It is a workaround to speed up eclipse plugin installation -->
             <!-- tricky way to clear default value of `version` and `uses:` -->
-            <Export-Package>*;version=0.0.0;uses:=.</Export-Package>
+            <Export-Package>*;version=0.0.0</Export-Package>
             <Import-Package>!*</Import-Package>
             <Embed-Directory>dependencies</Embed-Directory>
+            <Eclipse-BundleShape>dir</Eclipse-BundleShape>
+            <Bundle-RequiredExecutionEnvironment>JavaSE-1.8</Bundle-RequiredExecutionEnvironment>
+            <_nouses>true</_nouses>
           </instructions>
         </configuration>
       </plugin>
