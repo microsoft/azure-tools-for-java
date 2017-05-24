@@ -98,24 +98,21 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                 })
                 .flatMap((remoteDebugJob) ->
                     startDebuggerObservable(environment, callback, submissionState, remoteDebugJob)
-                            .doOnError(err -> {
-                                try {
-                                    HDInsightUtil.showInfoOnSubmissionMessageWindow(
-                                            submitModel.getProject(),
-                                            "Error : Spark batch debugging job is killed, got exception " + err);
-
-                                    remoteDebugJob.killBatchJob();
-                                } catch (IOException ignore) {
-                                } finally {
-                                    throw Exceptions.propagate(err);
-                                }
-                            })
                             .subscribeOn(Schedulers.computation())
                             .zipWith( // Block with getting the job log from cluster
                                     submitModel.jobLogObservable(
                                             remoteDebugJob.getBatchId(), clusterDetail)
                                                     .subscribeOn(Schedulers.computation()),
-                                    (session, ignore) -> session))
+                                    (session, ignore) -> session)
+                            .doOnError(err -> {
+                                try {
+                                    HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(
+                                            submitModel.getProject(),
+                                            "Error : Spark batch debugging job is killed, got exception " + err);
+
+                                    remoteDebugJob.killBatchJob();
+                                } catch (IOException ignore) { }
+                            }))
                 .subscribe(
                         sparkBatchDebugSession -> {
                             // Spark Job is done
@@ -131,7 +128,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                                     postEventProperty);
                         },
                         (throwable) -> {
-                            String errorMessage = null;
+                            String errorMessage;
 
                             if (throwable instanceof CompositeException) {
                                 CompositeException exceptions = (CompositeException) throwable;
@@ -145,7 +142,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
 
                             HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(
                                     submitModel.getProject(),
-                                    "Spark batch Job remote debug failed, got exception: " + errorMessage);
+                                    "Error : Spark batch Job remote debug failed, got exception: " + errorMessage);
 
                             postEventProperty.put("IsSubmitSucceed", "false");
                             postEventProperty.put("SubmitFailedReason", errorMessage);
