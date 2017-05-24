@@ -177,7 +177,12 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
             public void mouseReleased(MouseEvent e) {
                 Set<String> pluginIds = new HashSet<>();
                 pluginIds.add(SCALA_PLUGIN_ID);
-                PluginsAdvertiser.installAndEnablePlugins(pluginIds, () -> scalaPluginStatus = ScalaPluginStatus.NEED_RESTART);
+                PluginsAdvertiser.installAndEnablePlugins(pluginIds, new Runnable() {
+                    @Override
+                    public void run() {
+                        scalaPluginStatus = ScalaPluginStatus.NEED_RESTART;
+                    }
+                });
             }
         });
         JOptionPane.showMessageDialog(null, label, "Scala Plugin Check", JOptionPane.ERROR_MESSAGE);
