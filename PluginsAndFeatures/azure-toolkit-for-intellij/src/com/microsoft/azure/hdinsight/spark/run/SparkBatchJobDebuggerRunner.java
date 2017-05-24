@@ -145,7 +145,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                                     "Error : Spark batch Job remote debug failed, got exception: " + errorMessage);
 
                             postEventProperty.put("IsSubmitSucceed", "false");
-                            postEventProperty.put("SubmitFailedReason", errorMessage);
+                            postEventProperty.put("SubmitFailedReason", errorMessage.substring(0, 50));
                             AppInsightsClient.create(
                                     HDInsightBundle.message("SparkRunConfigDebugButtonClick"),
                                     null,

@@ -235,20 +235,19 @@ public class SparkSubmitModel {
                             if (aborted || errors != 0) {
                                 showCompilerErrorMessage(compileContext);
                                 jsmOpt.ifPresent((jsm) -> jsm.setJobRunningState(false));
+                                String errorMessage = StringUtils.join(
+                                        compileContext.getMessages(CompilerMessageCategory.ERROR),
+                                        "\\n");
 
                                 postEventProperty.put("IsSubmitSucceed", "false");
-                                postEventProperty.put("SubmitFailedReason", StringUtils.join(
-                                        compileContext.getMessages(CompilerMessageCategory.ERROR),
-                                        "\\n"));
+                                postEventProperty.put("SubmitFailedReason", errorMessage.substring(0, 50));
 
                                 AppInsightsClient.create(
                                         HDInsightBundle.message("SparkProjectDebugCompileFailed"),
                                         null,
                                         postEventProperty);
 
-                                em.onError(new CompilationException(StringUtils.join(
-                                        compileContext.getMessages(CompilerMessageCategory.ERROR),
-                                        "\\n")));
+                                em.onError(new CompilationException(errorMessage));
                             } else {
                                 postEventProperty.put("IsSubmitSucceed", "true");
                                 postEventProperty.put("SubmitFailedReason", "CompileSuccess");
