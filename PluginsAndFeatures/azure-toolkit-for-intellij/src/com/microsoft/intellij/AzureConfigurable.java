@@ -95,11 +95,6 @@ public class AzureConfigurable extends SearchableConfigurable.Parent.Abstract im
         return new HashSet<String>();
     }
 
-    @Override
-    public boolean isVisible() {
-        return !AzurePlugin.IS_ANDROID_STUDIO && AzurePlugin.IS_WINDOWS;
-    }
-
     public class AzureAbstractConfigurable implements SearchableConfigurable, Configurable.NoScroll, OptionsContainingConfigurable {
         private AzureAbstractConfigurablePanel myPanel;
 
