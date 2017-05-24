@@ -62,8 +62,14 @@ public final class JobViewPanel extends JFXPanel {
             webView = new WebView();
             webEngine = webView.getEngine();
             webEngine.setJavaScriptEnabled(true);
-            JSObject win = (JSObject) webEngine.executeScript("window");
-            win.setMember("JobUtils", jobUtil);
+            webEngine.getLoadWorker().stateProperty().addListener(
+                    (ObservableValue<? extends Worker.State> ov, Worker.State oldState,
+                     Worker.State newState) -> {
+                        if (newState == Worker.State.SUCCEEDED) {
+                            JSObject win = (JSObject) webEngine.executeScript("window");
+                            win.setMember("JobUtils", jobUtil);
+                        }
+                    });
             panel.setScene(new Scene(webView));
 
             if (!alreadyLoad) {
