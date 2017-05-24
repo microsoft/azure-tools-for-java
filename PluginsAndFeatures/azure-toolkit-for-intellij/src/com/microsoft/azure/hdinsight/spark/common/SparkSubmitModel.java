@@ -541,9 +541,9 @@ public class SparkSubmitModel {
 
                 if (!StringHelper.isNullOrWhiteSpace(jobConfigKey) && !SparkSubmissionParameter.isSubmissionParameter(jobConfigKey)) {
                     if (jobConfigKey == SparkSubmissionParameter.Conf) {
-                        Map<String, Object> sparkConfigs;
+                        SparkConfigures sparkConfigs;
 
-                        if (jobConfigValue instanceof Map && (sparkConfigs = (Map<String, Object>)(jobConfigValue)) != null) {
+                        if (jobConfigValue instanceof Map && (sparkConfigs = (SparkConfigures)(jobConfigValue)) != null) {
                             for (Map.Entry<String, Object> sparkConfigEntry : sparkConfigs.entrySet()) {
                                 if (!StringHelper.isNullOrWhiteSpace(sparkConfigEntry.getKey())) {
                                     tableModel.addRow(sparkConfigEntry.getKey(), sparkConfigEntry.getValue());
