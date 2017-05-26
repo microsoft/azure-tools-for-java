@@ -24,3 +24,4 @@ The two projects use a lot of shared code and as of v2.8.2 (March 2016 release) 
 
 ### Documentation 
 * Specific to the Toolkit: https://azure.microsoft.com/en-us/documentation/articles/azure-toolkit-for-intellij/
+test
