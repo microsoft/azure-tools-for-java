@@ -29,11 +29,17 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 
 apply plugin: 'org.jetbrains.intellij'
 apply plugin: 'checkstyle'
+apply plugin: 'findbugs'
 
 checkstyle {
     toolVersion = '7.7'
     configFile = new File('config/checkstyle/google_checks.xml')
     showViolations = false
+}
+
+findbugs {
+    toolVersion = "3.0.1"
+    ignoreFailures = true
 }
 
 intellij {
