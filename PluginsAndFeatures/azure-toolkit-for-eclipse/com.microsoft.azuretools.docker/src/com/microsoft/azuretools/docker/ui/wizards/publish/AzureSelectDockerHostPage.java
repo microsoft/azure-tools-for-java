@@ -32,6 +32,7 @@ import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureWizardDialog;
+import com.microsoft.azuretools.core.components.AzureWizardPage;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.docker.ui.dialogs.AzureInputDockerLoginCredsDialog;
 import com.microsoft.azuretools.docker.ui.dialogs.AzureViewDockerDialog;
@@ -77,8 +78,14 @@ import org.eclipse.ui.forms.ManagedForm;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 
-public class AzureSelectDockerHostPage extends WizardPage {
+public class AzureSelectDockerHostPage extends AzureWizardPage {
 	private static final Logger log =  Logger.getLogger(AzureSelectDockerHostPage.class.getName());
+	
+	private static final String REFRESH = "Refresh";
+	private static final String VIEW = "View";
+	private static final String ADD = "Add";
+	private static final String DELETE = "Delete";
+	private static final String EDIT = "Edit";
 
 	private Composite mainContainer;
 	private Text dockerArtifactPathTextField;
@@ -182,15 +189,15 @@ public class AzureSelectDockerHostPage extends WizardPage {
 		GridData gd_dockerHostsRefreshButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
 		gd_dockerHostsRefreshButton.verticalIndent = 1;
 		dockerHostsRefreshButton.setLayoutData(gd_dockerHostsRefreshButton);
-		dockerHostsRefreshButton.setText("Refresh");
+		dockerHostsRefreshButton.setText(REFRESH);
 		
 		dockerHostsViewButton = new Button(mainContainer, SWT.NONE);
 		dockerHostsViewButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		dockerHostsViewButton.setText("View");
+		dockerHostsViewButton.setText(VIEW);
 		
 		dockerHostsAddButton = new Button(mainContainer, SWT.NONE);
 		dockerHostsAddButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		dockerHostsAddButton.setText("Add");
+		dockerHostsAddButton.setText(ADD);
 		
 		dockerHostsDeleteButton = new Button(mainContainer, SWT.NONE);
 		dockerHostsDeleteButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -367,6 +374,7 @@ public class AzureSelectDockerHostPage extends WizardPage {
 			    AzureDockerUIResources.updateAzureResourcesWithProgressDialog(mainContainer.getShell(), project);
 			    refreshDockerHostsTable(mainContainer);
 				setPageComplete(doValidate());
+				sendButtonClickedTelemetry(REFRESH);
 			}
 		});
 		
@@ -390,6 +398,7 @@ public class AzureSelectDockerHostPage extends WizardPage {
 						setPageComplete(doValidate());
 					}
 				}
+				sendButtonClickedTelemetry(VIEW);
 			}
 		});
 		
@@ -425,6 +434,7 @@ public class AzureSelectDockerHostPage extends WizardPage {
 					dockerHostsTable.select(0);
 				}
 				setPageComplete(doValidate());
+				sendButtonClickedTelemetry(ADD);
 			}
 		});
 		
@@ -466,6 +476,7 @@ public class AzureSelectDockerHostPage extends WizardPage {
 					}
 					setPageComplete(doValidate());
 				}
+				sendButtonClickedTelemetry(DELETE);
 			}
 		});
 		
@@ -482,6 +493,7 @@ public class AzureSelectDockerHostPage extends WizardPage {
 					}
 				}
 				setPageComplete(doValidate());
+				sendButtonClickedTelemetry(EDIT);
 			}
 		});
 	}

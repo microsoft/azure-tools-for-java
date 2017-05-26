@@ -24,6 +24,7 @@ import com.microsoft.azure.docker.model.AzureDockerImageInstance;
 import com.microsoft.azure.docker.model.KnownDockerImages;
 import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.core.components.AzureWizardPage;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -53,7 +54,7 @@ import org.eclipse.ui.forms.ManagedForm;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 
-public class AzureConfigureDockerContainerStep extends WizardPage {
+public class AzureConfigureDockerContainerStep extends AzureWizardPage {
 	private static final Logger log =  Logger.getLogger(AzureConfigureDockerContainerStep.class.getName());
 
 	private Text dockerContainerNameTextField;
