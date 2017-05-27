@@ -39,11 +39,17 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 import com.microsoft.intellij.common.CommonConst;
+import rx.subjects.ReplaySubject;
+
+import java.util.AbstractMap.SimpleImmutableEntry;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
 
 public class HDInsightUtil {
     private static final Object LOCK = new Object();
+
+    // The replay subject for the message showed in HDInsight tool window
+    private static ReplaySubject<SimpleImmutableEntry<MessageInfoType, String>> toolWindowMessageSubject;
 
     public static void setHDInsightRootModule(@NotNull AzureModule azureModule) {
         HDInsightRootModuleImpl hdInsightRootModule =  new HDInsightRootModuleImpl(azureModule);
@@ -83,6 +89,29 @@ public class HDInsightUtil {
         }
     }
 
+    protected static void initializeToolWindowProcessorWithSubscribe(
+            SparkSubmissionToolWindowProcessor processor,
+            ReplaySubject<SimpleImmutableEntry<MessageInfoType, String>> messageSubject
+            ) {
+        processor.initialize();
+        messageSubject.subscribe(
+                entry -> {
+                    switch (entry.getKey()) {
+                        case Error:
+                            processor.setError(entry.getValue());
+                            break;
+                        case Info:
+                            processor.setInfo(entry.getValue());
+                            break;
+                        case Warning:
+                            processor.setWarning(entry.getValue());
+                            break;
+                    }
+                },
+                System.err::print
+        );
+    }
+
     public static SparkSubmissionToolWindowProcessor getSparkSubmissionToolWindowManager(Project project) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(CommonConst.SPARK_SUBMISSION_WINDOW_ID);
         ToolWindowKey key = new ToolWindowKey(project, CommonConst.SPARK_SUBMISSION_WINDOW_ID);
@@ -91,13 +120,17 @@ public class HDInsightUtil {
             SparkSubmissionToolWindowProcessor sparkSubmissionToolWindowProcessor = new SparkSubmissionToolWindowProcessor(toolWindow);
             PluginUtil.registerToolWindowManager(key, sparkSubmissionToolWindowProcessor);
 
+            // The replay subject will replay all notifications before the initialization is done
+            // The replay buffer size is 1MB.
+            toolWindowMessageSubject = ReplaySubject.create(1024 * 1024);
+
             // make sure tool window process initialize on swing dispatch
             if(ApplicationManager.getApplication().isDispatchThread()) {
-                sparkSubmissionToolWindowProcessor.initialize();
+                initializeToolWindowProcessorWithSubscribe(
+                        sparkSubmissionToolWindowProcessor, toolWindowMessageSubject);
             } else {
-                ApplicationManager.getApplication().invokeAndWait(()-> {
-                    sparkSubmissionToolWindowProcessor.initialize();
-                });
+                ApplicationManager.getApplication().invokeLater(()-> initializeToolWindowProcessorWithSubscribe(
+                        sparkSubmissionToolWindowProcessor, toolWindowMessageSubject));
             }
         }
 
@@ -133,9 +166,7 @@ public class HDInsightUtil {
             if (ApplicationManager.getApplication().isDispatchThread()) {
                 toolWindow.show(null);
             } else {
-                ApplicationManager.getApplication().invokeAndWait(() -> {
-                    toolWindow.show(null);
-                });
+                ApplicationManager.getApplication().invokeLater(() -> toolWindow.show(null));
             }
         }
 
@@ -144,16 +175,6 @@ public class HDInsightUtil {
             processor.clearAll();
         }
 
-        switch (type) {
-            case Error:
-                processor.setError(message);
-                break;
-            case Info:
-                processor.setInfo(message);
-                break;
-            case Warning:
-                processor.setWarning(message);
-                break;
-        }
+        toolWindowMessageSubject.onNext(new SimpleImmutableEntry<>(type, message));
     }
 }
