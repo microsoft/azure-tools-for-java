@@ -12,6 +12,6 @@ public class AzureTestCredentials extends ApplicationTokenCredentials {
 
     @Override
     public String getToken(String resource) throws IOException {
-        return "https:/asdd.com";
+        return "";
     }
 }
