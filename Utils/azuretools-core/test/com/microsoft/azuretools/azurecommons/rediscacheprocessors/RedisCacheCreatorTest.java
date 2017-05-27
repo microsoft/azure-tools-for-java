@@ -43,6 +43,6 @@ public class RedisCacheCreatorTest extends TestCase {
 	@Test
 	public void testRedisCacheCreator() {
 		Map<String, ProcessingStrategy> creatorMap = redisCacheCreator.CreatorMap();
-		assertEquals(TOTAL_KEY_NUM, creatorMap.keySet().size());
+		assertEquals("the key number of CreatorMap is wrong: ", TOTAL_KEY_NUM, creatorMap.keySet().size());
 	}
 }
