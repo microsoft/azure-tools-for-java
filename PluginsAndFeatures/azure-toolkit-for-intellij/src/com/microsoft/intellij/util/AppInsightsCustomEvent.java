@@ -3,6 +3,7 @@ package com.microsoft.intellij.util;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
+import com.microsoft.azuretools.telemetry.TelemetryClientSingleton;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 
@@ -25,24 +26,24 @@ public class AppInsightsCustomEvent {
     }
 
     public static void createTelemetryDenyEvent() {
-        TelemetryClient telemetry = new TelemetryClient();
-        telemetry.getContext().setInstrumentationKey(key);
+        TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry(key);
         Map<String, String> properties = new HashMap<>();
         properties.put("Plugin Version", CommonConst.PLUGIN_VERISON);
         String instID = DataOperations.getProperty(dataFile, AzureBundle.message("instID"));
         if (instID != null && !instID.isEmpty()) {
             properties.put("Installation ID", instID);
         }
-        telemetry.trackEvent(message("telemetryDenyAction"), properties, null);
-        telemetry.flush();
+        synchronized(TelemetryClientSingleton.class){
+            telemetry.trackEvent(message("telemetryDenyAction"), properties, null);
+            telemetry.flush();
+        }
     }
 
     public static void create(String eventName, String version, @Nullable Map<String, String> myProperties) {
         if (new File(dataFile).exists()) {
             String prefValue = DataOperations.getProperty(dataFile, AzureBundle.message("prefVal"));
             if (prefValue == null || prefValue.isEmpty() || prefValue.equalsIgnoreCase("true")) {
-                TelemetryClient telemetry = new TelemetryClient();
-                telemetry.getContext().setInstrumentationKey(key);
+                TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry(key);
                 Map<String, String> properties = myProperties == null ? new HashMap<String, String>() : new HashMap<String, String>(myProperties);
                 if (version != null && !version.isEmpty()) {
                     properties.put("Library Version", version);
@@ -56,9 +57,10 @@ public class AppInsightsCustomEvent {
                 if (instID != null && !instID.isEmpty()) {
                     properties.put("Installation ID", instID);
                 }
-
-                telemetry.trackEvent(eventName, properties, null);
-                telemetry.flush();
+                synchronized(TelemetryClientSingleton.class){
+                    telemetry.trackEvent(eventName, properties, null);
+                    telemetry.flush();
+                }
             }
         }
     }
@@ -68,8 +70,7 @@ public class AppInsightsCustomEvent {
     }
 
     public static void createFTPEvent(String eventName, String uri, String appName, String subId) {
-        TelemetryClient telemetry = new TelemetryClient();
-        telemetry.getContext().setInstrumentationKey(key);
+        TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry(key);
 
         Map<String, String> properties = new HashMap<String, String>();
 
@@ -93,7 +94,9 @@ public class AppInsightsCustomEvent {
                 properties.put("Installation ID", instID);
             }
         }
-        telemetry.trackEvent(eventName, properties, null);
-        telemetry.flush();
+        synchronized(TelemetryClientSingleton.class){
+            telemetry.trackEvent(eventName, properties, null);
+            telemetry.flush();
+        }
     }
 }

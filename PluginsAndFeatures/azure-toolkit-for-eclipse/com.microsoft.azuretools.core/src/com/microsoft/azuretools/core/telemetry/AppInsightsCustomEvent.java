@@ -27,94 +27,97 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.telemetry.TelemetryClientSingleton;
 
 public class AppInsightsCustomEvent {
-	static String pluginInstLoc = String.format("%s%s%s", PluginUtil.pluginFolder, File.separator,
-			Messages.commonPluginID);
-	static String dataFile = String.format("%s%s%s", pluginInstLoc, File.separator, Messages.dataFileName);
-	static String key = "824aaa4c-052b-4c43-bdcb-48f915d71b3f";
+    static String pluginInstLoc = String.format("%s%s%s", PluginUtil.pluginFolder, File.separator,
+            Messages.commonPluginID);
+    static String dataFile = String.format("%s%s%s", pluginInstLoc, File.separator, Messages.dataFileName);
+    static String key = "824aaa4c-052b-4c43-bdcb-48f915d71b3f";
 
-	public static void create(String eventName, String version) {
-		create(eventName, version, null);
-	}
+    public static void create(String eventName, String version) {
+        create(eventName, version, null);
+    }
 
-	public static void create(String eventName, String version, Map<String, String> myProperties) {
-		if (new File(pluginInstLoc).exists() && new File(dataFile).exists()) {
-			String prefValue = DataOperations.getProperty(dataFile, Messages.prefVal);
-			if (prefValue == null || prefValue.isEmpty() || prefValue.equalsIgnoreCase("true")) {
-				TelemetryClient telemetry = new TelemetryClient();
-				telemetry.getContext().setInstrumentationKey(key);
+    public static void create(String eventName, String version, Map<String, String> myProperties) {
+        if (new File(pluginInstLoc).exists() && new File(dataFile).exists()) {
+            String prefValue = DataOperations.getProperty(dataFile, Messages.prefVal);
+            if (prefValue == null || prefValue.isEmpty() || prefValue.equalsIgnoreCase("true")) {
+                TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry(key);
 
-				Map<String, String> properties = myProperties == null ? new HashMap<String, String>()
-						: new HashMap<String, String>(myProperties);
-				if (version != null && !version.isEmpty()) {
-					properties.put("Library Version", version);
-				}
+                Map<String, String> properties = myProperties == null ? new HashMap<String, String>()
+                        : new HashMap<String, String>(myProperties);
+                if (version != null && !version.isEmpty()) {
+                    properties.put("Library Version", version);
+                }
 
-				String pluginVersion = DataOperations.getProperty(dataFile, Messages.version);
-				if (pluginVersion != null && !pluginVersion.isEmpty()) {
-					properties.put("Plugin Version", pluginVersion);
-				}
+                String pluginVersion = DataOperations.getProperty(dataFile, Messages.version);
+                if (pluginVersion != null && !pluginVersion.isEmpty()) {
+                    properties.put("Plugin Version", pluginVersion);
+                }
 
-				String instID = DataOperations.getProperty(dataFile, Messages.instID);
-				if (instID != null && !instID.isEmpty()) {
-					properties.put("Installation ID", instID);
-				}
+                String instID = DataOperations.getProperty(dataFile, Messages.instID);
+                if (instID != null && !instID.isEmpty()) {
+                    properties.put("Installation ID", instID);
+                }
+                synchronized(TelemetryClientSingleton.class){
+                    telemetry.trackEvent(eventName, properties, null);
+                    telemetry.flush();
+                }
+            }
+        }
+    }
 
-				telemetry.trackEvent(eventName, properties, null);
-				telemetry.flush();
-			}
-		}
-	}
+    public static void createTelemetryDenyEvent() {
+        TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry(key);
+        Map<String, String> properties = new HashMap<String, String>();
 
-	public static void createTelemetryDenyEvent() {
-		TelemetryClient telemetry = new TelemetryClient();
-		telemetry.getContext().setInstrumentationKey(key);
-		Map<String, String> properties = new HashMap<String, String>();
+        if (new File(dataFile).exists()) {
+            String pluginVersion = DataOperations.getProperty(dataFile, Messages.version);
+            if (pluginVersion != null && !pluginVersion.isEmpty()) {
+                properties.put("Plugin Version", pluginVersion);
+            }
 
-		if (new File(dataFile).exists()) {
-			String pluginVersion = DataOperations.getProperty(dataFile, Messages.version);
-			if (pluginVersion != null && !pluginVersion.isEmpty()) {
-				properties.put("Plugin Version", pluginVersion);
-			}
+            String instID = DataOperations.getProperty(dataFile, Messages.instID);
+            if (instID != null && !instID.isEmpty()) {
+                properties.put("Installation ID", instID);
+            }
+        }
+        synchronized(TelemetryClientSingleton.class){
+            telemetry.trackEvent(Messages.telemetryDenyAction, properties, null);
+            telemetry.flush();
+        }
+    }
 
-			String instID = DataOperations.getProperty(dataFile, Messages.instID);
-			if (instID != null && !instID.isEmpty()) {
-				properties.put("Installation ID", instID);
-			}
-		}
+    public static void createFTPEvent(String eventName, String uri, String appName, String subId) {
+        TelemetryClient telemetry = new TelemetryClient();
+        telemetry.getContext().setInstrumentationKey(key);
 
-		telemetry.trackEvent(Messages.telemetryDenyAction, properties, null);
-		telemetry.flush();
-	}
+        Map<String, String> properties = new HashMap<String, String>();
 
-	public static void createFTPEvent(String eventName, String uri, String appName, String subId) {
-		TelemetryClient telemetry = new TelemetryClient();
-		telemetry.getContext().setInstrumentationKey(key);
+        if (uri != null && !uri.isEmpty()) {
+            properties.put("WebApp URI", uri);
+        }
+        if (appName != null && !appName.isEmpty()) {
+            properties.put("Java app name", appName);
+        }
+        if (subId != null && !subId.isEmpty()) {
+            properties.put("Subscription ID", subId);
+        }
+        if (new File(pluginInstLoc).exists() && new File(dataFile).exists()) {
+            String pluginVersion = DataOperations.getProperty(dataFile, Messages.version);
+            if (pluginVersion != null && !pluginVersion.isEmpty()) {
+                properties.put("Plugin Version", pluginVersion);
+            }
 
-		Map<String, String> properties = new HashMap<String, String>();
-
-		if (uri != null && !uri.isEmpty()) {
-			properties.put("WebApp URI", uri);
-		}
-		if (appName != null && !appName.isEmpty()) {
-			properties.put("Java app name", appName);
-		}
-		if (subId != null && !subId.isEmpty()) {
-			properties.put("Subscription ID", subId);
-		}
-		if (new File(pluginInstLoc).exists() && new File(dataFile).exists()) {
-			String pluginVersion = DataOperations.getProperty(dataFile, Messages.version);
-			if (pluginVersion != null && !pluginVersion.isEmpty()) {
-				properties.put("Plugin Version", pluginVersion);
-			}
-
-			String instID = DataOperations.getProperty(dataFile, Messages.instID);
-			if (instID != null && !instID.isEmpty()) {
-				properties.put("Installation ID", instID);
-			}
-		}
-		telemetry.trackEvent(eventName, properties, null);
-		telemetry.flush();
-	}
+            String instID = DataOperations.getProperty(dataFile, Messages.instID);
+            if (instID != null && !instID.isEmpty()) {
+                properties.put("Installation ID", instID);
+            }
+        }
+        synchronized(TelemetryClientSingleton.class){
+            telemetry.trackEvent(eventName, properties, null);
+            telemetry.flush();
+        }
+    }
 }

@@ -99,8 +99,8 @@ public class AppInsightsClient {
         if (configuration.validated()) {
             String prefValue = configuration.preferenceVal();
             if (prefValue == null || prefValue.isEmpty() || prefValue.equalsIgnoreCase("true") || force) {
-                TelemetryClient telemetry = new TelemetryClient();
-                telemetry.getContext().setInstrumentationKey(configuration.appInsightsKey());
+                TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry(configuration.appInsightsKey());
+
                 Map<String, String> properties = myProperties == null ? new HashMap<String, String>() : new HashMap<String, String>(myProperties);
                 properties.put("SessionId", configuration.sessionId());
                 properties.put("IDE", configuration.ide());
@@ -124,9 +124,10 @@ public class AppInsightsClient {
                 if (instID != null && !instID.isEmpty()) {
                     properties.put("Installation ID", instID);
                 }
-
-                telemetry.trackEvent(eventName, properties, null);
-                telemetry.flush();
+                synchronized(TelemetryClientSingleton.class){
+                    telemetry.trackEvent(eventName, properties, null);
+                    telemetry.flush();
+                }
             }
         }
     }
@@ -135,8 +136,7 @@ public class AppInsightsClient {
         if (!isAppInsightsClientAvailable())
             return;
 
-        TelemetryClient telemetry = new TelemetryClient();
-        telemetry.getContext().setInstrumentationKey(configuration.appInsightsKey());
+        TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry(configuration.appInsightsKey());
 
         Map<String, String> properties = new HashMap<String, String>();
         properties.put("SessionId", configuration.sessionId());
@@ -160,8 +160,10 @@ public class AppInsightsClient {
                 properties.put("Installation ID", instID);
             }
         }
-        telemetry.trackEvent(eventName, properties, null);
-        telemetry.flush();
+        synchronized(TelemetryClientSingleton.class){
+            telemetry.trackEvent(eventName, properties, null);
+            telemetry.flush();
+        }
     }
 
     private static boolean isAppInsightsClientAvailable() {
