@@ -25,13 +25,16 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobSubmissionState;
+import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel;
 import com.microsoft.azuretools.utils.Pair;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -39,10 +42,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class RemoteDebugRunConfiguration extends RunConfigurationBase {
+public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunConfigurationModule> {
     private static final String SUBMISSION_CONTENT_NAME = "spark_submission";
     private static final String SUBMISSION_ATTRIBUTE_CLUSTER_NAME = "cluster_name";
     private static final String SUBMISSION_ATTRIBUTE_SELECTED_CLUSTER = "selected_cluster";
@@ -53,8 +57,8 @@ public class RemoteDebugRunConfiguration extends RunConfigurationBase {
 
     private SparkSubmitModel submitModel;
 
-    public RemoteDebugRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
-        super(project, factory, name);
+    public RemoteDebugRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, @NotNull RunConfigurationModule configurationModule, String name) {
+        super(name, configurationModule, factory);
 
         this.submitModel = new SparkSubmitModel(project);
     }
@@ -89,9 +93,6 @@ public class RemoteDebugRunConfiguration extends RunConfigurationBase {
                     .ifPresent(attribute -> parameter.setClassName(attribute.getValue()));
 
             model.setSubmissionParameters(parameter);
-
-            Optional.ofNullable(element.getAttribute(SUBMISSION_ATTRIBUTE_SELECTED_CLUSTER))
-                    .ifPresent(attribute -> setSelectedClusterItem(attribute.getValue()));
         }));
     }
 
@@ -107,9 +108,6 @@ public class RemoteDebugRunConfiguration extends RunConfigurationBase {
         Element remoteDebugSettingsElement = new Element(SUBMISSION_CONTENT_NAME);
         remoteDebugSettingsElement.setAttribute(
                 SUBMISSION_ATTRIBUTE_CLUSTER_NAME, submissionParameter.getClusterName());
-        remoteDebugSettingsElement.setAttribute(
-                SUBMISSION_ATTRIBUTE_SELECTED_CLUSTER,
-                model.getClusterComboBoxModel().getSelectedItem().toString());
         remoteDebugSettingsElement.setAttribute(
                 SUBMISSION_ATTRIBUTE_IS_LOCAL_ARTIFACT, Boolean.toString(model.isLocalArtifact()));
         remoteDebugSettingsElement.setAttribute(
@@ -149,6 +147,15 @@ public class RemoteDebugRunConfiguration extends RunConfigurationBase {
         return new SparkBatchJobSubmissionState(
                 getProject(),
                 getSubmitModel());
+    }
+
+    @Override
+    public Collection<Module> getValidModules() {
+        return new ArrayList<>();
+    }
+
+    public void apply(SparkSubmissionContentPanel submissionPanel) {
+        this.submitModel.setSubmissionParameters(submissionPanel.constructSubmissionParameter());
     }
 }
 

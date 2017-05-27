@@ -38,32 +38,30 @@ public class RemoteDebugSettingsEditor extends SettingsEditor<RemoteDebugRunConf
     }
 
     public RemoteDebugSettingsEditor(final RemoteDebugRunConfiguration runConfiguration){
+        submissionPanel = new SparkSubmissionContentPanel(
+                runConfiguration.getSubmitModel(),
+                () -> {
+                    // TODO Add logic to resize the window and enable/disable button
+                });
+
         this.runConfiguration = runConfiguration;
     }
 
     @Override
     protected void resetEditorFrom(@NotNull RemoteDebugRunConfiguration remoteDebugRunConfiguration) {
-        // FIXME: to reset settings of editor
+        // Reset the panel from the RunConfiguration
+        submissionPanel.apply(remoteDebugRunConfiguration.getSubmitModel());
     }
 
     @Override
     protected void applyEditorTo(@NotNull RemoteDebugRunConfiguration remoteDebugRunConfiguration) throws ConfigurationException {
-        this.runConfiguration = remoteDebugRunConfiguration;
-
-        // Set the parameters from view to model
-        this.runConfiguration.getSubmitModel().setSubmissionParameters(
-                submissionPanel.constructSubmissionParameter());
+        // Apply the panel's setting to RunConfiguration
+        remoteDebugRunConfiguration.apply(submissionPanel);
     }
 
     @NotNull
     @Override
     protected JComponent createEditor() {
-        submissionPanel = new SparkSubmissionContentPanel(
-                this.getRunConfiguration().getSubmitModel(),
-                () -> {
-                    // TODO Add logic to resize the window and enable/disable button
-                });
-
         return submissionPanel;
     }
 }

@@ -149,6 +149,13 @@ public class SparkSubmissionContentPanel extends JPanel{
     private final JLabel[] errorMessageLabels = new JLabel[5];
     private SparkSubmissionAdvancedConfigDialog advancedConfigDialog;
 
+    public void apply(SparkSubmitModel submitModel) {
+        this.submitModel = submitModel;
+        initializeModel();
+        updateTableColumn();
+        loadParameter();
+    }
+
     private enum ErrorMessageLabelTag {
         ClusterName,
         SystemArtifact,

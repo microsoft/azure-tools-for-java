@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.spark.run.configuration;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.RunConfigurationModule;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
@@ -42,6 +43,10 @@ public class RemoteDebugConfigurationFactory extends ConfigurationFactory{
     @NotNull
     @Override
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-        return new RemoteDebugRunConfiguration(project, this, NAME);
+        return new RemoteDebugRunConfiguration(
+                project,
+                this,
+                new RunConfigurationModule(project),
+                NAME);
     }
 }
