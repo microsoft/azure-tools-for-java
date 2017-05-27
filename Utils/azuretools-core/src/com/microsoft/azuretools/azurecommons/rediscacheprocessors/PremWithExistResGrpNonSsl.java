@@ -4,9 +4,9 @@ import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.redis.RedisCaches;
 import com.microsoft.azure.management.resources.fluentcore.model.Creatable;
 
-public class PreWithExistResGrpNonSsl extends ProcessorBaseImpl {
+public class PremWithExistResGrpNonSsl extends ProcessorBaseImpl {
 
-	public PreWithExistResGrpNonSsl(RedisCaches rediscaches, String dns, String regionName,
+	public PremWithExistResGrpNonSsl(RedisCaches rediscaches, String dns, String regionName,
 			String group, int capacity) {
 		super(rediscaches, dns, regionName, group, capacity);
 	}

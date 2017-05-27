@@ -29,33 +29,43 @@ import com.microsoft.azure.management.redis.RedisCaches;
 public final class RedisCacheCreator {
     private Map<String, ProcessingStrategy> creatorMap = new HashMap<String, ProcessingStrategy>();
     
+    private static final String BASIC = "BASIC";
+    private static final String STANDARD = "STD";
+    private static final String PREMIUM = "PREMIUM";
+    
+    private static final String NEW_NO_SSL = "NewNoSSL";
+    private static final String NEW = "New";
+    private static final String EXISTING_NO_SSL = "ExistingNoSSL";
+    private static final String EXISTING = "Existing";
+    
+    
     private void initCreatorsForBasicTier(RedisCaches redisCaches, String dnsName, String regionName, String groupName, int[] capacities) {
     	for (int capacity : capacities) {
     		//e.g. "BASIC0NewNoSSL"
-    		creatorMap.put("BASIC" + Integer.toString(capacity) + "NewNoSSL", new BasicWithNewResGrpNonSsl(redisCaches, dnsName, regionName, groupName, capacity));
-    		creatorMap.put("BASIC" + Integer.toString(capacity) + "New", new BasicWithNewResGrp(redisCaches, dnsName, regionName, groupName, capacity));
-    		creatorMap.put("BASIC" + Integer.toString(capacity) + "ExistingNoSSL", new BasicWithExistResGrpNonSsl(redisCaches, dnsName, regionName, groupName, capacity));
-    		creatorMap.put("BASIC" + Integer.toString(capacity) + "Existing", new BasicWithExistResGrp(redisCaches, dnsName, regionName, groupName, capacity));
+    		creatorMap.put(BASIC + Integer.toString(capacity) + NEW_NO_SSL, new BasicWithNewResGrpNonSsl(redisCaches, dnsName, regionName, groupName, capacity));
+    		creatorMap.put(BASIC + Integer.toString(capacity) + NEW, new BasicWithNewResGrp(redisCaches, dnsName, regionName, groupName, capacity));
+    		creatorMap.put(BASIC + Integer.toString(capacity) + EXISTING_NO_SSL, new BasicWithExistResGrpNonSsl(redisCaches, dnsName, regionName, groupName, capacity));
+    		creatorMap.put(BASIC + Integer.toString(capacity) + EXISTING, new BasicWithExistResGrp(redisCaches, dnsName, regionName, groupName, capacity));
     	}
     }
     
     private void initCreatorsForStdTier(RedisCaches redisCaches, String dnsName, String regionName, String groupName, int[] capacities) {
     	for (int capacity : capacities) {
     		//e.g. "STD0NewNoSSL"
-    		creatorMap.put("STD" + Integer.toString(capacity) + "NewNoSSL", new StdWithNewResGrpNonSsl(redisCaches, dnsName, regionName, groupName, capacity));
-    		creatorMap.put("STD" + Integer.toString(capacity) + "New", new StdWithNewResGrp(redisCaches, dnsName, regionName, groupName, capacity));
-    		creatorMap.put("STD" + Integer.toString(capacity) + "ExistingNoSSL", new StdWithExistResGrpNonSsl(redisCaches, dnsName, regionName, groupName, capacity));
-    		creatorMap.put("STD" + Integer.toString(capacity) + "Existing", new StdWithExistResGrp(redisCaches, dnsName, regionName, groupName, capacity));
+    		creatorMap.put(STANDARD + Integer.toString(capacity) + NEW_NO_SSL, new StdWithNewResGrpNonSsl(redisCaches, dnsName, regionName, groupName, capacity));
+    		creatorMap.put(STANDARD + Integer.toString(capacity) + NEW, new StdWithNewResGrp(redisCaches, dnsName, regionName, groupName, capacity));
+    		creatorMap.put(STANDARD + Integer.toString(capacity) + EXISTING_NO_SSL, new StdWithExistResGrpNonSsl(redisCaches, dnsName, regionName, groupName, capacity));
+    		creatorMap.put(STANDARD + Integer.toString(capacity) + EXISTING, new StdWithExistResGrp(redisCaches, dnsName, regionName, groupName, capacity));
     	}
     }
     
     private void initCreatorsForPremiumTier(RedisCaches redisCaches, String dnsName, String regionName, String groupName, int[] capacities) {
     	for (int capacity : capacities) {
     		//e.g. "PREMIUM0NewNoSSL"
-    		creatorMap.put("PREMIUM" + Integer.toString(capacity) + "NewNoSSL", new PremWithNewResGrpNonSsl(redisCaches, dnsName, regionName, groupName, capacity));
-    		creatorMap.put("PREMIUM" + Integer.toString(capacity) + "New", new PremWithNewResGrp(redisCaches, dnsName, regionName, groupName, capacity));
-    		creatorMap.put("PREMIUM" + Integer.toString(capacity) + "ExistingNoSSL", new PreWithExistResGrpNonSsl(redisCaches, dnsName, regionName, groupName, capacity));
-    		creatorMap.put("PREMIUM" + Integer.toString(capacity) + "Existing", new PremWithExistResGrp(redisCaches, dnsName, regionName, groupName, capacity));
+    		creatorMap.put(PREMIUM + Integer.toString(capacity) + NEW_NO_SSL, new PremWithNewResGrpNonSsl(redisCaches, dnsName, regionName, groupName, capacity));
+    		creatorMap.put(PREMIUM + Integer.toString(capacity) + NEW, new PremWithNewResGrp(redisCaches, dnsName, regionName, groupName, capacity));
+    		creatorMap.put(PREMIUM + Integer.toString(capacity) + EXISTING_NO_SSL, new PremWithExistResGrpNonSsl(redisCaches, dnsName, regionName, groupName, capacity));
+    		creatorMap.put(PREMIUM + Integer.toString(capacity) + EXISTING, new PremWithExistResGrp(redisCaches, dnsName, regionName, groupName, capacity));
     	}
     }
     public RedisCacheCreator(RedisCaches redisCaches, String dnsName, String regionName, String groupName) {
