@@ -25,19 +25,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+    <groupId>com.microsoft.azuretools</groupId>
+    <artifactId>utils</artifactId>
+    <version>3.0.4-SNAPSHOT</version>
+    </parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>com.microsoft.azuretools.sdk.lib</artifactId>
-    <version>3.0.3</version>
+    <version>3.0.4-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <name>Package for Microsoft Azure Libraries for Java Plugin</name>
     <organization><name>Microsoft Corp.</name></organization>
-    <parent>
-        <groupId>com.microsoft.azuretools</groupId>
-        <artifactId>utils</artifactId>
-        <version>3.0.3</version>
-    </parent>
+
     <properties>
-        <azuretool.version>3.0.3</azuretool.version>
+        <azuretool.version>3.0.4-SNAPSHOT</azuretool.version>
+        <azuretool.sdk.version>3.0.4.qualifier</azuretool.sdk.version>
     </properties>
     <dependencies>
         <dependency>
@@ -77,7 +79,7 @@
           <excludeDependencies>azuretools-core,azure-explorer-common,hdinsight-node-common</excludeDependencies>
           <instructions>
             <Bundle-SymbolicName>com.microsoft.azuretools.sdk;singleton:=true</Bundle-SymbolicName>
-            <Bundle-Version>${project.version}.qualifier</Bundle-Version>
+            <Bundle-Version>${azuretool.sdk.version}</Bundle-Version>
             <Embed-Dependency>*</Embed-Dependency>
             <Embed-Transitive>true</Embed-Transitive>
             <Bundle-ClassPath>.;dependencies;{maven-dependencies}</Bundle-ClassPath>
@@ -139,6 +141,7 @@
                     <overWriteReleases>false</overWriteReleases>
                     <overWriteSnapshots>false</overWriteSnapshots>
                     <overWriteIfNewer>true</overWriteIfNewer>
+                    <stripVersion>true</stripVersion>
                     <includeArtifactIds>azuretools-core,azure-explorer-common,hdinsight-node-common</includeArtifactIds>
                 </configuration>
             </execution>
