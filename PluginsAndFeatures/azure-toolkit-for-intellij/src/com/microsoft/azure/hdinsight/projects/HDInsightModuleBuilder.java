@@ -23,16 +23,19 @@ package com.microsoft.azure.hdinsight.projects;
 
 import com.intellij.facet.impl.ui.libraries.LibraryCompositionSettings;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerConfigurable;
 import com.intellij.ide.util.projectWizard.JavaModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleBuilderListener;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.SettingsStep;
+import com.intellij.openapi.application.ex.ApplicationManagerEx;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ui.configuration.projectRoot.LibrariesContainer;
 import com.intellij.openapi.roots.ui.configuration.projectRoot.LibrariesContainerFactory;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.updateSettings.impl.pluginsAdvertisement.PluginsAdvertiser;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.packaging.artifacts.ArtifactManager;
@@ -189,9 +192,9 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
     }
 
     private void showRestartMsg() {
-        JLabel label = new JLabel("Please restart Intellij to enable the Scala plugin.");
-        label.setOpaque(false);
-        JOptionPane.showMessageDialog(null, label, "Restart", JOptionPane.ERROR_MESSAGE);
+        if (PluginManagerConfigurable.showRestartDialog() == Messages.YES) {
+            ApplicationManagerEx.getApplicationEx().restart(true);
+        }
     }
 
     private void addTelemetry(HDInsightTemplatesType templatesType, SparkVersion sparkVersion) {
