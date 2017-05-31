@@ -90,8 +90,7 @@ public class AppInsightsCustomEvent {
     }
 
     public static void createFTPEvent(String eventName, String uri, String appName, String subId) {
-        TelemetryClient telemetry = new TelemetryClient();
-        telemetry.getContext().setInstrumentationKey(key);
+        TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry(key);
 
         Map<String, String> properties = new HashMap<String, String>();
 
