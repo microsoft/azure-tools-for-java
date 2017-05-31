@@ -21,6 +21,10 @@
  */
 package com.microsoft.azure.hdinsight.common.task;
 
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.util.concurrent.FutureCallback;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
@@ -40,14 +44,14 @@ public class YarnHistoryTask extends Task<String> {
 
     protected final IClusterDetail clusterDetail;
     protected final String path;
-    private final CredentialsProvider credentialsProvider =  new BasicCredentialsProvider();
-
+    private static final CredentialsProvider CREDENTIALS_PROVIDER =  new BasicCredentialsProvider();
+    private static final WebClient WEB_CLIENT = new WebClient();
     public YarnHistoryTask(@NotNull IClusterDetail clusterDetail, @NotNull String path, @NotNull FutureCallback<String> callback) {
         super(callback);
         this.clusterDetail = clusterDetail;
         this.path = path;
         try {
-            credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword()));
+            CREDENTIALS_PROVIDER.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword()));
         } catch (HDIException e) {
             e.printStackTrace();
         }
@@ -55,14 +59,17 @@ public class YarnHistoryTask extends Task<String> {
 
     @Override
     public String call() throws Exception {
-        CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
-        HttpGet httpGet = new HttpGet(path);
-        httpGet.addHeader("Content-Type", "text/html");
+        WEB_CLIENT.setCredentialsProvider(CREDENTIALS_PROVIDER);
+        HtmlPage htmlPage = WEB_CLIENT.getPage(path);
 
-        CloseableHttpResponse response = httpclient.execute(httpGet);
+        // parse pre tag from html response
+        // there's only one 'pre' in response
+        DomNodeList<DomElement> preTagElements = htmlPage.getElementsByTagName("pre");
 
-        HttpEntity httpEntity = response.getEntity();
-
-        return IOUtils.toString(httpEntity.getContent());
+        if (preTagElements.size() == 0) {
+            return "No logs here or logs not available";
+        } else {
+            return preTagElements.get(0).asText();
+        }
     }
 }

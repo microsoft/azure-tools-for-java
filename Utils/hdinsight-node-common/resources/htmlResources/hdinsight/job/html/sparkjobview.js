@@ -265,7 +265,7 @@ function getSparkDriverLog() {
         executorsObject = JSON.parse(s);
         var hostPort = getDriverPortFromExecutor(executorsObject);
         ipAddress = hostPort.split(":")[0];
-        var url = localhost + projectId + "/jobhistory/logs/" + ipAddress + "/port/30050/" + containerId + "/" + containerId + "/spark/stderr?restType=yarnhistory";
+        var url = localhost + projectId + "/jobhistory/logs/" + ipAddress + "/port/30050/" + containerId + "/" + containerId + "/livy/stderr?restType=yarnhistory";
         getResultFromSparkHistory(url, function (result) {
             $("#sparkDriverLog").text(result);
         });
@@ -281,7 +281,7 @@ function getJobResult() {
         executorsObject = JSON.parse(s);
         var hostPort = getDriverPortFromExecutor(executorsObject);
         ipAddress = hostPort.split(":")[0];
-        var url = localhost + projectId + "/jobhistory/logs/" + ipAddress + "/port/30050/" + containerId + "/" + containerId + "/spark/stdout?restType=yarnhistory";
+        var url = localhost + projectId + "/jobhistory/logs/" + ipAddress + "/port/30050/" + containerId + "/" + containerId + "/livy/stdout?restType=yarnhistory";
         getResultFromSparkHistory(url, function (result) {
             if (result == "") {
                 result = "No out put";

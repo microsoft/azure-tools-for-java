@@ -21,20 +21,12 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <property>
-                    <name>html.build.enabled</name>
+                    <name>hdinsight.htmlcopy.enabled</name>
                     <value>true</value>
                 </property>
             </activation>
             <build>
                 <plugins>
-                    <plugin>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.3</version>
-                        <configuration>
-                            <source>1.8</source>
-                            <target>1.8</target>
-                        </configuration>
-                    </plugin>
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <version>1.8</version>
@@ -145,6 +137,10 @@
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
