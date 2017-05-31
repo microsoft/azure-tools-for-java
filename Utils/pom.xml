@@ -272,6 +272,18 @@
                 <artifactId>azure-data-lake-store-sdk</artifactId>
                 <version>2.1.5</version>
             </dependency>
+            <dependency>
+                <groupId>net.sourceforge.htmlunit</groupId>
+                <artifactId>htmlunit</artifactId>
+                <version>2.26</version>
+                <exclusions>
+                    <!--xml-apis has conflict with azure-storage,-->
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
