@@ -26,6 +26,7 @@ import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.rediscacheprocessors.RedisCacheHelper;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
@@ -37,11 +38,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public final class RedisCacheModule extends AzureRefreshableNode {
+public final class RedisCacheModule extends AzureRefreshableNode implements RedisCacheMvpView {
     private static final String REDIS_SERVICE_MODULE_ID = com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule.class.getName();
     private static final String ICON_PATH = "RedisCache.png";
     private static final String BASE_MODULE_NAME = "Redis Caches";
-
+    
     public RedisCacheModule(Node parent) {
         super(REDIS_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
     }
@@ -54,15 +55,20 @@ public final class RedisCacheModule extends AzureRefreshableNode {
             if (azureManager == null) {
                 return;
             }
+            
+            
 
             SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
             Set<String> sidList = subscriptionManager.getAccountSidList();
             for (String sid : sidList) {
                 try {
                     Azure azure = azureManager.getAzure(sid);
+                    RedisCacheHelper redisCacheHelper = new RedisCacheHelper(azure.redisCaches());
+                    RedisCachePresenter<RedisCacheModule> redisCachePresenter = new RedisCachePresenter<RedisCacheModule>(redisCacheHelper);
+                    redisCachePresenter.onAttachView(RedisCacheModule.this);
                     for (RedisCache cache : azure.redisCaches().list())
                     {
-                        addChildNode(new RedisCacheNode(this, sid, cache));
+                        addChildNode(new RedisCacheNode(this, sid, redisCachePresenter, cache));
                     }
                 } catch (Exception ex) {
                     failedSubscriptions.add(new ImmutablePair<>(sid, ex.getMessage()));
@@ -79,5 +85,10 @@ public final class RedisCacheModule extends AzureRefreshableNode {
             }
             DefaultLoader.getUIHelper().logError("An error occurred when trying to load Redis Caches\n\n" + errorMessage.toString(), null);
         }
+    }
+    
+    @Override
+    public void onRemoveNode(RedisCacheNode redisCacheNode) {
+        removeDirectChildNode(redisCacheNode);
     }
 }

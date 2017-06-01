@@ -21,34 +21,67 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
-import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.swing.JOptionPane;
+
+import com.microsoft.azure.management.redis.RedisCache;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
+
 public final class RedisCacheNode extends Node implements TelemetryProperties {
+
     private final RedisCache redisCache;
-    private String subscriptionId;
+    private final String subscriptionId;
+    private final RedisCacheMvpPresenter<RedisCacheModule> redisCachePresenter;
 
     private static final String REDISCACHE_ICON_PATH = "RedisCache.png";
 
-    public RedisCacheNode(Node parent, String subscriptionId, RedisCache redisCache) {
-        super(subscriptionId + redisCache.name(), redisCache.name(), parent, REDISCACHE_ICON_PATH, true);
+    @Inject
+    public RedisCacheNode(Node parent, String subscriptionId, RedisCacheMvpPresenter<RedisCacheModule> redisCachePresenter, RedisCache redisCache) {
+        super(subscriptionId + redisCache.name(), redisCache.provisioningState().equals("Creating") ? redisCache.name() + "(Creating...)" : redisCache.name(), parent, REDISCACHE_ICON_PATH, true);
         this.redisCache = redisCache;
         this.subscriptionId = subscriptionId;
+        this.redisCachePresenter = redisCachePresenter;
         loadActions();
     }
 
-    //TODO: add properties action
+    // TODO: add properties action
 
+    public class DeleteRedisCacheAction extends AzureNodeActionPromptListener {
+        public DeleteRedisCacheAction() {
+            super(RedisCacheNode.this,
+                    String.format("This operation will delete redis cache: %s.\nAre you sure you want to continue?",
+                            redisCache.name()),
+                    "Deleting Redis Cache");
+        }
+
+        @Override
+        protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
+            redisCachePresenter.onRedisCacheDelete(redisCache, RedisCacheNode.this);
+        }
+
+        @Override
+        protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+        }
+    }
+
+    
     @Override
-    public List<NodeAction> getNodeActions() {
-        return super.getNodeActions();
+    protected void loadActions() {
+        if (redisCache.provisioningState() != null && !redisCache.provisioningState().equals("Creating")) {
+            addAction("Delete", null, new DeleteRedisCacheAction());
+        }
+        super.loadActions();
     }
 
     @Override
@@ -57,4 +90,5 @@ public final class RedisCacheNode extends Node implements TelemetryProperties {
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
         return properties;
     }
+
 }
