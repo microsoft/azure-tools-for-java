@@ -21,68 +21,28 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
+import com.microsoft.azure.management.redis.RedisCaches;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.JOptionPane;
+import java.util.HashMap;
 
 public final class RedisCacheModule extends AzureRefreshableNode implements RedisCacheMvpView {
     private static final String REDIS_SERVICE_MODULE_ID = com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule.class.getName();
     private static final String ICON_PATH = "RedisCache.png";
     private static final String BASE_MODULE_NAME = "Redis Caches";
+    private final RedisCachePresenter<RedisCacheModule> redisCachePresenter;
     
     public RedisCacheModule(Node parent) {
         super(REDIS_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
+        redisCachePresenter = new RedisCachePresenter<RedisCacheModule>();
+        redisCachePresenter.onAttachView(RedisCacheModule.this);
     }
     @Override
     protected void refreshItems() throws AzureCmdException {
-        List<Pair<String, String>> failedSubscriptions = new ArrayList<>();
-        try {
-            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            // not signed in
-            if (azureManager == null) {
-                return;
-            }
-            
-            SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
-            Set<String> sidList = subscriptionManager.getAccountSidList();
-            for (String sid : sidList) {
-                try {
-                    Azure azure = azureManager.getAzure(sid);
-                    RedisCachePresenter<RedisCacheModule> redisCachePresenter = new RedisCachePresenter<RedisCacheModule>(azure.redisCaches());
-                    redisCachePresenter.onAttachView(RedisCacheModule.this);
-                    for (RedisCache cache : azure.redisCaches().list())
-                    {
-                        addChildNode(new RedisCacheNode(this, sid, redisCachePresenter, cache));
-                    }
-                } catch (Exception ex) {
-                    failedSubscriptions.add(new ImmutablePair<>(sid, ex.getMessage()));
-                    continue;
-                }
-            }
-        } catch (Exception ex) {
-            DefaultLoader.getUIHelper().logError("An error occurred when trying to load Redis Caches\n\n" + ex.getMessage(), ex);
-        }
-        if (!failedSubscriptions.isEmpty()) {
-            StringBuilder errorMessage = new StringBuilder("An error occurred when trying to load Redis Caches for the subscriptions:\n\n");
-            for (Pair error : failedSubscriptions) {
-                errorMessage.append(error.getKey()).append(": ").append(error.getValue()).append("\n");
-            }
-            DefaultLoader.getUIHelper().logError("An error occurred when trying to load Redis Caches\n\n" + errorMessage.toString(), null);
-        }
+    	redisCachePresenter.onRedisCacheRefresh();
     }
     
     @Override
@@ -90,8 +50,12 @@ public final class RedisCacheModule extends AzureRefreshableNode implements Redi
         removeDirectChildNode(redisCacheNode);
     }
     
-    @Override
-    public void onError(String message) {
-        JOptionPane.showMessageDialog(null, message, message, JOptionPane.ERROR_MESSAGE, null);        
-    }
+	@Override
+	public void onRefreshNode(HashMap<String, RedisCaches> redisCachesMap) {
+		for (String sid: redisCachesMap.keySet()) {
+			for (RedisCache redis: redisCachesMap.get(sid).list()) {
+				addChildNode(new RedisCacheNode(this, sid, redisCachePresenter, redis));
+			}
+		}
+	}
 }

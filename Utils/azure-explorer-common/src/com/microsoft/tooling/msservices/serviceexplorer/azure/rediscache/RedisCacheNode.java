@@ -26,13 +26,14 @@ import java.util.Map;
 
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
-public final class RedisCacheNode extends Node implements TelemetryProperties {
+public final class RedisCacheNode extends Node implements TelemetryProperties, MvpView {
 
     private final RedisCache redisCache;
     private final String subscriptionId;
@@ -60,7 +61,7 @@ public final class RedisCacheNode extends Node implements TelemetryProperties {
 
         @Override
         protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-            redisCachePresenter.onRedisCacheDelete(redisCache.id(), RedisCacheNode.this);
+            redisCachePresenter.onRedisCacheDelete(subscriptionId, redisCache.id(), RedisCacheNode.this);
         }
 
         @Override

@@ -1,4 +1,4 @@
-package com.microsoft.tooling.msservices.serviceexplorer.azure.base;
+package com.microsoft.azuretools.azurecommons.mvp.ui.base;
 
 public class BasePresenter<V extends MvpView> implements MvpPresenter<V> {
 
