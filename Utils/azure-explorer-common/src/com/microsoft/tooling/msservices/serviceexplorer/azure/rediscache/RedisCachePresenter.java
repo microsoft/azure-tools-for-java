@@ -1,34 +1,25 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
-import javax.inject.Inject;
-
-import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.azuretools.azurecommons.rediscacheprocessors.RedisCacheHelper;
+import com.microsoft.azure.management.redis.RedisCaches;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.base.BasePresenter;
 
 public class RedisCachePresenter<V extends RedisCacheMvpView> extends BasePresenter<V> 
     implements RedisCacheMvpPresenter<V> {
     
+    private final RedisCaches redisCaches;
     
-    private final RedisCacheHelper redisCacheHelper;
-    
-    @Inject
-    public RedisCachePresenter(RedisCacheHelper redisCacheHelper) {
-        this.redisCacheHelper = redisCacheHelper;
+    public RedisCachePresenter(RedisCaches redisCaches) {
+        this.redisCaches = redisCaches;
     }
 
     @Override
-    public void onRedisCacheDelete(RedisCache redisCache, RedisCacheNode node) {
-        if (redisCache == null) {
-            getMvpView().onError("Redis Cache is null");
-            return;
-        }
-        String id = redisCache.id();
+    public void onRedisCacheDelete(String id, RedisCacheNode node) {
         if (id == null || id.trim().isEmpty()) {
             getMvpView().onError("Cannot get Redis Cache's ID");
             return;
         }
-        redisCacheHelper.deleteRedisById(id);
+        redisCaches.deleteById(id);
         getMvpView().onRemoveNode(node);
     }
+
 }

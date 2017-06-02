@@ -22,20 +22,14 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import javax.inject.Inject;
-import javax.swing.JOptionPane;
 
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 public final class RedisCacheNode extends Node implements TelemetryProperties {
@@ -46,7 +40,6 @@ public final class RedisCacheNode extends Node implements TelemetryProperties {
 
     private static final String REDISCACHE_ICON_PATH = "RedisCache.png";
 
-    @Inject
     public RedisCacheNode(Node parent, String subscriptionId, RedisCacheMvpPresenter<RedisCacheModule> redisCachePresenter, RedisCache redisCache) {
         super(subscriptionId + redisCache.name(), redisCache.provisioningState().equals("Creating") ? redisCache.name() + "(Creating...)" : redisCache.name(), parent, REDISCACHE_ICON_PATH, true);
         this.redisCache = redisCache;
@@ -67,7 +60,7 @@ public final class RedisCacheNode extends Node implements TelemetryProperties {
 
         @Override
         protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-            redisCachePresenter.onRedisCacheDelete(redisCache, RedisCacheNode.this);
+            redisCachePresenter.onRedisCacheDelete(redisCache.id(), RedisCacheNode.this);
         }
 
         @Override

@@ -26,7 +26,6 @@ import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.azurecommons.rediscacheprocessors.RedisCacheHelper;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
@@ -37,6 +36,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import javax.swing.JOptionPane;
 
 public final class RedisCacheModule extends AzureRefreshableNode implements RedisCacheMvpView {
     private static final String REDIS_SERVICE_MODULE_ID = com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule.class.getName();
@@ -56,15 +57,12 @@ public final class RedisCacheModule extends AzureRefreshableNode implements Redi
                 return;
             }
             
-            
-
             SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
             Set<String> sidList = subscriptionManager.getAccountSidList();
             for (String sid : sidList) {
                 try {
                     Azure azure = azureManager.getAzure(sid);
-                    RedisCacheHelper redisCacheHelper = new RedisCacheHelper(azure.redisCaches());
-                    RedisCachePresenter<RedisCacheModule> redisCachePresenter = new RedisCachePresenter<RedisCacheModule>(redisCacheHelper);
+                    RedisCachePresenter<RedisCacheModule> redisCachePresenter = new RedisCachePresenter<RedisCacheModule>(azure.redisCaches());
                     redisCachePresenter.onAttachView(RedisCacheModule.this);
                     for (RedisCache cache : azure.redisCaches().list())
                     {
@@ -90,5 +88,10 @@ public final class RedisCacheModule extends AzureRefreshableNode implements Redi
     @Override
     public void onRemoveNode(RedisCacheNode redisCacheNode) {
         removeDirectChildNode(redisCacheNode);
+    }
+    
+    @Override
+    public void onError(String message) {
+        JOptionPane.showMessageDialog(null, message, message, JOptionPane.ERROR_MESSAGE, null);        
     }
 }
