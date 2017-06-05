@@ -19,10 +19,8 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
-import java.util.HashMap;
-import java.util.Map;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -33,16 +31,37 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class RedisCacheNode extends Node implements TelemetryProperties, MvpView {
 
     private final RedisCache redisCache;
     private final String subscriptionId;
     private final RedisCacheMvpPresenter<RedisCacheModule> redisCachePresenter;
 
+    private static final String DELETE_CONFIRM_DIALOG_FORMAT = "This operation will delete redis cache: %s."
+            + "\nAre you sure you want to continue?";
+    private static final String DELETE_CONFIRM_TITLE = "Deleting Redis Cache";
+    private static final String DELETE_ACTION_NAME = "Delete";
+    
+    private static final String CREATING_STATE = "Creating";
+    private static final String CREATING_REDIS_NAME_FORMAT = "%s(%s...)";
+    
     private static final String REDISCACHE_ICON_PATH = "RedisCache.png";
 
-    public RedisCacheNode(Node parent, String subscriptionId, RedisCacheMvpPresenter<RedisCacheModule> redisCachePresenter, RedisCache redisCache) {
-        super(subscriptionId + redisCache.name(), redisCache.provisioningState().equals("Creating") ? redisCache.name() + "(Creating...)" : redisCache.name(), parent, REDISCACHE_ICON_PATH, true);
+    /**
+     * Node for each Redis Cache Resource.
+     * @param parent The parent node of this node
+     * @param subscriptionId The subscription Id of this Redis Cache
+     * @param redisCachePresenter Presenter layer of this View
+     * @param redisCache The Redis Cache object of this node
+     */
+    public RedisCacheNode(Node parent, String subscriptionId, 
+            RedisCacheMvpPresenter<RedisCacheModule> redisCachePresenter, RedisCache redisCache) {
+        super(subscriptionId + redisCache.name(), redisCache.provisioningState().equals(CREATING_STATE)
+                ? String.format(CREATING_REDIS_NAME_FORMAT, redisCache.name(), CREATING_STATE) : redisCache.name(),
+                parent, REDISCACHE_ICON_PATH, true);
         this.redisCache = redisCache;
         this.subscriptionId = subscriptionId;
         this.redisCachePresenter = redisCachePresenter;
@@ -53,10 +72,8 @@ public final class RedisCacheNode extends Node implements TelemetryProperties, M
 
     public class DeleteRedisCacheAction extends AzureNodeActionPromptListener {
         public DeleteRedisCacheAction() {
-            super(RedisCacheNode.this,
-                    String.format("This operation will delete redis cache: %s.\nAre you sure you want to continue?",
-                            redisCache.name()),
-                    "Deleting Redis Cache");
+            super(RedisCacheNode.this, String.format(DELETE_CONFIRM_DIALOG_FORMAT, redisCache.name()),
+                    DELETE_CONFIRM_TITLE);
         }
 
         @Override
@@ -69,11 +86,10 @@ public final class RedisCacheNode extends Node implements TelemetryProperties, M
         }
     }
 
-    
     @Override
     protected void loadActions() {
-        if (redisCache.provisioningState() != null && !redisCache.provisioningState().equals("Creating")) {
-            addAction("Delete", null, new DeleteRedisCacheAction());
+        if (redisCache.provisioningState() != null && !redisCache.provisioningState().equals(CREATING_STATE)) {
+            addAction(DELETE_ACTION_NAME, null, new DeleteRedisCacheAction());
         }
         super.loadActions();
     }

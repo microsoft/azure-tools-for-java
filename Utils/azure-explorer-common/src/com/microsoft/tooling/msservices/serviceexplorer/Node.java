@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Node {
+public class Node implements NodeMvpView {
     private static final String CLICK_ACTION = "click";
 
     protected static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions;
@@ -351,5 +351,10 @@ public class Node {
 
     public static void setNode2Actions(Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions) {
         Node.node2Actions = node2Actions;
+    }
+
+    @Override
+    public void onRemoveNode(Node Node) {
+        removeDirectChildNode(Node);
     }
 }

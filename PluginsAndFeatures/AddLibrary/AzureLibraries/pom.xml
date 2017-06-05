@@ -124,8 +124,8 @@
                 </goals>
                 <configuration>
                     <outputDirectory>./com.microsoft.azuretools.sdk/dependencies</outputDirectory>
-                    <overWriteReleases>false</overWriteReleases>
-                    <overWriteSnapshots>false</overWriteSnapshots>
+                    <overWriteReleases>true</overWriteReleases>
+                    <overWriteSnapshots>true</overWriteSnapshots>
                     <overWriteIfNewer>true</overWriteIfNewer>
                     <excludeArtifactIds>azuretools-core,azure-explorer-common,hdinsight-node-common</excludeArtifactIds>
                 </configuration>
@@ -138,8 +138,8 @@
                 </goals>
                 <configuration>
                     <outputDirectory>${project.basedir}/../../azure-toolkit-for-eclipse/com.microsoft.azuretools.core/resources</outputDirectory>
-                    <overWriteReleases>false</overWriteReleases>
-                    <overWriteSnapshots>false</overWriteSnapshots>
+                    <overWriteReleases>true</overWriteReleases>
+                    <overWriteSnapshots>true</overWriteSnapshots>
                     <overWriteIfNewer>true</overWriteIfNewer>
                     <stripVersion>true</stripVersion>
                     <includeArtifactIds>azuretools-core,azure-explorer-common,hdinsight-node-common</includeArtifactIds>

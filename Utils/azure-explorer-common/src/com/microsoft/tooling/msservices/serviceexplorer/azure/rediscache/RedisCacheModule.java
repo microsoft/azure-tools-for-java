@@ -19,6 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azure.management.redis.RedisCache;
@@ -30,32 +31,32 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import java.util.HashMap;
 
 public final class RedisCacheModule extends AzureRefreshableNode implements RedisCacheMvpView {
-    private static final String REDIS_SERVICE_MODULE_ID = com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule.class.getName();
+    private static final String REDIS_SERVICE_MODULE_ID = RedisCacheModule.class.getName();
     private static final String ICON_PATH = "RedisCache.png";
     private static final String BASE_MODULE_NAME = "Redis Caches";
     private final RedisCachePresenter<RedisCacheModule> redisCachePresenter;
     
+    /**
+     * Create the node containing all the Redis Cache resources.
+     * @param parent The parent node of this node
+     */
     public RedisCacheModule(Node parent) {
         super(REDIS_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
         redisCachePresenter = new RedisCachePresenter<RedisCacheModule>();
         redisCachePresenter.onAttachView(RedisCacheModule.this);
     }
+    
     @Override
     protected void refreshItems() throws AzureCmdException {
-    	redisCachePresenter.onRedisCacheRefresh();
+        redisCachePresenter.onRedisCacheRefresh();
     }
     
     @Override
-    public void onRemoveNode(RedisCacheNode redisCacheNode) {
-        removeDirectChildNode(redisCacheNode);
+    public void onRefreshNode(HashMap<String, RedisCaches> redisCachesMap) {
+        for (String sid: redisCachesMap.keySet()) {
+            for (RedisCache redis: redisCachesMap.get(sid).list()) {
+                addChildNode(new RedisCacheNode(this, sid, redisCachePresenter, redis));
+            }
+        }
     }
-    
-	@Override
-	public void onRefreshNode(HashMap<String, RedisCaches> redisCachesMap) {
-		for (String sid: redisCachesMap.keySet()) {
-			for (RedisCache redis: redisCachesMap.get(sid).list()) {
-				addChildNode(new RedisCacheNode(this, sid, redisCachePresenter, redis));
-			}
-		}
-	}
 }

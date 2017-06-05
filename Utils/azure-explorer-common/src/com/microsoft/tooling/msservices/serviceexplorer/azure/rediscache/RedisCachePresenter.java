@@ -1,44 +1,74 @@
+/**
+ * Copyright (c) Microsoft Corporation
+ * <p/>
+ * All rights reserved.
+ * <p/>
+ * MIT License
+ * <p/>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p/>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ * <p/>
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
+
+import com.microsoft.azure.management.redis.RedisCaches;
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.BasePresenter;
+import com.microsoft.azuretools.core.model.AzureMvpModel;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 import java.io.IOException;
 import java.util.HashMap;
 
-import com.microsoft.azure.management.redis.RedisCaches;
-import com.microsoft.azuretools.azurecommons.azuremodel.AzureModel;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.BasePresenter;
-
 public class RedisCachePresenter<V extends RedisCacheMvpView> extends BasePresenter<V> 
-    implements RedisCacheMvpPresenter<V> {
+        implements RedisCacheMvpPresenter<V> {
     
+    private static final String CANNOT_GET_SUBCROPTION_ID = "Cannot get Subscription ID.";
+    private static final String CANNOT_GET_REDIS_ID = "Cannot get Redis Cache's ID.";
+    private static final String CANNOT_DELETE_REDIS = "Cannot delete Redis Cache.";
+    
+    private final AzureMvpModel azureMvpModel = AzureMvpModel.getInstance();
     
     public RedisCachePresenter() { }
 
     @Override
     public void onRedisCacheDelete(String sid, String id, RedisCacheNode node) {
         if (sid == null || sid.trim().isEmpty()) {
-            getMvpView().onError("Cannot get Subscription ID.");
+            getMvpView().onError(CANNOT_GET_SUBCROPTION_ID);
             return;
         }
         if (id == null || id.trim().isEmpty()) {
-            getMvpView().onError("Cannot get Redis Cache's ID.");
+            getMvpView().onError(CANNOT_GET_REDIS_ID);
             return;
         }
         try {
-            AzureModel.deleteRedisCache(sid, id);
+            azureMvpModel.deleteRedisCache(sid, id);
         } catch (IOException e) {
-            getMvpView().OnErrorWithException("Cannot delete Redis Cache.", e);
+            getMvpView().onErrorWithException(CANNOT_DELETE_REDIS, e);
             return;
         }
-        getMvpView().onRemoveNode(node);
+        if (getMvpView() instanceof Node) {
+            ((Node) getMvpView()).onRemoveNode(node);
+        }
     }
 
     @Override
     public void onRedisCacheRefresh() {
         HashMap<String, RedisCaches> redisCachesMap;
         try {
-            redisCachesMap = AzureModel.getRedisCaches();
+            redisCachesMap = azureMvpModel.getRedisCaches();
         } catch (IOException e) {
-            getMvpView().OnErrorWithException("Cannot get Redis Cache's ID.", e);
+            getMvpView().onErrorWithException(CANNOT_GET_REDIS_ID, e);
             return;
         }
         getMvpView().onRefreshNode(redisCachesMap);
