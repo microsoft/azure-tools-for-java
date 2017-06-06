@@ -22,34 +22,57 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
+import com.microsoft.azure.management.redis.RedisCache;
+import com.microsoft.azure.management.redis.RedisCaches;
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.NodeContent;
+import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
-import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
-import com.microsoft.azuretools.core.model.NodeContent;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-
 public class RedisCacheModulePresenter<V extends RedisCacheModule> extends MvpPresenter<V> {
-    
+
     private static final String CANNOT_GET_SUBCROPTION_ID = "Cannot get Subscription ID.";
     private static final String CANNOT_GET_REDIS_ID = "Cannot get Redis Cache's ID.";
     private static final String CANNOT_DELETE_REDIS = "Cannot delete Redis Cache.";
-    
+
     private final AzureMvpModelHelper azureMvpModelHelper = AzureMvpModelHelper.getInstance();
-    
+
+    /**
+     * Called from view when the view needs refresh.
+     */
     public void onModuleRefresh() {
-        HashMap<String, ArrayList<NodeContent>> redisCachesMap;
+        HashMap<String, ArrayList<NodeContent>> nodeMap = new HashMap<String, ArrayList<NodeContent>>();
         try {
-            redisCachesMap = azureMvpModelHelper.getRedisCaches();
+            HashMap<String, RedisCaches> redisCachesMap = azureMvpModelHelper.getRedisCaches();
+            for (String sid : redisCachesMap.keySet()) {
+                ArrayList<NodeContent> nodeContentList = new ArrayList<NodeContent>();
+                for (RedisCache redisCache : redisCachesMap.get(sid).list()) {
+                    nodeContentList
+                            .add(new NodeContent(redisCache.id(), redisCache.name(), redisCache.provisioningState()));
+                }
+                nodeMap.put(sid, nodeContentList);
+            }
         } catch (IOException e) {
             getMvpView().onErrorWithException(CANNOT_GET_REDIS_ID, e);
             return;
         }
-        getMvpView().showNode(redisCachesMap);
+        getMvpView().showNode(nodeMap);
     }
-    
+
+    /**
+     * Called from view when the view need delete its child node.
+     * 
+     * @param sid
+     *            subscription id
+     * @param id
+     *            resource id
+     * @param node
+     *            node reference
+     */
     public void onNodeDelete(String sid, String id, Node node) {
         if (sid == null || sid.trim().isEmpty()) {
             getMvpView().onError(CANNOT_GET_SUBCROPTION_ID);

@@ -27,7 +27,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.core.model.NodeContent;
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.NodeContent;
 
 import java.util.ArrayList;
 import java.util.HashMap;

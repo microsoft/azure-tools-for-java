@@ -25,7 +25,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
-import com.microsoft.azuretools.core.model.NodeContent;
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.NodeContent;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;

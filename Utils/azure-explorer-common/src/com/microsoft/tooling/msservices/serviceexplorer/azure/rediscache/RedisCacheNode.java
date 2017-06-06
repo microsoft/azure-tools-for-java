@@ -23,7 +23,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.core.model.NodeContent;
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.NodeContent;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -57,10 +57,8 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
      *            The parent node of this node
      * @param subscriptionId
      *            The subscription Id of this Redis Cache
-     * @param redisCachePresenter
-     *            Presenter layer of this View
-     * @param redisCache
-     *            The Redis Cache object of this node
+     * @param content
+     *            The basic information object for the node
      */
     public RedisCacheNode(Node parent, String subscriptionId, NodeContent content) {
         super(subscriptionId + content.getName(), content.getProvisionState().equals(CREATING_STATE)
