@@ -22,10 +22,20 @@
 
 package com.microsoft.azuretools.azurecommons.mvp.ui.base;
 
-public interface MvpPresenter<V extends MvpView> {
+public abstract class MvpPresenter<V extends MvpView> {
 
-    void onAttachView(V mvpView);
+    private V mvpView;
 
-    void onDetachView();
+    public V getMvpView() {
+        return mvpView;
+    }
+
+    public void onAttachView(V mvpView) {
+        this.mvpView = mvpView;
+    }
+
+    public void onDetachView() {
+        this.mvpView = null;
+    }
 
 }

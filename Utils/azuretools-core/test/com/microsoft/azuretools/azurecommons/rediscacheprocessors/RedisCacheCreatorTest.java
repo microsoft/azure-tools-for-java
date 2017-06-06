@@ -1,3 +1,25 @@
+/**
+ * Copyright (c) Microsoft Corporation
+ * <p/>
+ * All rights reserved.
+ * <p/>
+ * MIT License
+ * <p/>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p/>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ * <p/>
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.azuretools.azurecommons.rediscacheprocessors;
 
 import static org.junit.Assert.assertEquals;
@@ -6,14 +28,13 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Map;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import com.microsoft.azure.management.redis.RedisCaches;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 
-import cucumber.api.java.Before;
-import cucumber.api.java.en.Then;
-
-
-public class RedisCacheCreatorScenario {
+public class RedisCacheCreatorTest {
     
     private static final String DNS_NAME = "test-redis";
     private static final String REGION_NAME = Region.US_CENTRAL.name();
@@ -45,12 +66,12 @@ public class RedisCacheCreatorScenario {
         creatorMap = redisCacheCreator.CreatorMap();
     }
     
-    @Then("^check the the key number of CreatorMap$")
+    @Test
     public void testRedisCacheCreator() {
         assertEquals(TOTAL_KEY_NUM, creatorMap.keySet().size());
     }
     
-    @Then("^check the initialization state of BasicWithExistResGrp$")
+    @Test
     public void testBasicWithExistResGrp() {
         BasicWithExistResGrp basicWithExistResGrp = (BasicWithExistResGrp) creatorMap.get(BASIC_WITH_EXIST_RES_GRP);
         assertNotNull(basicWithExistResGrp);
@@ -60,7 +81,7 @@ public class RedisCacheCreatorScenario {
         assertEquals(CAPACITY, basicWithExistResGrp.Capacity());
     }
     
-    @Then("^check the initialization state of BasicWithExistResGrpNonSsl$")
+    @Test
     public void testBasicWithExistResGrpNonSsl() {
         BasicWithExistResGrpNonSsl basicWithExistResGrpNonSsl = (BasicWithExistResGrpNonSsl) creatorMap.get(BASIC_WITH_EXIST_RES_GRP_NO_SSL);
         assertNotNull(basicWithExistResGrpNonSsl);
@@ -70,7 +91,7 @@ public class RedisCacheCreatorScenario {
         assertEquals(CAPACITY, basicWithExistResGrpNonSsl.Capacity());
     }
     
-    @Then("^check the initialization state of BasicWithNewResGrp$")
+    @Test
     public void testBasicWithNewResGrp() {
         BasicWithNewResGrp basicWithNewResGrp = (BasicWithNewResGrp) creatorMap.get(BASIC_WITH_NEW_RES_GRP);
         assertNotNull(basicWithNewResGrp);
@@ -80,7 +101,7 @@ public class RedisCacheCreatorScenario {
         assertEquals(CAPACITY, basicWithNewResGrp.Capacity());
     }
     
-    @Then("^check the initialization state of BasicWithNewResGrpNonSsl$")
+    @Test
     public void testBasicWithNewResGrpNonSsl() {
         BasicWithNewResGrpNonSsl basicWithNewResGrpNonSsl = (BasicWithNewResGrpNonSsl) creatorMap.get(BASIC_WITH_NEW_RES_GRP_NO_SSL);
         assertNotNull(basicWithNewResGrpNonSsl);
@@ -90,7 +111,7 @@ public class RedisCacheCreatorScenario {
         assertEquals(CAPACITY, basicWithNewResGrpNonSsl.Capacity());
     }
     
-    @Then("^check the initialization state of StdWithExistResGrp$")
+    @Test
     public void testStdWithExistResGrp() {
         StdWithExistResGrp stdWithExistResGrp = (StdWithExistResGrp) creatorMap.get(STD_WITH_EXIST_RES_GRP);
         assertNotNull(stdWithExistResGrp);
@@ -100,7 +121,7 @@ public class RedisCacheCreatorScenario {
         assertEquals(CAPACITY, stdWithExistResGrp.Capacity());
     }
     
-    @Then("^check the initialization state of StdWithExistResGrpNonSsl$")
+    @Test
     public void testStdWithExistResGrpNonSsl() {
         StdWithExistResGrpNonSsl stdWithExistResGrpNonSsl = (StdWithExistResGrpNonSsl) creatorMap.get(STD_WITH_EXIST_RES_GRP_NO_SSL);
         assertNotNull(stdWithExistResGrpNonSsl);
@@ -110,7 +131,7 @@ public class RedisCacheCreatorScenario {
         assertEquals(CAPACITY, stdWithExistResGrpNonSsl.Capacity());
     }
     
-    @Then("^check the initialization state of StdWithNewResGrp$")
+    @Test
     public void testStdWithNewResGrp() {
         StdWithNewResGrp stdWithNewResGrp = (StdWithNewResGrp) creatorMap.get(STD_WITH_NEW_RES_GRP);
         assertNotNull(stdWithNewResGrp);
@@ -120,7 +141,7 @@ public class RedisCacheCreatorScenario {
         assertEquals(CAPACITY, stdWithNewResGrp.Capacity());
     }
     
-    @Then("^check the initialization state of StdWithNewResGrpNonSsl$")
+    @Test
     public void testStdWithNewResGrpNonSsl() {
         StdWithNewResGrpNonSsl stdWithNewResGrpNonSsl = (StdWithNewResGrpNonSsl) creatorMap.get(STD_WITH_NEW_RES_GRP_NO_SSL);
         assertNotNull(stdWithNewResGrpNonSsl);
@@ -130,7 +151,7 @@ public class RedisCacheCreatorScenario {
         assertEquals(CAPACITY, stdWithNewResGrpNonSsl.Capacity());
     }
     
-    @Then("^check the initialization state of PremWithExistResGrp$")
+    @Test
     public void testPremWithExistResGrp() {
         PremWithExistResGrp premWithExistResGrp = (PremWithExistResGrp) creatorMap.get(PREM_WITH_EXIST_RES_GRP);
         assertNotNull(premWithExistResGrp);
@@ -140,7 +161,7 @@ public class RedisCacheCreatorScenario {
         assertEquals(CAPACITY_FOR_PREMIUM, premWithExistResGrp.Capacity());
     }
     
-    @Then("^check the initialization state of PremWithExistResGrpNonSsl$")
+    @Test
     public void testPremWithExistResGrpNonSsl() {
         PremWithExistResGrpNonSsl premWithExistResGrpNonSsl = (PremWithExistResGrpNonSsl) creatorMap.get(PREM_WITH_EXIST_RES_GRP_NO_SSL);
         assertNotNull(premWithExistResGrpNonSsl);
@@ -150,7 +171,7 @@ public class RedisCacheCreatorScenario {
         assertEquals(CAPACITY_FOR_PREMIUM, premWithExistResGrpNonSsl.Capacity());
     }
     
-    @Then("^check the initialization state of PremWithNewResGrp$")
+    @Test
     public void testPremWithNewResGrp() {
         PremWithNewResGrp premWithNewResGrp = (PremWithNewResGrp) creatorMap.get(PREM_WITH_NEW_RES_GRP);
         assertNotNull(premWithNewResGrp);
@@ -160,7 +181,7 @@ public class RedisCacheCreatorScenario {
         assertEquals(CAPACITY_FOR_PREMIUM, premWithNewResGrp.Capacity());
     }
     
-    @Then("^check the initialization state of PremWithNewResGrpNonSsl$")
+    @Test
     public void testPremWithNewResGrpNonSsl() {
         PremWithNewResGrpNonSsl premWithNewResGrpNonSsl = (PremWithNewResGrpNonSsl) creatorMap.get(PREM_WITH_NEW_RES_GRP_NO_SSL);
         assertNotNull(premWithNewResGrpNonSsl);

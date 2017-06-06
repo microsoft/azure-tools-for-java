@@ -22,9 +22,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
-import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
+import com.microsoft.azuretools.core.model.NodeContent;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -34,37 +33,43 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPro
 import java.util.HashMap;
 import java.util.Map;
 
-public final class RedisCacheNode extends Node implements TelemetryProperties, MvpView {
+public class RedisCacheNode extends Node implements TelemetryProperties {
 
-    private final RedisCache redisCache;
+    private final String name;
+    private final String id;
+    private final String provisionState;
     private final String subscriptionId;
-    private final RedisCacheMvpPresenter<RedisCacheModule> redisCachePresenter;
 
     private static final String DELETE_CONFIRM_DIALOG_FORMAT = "This operation will delete redis cache: %s."
             + "\nAre you sure you want to continue?";
     private static final String DELETE_CONFIRM_TITLE = "Deleting Redis Cache";
     private static final String DELETE_ACTION_NAME = "Delete";
-    
+
     private static final String CREATING_STATE = "Creating";
     private static final String CREATING_REDIS_NAME_FORMAT = "%s(%s...)";
-    
+
     private static final String REDISCACHE_ICON_PATH = "RedisCache.png";
 
     /**
      * Node for each Redis Cache Resource.
-     * @param parent The parent node of this node
-     * @param subscriptionId The subscription Id of this Redis Cache
-     * @param redisCachePresenter Presenter layer of this View
-     * @param redisCache The Redis Cache object of this node
+     * 
+     * @param parent
+     *            The parent node of this node
+     * @param subscriptionId
+     *            The subscription Id of this Redis Cache
+     * @param redisCachePresenter
+     *            Presenter layer of this View
+     * @param redisCache
+     *            The Redis Cache object of this node
      */
-    public RedisCacheNode(Node parent, String subscriptionId, 
-            RedisCacheMvpPresenter<RedisCacheModule> redisCachePresenter, RedisCache redisCache) {
-        super(subscriptionId + redisCache.name(), redisCache.provisioningState().equals(CREATING_STATE)
-                ? String.format(CREATING_REDIS_NAME_FORMAT, redisCache.name(), CREATING_STATE) : redisCache.name(),
-                parent, REDISCACHE_ICON_PATH, true);
-        this.redisCache = redisCache;
+    public RedisCacheNode(Node parent, String subscriptionId, NodeContent content) {
+        super(subscriptionId + content.getName(), content.getProvisionState().equals(CREATING_STATE)
+                ? String.format(CREATING_REDIS_NAME_FORMAT, content.getName(), CREATING_STATE) 
+                : content.getName(), parent, REDISCACHE_ICON_PATH, true);
+        this.name = content.getName();
+        this.id = content.getId();
+        this.provisionState = content.getProvisionState();
         this.subscriptionId = subscriptionId;
-        this.redisCachePresenter = redisCachePresenter;
         loadActions();
     }
 
@@ -72,13 +77,13 @@ public final class RedisCacheNode extends Node implements TelemetryProperties, M
 
     public class DeleteRedisCacheAction extends AzureNodeActionPromptListener {
         public DeleteRedisCacheAction() {
-            super(RedisCacheNode.this, String.format(DELETE_CONFIRM_DIALOG_FORMAT, redisCache.name()),
+            super(RedisCacheNode.this, String.format(DELETE_CONFIRM_DIALOG_FORMAT, RedisCacheNode.this.name),
                     DELETE_CONFIRM_TITLE);
         }
 
         @Override
         protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-            redisCachePresenter.onRedisCacheDelete(subscriptionId, redisCache.id(), RedisCacheNode.this);
+        	RedisCacheNode.this.getParent().onRemoveNode(subscriptionId, RedisCacheNode.this.id, RedisCacheNode.this);
         }
 
         @Override
@@ -88,7 +93,7 @@ public final class RedisCacheNode extends Node implements TelemetryProperties, M
 
     @Override
     protected void loadActions() {
-        if (redisCache.provisioningState() != null && !redisCache.provisioningState().equals(CREATING_STATE)) {
+        if (!CREATING_STATE.equals(this.provisionState)) {
             addAction(DELETE_ACTION_NAME, null, new DeleteRedisCacheAction());
         }
         super.loadActions();

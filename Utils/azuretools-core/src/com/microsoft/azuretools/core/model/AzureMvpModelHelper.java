@@ -23,24 +23,26 @@
 package com.microsoft.azuretools.core.model;
 
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.redis.RedisCaches;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
-public class AzureMvpModel {
+public class AzureMvpModelHelper {
     
-    private AzureMvpModel() {}
+    private AzureMvpModelHelper() {}
     
     private static final class  AzureMvpModelHolder {
-        private static final AzureMvpModel INSTANCE = new AzureMvpModel();
+        private static final AzureMvpModelHelper INSTANCE = new AzureMvpModelHelper();
     }
     
-    public static AzureMvpModel getInstance() {
+    public static AzureMvpModelHelper getInstance() {
         return AzureMvpModelHolder.INSTANCE;
     }
     
@@ -49,8 +51,8 @@ public class AzureMvpModel {
      * @return A map containing RedisCaches with subscription id as the key
      * @throws IOException getAzureManager Exception
      */
-    public HashMap<String, RedisCaches> getRedisCaches() throws IOException {
-        HashMap<String, RedisCaches> redisCacheMaps = new HashMap<String, RedisCaches>();
+    public HashMap<String, ArrayList<NodeContent>> getRedisCaches() throws IOException {
+        HashMap<String, ArrayList<NodeContent>> redisCacheMaps = new HashMap<String, ArrayList<NodeContent>>();
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         if (azureManager == null) {
             return redisCacheMaps;
@@ -62,10 +64,15 @@ public class AzureMvpModel {
         Set<String> sidList = subscriptionManager.getAccountSidList();
         for (String sid : sidList) {
             Azure azure = azureManager.getAzure(sid);
-            if (azure == null) {
+            if (azure == null || azure.redisCaches() == null) {
                 continue;
             }
-            redisCacheMaps.put(sid, azure.redisCaches());
+            ArrayList<NodeContent> nodeContentList = new ArrayList<NodeContent>();
+            for (RedisCache redis: azure.redisCaches().list()) {
+                NodeContent nodeContent = new NodeContent(redis.id(), redis.name(), redis.provisioningState());
+                nodeContentList.add(nodeContent);
+            }
+            redisCacheMaps.put(sid, nodeContentList);
         }
         return redisCacheMaps;
     }

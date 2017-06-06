@@ -27,7 +27,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.core.model.NodeContent;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public abstract class RefreshableNode extends Node {
@@ -43,7 +46,7 @@ public abstract class RefreshableNode extends Node {
     public RefreshableNode(String id, String name, Node parent, String iconPath, boolean delayActionLoading) {
         super(id, name, parent, iconPath, delayActionLoading);
     }
-
+    
     @Override
     protected void loadActions() {
         addAction(REFRESH, DefaultLoader.getUIHelper().isDarkTheme() ? REFRESH_ICON_DARK : REFRESH_ICON_LIGHT, new NodeActionListener() {
@@ -149,5 +152,13 @@ public abstract class RefreshableNode extends Node {
         );
 
         return future;
+    }
+    
+    public void onRefreshNode(HashMap<String, ArrayList<NodeContent>> nodeMap) {
+        for (String sid: nodeMap.keySet()) {
+            for (NodeContent content: nodeMap.get(sid)) {
+                addChildNode(createNode(this, sid, content));
+            }
+        }
     }
 }

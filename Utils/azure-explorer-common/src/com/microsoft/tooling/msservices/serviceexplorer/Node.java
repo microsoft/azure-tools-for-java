@@ -24,6 +24,8 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
+import com.microsoft.azuretools.core.model.NodeContent;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
@@ -36,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Node implements NodeMvpView {
+public class Node extends MvpView {
     private static final String CLICK_ACTION = "click";
 
     protected static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions;
@@ -49,7 +51,7 @@ public class Node implements NodeMvpView {
     protected Object viewData;
     protected NodeAction clickAction = new NodeAction(this, CLICK_ACTION);
     protected List<NodeAction> nodeActions = new ArrayList<NodeAction>();
-
+    
     // marks this node as being in a "loading" state; when this field is true
     // the following consequences apply:
     //  [1] all actions associated with this node get disabled
@@ -65,7 +67,7 @@ public class Node implements NodeMvpView {
     public Node(String id, String name, Node parent, String iconPath) {
         this(id, name, parent, iconPath, false);
     }
-
+    
     public Node(String id, String name, Node parent, String iconPath, boolean delayActionLoading) {
         this.id = id;
         this.name = name;
@@ -76,7 +78,7 @@ public class Node implements NodeMvpView {
             loadActions();
         }
     }
-
+    
     public String getId() {
         return id;
     }
@@ -353,8 +355,9 @@ public class Node implements NodeMvpView {
         Node.node2Actions = node2Actions;
     }
 
-    @Override
-    public void onRemoveNode(Node Node) {
-        removeDirectChildNode(Node);
+    public void onRemoveNode(String sid, String id, Node node) { }
+    
+    public Node createNode(Node parent, String sid, NodeContent content) {
+        return new Node(content.getId(), content.getName());
     }
 }

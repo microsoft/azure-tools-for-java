@@ -22,27 +22,35 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
-import com.microsoft.azure.management.redis.RedisCaches;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.BasePresenter;
-import com.microsoft.azuretools.core.model.AzureMvpModel;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
-public class RedisCachePresenter<V extends RedisCacheMvpView> extends BasePresenter<V> 
-        implements RedisCacheMvpPresenter<V> {
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
+import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
+import com.microsoft.azuretools.core.model.NodeContent;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+
+public class RedisCacheModulePresenter<V extends RedisCacheModule> extends MvpPresenter<V> {
     
-    private static final String CANNOT_GET_SUBCROPTION_ID = "Cannot get Subscription ID.";
+	private static final String CANNOT_GET_SUBCROPTION_ID = "Cannot get Subscription ID.";
     private static final String CANNOT_GET_REDIS_ID = "Cannot get Redis Cache's ID.";
     private static final String CANNOT_DELETE_REDIS = "Cannot delete Redis Cache.";
     
-    private final AzureMvpModel azureMvpModel = AzureMvpModel.getInstance();
+    private final AzureMvpModelHelper azureMvpModelHelper = AzureMvpModelHelper.getInstance();
     
-    public RedisCachePresenter() { }
-
-    @Override
-    public void onRedisCacheDelete(String sid, String id, RedisCacheNode node) {
+    public void onModuleRefresh() {
+        HashMap<String, ArrayList<NodeContent>> redisCachesMap;
+        try {
+            redisCachesMap = azureMvpModelHelper.getRedisCaches();
+        } catch (IOException e) {
+            getMvpView().onErrorWithException(CANNOT_GET_REDIS_ID, e);
+            return;
+        }
+        getMvpView().onRefreshNode(redisCachesMap);
+    }
+    
+    public void onNodeDelete(String sid, String id, Node node) {
         if (sid == null || sid.trim().isEmpty()) {
             getMvpView().onError(CANNOT_GET_SUBCROPTION_ID);
             return;
@@ -52,25 +60,11 @@ public class RedisCachePresenter<V extends RedisCacheMvpView> extends BasePresen
             return;
         }
         try {
-            azureMvpModel.deleteRedisCache(sid, id);
+            azureMvpModelHelper.deleteRedisCache(sid, id);
         } catch (IOException e) {
             getMvpView().onErrorWithException(CANNOT_DELETE_REDIS, e);
             return;
         }
-        if (getMvpView() instanceof Node) {
-            ((Node) getMvpView()).onRemoveNode(node);
-        }
-    }
-
-    @Override
-    public void onRedisCacheRefresh() {
-        HashMap<String, RedisCaches> redisCachesMap;
-        try {
-            redisCachesMap = azureMvpModel.getRedisCaches();
-        } catch (IOException e) {
-            getMvpView().onErrorWithException(CANNOT_GET_REDIS_ID, e);
-            return;
-        }
-        getMvpView().onRefreshNode(redisCachesMap);
+        getMvpView().removeDirectChildNode(node);
     }
 }
