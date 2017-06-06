@@ -355,7 +355,7 @@ public class Node extends MvpView {
         Node.node2Actions = node2Actions;
     }
 
-    public void onRemoveNode(String sid, String id, Node node) { }
+    public void removeNode(String sid, String id, Node node) { }
     
     public Node createNode(Node parent, String sid, NodeContent content) {
         return new Node(content.getId(), content.getName());

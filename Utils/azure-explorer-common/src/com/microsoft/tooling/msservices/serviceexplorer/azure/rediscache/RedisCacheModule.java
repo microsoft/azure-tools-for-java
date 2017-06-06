@@ -56,7 +56,7 @@ public class RedisCacheModule extends AzureRefreshableNode {
     }
     
     @Override
-    public void onRemoveNode(String sid, String id, Node node) {
-    	redisCachePresenter.onNodeDelete(sid, id, node);
+    public void removeNode(String sid, String id, Node node) {
+        redisCachePresenter.onNodeDelete(sid, id, node);
     }
 }

@@ -64,7 +64,7 @@ import java.util.stream.Stream;
 })
 
 public class AzureMvpModelHelperTest {
-	
+    
     private AzureMvpModelHelper azureMvpModelHelper = null;
     
     @Mock
@@ -84,11 +84,11 @@ public class AzureMvpModelHelperTest {
     
     private class MockedPagedList<RedisCache> extends PagedList<RedisCache> {
 
-		@Override
-		public Page<RedisCache> nextPage(String nextPageLink) throws RestException, IOException {
-			return null;
-		}
-	}
+        @Override
+        public Page<RedisCache> nextPage(String nextPageLink) throws RestException, IOException {
+            return null;
+        }
+    }
     
     private static final String MOCK_SUBSCRIPTION = "00000000-0000-0000-0000-000000000000";
     private static final String MOCK_REDIS_ID = "test-id";

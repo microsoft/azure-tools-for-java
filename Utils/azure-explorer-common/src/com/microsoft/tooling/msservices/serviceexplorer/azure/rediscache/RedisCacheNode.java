@@ -83,7 +83,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
 
         @Override
         protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-        	RedisCacheNode.this.getParent().onRemoveNode(subscriptionId, RedisCacheNode.this.id, RedisCacheNode.this);
+            RedisCacheNode.this.getParent().removeNode(subscriptionId, RedisCacheNode.this.id, RedisCacheNode.this);
         }
 
         @Override

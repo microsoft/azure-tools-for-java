@@ -154,7 +154,7 @@ public abstract class RefreshableNode extends Node {
         return future;
     }
     
-    public void onRefreshNode(HashMap<String, ArrayList<NodeContent>> nodeMap) {
+    public void showNode(HashMap<String, ArrayList<NodeContent>> nodeMap) {
         for (String sid: nodeMap.keySet()) {
             for (NodeContent content: nodeMap.get(sid)) {
                 addChildNode(createNode(this, sid, content));

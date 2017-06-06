@@ -33,7 +33,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 public class RedisCacheModulePresenter<V extends RedisCacheModule> extends MvpPresenter<V> {
     
-	private static final String CANNOT_GET_SUBCROPTION_ID = "Cannot get Subscription ID.";
+    private static final String CANNOT_GET_SUBCROPTION_ID = "Cannot get Subscription ID.";
     private static final String CANNOT_GET_REDIS_ID = "Cannot get Redis Cache's ID.";
     private static final String CANNOT_DELETE_REDIS = "Cannot delete Redis Cache.";
     
@@ -47,7 +47,7 @@ public class RedisCacheModulePresenter<V extends RedisCacheModule> extends MvpPr
             getMvpView().onErrorWithException(CANNOT_GET_REDIS_ID, e);
             return;
         }
-        getMvpView().onRefreshNode(redisCachesMap);
+        getMvpView().showNode(redisCachesMap);
     }
     
     public void onNodeDelete(String sid, String id, Node node) {
