@@ -98,7 +98,14 @@ public class CreateProjectUtil {
 			AppInsightsClient.create(Messages.SparkProjectSystemScalaSampleCreation, null);
 			copyFileTo(Scala_Cluster_Run_Sample, rootPath);
 			break;
+		case "com.microsoft.azure.hdinsight.scala.projwizard":
+			AppInsightsClient.create(Messages.SparkProjectSystemScalaCreation, null);
+			break;
+		case "com.microsoft.azure.hdinsight.java.projwizard":
+			AppInsightsClient.create(Messages.SparkProjectSystemJavaCreation, null);
+			break;
 		default:
+			AppInsightsClient.create(Messages.SparkProjectSystemOtherCreation, null);
 			break;
 		}
 	}

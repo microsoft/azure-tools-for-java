@@ -33,6 +33,7 @@ public class Messages extends NLS {
     public static String SparkProjectSystemJavaSampleCreation;
     public static String SparkProjectSystemScalaCreation;
     public static String SparkProjectSystemScalaSampleCreation;
+    public static String SparkProjectSystemOtherCreation;
 
 	public static String SparkSubmissionRightClickProject;
 	public static String SparkSubmissionButtonClickEvent;
