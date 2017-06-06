@@ -15,7 +15,7 @@ public class PremWithNewResGrpNonSsl extends ProcessorBaseImpl {
     @Override
     public ProcessingStrategy process() {
         Creatable<RedisCache> redisCacheDefinition = withDNSNameAndRegionDefinition()
-                .withExistingResourceGroup(this.ResourceGroupName())
+                .withNewResourceGroup(this.ResourceGroupName())
                 .withPremiumSku(this.Capacity())
                 .withNonSslPort();
         this.RedisCachesInstance().create(redisCacheDefinition);
