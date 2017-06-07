@@ -32,6 +32,7 @@ import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
@@ -252,9 +253,15 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void openView(String sid, String id) {
         try {
-            RedisPropertyView view = (RedisPropertyView) PlatformUI
-               .getWorkbench().getActiveWorkbenchWindow()
-               .getActivePage().showView(RedisPropertyView.ID);
+            IWorkbenchWindow activeWorkbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+            if (activeWorkbenchWindow == null) {
+                return;
+            }
+            IWorkbenchPage page = activeWorkbenchWindow.getActivePage();
+            if (page == null) {
+                return;
+            }
+            RedisPropertyView view = (RedisPropertyView) page.showView(RedisPropertyView.ID);
             Display.getDefault().asyncExec(new Runnable() {
                 @Override
                 public void run() {

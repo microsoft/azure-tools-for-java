@@ -190,4 +190,41 @@ public class AzureMvpModelHelperTest {
         azureMvpModelHelper.deleteRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
         verify(redisCachesMock, times(0)).deleteById(MOCK_REDIS_ID);
     }
+    
+    @Test
+    public void testGetRedisCache() throws IOException {
+        when(authMethodManagerMock.getAzureManager()).thenReturn(azureManagerMock);
+        when(azureManagerMock.getAzure(anyString())).thenReturn(azureMock);
+        when(azureMock.redisCaches()).thenReturn(redisCachesMock);
+        
+        azureMvpModelHelper.getRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
+        verify(redisCachesMock, times(1)).getById(MOCK_REDIS_ID);
+    }
+    
+    @Test
+    public void testGetRedisCacheWhenAzureManagerIsNull() throws IOException {
+        when(authMethodManagerMock.getAzureManager()).thenReturn(null);
+        
+        azureMvpModelHelper.getRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
+        verify(redisCachesMock, times(0)).getById(MOCK_REDIS_ID);
+    }
+    
+    @Test
+    public void testGetRedisCacheWhenAzureIsNull() throws IOException {
+        when(authMethodManagerMock.getAzureManager()).thenReturn(azureManagerMock);
+        when(azureManagerMock.getAzure(anyString())).thenReturn(null);
+        
+        azureMvpModelHelper.getRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
+        verify(redisCachesMock, times(0)).getById(MOCK_REDIS_ID);
+    }
+    
+    @Test
+    public void testGetRedisCacheWhenRedisCacheIsNull() throws IOException {
+        when(authMethodManagerMock.getAzureManager()).thenReturn(azureManagerMock);
+        when(azureManagerMock.getAzure(anyString())).thenReturn(azureMock);
+        when(azureMock.redisCaches()).thenReturn(null);
+        
+        azureMvpModelHelper.getRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
+        verify(redisCachesMock, times(0)).getById(MOCK_REDIS_ID);
+    }
 }

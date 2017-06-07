@@ -46,6 +46,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
             + "\nAre you sure you want to continue?";
     private static final String DELETE_CONFIRM_TITLE = "Deleting Redis Cache";
     private static final String DELETE_ACTION_NAME = "Delete";
+    private static final String SHOW_PROPERTY_ACTION = "Show properties";
 
     private static final String CREATING_STATE = "Creating";
     private static final String CREATING_REDIS_NAME_FORMAT = "%s(%s...)";
@@ -101,7 +102,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     protected void loadActions() {
         if (!CREATING_STATE.equals(this.provisionState)) {
             addAction(DELETE_ACTION_NAME, null, new DeleteRedisCacheAction());
-            addAction("Show properties", null, new ShowRedisCachePropertyAction());
+            addAction(SHOW_PROPERTY_ACTION, null, new ShowRedisCachePropertyAction());
         }
         super.loadActions();
     }

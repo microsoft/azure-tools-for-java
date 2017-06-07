@@ -64,6 +64,7 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
     private static final String LABEL_SECONDARY_KEY = "Secondary Key";
     private static final String LOADING = "<Loading...>";
     private static final String COPY_TO_CLIPBOARD = "<a>Copy to Clipboard</a>";
+    private static final String COPY_FAIL = "Cannot copy to system clipboard.";
     
     private final RedisPropertyViewPresenter<RedisPropertyView> redisPropertyViewPresenter;
     
@@ -222,7 +223,12 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
     
     private void copyToSystemClipboard(String key) {
         StringSelection stringSelection = new StringSelection(key);
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Toolkit toolKit = Toolkit.getDefaultToolkit();
+        if (toolKit == null) {
+            onError(COPY_FAIL);
+            return;
+        }
+        Clipboard clipboard = toolKit.getSystemClipboard();
         clipboard.setContents(stringSelection, null);
     }
 }

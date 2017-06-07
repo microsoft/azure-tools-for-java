@@ -54,6 +54,9 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
             getMvpView().onError(CANNOT_GET_REDIS_ID);
             return;
         }
+        if (!(getMvpView() instanceof RedisPropertyMvpView)) {
+            return;
+        }
         RedisCache redis = null;
         try {
             redis = azureMvpModelHelper.getRedisCache(sid, id);
@@ -68,9 +71,6 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
         RedisCacheProperty property = new RedisCacheProperty(redis.name(), redis.type(), redis.resourceGroupName(),
                 redis.regionName(), sid, redis.redisVersion(), redis.sslPort(), redis.nonSslPort(),
                 redis.keys().primaryKey(), redis.keys().secondaryKey(), redis.hostName());
-        if (getMvpView() instanceof RedisPropertyMvpView) {
-            ((RedisPropertyMvpView) getMvpView()).showProperty(property);
-        }
-
+        ((RedisPropertyMvpView) getMvpView()).showProperty(property);
     }
 }
