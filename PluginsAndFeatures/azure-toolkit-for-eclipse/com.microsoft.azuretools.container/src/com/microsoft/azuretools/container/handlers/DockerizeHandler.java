@@ -40,8 +40,8 @@ public class DockerizeHandler extends AzureAbstractHandler {
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
+        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
         try {
-            IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
             IProject project = PluginUtil.getSelectedProject();
             IFolder folder = project.getFolder(Constant.DOCKER_CONTEXT_FOLDER);
             if(!folder.exists()) folder.create(true, true, null);
