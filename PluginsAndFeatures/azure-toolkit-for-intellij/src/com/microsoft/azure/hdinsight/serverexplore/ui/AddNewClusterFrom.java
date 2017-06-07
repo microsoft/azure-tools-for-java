@@ -33,6 +33,8 @@ import com.microsoft.azure.hdinsight.serverexplore.AddHDInsightAdditionalCluster
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -103,6 +105,8 @@ public class AddNewClusterFrom extends DialogWrapper {
                     storageKey = storageKeyTextField.getText().trim();
 
                     password = String.valueOf(passwordField.getPassword());
+
+                    AppInsightsClient.create(HDInsightBundle.message("HDInsightAddNewClusterAction"), null);
 
                     if (StringHelper.isNullOrWhiteSpace(clusterNameOrUrl) || StringHelper.isNullOrWhiteSpace(storageName) || StringHelper.isNullOrWhiteSpace(storageKey) || StringHelper.isNullOrWhiteSpace(userName) || StringHelper.isNullOrWhiteSpace(password)) {
                         errorMessage = "Cluster Name, Storage Key, User Name, or Password shouldn't be empty";

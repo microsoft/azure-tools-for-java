@@ -58,7 +58,7 @@ public class JobViewEditor implements FileEditor {
         myVirtualFile = file;
         uuid = file.getUserData(JobViewEditorProvider.JOB_VIEW_UUID);
         myComponent = new JobViewPanel(PluginUtil.getPluginRootDirectory(), uuid);
-
+        AppInsightsClient.create(HDInsightBundle.message("HDInsightSparkJobview"), null);
     }
 
     @NotNull
@@ -140,7 +140,7 @@ public class JobViewEditor implements FileEditor {
 
     @Override
     public void dispose() {
-        AppInsightsClient.create(HDInsightBundle.message("HDInsight.SParkJobView.Close"), null);
+        AppInsightsClient.create(HDInsightBundle.message("HDInsightSparkJobView.Close"), null);
     }
 
     @Nullable

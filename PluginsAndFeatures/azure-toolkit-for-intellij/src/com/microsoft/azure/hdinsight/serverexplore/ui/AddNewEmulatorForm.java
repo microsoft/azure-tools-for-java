@@ -15,6 +15,8 @@ import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -186,6 +188,7 @@ public class AddNewEmulatorForm extends DialogWrapper {
         sparkHistoryEndpoint = sparkHistoryEndpointField.getText().trim().replaceAll("/+$","");
         ambariEndpoint = ambariEndpointField.getText().trim().replaceAll("/+$","");
 
+        AppInsightsClient.create(HDInsightBundle.message("HDInsightCreateLocalEmulator"), null);
         try {
             host = new URI(sshEndpoint).getHost();
             sshPort = new URI(sshEndpoint).getPort();

@@ -38,6 +38,7 @@ import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootMo
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 
 public class AddNewEmulatorForm extends AzureTitleAreaDialogWrapper {
 
@@ -285,6 +286,7 @@ public class AddNewEmulatorForm extends AzureTitleAreaDialogWrapper {
 		sparkHistoryEndpoint = sparkHistoryEndpointField.getText().trim().replaceAll("/+$", "");
 		ambariEndpoint = ambariEndpointField.getText().trim().replaceAll("/+$", "");
 
+		AppInsightsClient.create(Messages.HDInsightCreateLocalEmulator, null);
 		try {
 			host = new URI(sshEndpoint).getHost();
 			sshPort = new URI(sshEndpoint).getPort();

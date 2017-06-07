@@ -1,5 +1,7 @@
 package com.microsoft.azuretools.azureexplorer.forms;
 
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -135,6 +137,8 @@ public class AddNewClusterForm extends AzureTitleAreaDialogWrapper {
     	synchronized (AddNewClusterForm.class) {
             isCarryOnNextStep = true;
             setErrorMessage(null);
+
+            AppInsightsClient.create(Messages.HDInsightAddNewClusterAction, null);
 
             String clusterNameOrUrl = clusterNameField.getText().trim();
             userName = userNameField.getText().trim();
