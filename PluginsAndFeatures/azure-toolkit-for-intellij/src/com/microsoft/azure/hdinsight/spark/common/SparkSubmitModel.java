@@ -190,6 +190,14 @@ public class SparkSubmitModel {
                         @Override
                         public void finished(boolean aborted, int errors, int warnings, CompileContext compileContext) {
                             if (aborted || errors != 0) {
+                                String errorMessage = StringUtils.join(
+                                        compileContext.getMessages(CompilerMessageCategory.ERROR),
+                                        "\\n");
+
+                                postEventProperty.put("IsSubmitSucceed", "false");
+                                postEventProperty.put("SubmitFailedReason", errorMessage.substring(0, 50));
+                                AppInsightsClient.create(HDInsightBundle.message("SparkProjectCompileFailed"), null, postEventProperty);
+
                                 showCompilerErrorMessage(compileContext);
                                 HDInsightUtil.getJobStatusManager(project).setJobRunningState(false);
                             } else {
@@ -269,10 +277,6 @@ public class SparkSubmitModel {
     }
 
     private void showCompilerErrorMessage(@NotNull CompileContext compileContext) {
-        postEventProperty.put("IsSubmitSucceed", "false");
-        postEventProperty.put("SubmitFailedReason", "CompileFailed");
-        AppInsightsClient.create(HDInsightBundle.message("SparkProjectCompileFailed"), null, postEventProperty);
-
         CompilerMessage[] errorMessages= compileContext.getMessages(CompilerMessageCategory.ERROR);
         for(CompilerMessage message : errorMessages) {
             HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, message.toString());
