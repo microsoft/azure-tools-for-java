@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+  <extension point="org.eclipse.ui.commands">
+    <command id="com.microsoft.azuretools.container.commands.dockerize" name="Add Docker Support" categoryId="com.microsoft.ui.dropdown.category" icon="icons/Container_16.png"></command>
+    <command id="com.microsoft.azuretools.container.commands.dockerrun" name="Docker Run" categoryId="com.microsoft.ui.dropdown.category" icon="icons/Container_16.png"></command>
+  </extension>
+  <extension point="org.eclipse.ui.handlers">
+    <handler commandId="com.microsoft.azuretools.container.commands.dockerize" class="com.microsoft.azuretools.container.handlers.DockerizeHandler"></handler>
+    <handler commandId="com.microsoft.azuretools.container.commands.dockerrun" class="com.microsoft.azuretools.container.handlers.DockerRunHandler"></handler>
+  </extension>
+  <extension point="org.eclipse.ui.menus">
+    <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+      <menu label="Azure" id="com.microsoft.azuretools.webprojmenu" icon="icons/windowsAzure.png">
+        <command name="dockerize" commandId="com.microsoft.azuretools.container.commands.dockerize">
+          <visibleWhen checkEnabled="false">
+            <not>
+              <reference definitionId="when.is.dockerized"/>
+            </not>
+          </visibleWhen>
+        </command>
+        <command name="dockerrun" commandId="com.microsoft.azuretools.container.commands.dockerrun">
+          <visibleWhen checkEnabled="false">
+            <reference definitionId="when.is.dockerized"/>
+          </visibleWhen>
+        </command>
+      </menu>
+    </menuContribution>
+    <menuContribution locationURI="menu:com.microsoft.ui.dropdown.toolbar.command">
+      <command commandId="com.microsoft.azuretools.container.commands.dockerize" style="push">
+        <visibleWhen checkEnabled="false">
+          <not>
+            <reference definitionId="when.is.dockerized"/>
+          </not>
+        </visibleWhen>
+      </command>
+      <command commandId="com.microsoft.azuretools.container.commands.dockerrun" style="push">
+        <visibleWhen checkEnabled="false">
+          <reference definitionId="when.is.dockerized"/>
+        </visibleWhen>
+      </command>
+    </menuContribution>
+  </extension>
+  <extension point="org.eclipse.ui.commandImages">
+    <image commandId="com.microsoft.azuretools.container.commands.dockerize" icon="icons/Container_16.png"/>
+    <image commandId="com.microsoft.azuretools.container.commands.dockerrun" icon="icons/Container_16.png"/>
+  </extension>
+  <extension point="org.eclipse.core.expressions.definitions">
+    <definition id="when.is.dockerized">
+      <test property="com.microsoft.azuretools.container.testers.isDockerized" forcePluginActivation="true"></test>
+    </definition>
+  </extension>
+  <extension point="org.eclipse.core.expressions.propertyTesters">
+    <propertyTester class="com.microsoft.azuretools.container.testers.DockerizedTester" id="com.microsoft.azuretools.container.testers.DockerizedTester" namespace="com.microsoft.azuretools.container.testers" properties="isDockerized" type="java.lang.Object"></propertyTester>
+  </extension>
+</plugin>
