@@ -14,6 +14,12 @@
     </properties>
     <build>
         <sourceDirectory>src</sourceDirectory>
+        <testSourceDirectory>test/java</testSourceDirectory>
+        <testResources>
+            <testResource>
+                <directory>test/resources</directory>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -89,5 +95,32 @@
             <artifactId>applicationinsights-management</artifactId>
             <version>1.0.3</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock</artifactId>
+            <scope>test</scope>
+        </dependency>
+                <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>1.7.0RC4</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+             <groupId>org.powermock</groupId>
+             <artifactId>powermock-api-mockito2</artifactId>
+             <version>1.7.0RC4</version>
+             <scope>test</scope>
+         </dependency>
     </dependencies>
 </project>
