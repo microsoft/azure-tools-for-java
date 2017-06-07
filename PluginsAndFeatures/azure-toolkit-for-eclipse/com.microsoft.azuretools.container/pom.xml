@@ -44,7 +44,6 @@
             </goals>
             <configuration>
               <outputDirectory>${project.build.directory}/lib</outputDirectory>
-              <!--<includeGroupIds>com.spotify,org.apache,org.slf4j,org.glassfish,javax.annotation,javax.ws.rs,com.fasterxml.jackson,com.github.jnr,org.ow2.asm,org.bouncycastle</includeGroupIds>-->
               <artifactItems>
                 <artifactItem>
                   <groupId>com.spotify</groupId>
@@ -60,7 +59,6 @@
                   <artifactId>commons-compress</artifactId>
                 </artifactItem>
               </artifactItems>
-              <!--<stripVersion>true</stripVersion>-->
             </configuration>
           </execution>
         </executions>
