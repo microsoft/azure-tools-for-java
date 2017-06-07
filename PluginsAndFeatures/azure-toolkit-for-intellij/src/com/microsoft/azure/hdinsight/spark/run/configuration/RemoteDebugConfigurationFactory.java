@@ -26,6 +26,7 @@ import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunConfigurationModule;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 public class RemoteDebugConfigurationFactory extends ConfigurationFactory{
@@ -47,6 +48,7 @@ public class RemoteDebugConfigurationFactory extends ConfigurationFactory{
                 project,
                 this,
                 new RunConfigurationModule(project),
+                ClusterManagerEx.getInstance(),
                 NAME);
     }
 }

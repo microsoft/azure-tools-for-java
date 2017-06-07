@@ -31,6 +31,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobSubmissionState;
@@ -56,11 +57,17 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
     private static final String SUBMISSION_ATTRIBUTE_CLASSNAME = "classname";
 
     private SparkSubmitModel submitModel;
+    private ClusterManagerEx clusterManagerEx;
 
-    public RemoteDebugRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, @NotNull RunConfigurationModule configurationModule, String name) {
+    public RemoteDebugRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, @NotNull RunConfigurationModule configurationModule, ClusterManagerEx clusterManagerEx, String name) {
         super(name, configurationModule, factory);
 
         this.submitModel = new SparkSubmitModel(project);
+        this.clusterManagerEx =clusterManagerEx;
+    }
+
+    protected ClusterManagerEx getClusterManagerEx() {
+        return clusterManagerEx;
     }
 
     @Override
@@ -133,7 +140,7 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
     @NotNull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new RemoteDebugSettingsEditor(this);
+        return new RemoteDebugSettingsEditor(this, getClusterManagerEx());
     }
 
     @Override

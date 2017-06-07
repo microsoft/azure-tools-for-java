@@ -61,15 +61,17 @@ import java.util.Map;
 import java.util.Properties;
 
 public class SparkSubmissionContentPanel extends JPanel{
-    public SparkSubmissionContentPanel(@NotNull Project project, @Nullable CallBack updateCallBack){
+    public SparkSubmissionContentPanel(@NotNull Project project, @Nullable ClusterManagerEx clusterManagerEx, @Nullable CallBack updateCallBack){
         this.submitModel = new SparkSubmitModel(project);
+        this.clusterManagerEx = clusterManagerEx;
         this.updateCallBack = updateCallBack;
 
         initialize();
     }
 
-    public SparkSubmissionContentPanel(SparkSubmitModel submitModel, @Nullable CallBack updateCallBack){
+    public SparkSubmissionContentPanel(SparkSubmitModel submitModel, @Nullable ClusterManagerEx clusterManagerEx,@Nullable CallBack updateCallBack){
         this.submitModel = submitModel;
+        this.clusterManagerEx = clusterManagerEx;
         this.updateCallBack = updateCallBack;
 
         initialize();
@@ -127,6 +129,7 @@ public class SparkSubmissionContentPanel extends JPanel{
     public int displayLayoutCurrentRow = 0;
 
     private CallBack updateCallBack;
+    private ClusterManagerEx clusterManagerEx;
 
     public SparkSubmitModel getSubmitModel() {
         return submitModel;
@@ -154,6 +157,10 @@ public class SparkSubmissionContentPanel extends JPanel{
         initializeModel();
         updateTableColumn();
         loadParameter();
+    }
+
+    protected ClusterManagerEx getClusterManagerEx() {
+        return clusterManagerEx;
     }
 
     private enum ErrorMessageLabelTag {
@@ -213,17 +220,17 @@ public class SparkSubmissionContentPanel extends JPanel{
             Project project = submitModel.getProject();
 
             HDInsightUtil.showInfoOnSubmissionMessageWindow(submitModel.getProject(), "List spark clusters ...", true);
-            List<IClusterDetail> cachedClusters = ClusterManagerEx.getInstance().getClusterDetailsWithoutAsync(true, submitModel.getProject());
+            List<IClusterDetail> cachedClusters = getClusterManagerEx().getClusterDetailsWithoutAsync(true, submitModel.getProject());
 
-            if (!ClusterManagerEx.getInstance().isSelectedSubscriptionExist()) {
+            if (!getClusterManagerEx().isSelectedSubscriptionExist()) {
                 HDInsightUtil.showWarningMessageOnSubmissionMessageWindow(project, "No selected subscription(s), Please go to HDInsight Explorer to sign in....");
             }
-            if (ClusterManagerEx.getInstance().isListClusterSuccess()) {
+            if (getClusterManagerEx().isListClusterSuccess()) {
                 HDInsightUtil.showInfoOnSubmissionMessageWindow(project, "List spark clusters successfully");
             } else {
                 HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, "Error : Failed to list spark clusters.");
             }
-            if (ClusterManagerEx.getInstance().isLIstAdditionalClusterSuccess()) {
+            if (getClusterManagerEx().isLIstAdditionalClusterSuccess()) {
                 HDInsightUtil.showInfoOnSubmissionMessageWindow(project, "List additional spark clusters successfully");
             } else {
                 HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, "Error: Failed to list additional cluster");
@@ -276,7 +283,7 @@ public class SparkSubmissionContentPanel extends JPanel{
             public void actionPerformed(ActionEvent e) {
                 Cursor cursor = getCursor();
                 setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                List<IClusterDetail> clusterDetails = ClusterManagerEx.getInstance().getClusterDetails(submitModel.getProject());
+                List<IClusterDetail> clusterDetails = getClusterManagerEx().getClusterDetails(submitModel.getProject());
                 setCursor(cursor);
                 submitModel.setClusterComboBoxModel(clusterDetails);
             }

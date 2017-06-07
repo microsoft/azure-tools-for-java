@@ -53,12 +53,10 @@ public class SubmitAction extends AnAction {
             isActionPerformedSet.add(project);
             AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionRightClickProject"), null);
 
-            SparkSubmissionExDialog dialog = new SparkSubmissionExDialog(anActionEvent.getProject(), new CallBack() {
-                @Override
-                public void run() {
-                    isActionPerformedSet.remove(anActionEvent.getProject());
-                }
-            });
+            SparkSubmissionExDialog dialog = new SparkSubmissionExDialog(
+                    anActionEvent.getProject(),
+                    ClusterManagerEx.getInstance(),
+                    (CallBack) () -> isActionPerformedSet.remove(anActionEvent.getProject()));
 
             dialog.setVisible(true);
         }

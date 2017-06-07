@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.spark.run.configuration;
 
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
@@ -37,9 +38,10 @@ public class RemoteDebugSettingsEditor extends SettingsEditor<RemoteDebugRunConf
         return runConfiguration;
     }
 
-    public RemoteDebugSettingsEditor(final RemoteDebugRunConfiguration runConfiguration){
+    public RemoteDebugSettingsEditor(final RemoteDebugRunConfiguration runConfiguration, ClusterManagerEx clusterManagerEx){
         submissionPanel = new SparkSubmissionContentPanel(
                 runConfiguration.getSubmitModel(),
+                clusterManagerEx,
                 () -> {
                     // TODO Add logic to resize the window and enable/disable button
                 });

@@ -175,6 +175,8 @@ public class HDInsightUtil {
             processor.clearAll();
         }
 
-        toolWindowMessageSubject.onNext(new SimpleImmutableEntry<>(type, message));
+        if (toolWindowMessageSubject != null) {
+            toolWindowMessageSubject.onNext(new SimpleImmutableEntry<>(type, message));
+        }
     }
 }

@@ -23,6 +23,7 @@ package com.microsoft.azure.hdinsight.spark.ui;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.CallBack;
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitHelper;
@@ -38,6 +39,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.URI;
 
+import static com.microsoft.azure.hdinsight.common.StreamUtil.getImageResourceFile;
+
 public class SparkSubmissionExDialog extends JDialog {
     private SparkSubmissionContentPanel contentPane;
 
@@ -48,10 +51,12 @@ public class SparkSubmissionExDialog extends JDialog {
 
     private Project project;
     private SparkSubmitModel submitModel;
+    private ClusterManagerEx clusterManagerEx;
     private CallBack callBack;
 
-    public SparkSubmissionExDialog(@NotNull Project project, @Nullable CallBack callBack) {
+    public SparkSubmissionExDialog(@NotNull Project project, @Nullable ClusterManagerEx clusterManagerEx, @Nullable CallBack callBack) {
         this.project = project;
+        this.clusterManagerEx = clusterManagerEx;
         this.callBack = callBack;
         submitModel = new SparkSubmitModel(project);
 
@@ -60,17 +65,36 @@ public class SparkSubmissionExDialog extends JDialog {
         this.pack();
     }
 
+    public SparkSubmissionExDialog(@NotNull SparkSubmitModel submitModel, @Nullable ClusterManagerEx clusterManagerEx, @Nullable CallBack callBack) {
+        this.project = submitModel.getProject();
+        this.clusterManagerEx = clusterManagerEx;
+        this.callBack = callBack;
+        this.submitModel = submitModel;
+
+        initializeComponents();
+        setSubmitButtonStatus();
+        this.pack();
+    }
+
+    public ClusterManagerEx getClusterManagerEx() {
+        return clusterManagerEx;
+    }
+
     //region UI Constructor
     private void initializeComponents() {
-        Image image = StreamUtil.getImageResourceFile(CommonConst.ProductIConPath).getImage();
-        setIconImage(image);
+        ImageIcon icon = StreamUtil.getImageResourceFile(CommonConst.ProductIConPath);
+        if (icon != null) {
+            Image image = icon.getImage();
+            setIconImage(image);
+        }
 
-        contentPane = new SparkSubmissionContentPanel(submitModel, new CallBack(){
-            public void run() {
-                setSubmitButtonStatus();
-                pack();
-            }
-        });
+        contentPane = new SparkSubmissionContentPanel(
+                submitModel,
+                getClusterManagerEx(),
+                () -> {
+                    setSubmitButtonStatus();
+                    pack();
+                });
         setContentPane(contentPane);
 
         setModal(true);

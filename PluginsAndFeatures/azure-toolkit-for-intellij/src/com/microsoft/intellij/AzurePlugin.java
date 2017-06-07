@@ -22,6 +22,7 @@
 package com.microsoft.intellij;
 
 import com.intellij.ide.plugins.cl.PluginClassLoader;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -107,8 +108,11 @@ public class AzurePlugin extends AbstractProjectComponent {
         if (!IS_ANDROID_STUDIO) {
             LOG.info("Starting Azure Plugin");
             try {
-                //this code is for copying componentset.xml in plugins folder
-                copyPluginComponents();
+                if (!ApplicationManager.getApplication().isUnitTestMode()) {
+                    //this code is for copying componentset.xml in plugins folder
+                    copyPluginComponents();
+                }
+
                 initializeTelemetry();
                 clearTempDirectory();
                 loadWebappsSettings();

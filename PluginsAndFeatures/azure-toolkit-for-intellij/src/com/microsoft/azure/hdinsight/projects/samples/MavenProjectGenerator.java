@@ -33,7 +33,7 @@ import com.microsoft.azure.hdinsight.projects.SparkVersion;
 import com.intellij.openapi.util.io.FileUtil;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
+//import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -140,12 +140,12 @@ public class MavenProjectGenerator {
     private void importMavenProject() throws ConfigurationException {
         Project project = this.module.getProject();
         String baseDirPath = project.getBasePath();
-        MavenProjectsManager manager = MavenProjectsManager.getInstance(project);
+        //MavenProjectsManager manager = MavenProjectsManager.getInstance(project);
 
         File pomFile = new File(baseDirPath + File.separator + "pom.xml");
         VirtualFile pom = VfsUtil.findFileByIoFile(pomFile, true);
 
-        manager.addManagedFiles(Collections.singletonList(pom));
-        manager.scheduleImportAndResolve();
+        //manager.addManagedFiles(Collections.singletonList(pom));
+        //manager.scheduleImportAndResolve();
     }
 }
