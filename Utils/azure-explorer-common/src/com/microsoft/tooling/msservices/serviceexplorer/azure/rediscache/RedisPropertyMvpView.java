@@ -20,52 +20,13 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.azurecommons.mvp.ui.base;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
-public class NodeContent {
-    /**
-     * Basic information for the node.
-     * 
-     * @param id
-     *            resource id
-     * @param name
-     *            resource name
-     * @param provisionState
-     *            resource provision state
-     */
-    public NodeContent(String id, String name, String provisionState) {
-        this.id = id;
-        this.name = name;
-        this.provisionState = provisionState;
-    }
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
 
-    private String id;
+public interface RedisPropertyMvpView extends MvpView {
+    
+    void getProperty(String sid, String id);
 
-    private String name;
-
-    private String provisionState;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getProvisionState() {
-        return provisionState;
-    }
-
-    public void setProvisionState(String provisionState) {
-        this.provisionState = provisionState;
-    }
+    void showProperty(RedisCacheProperty property);
 }

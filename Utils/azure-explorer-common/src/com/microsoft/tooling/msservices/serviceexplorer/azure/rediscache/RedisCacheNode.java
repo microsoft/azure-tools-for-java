@@ -26,8 +26,10 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.mvp.ui.base.NodeContent;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
@@ -71,7 +73,13 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         loadActions();
     }
 
-    // TODO: add properties action
+    public class ShowRedisCachePropertyAction extends NodeActionListener {
+        
+        @Override
+        protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+            DefaultLoader.getUIHelper().openView(RedisCacheNode.this.subscriptionId, RedisCacheNode.this.id);
+        }
+    }
 
     public class DeleteRedisCacheAction extends AzureNodeActionPromptListener {
         public DeleteRedisCacheAction() {
@@ -93,6 +101,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     protected void loadActions() {
         if (!CREATING_STATE.equals(this.provisionState)) {
             addAction(DELETE_ACTION_NAME, null, new DeleteRedisCacheAction());
+            addAction("Show properties", null, new ShowRedisCachePropertyAction());
         }
         super.loadActions();
     }

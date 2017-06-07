@@ -22,15 +22,16 @@
 
 package com.microsoft.azuretools.core.model;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Set;
-
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.redis.RedisCaches;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Set;
 
 public class AzureMvpModelHelper {
     
@@ -68,6 +69,23 @@ public class AzureMvpModelHelper {
             redisCacheMaps.put(sid, azure.redisCaches());
         }
         return redisCacheMaps;
+    }
+    
+    public RedisCache getRedisCache(String sid, String id) throws IOException {
+        RedisCache redisCache = null;
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null) {
+            return redisCache;
+        }
+        Azure azure = azureManager.getAzure(sid);
+        if (azure == null) {
+            return redisCache;
+        }
+        RedisCaches redisCaches = azure.redisCaches();
+        if (redisCaches == null) {
+            return redisCache;
+        }
+        return redisCaches.getById(id);
     }
     
     /**

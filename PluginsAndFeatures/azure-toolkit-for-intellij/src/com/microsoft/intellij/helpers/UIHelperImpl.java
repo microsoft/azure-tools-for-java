@@ -269,6 +269,11 @@ public class UIHelperImpl implements UIHelper {
         return DefaultLoader.getIdeHelper().getPropertyWithDefault("MSOpenSSLPath", "");
     }
 
+    @Override
+    public void openView(String sid, String id) {
+        //TODO: add openView
+    }
+
     @Nullable
     @Override
     public <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,

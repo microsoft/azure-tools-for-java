@@ -45,6 +45,7 @@ import com.microsoft.azuretools.azureexplorer.editors.QueueFileEditor;
 import com.microsoft.azuretools.azureexplorer.editors.StorageEditorInput;
 import com.microsoft.azuretools.azureexplorer.editors.TableFileEditor;
 import com.microsoft.azuretools.azureexplorer.forms.OpenSSLFinderForm;
+import com.microsoft.azuretools.azureexplorer.views.RedisPropertyView;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
@@ -246,6 +247,23 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public boolean isDarkTheme() {
         return false;
+    }
+    
+    @Override
+    public void openView(String sid, String id) {
+        try {
+            RedisPropertyView view = (RedisPropertyView) PlatformUI
+               .getWorkbench().getActiveWorkbenchWindow()
+               .getActivePage().showView(RedisPropertyView.ID);
+            Display.getDefault().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    view.getProperty(sid, id);
+                }
+            });
+        } catch (PartInitException e) {
+            Activator.getDefault().log("Error opening RedisPropertyView", e);
+        }
     }
     
     public static String readableFileSize(long size) {

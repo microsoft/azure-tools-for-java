@@ -1,0 +1,76 @@
+/**
+ * Copyright (c) Microsoft Corporation
+ * <p/>
+ * All rights reserved.
+ * <p/>
+ * MIT License
+ * <p/>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p/>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ * <p/>
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
+
+import com.microsoft.azure.management.redis.RedisCache;
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
+import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheProperty;
+
+import java.io.IOException;
+
+public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends MvpPresenter<V> {
+
+    private static final String CANNOT_GET_SUBCROPTION_ID = "Cannot get Subscription ID.";
+    private static final String CANNOT_GET_REDIS_ID = "Cannot get Redis Cache's ID.";
+    private static final String CANNOT_GET_REDIS_PROPERTY = "Cannot get Redis Cache's property.";
+
+    private final AzureMvpModelHelper azureMvpModelHelper = AzureMvpModelHelper.getInstance();
+
+    /**
+     * Called from view when the view needs to show the property.
+     * 
+     * @param sid
+     *            Subscription Id
+     * @param id
+     *            Redis Cache's Id
+     */
+    public void onGetRedisProperty(String sid, String id) {
+        if (sid == null || sid.trim().isEmpty()) {
+            getMvpView().onError(CANNOT_GET_SUBCROPTION_ID);
+            return;
+        }
+        if (id == null || id.trim().isEmpty()) {
+            getMvpView().onError(CANNOT_GET_REDIS_ID);
+            return;
+        }
+        RedisCache redis = null;
+        try {
+            redis = azureMvpModelHelper.getRedisCache(sid, id);
+        } catch (IOException e) {
+            getMvpView().onErrorWithException(CANNOT_GET_REDIS_PROPERTY, e);
+            return;
+        }
+        if (redis == null) {
+            getMvpView().onError(CANNOT_GET_REDIS_PROPERTY);
+            return;
+        }
+        RedisCacheProperty property = new RedisCacheProperty(redis.name(), redis.type(), redis.resourceGroupName(),
+                redis.regionName(), sid, redis.redisVersion(), redis.sslPort(), redis.nonSslPort(),
+                redis.keys().primaryKey(), redis.keys().secondaryKey(), redis.hostName());
+        if (getMvpView() instanceof RedisPropertyMvpView) {
+            ((RedisPropertyMvpView) getMvpView()).showProperty(property);
+        }
+
+    }
+}

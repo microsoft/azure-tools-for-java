@@ -27,6 +27,11 @@
                id="com.microsoft.azuretools.azureexplorer.views.ServiceExplorerView"
                restorable="true">
        </view>
+       <view
+             class="com.microsoft.azuretools.azureexplorer.views.RedisPropertyView"
+             id="com.microsoft.azuretools.azureexplorer.views.RedisPropertyView"
+             name="Redis Cache Property">
+       </view>
    </extension>
    <extension
             point="org.eclipse.ui.editors">

@@ -60,6 +60,8 @@ public interface UIHelper {
     void refreshTable(@NotNull Object projectObject, @NotNull StorageAccount storageAccount, @NotNull Table table);
 
     String promptForOpenSSLPath();
+    
+    void openView(String sid, String id);
 
     @Nullable
     <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,

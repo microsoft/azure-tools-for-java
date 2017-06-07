@@ -24,13 +24,13 @@ package com.microsoft.azuretools.azurecommons.mvp.ui.base;
 
 import javax.swing.JOptionPane;
 
-public abstract class MvpView {
+public interface MvpView {
     
-    public void onError(String message) {
+    default void onError(String message) {
         JOptionPane.showMessageDialog(null, null, message, JOptionPane.ERROR_MESSAGE, null);
     }
     
-    public void onErrorWithException(String message, Exception ex) {
+    default void onErrorWithException(String message, Exception ex) {
         JOptionPane.showMessageDialog(null, ex.getMessage(), message, JOptionPane.ERROR_MESSAGE, null);
     }
 }
