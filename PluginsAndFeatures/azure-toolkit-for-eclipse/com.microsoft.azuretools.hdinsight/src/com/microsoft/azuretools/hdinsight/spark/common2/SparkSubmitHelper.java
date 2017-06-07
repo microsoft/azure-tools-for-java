@@ -179,6 +179,8 @@ public class SparkSubmitHelper {
 
             if (isFailedJob) {
                 postEventProperty.put("IsRunningSucceed", "false");
+                HttpResponse httpResponse = SparkBatchSubmission.getInstance().getBatchJobFullLog(clusterDetail.getConnectionUrl() + "/livy/batches", id);
+                postEventProperty.put("SubmitFailedReason", httpResponse.getMessage().substring(0, 50));
                 HDInsightUtil.getSparkSubmissionToolWindowView().setError("Error : Your submitted job run failed");
             } else {
                 postEventProperty.put("IsRunningSucceed", "true");
@@ -189,6 +191,8 @@ public class SparkSubmitHelper {
         } catch (Exception e) {
             if (HDInsightUtil.getSparkSubmissionToolWindowView().getJobStatusManager().isJobKilled() == false) {
                 HDInsightUtil.getSparkSubmissionToolWindowView().setError("Error : Failed to getting running log. Exception : " + e.toString());
+
+                postEventProperty.put("SubmitFailedReason", e.toString().substring(0, 50));
             } else {
                 postEventProperty.put("IsKilled", "true");
             }
