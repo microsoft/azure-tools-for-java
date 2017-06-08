@@ -27,6 +27,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -69,6 +70,7 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
     private final RedisPropertyViewPresenter<RedisPropertyView> redisPropertyViewPresenter;
     
     //widget
+    private ScrolledComposite scrolledComposite;
     private Composite container;
     private Text txtNameValue;
     private Text txtTypeValue;
@@ -97,7 +99,11 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
      */
     @Override
     public void createPartControl(Composite parent) {
-        container = new Composite(parent, SWT.NONE);
+        scrolledComposite = new ScrolledComposite(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);;
+        
+        container = new Composite(scrolledComposite, SWT.NONE);
         GridLayout gridLayoutContainer = new GridLayout(COLUMN_NUM, false);
         gridLayoutContainer.verticalSpacing = VERTICAL_SPACING;
         gridLayoutContainer.horizontalSpacing = HORIZONTAL_SPACING;
@@ -171,6 +177,8 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
         lnkSecondaryKey.setEnabled(false);
         lnkSecondaryKey.setText(COPY_TO_CLIPBOARD);
         
+        setScrolledCompositeContent();
+        
         // View cLose event
         parent.addDisposeListener(new DisposeListener() {
             @Override
@@ -219,6 +227,12 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
         lnkPrimaryKey.setEnabled(true);
         lnkSecondaryKey.setEnabled(true);
         container.layout();
+        setScrolledCompositeContent();
+    }
+
+    private void setScrolledCompositeContent() {
+        scrolledComposite.setContent(container);
+        scrolledComposite.setMinSize(container.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
     
     private void copyToSystemClipboard(String key) {
