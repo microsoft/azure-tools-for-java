@@ -20,6 +20,7 @@
 package com.microsoft.azuretools.azureexplorer.helpers;
 
 import java.io.File;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.Map;
 
@@ -60,6 +61,8 @@ public class UIHelperImpl implements UIHelper {
     private Map<Class<? extends StorageServiceTreeItem>, String> type2Editor = ImmutableMap.of(BlobContainer.class, "com.microsoft.azuretools.azureexplorer.editors.BlobExplorerFileEditor",
             Queue.class, "com.microsoft.azuretools.azureexplorer.editors.QueueFileEditor",
             Table.class, "com.microsoft.azuretools.azureexplorer.editors.TableFileEditor");
+    
+    private static final String UNABLE_TO_OPEN_BROWSER = "Unable to open external web browser";
 
     @Override
     public void showException(final String message,
@@ -270,6 +273,15 @@ public class UIHelperImpl implements UIHelper {
             });
         } catch (PartInitException e) {
             Activator.getDefault().log("Error opening RedisPropertyView", e);
+        }
+    }
+    
+    @Override
+    public void openInBrowser(String link) {
+        try {
+            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(link));
+        } catch (Exception e) {
+            showException(UNABLE_TO_OPEN_BROWSER, e, UNABLE_TO_OPEN_BROWSER, false, false);
         }
     }
     

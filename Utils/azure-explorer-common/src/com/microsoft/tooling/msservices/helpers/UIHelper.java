@@ -62,6 +62,8 @@ public interface UIHelper {
     String promptForOpenSSLPath();
     
     void openRedisPropertyView(String sid, String id);
+    
+    void openInBrowser(String link);
 
     @Nullable
     <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,

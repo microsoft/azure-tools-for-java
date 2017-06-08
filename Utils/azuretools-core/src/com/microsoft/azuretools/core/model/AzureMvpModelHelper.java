@@ -71,6 +71,13 @@ public class AzureMvpModelHelper {
         return redisCacheMaps;
     }
     
+    /**
+     * Get a Redis Cache by Id.
+     * @param sid Subscription Id
+     * @param id Redis cache's id
+     * @return Redis Cache Object
+     * @throws IOException getAzureManager Exception
+     */
     public RedisCache getRedisCache(String sid, String id) throws IOException {
         RedisCache redisCache = null;
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();

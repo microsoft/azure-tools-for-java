@@ -44,9 +44,11 @@ import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.*;
 
 import javax.swing.*;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.Map;
 
@@ -56,6 +58,8 @@ public class UIHelperImpl implements UIHelper {
     private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key = ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
             Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
             Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
+
+    private static final String UNABLE_TO_OPEN_BROWSER = "Unable to open external web browser";
 
     @Override
     public void showException(@NotNull final String message,
@@ -272,6 +276,15 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void openRedisPropertyView(String sid, String id) {
         //TODO: add openView
+    }
+
+    @Override
+    public void openInBrowser(String link) {
+        try {
+            Desktop.getDesktop().browse(URI.create(link));
+        } catch (Exception e) {
+            showException(UNABLE_TO_OPEN_BROWSER, e, UNABLE_TO_OPEN_BROWSER, false, false);
+        }
     }
 
     @Nullable

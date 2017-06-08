@@ -38,18 +38,20 @@ import java.util.Map;
 public class RedisCacheNode extends Node implements TelemetryProperties {
 
     private final String name;
-    private final String id;
+    private final String resourceId;
     private final String provisionState;
     private final String subscriptionId;
 
     private static final String DELETE_CONFIRM_DIALOG_FORMAT = "This operation will delete redis cache: %s."
             + "\nAre you sure you want to continue?";
     private static final String DELETE_CONFIRM_TITLE = "Deleting Redis Cache";
-    private static final String DELETE_ACTION_NAME = "Delete";
+    private static final String DELETE_ACTION = "Delete";
     private static final String SHOW_PROPERTY_ACTION = "Show properties";
+    private static final String OPEN_IN_BROWSER_ACTION = "Open in browser";
 
     private static final String CREATING_STATE = "Creating";
     private static final String CREATING_REDIS_NAME_FORMAT = "%s(%s...)";
+    private static final String AZURE_PORTAL_LINK_FORMAT = "https://ms.portal.azure.com/#resource/%s/overview";
 
     private static final String REDISCACHE_ICON_PATH = "RedisCache.png";
 
@@ -68,20 +70,23 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
                 ? String.format(CREATING_REDIS_NAME_FORMAT, content.getName(), CREATING_STATE) 
                 : content.getName(), parent, REDISCACHE_ICON_PATH, true);
         this.name = content.getName();
-        this.id = content.getId();
+        this.resourceId = content.getId();
         this.provisionState = content.getProvisionState();
         this.subscriptionId = subscriptionId;
         loadActions();
     }
 
+    // Show property action class
     public class ShowRedisCachePropertyAction extends NodeActionListener {
         
         @Override
         protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            DefaultLoader.getUIHelper().openRedisPropertyView(RedisCacheNode.this.subscriptionId, RedisCacheNode.this.id);
+            DefaultLoader.getUIHelper().openRedisPropertyView(RedisCacheNode.this.subscriptionId, 
+                    RedisCacheNode.this.resourceId);
         }
     }
 
+    // Delete Redis Cache action class
     public class DeleteRedisCacheAction extends AzureNodeActionPromptListener {
         public DeleteRedisCacheAction() {
             super(RedisCacheNode.this, String.format(DELETE_CONFIRM_DIALOG_FORMAT, RedisCacheNode.this.name),
@@ -90,20 +95,31 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
 
         @Override
         protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-            RedisCacheNode.this.getParent().removeNode(subscriptionId, RedisCacheNode.this.id, RedisCacheNode.this);
+            RedisCacheNode.this.getParent().removeNode(subscriptionId, RedisCacheNode.this.resourceId,
+                    RedisCacheNode.this);
         }
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
         }
     }
+    
+    // Open in browser action class
+    public class OpenInBrowserAction extends NodeActionListener {
+        @Override
+        protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+            DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, 
+                    RedisCacheNode.this.resourceId));
+        }
+    }
 
     @Override
     protected void loadActions() {
         if (!CREATING_STATE.equals(this.provisionState)) {
-            addAction(DELETE_ACTION_NAME, null, new DeleteRedisCacheAction());
+            addAction(DELETE_ACTION, null, new DeleteRedisCacheAction());
             addAction(SHOW_PROPERTY_ACTION, null, new ShowRedisCachePropertyAction());
         }
+        addAction(OPEN_IN_BROWSER_ACTION, null, new OpenInBrowserAction());
         super.loadActions();
     }
 
