@@ -4,7 +4,7 @@ jdk:
 - oraclejdk8
 before_install:
 - chmod +x ./gradlew
-- chmod +x ./BuildDevint
+- chmod +x ./BuildDevint_travis
 script:
 - touch PluginsAndFeatures/AddLibrary/JDBCLibrary/JavaEE6/com.microsoft.sqljdbc4/sqljdbc42.jar
-- ./BuildDevint -q
+- ./BuildDevint_travis -q
