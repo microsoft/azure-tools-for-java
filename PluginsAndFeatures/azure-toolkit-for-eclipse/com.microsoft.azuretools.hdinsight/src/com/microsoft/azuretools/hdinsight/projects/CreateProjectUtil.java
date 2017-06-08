@@ -40,7 +40,7 @@ import org.eclipse.jdt.core.JavaCore;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.azuretools.hdinsight.util.Messages;
+import com.microsoft.azuretools.core.utils.Messages;
 
 public class CreateProjectUtil {
 

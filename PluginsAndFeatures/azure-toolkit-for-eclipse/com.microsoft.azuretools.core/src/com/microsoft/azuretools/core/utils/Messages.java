@@ -95,6 +95,29 @@ public final class Messages extends NLS {
 	public static String propWebProj;
 	public static String propErr;
 	
+	// For HDInsight telemetrics
+    public static String SparkProjectSystemJavaCreation;
+    public static String SparkProjectSystemJavaSampleCreation;
+    public static String SparkProjectSystemScalaCreation;
+    public static String SparkProjectSystemScalaSampleCreation;
+    public static String SparkProjectSystemOtherCreation;
+
+	public static String SparkSubmissionRightClickProject;
+	public static String SparkSubmissionButtonClickEvent;
+	public static String SparkSubmissionHelpClickEvent;
+	public static String SparkSubmissionStopButtionClickEvent;
+
+	public static String HDInsightExplorerHDInsightNodeExpand;
+	public static String HDInsightExplorerSparkNodeExpand;
+	public static String HDInsightExplorerStorageAccountExpand;
+	public static String HDInsightExplorerContainerOpen;
+	public static String HDInsightFeatureEnabled;
+	public static String HDInsightDownloadSparkLibrary;
+	public static String HDInsightJobViewOpenAction;
+	
+	public static String HDInsightCreateLocalEmulator;
+	public static String HDInsightAddNewClusterAction;
+	
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

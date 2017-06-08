@@ -54,12 +54,11 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.hdinsight.Activator;
 import com.microsoft.azuretools.hdinsight.projects.HDInsightProjectNature;
 import com.microsoft.azuretools.hdinsight.spark.common2.SparkSubmitModel;
-import com.microsoft.azuretools.hdinsight.util.Messages;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

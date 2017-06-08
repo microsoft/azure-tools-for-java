@@ -38,6 +38,7 @@ import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootMo
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 
 public class AddNewEmulatorForm extends AzureTitleAreaDialogWrapper {

@@ -47,7 +47,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.azuretools.hdinsight.util.Messages;
+import com.microsoft.azuretools.core.utils.Messages;
 
 public class SparkSubmissionToolWindowView extends ViewPart {
     private static final String yarnRunningUIUrlFormat = "%s/yarnui/hn/proxy/%s/";

@@ -29,7 +29,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.hdinsight.util.HDInsightJobViewUtils;
-import com.microsoft.azuretools.hdinsight.util.Messages;
+import com.microsoft.azuretools.core.utils.Messages;
 
 /**
  * The activator class controls the plug-in life cycle

@@ -37,7 +37,7 @@ import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.hdinsight.SparkSubmissionToolWindowView;
 import com.microsoft.azuretools.hdinsight.common2.HDInsightUtil;
-import com.microsoft.azuretools.hdinsight.util.Messages;
+import com.microsoft.azuretools.core.utils.Messages;
 
 import java.io.File;
 import java.io.IOException;

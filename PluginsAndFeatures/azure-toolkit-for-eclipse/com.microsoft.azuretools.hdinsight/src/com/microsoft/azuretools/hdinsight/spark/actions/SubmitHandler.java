@@ -37,7 +37,7 @@ import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.hdinsight.Activator;
 import com.microsoft.azuretools.hdinsight.common2.HDInsightUtil;
 import com.microsoft.azuretools.hdinsight.spark.ui.SparkSubmissionExDialog;
-import com.microsoft.azuretools.hdinsight.util.Messages;
+import com.microsoft.azuretools.core.utils.Messages;
 
 public class SubmitHandler extends AzureAbstractHandler {
     private List<IClusterDetail> cachedClusterDetails = null;
