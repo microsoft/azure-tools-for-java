@@ -251,7 +251,7 @@ public class UIHelperImpl implements UIHelper {
     }
     
     @Override
-    public void openView(String sid, String id) {
+    public void openRedisPropertyView(String sid, String id) {
         try {
             IWorkbenchWindow activeWorkbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             if (activeWorkbenchWindow == null) {
@@ -265,7 +265,7 @@ public class UIHelperImpl implements UIHelper {
             Display.getDefault().asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    view.getProperty(sid, id);
+                    view.readProperty(sid, id);
                 }
             });
         } catch (PartInitException e) {

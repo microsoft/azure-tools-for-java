@@ -270,7 +270,7 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
-    public void openView(String sid, String id) {
+    public void openRedisPropertyView(String sid, String id) {
         //TODO: add openView
     }
 

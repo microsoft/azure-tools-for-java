@@ -198,7 +198,7 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
     public void setFocus() { }
     
     @Override
-    public void getProperty(String sid, String id) {
+    public void readProperty(String sid, String id) {
         redisPropertyViewPresenter.onGetRedisProperty(sid, id);
     }
     

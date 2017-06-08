@@ -26,7 +26,7 @@ import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
 
 public interface RedisPropertyMvpView extends MvpView {
     
-    void getProperty(String sid, String id);
+    void readProperty(String sid, String id);
 
     void showProperty(RedisCacheProperty property);
 }

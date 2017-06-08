@@ -78,7 +78,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         
         @Override
         protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            DefaultLoader.getUIHelper().openView(RedisCacheNode.this.subscriptionId, RedisCacheNode.this.id);
+            DefaultLoader.getUIHelper().openRedisPropertyView(RedisCacheNode.this.subscriptionId, RedisCacheNode.this.id);
         }
     }
 
