@@ -66,7 +66,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
         IProject project = PluginUtil.getSelectedProject();
         
         if (project == null) {
-            ConsoleLogger.error("Can't detect an active project");
+            ConsoleLogger.error(Constant.ERROR_NO_SELECTED_PROJECT);
             return null;
         }
 
@@ -75,7 +75,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
         
         try {
             // Initialize docker client according to env DOCKER_HOST & DOCKER_CERT_PATH
-            ConsoleLogger.info("Connecting to docker daemon ... ");
+            ConsoleLogger.info(Constant.MESSAGE_DOCKER_CONNECTING);
             if (docker == null) {
                 docker = DefaultDockerClient.fromEnv().build();
                 Runtime.setDocker(docker);
@@ -92,23 +92,23 @@ public class DockerRunHandler extends AzureAbstractHandler {
                 }
             }
             // export WAR file
-            ConsoleLogger.info(String.format("Packaging project into WAR file: %s", destinationPath));
+            ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
             export(project, destinationPath);
             
             // build image based on WAR file 
-            ConsoleLogger.info("Building Image ...");
+            ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
             String imageName = build(docker, project, project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER );
-            ConsoleLogger.info(String.format("Image name: %s", imageName));
+            ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageName));
             
             // create a container
             String containerId = createContainer(docker, project, imageName);
-            ConsoleLogger.info("Creating container ...");
-            ConsoleLogger.info(String.format("Container Id: %s", containerId));
+            ConsoleLogger.info(Constant.MESSAGE_CREATING_CONTAINER);
+            ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_INFO, containerId));
             
             // start container
-            ConsoleLogger.info("Starting container ...");
+            ConsoleLogger.info(Constant.MESSAGE_STARTING_CONTAINER);
             String webappUrl = runContainer(docker, containerId);
-            ConsoleLogger.info(String.format("Container is running now!\nURL: %s/%s", webappUrl, project.getName()));
+            ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_STARTED, webappUrl, project.getName()));
         } catch (Exception e) {
             e.printStackTrace();
             ConsoleLogger.error(Constant.ERROR_RUNNING_DOCKER);
@@ -147,7 +147,9 @@ public class DockerRunHandler extends AzureAbstractHandler {
                     docker.getHost(),
                     res.get().ports().stream().filter(item->item.privatePort().equals(8080)).findFirst().get().publicPort());
         }else{
-            throw new Exception(String.format("Fail to start Container #id=%s", containerId));
+            String errorMsg = String.format(Constant.ERROR_STARTING_CONTAINER, containerId);
+            ConsoleLogger.error(errorMsg);
+            throw new Exception(errorMsg);
         }
     }
     
@@ -168,16 +170,11 @@ public class DockerRunHandler extends AzureAbstractHandler {
     }
 
     private void export(IProject project, String destinationPath) throws Exception {
-        String projectName = project.getName();
-        System.out.println("Building project '" + projectName + "'...");
+        String projectName = project.getName(); 
         project.build(IncrementalProjectBuilder.FULL_BUILD, null);
-    
-        System.out.println("Exporting to WAR...");
         IDataModel dataModel = DataModelFactory.createDataModel(new WebComponentExportDataModelProvider());
         dataModel.setProperty(IJ2EEComponentExportDataModelProperties.PROJECT_NAME, projectName);
         dataModel.setProperty(IJ2EEComponentExportDataModelProperties.ARCHIVE_DESTINATION, destinationPath);
-    
         dataModel.getDefaultOperation().execute(null, null);
-        System.out.println("Done.");
     }
 }

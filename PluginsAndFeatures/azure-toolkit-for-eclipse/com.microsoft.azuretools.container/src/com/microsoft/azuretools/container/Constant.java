@@ -21,6 +21,8 @@ package com.microsoft.azuretools.container;
 
 public class Constant {
     public final static int TIMEOUT_STOP_CONTAINER = 5;
+    public final static String CONSOLE_NAME = "AzureToolsConsole";
+    public final static String CONSOLE_TYPE = "org.eclipse.ui.MessageConsole";
     public final static String DOCKER_CONTEXT_FOLDER="/dockerContext/";
     public final static String DOCKERFILE_NAME="Dockerfile";
     public final static String TOMCAT_SERVICE_PORT = "8080";
@@ -30,7 +32,19 @@ public class Constant {
     public final static String MESSAGE_INSTRUCTION_DEPRECATED = "Please make sure following environment variables are correctly set:\nDOCKER_HOST (default value: localhost:2375)\nDOCKER_CERT_PATH ";
     public final static String MESSAGE_DOCKERFILE_CREATED = "Dockerfile Successfully Created.";
     public final static String MESSAGE_CONFIRM_STOP_CONTAINER = "Running container detected. We will stop and remove it.\n Continue?";
+    public final static String MESSAGE_DOCKER_CONNECTING = "Connecting to docker daemon ... ";
     public final static String ERROR_CREATING_DOCKERFILE = "Error occurred in generating Dockerfile";
     public final static String ERROR_RUNNING_DOCKER = "Error occurred in Docker Run";
-    public final static String DOCKERFILE_CONTENT_TOMCAT = "FROM tomcat:8.5-jre8\r\nCOPY %s.war /usr/local/tomcat/webapps/\r\n";
+    public final static String DOCKERFILE_CONTENT_TOMCAT = "FROM tomcat:8.5-jre8\r\n"
+            + "COPY %s.war /usr/local/tomcat/webapps/\r\n";
+    public final static String ERROR_NO_SELECTED_PROJECT = "Can't detect an active project";
+    public final static String MESSAGE_EXPORTING_PROJECT = "Packaging project into WAR file: %s";
+    public final static String MESSAGE_BUILDING_IMAGE = "Building Image ...";
+    public final static String MESSAGE_IMAGE_INFO = "Image name: %s";
+    public final static String MESSAGE_CREATING_CONTAINER = "Creating container ...";
+    public final static String MESSAGE_CONTAINER_INFO = "Container Id: %s";
+    public final static String MESSAGE_STARTING_CONTAINER = "Starting container ...";
+    public final static String MESSAGE_CONTAINER_STARTED = "Container is running now!\nURL: %s/%s";
+    public final static String ERROR_STARTING_CONTAINER = "Fail to start Container #id=%s";
+
 }

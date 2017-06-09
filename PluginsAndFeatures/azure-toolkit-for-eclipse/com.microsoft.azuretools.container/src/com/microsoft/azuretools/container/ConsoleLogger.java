@@ -38,7 +38,7 @@ public class ConsoleLogger {
     public MessageConsoleStream err = null; 
     private ConsoleLogger(){
         // TODO: make console name constant in future
-        console = findConsole("AzureToolsConsole");
+        console = findConsole(Constant.CONSOLE_NAME);
         out = console.newMessageStream();
         err = console.newMessageStream();
         out.setColor(new Color(null, 0, 0, 255));
@@ -68,17 +68,19 @@ public class ConsoleLogger {
         LazyHolder.INSTANCE.out.println(String.format("[INFO]\t%s", infoMsg));
     }
     
-    public static void error(String infoMsg){
-        LazyHolder.INSTANCE.err.println(String.format("[ERROR]\t%s", infoMsg));
+    public static void error(String errorMsg){
+        LazyHolder.INSTANCE.err.println(String.format("[ERROR]\t%s", errorMsg));
     }
     
     private MessageConsole findConsole(String name) {
         ConsolePlugin plugin = ConsolePlugin.getDefault();
         IConsoleManager conMan = plugin.getConsoleManager();
         IConsole[] existing = conMan.getConsoles();
-        for (int i = 0; i < existing.length; i++)
-           if (name.equals(existing[i].getName()))
+        for (int i = 0; i < existing.length; i++){
+            System.out.println(existing[i].getType());
+            if (name.equals(existing[i].getName()) && existing[i].getType().equals(Constant.CONSOLE_TYPE))
               return (MessageConsole) existing[i];
+        }
         //no console found, so create a new one
         MessageConsole myConsole = new MessageConsole(name, null);
         conMan.addConsoles(new IConsole[]{myConsole});
