@@ -256,6 +256,11 @@ public class UIHelperImpl implements UIHelper {
     
     @Override
     public void openRedisPropertyView(RedisCacheNode node) {
+        String sid = node.getSubscriptionId();
+        String resId = node.getResourceId();
+        if (sid == null || resId == null) {
+            return;
+        }
         try {
             IWorkbenchWindow activeWorkbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             if (activeWorkbenchWindow == null) {
@@ -269,7 +274,7 @@ public class UIHelperImpl implements UIHelper {
             Display.getDefault().asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    view.readProperty(node.getSubscriptionId(), node.getResourceId());
+                    view.readProperty(sid, resId);
                 }
             });
         } catch (PartInitException e) {
