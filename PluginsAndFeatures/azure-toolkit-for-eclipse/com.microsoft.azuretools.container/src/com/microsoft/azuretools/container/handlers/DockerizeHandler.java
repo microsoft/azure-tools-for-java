@@ -29,13 +29,16 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.microsoft.azuretools.container.Constant;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DefaultDockerClient.Builder;
+import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.exceptions.DockerCertificateException;
+import com.microsoft.azuretools.container.Runtime;
 public class DockerizeHandler extends AzureAbstractHandler {
 
     @Override
@@ -46,8 +49,19 @@ public class DockerizeHandler extends AzureAbstractHandler {
             IFolder folder = project.getFolder(Constant.DOCKER_CONTEXT_FOLDER);
             if(!folder.exists()) folder.create(true, true, null);
             createDockerFile(project, folder, Constant.DOCKERFILE_NAME);
-            MessageDialog.openInformation(window.getShell(), "Add Docker Support", String.format("%s\n\n%s", Constant.MESSAGE_DOCKERFILE_CREATED, Constant.MESSAGE_INSTRUCTION));
-        } catch (CoreException e) {
+            
+            Builder builder = DefaultDockerClient.fromEnv();
+           
+            Runtime.setDocker(builder.build());
+
+            MessageDialog.openInformation(window.getShell(), 
+                    "Add Docker Support", 
+                    String.format("Successful.\nDockerfile located in: %s\nCurrent host: %s\n\n%s",
+                            folder.getFile(Constant.DOCKERFILE_NAME).getFullPath(), 
+                            builder.uri(),
+                            Constant.MESSAGE_INSTRUCTION)
+                    );
+        } catch (CoreException | DockerCertificateException e) {
             e.printStackTrace();
             MessageDialog.openError(window.getShell(), this.getClass().toString(), Constant.ERROR_CREATING_DOCKERFILE);
         }
