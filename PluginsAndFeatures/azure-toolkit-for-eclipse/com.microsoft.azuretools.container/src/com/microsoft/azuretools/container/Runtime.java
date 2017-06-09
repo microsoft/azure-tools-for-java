@@ -19,15 +19,39 @@
  */
 package com.microsoft.azuretools.container;
 
-public class Constant {
-    public final static int TIMEOUT_STOP_CONTAINER = 5;
-    public final static String DOCKER_CONTEXT_FOLDER="/dockerContext/";
-    public final static String DOCKERFILE_NAME="Dockerfile";
-    public final static String TOMCAT_SERVICE_PORT = "8080";
-    public final static String IMAGE_PREFIX = "local/tomcat";
-    public final static String MESSAGE_INSTRUCTION = "Please make sure following environment variables are correctly set:\nDOCKER_HOST (default value: localhost:2375)\nDOCKER_CERT_PATH ";
-    public final static String MESSAGE_DOCKERFILE_CREATED = "Dockerfile Successfully Created.";
-    public final static String MESSAGE_CONFIRM_STOP_CONTAINER = "Running container detected. We will stop and remove it.\n Continue?";
-    public final static String ERROR_CREATING_DOCKERFILE = "Error occurred in generating Dockerfile";
-    public final static String DOCKERFILE_CONTENT_TOMCAT = "FROM tomcat:8.5-jre8\r\nCOPY %s.war /usr/local/tomcat/webapps/\r\n";
+import org.eclipse.jface.dialogs.MessageDialog;
+
+import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.exceptions.DockerException;
+
+public class Runtime {
+    static String runningContainerId = null;
+    static DockerClient docker = null;
+    
+    public static String getRunningContainerId() {
+        return runningContainerId;
+    }
+
+    public static void setRunningContainerId(String runningContainerId) {
+        Runtime.runningContainerId = runningContainerId;
+    }
+    
+
+    public static DockerClient getDocker() {
+        return docker;
+    }
+
+    public static void setDocker(DockerClient docker2) {
+        Runtime.docker = docker2;
+    }
+
+    public static void cleanRuningContainer() throws DockerException, InterruptedException{
+        if(runningContainerId != null) {
+            docker.stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
+            docker.removeContainer(runningContainerId);
+            runningContainerId = null;
+        }
+        return;
+    }
+
 }

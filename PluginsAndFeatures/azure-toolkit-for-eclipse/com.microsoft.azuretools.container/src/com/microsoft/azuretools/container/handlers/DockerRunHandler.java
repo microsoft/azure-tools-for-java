@@ -55,6 +55,7 @@ import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.ProgressMessage;
 import com.microsoft.azuretools.container.Constant;
+import com.microsoft.azuretools.container.Runtime;
 
 public class DockerRunHandler extends AzureAbstractHandler {
 
@@ -73,11 +74,33 @@ public class DockerRunHandler extends AzureAbstractHandler {
         }
 
         String destinationPath = project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER + project.getName() + ".war";
-        DockerClient docker;
+        DockerClient docker = Runtime.getDocker();
+        
         try {
-            docker = DefaultDockerClient.fromEnv().build();
+            // Initialize docker client according to env DOCKER_HOST & DOCKER_CERT_PATH
+            if (docker == null) {
+                docker = DefaultDockerClient.fromEnv().build();
+                Runtime.setDocker(docker);
+            }
+
+            // Stop running container
+            String runningContainerId = Runtime.getRunningContainerId();
+            if (runningContainerId != null) {
+                boolean stop = MessageDialog.openConfirm(window.getShell(), "Stop", Constant.MESSAGE_CONFIRM_STOP_CONTAINER);
+                if(stop) {
+                    Runtime.cleanRuningContainer();
+                }
+                else{
+                    return null;
+                }
+            }
+            // export WAR file
             export(project, destinationPath);
+            
+            // build image based on WAR file 
             String imageName = build(docker, project, project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER );
+            
+            // create a container and run
             String webappUrl = run(docker, project, imageName);
             MessageDialog.openInformation(window.getShell(), "Docker Run", webappUrl);
         } catch (Exception e) {
@@ -88,7 +111,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
         return null;
     }
     
-    
+
     private String run(DockerClient docker, IProject project, String imageName) throws Exception{
         final Map<String, List<PortBinding>> portBindings = new HashMap<>();
         List<PortBinding> randomPort = new ArrayList<>();
@@ -109,6 +132,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
         final Optional<Container> res = containers.stream().filter(item -> item.id().equals(container.id())).findFirst();
         
         if(res.isPresent()){
+            Runtime.setRunningContainerId(res.get().id());
             return String.format(
                     "Image Name:\n%s\n\n"
                     + "Container ID:\n%s\n\n"

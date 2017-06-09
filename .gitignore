@@ -1,6 +1,6 @@
 # Editor-specific files
-.swp
-.swo
+*.swp
+*.swo
 .vscode/
 
 # Java class files
@@ -103,3 +103,6 @@ artifacts
 gradle/
 gradlew
 gradlew.bat
+
+# Mac OSX
+.DS_Store
