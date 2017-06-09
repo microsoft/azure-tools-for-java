@@ -54,6 +54,7 @@ import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.ProgressMessage;
+import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.Constant;
 import com.microsoft.azuretools.container.Runtime;
 
@@ -65,11 +66,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
         IProject project = PluginUtil.getSelectedProject();
         
         if (project == null) {
-            MessageDialog.openError(window.getShell(), this.getClass().toString(), "Can't detect an active project");
-            return null;
-        }
-        
-        if (!SignInCommandHandler.doSignIn(window.getShell())){
+            ConsoleLogger.error("Can't detect an active project");
             return null;
         }
 
@@ -78,11 +75,11 @@ public class DockerRunHandler extends AzureAbstractHandler {
         
         try {
             // Initialize docker client according to env DOCKER_HOST & DOCKER_CERT_PATH
+            ConsoleLogger.info("Connecting to docker daemon ... ");
             if (docker == null) {
                 docker = DefaultDockerClient.fromEnv().build();
                 Runtime.setDocker(docker);
             }
-
             // Stop running container
             String runningContainerId = Runtime.getRunningContainerId();
             if (runningContainerId != null) {
@@ -95,24 +92,32 @@ public class DockerRunHandler extends AzureAbstractHandler {
                 }
             }
             // export WAR file
+            ConsoleLogger.info(String.format("Packaging project into WAR file: %s", destinationPath));
             export(project, destinationPath);
             
             // build image based on WAR file 
+            ConsoleLogger.info("Building Image ...");
             String imageName = build(docker, project, project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER );
+            ConsoleLogger.info(String.format("Image name: %s", imageName));
             
-            // create a container and run
-            String webappUrl = run(docker, project, imageName);
-            MessageDialog.openInformation(window.getShell(), "Docker Run", webappUrl);
+            // create a container
+            String containerId = createContainer(docker, project, imageName);
+            ConsoleLogger.info("Creating container ...");
+            ConsoleLogger.info(String.format("Container Id: %s", containerId));
+            
+            // start container
+            ConsoleLogger.info("Starting container ...");
+            String webappUrl = runContainer(docker, containerId);
+            ConsoleLogger.info(String.format("Container is running now!\nURL: %s/%s", webappUrl, project.getName()));
         } catch (Exception e) {
             e.printStackTrace();
-            MessageDialog.openError(window.getShell(), this.getClass().toString(), e.getMessage());
-            MessageDialog.openInformation(window.getShell(), this.getClass().toString(), Constant.MESSAGE_INSTRUCTION);
+            ConsoleLogger.error(Constant.ERROR_RUNNING_DOCKER);
         }
         return null;
     }
     
 
-    private String run(DockerClient docker, IProject project, String imageName) throws Exception{
+    private String createContainer(DockerClient docker, IProject project, String imageName) throws DockerException, InterruptedException{
         final Map<String, List<PortBinding>> portBindings = new HashMap<>();
         List<PortBinding> randomPort = new ArrayList<>();
         PortBinding randomBinding = PortBinding.randomPort("0.0.0.0");
@@ -127,30 +132,29 @@ public class DockerRunHandler extends AzureAbstractHandler {
                 .exposedPorts(Constant.TOMCAT_SERVICE_PORT)
                 .build();
         final ContainerCreation container = docker.createContainer(config);
-        docker.startContainer(container.id());
+        return container.id();
+    }
+    
+    private String runContainer(DockerClient docker, String containerId) throws Exception{
+        docker.startContainer(containerId);
         final List<Container> containers = docker.listContainers();
-        final Optional<Container> res = containers.stream().filter(item -> item.id().equals(container.id())).findFirst();
+        final Optional<Container> res = containers.stream().filter(item -> item.id().equals(containerId)).findFirst();
         
         if(res.isPresent()){
             Runtime.setRunningContainerId(res.get().id());
             return String.format(
-                    "Image Name:\n%s\n\n"
-                    + "Container ID:\n%s\n\n"
-                    + "URL: http://%s:%s/%s/\n",
-                    imageName,
-                    res.get().id(),
+                    "http://%s:%s",
                     docker.getHost(),
-                    res.get().ports().stream().filter(item->item.privatePort().equals(8080)).findFirst().get().publicPort(), 
-                    project.getName());
+                    res.get().ports().stream().filter(item->item.privatePort().equals(8080)).findFirst().get().publicPort());
         }else{
-            throw new Exception(String.format("Fail to start Container #id=%s", container.id()));
+            throw new Exception(String.format("Fail to start Container #id=%s", containerId));
         }
     }
     
     private String build(DockerClient docker, IProject project, String dockerDirectory) throws DockerCertificateException, DockerException, InterruptedException, IOException{
         final AtomicReference<String> imageIdFromMessage = new AtomicReference<>();
         final String imageName = String.format("%s-%s:%tY%<tm%<td%<tH%<tM%<tS", Constant.IMAGE_PREFIX, project.getName(), new java.util.Date());
-        final String returnedImageId = docker.build(
+        docker.build(
             Paths.get(dockerDirectory), imageName, new ProgressHandler() {
               @Override
               public void progress(ProgressMessage message) throws DockerException {

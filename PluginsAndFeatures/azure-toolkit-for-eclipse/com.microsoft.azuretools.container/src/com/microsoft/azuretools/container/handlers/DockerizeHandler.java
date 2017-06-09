@@ -27,43 +27,43 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.handlers.HandlerUtil;
 
+import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.Constant;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.microsoft.azuretools.container.Runtime;
 public class DockerizeHandler extends AzureAbstractHandler {
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
-        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+        ConsoleLogger.info("Adding docker support ...");
         try {
             IProject project = PluginUtil.getSelectedProject();
+            if (project == null) {
+                throw new Exception("Can't detect an active project");
+            }
             IFolder folder = project.getFolder(Constant.DOCKER_CONTEXT_FOLDER);
             if(!folder.exists()) folder.create(true, true, null);
-            createDockerFile(project, folder, Constant.DOCKERFILE_NAME);
-            
-            Builder builder = DefaultDockerClient.fromEnv();
-           
-            Runtime.setDocker(builder.build());
 
-            MessageDialog.openInformation(window.getShell(), 
-                    "Add Docker Support", 
-                    String.format("Successful.\nDockerfile located in: %s\nCurrent host: %s\n\n%s",
-                            folder.getFile(Constant.DOCKERFILE_NAME).getFullPath(), 
-                            builder.uri(),
-                            Constant.MESSAGE_INSTRUCTION)
-                    );
-        } catch (CoreException | DockerCertificateException e) {
+            createDockerFile(project, folder, Constant.DOCKERFILE_NAME);
+            ConsoleLogger.info(String.format(
+                    "Docker file created at: %s", 
+                    folder.getFile(Constant.DOCKERFILE_NAME).getFullPath()
+                    ));
+            Builder builder = DefaultDockerClient.fromEnv();
+            ConsoleLogger.info(String.format(
+                    "Current docker host: %s", 
+                    builder.uri()
+                    ));
+            Runtime.setDocker(builder.build());
+            ConsoleLogger.info("Successfully added docker support!");
+            ConsoleLogger.info(Constant.MESSAGE_INSTRUCTION);
+        } catch (Exception e) {
             e.printStackTrace();
-            MessageDialog.openError(window.getShell(), this.getClass().toString(), Constant.ERROR_CREATING_DOCKERFILE);
+            ConsoleLogger.error(Constant.ERROR_CREATING_DOCKERFILE);
         }
         return null;
     }

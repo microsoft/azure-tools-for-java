@@ -19,8 +19,6 @@
  */
 package com.microsoft.azuretools.container;
 
-import org.eclipse.jface.dialogs.MessageDialog;
-
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
 

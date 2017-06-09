@@ -25,13 +25,12 @@ public class Constant {
     public final static String DOCKERFILE_NAME="Dockerfile";
     public final static String TOMCAT_SERVICE_PORT = "8080";
     public final static String IMAGE_PREFIX = "local/tomcat";
-    public final static String MESSAGE_INSTRUCTION = 
-            "Note:\n"
-            + "Set the DOCKER_HOST environment variable to connect else where.\n"
-            + "Set the DOCKER_CERT_PATH variable to connect TLS-enabled daemon.";
+    public final static String MESSAGE_INSTRUCTION = "(Set the DOCKER_HOST environment variable to connect elsewhere. "
+            + "Set the DOCKER_CERT_PATH variable to connect TLS-enabled daemon.)";
     public final static String MESSAGE_INSTRUCTION_DEPRECATED = "Please make sure following environment variables are correctly set:\nDOCKER_HOST (default value: localhost:2375)\nDOCKER_CERT_PATH ";
     public final static String MESSAGE_DOCKERFILE_CREATED = "Dockerfile Successfully Created.";
     public final static String MESSAGE_CONFIRM_STOP_CONTAINER = "Running container detected. We will stop and remove it.\n Continue?";
     public final static String ERROR_CREATING_DOCKERFILE = "Error occurred in generating Dockerfile";
+    public final static String ERROR_RUNNING_DOCKER = "Error occurred in Docker Run";
     public final static String DOCKERFILE_CONTENT_TOMCAT = "FROM tomcat:8.5-jre8\r\nCOPY %s.war /usr/local/tomcat/webapps/\r\n";
 }
