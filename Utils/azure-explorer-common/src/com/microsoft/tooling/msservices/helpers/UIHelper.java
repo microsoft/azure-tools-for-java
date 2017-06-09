@@ -61,7 +61,8 @@ public interface UIHelper {
 
     String promptForOpenSSLPath();
     
-    void openRedisPropertyView(String sid, String id);
+    void openRedisPropertyView(@NotNull Object projectObject, @NotNull String sid, @NotNull String id, 
+            @NotNull String type, @NotNull String iconName);
     
     void openInBrowser(String link);
 

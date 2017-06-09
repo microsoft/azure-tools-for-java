@@ -24,6 +24,7 @@ package com.microsoft.intellij.helpers;
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
@@ -38,10 +39,12 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
 import com.microsoft.intellij.forms.OpenSSLFinderForm;
+import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
 import com.microsoft.intellij.helpers.storage.*;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.*;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyMvpView;
 
 import javax.swing.*;
 import java.awt.Desktop;
@@ -55,11 +58,14 @@ import java.util.Map;
 public class UIHelperImpl implements UIHelper {
     public static Key<StorageAccount> STORAGE_KEY = new Key<StorageAccount>("storageAccount");
     public static Key<ClientStorageAccount> CLIENT_STORAGE_KEY = new Key<ClientStorageAccount>("clientStorageAccount");
+    public static final Key<String> SUBSCRIPTION_ID = new Key<>("subscriptionId");
+    public static final Key<String> RESOURCE_ID = new Key<>("resourceId");
     private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key = ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
             Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
             Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
 
     private static final String UNABLE_TO_OPEN_BROWSER = "Unable to open external web browser";
+
 
     @Override
     public void showException(@NotNull final String message,
@@ -274,8 +280,25 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
-    public void openRedisPropertyView(String sid, String id) {
-        //TODO: add openView
+    public void openRedisPropertyView(@NotNull Object project, @NotNull String sid, @NotNull String id,
+                                      @NotNull String type, @NotNull String iconName) {
+        String redisName = id.substring(id.lastIndexOf("/") + 1);
+        LightVirtualFile itemVirtualFile = new LightVirtualFile(redisName);
+        itemVirtualFile.setFileType(getFileType(type, iconName));
+        itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
+        itemVirtualFile.putUserData(RESOURCE_ID, id);
+        FileEditor[] editors = FileEditorManager.getInstance((Project) project).openFile( itemVirtualFile, true, true);
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                for (FileEditor editor: editors) {
+                    if (editor.getName().equals(RedisCachePropertyView.ID) &&
+                            editor instanceof RedisCachePropertyView) {
+                        ((RedisCachePropertyView) editor).readProperty(sid, id);
+                    }
+                }
+            }
+        }, ModalityState.any());
     }
 
     @Override

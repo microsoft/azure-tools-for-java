@@ -254,7 +254,7 @@ public class UIHelperImpl implements UIHelper {
     }
     
     @Override
-    public void openRedisPropertyView(String sid, String id) {
+    public void openRedisPropertyView(Object project, String sid, String id, String type, String iconName) {
         try {
             IWorkbenchWindow activeWorkbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             if (activeWorkbenchWindow == null) {

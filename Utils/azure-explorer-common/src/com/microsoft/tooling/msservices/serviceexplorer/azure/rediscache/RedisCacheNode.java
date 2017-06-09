@@ -41,19 +41,25 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     private final String resourceId;
     private final String provisionState;
     private final String subscriptionId;
-
-    private static final String DELETE_CONFIRM_DIALOG_FORMAT = "This operation will delete redis cache: %s."
-            + "\nAre you sure you want to continue?";
-    private static final String DELETE_CONFIRM_TITLE = "Deleting Redis Cache";
+    
+    // node related
+    private static final String TYPE = "Microsoft.Cache/Redis";
+    private static final String REDISCACHE_ICON_PATH = "RedisCache.png";
+    private static final String CREATING_STATE = "Creating";
+    private static final String CREATING_REDIS_NAME_FORMAT = "%s(%s...)";
+    
+    // action names
     private static final String DELETE_ACTION = "Delete";
     private static final String SHOW_PROPERTY_ACTION = "Show properties";
     private static final String OPEN_IN_BROWSER_ACTION = "Open in browser";
-
-    private static final String CREATING_STATE = "Creating";
-    private static final String CREATING_REDIS_NAME_FORMAT = "%s(%s...)";
+    
+    // string format
+    private static final String DELETE_CONFIRM_DIALOG_FORMAT = "This operation will delete redis cache: %s."
+            + "\nAre you sure you want to continue?";
+    private static final String DELETE_CONFIRM_TITLE = "Deleting Redis Cache";
     private static final String AZURE_PORTAL_LINK_FORMAT = "https://ms.portal.azure.com/#resource/%s/overview";
 
-    private static final String REDISCACHE_ICON_PATH = "RedisCache.png";
+    
 
     /**
      * Node for each Redis Cache Resource.
@@ -81,8 +87,9 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         
         @Override
         protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            DefaultLoader.getUIHelper().openRedisPropertyView(RedisCacheNode.this.subscriptionId, 
-                    RedisCacheNode.this.resourceId);
+            RedisCacheNode currentNode = RedisCacheNode.this;
+            DefaultLoader.getUIHelper().openRedisPropertyView(currentNode.getProject(), currentNode.subscriptionId, 
+                    currentNode.resourceId, currentNode.TYPE, currentNode.iconPath);
         }
     }
 
