@@ -45,6 +45,7 @@ import com.microsoft.intellij.helpers.storage.*;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.*;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 
 import javax.swing.*;
 import java.awt.Desktop;
@@ -280,21 +281,25 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
-    public void openRedisPropertyView(@NotNull Object project, @NotNull String sid, @NotNull String id,
-                                      @NotNull String type, @NotNull String iconName) {
-        String redisName = id.substring(id.lastIndexOf("/") + 1);
+    public void openRedisPropertyView(@NotNull RedisCacheNode node) {
+        String redisName = node.getName() != null ? node.getName() : RedisCacheNode.TYPE;
+        String sid = node.getSubscriptionId();
+        String resId = node.getResourceId();
+        if (sid == null || resId == null) {
+            return;
+        }
         LightVirtualFile itemVirtualFile = new LightVirtualFile(redisName);
-        itemVirtualFile.setFileType(getFileType(type, iconName));
+        itemVirtualFile.setFileType(getFileType(RedisCacheNode.TYPE, RedisCacheNode.REDISCACHE_ICON_PATH));
         itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
-        itemVirtualFile.putUserData(RESOURCE_ID, id);
-        FileEditor[] editors = FileEditorManager.getInstance((Project) project).openFile( itemVirtualFile, true, true);
+        itemVirtualFile.putUserData(RESOURCE_ID, resId);
+        FileEditor[] editors = FileEditorManager.getInstance((Project) node.getProject()).openFile( itemVirtualFile, true, true);
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
                 for (FileEditor editor: editors) {
                     if (editor.getName().equals(RedisCachePropertyView.ID) &&
                             editor instanceof RedisCachePropertyView) {
-                        ((RedisCachePropertyView) editor).readProperty(sid, id);
+                        ((RedisCachePropertyView) editor).readProperty(sid, resId);
                     }
                 }
             }

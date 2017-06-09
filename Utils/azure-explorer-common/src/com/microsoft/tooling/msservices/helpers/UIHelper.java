@@ -29,6 +29,7 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 
 import java.io.File;
 
@@ -61,8 +62,7 @@ public interface UIHelper {
 
     String promptForOpenSSLPath();
     
-    void openRedisPropertyView(@NotNull Object projectObject, @NotNull String sid, @NotNull String id, 
-            @NotNull String type, @NotNull String iconName);
+    void openRedisPropertyView(@NotNull RedisCacheNode node);
     
     void openInBrowser(String link);
 

@@ -56,6 +56,7 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 
 public class UIHelperImpl implements UIHelper {
     private Map<Class<? extends StorageServiceTreeItem>, String> type2Editor = ImmutableMap.of(BlobContainer.class, "com.microsoft.azuretools.azureexplorer.editors.BlobExplorerFileEditor",
@@ -254,7 +255,7 @@ public class UIHelperImpl implements UIHelper {
     }
     
     @Override
-    public void openRedisPropertyView(Object project, String sid, String id, String type, String iconName) {
+    public void openRedisPropertyView(RedisCacheNode node) {
         try {
             IWorkbenchWindow activeWorkbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             if (activeWorkbenchWindow == null) {
@@ -268,7 +269,7 @@ public class UIHelperImpl implements UIHelper {
             Display.getDefault().asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    view.readProperty(sid, id);
+                    view.readProperty(node.getSubscriptionId(), node.getResourceId());
                 }
             });
         } catch (PartInitException e) {

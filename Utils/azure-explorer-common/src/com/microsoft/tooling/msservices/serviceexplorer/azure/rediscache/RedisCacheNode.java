@@ -36,6 +36,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RedisCacheNode extends Node implements TelemetryProperties {
+    
+    public static final String TYPE = "Microsoft.Cache/Redis";
+    public static final String REDISCACHE_ICON_PATH = "RedisCache.png";
 
     private final String name;
     private final String resourceId;
@@ -43,8 +46,6 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     private final String subscriptionId;
     
     // node related
-    private static final String TYPE = "Microsoft.Cache/Redis";
-    private static final String REDISCACHE_ICON_PATH = "RedisCache.png";
     private static final String CREATING_STATE = "Creating";
     private static final String CREATING_REDIS_NAME_FORMAT = "%s(%s...)";
     
@@ -87,9 +88,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         
         @Override
         protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            RedisCacheNode currentNode = RedisCacheNode.this;
-            DefaultLoader.getUIHelper().openRedisPropertyView(currentNode.getProject(), currentNode.subscriptionId, 
-                    currentNode.resourceId, currentNode.TYPE, currentNode.iconPath);
+            DefaultLoader.getUIHelper().openRedisPropertyView(RedisCacheNode.this);
         }
     }
 
@@ -102,8 +101,8 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
 
         @Override
         protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-            RedisCacheNode.this.getParent().removeNode(subscriptionId, RedisCacheNode.this.resourceId,
-                    RedisCacheNode.this);
+            RedisCacheNode.this.getParent().removeNode(RedisCacheNode.this.subscriptionId, 
+                    RedisCacheNode.this.resourceId, RedisCacheNode.this);
         }
 
         @Override
@@ -135,6 +134,18 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
         return properties;
+    }
+
+    public String getSubscriptionId() {
+        return this.subscriptionId;
+    }
+    
+    public String getResourceId() {
+        return this.resourceId;
+    }
+    
+    public String getName() {
+        return this.name;
     }
 
 }
