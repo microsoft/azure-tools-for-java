@@ -156,7 +156,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
             throws DockerCertificateException, DockerException, InterruptedException, IOException {
         final AtomicReference<String> imageIdFromMessage = new AtomicReference<>();
         final String imageName = String.format("%s-%s:%tY%<tm%<td%<tH%<tM%<tS", Constant.IMAGE_PREFIX,
-                project.getName(), new java.util.Date());
+                project.getName().toLowerCase(), new java.util.Date());
         docker.build(Paths.get(dockerDirectory), imageName, new ProgressHandler() {
             @Override
             public void progress(ProgressMessage message) throws DockerException {
