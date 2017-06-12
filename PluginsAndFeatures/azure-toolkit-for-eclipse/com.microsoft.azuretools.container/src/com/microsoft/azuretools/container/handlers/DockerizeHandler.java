@@ -56,8 +56,7 @@ public class DockerizeHandler extends AzureAbstractHandler {
             createDockerFile(project, folder, Constant.DOCKERFILE_NAME);
             ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKERFILE_CREATED,
                     folder.getFile(Constant.DOCKERFILE_NAME).getFullPath()));
-            Builder builder = DefaultDockerClient.fromEnv();
-            Runtime.getInstance().setDockerBuilder(builder);
+            Builder builder = Runtime.getInstance().getDockerBuilder();
             ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKER_HOST_INFO, builder.uri()));
             ConsoleLogger.info(Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK);
             ConsoleLogger.info(Constant.MESSAGE_INSTRUCTION);

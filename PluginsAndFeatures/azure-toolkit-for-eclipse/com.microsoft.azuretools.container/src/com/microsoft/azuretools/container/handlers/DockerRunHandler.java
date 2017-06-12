@@ -76,15 +76,11 @@ public class DockerRunHandler extends AzureAbstractHandler {
         }
 
         String destinationPath = project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER + project.getName() + ".war";
-        Builder dockerBuilder = Runtime.getInstance().getDockerBuilder();
-
+        
         try {
             // Initialize docker client according to env DOCKER_HOST & DOCKER_CERT_PATH
             ConsoleLogger.info(Constant.MESSAGE_DOCKER_CONNECTING);
-            if (dockerBuilder == null) {
-                dockerBuilder = DefaultDockerClient.fromEnv();
-                Runtime.getInstance().setDockerBuilder(dockerBuilder);
-            }
+            Builder dockerBuilder = Runtime.getInstance().getDockerBuilder();
             DockerClient docker = dockerBuilder.build();
             // Stop running container
             String runningContainerId = Runtime.getInstance().getRunningContainerId();

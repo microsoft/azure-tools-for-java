@@ -23,7 +23,9 @@
 package com.microsoft.azuretools.container;
 
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
+import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
 
 public class Runtime {
@@ -31,7 +33,13 @@ public class Runtime {
     private String runningContainerId = null;
     private Builder dockerBuilder = null;
 
-    private Runtime() { }
+    private Runtime() {
+        try {
+            dockerBuilder = DefaultDockerClient.fromEnv();
+        } catch (DockerCertificateException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static Runtime getInstance() {
         return INSTANCE;
@@ -41,7 +49,15 @@ public class Runtime {
         return runningContainerId;
     }
 
-    public synchronized void setRunningContainerId(String runningContainerId) {
+    public synchronized void setRunningContainerId(String runningContainerId) throws DockerException, InterruptedException {
+        // return if current running container is not clean.
+        if (this.runningContainerId != null) {
+            DockerClient docker = dockerBuilder.build();
+            long count = docker.listContainers().stream().filter(item -> item.id().equals(this.runningContainerId)).count();
+            if (count > 0) {
+                return;
+            }
+        }
         this.runningContainerId = runningContainerId;
     }
 
@@ -49,17 +65,14 @@ public class Runtime {
         return dockerBuilder;
     }
 
-    public synchronized void setDockerBuilder(Builder builder) {
-        this.dockerBuilder = builder;
-    }
-
     /**
      * clean running container.
      */
     public synchronized void cleanRuningContainer() throws DockerException, InterruptedException {
         if (runningContainerId != null) {
-            dockerBuilder.build().stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
-            dockerBuilder.build().removeContainer(runningContainerId);
+            DockerClient docker = dockerBuilder.build();
+            docker.stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
+            docker.removeContainer(runningContainerId);
             runningContainerId = null;
         }
         return;
