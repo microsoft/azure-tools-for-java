@@ -40,7 +40,7 @@ public class DarkThemeManager {
     private static final String Gray = "#BBBBBB";
 
     private static final String Blue = "blue";
-    private static final String LightBlue = "deepskyblue";
+    private static final String LightBlue = "#5394EC";
 
     public static DarkThemeManager getInstance(){
         if(instance == null){
@@ -95,7 +95,7 @@ public class DarkThemeManager {
     }
 
     public String getHyperLinkColor(){
-        if(UIUtil.isUnderDarcula()){
+        if (UIUtil.isUnderDarcula()) {
             return LightBlue;
         }
 
