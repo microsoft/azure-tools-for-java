@@ -79,15 +79,11 @@ public class ConsoleLogger {
     private MessageConsole findConsole(String name) {
         ConsolePlugin plugin = ConsolePlugin.getDefault();
         IConsoleManager conMan = plugin.getConsoleManager();
-        
-        //test
-        MessageConsole myConsole0 = new MessageConsole(name, null);
-        conMan.addConsoles(new IConsole[] { myConsole0 });
-        
+
         IConsole[] existing = conMan.getConsoles();
         for (int i = 0; i < existing.length; i++) {
             System.out.println(existing[i].getType());
-            if (name.equals(existing[i].getName()) && existing[i].getType().equals("org.eclipse.ui.MessageConsole")) {
+            if (name.equals(existing[i].getName()) && existing[i] instanceof MessageConsole) {
                 return (MessageConsole) existing[i];
             }
         }
