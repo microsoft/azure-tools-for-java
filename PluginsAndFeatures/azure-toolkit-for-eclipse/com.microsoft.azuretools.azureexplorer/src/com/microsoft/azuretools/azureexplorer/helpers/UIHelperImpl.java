@@ -270,7 +270,8 @@ public class UIHelperImpl implements UIHelper {
             if (page == null) {
                 return;
             }
-            RedisPropertyView view = (RedisPropertyView) page.showView(RedisPropertyView.ID, node.getResourceId(), IWorkbenchPage.VIEW_ACTIVATE);
+            RedisPropertyView view = (RedisPropertyView) page.showView(RedisPropertyView.ID, node.getResourceId(),
+                    IWorkbenchPage.VIEW_ACTIVATE);
             Display.getDefault().asyncExec(new Runnable() {
                 @Override
                 public void run() {
