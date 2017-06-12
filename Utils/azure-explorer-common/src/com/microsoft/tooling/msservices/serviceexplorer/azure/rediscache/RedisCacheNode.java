@@ -143,9 +143,4 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     public String getResourceId() {
         return this.resourceId;
     }
-    
-    public String getName() {
-        return this.name;
-    }
-
 }
