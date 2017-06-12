@@ -23,38 +23,79 @@
 package com.microsoft.azuretools.container;
 
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.exceptions.DockerException;
 
-public class Runtime {
-    static String runningContainerId = null;
-    static DockerClient docker = null;
+// public class Runtime {
+//     static String runningContainerId = null;
+//     static DockerClient docker = null;
 
-    public static String getRunningContainerId() {
+//     public static String getRunningContainerId() {
+//         return runningContainerId;
+//     }
+
+//     public static void setRunningContainerId(String runningContainerId) {
+//         Runtime.runningContainerId = runningContainerId;
+//     }
+
+//     public static DockerClient getDocker() {
+//         return docker;
+//     }
+
+//     public static void setDocker(DockerClient docker2) {
+//         Runtime.docker = docker2;
+//     }
+
+//     /**
+//      * clean running container.
+//      */
+//     public static void cleanRuningContainer() throws DockerException, InterruptedException {
+//         if (runningContainerId != null) {
+//             docker.stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
+//             docker.removeContainer(runningContainerId);
+//             runningContainerId = null;
+//         }
+//         return;
+//     }
+
+// }
+
+public class Runtime {
+    private static final Runtime INSTANCE = new Runtime();
+    private String runningContainerId = null;
+    private Builder dockerBuilder = null;
+
+    private Runtime() { }
+
+    public static Runtime getInstance() {
+        return INSTANCE;
+    }
+
+    public synchronized String getRunningContainerId() {
         return runningContainerId;
     }
 
-    public static void setRunningContainerId(String runningContainerId) {
-        Runtime.runningContainerId = runningContainerId;
+    public synchronized void setRunningContainerId(String runningContainerId) {
+        this.runningContainerId = runningContainerId;
     }
 
-    public static DockerClient getDocker() {
-        return docker;
+    public synchronized Builder getDockerBuilder() {
+        return dockerBuilder;
     }
 
-    public static void setDocker(DockerClient docker2) {
-        Runtime.docker = docker2;
+    public synchronized void setDockerBuilder(Builder builder) {
+        this.dockerBuilder = builder;
     }
 
     /**
      * clean running container.
      */
-    public static void cleanRuningContainer() throws DockerException, InterruptedException {
+    public synchronized void cleanRuningContainer() throws DockerException, InterruptedException {
         if (runningContainerId != null) {
-            docker.stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
-            docker.removeContainer(runningContainerId);
+            dockerBuilder.build().stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
+            dockerBuilder.build().removeContainer(runningContainerId);
             runningContainerId = null;
         }
         return;
     }
-
 }

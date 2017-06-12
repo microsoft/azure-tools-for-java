@@ -43,23 +43,23 @@ public class DockerizeHandler extends AzureAbstractHandler {
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
-        ConsoleLogger.info("Adding docker support ...");
+        ConsoleLogger.info(Constant.MESSAGE_ADDING_DOCKER_SUPPORT);
         try {
             IProject project = PluginUtil.getSelectedProject();
             if (project == null) {
-                throw new Exception("Can't detect an active project");
+                throw new Exception(Constant.ERROR_NO_SELECTED_PROJECT);
             }
             IFolder folder = project.getFolder(Constant.DOCKER_CONTEXT_FOLDER);
             if (!folder.exists()) {
                 folder.create(true, true, null);
             }
             createDockerFile(project, folder, Constant.DOCKERFILE_NAME);
-            ConsoleLogger.info(String.format("Docker file created at: %s",
+            ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKERFILE_CREATED,
                     folder.getFile(Constant.DOCKERFILE_NAME).getFullPath()));
             Builder builder = DefaultDockerClient.fromEnv();
-            ConsoleLogger.info(String.format("Current docker host: %s", builder.uri()));
-            Runtime.setDocker(builder.build());
-            ConsoleLogger.info("Successfully added docker support!");
+            Runtime.getInstance().setDockerBuilder(builder);
+            ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKER_HOST_INFO, builder.uri()));
+            ConsoleLogger.info(Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK);
             ConsoleLogger.info(Constant.MESSAGE_INSTRUCTION);
         } catch (Exception e) {
             e.printStackTrace();

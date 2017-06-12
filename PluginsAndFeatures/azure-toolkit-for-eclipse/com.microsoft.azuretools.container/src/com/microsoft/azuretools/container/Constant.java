@@ -25,7 +25,6 @@ package com.microsoft.azuretools.container;
 public class Constant {
     public static final int TIMEOUT_STOP_CONTAINER = 5;
     public static final String CONSOLE_NAME = "AzureToolsConsole";
-    public static final String CONSOLE_TYPE = "org.eclipse.ui.MessageConsole";
     public static final String DOCKER_CONTEXT_FOLDER = "/dockerContext/";
     public static final String DOCKERFILE_NAME = "Dockerfile";
     public static final String TOMCAT_SERVICE_PORT = "8080";
@@ -34,7 +33,7 @@ public class Constant {
             + "Set the DOCKER_CERT_PATH variable to connect TLS-enabled daemon.)";
     public static final String MESSAGE_INSTRUCTION_DEPRECATED = "Please make sure following environment variables are"
             + " correctly set:\nDOCKER_HOST (default value: localhost:2375)\nDOCKER_CERT_PATH ";
-    public static final String MESSAGE_DOCKERFILE_CREATED = "Dockerfile Successfully Created.";
+    public static final String MESSAGE_DOCKERFILE_CREATED = "Docker file created at: %s";
     public static final String MESSAGE_CONFIRM_STOP_CONTAINER = "Running container detected. We will stop and remove "
             + "it.\n Continue?";
     public static final String MESSAGE_DOCKER_CONNECTING = "Connecting to docker daemon ... ";
@@ -51,5 +50,7 @@ public class Constant {
     public static final String MESSAGE_STARTING_CONTAINER = "Starting container ...";
     public static final String MESSAGE_CONTAINER_STARTED = "Container is running now!\nURL: %s/%s";
     public static final String ERROR_STARTING_CONTAINER = "Fail to start Container #id=%s";
-
+    public static final String MESSAGE_ADD_DOCKER_SUPPORT_OK = "Successfully added docker support!";
+    public static final String MESSAGE_ADDING_DOCKER_SUPPORT = "Adding docker support ...";
+    public static final String MESSAGE_DOCKER_HOST_INFO = "Current docker host: %s";
 }

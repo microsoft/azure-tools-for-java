@@ -37,11 +37,10 @@ import org.eclipse.ui.console.MessageConsoleStream;
 
 public class ConsoleLogger {
     private MessageConsole console = null;
-    public MessageConsoleStream out = null;
-    public MessageConsoleStream err = null;
+    private MessageConsoleStream out = null;
+    private MessageConsoleStream err = null;
 
     private ConsoleLogger() {
-        // TODO: make console name constant in future
         console = findConsole(Constant.CONSOLE_NAME);
         out = console.newMessageStream();
         err = console.newMessageStream();
@@ -80,10 +79,15 @@ public class ConsoleLogger {
     private MessageConsole findConsole(String name) {
         ConsolePlugin plugin = ConsolePlugin.getDefault();
         IConsoleManager conMan = plugin.getConsoleManager();
+        
+        //test
+        MessageConsole myConsole0 = new MessageConsole(name, null);
+        conMan.addConsoles(new IConsole[] { myConsole0 });
+        
         IConsole[] existing = conMan.getConsoles();
         for (int i = 0; i < existing.length; i++) {
             System.out.println(existing[i].getType());
-            if (name.equals(existing[i].getName()) && existing[i].getType().equals(Constant.CONSOLE_TYPE)) {
+            if (name.equals(existing[i].getName()) && existing[i].getType().equals("org.eclipse.ui.MessageConsole")) {
                 return (MessageConsole) existing[i];
             }
         }

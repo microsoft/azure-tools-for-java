@@ -29,6 +29,7 @@ import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 
 import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.ProgressHandler;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
@@ -75,22 +76,23 @@ public class DockerRunHandler extends AzureAbstractHandler {
         }
 
         String destinationPath = project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER + project.getName() + ".war";
-        DockerClient docker = Runtime.getDocker();
+        Builder dockerBuilder = Runtime.getInstance().getDockerBuilder();
 
         try {
             // Initialize docker client according to env DOCKER_HOST & DOCKER_CERT_PATH
             ConsoleLogger.info(Constant.MESSAGE_DOCKER_CONNECTING);
-            if (docker == null) {
-                docker = DefaultDockerClient.fromEnv().build();
-                Runtime.setDocker(docker);
+            if (dockerBuilder == null) {
+                dockerBuilder = DefaultDockerClient.fromEnv();
+                Runtime.getInstance().setDockerBuilder(dockerBuilder);
             }
+            DockerClient docker = dockerBuilder.build();
             // Stop running container
-            String runningContainerId = Runtime.getRunningContainerId();
+            String runningContainerId = Runtime.getInstance().getRunningContainerId();
             if (runningContainerId != null) {
                 boolean stop = MessageDialog.openConfirm(window.getShell(), "Stop",
                         Constant.MESSAGE_CONFIRM_STOP_CONTAINER);
                 if (stop) {
-                    Runtime.cleanRuningContainer();
+                    Runtime.getInstance().cleanRuningContainer();
                 } else {
                     return null;
                 }
@@ -142,7 +144,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
         final Optional<Container> res = containers.stream().filter(item -> item.id().equals(containerId)).findFirst();
 
         if (res.isPresent()) {
-            Runtime.setRunningContainerId(res.get().id());
+            Runtime.getInstance().setRunningContainerId(res.get().id());
             return String.format("http://%s:%s", docker.getHost(), res.get().ports().stream()
                     .filter(item -> item.privatePort().equals(8080)).findFirst().get().publicPort());
         } else {
