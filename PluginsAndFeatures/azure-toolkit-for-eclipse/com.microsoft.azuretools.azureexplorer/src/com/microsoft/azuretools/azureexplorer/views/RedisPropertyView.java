@@ -32,8 +32,10 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
@@ -55,7 +57,7 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
     private static final String LABEL_NAME = "Name";
     private static final String LABEL_TYPE = "Type";
     private static final String LABEL_RES_GRP = "Resource Group";
-    private static final String LABEL_SUBSCRIPTION = "Subscription";
+    private static final String LABEL_SUBSCRIPTION = "Subscription Id";
     private static final String LABEL_REGION = "Region";
     private static final String LABEL_HOST_NAME = "Host Name";
     private static final String LABEL_SSL = "SSL Port";
@@ -177,6 +179,7 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
         lnkSecondaryKey.setEnabled(false);
         lnkSecondaryKey.setText(COPY_TO_CLIPBOARD);
         
+        setTextFieldTransparent();
         setScrolledCompositeContent();
         
         // View cLose event
@@ -228,6 +231,19 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
         lnkSecondaryKey.setEnabled(true);
         container.layout();
         setScrolledCompositeContent();
+    }
+    
+    private void setTextFieldTransparent() {
+        Color transparentColor = new Color(Display.getCurrent(), 0, 0, 0, 0);
+        txtNameValue.setBackground(transparentColor);
+        txtTypeValue.setBackground(transparentColor);
+        txtResGrpValue.setBackground(transparentColor);
+        txtSubscriptionValue.setBackground(transparentColor);
+        txtRegionValue.setBackground(transparentColor);
+        txtHostNameValue.setBackground(transparentColor);
+        txtSslPortValue.setBackground(transparentColor);
+        txtNonSslPortValue.setBackground(transparentColor);
+        txtVersionValue.setBackground(transparentColor);
     }
 
     private void setScrolledCompositeContent() {
