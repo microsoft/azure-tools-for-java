@@ -271,14 +271,12 @@ public class UIHelperImpl implements UIHelper {
             if (page == null) {
                 return;
             }
-            final RedisPropertyView view;
             if (node.getResourceId() == null) {
                 showError(UNABLE_TO_GET_REDIS_PROPERTY, UNABLE_TO_GET_REDIS_PROPERTY);
                 return;
-            } else {
-                view = (RedisPropertyView) page.showView(RedisPropertyView.ID, node.getResourceId(),
-                        IWorkbenchPage.VIEW_ACTIVATE);
             }
+            final RedisPropertyView view = (RedisPropertyView) page.showView(RedisPropertyView.ID, node.getResourceId(),
+                    IWorkbenchPage.VIEW_ACTIVATE);
             Display.getDefault().asyncExec(new Runnable() {
                 @Override
                 public void run() {
@@ -287,7 +285,6 @@ public class UIHelperImpl implements UIHelper {
             });
         } catch (PartInitException e) {
             showException(UNABLE_TO_GET_REDIS_PROPERTY, e, UNABLE_TO_GET_REDIS_PROPERTY, false, false);
-            Activator.getDefault().log("Error opening RedisPropertyView", e);
         }
     }
     
