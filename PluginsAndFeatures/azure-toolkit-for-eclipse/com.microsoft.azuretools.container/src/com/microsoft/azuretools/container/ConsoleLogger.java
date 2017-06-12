@@ -46,19 +46,8 @@ public class ConsoleLogger {
         err = console.newMessageStream();
         out.setColor(new Color(null, 0, 0, 255));
         err.setColor(new Color(null, 255, 0, 0));
-
-        IConsole myConsole = this.console;
-        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        IWorkbenchPage page = window.getActivePage();
-        String id = IConsoleConstants.ID_CONSOLE_VIEW;
-        IConsoleView view;
-        try {
-            view = (IConsoleView) page.showView(id);
-            view.display(myConsole);
-        } catch (PartInitException e) {
-            e.printStackTrace();
-        }
     }
+    
 
     private static class LazyHolder {
         static final ConsoleLogger INSTANCE = new ConsoleLogger();
@@ -70,10 +59,12 @@ public class ConsoleLogger {
 
     public static void info(String infoMsg) {
         LazyHolder.INSTANCE.out.println(String.format("[INFO]\t%s", infoMsg));
+        LazyHolder.INSTANCE.showConsole();
     }
 
     public static void error(String errorMsg) {
         LazyHolder.INSTANCE.err.println(String.format("[ERROR]\t%s", errorMsg));
+        LazyHolder.INSTANCE.showConsole();
     }
 
     private MessageConsole findConsole(String name) {
@@ -92,4 +83,19 @@ public class ConsoleLogger {
         conMan.addConsoles(new IConsole[] { myConsole });
         return myConsole;
     }
+    
+    private void showConsole() {
+        IConsole myConsole = this.console;
+        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        IWorkbenchPage page = window.getActivePage();
+        String id = IConsoleConstants.ID_CONSOLE_VIEW;
+        IConsoleView view;
+        try {
+            view = (IConsoleView) page.showView(id);
+            view.display(myConsole);
+        } catch (PartInitException e) {
+            e.printStackTrace();
+        }
+    }
+    
 }
