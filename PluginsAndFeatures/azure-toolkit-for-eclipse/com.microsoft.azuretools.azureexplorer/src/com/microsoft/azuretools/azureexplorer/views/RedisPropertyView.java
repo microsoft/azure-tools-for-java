@@ -35,6 +35,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
@@ -179,7 +180,7 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
         lnkSecondaryKey.setEnabled(false);
         lnkSecondaryKey.setText(COPY_TO_CLIPBOARD);
         
-        setTextFieldTransparent();
+        setChildrenTransparent(container);
         setScrolledCompositeContent();
         
         // View cLose event
@@ -233,17 +234,16 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
         setScrolledCompositeContent();
     }
     
-    private void setTextFieldTransparent() {
+    private void setChildrenTransparent(Composite container) {
+        if (container == null) {
+            return;
+        }
         Color transparentColor = new Color(Display.getCurrent(), 0, 0, 0, 0);
-        txtNameValue.setBackground(transparentColor);
-        txtTypeValue.setBackground(transparentColor);
-        txtResGrpValue.setBackground(transparentColor);
-        txtSubscriptionValue.setBackground(transparentColor);
-        txtRegionValue.setBackground(transparentColor);
-        txtHostNameValue.setBackground(transparentColor);
-        txtSslPortValue.setBackground(transparentColor);
-        txtNonSslPortValue.setBackground(transparentColor);
-        txtVersionValue.setBackground(transparentColor);
+        for (Control control: container.getChildren()) {
+            if (control instanceof Text) {
+                control.setBackground(transparentColor);
+            }
+        }
     }
 
     private void setScrolledCompositeContent() {
