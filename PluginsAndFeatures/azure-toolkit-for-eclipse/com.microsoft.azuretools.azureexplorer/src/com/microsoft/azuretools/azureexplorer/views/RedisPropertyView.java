@@ -231,6 +231,8 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
         lnkSecondaryKey.setEnabled(true);
         container.layout();
         setScrolledCompositeContent();
+
+        this.setPartName(property.getName());
     }
     
     private void setChildrenTransparent(Composite container) {
