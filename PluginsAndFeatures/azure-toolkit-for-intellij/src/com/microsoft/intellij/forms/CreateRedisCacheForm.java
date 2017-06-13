@@ -85,6 +85,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     private AzureManager azureManager;
     private List<SubscriptionDetail> allSubs;
     private LinkedHashMap<String, String> skus;
+    private List<String> sortedGroups;
     private Runnable onCreate;
 
     // Form Variables
@@ -142,11 +143,14 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         }
 
         try {
-            Azure azure = azureManager.getAzure(currentSub.getSubscriptionId());
-            if (newResGrp && !RedisCacheUtil.canCreateNewResGrp(azure, selectedResGrpValue)) {
-                return new ValidationInfo(String.format(NEW_RES_GRP_ERROR_FORMAT, selectedResGrpValue), txtNewResGrp);
+            if (newResGrp) {
+                for (String resGrp : sortedGroups) {
+                    if (resGrp.equals(selectedResGrpValue)) {
+                        return new ValidationInfo(String.format(NEW_RES_GRP_ERROR_FORMAT, selectedResGrpValue), txtNewResGrp);
+                    }
+                }
             }
-            for (RedisCache existingRedisCache : azure.redisCaches().list()) {
+            for (RedisCache existingRedisCache : azureManager.getAzure(currentSub.getSubscriptionId()).redisCaches().list()) {
                 if (existingRedisCache.name().equals(redisCacheNameValue)) {
                     return new ValidationInfo(String.format(VALIDATION_FORMAT, redisCacheNameValue), txtRedisName);
                 }
@@ -375,7 +379,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         }
         List<ResourceGroup> groups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(selectedSub);
         if (groups != null) {
-            List<String> sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
+            sortedGroups = groups.stream().map(ResourceGroup::name).sorted().collect(Collectors.toList());
             cbUseExist.setModel(new DefaultComboBoxModel<>(sortedGroups.toArray(new String[sortedGroups.size()])));
         }
     }
