@@ -27,7 +27,7 @@ import com.microsoft.azuretools.container.Constant;
 import com.microsoft.azuretools.container.Runtime;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.ProgressHandler;
@@ -61,7 +61,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 
-
 public class DockerRunHandler extends AzureAbstractHandler {
 
     @Override
@@ -73,16 +72,16 @@ public class DockerRunHandler extends AzureAbstractHandler {
             ConsoleLogger.error(Constant.ERROR_NO_SELECTED_PROJECT);
             return null;
         }
-
-        String destinationPath = project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER + project.getName() + ".war";
         
+        String destinationPath = project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER + project.getName() + ".war";
+
+        // Initialize docker client according to env DOCKER_HOST & DOCKER_CERT_PATH
+        ConsoleLogger.info(Constant.MESSAGE_DOCKER_CONNECTING);
+        Builder dockerBuilder = Runtime.getInstance().getDockerBuilder();
+        DockerClient docker = dockerBuilder.build();
+        // Stop running container
+        String runningContainerId = Runtime.getInstance().getRunningContainerId();
         try {
-            // Initialize docker client according to env DOCKER_HOST & DOCKER_CERT_PATH
-            ConsoleLogger.info(Constant.MESSAGE_DOCKER_CONNECTING);
-            Builder dockerBuilder = Runtime.getInstance().getDockerBuilder();
-            DockerClient docker = dockerBuilder.build();
-            // Stop running container
-            String runningContainerId = Runtime.getInstance().getRunningContainerId();
             if (containerExists(docker, runningContainerId)) {
                 boolean stop = MessageDialog.openConfirm(window.getShell(), "Stop",
                         Constant.MESSAGE_CONFIRM_STOP_CONTAINER);
@@ -92,28 +91,53 @@ public class DockerRunHandler extends AzureAbstractHandler {
                     return null;
                 }
             }
-            // export WAR file
-            ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
-            export(project, destinationPath);
-
-            // build image based on WAR file 
-            ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
-            String imageName = build(docker, project, project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER);
-            ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageName));
-
-            // create a container
-            String containerId = createContainer(docker, project, imageName);
-            ConsoleLogger.info(Constant.MESSAGE_CREATING_CONTAINER);
-            ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_INFO, containerId));
-
-            // start container
-            ConsoleLogger.info(Constant.MESSAGE_STARTING_CONTAINER);
-            String webappUrl = runContainer(docker, containerId);
-            ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_STARTED, webappUrl, project.getName()));
         } catch (Exception e) {
             e.printStackTrace();
             ConsoleLogger.error(String.format(Constant.ERROR_RUNNING_DOCKER, e.getMessage()));
         }
+
+        DefaultLoader.getIdeHelper().runInBackground(project, Constant.MESSAGE_EXECUTE_DOCKER_RUN, true, true,
+                Constant.MESSAGE_EXECUTE_DOCKER_RUN, () -> {
+                    try {
+                        // export WAR file
+                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                            ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
+                        });
+                        export(project, destinationPath);
+
+                        // build image based on WAR file
+                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                            ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
+                        });
+                        String imageName = build(docker, project,
+                                project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER);
+                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                            ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageName));
+                        });
+
+                        // create a container
+                        String containerId = createContainer(docker, project, imageName);
+                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                            ConsoleLogger.info(Constant.MESSAGE_CREATING_CONTAINER);
+                            ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_INFO, containerId));
+                        });
+
+                        // start container
+                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                            ConsoleLogger.info(Constant.MESSAGE_STARTING_CONTAINER);
+                        });
+                        String webappUrl = runContainer(docker, containerId);
+                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                            ConsoleLogger.info(
+                                    String.format(Constant.MESSAGE_CONTAINER_STARTED, webappUrl, project.getName()));
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                            ConsoleLogger.error(String.format(Constant.ERROR_RUNNING_DOCKER, e.getMessage()));
+                        });
+                    }
+                });
         return null;
     }
 
@@ -174,8 +198,9 @@ public class DockerRunHandler extends AzureAbstractHandler {
         dataModel.setProperty(IJ2EEComponentExportDataModelProperties.ARCHIVE_DESTINATION, destinationPath);
         dataModel.getDefaultOperation().execute(null, null);
     }
-    
-    private boolean containerExists(DockerClient docker, String containerId) throws DockerException, InterruptedException{
+
+    private boolean containerExists(DockerClient docker, String containerId)
+            throws DockerException, InterruptedException {
         long count = docker.listContainers().stream().filter(item -> item.id().equals(containerId)).count();
         return (count > 0);
     }

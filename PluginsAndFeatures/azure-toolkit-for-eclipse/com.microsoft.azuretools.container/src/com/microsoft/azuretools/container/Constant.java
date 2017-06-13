@@ -53,4 +53,5 @@ public class Constant {
     public static final String MESSAGE_ADD_DOCKER_SUPPORT_OK = "Successfully added docker support!";
     public static final String MESSAGE_ADDING_DOCKER_SUPPORT = "Adding docker support ...";
     public static final String MESSAGE_DOCKER_HOST_INFO = "Current docker host: %s";
+    public static final String MESSAGE_EXECUTE_DOCKER_RUN = "Executing Docker Run...";
 }
