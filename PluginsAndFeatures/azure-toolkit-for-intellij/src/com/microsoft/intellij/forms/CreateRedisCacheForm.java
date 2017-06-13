@@ -105,6 +105,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     private static final String VALIDATION_FORMAT = "The name %s is not available.";
     private static final String CREATING_INDICATOR = "Creating Redis Cache %s ...";
     private static final String CREATING_ERROR_INDICATOR = "An error occurred while attempting to %s.\n%s";
+    private static final String NEW_RES_GRP_ERROR_FORMAT = "The resource group: %s is already existing.";
 
     public CreateRedisCacheForm(Project project) throws IOException {
         super(project, true);
@@ -141,7 +142,11 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         }
 
         try {
-            for (RedisCache existingRedisCache : azureManager.getAzure(currentSub.getSubscriptionId()).redisCaches().list()) {
+            Azure azure = azureManager.getAzure(currentSub.getSubscriptionId());
+            if (newResGrp && !RedisCacheUtil.canCreateNewResGrp(azure, selectedResGrpValue)) {
+                return new ValidationInfo(String.format(NEW_RES_GRP_ERROR_FORMAT, selectedResGrpValue), txtNewResGrp);
+            }
+            for (RedisCache existingRedisCache : azure.redisCaches().list()) {
                 if (existingRedisCache.name().equals(redisCacheNameValue)) {
                     return new ValidationInfo(String.format(VALIDATION_FORMAT, redisCacheNameValue), txtRedisName);
                 }
