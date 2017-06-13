@@ -36,7 +36,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
@@ -238,7 +237,7 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
         if (container == null) {
             return;
         }
-        Color transparentColor = new Color(Display.getCurrent(), 0, 0, 0, 0);
+        Color transparentColor = container.getBackground();
         for (Control control: container.getChildren()) {
             if (control instanceof Text) {
                 control.setBackground(transparentColor);
