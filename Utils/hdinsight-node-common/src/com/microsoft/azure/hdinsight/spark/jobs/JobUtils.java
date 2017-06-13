@@ -21,10 +21,10 @@
  */
 package com.microsoft.azure.hdinsight.spark.jobs;
 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+//import com.gargoylesoftware.htmlunit.WebClient;
+//import com.gargoylesoftware.htmlunit.html.DomElement;
+//import com.gargoylesoftware.htmlunit.html.DomNodeList;
+//import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -193,7 +193,7 @@ public class JobUtils {
             DefaultLoader.getUIHelper().showError(e.getMessage(), "Open Spark Event Log");
         }
     }
-    private static final WebClient HTTP_WEB_CLIENT = new WebClient();
+//    private static final WebClient HTTP_WEB_CLIENT = new WebClient();
 
     private static final String DRIVER_LOG_INFO_URL = "%s/yarnui/jobhistory/logs/%s/port/%s/%s/%s/livy";
 
@@ -228,7 +228,7 @@ public class JobUtils {
     private static ApplicationMasterLogs getYarnLogsFromWebClient(@NotNull final IClusterDetail clusterDetail, @NotNull final String url) throws HDIException, IOException {
         final CredentialsProvider credentialsProvider  =  new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword()));
-        HTTP_WEB_CLIENT.setCredentialsProvider(credentialsProvider);
+//        HTTP_WEB_CLIENT.setCredentialsProvider(credentialsProvider);
 
         String standerr = getInformationFromYarnLogDom(url + "/stderr/?start=0");
         String standout = getInformationFromYarnLogDom(url + "/stout/?start=0");
@@ -237,18 +237,18 @@ public class JobUtils {
     }
 
     private static String getInformationFromYarnLogDom(@NotNull String url) {
-        try {
-            HtmlPage htmlPage = HTTP_WEB_CLIENT.getPage(url);
-            // parse pre tag from html response
-            // there's only one 'pre' in response
-            DomNodeList<DomElement> preTagElements = htmlPage.getElementsByTagName("pre");
-            if (preTagElements.size() != 0) {
-                return preTagElements.get(0).asText();
-            }
-        } catch (IOException e) {
-            LOGGER.error("get Driver Log Error", e);
-        }
-        return "";
+//        try {
+//            HtmlPage htmlPage = HTTP_WEB_CLIENT.getPage(url);
+//            // parse pre tag from html response
+//            // there's only one 'pre' in response
+//            DomNodeList<DomElement> preTagElements = htmlPage.getElementsByTagName("pre");
+//            if (preTagElements.size() != 0) {
+//                return preTagElements.get(0).asText();
+//            }
+//        } catch (IOException e) {
+//            LOGGER.error("get Driver Log Error", e);
+//        }
+        return "Yarn Log unavailable";
     }
 
     public static HttpEntity getEntity(@NotNull final IClusterDetail clusterDetail, @NotNull final String url) throws IOException, HDIException {
