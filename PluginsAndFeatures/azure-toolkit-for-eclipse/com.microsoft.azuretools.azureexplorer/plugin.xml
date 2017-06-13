@@ -30,6 +30,7 @@
        <view
              class="com.microsoft.azuretools.azureexplorer.views.RedisPropertyView"
              id="com.microsoft.azuretools.azureexplorer.views.RedisPropertyView"
+             icon="icons/RedisCache.png"
              name="Redis Cache Property">
        </view>
    </extension>
