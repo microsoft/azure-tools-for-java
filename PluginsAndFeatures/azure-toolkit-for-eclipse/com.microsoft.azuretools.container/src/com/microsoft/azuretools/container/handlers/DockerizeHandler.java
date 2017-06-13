@@ -42,9 +42,9 @@ public class DockerizeHandler extends AzureAbstractHandler {
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
+        IProject project = PluginUtil.getSelectedProject();
         ConsoleLogger.info(Constant.MESSAGE_ADDING_DOCKER_SUPPORT);
         try {
-            IProject project = PluginUtil.getSelectedProject();
             if (project == null) {
                 throw new Exception(Constant.ERROR_NO_SELECTED_PROJECT);
             }
