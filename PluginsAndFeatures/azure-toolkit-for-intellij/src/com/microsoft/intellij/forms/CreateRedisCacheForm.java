@@ -105,7 +105,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     private static final String VALIDATION_FORMAT = "The name %s is not available.";
     private static final String CREATING_INDICATOR = "Creating Redis Cache %s ...";
     private static final String CREATING_ERROR_INDICATOR = "An error occurred while attempting to %s.\n%s";
-    private static final String NEW_RES_GRP_ERROR_FORMAT = "The resource group: %s is already existing.";
+    private static final String NEW_RES_GRP_ERROR_FORMAT = "The resource group: %s is already existed.";
 
     public CreateRedisCacheForm(Project project) throws IOException {
         super(project, true);
