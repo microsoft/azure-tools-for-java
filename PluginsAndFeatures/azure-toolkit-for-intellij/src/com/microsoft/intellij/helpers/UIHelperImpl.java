@@ -288,19 +288,33 @@ public class UIHelperImpl implements UIHelper {
         if (sid == null || resId == null) {
             return;
         }
-        LightVirtualFile itemVirtualFile = new LightVirtualFile(redisName);
-        itemVirtualFile.setFileType(getFileType(RedisCacheNode.TYPE, RedisCacheNode.REDISCACHE_ICON_PATH));
-        itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
-        itemVirtualFile.putUserData(RESOURCE_ID, resId);
-        FileEditor[] editors = FileEditorManager.getInstance((Project) node.getProject()).openFile( itemVirtualFile, true, true);
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                for (FileEditor editor: editors) {
-                    if (editor.getName().equals(RedisCachePropertyView.ID) &&
-                            editor instanceof RedisCachePropertyView) {
-                        ((RedisCachePropertyView) editor).readProperty(sid, resId);
-                    }
+        Project project = (Project) node.getProject();
+        LightVirtualFile itemVirtualFile = null;
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        if (fileEditorManager == null) {
+            return;
+        }
+        for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
+            String fileSid = editedFile.getUserData(SUBSCRIPTION_ID);
+            if (fileSid != null && fileSid.equals(sid) &&
+                    editedFile.getName().equals(redisName) &&
+                    editedFile.getFileType().getName().equals(RedisCacheNode.TYPE)) {
+                itemVirtualFile = (LightVirtualFile) editedFile;
+                break;
+            }
+        }
+        if (itemVirtualFile == null) {
+            itemVirtualFile = new LightVirtualFile(redisName);
+            itemVirtualFile.setFileType(getFileType(RedisCacheNode.TYPE, RedisCacheNode.REDISCACHE_ICON_PATH));
+            itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
+            itemVirtualFile.putUserData(RESOURCE_ID, resId);
+        }
+        FileEditor[] editors = fileEditorManager.openFile( itemVirtualFile, true, true);
+        ApplicationManager.getApplication().invokeLater(() -> {
+            for (FileEditor editor: editors) {
+                if (editor.getName().equals(RedisCachePropertyView.ID) &&
+                        editor instanceof RedisCachePropertyView) {
+                    ((RedisCachePropertyView) editor).readProperty(sid, resId);
                 }
             }
         }, ModalityState.any());
