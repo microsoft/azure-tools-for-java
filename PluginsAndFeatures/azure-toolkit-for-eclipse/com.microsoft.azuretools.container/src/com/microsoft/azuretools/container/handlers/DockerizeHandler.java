@@ -27,7 +27,6 @@ import com.microsoft.azuretools.container.Constant;
 import com.microsoft.azuretools.container.Runtime;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
 
 import java.io.ByteArrayInputStream;
@@ -62,7 +61,7 @@ public class DockerizeHandler extends AzureAbstractHandler {
             ConsoleLogger.info(Constant.MESSAGE_INSTRUCTION);
         } catch (Exception e) {
             e.printStackTrace();
-            ConsoleLogger.error(Constant.ERROR_CREATING_DOCKERFILE);
+            ConsoleLogger.error(String.format(Constant.ERROR_CREATING_DOCKERFILE, e.getMessage()));
         }
         return null;
     }

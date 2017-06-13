@@ -25,7 +25,6 @@ package com.microsoft.azuretools.container;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
-import com.spotify.docker.client.exceptions.ContainerNotFoundException;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
 
@@ -68,17 +67,14 @@ public class Runtime {
 
     /**
      * clean running container.
-     * @throws DockerException, InterruptedException
+     * @throws DockerException
+     * @throws InterruptedException
      */
     public synchronized void cleanRuningContainer() throws DockerException, InterruptedException {
         if (runningContainerId != null) {
             DockerClient docker = dockerBuilder.build();
-            try {
-                docker.stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
-                docker.removeContainer(runningContainerId);
-            } catch (ContainerNotFoundException e) {
-                e.printStackTrace();
-            }
+            docker.stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
+            docker.removeContainer(runningContainerId);
             runningContainerId = null;
         }
         return;

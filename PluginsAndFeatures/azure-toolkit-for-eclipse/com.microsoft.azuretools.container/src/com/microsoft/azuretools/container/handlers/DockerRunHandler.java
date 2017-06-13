@@ -28,7 +28,6 @@ import com.microsoft.azuretools.container.Runtime;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 
-import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.ProgressHandler;
@@ -84,7 +83,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
             DockerClient docker = dockerBuilder.build();
             // Stop running container
             String runningContainerId = Runtime.getInstance().getRunningContainerId();
-            if (runningContainerId != null) {
+            if (containerExists(docker, runningContainerId)) {
                 boolean stop = MessageDialog.openConfirm(window.getShell(), "Stop",
                         Constant.MESSAGE_CONFIRM_STOP_CONTAINER);
                 if (stop) {
@@ -113,7 +112,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
             ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_STARTED, webappUrl, project.getName()));
         } catch (Exception e) {
             e.printStackTrace();
-            ConsoleLogger.error(Constant.ERROR_RUNNING_DOCKER);
+            ConsoleLogger.error(String.format(Constant.ERROR_RUNNING_DOCKER, e.getMessage()));
         }
         return null;
     }
@@ -174,5 +173,10 @@ public class DockerRunHandler extends AzureAbstractHandler {
         dataModel.setProperty(IJ2EEComponentExportDataModelProperties.PROJECT_NAME, projectName);
         dataModel.setProperty(IJ2EEComponentExportDataModelProperties.ARCHIVE_DESTINATION, destinationPath);
         dataModel.getDefaultOperation().execute(null, null);
+    }
+    
+    private boolean containerExists(DockerClient docker, String containerId) throws DockerException, InterruptedException{
+        long count = docker.listContainers().stream().filter(item -> item.id().equals(containerId)).count();
+        return (count > 0);
     }
 }
