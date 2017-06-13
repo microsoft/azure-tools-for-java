@@ -43,7 +43,7 @@ Section A: Microsoft is offering you a license to use the following components w
 35.	Retrofit (https://github.com/square/retrofit)
 36.	RxJava (https://github.com/ReactiveX/RxJava)
 37.	Simple Logging Facade for Java (https://www.slf4j.org/)
-
+38. HtmlUnit (http://htmlunit.sourceforge.net/)
 
 %% annotation-detector (infomas-asl)  NOTICES AND INFORMATION BEGIN HERE
 =========================================

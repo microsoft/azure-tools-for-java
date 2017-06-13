@@ -41,13 +41,12 @@ function serializeQuery(queriesMap) {
 }
 
 function getMessageAsync(url, type, callback, appId) {
-    var queriesMap = {};
-    queriesMap['http-type'] = type | 'spark';
-    queriesMap['cluster-name'] = spark.clusterName;
-    if (!appId) {
-        queriesMap['appId'] = appId;
-    }
-    var queryString = serializeQuery(queriesMap);
+    var queries = {
+        'http-type' : type || 'spark',
+        'cluster-name' : spark.clusterName || '0',
+        'appId' : appId || '0'
+    };
+    var queryString = serializeQuery(queries);
 
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.timeout = 60 * 1000;

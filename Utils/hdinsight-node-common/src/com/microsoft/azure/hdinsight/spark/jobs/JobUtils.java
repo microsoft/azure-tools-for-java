@@ -86,6 +86,9 @@ public class JobUtils {
             httpExchange.sendResponseHeaders(code, message.length());
             OutputStream stream = httpExchange.getResponseBody();
             stream.write(message.getBytes());
+            stream.flush();
+            stream.close();
+            httpExchange.close();
         } catch (IOException e) {
             LOGGER.error("JobUtils set Response error", e);
         }

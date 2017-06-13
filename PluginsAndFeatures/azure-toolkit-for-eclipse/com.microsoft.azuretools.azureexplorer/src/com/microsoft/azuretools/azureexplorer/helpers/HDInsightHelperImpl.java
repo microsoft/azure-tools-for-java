@@ -34,6 +34,7 @@ import org.osgi.framework.BundleException;
 import com.microsoft.azure.hdinsight.common.HDInsightHelper;
 import com.microsoft.azure.hdinsight.common.JobViewManager;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.azureexplorer.editors.JobViewInput;
@@ -51,20 +52,20 @@ public class HDInsightHelperImpl implements HDInsightHelper {
 		instID = DataOperations.getProperty(dataFile, Messages.instID);
 	}
 
-	public void openJobViewEditor(Object projectObject, String uuid) {
+	public void openJobViewEditor(Object projectObject, @NotNull String clusterName) {
 		try {
 			loadHDInsightPlugin();
 		} catch (BundleException bundleException) {
 			Activator.getDefault().log("Error loading plugin " + HDINSIHGT_BUNDLE_ID, bundleException);
 		}
 
-		IClusterDetail clusterDetail = JobViewManager.getCluster(uuid);
+		IClusterDetail clusterDetail = JobViewManager.getCluster(clusterName);
 		IWorkbench workbench = PlatformUI.getWorkbench();
 		IEditorDescriptor editorDescriptor = workbench.getEditorRegistry()
 				.findEditor("com.microsoft.azure.hdinsight.jobview");
 		try {
 			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-			IEditorPart newEditor = page.openEditor(new JobViewInput(clusterDetail, uuid), editorDescriptor.getId());
+			IEditorPart newEditor = page.openEditor(new JobViewInput(clusterDetail), editorDescriptor.getId());
 		} catch (PartInitException e2) {
 			Activator.getDefault().log("Error opening " + clusterDetail.getName(), e2);
 		}

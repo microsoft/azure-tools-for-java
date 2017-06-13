@@ -22,6 +22,9 @@
 package com.microsoft.azure.hdinsight.spark.jobs;
 
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
@@ -33,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 public class JobViewHttpServer {
     private static HttpServer server;
-    private static final int NUMBER_OF_THREADS = 10;
+    private static final int NUMBER_OF_THREADS = 50;
     private static ExecutorService executorService;
     private static boolean isEnabled = false;
     private static int port = -1;
@@ -73,7 +76,12 @@ public class JobViewHttpServer {
             InetSocketAddress socketAddress = new InetSocketAddress(s.getLocalPort());
             port = socketAddress.getPort();
 
-            server = HttpServer.create(socketAddress, 10);
+            server = HttpServer.create(socketAddress, NUMBER_OF_THREADS);
+
+            server.createContext("/try", (httpExchange) -> {
+                    httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+                    JobUtils.setResponse(httpExchange, "Connect Successfully");
+            });
             server.createContext("/applications", new SparkJobHttpHandler());
             server.createContext("/apps", new YarnJobHttpHandler());
             server.createContext("/actions", new ActionHttpHandler());

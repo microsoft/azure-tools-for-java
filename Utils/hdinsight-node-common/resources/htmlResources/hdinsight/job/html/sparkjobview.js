@@ -134,26 +134,28 @@ function getBasicInfoFromUrl() {
         spark.queriresMap[strs[0]] = strs[1];
     }
 
-    spark.sourceType = spark.queriresMap['sourcetype'] === 'undefined' ? "intellij" : "eclipse";
+    spark.sourceType = spark.queriresMap['sourcetype'] === undefined ? "intellij" : "eclipse";
     spark.clusterName = spark.queriresMap['clusterName'];
     spark.engineType = spark.queriresMap['engineType'];
     spark.queryPort = spark.queriresMap['port'];
     spark.localhost = 'http://localhost:{0}'.format(spark.queryPort);
+
+    // send empty request so we can get first response with access header quickly
+    getMessageAsync('/try', 'spark', null, null);
 }
 
 function getJobHistory() {
     getMessageAsync("/applications/", 'spark', function (s) {
         writeToTable(s);
         refreshGetSelectedApplication();
-
-        // try to click the first application
-        $('#JobHistoryTbody').find('tr:eq(0)').click();
     });
 }
 
 function refreshGetSelectedApplication() {
     var selectedAppId = localStorage.getItem("selectedAppID");
     if (!selectedAppId) {
+        // try to click the first application
+        $('#JobHistoryTbody').find('tr:eq(0)').click();
         return;
     }
 

@@ -29,7 +29,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
 
-import com.microsoft.azure.hdinsight.spark.jobs.JobViewDummyHttpServer;
+import com.microsoft.azure.hdinsight.spark.jobs.JobViewHttpServer;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 
@@ -41,12 +41,12 @@ public class HDInsightJobViewUtils {
     private static final String HDINSIGHT_JOBVIEW_EXTRACT_FLAG = "com.microsoft.azuretools.hdinsight.html.extract";
     
     public static void closeJobViewHttpServer() {
-    	JobViewDummyHttpServer.close();
+    	JobViewHttpServer.close();
     }
     
     public static void checkInitlize() {
 		extractJobViewResource();
-		JobViewDummyHttpServer.initlize();
+		JobViewHttpServer.initialize();
     }
     
 	 private static void extractJobViewResource() {

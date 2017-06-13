@@ -8,19 +8,17 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 
 public class JobViewInput implements IEditorInput {
     private IClusterDetail clusterDetail;
-    private String uuid;
 
-    public JobViewInput(IClusterDetail clusterDetail, String uuid) {
+    public JobViewInput(IClusterDetail clusterDetail) {
         this.clusterDetail = clusterDetail;
-        this.uuid = uuid;
     }
     
     public IClusterDetail getClusterDetail() {
 		return clusterDetail;
 	}
 
-	public String getUuid() {
-		return uuid;
+	public String getClusterName() {
+		return clusterDetail.getName();
 	}
 
 	@Override

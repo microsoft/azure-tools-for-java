@@ -15,11 +15,13 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.spark.jobs.JobViewHttpServer;
 
 public class JobViewEditor extends EditorPart {
-
+	
+    private static final String QUERY_TEMPLATE = "?clusterName=%s&port=%s&engineType=javafx";
+    
 	private IClusterDetail clusterDetail;
-	private String uuid;
 
 	@Override
 	public void doSave(IProgressMonitor iProgressMonitor) {
@@ -36,7 +38,6 @@ public class JobViewEditor extends EditorPart {
 		setSite(site);
 		setInput(input);
 		clusterDetail = ((JobViewInput) input).getClusterDetail();
-		uuid = ((JobViewInput) input).getUuid();
 		setPartName(clusterDetail.getName() + " Spark JobView");
 	}
 
@@ -58,7 +59,8 @@ public class JobViewEditor extends EditorPart {
 				+ "/hdinsight/job/html/index.html";
 		File indexFile = new File(indexPath);
 		if(indexFile.exists()) {
-			final String queryString = "?projectid=" + uuid + "&engintype=javafx&sourcetype=eclipse&clustername=" + clusterDetail.getName();
+			final String queryString = String.format(QUERY_TEMPLATE, clusterDetail.getName(),
+					JobViewHttpServer.getPort());
 			final String webUrl = "file:///" + indexPath.replace("\\", "/") + queryString;
 			FxClassLoader.loadJavaFxForJobView(composite, webUrl);
 		} else {
