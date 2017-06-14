@@ -104,8 +104,7 @@ public class RedisCacheIntegrationTest extends IntegrationTestBase {
             RedisCacheNode redisCacheNode = (RedisCacheNode) nodes.get(0);
             
             redisModule.removeNode(this.defaultSubscription, redisCacheNode.getResourceId(), redisCacheNode);
-            nodes = redisModule.getChildNodes();
-            assertEquals(0, nodes.size());
+            assertEquals(0, redisModule.getChildNodes().size());
             // TODO: add create case
         } catch (Exception e) {
             System.out.println(e.getStackTrace());
