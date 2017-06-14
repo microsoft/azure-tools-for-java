@@ -89,7 +89,7 @@ public class RedisCacheIntegrationTest extends IntegrationTestBase {
     private String defaultSubscription;
     
     @Before
-    public void setup() throws Exception {
+    public void setUp() throws Exception {
         setUpStep();
     }
     
@@ -99,7 +99,14 @@ public class RedisCacheIntegrationTest extends IntegrationTestBase {
             redisModule.refreshItems();
             ObservableList<Node> nodes = redisModule.getChildNodes();
             assertEquals(1, nodes.size());
-            // TODO: add remove/create case
+            
+            assertTrue(nodes.get(0) instanceof RedisCacheNode);
+            RedisCacheNode redisCacheNode = (RedisCacheNode) nodes.get(0);
+            
+            redisModule.removeNode(this.defaultSubscription, redisCacheNode.getResourceId(), redisCacheNode);
+            nodes = redisModule.getChildNodes();
+            assertEquals(0, nodes.size());
+            // TODO: add create case
         } catch (Exception e) {
             System.out.println(e.getStackTrace());
             fail();
@@ -107,7 +114,7 @@ public class RedisCacheIntegrationTest extends IntegrationTestBase {
     }
     
     @After
-    public void cleanup() throws Exception {
+    public void tearDown() throws Exception {
         resetTest(name.getMethodName());
     }
     
