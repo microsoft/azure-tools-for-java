@@ -29,7 +29,9 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -84,19 +86,24 @@ public class ClusterManager {
             ClusterType type,
             String osType,
             Object projectObject) throws AggregatedException {
-
         List<IClusterDetail> clusterDetailList = getClusterDetails(subscriptions, projectObject);
-        List<IClusterDetail> filterClusterDetailList = new ArrayList<>();
+
+        Map<String, IClusterDetail> filterClusterDetailMap = new HashMap<>();
         for (IClusterDetail clusterDetail : clusterDetailList) {
             if (clusterDetail.getOSType() != null && osType != null) {
                 if (clusterDetail.getType().equals(type) && clusterDetail.getOSType().toLowerCase().equals(osType.toLowerCase())) {
-                    filterClusterDetailList.add(clusterDetail);
+                    filterClusterDetailMap.put(clusterDetail.getName(), clusterDetail);
                 }
             } else {
                 if (clusterDetail.getType().equals(type)) {
-                    filterClusterDetailList.add(clusterDetail);
+                    filterClusterDetailMap.put(clusterDetail.getName(), clusterDetail);
                 }
             }
+        }
+
+        List<IClusterDetail> filterClusterDetailList = new ArrayList<>();
+        for (IClusterDetail clusterDetail : filterClusterDetailMap.values()) {
+            filterClusterDetailList.add(clusterDetail);
         }
 
         return filterClusterDetailList;

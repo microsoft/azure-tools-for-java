@@ -64,7 +64,7 @@ public class StorageAccountNode extends RefreshableNode implements TelemetryProp
                 addChildNode(new BlobContainerNode(this, blobStorageAccount, blobContainer, !StringHelper.isNullOrWhiteSpace(defaultContainer) && defaultContainer.equals(blobContainer.getName())));
             }
         } else if(storageAccount.getAccountType() == StorageAccountTypeEnum.ADLS) {
-            // TODO：　adls support
+            // TODO adls support
         }
     }
 
