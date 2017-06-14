@@ -81,7 +81,7 @@ public class ClusterManager {
      * @return detailed cluster info list with specific cluster type
      * @throws AggregatedException
      */
-    public synchronized List<IClusterDetail> getHDInsightCausersWithSpecificType(
+    public synchronized List<IClusterDetail> getHDInsightClustersWithSpecificType(
             List<SubscriptionDetail> subscriptions,
             ClusterType type,
             String osType,

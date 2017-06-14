@@ -26,7 +26,6 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.microsoft.azure.hdinsight.metadata.ClusterMetaDataService;
 import com.microsoft.azure.hdinsight.sdk.cluster.*;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
@@ -35,7 +34,6 @@ import com.microsoft.azure.hdinsight.sdk.common.AggregatedException;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationErrorHandler;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
-import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -136,7 +134,7 @@ public class ClusterManagerEx {
         List<SubscriptionDetail> subscriptionList = null;
         try {
             subscriptionList = manager.getSubscriptionManager().getSubscriptionDetails();
-            cachedClusterDetails = ClusterManager.getInstance().getHDInsightCausersWithSpecificType(subscriptionList, ClusterType.spark, OSTYPE, project);
+            cachedClusterDetails = ClusterManager.getInstance().getHDInsightClustersWithSpecificType(subscriptionList, ClusterType.spark, OSTYPE, project);
             // TODO: so far we have not a good way to judge whether it is token expired as we have changed the way to list hdinsight clusters
             if (cachedClusterDetails.size() == 0) {
                 //DefaultLoader.getUIHelper().showError("Falied to get HDInsight Cluster, Please make sure there's no login problem first","List HDInsight Cluster Error");
