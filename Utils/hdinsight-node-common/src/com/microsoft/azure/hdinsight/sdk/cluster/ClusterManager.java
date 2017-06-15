@@ -102,9 +102,7 @@ public class ClusterManager {
         }
 
         List<IClusterDetail> filterClusterDetailList = new ArrayList<>();
-        for (IClusterDetail clusterDetail : filterClusterDetailMap.values()) {
-            filterClusterDetailList.add(clusterDetail);
-        }
+        filterClusterDetailList.addAll(filterClusterDetailMap.values());
 
         return filterClusterDetailList;
     }
