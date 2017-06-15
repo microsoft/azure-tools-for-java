@@ -104,6 +104,10 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
 
         SparkSubmissionParameter submissionParameter = model.getSubmissionParameter();
 
+        if (submissionParameter == null) {
+            return;
+        }
+
         // The element to save editor's setting
         Element remoteDebugSettingsElement = new Element(SUBMISSION_CONTENT_NAME);
         remoteDebugSettingsElement.setAttribute(
