@@ -22,11 +22,11 @@
 
 package com.microsoft.azure.hdinsight.projects.ui;
 
-import com.intellij.ide.plugins.PluginManager;
-import com.intellij.ide.plugins.PluginManagerConfigurable;
+import com.intellij.ide.plugins.*;
 import com.intellij.ide.projectWizard.ProjectTemplateList;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ex.ApplicationManagerEx;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.options.ConfigurationException;
@@ -35,6 +35,7 @@ import com.intellij.openapi.updateSettings.impl.pluginsAdvertisement.PluginsAdve
 import com.microsoft.azure.hdinsight.projects.HDInsightExternalSystem;
 import com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder;
 import com.microsoft.azure.hdinsight.projects.HDInsightProjectTemplate;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.HashSet;
@@ -151,15 +152,29 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
 
             Set<String> pluginIds = new HashSet<>();
             pluginIds.add(SCALA_PLUGIN_ID);
-            PluginsAdvertiser.installAndEnablePlugins(pluginIds, new Runnable() {
-                @Override
-                public void run() {
-                }
+            ApplicationManager.getApplication().invokeAndWait(() -> {
+                PluginsAdvertiser.installAndEnablePlugins(pluginIds, new Runnable() {
+                    @Override
+                    public void run() {
+                        PluginInstaller.addStateListener(new PluginStateListener() {
+                            @Override
+                            public void install(@NotNull IdeaPluginDescriptor descriptor) {
+                                if (descriptor.getPluginId().toString().equals(SCALA_PLUGIN_ID)) {
+                                    showRestartDialog();
+                                }
+                            }
+
+                            @Override
+                            public void uninstall(@NotNull IdeaPluginDescriptor descriptor) {
+                            }
+                        });
+                    }
+                });
             });
         }
     }
 
-    private void showRestartMsg() {
+    private void showRestartDialog() {
         if (PluginManagerConfigurable.showRestartDialog() == Messages.YES) {
             ApplicationManagerEx.getApplicationEx().restart(true);
         }
