@@ -152,10 +152,10 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
 
     private void initTemplates() {
         this.templates = new ArrayList<>();
-        this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.Scala));
         this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.Java));
-        this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.ScalaLocalSample));
+        this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.Scala));
         this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.JavaLocalSample));
+        this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.ScalaLocalSample));
         this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.ScalaClusterSample));
     }
 

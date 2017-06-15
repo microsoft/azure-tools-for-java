@@ -37,8 +37,6 @@ import com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder;
 import com.microsoft.azure.hdinsight.projects.HDInsightProjectTemplate;
 
 import javax.swing.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -49,13 +47,10 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
 
     private JPanel mainPanel;
     private ProjectTemplateList templateList;
-    private JComboBox externalSystems;
+    private JComboBox externalSystemsComboBox;
     private JLabel externalSystemsLabel;
 
     private static final String SCALA_PLUGIN_ID = "org.intellij.scala";
-    private static final String SCALA_PLUGIN_INSTALL_MSG = "<HTML>No Scala Intellij plugin found. " +
-            "Please <FONT color=\"#000099\"><U>CLICK</U></FONT> to install Scala plugin. " +
-            "Remember to restart Intellij when installation finished.</HTML>";
 
     public HDInsightProjectTypeStep(HDInsightModuleBuilder moduleBuilder) {
         this.moduleBuilder = moduleBuilder;
@@ -67,9 +62,9 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
         this.templateList.addListSelectionListener(e -> templateUpdated());
         checkScalaPlugin();
 
-        this.externalSystems.addItem(HDInsightExternalSystem.MAVEN);
+        this.externalSystemsComboBox.addItem(HDInsightExternalSystem.MAVEN);
         if (this.scalaPluginInstalled) {
-            this.externalSystems.addItem(HDInsightExternalSystem.SBT);
+            this.externalSystemsComboBox.addItem(HDInsightExternalSystem.SBT);
         }
         setExternalSystems();
 
@@ -85,12 +80,12 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
     @Override
     public void updateDataModel() {
         this.moduleBuilder.setSelectedTemplate((HDInsightProjectTemplate) this.templateList.getSelectedTemplate());
-        this.moduleBuilder.setSelectedExternalSystem((HDInsightExternalSystem) this.externalSystems.getSelectedItem());
+        this.moduleBuilder.setSelectedExternalSystem((HDInsightExternalSystem) this.externalSystemsComboBox.getSelectedItem());
     }
 
     @Override
     public boolean validate() throws ConfigurationException {
-        return (this.scalaPluginInstalled) &&
+        return (this.isScalaPluginStatusValid()) &&
                 super.validate();
     }
 
@@ -99,21 +94,36 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
         moduleBuilder = null;
     }
 
+    private boolean isScalaPluginStatusValid() {
+        HDInsightProjectTemplate template = (HDInsightProjectTemplate) this.templateList.getSelectedTemplate();
+        switch (template.getTemplateType()) {
+            case Java:
+            case JavaLocalSample:
+                return true;
+            case Scala:
+            case ScalaLocalSample:
+            case ScalaClusterSample:
+                return this.scalaPluginInstalled;
+            default:
+                return false;
+        }
+    }
+
     private void templateUpdated() {
         setExternalSystems();
         checkScalaPlugin();
     }
 
     private void setExternalSystems() {
-        this.externalSystems.setSelectedItem(HDInsightExternalSystem.MAVEN);
+        this.externalSystemsComboBox.setSelectedItem(HDInsightExternalSystem.MAVEN);
         HDInsightProjectTemplate template = (HDInsightProjectTemplate) this.templateList.getSelectedTemplate();
         switch (template.getTemplateType()) {
             case Java:
             case JavaLocalSample:
-                this.externalSystems.setEnabled(false);
+                this.externalSystemsComboBox.setEnabled(false);
                 break;
             default:
-                this.externalSystems.setEnabled(true);
+                this.externalSystemsComboBox.setEnabled(true);
         }
     }
 
@@ -124,8 +134,7 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
             case ScalaClusterSample:
             case ScalaLocalSample:
                 if (!this.scalaPluginInstalled) {
-                    showScalaPluginInstallMsg();
-                    showRestartMsg();
+                    showScalaPluginInstallDialog();
                 }
                 return;
             default:
@@ -133,22 +142,21 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
         }
     }
 
-    private void showScalaPluginInstallMsg() {
-        JLabel label = new JLabel(SCALA_PLUGIN_INSTALL_MSG);
-        label.setOpaque(false);
-        label.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                Set<String> pluginIds = new HashSet<>();
-                pluginIds.add(SCALA_PLUGIN_ID);
-                PluginsAdvertiser.installAndEnablePlugins(pluginIds, new Runnable() {
-                    @Override
-                    public void run() {
-                    }
-                });
-            }
-        });
-        JOptionPane.showMessageDialog(null, label, "Scala Plugin Check", JOptionPane.ERROR_MESSAGE);
+    private void showScalaPluginInstallDialog() {
+        if (Messages.showYesNoDialog("No Scala plugin found. Do you want to install Scala plugin?",
+                "Scala Plugin Check",
+                "Install",
+                "Postpone",
+                Messages.getQuestionIcon()) == Messages.YES) {
+
+            Set<String> pluginIds = new HashSet<>();
+            pluginIds.add(SCALA_PLUGIN_ID);
+            PluginsAdvertiser.installAndEnablePlugins(pluginIds, new Runnable() {
+                @Override
+                public void run() {
+                }
+            });
+        }
     }
 
     private void showRestartMsg() {
