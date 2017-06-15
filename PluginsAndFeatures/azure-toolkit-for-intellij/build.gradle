@@ -116,5 +116,3 @@ task cucumber() {
 }
 
 test.dependsOn cucumber
-
-defaultTasks 'buildPlugin', 'test'
