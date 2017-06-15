@@ -33,9 +33,7 @@ import com.intellij.openapi.roots.OrderEntry;
 import com.microsoft.azure.hdinsight.common.CallBack;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.hdinsight.common.JobStatusManager;
-import com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionExDialog;
-import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 
@@ -75,7 +73,7 @@ public class SubmitAction extends AnAction {
             return;
         }
 
-        if(checkVisible(event.getProject())) {
+        if(this.checkActionVisible(event.getProject())) {
             presentation.setVisible(true);
             JobStatusManager manager = HDInsightUtil.getJobStatusManager(module.getProject());
             presentation.setEnabled(!isActionPerformedSet.contains(module.getProject()) && (manager == null || !manager.isJobRunning()));
@@ -84,7 +82,7 @@ public class SubmitAction extends AnAction {
         }
     }
 
-    private boolean checkVisible(Project project) {
+    private boolean checkActionVisible(Project project) {
         Module[] moduels = ModuleManager.getInstance(project).getModules();
         for(Module module : moduels) {
             final ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
