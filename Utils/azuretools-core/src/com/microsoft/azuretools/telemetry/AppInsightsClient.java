@@ -99,7 +99,7 @@ public class AppInsightsClient {
         if (configuration.validated()) {
             String prefValue = configuration.preferenceVal();
             if (prefValue == null || prefValue.isEmpty() || prefValue.equalsIgnoreCase("true") || force) {
-                TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry(configuration.appInsightsKey());
+                TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry();
 
                 Map<String, String> properties = myProperties == null ? new HashMap<String, String>() : new HashMap<String, String>(myProperties);
                 properties.put("SessionId", configuration.sessionId());
@@ -136,7 +136,7 @@ public class AppInsightsClient {
         if (!isAppInsightsClientAvailable())
             return;
 
-        TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry(configuration.appInsightsKey());
+        TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry();
 
         Map<String, String> properties = new HashMap<String, String>();
         properties.put("SessionId", configuration.sessionId());

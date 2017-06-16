@@ -1,31 +1,24 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE ApplicationInsights>
 <ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings" schemaVersion="2014-05-30">
-  <!--
-	Please do not modify below instrumentation key.
-	Use of this instrumentation key by any application other than Azure Toolkit for IntelliJ is strictly prohibited.
-  -->
-  <InstrumentationKey>9ee9694d-128e-4c2b-903f-dbe694548bf0</InstrumentationKey>
+  <InstrumentationKey>@applicationinsights.key@</InstrumentationKey>
   <ContextInitializers>
   </ContextInitializers>
   <TelemetryInitializers>
     <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer"/>
     <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer"/>
-	<Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer"/>
-	<Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserTelemetryInitializer"/>
-	<Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserAgentTelemetryInitializer"/>
+    <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer"/>
+    <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserTelemetryInitializer"/>
+    <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserAgentTelemetryInitializer"/>
   </TelemetryInitializers>
   <TelemetryModules>
     <Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule"/>
     <Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule"/>
-    <Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule"/>	
+    <Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule"/>
   </TelemetryModules>
   <Channel>
-    <!-- 
-      Setting DeveloperMode to true will enable immediate transmission of the telemetry events, which can be helpful during the development process.
-      Make sure to turn this off on production servers due to performance considerations.
-    -->
     <DeveloperMode>false</DeveloperMode>
   </Channel>
   <DisableTelemetry>false</DisableTelemetry>
 </ApplicationInsights>
+

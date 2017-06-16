@@ -23,8 +23,6 @@
 package com.microsoft.azuretools.telemetry;
 
 public interface AppInsightsConfiguration {
-    String appInsightsKey();
-
     String sessionId();
 
     String pluginVersion();

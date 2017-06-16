@@ -8,7 +8,38 @@
     <artifactId>parent</artifactId>
     <version>3.0.4-SNAPSHOT</version>
   </parent>
-  <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
   <artifactId>com.microsoft.azuretools.sdk</artifactId>
   <packaging>eclipse-plugin</packaging>
+  <properties>
+    <instrkey>740a59e4-f3bf-48f8-b8be-a608d976b65a</instrkey>
+  </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.0.2</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>dependencies</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>resources</directory>
+                  <filtering>true</filtering>
+                  <includes>
+                    <include>ApplicationInsights.xml</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

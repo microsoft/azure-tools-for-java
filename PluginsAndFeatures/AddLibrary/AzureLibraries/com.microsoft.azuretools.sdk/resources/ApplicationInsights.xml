@@ -5,7 +5,7 @@
 	Please do not modify below instrumentation key.
 	Use of this instrumentation key by any application other than Azure Toolkit for Eclipse is strictly prohibited.
   -->
-  <InstrumentationKey>824aaa4c-052b-4c43-bdcb-48f915d71b3f</InstrumentationKey>
+  <InstrumentationKey>${instrkey}</InstrumentationKey>
   <ContextInitializers>
   </ContextInitializers>
   <TelemetryInitializers>

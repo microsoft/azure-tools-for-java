@@ -32,15 +32,9 @@ public class AppInsightsConfigurationImpl implements AppInsightsConfiguration{
 	static String pluginInstLoc = String.format("%s%s%s", PluginUtil.pluginFolder, File.separator,
 			Messages.commonPluginID);
 	static String dataFile = String.format("%s%s%s", pluginInstLoc, File.separator, Messages.dataFileName);
-	static String key = "824aaa4c-052b-4c43-bdcb-48f915d71b3f";
 	static String sessionId = UUID.randomUUID().toString();
 	static String buildId = "Eclipse " + System.getProperty("eclipse.buildId");
 	
-	@Override
-	public String appInsightsKey() {
-		return key;
-	}
-
 	@Override
 	public String sessionId() {
 		return sessionId;
