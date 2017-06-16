@@ -21,31 +21,31 @@
  */
 package com.microsoft.azure.hdinsight.spark.actions;
 
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.LangDataKeys;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.hdinsight.common.*;
-import com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.OrderEntry;
+import com.microsoft.azure.hdinsight.common.CallBack;
+import com.microsoft.azure.hdinsight.common.HDInsightUtil;
+import com.microsoft.azure.hdinsight.common.JobStatusManager;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionExDialog;
-import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import java.util.HashSet;
-import java.util.List;
 
 public class SubmitAction extends AnAction {
-    private List<IClusterDetail> cachedClusterDetails = null;
     private static final HashSet<Project> isActionPerformedSet = new HashSet<>();
 
     @Override
     public void actionPerformed(final AnActionEvent anActionEvent) {
         synchronized (SubmitAction.class) {
             final Project project = anActionEvent.getProject();
-//            RemoteDebug.myDebug(project);
             if(isActionPerformedSet.contains(project)) {
                 return;
             }
@@ -66,7 +66,6 @@ public class SubmitAction extends AnAction {
 
     public void update(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
-        VirtualFile selectedFile = CommonDataKeys.VIRTUAL_FILE.getData(event.getDataContext());
 
         Presentation presentation = event.getPresentation();
         if(module == null) {
@@ -74,14 +73,28 @@ public class SubmitAction extends AnAction {
             return;
         }
 
-        String uniqueValue = module.getOptionValue(HDInsightModuleBuilder.UniqueKeyName);
-        boolean isVisible = !StringHelper.isNullOrWhiteSpace(uniqueValue) && uniqueValue.equals(HDInsightModuleBuilder.UniqueKeyValue);
-        if(isVisible) {
-            presentation.setVisible(isVisible);
+        if(this.checkActionVisible(event.getProject())) {
+            presentation.setVisible(true);
             JobStatusManager manager = HDInsightUtil.getJobStatusManager(module.getProject());
             presentation.setEnabled(!isActionPerformedSet.contains(module.getProject()) && (manager == null || !manager.isJobRunning()));
         } else {
             presentation.setEnabledAndVisible(false);
         }
+    }
+
+    private boolean checkActionVisible(Project project) {
+        Module[] moduels = ModuleManager.getInstance(project).getModules();
+        for(Module module : moduels) {
+            final ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
+            final OrderEntry[] orderEntries = moduleRootManager.getOrderEntries();
+
+            for(OrderEntry orderEntry : orderEntries) {
+                if (orderEntry.getPresentableName().contains("spark-core")) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

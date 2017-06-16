@@ -53,9 +53,6 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
     private SparkVersion sparkVersion;
     private String sbtVersion;
 
-    public static final String UniqueKeyName = "UniqueKey";
-    public static final String UniqueKeyValue = "HDInsightTool";
-
     public HDInsightModuleBuilder() {
         this.selectedExternalSystem = HDInsightExternalSystem.MAVEN;
         initTemplates();
@@ -114,7 +111,6 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
 
     @Override
     public void moduleCreated(@NotNull Module module) {
-        module.setOption(UniqueKeyName, UniqueKeyValue);
         createDefaultArtifact(module);
         switch(this.selectedExternalSystem) {
             case MAVEN:
@@ -156,10 +152,10 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
 
     private void initTemplates() {
         this.templates = new ArrayList<>();
-        this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.Scala));
         this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.Java));
-        this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.ScalaLocalSample));
+        this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.Scala));
         this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.JavaLocalSample));
+        this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.ScalaLocalSample));
         this.templates.add(new HDInsightProjectTemplate(HDInsightTemplatesType.ScalaClusterSample));
     }
 
