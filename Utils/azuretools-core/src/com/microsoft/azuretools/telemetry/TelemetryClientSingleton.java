@@ -5,10 +5,7 @@ public final class TelemetryClientSingleton {
     private TelemetryClient telemetry = null;
 
     private static final class SingletonHolder {
-        private static final TelemetryClientSingleton INSTANCE = init();
-        private static TelemetryClientSingleton init(){
-            return new TelemetryClientSingleton();
-        }
+        private static final TelemetryClientSingleton INSTANCE = new TelemetryClientSingleton();
     }
 
     public static TelemetryClient getTelemetry(){
