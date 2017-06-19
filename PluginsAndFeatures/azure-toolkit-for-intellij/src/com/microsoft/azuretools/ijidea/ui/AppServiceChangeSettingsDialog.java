@@ -72,7 +72,7 @@ public class AppServiceChangeSettingsDialog extends AppServiceCreateDialog {
 
         DefaultComboBoxModel<WebContainer> wcModel = (DefaultComboBoxModel<WebContainer>)comboBoxWebContainer.getModel();
         if (wad.webApp.javaVersion() != JavaVersion.OFF) {
-            wcModel.setSelectedItem(new WebContainer(wad.webApp.javaContainer() + " " + wad.webApp.javaContainerVersion()));
+            wcModel.setSelectedItem(WebContainer.fromString(wad.webApp.javaContainer() + " " + wad.webApp.javaContainerVersion()));
         }
 
         comboBoxSubscription.setEnabled(false);

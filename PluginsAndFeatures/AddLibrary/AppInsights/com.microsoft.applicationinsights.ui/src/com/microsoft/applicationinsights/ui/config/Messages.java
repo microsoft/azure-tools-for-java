@@ -97,6 +97,7 @@ public final class Messages extends NLS {
 	public static String genKeyListErr;
 	public static String startUpErr;
 	public static String dlgImgPath;
+	public static String sdkJar;
 
 	static {
 		// initialize resource bundle
