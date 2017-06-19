@@ -493,10 +493,9 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
 
 	public IClasspathEntry[] getClasspathEntriesOfAzureLibabries(
 			IPath containerPath) {
-		String sdkID = "com.microsoft.azuretools.sdk";
-		Bundle bundle = Platform.getBundle(sdkID);
+		Bundle bundle = Platform.getBundle(Messages.sdkID);
 		// Search the available SDKs
-		Bundle[] bundles = Platform.getBundles(sdkID, null);
+		Bundle[] bundles = Platform.getBundles(Messages.sdkID, null);
 		List<IClasspathEntry> listEntries = new ArrayList<IClasspathEntry>();
 		if (bundles != null) {
 			for (Bundle bundle2 : bundles) {
@@ -509,7 +508,7 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
 
 			// Get the SDK jar.
 			URL sdkJar = FileLocator.find(bundle, new Path(
-					"azure-1.0.0.jar"), null);
+					Messages.sdkJar), null);
 			URL resSdkJar = null;
 			IClasspathAttribute[] attr = null;
 			try {
@@ -525,7 +524,7 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
 					URL bundleLoc = new URL(bundle.getLocation());
 					StringBuffer strBfr = new StringBuffer(bundleLoc.getPath());
 					strBfr.append(File.separator)
-							.append("azure-1.0.0.jar");
+							.append(Messages.sdkJar);
 					URL jarLoc = new URL(strBfr.toString());
 					IPath jarPath = new Path(FileLocator.resolve(jarLoc)
 							.getPath());
