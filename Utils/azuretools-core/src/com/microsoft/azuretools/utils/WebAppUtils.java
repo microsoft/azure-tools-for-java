@@ -347,7 +347,7 @@ public class WebAppUtils {
         }
 
         public WebContainer toWebContainer() {
-            return new WebContainer(getValue());
+            return new WebContainer();
         }
 
         @Override
