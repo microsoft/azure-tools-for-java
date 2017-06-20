@@ -39,7 +39,7 @@ public class PluginHelper {
         try {
             String pluginInstLoc = PluginUtil.getPluginRootDirectory();
             libLocation = String.format(pluginInstLoc + "%s%s", File.separator, "lib");
-            File file = new File(String.format(libLocation + "%s%s", File.separator, "azure-1.0.0.jar"));
+            File file = new File(String.format(libLocation + "%s%s", File.separator, "azure-1.1.0.jar"));
             if (!file.exists()) {
                 throw new WACommonException(AzureBundle.message("SDKLocErrMsg"));
             }
