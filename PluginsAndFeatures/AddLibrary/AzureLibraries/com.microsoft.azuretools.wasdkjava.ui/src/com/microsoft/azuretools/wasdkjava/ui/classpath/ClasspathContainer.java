@@ -78,50 +78,47 @@ public class ClasspathContainer implements IClasspathContainer {
             URL sdkJar = FileLocator.find(bundle,
                     new Path(Messages.sdkJar), null);
             URL resSdkJar = null;
-            IClasspathAttribute[] attr = null;
             try {
-            	if (sdkJar != null) {
-            		resSdkJar = FileLocator.resolve(sdkJar);
-            		//create classpath attribute for java doc, if present
-            	}
-            	if (resSdkJar == null) {
-            		/* if sdk jar is not present then create an place holder
-                	for sdk jar so that it would be shown as missing file */
-            		URL bundleLoc = new URL(bundle.getLocation());
-            		StringBuffer strBfr =
-            				new StringBuffer(bundleLoc.getPath());
-            		strBfr.append(File.separator).append(Messages.sdkJar);
-            		URL jarLoc = new URL(strBfr.toString());
-            		IPath jarPath = new Path(
-            				FileLocator.resolve(jarLoc).getPath());
-            		File jarFile = jarPath.toFile();
-            		listEntries.add(JavaCore.newLibraryEntry(new Path(
-            				jarFile.getAbsolutePath()),
-            				null, null, null, attr, true));
+                if (sdkJar != null) {
+                    resSdkJar = FileLocator.resolve(sdkJar);
+                    //create classpath attribute for java doc, if present
+                }
+                if (resSdkJar == null) {
+                    /* if sdk jar is not present then create an place holder
+                    for sdk jar so that it would be shown as missing file */
+                    URL bundleLoc = new URL(bundle.getLocation());
+                    StringBuffer strBfr =
+                            new StringBuffer(bundleLoc.getPath());
+                    strBfr.append(File.separator).append(Messages.sdkJar);
+                    URL jarLoc = new URL(strBfr.toString());
+                    IPath jarPath = new Path(
+                            FileLocator.resolve(jarLoc).getPath());
+                    File jarFile = jarPath.toFile();
+                    listEntries.add(JavaCore.newLibraryEntry(new Path(
+                            jarFile.getAbsolutePath()),
+                            null, null, null, null, true));
                 } else {
-                	File directory = new File(resSdkJar.getPath());
-                	//create the library entry for sdk jar
-                	listEntries.add(JavaCore.newLibraryEntry(new Path(
-                			directory.getAbsolutePath()), null, null, null,
-                			attr, true));
-                	FilenameFilter sdkJarsFilter = new SDKJarsFilter();
-                	File[] jars = new File(String.format(
-                			"%s%s%s", directory.getParent(), File.separator,
-                			Messages.depLocation)).listFiles(sdkJarsFilter);
-                	for (int i = 0; i < jars.length; i++) {
-                		if (jars[i].getName().contains(Messages.appInsightMng)
-                				|| jars[i].getName().contains(Messages.adAuth)
-                				|| jars[i].getName().contains(Messages.srvExp)) {
-                			/*
-                			 * Do not add them as they are not part of Azure SDK.
-                			 * They are just used for coding purpose.
-                			 */
-                		} else {
-                			listEntries.add(JavaCore.newLibraryEntry(
-                					new Path(jars[i].getAbsolutePath()), null,
-                					null, null, attr, true));
-                		}
-                	}
+                    File directory = new File(resSdkJar.getPath());
+                    //create the library entry for sdk jar
+                    listEntries.add(JavaCore.newLibraryEntry(new Path(
+                            directory.getAbsolutePath()), null, null, null,
+                            null, true));
+                    FilenameFilter sdkJarsFilter = new SDKJarsFilter();
+                    File[] jars = new File(directory.getParent()).listFiles(sdkJarsFilter);
+                    for (int i = 0; i < jars.length; i++) {
+                        if (jars[i].getName().contains(Messages.appInsightMng)
+                                || jars[i].getName().contains(Messages.adAuth)
+                                || jars[i].getName().contains(Messages.srvExp)) {
+                            /*
+                             * Do not add them as they are not part of Azure SDK.
+                             * They are just used for coding purpose.
+                             */
+                        } else {
+                            listEntries.add(JavaCore.newLibraryEntry(
+                                    new Path(jars[i].getAbsolutePath()), null,
+                                    null, null, null, true));
+                        }
+                    }
                 }
             } catch (Exception e) {
                 listEntries = new ArrayList<IClasspathEntry>();
@@ -156,10 +153,10 @@ public class ClasspathContainer implements IClasspathContainer {
  * Does not include sources jars.
  */
 class SDKJarsFilter implements FilenameFilter {
-	public boolean accept(File dir, String name) {
-		return (name.endsWith(".jar")
-				&& name.indexOf(Messages.src) == -1);
-	}
+    public boolean accept(File dir, String name) {
+        return (name.endsWith(".jar")
+                && name.indexOf(Messages.src) == -1);
+    }
 }
 
 
