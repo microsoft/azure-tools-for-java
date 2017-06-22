@@ -46,9 +46,13 @@ import com.microsoft.azuretools.azureexplorer.editors.BlobExplorerFileEditor;
 import com.microsoft.azuretools.azureexplorer.editors.QueueFileEditor;
 import com.microsoft.azuretools.azureexplorer.editors.StorageEditorInput;
 import com.microsoft.azuretools.azureexplorer.editors.TableFileEditor;
+import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor;
+import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditorInput;
 import com.microsoft.azuretools.azureexplorer.forms.OpenSSLFinderForm;
+import com.microsoft.azuretools.azureexplorer.messages.MessageHandler;
 import com.microsoft.azuretools.azureexplorer.views.RedisPropertyView;
 import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
@@ -56,6 +60,7 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 
 public class UIHelperImpl implements UIHelper {
@@ -283,6 +288,28 @@ public class UIHelperImpl implements UIHelper {
                     view.readProperty(sid, resId);
                 }
             });
+        } catch (PartInitException e) {
+            showException(UNABLE_TO_GET_REDIS_PROPERTY, e, UNABLE_TO_GET_REDIS_PROPERTY, false, false);
+        }
+    }
+    
+    @Override
+    public void openEditor(@NotNull Node node) {
+        try {
+            IWorkbench workbench = PlatformUI.getWorkbench();
+            IWorkbenchWindow activeWorkbenchWindow = workbench.getActiveWorkbenchWindow();
+            if (activeWorkbenchWindow == null) {
+                return;
+            }
+            IEditorDescriptor editorDescriptor = workbench.getEditorRegistry().findEditor(RedisExplorerEditor.ID);
+            IWorkbenchPage page = activeWorkbenchWindow.getActivePage();
+            if (page == null) {
+                return;
+            }
+            if (node instanceof RedisCacheNode) {
+                RedisCacheNode redisCacheNode = (RedisCacheNode) node;
+                page.openEditor(new RedisExplorerEditorInput(redisCacheNode.getSubscriptionId(), redisCacheNode.getResourceId()), editorDescriptor.getId());
+            }
         } catch (PartInitException e) {
             showException(UNABLE_TO_GET_REDIS_PROPERTY, e, UNABLE_TO_GET_REDIS_PROPERTY, false, false);
         }
