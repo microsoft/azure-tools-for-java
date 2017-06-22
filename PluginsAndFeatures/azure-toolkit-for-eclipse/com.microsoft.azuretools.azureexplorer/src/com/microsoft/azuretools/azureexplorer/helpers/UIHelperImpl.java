@@ -308,7 +308,7 @@ public class UIHelperImpl implements UIHelper {
             }
             if (node instanceof RedisCacheNode) {
                 RedisCacheNode redisCacheNode = (RedisCacheNode) node;
-                page.openEditor(new RedisExplorerEditorInput(redisCacheNode.getSubscriptionId(), redisCacheNode.getResourceId()), editorDescriptor.getId());
+                page.openEditor(new RedisExplorerEditorInput(redisCacheNode.getSubscriptionId(), redisCacheNode.getResourceId(), redisCacheNode.getName()), editorDescriptor.getId());
             }
         } catch (PartInitException e) {
             showException(UNABLE_TO_GET_REDIS_PROPERTY, e, UNABLE_TO_GET_REDIS_PROPERTY, false, false);
