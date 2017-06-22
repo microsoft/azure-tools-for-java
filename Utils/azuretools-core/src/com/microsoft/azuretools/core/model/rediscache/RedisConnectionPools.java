@@ -22,15 +22,12 @@
 
 package com.microsoft.azuretools.core.model.rediscache;
 
-import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
-
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import com.microsoft.azure.management.redis.RedisCache;
+import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -68,7 +65,7 @@ public class RedisConnectionPools {
      * @return jedis connection
      * @throws IOException Error getting the Redis Cache
      */
-    public synchronized Jedis getJedis(String sid, String id) throws IOException {
+    public synchronized Jedis getJedis(String sid, String id) throws Exception  {
         if (pools.get(id) == null) {
             if (pools.size() == MAX_CONNECTIONS) {
                 while (!pools.containsKey(queue.peek())) {
@@ -98,7 +95,7 @@ public class RedisConnectionPools {
         }
     }
 
-    private void connect(String sid, String id) throws IOException {
+    private void connect(String sid, String id) throws Exception {
         RedisCache redisCache = AzureMvpModelHelper.getInstance().getRedisCache(sid, id);
 
         // get redis setting

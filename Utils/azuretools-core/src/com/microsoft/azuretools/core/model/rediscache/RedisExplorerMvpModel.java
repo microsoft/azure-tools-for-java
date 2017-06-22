@@ -53,7 +53,7 @@ public class RedisExplorerMvpModel {
      * @return the number of databases the Redis Cache has
      * @throws IOException Error getting the Redis Cache
      */
-    public int getDbNumber(String sid, String id) throws IOException {
+    public int getDbNumber(String sid, String id) throws Exception {
         int dbNum = DEFAULT_REDIS_DB_NUMBER;
         try (Jedis jedis = RedisConnectionPools.getInstance().getJedis(sid, id)) {
             List<String> dbs = jedis.configGet("databases");
