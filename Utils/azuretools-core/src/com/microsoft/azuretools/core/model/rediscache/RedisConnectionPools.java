@@ -22,25 +22,25 @@
 
 package com.microsoft.azuretools.core.model.rediscache;
 
+import com.microsoft.azure.management.redis.RedisCache;
+import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
-
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 public class RedisConnectionPools {
-    
+
     private static final int NON_SSL_PORT = 6379;
     private static final int TIMEOUT = 500;
     private static final int MAX_CONNECTIONS = 1;
-    
+
     private Map<String, JedisPool> pools;
     private Queue<String> queue;
 
@@ -48,15 +48,25 @@ public class RedisConnectionPools {
         this.pools = new HashMap<String, JedisPool>();
         this.queue = new LinkedList<String>();
     }
-    
-    private static final class  RedisConnectionFactoryHolder {
+
+    private static final class RedisConnectionFactoryHolder {
         private static final RedisConnectionPools INSTANCE = new RedisConnectionPools();
     }
-    
+
     public static RedisConnectionPools getInstance() {
         return RedisConnectionFactoryHolder.INSTANCE;
     }
-    
+
+    /**
+     * Get Jedis connection.
+     * 
+     * @param sid
+     *            subscription id of Redis Cache
+     * @param id
+     *            resource id of Redis Cache
+     * @return jedis connection
+     * @throws IOException Error getting the Redis Cache
+     */
     public synchronized Jedis getJedis(String sid, String id) throws IOException {
         if (pools.get(id) == null) {
             if (queue.size() == MAX_CONNECTIONS) {
@@ -66,7 +76,13 @@ public class RedisConnectionPools {
         }
         return pools.get(id).getResource();
     }
-    
+
+    /**
+     * Destroy the jedisPool.
+     * 
+     * @param id
+     *            id of the jedisPool which needs to be destroyed
+     */
     public synchronized void releasePool(String id) {
         if (pools.containsKey(id)) {
             JedisPool jedisPool = pools.get(id);
@@ -77,16 +93,16 @@ public class RedisConnectionPools {
             queue.remove();
         }
     }
-    
+
     private void connect(String sid, String id) throws IOException {
         RedisCache redisCache = AzureMvpModelHelper.getInstance().getRedisCache(sid, id);
-        
+
         // get redis setting
         String hostName = redisCache.hostName();
         String password = redisCache.keys().primaryKey();
         boolean enableSsl = !redisCache.nonSslPort();
         int port = enableSsl ? redisCache.port() : NON_SSL_PORT;
-        
+
         // create connection pool according to redis setting
         JedisPool pool = new JedisPool(new JedisPoolConfig(), hostName, port, TIMEOUT, password, enableSsl);
         pools.put(id, pool);

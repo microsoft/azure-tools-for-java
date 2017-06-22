@@ -29,28 +29,40 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisException;
 
 public class RedisExplorerMvpModel {
-    
+
     private static final int DEFAULT_REDIS_DB_NUMBER = 16;
-    
-    private RedisExplorerMvpModel() {}
-    
-    private static final class  RedisExplorerMvpModelHolder {
+
+    private RedisExplorerMvpModel() {
+    }
+
+    private static final class RedisExplorerMvpModelHolder {
         private static final RedisExplorerMvpModel INSTANCE = new RedisExplorerMvpModel();
     }
-    
+
     public static RedisExplorerMvpModel getInstance() {
         return RedisExplorerMvpModelHolder.INSTANCE;
     }
-    
+
+    /**
+     * Get the number of databases the Redis Cache has.
+     * 
+     * @param sid
+     *            subscription id of Redis Cache
+     * @param id
+     *            resource id of Redis Cache
+     * @return the number of databases the Redis Cache has
+     * @throws IOException Error getting the Redis Cache
+     */
     public int getDbNumber(String sid, String id) throws IOException {
         int dbNum = DEFAULT_REDIS_DB_NUMBER;
-        try(Jedis jedis = RedisConnectionPools.getInstance().getJedis(sid, id)) {
-            List<String> dbs = jedis.configGet("databases"); 
+        try (Jedis jedis = RedisConnectionPools.getInstance().getJedis(sid, id)) {
+            List<String> dbs = jedis.configGet("databases");
             if (dbs.size() > 0) {
                 dbNum = Integer.parseInt(dbs.get(1));
             }
         } catch (JedisException e) {
-            //TODO: keep ping to different db index to figure out how many dbs the redis has.
+            // TODO: keep ping to different db index to figure out how many dbs
+            // the redis has.
         }
         return dbNum;
     }
