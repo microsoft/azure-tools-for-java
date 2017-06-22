@@ -56,14 +56,16 @@ public class RedisExplorerMvpModel {
     public int getDbNumber(String sid, String id) throws Exception {
         int dbNum = DEFAULT_REDIS_DB_NUMBER;
         try (Jedis jedis = RedisConnectionPools.getInstance().getJedis(sid, id)) {
-            List<String> dbs = jedis.configGet("databases");
-            if (dbs.size() > 0) {
-                dbNum = Integer.parseInt(dbs.get(1));
+            try {
+                List<String> dbs = jedis.configGet("databases");
+                if (dbs.size() > 0) {
+                    dbNum = Integer.parseInt(dbs.get(1));
+                }
+            } catch (JedisException e) {
+                // TODO: keep ping to different db index to figure out how many dbs
+                // the redis has.
             }
-        } catch (JedisException e) {
-            // TODO: keep ping to different db index to figure out how many dbs
-            // the redis has.
-        }
+        } 
         return dbNum;
     }
 }
