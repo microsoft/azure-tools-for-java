@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -70,6 +71,7 @@ public class UIHelperImpl implements UIHelper {
     
     private static final String UNABLE_TO_OPEN_BROWSER = "Unable to open external web browser";
     private static final String UNABLE_TO_GET_REDIS_PROPERTY = "Error opening RedisPropertyView";
+    private static final String UNABLE_TO_OPEN_EXPLORER = "Unable to open the Redis Cache Explorer";
 
     @Override
     public void showException(final String message,
@@ -294,25 +296,11 @@ public class UIHelperImpl implements UIHelper {
     }
     
     @Override
-    public void openEditor(@NotNull Node node) {
-        try {
-            IWorkbench workbench = PlatformUI.getWorkbench();
-            IWorkbenchWindow activeWorkbenchWindow = workbench.getActiveWorkbenchWindow();
-            if (activeWorkbenchWindow == null) {
-                return;
-            }
-            IEditorDescriptor editorDescriptor = workbench.getEditorRegistry().findEditor(RedisExplorerEditor.ID);
-            IWorkbenchPage page = activeWorkbenchWindow.getActivePage();
-            if (page == null) {
-                return;
-            }
-            if (node instanceof RedisCacheNode) {
-                RedisCacheNode redisCacheNode = (RedisCacheNode) node;
-                page.openEditor(new RedisExplorerEditorInput(redisCacheNode.getSubscriptionId(), redisCacheNode.getResourceId(), redisCacheNode.getName()), editorDescriptor.getId());
-            }
-        } catch (PartInitException e) {
-            showException(UNABLE_TO_GET_REDIS_PROPERTY, e, UNABLE_TO_GET_REDIS_PROPERTY, false, false);
-        }
+    public void openRedisExplorer(@NotNull RedisCacheNode node) {
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        RedisExplorerEditorInput input = new RedisExplorerEditorInput(node.getSubscriptionId(), node.getResourceId(), node.getName());
+        IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(RedisExplorerEditor.ID);
+        openEditor(EditorType.REDIS_EXPLORER, input, descriptor);
     }
     
     @Override
@@ -329,5 +317,26 @@ public class UIHelperImpl implements UIHelper {
         final String[] units = new String[]{"B", "kB", "MB", "GB", "TB"};
         int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
         return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
+    }
+    
+    private void openEditor(EditorType type, IEditorInput input, IEditorDescriptor descriptor) {
+        try {
+            IWorkbench workbench = PlatformUI.getWorkbench();
+            IWorkbenchWindow activeWorkbenchWindow = workbench.getActiveWorkbenchWindow();
+            if (activeWorkbenchWindow == null) {
+                return;
+            }
+            IWorkbenchPage page = activeWorkbenchWindow.getActivePage();
+            if (page == null) {
+                return;
+            }
+            switch (type) {
+                case REDIS_EXPLORER:
+                    page.openEditor(input, descriptor.getId());
+                    break;
+            }
+        } catch (Exception e) {
+            showException(UNABLE_TO_OPEN_EXPLORER, e, UNABLE_TO_OPEN_EXPLORER, false, false);
+        }
     }
 }

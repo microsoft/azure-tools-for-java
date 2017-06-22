@@ -39,10 +39,11 @@ public class RedisExplorerEditorInput implements IEditorInput {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        
-        RedisExplorerEditorInput input = (RedisExplorerEditorInput) o;
-        return this.id.equals(input.getId());
+        if (o instanceof RedisExplorerEditorInput) {
+            RedisExplorerEditorInput input = (RedisExplorerEditorInput) o;
+            return this.id.equals(input.getId());
+        }
+        return false;
         
     }
 

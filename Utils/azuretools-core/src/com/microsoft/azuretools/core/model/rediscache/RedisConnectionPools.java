@@ -26,10 +26,11 @@ import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -41,12 +42,12 @@ public class RedisConnectionPools {
     private static final int TIMEOUT = 500;
     private static final int MAX_CONNECTIONS = 1;
 
-    private Map<String, JedisPool> pools;
-    private Queue<String> queue;
+    private ConcurrentHashMap<String, JedisPool> pools;
+    private ConcurrentLinkedQueue<String> queue;
 
     private RedisConnectionPools() {
-        this.pools = new HashMap<String, JedisPool>();
-        this.queue = new LinkedList<String>();
+        this.pools = new ConcurrentHashMap<String, JedisPool>();
+        this.queue = new ConcurrentLinkedQueue<String>();
     }
 
     private static final class RedisConnectionFactoryHolder {
@@ -69,7 +70,10 @@ public class RedisConnectionPools {
      */
     public synchronized Jedis getJedis(String sid, String id) throws IOException {
         if (pools.get(id) == null) {
-            if (queue.size() == MAX_CONNECTIONS) {
+            if (pools.size() == MAX_CONNECTIONS) {
+                while (!pools.containsKey(queue.peek())) {
+                    queue.remove();
+                }
                 releasePool(queue.peek());
             }
             connect(sid, id);

@@ -124,7 +124,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     public class OpenRedisExplorerAction extends NodeActionListener {
         @Override
         protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            DefaultLoader.getUIHelper().openEditor(RedisCacheNode.this);
+            DefaultLoader.getUIHelper().openRedisExplorer(RedisCacheNode.this);
         }
     }
 

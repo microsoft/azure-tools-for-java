@@ -322,7 +322,7 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
-    public void openEditor(Node node) {
+    public void openRedisExplorer(RedisCacheNode redisCacheNode) {
         //TODO: implement for intellij
     }
 

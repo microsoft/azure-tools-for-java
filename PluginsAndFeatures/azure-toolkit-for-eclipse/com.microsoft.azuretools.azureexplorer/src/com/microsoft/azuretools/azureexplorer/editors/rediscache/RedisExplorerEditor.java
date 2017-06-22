@@ -169,9 +169,11 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         setSite(site);
         setInput(input);
-        RedisExplorerEditorInput redisInput = (RedisExplorerEditorInput) input;
-        this.onReadRedisDatabaseNum(redisInput.getSubscriptionId(), redisInput.getId());
-        this.setPartName(redisInput.getRedisName());
+        if (input instanceof RedisExplorerEditorInput) {
+            RedisExplorerEditorInput redisInput = (RedisExplorerEditorInput) input;
+            this.onReadRedisDatabaseNum(redisInput.getSubscriptionId(), redisInput.getId());
+            this.setPartName(redisInput.getRedisName());
+        }
         
         IWorkbench workbench = PlatformUI.getWorkbench();
         final IWorkbenchPage activePage = workbench.getActiveWorkbenchWindow().getActivePage();

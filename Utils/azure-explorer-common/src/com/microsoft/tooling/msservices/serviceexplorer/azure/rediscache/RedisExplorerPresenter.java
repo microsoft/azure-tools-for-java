@@ -49,7 +49,7 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         .subscribeOn(Schedulers.io())
         .subscribe(number -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                getMvpView().renderDbCombo(number.intValue());
+                getMvpView().renderDbCombo(number);
             });
         }, e -> {
             getMvpView().onErrorWithException(CANNOT_GET_REDIS_INFO, (Exception) e);

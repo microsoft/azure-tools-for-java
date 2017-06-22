@@ -65,7 +65,7 @@ public interface UIHelper {
     
     void openRedisPropertyView(@NotNull RedisCacheNode node);
     
-    void openEditor(@NotNull Node node);
+    void openRedisExplorer(@NotNull RedisCacheNode node);
     
     void openInBrowser(String link);
 
