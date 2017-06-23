@@ -24,19 +24,15 @@ package com.microsoft.azuretools.container.handlers;
 
 import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.Constant;
-import com.microsoft.azuretools.container.Runtime;
+import com.microsoft.azuretools.container.DockerRuntime;
+import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
 
-import java.io.ByteArrayInputStream;
-
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 
 public class DockerizeHandler extends AzureAbstractHandler {
 
@@ -48,14 +44,10 @@ public class DockerizeHandler extends AzureAbstractHandler {
             if (project == null) {
                 throw new Exception(Constant.ERROR_NO_SELECTED_PROJECT);
             }
-            IFolder folder = project.getFolder(Constant.DOCKER_CONTEXT_FOLDER);
-            if (!folder.exists()) {
-                folder.create(true, true, null);
-            }
-            createDockerFile(project, folder, Constant.DOCKERFILE_NAME);
+            DockerUtil.createDockerFile(project, Constant.DOCKER_CONTEXT_FOLDER, Constant.DOCKERFILE_NAME, Constant.DOCKERFILE_CONTENT_TOMCAT);
             ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKERFILE_CREATED,
-                    folder.getFile(Constant.DOCKERFILE_NAME).getFullPath()));
-            Builder builder = Runtime.getInstance().getDockerBuilder();
+                    project.getFolder(Constant.DOCKER_CONTEXT_FOLDER).getFile(Constant.DOCKERFILE_NAME).getFullPath()));
+            Builder builder = DockerRuntime.getInstance().getDockerBuilder();
             ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKER_HOST_INFO, builder.uri()));
             ConsoleLogger.info(Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK);
             ConsoleLogger.info(Constant.MESSAGE_INSTRUCTION);
@@ -65,18 +57,4 @@ public class DockerizeHandler extends AzureAbstractHandler {
         }
         return null;
     }
-
-    /**
-     * create a docker file in specified folder.
-     */
-    public void createDockerFile(IProject project, IFolder folder, String filename) throws CoreException {
-        //create file
-        IFile dockerfile = folder.getFile(filename);
-        if (!dockerfile.exists()) {
-            byte[] bytes = String.format(Constant.DOCKERFILE_CONTENT_TOMCAT, project.getName()).getBytes();
-            dockerfile.create(new ByteArrayInputStream(bytes), false, null);
-        }
-
-    }
-
 }

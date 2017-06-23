@@ -28,12 +28,49 @@ import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
 
-public class Runtime {
-    private static final Runtime INSTANCE = new Runtime();
+public class DockerRuntime {
+    private static final DockerRuntime INSTANCE = new DockerRuntime();
     private String runningContainerId = null;
     private Builder dockerBuilder = null;
 
-    private Runtime() {
+    private String registryUrl = null;
+    private String registryUsername = null;
+    private String registryPassword = null;
+    private String latestImageName = null;
+
+    public synchronized String getLatestImageName() {
+        return latestImageName;
+    }
+
+    public synchronized void setLatestImageName(String latestImageName) {
+        this.latestImageName = latestImageName;
+    }
+
+    public synchronized String getRegistryUrl() {
+        return registryUrl;
+    }
+
+    public synchronized void setRegistryUrl(String registryUrl) {
+        this.registryUrl = registryUrl;
+    }
+
+    public synchronized String getRegistryUsername() {
+        return registryUsername;
+    }
+
+    public synchronized void setRegistryUsername(String registryUsername) {
+        this.registryUsername = registryUsername;
+    }
+
+    public synchronized String getRegistryPassword() {
+        return registryPassword;
+    }
+
+    public synchronized void setRegistryPassword(String registryPassword) {
+        this.registryPassword = registryPassword;
+    }
+
+    private DockerRuntime() {
         try {
             dockerBuilder = DefaultDockerClient.fromEnv();
         } catch (DockerCertificateException e) {
@@ -41,7 +78,7 @@ public class Runtime {
         }
     }
 
-    public static Runtime getInstance() {
+    public static DockerRuntime getInstance() {
         return INSTANCE;
     }
 
