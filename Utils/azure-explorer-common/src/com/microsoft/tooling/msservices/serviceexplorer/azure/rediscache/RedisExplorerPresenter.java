@@ -71,9 +71,9 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
      * @param pattern
      *             pattern for Redis Scan Param
      */
-    public void onDbSelect(String sid, String id, int db, String cursor, String pattern) {
+    public void onDbSelect(String sid, String id, int db) {
         Observable.fromCallable(() -> {
-            return RedisExplorerMvpModel.getInstance().scanKeys(sid, id, db, cursor, pattern);
+            return RedisExplorerMvpModel.getInstance().scanKeys(sid, id, db, "", "");
         })
         .subscribeOn(Schedulers.io())
         .subscribe(result -> {

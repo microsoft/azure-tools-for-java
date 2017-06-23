@@ -157,7 +157,8 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         scrolledComposite.setMinSize(cmpoMain.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
         cbDatabase.addListener(SWT.Selection, event -> {
-            redisExplorerPresenter.onDbSelect(sid, id, cbDatabase.getSelectionIndex(), currentCursor, txtKeyScanPattern.getText());
+            redisExplorerPresenter.onDbSelect(sid, id, cbDatabase.getSelectionIndex());
+            txtKeyScanPattern.setText("*");
         });
     }
     
@@ -172,6 +173,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
             cbDatabase.add(String.format(DBNameFormat, String.valueOf(i)));
         }
         cbDatabase.select(0);
+        redisExplorerPresenter.onDbSelect(sid, id, cbDatabase.getSelectionIndex());
     }
     
     @Override
