@@ -58,7 +58,13 @@
                class="com.microsoft.azuretools.azureexplorer.editors.JobViewEditor"
                icon="icons/JobViewTitle.png"
                name="Spark JobView"
-               id="com.microsoft.azure.hdinsight.jobview"/>        
+               id="com.microsoft.azure.hdinsight.jobview"/>
+       <editor
+             class="com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor"
+             icon="icons/RedisCache.png"
+             id="com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor"
+             name="Redis Cache Explorer">
+       </editor>        
     </extension>
 
 	<extension point="org.eclipse.ui.handlers">

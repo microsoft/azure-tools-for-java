@@ -1,52 +1,41 @@
 /**
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.intellij.util;
 
-import com.microsoft.intellij.ui.messages.AzureBundle;
-import com.wacommon.utils.WACommonException;
+package com.microsoft.azuretools.container.utils;
 
-import java.io.File;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.jst.j2ee.datamodel.properties.IJ2EEComponentExportDataModelProperties;
+import org.eclipse.jst.j2ee.internal.web.archive.operations.WebComponentExportDataModelProvider;
+import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
+import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 
-public class PluginHelper {
-    /**
-     * @return resource filename in plugin's directory
-     */
-    public static String getTemplateFile(String fileName) {
-        return String.format("%s%s%s", PluginUtil.getPluginRootDirectory(), File.separator, fileName);
-    }
-
-    public static String getAzureLibLocation() throws WACommonException {
-        String libLocation;
-        try {
-            String pluginInstLoc = PluginUtil.getPluginRootDirectory();
-            libLocation = String.format(pluginInstLoc + "%s%s", File.separator, "lib");
-            File file = new File(String.format(libLocation + "%s%s", File.separator, "azure-1.1.0.jar"));
-            if (!file.exists()) {
-                throw new WACommonException(AzureBundle.message("SDKLocErrMsg"));
-            }
-        } catch (WACommonException e) {
-            e.printStackTrace();
-            throw e;
-        }
-        return libLocation;
+public class WarUtil {
+    public static void export(IProject project, String destinationPath) throws Exception {
+        String projectName = project.getName();
+        project.build(IncrementalProjectBuilder.FULL_BUILD, null);
+        IDataModel dataModel = DataModelFactory.createDataModel(new WebComponentExportDataModelProvider());
+        dataModel.setProperty(IJ2EEComponentExportDataModelProperties.PROJECT_NAME, projectName);
+        dataModel.setProperty(IJ2EEComponentExportDataModelProperties.ARCHIVE_DESTINATION, destinationPath);
+        dataModel.getDefaultOperation().execute(null, null);
     }
 }

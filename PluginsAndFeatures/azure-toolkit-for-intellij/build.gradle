@@ -17,7 +17,9 @@ plugins {
 
 import org.apache.tools.ant.filters.*
 processResources {
-    filter(ReplaceTokens, tokens: ["applicationinsights.key": project.property("applicationinsights.key")])
+    filesMatching('**/ApplicationInsights.xml') {
+        filter(ReplaceTokens, tokens: ["applicationinsights.key": project.property("applicationinsights.key")])
+    }
 }
 
 group 'com.microsoft.azuretools'

@@ -12,6 +12,7 @@ target/
 
 *.publishsettings
 **/dependencies/*.jar
+**/dependencies/ApplicationInsights.xml
 **/azure-toolkit-for-eclipse/**/resources/*.jar
 
 # Created by https://www.gitignore.io/api/intellij

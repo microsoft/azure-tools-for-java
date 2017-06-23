@@ -103,7 +103,7 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
     public void createPartControl(Composite parent) {
         scrolledComposite = new ScrolledComposite(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         scrolledComposite.setExpandHorizontal(true);
-        scrolledComposite.setExpandVertical(true);;
+        scrolledComposite.setExpandVertical(true);
         
         container = new Composite(scrolledComposite, SWT.NONE);
         GridLayout gridLayoutContainer = new GridLayout(COLUMN_NUM, false);

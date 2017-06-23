@@ -45,6 +45,7 @@ import com.microsoft.intellij.helpers.storage.*;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.*;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 
 import javax.swing.*;
@@ -318,6 +319,11 @@ public class UIHelperImpl implements UIHelper {
                 }
             }
         }, ModalityState.any());
+    }
+
+    @Override
+    public void openRedisExplorer(RedisCacheNode redisCacheNode) {
+        //TODO: implement for intellij
     }
 
     @Override

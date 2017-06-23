@@ -19,34 +19,14 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.intellij.util;
 
-import com.microsoft.intellij.ui.messages.AzureBundle;
-import com.wacommon.utils.WACommonException;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
-import java.io.File;
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
 
-public class PluginHelper {
-    /**
-     * @return resource filename in plugin's directory
-     */
-    public static String getTemplateFile(String fileName) {
-        return String.format("%s%s%s", PluginUtil.getPluginRootDirectory(), File.separator, fileName);
-    }
-
-    public static String getAzureLibLocation() throws WACommonException {
-        String libLocation;
-        try {
-            String pluginInstLoc = PluginUtil.getPluginRootDirectory();
-            libLocation = String.format(pluginInstLoc + "%s%s", File.separator, "lib");
-            File file = new File(String.format(libLocation + "%s%s", File.separator, "azure-1.1.0.jar"));
-            if (!file.exists()) {
-                throw new WACommonException(AzureBundle.message("SDKLocErrMsg"));
-            }
-        } catch (WACommonException e) {
-            e.printStackTrace();
-            throw e;
-        }
-        return libLocation;
-    }
+public interface RedisExplorerMvpView extends MvpView {
+    
+    void onReadRedisDatabaseNum(String sid, String id);
+    
+    void renderDbCombo(int num);
 }
