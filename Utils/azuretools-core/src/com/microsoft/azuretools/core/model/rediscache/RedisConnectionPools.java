@@ -22,12 +22,11 @@
 
 package com.microsoft.azuretools.core.model.rediscache;
 
-import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
+
+import java.io.IOException;
+import java.util.LinkedHashMap;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -38,13 +37,11 @@ public class RedisConnectionPools {
     private static final int NON_SSL_PORT = 6379;
     private static final int TIMEOUT = 500;
     private static final int MAX_CONNECTIONS = 1;
-
-    private ConcurrentHashMap<String, JedisPool> pools;
-    private ConcurrentLinkedQueue<String> queue;
+    
+    private LinkedHashMap<String, JedisPool> pools;
 
     private RedisConnectionPools() {
-        this.pools = new ConcurrentHashMap<String, JedisPool>();
-        this.queue = new ConcurrentLinkedQueue<String>();
+        this.pools = new LinkedHashMap<String, JedisPool>(MAX_CONNECTIONS);
     }
 
     private static final class RedisConnectionFactoryHolder {
@@ -68,10 +65,7 @@ public class RedisConnectionPools {
     public synchronized Jedis getJedis(String sid, String id) throws Exception  {
         if (pools.get(id) == null) {
             if (pools.size() == MAX_CONNECTIONS) {
-                while (!pools.containsKey(queue.peek())) {
-                    queue.remove();
-                }
-                releasePool(queue.peek());
+                releasePool(pools.keySet().iterator().next());
             }
             connect(sid, id);
         }
@@ -91,7 +85,6 @@ public class RedisConnectionPools {
                 jedisPool.destroy();
             }
             pools.remove(id);
-            queue.remove();
         }
     }
 
@@ -107,6 +100,5 @@ public class RedisConnectionPools {
         // create connection pool according to redis setting
         JedisPool pool = new JedisPool(new JedisPoolConfig(), hostName, port, TIMEOUT, password, enableSsl);
         pools.put(id, pool);
-        queue.add(id);
     }
 }

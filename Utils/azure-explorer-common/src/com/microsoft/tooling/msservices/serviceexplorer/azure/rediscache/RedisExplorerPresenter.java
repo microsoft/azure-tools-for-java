@@ -23,6 +23,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisScanResult;
 import com.microsoft.azuretools.core.model.rediscache.RedisConnectionPools;
 import com.microsoft.azuretools.core.model.rediscache.RedisExplorerMvpModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -55,7 +56,41 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
             getMvpView().onErrorWithException(CANNOT_GET_REDIS_INFO, (Exception) e);
         });
     }
+    
+    /**
+     * Called when the database combo selection event is fired.
+     * 
+     * @param sid
+     *             subscription id of Redis Cache
+     * @param id
+     *             resource id of Redis Cache
+     * @param db
+     *             index of Redis Cache database
+     * @param cursor
+     *             cursor for Redis Scan command
+     * @param pattern
+     *             pattern for Redis Scan Param
+     */
+    public void onDbSelect(String sid, String id, int db, String cursor, String pattern) {
+        Observable.fromCallable(() -> {
+            return RedisExplorerMvpModel.getInstance().scanKeys(sid, id, db, cursor, pattern);
+        })
+        .subscribeOn(Schedulers.io())
+        .subscribe(result -> {
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                getMvpView().showScanResult(new RedisScanResult(result));
+            });
+        }, e -> {
+            getMvpView().onErrorWithException(CANNOT_GET_REDIS_INFO, (Exception) e);
+        });
+    }
 
+    /**
+     * Called when the jedis pool needs to be released.
+     * 
+     * @param id
+     *             resource id of Redis Cache
+     */
     public void onRelease(String id) {
         RedisConnectionPools.getInstance().releasePool(id);
     }

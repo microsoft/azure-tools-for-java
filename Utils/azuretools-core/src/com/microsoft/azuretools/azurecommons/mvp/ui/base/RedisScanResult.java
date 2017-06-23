@@ -20,17 +20,28 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
+package com.microsoft.azuretools.azurecommons.mvp.ui.base;
 
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
+import java.util.List;
 
 import redis.clients.jedis.ScanResult;
 
-public interface RedisPropertyMvpView extends MvpView {
+public class RedisScanResult {
     
-    void readProperty(String sid, String id);
+    private List<String> keys;
+    private String nextCursor;
+    
+    
+    public RedisScanResult(ScanResult<String> result) {
+        this.keys = result.getResult();
+        this.nextCursor = result.getStringCursor();
+    }
 
-    void showProperty(RedisCacheProperty property);
-    
-    void showScanResult(ScanResult<String> result);
+    public String getNextCursor() {
+        return nextCursor;
+    }
+
+    public List<String> getKeys() {
+        return keys;
+    }
 }

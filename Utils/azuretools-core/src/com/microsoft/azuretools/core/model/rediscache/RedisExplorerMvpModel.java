@@ -22,15 +22,22 @@
 
 package com.microsoft.azuretools.core.model.rediscache;
 
-import java.io.IOException;
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
+
+import com.microsoft.azuretools.azurecommons.util.Utils;
+
 import java.util.List;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.exceptions.JedisException;
 
 public class RedisExplorerMvpModel {
 
     private static final int DEFAULT_REDIS_DB_NUMBER = 16;
+    private static final int DEFAULT_COUNT = 50;
+    private static final String DEFAULT_SCAN_PATTERN = "*";
 
     private RedisExplorerMvpModel() {
     }
@@ -51,7 +58,7 @@ public class RedisExplorerMvpModel {
      * @param id
      *            resource id of Redis Cache
      * @return the number of databases the Redis Cache has
-     * @throws IOException Error getting the Redis Cache
+     * @throws Exception Error getting the Redis Cache
      */
     public int getDbNumber(String sid, String id) throws Exception {
         int dbNum = DEFAULT_REDIS_DB_NUMBER;
@@ -67,5 +74,34 @@ public class RedisExplorerMvpModel {
             }
         } 
         return dbNum;
+    }
+    
+    /**
+     * 
+     * @param sid
+     *            subscription id of Redis Cache
+     * @param id
+     *            resource id of Redis Cache
+     * @param db
+     *            index of Redis Cache database
+     * @param cursor
+     *            cursor for Redis Scan command
+     * @param pattern
+     *            pattern for Redis Scan Param
+     * @return Scan Result returned from Jedis
+     * @throws Exception
+     * 
+     */
+    public ScanResult<String> scanKeys(String sid, String id, int db, String cursor, String pattern) throws Exception {
+        if (Utils.isEmptyString(cursor)) {
+            cursor = SCAN_POINTER_START;
+        }
+        if (Utils.isEmptyString(pattern)) {
+            pattern = DEFAULT_SCAN_PATTERN;
+        }
+        try (Jedis jedis = RedisConnectionPools.getInstance().getJedis(sid, id)) {
+            jedis.select(db);
+            return jedis.scan(cursor, new ScanParams().match(pattern).count(DEFAULT_COUNT));
+        }
     }
 }

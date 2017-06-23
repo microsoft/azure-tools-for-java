@@ -23,6 +23,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheProperty;
@@ -45,11 +46,11 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
      *            Redis Cache's Id
      */
     public void onGetRedisProperty(String sid, String id) {
-        if (sid == null || sid.trim().isEmpty()) {
+        if (Utils.isEmptyString(sid)) {
             getMvpView().onError(CANNOT_GET_SUBCROPTION_ID);
             return;
         }
-        if (id == null || id.trim().isEmpty()) {
+        if (Utils.isEmptyString(id)) {
             getMvpView().onError(CANNOT_GET_REDIS_ID);
             return;
         }

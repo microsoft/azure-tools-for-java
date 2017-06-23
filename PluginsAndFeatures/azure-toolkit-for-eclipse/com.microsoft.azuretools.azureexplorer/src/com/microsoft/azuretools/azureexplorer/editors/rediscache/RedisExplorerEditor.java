@@ -34,6 +34,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisScanResult;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerPresenter;
 
@@ -46,7 +47,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.List;
 
 public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpView {
     
@@ -54,20 +55,33 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     
     private final RedisExplorerPresenter<RedisExplorerEditor> redisExplorerPresenter;
     
+    private static final String DBNameFormat = "DB<%s>";
+    
+    private String currentCursor;
+    private String sid;
+    private String id;
+    
     private ScrolledComposite scrolledComposite;
     private Composite cmpoMain;
     private Combo cbDatabase;
     private SashForm sashForm;
     private Composite cmpoKeyArea;
     private Composite cmpoValueArea;
-    private Text txtKeySearchPattern;
-    private Button btnKeySearch;
-    private Table table;
-    private Button btnAddKey;
+    private Text txtKeyScanPattern;
+    private Button btnScanKey;
+    private Label lblType;
+    private List lstKey;
+    private Composite cmpoInnerValue;
+    private Composite cmpoStringValue;
+    private Table tblInnerValue;
+    private Text txtStringValue;
+    private Button btnScanMoreKey;
+    private Text txtKeyName;
     
     public RedisExplorerEditor() {
         this.redisExplorerPresenter = new RedisExplorerPresenter<RedisExplorerEditor>();
         this.redisExplorerPresenter.onAttachView(this);
+        currentCursor = "";
     }
 
     /**
@@ -95,59 +109,79 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 2, 1));
         
         cmpoKeyArea = new Composite(sashForm, SWT.BORDER);
-        cmpoKeyArea.setLayout(new GridLayout(2, false));
+        cmpoKeyArea.setLayout(new GridLayout(3, false));
         
-        txtKeySearchPattern = new Text(cmpoKeyArea, SWT.BORDER);
-        txtKeySearchPattern.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        txtKeyScanPattern = new Text(cmpoKeyArea, SWT.BORDER);
+        txtKeyScanPattern.setText("*");
+        txtKeyScanPattern.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         
-        btnKeySearch = new Button(cmpoKeyArea, SWT.NONE);
-        btnKeySearch.setText("Search");
+        btnScanKey = new Button(cmpoKeyArea, SWT.NONE);
+        btnScanKey.setText("Scan Keys");
         
-        table =  new Table(cmpoKeyArea, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
-        table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
-        table.setLinesVisible(true);
+        btnScanMoreKey = new Button(cmpoKeyArea, SWT.NONE);
+        btnScanMoreKey.setText("Scan More Keys");
         
-        //TODO: Remove this!
-        fillingTestData();
+        lstKey = new List(cmpoKeyArea, SWT.BORDER | SWT.V_SCROLL);
+        lstKey.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 3, 1));
+
+        cmpoValueArea = new Composite(sashForm, SWT.NONE);
+        cmpoValueArea.setLayout(new GridLayout(2, false));
         
-        btnAddKey = new Button(cmpoKeyArea, SWT.NONE);
-        btnAddKey.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-        btnAddKey.setText("Add");
+        lblType = new Label(cmpoValueArea, SWT.NONE);
+        lblType.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        lblType.setText("type");
         
-        cmpoValueArea = new Composite(sashForm, SWT.BORDER);
-        cmpoValueArea.setLayout(new GridLayout(1, false));
+        txtKeyName = new Text(cmpoValueArea, SWT.BORDER);
+        txtKeyName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        
+        cmpoInnerValue = new Composite(cmpoValueArea, SWT.NONE);
+        cmpoInnerValue.setLayout(new GridLayout(1, false));
+        cmpoInnerValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+        
+        tblInnerValue = new Table(cmpoInnerValue, SWT.BORDER | SWT.FULL_SELECTION);
+        tblInnerValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
+        tblInnerValue.setHeaderVisible(true);
+        tblInnerValue.setLinesVisible(true);
+        
+        cmpoStringValue = new Composite(cmpoValueArea, SWT.NONE);
+        cmpoStringValue.setLayout(new GridLayout(1, false));
+        cmpoStringValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 2, 1));
+        
+        Label lblStringValue = new Label(cmpoStringValue, SWT.NONE);
+        lblStringValue.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
+        lblStringValue.setText("Value");
+        
+        txtStringValue = new Text(cmpoStringValue, SWT.BORDER | SWT.MULTI);
+        txtStringValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         sashForm.setWeights(new int[] {1, 1});
         scrolledComposite.setContent(cmpoMain);
         scrolledComposite.setMinSize(cmpoMain.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+        
+        cbDatabase.addListener(SWT.Selection, event -> {
+            redisExplorerPresenter.onDbSelect(sid, id, cbDatabase.getSelectionIndex(), currentCursor, txtKeyScanPattern.getText());
+        });
     }
     
-    private void fillingTestData() {
-        //TODO: only for test!
-        TableItem stringItem = new TableItem(table, SWT.NONE);
-        stringItem.setText(0, "string");
-        
-        TableItem listItem = new TableItem(table, SWT.NONE);
-        listItem.setText(0, "list");
-        
-        TableItem setItem = new TableItem(table, SWT.NONE);
-        setItem.setText(0, "set");
-        
-        TableItem zsetItem = new TableItem(table, SWT.NONE);
-        zsetItem.setText(0, "zset");
-        
-        TableItem hashItem = new TableItem(table, SWT.NONE);
-        hashItem.setText(0, "hash");
-    }
-
     @Override
     public void onReadRedisDatabaseNum(String sid, String id) {
-        this.redisExplorerPresenter.onReadDbNum(sid, id);
+        redisExplorerPresenter.onReadDbNum(sid, id);
     }
     
     @Override
     public void renderDbCombo(int num) {
-        cbDatabase.add(String.valueOf(num));
+        for(int i = 0; i < num; i++) {
+            cbDatabase.add(String.format(DBNameFormat, String.valueOf(i)));
+        }
         cbDatabase.select(0);
+    }
+    
+    @Override
+    public void showScanResult(RedisScanResult result) {
+        lstKey.removeAll();
+        for (String key: result.getKeys()) {
+            lstKey.add(key);
+        }
+        currentCursor = result.getNextCursor();
     }
     
     @Override
@@ -171,7 +205,9 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         setInput(input);
         if (input instanceof RedisExplorerEditorInput) {
             RedisExplorerEditorInput redisInput = (RedisExplorerEditorInput) input;
-            this.onReadRedisDatabaseNum(redisInput.getSubscriptionId(), redisInput.getId());
+            this.sid = redisInput.getSubscriptionId();
+            this.id = redisInput.getId();
+            this.onReadRedisDatabaseNum(this.sid, this.id);
             this.setPartName(redisInput.getRedisName());
         }
         

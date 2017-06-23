@@ -204,4 +204,8 @@ public class Utils {
 
         return version1Seg.length - version2Seg.length;
     }
+    
+    public static boolean isEmptyString(String str) {
+        return str == null || str.trim().isEmpty();
+    }
 }
