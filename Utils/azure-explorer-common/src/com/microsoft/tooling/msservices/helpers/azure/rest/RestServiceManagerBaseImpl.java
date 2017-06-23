@@ -76,6 +76,7 @@ public class RestServiceManagerBaseImpl implements RestServiceManager {
     private static final String X_MS_VERSION_HEADER = "x-ms-version";
     private static final String ACCEPT_HEADER = "Accept";
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
+    private static final int DEFAULT_READ_TIMEOUT = 0;
 
     @NotNull
     public String executeRequest(@NotNull String managementUrl,
@@ -113,6 +114,7 @@ public class RestServiceManagerBaseImpl implements RestServiceManager {
             conn.addRequestProperty(TELEMETRY_HEADER, getPlatformUserAgent());
             conn.addRequestProperty(X_MS_VERSION_HEADER, AZURE_API_VERSION);
             conn.addRequestProperty(ACCEPT_HEADER, "");
+            conn.setReadTimeout(DEFAULT_READ_TIMEOUT);
             if (contentType != null) {
                 conn.addRequestProperty(CONTENT_TYPE_HEADER, contentType.toString());
             }
