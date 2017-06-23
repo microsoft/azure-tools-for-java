@@ -24,13 +24,9 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
 
-import redis.clients.jedis.ScanResult;
-
 public interface RedisPropertyMvpView extends MvpView {
     
     void readProperty(String sid, String id);
 
     void showProperty(RedisCacheProperty property);
-    
-    void showScanResult(ScanResult<String> result);
 }
