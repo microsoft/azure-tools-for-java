@@ -92,7 +92,7 @@ public class DockerUtil {
         if (res.isPresent()) {
             DockerRuntime.getInstance().setRunningContainerId(res.get().id());
             return String.format("http://%s:%s", docker.getHost(), res.get().ports().stream()
-                    .filter(item -> item.privatePort().equals(Constant.TOMCAT_SERVICE_PORT)).findFirst().get().publicPort());
+                    .filter(item -> item.privatePort().toString().equals(Constant.TOMCAT_SERVICE_PORT)).findFirst().get().publicPort());
         } else {
             String errorMsg = String.format(Constant.ERROR_STARTING_CONTAINER, containerId);
             ConsoleLogger.error(errorMsg);
