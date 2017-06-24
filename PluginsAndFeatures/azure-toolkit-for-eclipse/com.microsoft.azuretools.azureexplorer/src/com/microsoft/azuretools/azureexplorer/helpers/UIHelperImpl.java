@@ -40,20 +40,15 @@ import org.eclipse.ui.PlatformUI;
 
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.management.storage.StorageAccount;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azureexplorer.Activator;
-import com.microsoft.azuretools.azureexplorer.editors.BlobExplorerFileEditor;
-import com.microsoft.azuretools.azureexplorer.editors.QueueFileEditor;
 import com.microsoft.azuretools.azureexplorer.editors.StorageEditorInput;
-import com.microsoft.azuretools.azureexplorer.editors.TableFileEditor;
 import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor;
 import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditorInput;
 import com.microsoft.azuretools.azureexplorer.forms.OpenSSLFinderForm;
-import com.microsoft.azuretools.azureexplorer.messages.MessageHandler;
 import com.microsoft.azuretools.azureexplorer.views.RedisPropertyView;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.utils.AzureModelController;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
@@ -61,7 +56,6 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 
 public class UIHelperImpl implements UIHelper {

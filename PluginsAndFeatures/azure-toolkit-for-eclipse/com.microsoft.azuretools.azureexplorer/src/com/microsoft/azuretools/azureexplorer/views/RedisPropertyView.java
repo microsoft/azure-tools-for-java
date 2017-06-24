@@ -28,8 +28,6 @@ import java.awt.datatransfer.StringSelection;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -47,7 +45,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
-import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyViewPresenter;
