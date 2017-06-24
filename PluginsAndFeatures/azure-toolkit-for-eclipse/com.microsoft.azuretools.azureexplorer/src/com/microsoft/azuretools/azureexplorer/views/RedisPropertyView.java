@@ -39,8 +39,15 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchListener;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyViewPresenter;
@@ -182,14 +189,6 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
         setChildrenTransparent(container);
         setScrolledCompositeContent();
         
-        // View cLose event
-        parent.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                RedisPropertyView.this.redisPropertyViewPresenter.onDetachView();
-            }
-        });
-        
         lnkPrimaryKey.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -207,6 +206,27 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
 
     @Override
     public void setFocus() { }
+    
+    @Override
+    public void init(IViewSite site) throws PartInitException {
+        super.init(site);
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        final IWorkbenchPage activePage = workbench.getActiveWorkbenchWindow().getActivePage();
+        workbench.addWorkbenchListener( new IWorkbenchListener() {
+            public boolean preShutdown( IWorkbench workbench, boolean forced )     {
+                activePage.hideView(RedisPropertyView.this);
+                return true;
+            }
+         
+            public void postShutdown( IWorkbench workbench ) { }
+        });
+    }
+    
+    @Override
+    public void dispose() {
+        this.redisPropertyViewPresenter.onDetachView();
+        super.dispose();
+    }
     
     @Override
     public void readProperty(String sid, String id) {

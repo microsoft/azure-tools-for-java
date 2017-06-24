@@ -202,5 +202,6 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         this.redisExplorerPresenter.onDetachView();
         RedisExplorerEditorInput redisInput = (RedisExplorerEditorInput) this.getEditorInput();
         this.redisExplorerPresenter.onRelease(redisInput.getId());
+        super.dispose();
     }
 }

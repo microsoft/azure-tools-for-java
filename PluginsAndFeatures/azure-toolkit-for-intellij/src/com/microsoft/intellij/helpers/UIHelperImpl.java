@@ -311,14 +311,12 @@ public class UIHelperImpl implements UIHelper {
             itemVirtualFile.putUserData(RESOURCE_ID, resId);
         }
         FileEditor[] editors = fileEditorManager.openFile( itemVirtualFile, true, true);
-        ApplicationManager.getApplication().invokeLater(() -> {
-            for (FileEditor editor: editors) {
-                if (editor.getName().equals(RedisCachePropertyView.ID) &&
-                        editor instanceof RedisCachePropertyView) {
-                    ((RedisCachePropertyView) editor).readProperty(sid, resId);
-                }
+        for (FileEditor editor: editors) {
+            if (editor.getName().equals(RedisCachePropertyView.ID) &&
+                    editor instanceof RedisCachePropertyView) {
+                ((RedisCachePropertyView) editor).readProperty(sid, resId);
             }
-        }, ModalityState.any());
+        }
     }
 
     @Override

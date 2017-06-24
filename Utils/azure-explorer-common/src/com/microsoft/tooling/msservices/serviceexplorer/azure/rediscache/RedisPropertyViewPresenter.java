@@ -22,20 +22,19 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
-import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheProperty;
 
-import java.io.IOException;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends MvpPresenter<V> {
 
     private static final String CANNOT_GET_SUBCROPTION_ID = "Cannot get Subscription ID.";
     private static final String CANNOT_GET_REDIS_ID = "Cannot get Redis Cache's ID.";
     private static final String CANNOT_GET_REDIS_PROPERTY = "Cannot get Redis Cache's property.";
-
-    private final AzureMvpModelHelper azureMvpModelHelper = AzureMvpModelHelper.getInstance();
 
     /**
      * Called from view when the view needs to show the property.
@@ -57,20 +56,19 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
         if (!(getMvpView() instanceof RedisPropertyMvpView)) {
             return;
         }
-        RedisCache redis = null;
-        try {
-            redis = azureMvpModelHelper.getRedisCache(sid, id);
-        } catch (IOException e) {
-            getMvpView().onErrorWithException(CANNOT_GET_REDIS_PROPERTY, e);
-            return;
-        }
-        if (redis == null) {
-            getMvpView().onError(CANNOT_GET_REDIS_PROPERTY);
-            return;
-        }
-        RedisCacheProperty property = new RedisCacheProperty(redis.name(), redis.type(), redis.resourceGroupName(),
-                redis.regionName(), sid, redis.redisVersion(), redis.sslPort(), redis.nonSslPort(),
-                redis.keys().primaryKey(), redis.keys().secondaryKey(), redis.hostName());
-        ((RedisPropertyMvpView) getMvpView()).showProperty(property);
+        Observable.fromCallable(() -> {
+            return AzureMvpModelHelper.getInstance().getRedisCache(sid, id);
+        })
+        .subscribeOn(Schedulers.io())
+        .subscribe(redis -> {
+            RedisCacheProperty property = new RedisCacheProperty(redis.name(), redis.type(), redis.resourceGroupName(),
+                  redis.regionName(), sid, redis.redisVersion(), redis.sslPort(), redis.nonSslPort(),
+                  redis.keys().primaryKey(), redis.keys().secondaryKey(), redis.hostName());
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                getMvpView().showProperty(property);
+            });
+        }, e -> {
+            getMvpView().onErrorWithException(CANNOT_GET_REDIS_PROPERTY, (Exception) e);
+        });
     }
 }

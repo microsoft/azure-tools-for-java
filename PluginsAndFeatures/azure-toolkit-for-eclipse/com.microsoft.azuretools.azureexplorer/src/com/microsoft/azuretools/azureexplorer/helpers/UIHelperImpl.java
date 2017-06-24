@@ -284,12 +284,7 @@ public class UIHelperImpl implements UIHelper {
             }
             final RedisPropertyView view = (RedisPropertyView) page.showView(RedisPropertyView.ID, node.getResourceId(),
                     IWorkbenchPage.VIEW_ACTIVATE);
-            Display.getDefault().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    view.readProperty(sid, resId);
-                }
-            });
+            view.readProperty(sid, resId);
         } catch (PartInitException e) {
             showException(UNABLE_TO_GET_REDIS_PROPERTY, e, UNABLE_TO_GET_REDIS_PROPERTY, false, false);
         }
