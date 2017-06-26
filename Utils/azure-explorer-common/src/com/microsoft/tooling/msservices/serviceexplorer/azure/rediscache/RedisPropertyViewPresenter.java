@@ -63,6 +63,7 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
         .subscribe(redis -> {
             if (redis == null) {
                 getMvpView().onError(CANNOT_GET_REDIS_PROPERTY);
+                return;
             }
             RedisCacheProperty property = new RedisCacheProperty(redis.name(), redis.type(), redis.resourceGroupName(),
                   redis.regionName(), sid, redis.redisVersion(), redis.sslPort(), redis.nonSslPort(),
