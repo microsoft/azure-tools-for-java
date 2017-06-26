@@ -54,6 +54,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     
     private final RedisExplorerPresenter<RedisExplorerEditor> redisExplorerPresenter;
     
+    private static final String DEFAULT_SCAN_PATTERN = "*";
     private static final String DBNameFormat = "DB<%s>";
     
     private String currentCursor;
@@ -80,7 +81,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     public RedisExplorerEditor() {
         this.redisExplorerPresenter = new RedisExplorerPresenter<RedisExplorerEditor>();
         this.redisExplorerPresenter.onAttachView(this);
-        currentCursor = "";
+        currentCursor = DEFAULT_SCAN_PATTERN;
     }
 
     /**
@@ -111,7 +112,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         cmpoKeyArea.setLayout(new GridLayout(3, false));
         
         txtKeyScanPattern = new Text(cmpoKeyArea, SWT.BORDER);
-        txtKeyScanPattern.setText("*");
+        txtKeyScanPattern.setText(DEFAULT_SCAN_PATTERN);
         txtKeyScanPattern.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         
         btnScanKey = new Button(cmpoKeyArea, SWT.NONE);
@@ -157,8 +158,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         scrolledComposite.setMinSize(cmpoMain.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
         cbDatabase.addListener(SWT.Selection, event -> {
-            redisExplorerPresenter.onDbSelect(sid, id, cbDatabase.getSelectionIndex());
-            txtKeyScanPattern.setText("*");
+            onDataBaseSelect();
         });
     }
     
@@ -172,8 +172,10 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         for(int i = 0; i < num; i++) {
             cbDatabase.add(String.format(DBNameFormat, String.valueOf(i)));
         }
-        cbDatabase.select(0);
-        redisExplorerPresenter.onDbSelect(sid, id, cbDatabase.getSelectionIndex());
+        if (num > 0) {
+            cbDatabase.select(0);
+            onDataBaseSelect();
+        }
     }
     
     @Override
@@ -240,5 +242,10 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         RedisExplorerEditorInput redisInput = (RedisExplorerEditorInput) this.getEditorInput();
         this.redisExplorerPresenter.onRelease(redisInput.getId());
         super.dispose();
+    }
+    
+    private void onDataBaseSelect() {
+        txtKeyScanPattern.setText(DEFAULT_SCAN_PATTERN);
+        redisExplorerPresenter.onDbSelect(sid, id, cbDatabase.getSelectionIndex(), DEFAULT_SCAN_PATTERN);
     }
 }

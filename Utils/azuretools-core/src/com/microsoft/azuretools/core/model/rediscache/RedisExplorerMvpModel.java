@@ -22,10 +22,6 @@
 
 package com.microsoft.azuretools.core.model.rediscache;
 
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
-
-import com.microsoft.azuretools.azurecommons.util.Utils;
-
 import java.util.List;
 
 import redis.clients.jedis.Jedis;
@@ -37,7 +33,6 @@ public class RedisExplorerMvpModel {
 
     private static final int DEFAULT_REDIS_DB_NUMBER = 16;
     private static final int DEFAULT_COUNT = 50;
-    private static final String DEFAULT_SCAN_PATTERN = "*";
 
     private RedisExplorerMvpModel() {
     }
@@ -93,12 +88,6 @@ public class RedisExplorerMvpModel {
      * 
      */
     public ScanResult<String> scanKeys(String sid, String id, int db, String cursor, String pattern) throws Exception {
-        if (Utils.isEmptyString(cursor)) {
-            cursor = SCAN_POINTER_START;
-        }
-        if (Utils.isEmptyString(pattern)) {
-            pattern = DEFAULT_SCAN_PATTERN;
-        }
         try (Jedis jedis = RedisConnectionPools.getInstance().getJedis(sid, id)) {
             jedis.select(db);
             return jedis.scan(cursor, new ScanParams().match(pattern).count(DEFAULT_COUNT));

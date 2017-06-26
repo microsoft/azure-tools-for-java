@@ -22,6 +22,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
+
 import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisScanResult;
 import com.microsoft.azuretools.core.model.rediscache.RedisConnectionPools;
@@ -32,7 +34,7 @@ import rx.Observable;
 import rx.schedulers.Schedulers;
 
 public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpPresenter<V> {
-
+    
     private static final String CANNOT_GET_REDIS_INFO = "Cannot get Redis Cache's information.";
 
     /**
@@ -71,9 +73,9 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
      * @param pattern
      *             pattern for Redis Scan Param
      */
-    public void onDbSelect(String sid, String id, int db) {
+    public void onDbSelect(String sid, String id, int db, String pattern) {
         Observable.fromCallable(() -> {
-            return RedisExplorerMvpModel.getInstance().scanKeys(sid, id, db, "", "");
+            return RedisExplorerMvpModel.getInstance().scanKeys(sid, id, db, SCAN_POINTER_START, pattern);
         })
         .subscribeOn(Schedulers.io())
         .subscribe(result -> {
