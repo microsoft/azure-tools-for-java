@@ -61,6 +61,9 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
         })
         .subscribeOn(Schedulers.io())
         .subscribe(redis -> {
+            if (redis == null) {
+                getMvpView().onError(CANNOT_GET_REDIS_PROPERTY);
+            }
             RedisCacheProperty property = new RedisCacheProperty(redis.name(), redis.type(), redis.resourceGroupName(),
                   redis.regionName(), sid, redis.redisVersion(), redis.sslPort(), redis.nonSslPort(),
                   redis.keys().primaryKey(), redis.keys().secondaryKey(), redis.hostName());
