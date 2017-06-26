@@ -246,6 +246,6 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     
     private void onDataBaseSelect() {
         txtKeyScanPattern.setText(DEFAULT_SCAN_PATTERN);
-        redisExplorerPresenter.onDbSelect(sid, id, cbDatabase.getSelectionIndex(), DEFAULT_SCAN_PATTERN);
+        redisExplorerPresenter.onDbSelect(sid, id, cbDatabase.getSelectionIndex());
     }
 }

@@ -35,6 +35,8 @@ import rx.schedulers.Schedulers;
 
 public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpPresenter<V> {
     
+    private static final String DEFAULT_SCAN_PATTERN = "*";
+    
     private static final String CANNOT_GET_REDIS_INFO = "Cannot get Redis Cache's information.";
 
     /**
@@ -73,9 +75,9 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
      * @param pattern
      *             pattern for Redis Scan Param
      */
-    public void onDbSelect(String sid, String id, int db, String pattern) {
+    public void onDbSelect(String sid, String id, int db) {
         Observable.fromCallable(() -> {
-            return RedisExplorerMvpModel.getInstance().scanKeys(sid, id, db, SCAN_POINTER_START, pattern);
+            return RedisExplorerMvpModel.getInstance().scanKeys(sid, id, db, SCAN_POINTER_START, DEFAULT_SCAN_PATTERN);
         })
         .subscribeOn(Schedulers.io())
         .subscribe(result -> {
