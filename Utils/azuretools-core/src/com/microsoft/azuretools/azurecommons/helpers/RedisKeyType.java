@@ -23,10 +23,10 @@
 package com.microsoft.azuretools.azurecommons.helpers;
 
 public enum RedisKeyType {
+    NONE,
     STRING,
     LIST,
     SET,
     ZSET,
-    HASH,
-    NONE;
+    HASH;
 }

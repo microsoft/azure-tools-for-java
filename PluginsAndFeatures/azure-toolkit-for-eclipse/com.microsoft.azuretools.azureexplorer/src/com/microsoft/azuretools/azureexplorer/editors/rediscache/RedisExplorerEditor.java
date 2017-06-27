@@ -60,12 +60,15 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     
     private final RedisExplorerPresenter<RedisExplorerEditor> redisExplorerPresenter;
     
+    private static final String[] LIST_TITLE = new String[] { "Index", "Item" };
+    private static final String[] SET_TITLE = new String[] { "Member" };
+    private static final String[] ZSET_TITLE = new String[] { "Score", "Member" };
+    private static final String[] HASH_TITLE = new String[] { "Field", "Value" };
+    
     private static final String DEFAULT_SCAN_PATTERN = "*";
     private static final String DBNameFormat = "DB<%s>";
     
     private String currentCursor;
-    private String sid;
-    private String id;
     private String lastChosenKey;
     
     private ScrolledComposite scrolledComposite;
@@ -175,11 +178,12 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         });
         
         btnScanKey.addListener(SWT.Selection, event -> {
-            redisExplorerPresenter.onKeyList(sid, id, cbDatabase.getSelectionIndex(), SCAN_POINTER_START, txtKeyScanPattern.getText());
+            redisExplorerPresenter.onKeyList(cbDatabase.getSelectionIndex(), SCAN_POINTER_START, txtKeyScanPattern.getText());
+            currentCursor = SCAN_POINTER_START;
         });
         
         btnScanMoreKey.addListener(SWT.Selection, event -> {
-            redisExplorerPresenter.onKeyList(sid, id, cbDatabase.getSelectionIndex(), currentCursor, txtKeyScanPattern.getText());
+            redisExplorerPresenter.onKeyList(cbDatabase.getSelectionIndex(), currentCursor, txtKeyScanPattern.getText());
         });
         
         lstKey.addListener(SWT.Selection, event -> {
@@ -188,13 +192,8 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
                 return;
             }
             lastChosenKey = selectedKey;
-            redisExplorerPresenter.onkeySelect(sid, id, cbDatabase.getSelectionIndex(), selectedKey);
+            redisExplorerPresenter.onkeySelect(cbDatabase.getSelectionIndex(), selectedKey);
         });
-    }
-    
-    @Override
-    public void onReadRedisDatabaseNum(String sid, String id) {
-        redisExplorerPresenter.onReadDbNum(sid, id);
     }
     
     @Override
@@ -219,15 +218,32 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     
     @Override
     public void showContent(RedisValueData val) {
-        String type = val.getKeyType();
-        lblType.setText(type);
+        RedisKeyType type = val.getKeyType();
+        lblType.setText(type.toString());
         txtKeyName.setText(lstKey.getItem(lstKey.getSelectionIndex()));
-        if (type.equals(RedisKeyType.STRING.toString())) {
+        if (type.equals(RedisKeyType.STRING)) {
             if (val.getRowData().size() > 0 && val.getRowData().get(0).length > 0) {
                 txtStringValue.setText(val.getRowData().get(0)[0]);
             }
-            setValueCompositeVisiable(false, true);
+            setValueCompositeVisiable(false);
         } else {
+            String[] columnNames;
+            switch (type){
+                case LIST:
+                    columnNames = LIST_TITLE;
+                    break;
+                case SET:
+                    columnNames = SET_TITLE;
+                    break;
+                case ZSET:
+                    columnNames = ZSET_TITLE;
+                    break;
+                case HASH:
+                    columnNames = HASH_TITLE;
+                    break;
+                default:
+                    return;    
+            }
             tblInnerValue.setRedraw(false);
             // remove all the columns
             while ( tblInnerValue.getColumnCount() > 0 ) {
@@ -236,7 +252,6 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
             //remove all the items
             tblInnerValue.removeAll();
             // set column title and the number of columns
-            String[] columnNames = val.getColumnName();
             TableColumn[] cols = new TableColumn[columnNames.length];
             for (int i = 0; i < columnNames.length; i++) {
                 cols[i] = new TableColumn(tblInnerValue, SWT.LEFT);
@@ -252,7 +267,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
                 cols[i].pack();
             }
             tblInnerValue.setRedraw(true);
-            setValueCompositeVisiable(true, false);
+            setValueCompositeVisiable(true);
         }
     }
     
@@ -277,9 +292,8 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         setInput(input);
         if (input instanceof RedisExplorerEditorInput) {
             RedisExplorerEditorInput redisInput = (RedisExplorerEditorInput) input;
-            this.sid = redisInput.getSubscriptionId();
-            this.id = redisInput.getId();
-            this.onReadRedisDatabaseNum(this.sid, this.id);
+            this.redisExplorerPresenter.initializeResourceData(redisInput.getSubscriptionId(), redisInput.getId());
+            this.redisExplorerPresenter.onReadDbNum();
             this.setPartName(redisInput.getRedisName());
         }
         
@@ -315,14 +329,14 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     
     private void onDataBaseSelect() {
         txtKeyScanPattern.setText(DEFAULT_SCAN_PATTERN);
-        redisExplorerPresenter.onDbSelect(sid, id, cbDatabase.getSelectionIndex());
+        redisExplorerPresenter.onDbSelect(cbDatabase.getSelectionIndex());
     }
     
-    private void setValueCompositeVisiable(boolean tblCompoVisiable, boolean txtCompoVisiable) {
-        ((GridData)cmpoInnerValue.getLayoutData()).exclude = !tblCompoVisiable;
-        ((GridData)cmpoStringValue.getLayoutData()).exclude = !txtCompoVisiable;
-        cmpoInnerValue.setVisible(tblCompoVisiable);
-        cmpoStringValue.setVisible(txtCompoVisiable);
+    private void setValueCompositeVisiable(boolean showTable) {
+        ((GridData)cmpoInnerValue.getLayoutData()).exclude = !showTable;
+        ((GridData)cmpoStringValue.getLayoutData()).exclude = showTable;
+        cmpoInnerValue.setVisible(showTable);
+        cmpoStringValue.setVisible(!showTable);
         cmpoValueArea.layout();
     }
 }

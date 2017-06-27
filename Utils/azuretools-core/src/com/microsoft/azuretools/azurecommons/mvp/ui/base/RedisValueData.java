@@ -24,12 +24,12 @@ package com.microsoft.azuretools.azurecommons.mvp.ui.base;
 
 import java.util.ArrayList;
 
+import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
+
 public class RedisValueData {
 
-    private String[] columnName;
     private ArrayList<String[]> rowData;
-    private int columnNum;
-    private String keyType;
+    private RedisKeyType keyType;
 
     /**
      * Constructor for RedisValueData class.
@@ -41,43 +41,16 @@ public class RedisValueData {
      * @param keyType
      *            the Redis Cache's key type
      */
-    public RedisValueData(String[] columnName, ArrayList<String[]> rowData, String keyType) {
-        setColumnName(columnName);
-        setRowData(rowData);
-        setKeyType(keyType);
-        setColumnNum(columnName.length);
-    }
-
-    public int getColumnNum() {
-        return columnNum;
-    }
-
-    public void setColumnNum(int columnNum) {
-        this.columnNum = columnNum;
+    public RedisValueData(ArrayList<String[]> rowData, RedisKeyType keyType) {
+        this.rowData = rowData;
+        this.keyType = keyType;
     }
 
     public ArrayList<String[]> getRowData() {
         return rowData;
     }
 
-    public void setRowData(ArrayList<String[]> columnData) {
-        this.rowData = columnData;
-    }
-
-    public String[] getColumnName() {
-        return columnName;
-    }
-
-    public void setColumnName(String[] columnName) {
-        this.columnName = columnName;
-    }
-
-    public String getKeyType() {
+    public RedisKeyType getKeyType() {
         return keyType;
     }
-
-    public void setKeyType(String dataType) {
-        this.keyType = dataType;
-    }
-
 }

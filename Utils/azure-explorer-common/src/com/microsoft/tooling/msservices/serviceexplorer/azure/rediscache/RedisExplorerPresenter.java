@@ -43,12 +43,11 @@ import rx.Observable;
 import rx.schedulers.Schedulers;
 
 public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpPresenter<V> {
+    
+    private String sid;
+    private String id;
 
     private static final String DEFAULT_SCAN_PATTERN = "*";
-    private static final String[] LIST_TITLE = new String[] { "Index", "Item" };
-    private static final String[] SET_TITLE = new String[] { "Member" };
-    private static final String[] ZSET_TITLE = new String[] { "Score", "Member" };
-    private static final String[] HASH_TITLE = new String[] { "Field", "Value" };
 
     private static final String CANNOT_GET_REDIS_INFO = "Cannot get Redis Cache's information.";
 
@@ -60,7 +59,7 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
      * @param id
      *            resource id of Redis Cache
      */
-    public void onReadDbNum(String sid, String id) {
+    public void onReadDbNum() {
         Observable.fromCallable(() -> {
             return RedisExplorerMvpModel.getInstance().getDbNumber(sid, id);
         })
@@ -84,8 +83,8 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
      * @param db
      *            index of Redis Cache database
      */
-    public void onDbSelect(String sid, String id, int db) {
-        onKeyList(sid, id, db, SCAN_POINTER_START, DEFAULT_SCAN_PATTERN);
+    public void onDbSelect(int db) {
+        onKeyList(db, SCAN_POINTER_START, DEFAULT_SCAN_PATTERN);
     }
 
     /**
@@ -102,7 +101,7 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
      * @param pattern
      *            scan match pattern for Redis Cache
      */
-    public void onKeyList(String sid, String id, int db, String cursor, String pattern) {
+    public void onKeyList(int db, String cursor, String pattern) {
         Observable.fromCallable(() -> {
             return RedisExplorerMvpModel.getInstance().scanKeys(sid, id, db, cursor, pattern);
         })
@@ -128,47 +127,41 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
      * @param key
      *            target key name for Redis Cache
      */
-    public void onkeySelect(String sid, String id, int db, String key) {
+    public void onkeySelect(int db, String key) {
         Observable.fromCallable(() -> {
             String type = RedisExplorerMvpModel.getInstance().getKeyType(sid, id, db, key).toUpperCase();
-            String[] columnName;
             ArrayList<String[]> columnData = new ArrayList<String[]>();
             switch (RedisKeyType.valueOf(type)) {
                 case STRING:
                     String stringVal = RedisExplorerMvpModel.getInstance().getStringValue(sid, id, db, key);
-                    columnName = new String[] {};
                     columnData.add(new String[] { stringVal });
-                    return new RedisValueData(columnName, columnData, type);
+                    return new RedisValueData(columnData, RedisKeyType.STRING);
                 case LIST:
                     List<String> listVal = RedisExplorerMvpModel.getInstance().getListValue(sid, id, db, key);
-                    columnName = LIST_TITLE;
                     for (int i = 0; i < listVal.size(); i++) {
                         columnData.add(new String[] { String.valueOf(i + 1), listVal.get(i) });
                     }
-                    return new RedisValueData(columnName, columnData, type);
+                    return new RedisValueData(columnData, RedisKeyType.LIST);
                 case SET:
                     ScanResult<String> setVal = RedisExplorerMvpModel.getInstance().getSetValue(sid, id, db, key,
                             SCAN_POINTER_START);
-                    columnName = SET_TITLE;
                     for (String row : setVal.getResult()) {
                         columnData.add(new String[] { row });
                     }
-                    return new RedisValueData(columnName, columnData, type);
+                    return new RedisValueData(columnData, RedisKeyType.SET);
                 case ZSET:
                     Set<Tuple> zsetVal = RedisExplorerMvpModel.getInstance().getZSetValue(sid, id, db, key);
-                    columnName = ZSET_TITLE;
                     for (Tuple tuple : zsetVal) {
                         columnData.add(new String[] { String.valueOf(tuple.getScore()), tuple.getElement() });
                     }
-                    return new RedisValueData(columnName, columnData, type);
+                    return new RedisValueData(columnData, RedisKeyType.ZSET);
                 case HASH:
                     ScanResult<Entry<String, String>> hashVal = RedisExplorerMvpModel.getInstance().getHashValue(sid,
                             id, db, key, SCAN_POINTER_START);
-                    columnName = HASH_TITLE;
                     for (Entry<String, String> hash : hashVal.getResult()) {
                         columnData.add(new String[] { hash.getKey(), hash.getValue() });
                     }
-                    return new RedisValueData(columnName, columnData, type);
+                    return new RedisValueData(columnData, RedisKeyType.HASH);
                 default:
                     return null;
 
@@ -196,5 +189,10 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
      */
     public void onRelease(String id) {
         RedisConnectionPools.getInstance().releasePool(id);
+    }
+    
+    public void initializeResourceData(String sid, String id) {
+        this.sid = sid;
+        this.id = id;
     }
 }

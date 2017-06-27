@@ -28,8 +28,6 @@ import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisValueData;
 
 public interface RedisExplorerMvpView extends MvpView {
     
-    void onReadRedisDatabaseNum(String sid, String id);
-    
     void renderDbCombo(int num);
     
     void showScanResult(RedisScanResult result);
