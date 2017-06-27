@@ -24,6 +24,12 @@ done
 ECLIPSE_KEY=${ECLIPSE_TELKEY}
 INTELLIJ_KEY=${INTELLIJ_TELKEY}
 ARTIFACTS_DIR="artifacts"
+TOSIGNPATH="/c/Signing/ToSign"
+SIGNEDPATH="/c/Signing/Signed"
+ECLIPSE_TOSIGN="/c/jenkins/toSignPackage/eclipse"
+INTELLIJ_TOSIGN="/c/jenkins/toSignPackage/intelliJ"
+CSU_PATH="/c/Signing/CodeSignUtility"
+
 # check dir exists
 if [ ! -d  "$ARTIFACTS_DIR" ]; then
     echo "Creating artifacts directory $ARTIFACTS_DIR"
@@ -34,13 +40,13 @@ fi
 set -x
 
 # Build Utils
-mvn install -f $SCRIPTPATH/Utils/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
-rm -rf /c/Signing/ToSign/*
-cp $SCRIPTPATH/Utils/azuretools-core/target/azuretools-core-${VERSION}.jar /c/Signing/ToSign/
-cp $SCRIPTPATH/Utils/azure-explorer-common/target/azure-explorer-common-${VERSION}.jar /c/Signing/ToSign/
-cp $SCRIPTPATH/Utils/hdinsight-node-common/target/hdinsight-node-common-${VERSION}.jar /c/Signing/ToSign/
+mvn install -f ./Utils/pom.xml -Dmaven.repo.local=./.repository $MAVEN_QUIET
+rm -rf ${TOSIGNPATH}/*
+cp ./Utils/azuretools-core/target/azuretools-core-${VERSION}.jar ${TOSIGNPATH}/
+cp ./Utils/azure-explorer-common/target/azure-explorer-common-${VERSION}.jar ${TOSIGNPATH}/
+cp ./Utils/hdinsight-node-common/target/hdinsight-node-common-${VERSION}.jar ${TOSIGNPATH}/
 
-if /c/Signing/CodeSignUtility/csu.exe -c1=170
+if ${CSU_PATH}/csu.exe -c1=170
 then
 	echo jar signed successfully
 else
@@ -48,18 +54,18 @@ else
 	exit 1
 fi
 
-cp /c/Signing/Signed/azuretools-core-${VERSION}.jar $SCRIPTPATH/Utils/azuretools-core/target/azuretools-core-${VERSION}.jar
-cp /c/Signing/Signed/azure-explorer-common-${VERSION}.jar $SCRIPTPATH/Utils/azure-explorer-common/target/azure-explorer-common-${VERSION}.jar
-cp /c/Signing/Signed/hdinsight-node-common-${VERSION}.jar $SCRIPTPATH/Utils/hdinsight-node-common/target/hdinsight-node-common-${VERSION}.jar 
+cp ${SIGNEDPATH}/azuretools-core-${VERSION}.jar ./Utils/azuretools-core/target/azuretools-core-${VERSION}.jar
+cp ${SIGNEDPATH}/azure-explorer-common-${VERSION}.jar ./Utils/azure-explorer-common/target/azure-explorer-common-${VERSION}.jar
+cp ${SIGNEDPATH}/hdinsight-node-common-${VERSION}.jar ./Utils/hdinsight-node-common/target/hdinsight-node-common-${VERSION}.jar
 
-mvn install:install-file -Dfile=$SCRIPTPATH/Utils/azuretools-core/target/azuretools-core-${VERSION}.jar -DgroupId=com.microsoft.azuretools -DartifactId=azuretools-core -Dversion=${VERSION} -Dpackaging=jar -Dmaven.repo.local=$SCRIPTPATH/.repository
-mvn install:install-file -Dfile=$SCRIPTPATH/Utils/azure-explorer-common/target/azure-explorer-common-${VERSION}.jar -DgroupId=com.microsoft.azuretools -DartifactId=azure-explorer-common -Dversion=${VERSION} -Dpackaging=jar -Dmaven.repo.local=$SCRIPTPATH/.repository
-mvn install:install-file -Dfile=$SCRIPTPATH/Utils/hdinsight-node-common/target/hdinsight-node-common-${VERSION}.jar -DgroupId=com.microsoft.azuretools -DartifactId=hdinsight-node-common -Dversion=${VERSION} -Dpackaging=jar -Dmaven.repo.local=$SCRIPTPATH/.repository 
+mvn install:install-file -Dfile=./Utils/azuretools-core/target/azuretools-core-${VERSION}.jar -DgroupId=com.microsoft.azuretools -DartifactId=azuretools-core -Dversion=${VERSION} -Dpackaging=jar -Dmaven.repo.local=./.repository
+mvn install:install-file -Dfile=./Utils/azure-explorer-common/target/azure-explorer-common-${VERSION}.jar -DgroupId=com.microsoft.azuretools -DartifactId=azure-explorer-common -Dversion=${VERSION} -Dpackaging=jar -Dmaven.repo.local=./.repository
+mvn install:install-file -Dfile=./Utils/hdinsight-node-common/target/hdinsight-node-common-${VERSION}.jar -DgroupId=com.microsoft.azuretools -DartifactId=hdinsight-node-common -Dversion=${VERSION} -Dpackaging=jar -Dmaven.repo.local=./.repository
 
-mvn install -f $SCRIPTPATH/PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
+mvn install -f ./PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.repo.local=./.repository $MAVEN_QUIET
 
 # # Build eclipse plugin
-mvn clean install -f $SCRIPTPATH/PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml -Dinstrkey=${ECLIPSE_KEY}  $MAVEN_QUIET
+mvn clean install -f ./PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml -Dinstrkey=${ECLIPSE_KEY}  $MAVEN_QUIET
 cp ./PluginsAndFeatures/azure-toolkit-for-eclipse/WindowsAzurePlugin4EJ/target/WindowsAzurePlugin4EJ*.zip ./$ARTIFACTS_DIR/WindowsAzurePlugin4EJ.zip
 
 chmod +x ./gradlew
@@ -83,12 +89,12 @@ cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-too
 
 # Extract jars to sign
 # intelliJ
-rm -rf /c/jenkins/toSignPackage/intelliJ/*
-unzip -p $SCRIPTPATH/artifacts/azure-toolkit-for-intellij-2016.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > /c/jenkins/toSignPackage/intelliJ/azure-toolkit-for-intellij_2016.jar
-unzip -p $SCRIPTPATH/artifacts/azure-toolkit-for-intellij-2017.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > /c/jenkins/toSignPackage/intelliJ/azure-toolkit-for-intellij_2017.jar
+rm -rf ${INTELLIJ_TOSIGN}/*
+unzip -p ./artifacts/azure-toolkit-for-intellij-2016.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_2016.jar
+unzip -p ./artifacts/azure-toolkit-for-intellij-2017.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_2017.jar
 
 # Eclipse
-rm -rf /c/jenkins/toSignPackage/eclipse/*
-unzip -j artifacts/WindowsAzurePlugin4EJ.zip "**/*.jar" "*.jar" -d /c/jenkins/toSignPackage/eclipse
+rm -rf ${ECLIPSE_TOSIGN}/*
+unzip -j artifacts/WindowsAzurePlugin4EJ.zip "**/*.jar" "*.jar" -d ${ECLIPSE_TOSIGN}
 
 echo "ALL BUILD SUCCESSFUL"
