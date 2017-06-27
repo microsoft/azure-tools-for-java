@@ -24,6 +24,9 @@
    <feature url="features/com.microsoft.azuretools.docker.feature_3.0.4.qualifier.jar" id="com.microsoft.azuretools.docker.feature" version="3.0.4.qualifier">
       <category name="com.persistent.azuretools.eclipseplugin.category"/>
    </feature>
+   <feature url="features/com.microsoft.azuretools.container.feature_3.0.4.qualifier.jar" id="com.microsoft.azuretools.container.feature" version="3.0.4.qualifier">
+      <category name="com.persistent.azuretools.eclipseplugin.category"/>
+   </feature>
    <category-def name="com.persistent.azuretools.eclipseplugin.category" label="Azure Toolkit for Java">
       <description>
          Provides support for developing projects that help build, test and deploy Java applications for the  Microsoft Azure cloud in Eclipse.

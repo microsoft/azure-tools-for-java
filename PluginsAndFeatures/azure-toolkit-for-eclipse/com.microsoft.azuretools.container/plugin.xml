@@ -4,10 +4,12 @@
   <extension point="org.eclipse.ui.commands">
     <command id="com.microsoft.azuretools.container.commands.dockerize" name="Add Docker Support" categoryId="com.microsoft.ui.dropdown.category"></command>
     <command id="com.microsoft.azuretools.container.commands.dockerrun" name="Docker Run" categoryId="com.microsoft.ui.dropdown.category"></command>
+    <command id="com.microsoft.azuretools.container.commands.publish" name="Publish" categoryId="com.microsoft.ui.dropdown.category"></command>
   </extension>
   <extension point="org.eclipse.ui.handlers">
     <handler commandId="com.microsoft.azuretools.container.commands.dockerize" class="com.microsoft.azuretools.container.handlers.DockerizeHandler"></handler>
     <handler commandId="com.microsoft.azuretools.container.commands.dockerrun" class="com.microsoft.azuretools.container.handlers.DockerRunHandler"></handler>
+    <handler commandId="com.microsoft.azuretools.container.commands.publish" class="com.microsoft.azuretools.container.handlers.PublishHandler"></handler>
   </extension>
   <extension point="org.eclipse.ui.menus">
     <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
@@ -20,6 +22,11 @@
           </visibleWhen>
         </command>
         <command name="dockerrun" commandId="com.microsoft.azuretools.container.commands.dockerrun">
+          <visibleWhen checkEnabled="false">
+            <reference definitionId="when.is.dockerized"/>
+          </visibleWhen>
+        </command>
+        <command name="dockerrun" commandId="com.microsoft.azuretools.container.commands.publish">
           <visibleWhen checkEnabled="false">
             <reference definitionId="when.is.dockerized"/>
           </visibleWhen>

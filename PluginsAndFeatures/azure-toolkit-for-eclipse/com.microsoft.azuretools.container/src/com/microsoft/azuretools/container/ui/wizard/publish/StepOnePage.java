@@ -22,10 +22,12 @@
 
 package com.microsoft.azuretools.container.ui.wizard.publish;
 
+import java.util.Date;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
-import com.microsoft.azuretools.container.presenters.PublishWizardPresenter;
+import com.microsoft.azuretools.container.presenters.StepOnePagePresenter;
 import com.microsoft.azuretools.core.components.AzureWizardPage;
 
 import org.eclipse.swt.layout.GridLayout;
@@ -37,6 +39,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.custom.StyledText;
 
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.widgets.Button;
 
 public class StepOnePage extends AzureWizardPage {
     private Text txtRegistryUrl;
@@ -44,11 +47,12 @@ public class StepOnePage extends AzureWizardPage {
     private Text txtPassword;
     private StyledText styledText;
     private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
-    private final PublishWizardPresenter<StepOnePage> presenter;
+    private final StepOnePagePresenter<StepOnePage> presenter;
+    private Button btnValidate;
 
     // Call Presenter
     public boolean validated() {
-        return presenter.onAckRegistry(txtRegistryUrl.getText(), txtUsername.getText(), txtPassword.getText());
+        return presenter.onValidateRegistry(txtRegistryUrl.getText(), txtUsername.getText(), txtPassword.getText());
     }
 
     public void updateRegistryInfo() {
@@ -58,7 +62,13 @@ public class StepOnePage extends AzureWizardPage {
     public void loadRegistryInfo() {
         presenter.onLoadRegistryInfo();
     }
+    public void setWidgetsEnabledStatus(boolean enableStatus) {
+        btnValidate.setEnabled(enableStatus);
 
+        txtRegistryUrl.setEditable(enableStatus);
+        txtUsername.setEditable(enableStatus);
+        txtPassword.setEditable(enableStatus);
+    }
     // View Actions
     public void fillRegistryInfo(String registryUrl, String username, String password) {
         txtRegistryUrl.setText(registryUrl != null ? registryUrl : "");
@@ -70,7 +80,7 @@ public class StepOnePage extends AzureWizardPage {
         if (string == null) {
             return;
         }
-        styledText.append(string + "\n");
+        styledText.append(String.format("[%s]\t%s\n", (new Date()).toString(), string));
     }
 
     /**
@@ -78,7 +88,7 @@ public class StepOnePage extends AzureWizardPage {
      */
     public StepOnePage() {
         super("wizardPage");
-        presenter = new PublishWizardPresenter<StepOnePage>();
+        presenter = new StepOnePagePresenter<StepOnePage>();
         presenter.onAttachView(this);
 
         setTitle("Setting Docker Repo Credential");
@@ -122,6 +132,13 @@ public class StepOnePage extends AzureWizardPage {
 
         txtPassword = new Text(cmpoDockerRepoCredential, SWT.BORDER | SWT.PASSWORD);
         txtPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        new Label(cmpoDockerRepoCredential, SWT.NONE);
+        
+        btnValidate = new Button(cmpoDockerRepoCredential, SWT.NONE);
+        btnValidate.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        formToolkit.adapt(btnValidate, true, true);
+        btnValidate.setText("Validate");
+        btnValidate.addListener(SWT.Selection, event -> onBtnValidateSelection());
 
         ScrolledComposite cmpoInformation = new ScrolledComposite(container, SWT.BORDER | SWT.V_SCROLL);
         cmpoInformation.setAlwaysShowScrollBars(true);
@@ -141,6 +158,12 @@ public class StepOnePage extends AzureWizardPage {
         styledText.addListener(SWT.Modify, event -> styledText.setTopIndex(styledText.getLineCount() - 1));
 
         loadRegistryInfo();
+        setPageComplete(false);
+    }
+
+    private void onBtnValidateSelection() {
+        setWidgetsEnabledStatus(false);
+        presenter.onValidateRegistry(txtRegistryUrl.getText(), txtUsername.getText(), txtPassword.getText());
     }
 
     @Override

@@ -25,25 +25,26 @@ package com.microsoft.azuretools.container.ui.wizard.publish;
 import org.eclipse.jface.wizard.Wizard;
 
 public class PublishWizard extends Wizard {
-	private StepOnePage p1;
-	private StepTwoPage p2;
-	public PublishWizard() {
-		setWindowTitle("New Wizard");
-		p1 = new StepOnePage();
-		p2 = new StepTwoPage();
-	}
+    private StepOnePage p1;
+    private StepTwoPage p2;
 
-	@Override
-	public void addPages() {
-		addPage(p1);
-		addPage(p2);
-	}
+    public PublishWizard() {
+        setWindowTitle("New Wizard");
+        p1 = new StepOnePage();
+        p2 = new StepTwoPage();
 
-	@Override
-	public boolean performFinish() {
-		return p1.isPageComplete() && p2.isPageComplete();
-	}
-	
-	
+    }
+
+    @Override
+    public void addPages() {
+        addPage(p1);
+        addPage(p2);
+        //
+    }
+
+    @Override
+    public boolean performFinish() {
+        return p1.isPageComplete() && p2.isPageComplete();
+    }
 
 }

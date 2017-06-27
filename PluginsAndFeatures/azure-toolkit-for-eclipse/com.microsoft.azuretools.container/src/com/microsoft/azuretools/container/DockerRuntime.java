@@ -23,6 +23,9 @@
 package com.microsoft.azuretools.container;
 
 import com.spotify.docker.client.DockerClient;
+
+import java.util.Properties;
+
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
@@ -33,10 +36,20 @@ public class DockerRuntime {
     private String runningContainerId = null;
     private Builder dockerBuilder = null;
 
+    private String latestImageName = null;
+    
     private String registryUrl = null;
     private String registryUsername = null;
     private String registryPassword = null;
-    private String latestImageName = null;
+    private String latestWebAppName = null;
+
+	public synchronized String getLatestWebAppName() {
+        return latestWebAppName;
+    }
+
+    public synchronized void setLatestWebAppName(String latestWebAppName) {
+        this.latestWebAppName = latestWebAppName;
+    }
 
     public synchronized String getLatestImageName() {
         return latestImageName;
@@ -115,5 +128,20 @@ public class DockerRuntime {
             runningContainerId = null;
         }
         return;
+    }
+
+    public Properties saveToProps(Properties props) {
+        if(registryUrl != null) props.setProperty("registryUrl", registryUrl);
+        if(registryUsername != null) props.setProperty("registryUsername", registryUsername);
+        if(registryPassword != null) props.setProperty("registryPassword", registryPassword);
+        if(latestWebAppName != null) props.setProperty("latestWebAppName", latestWebAppName);
+        return props;
+    }
+
+    public void loadFromProps(Properties props) {
+        registryUrl = props.getProperty("registryUrl");
+        registryUsername = props.getProperty("registryUsername");
+        registryPassword = props.getProperty("registryPassword");
+        latestWebAppName = props.getProperty("latestWebAppName");
     }
 }
