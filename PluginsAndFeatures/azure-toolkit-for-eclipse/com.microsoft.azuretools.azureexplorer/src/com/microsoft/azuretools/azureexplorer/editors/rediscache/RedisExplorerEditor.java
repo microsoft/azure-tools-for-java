@@ -236,10 +236,11 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
             //remove all the items
             tblInnerValue.removeAll();
             // set column title and the number of columns
-            TableColumn[] cols = new TableColumn[val.getColumnName().length];
-            for (int i = 0; i < val.getColumnName().length; i++) {
+            String[] columnNames = val.getColumnName();
+            TableColumn[] cols = new TableColumn[columnNames.length];
+            for (int i = 0; i < columnNames.length; i++) {
                 cols[i] = new TableColumn(tblInnerValue, SWT.LEFT);
-                cols[i].setText(val.getColumnName()[i]);
+                cols[i].setText(columnNames[i]);
             }
             // fill in the data for each row
             for (String[] data: val.getRowData()) {
@@ -247,7 +248,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
                 item.setText(data);
             }
             // after all the data are filled in, call pack() to tell the table calculate each column's width
-            for (int i = 0; i < val.getColumnName().length; i++) {
+            for (int i = 0; i < tblInnerValue.getColumnCount(); i++) {
                 cols[i].pack();
             }
             tblInnerValue.setRedraw(true);

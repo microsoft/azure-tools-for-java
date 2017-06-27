@@ -63,7 +63,9 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
     public void onReadDbNum(String sid, String id) {
         Observable.fromCallable(() -> {
             return RedisExplorerMvpModel.getInstance().getDbNumber(sid, id);
-        }).subscribeOn(Schedulers.io()).subscribe(number -> {
+        })
+        .subscribeOn(Schedulers.io())
+        .subscribe(number -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 getMvpView().renderDbCombo(number);
             });
@@ -103,7 +105,9 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
     public void onKeyList(String sid, String id, int db, String cursor, String pattern) {
         Observable.fromCallable(() -> {
             return RedisExplorerMvpModel.getInstance().scanKeys(sid, id, db, cursor, pattern);
-        }).subscribeOn(Schedulers.io()).subscribe(result -> {
+        })
+        .subscribeOn(Schedulers.io())
+        .subscribe(result -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 getMvpView().showScanResult(new RedisScanResult(result));
             });
@@ -169,7 +173,9 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
                     return null;
 
             }
-        }).subscribeOn(Schedulers.io()).subscribe(result -> {
+        })
+        .subscribeOn(Schedulers.io())
+        .subscribe(result -> {
             if (result == null) {
                 getMvpView().onError(CANNOT_GET_REDIS_INFO);
                 return;
