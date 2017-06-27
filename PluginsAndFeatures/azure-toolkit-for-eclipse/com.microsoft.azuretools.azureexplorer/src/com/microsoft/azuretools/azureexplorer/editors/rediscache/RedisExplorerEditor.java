@@ -1,18 +1,18 @@
 /**
  * Copyright (c) Microsoft Corporation
- * <p/>
+ * 
  * All rights reserved.
- * <p/>
+ * 
  * MIT License
- * <p/>
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ * 
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ * 
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -21,6 +21,8 @@
  */
 
 package com.microsoft.azuretools.azureexplorer.editors.rediscache;
+
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
@@ -34,6 +36,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -44,7 +48,9 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
+import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
 import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisScanResult;
+import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisValueData;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerPresenter;
 
@@ -60,6 +66,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     private String currentCursor;
     private String sid;
     private String id;
+    private String lastChosenKey;
     
     private ScrolledComposite scrolledComposite;
     private Composite cmpoMain;
@@ -82,6 +89,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         this.redisExplorerPresenter = new RedisExplorerPresenter<RedisExplorerEditor>();
         this.redisExplorerPresenter.onAttachView(this);
         currentCursor = DEFAULT_SCAN_PATTERN;
+        lastChosenKey = "";
     }
 
     /**
@@ -124,19 +132,21 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         lstKey = new List(cmpoKeyArea, SWT.BORDER | SWT.V_SCROLL);
         lstKey.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 3, 1));
 
-        cmpoValueArea = new Composite(sashForm, SWT.NONE);
+        cmpoValueArea = new Composite(sashForm, SWT.BORDER);
         cmpoValueArea.setLayout(new GridLayout(2, false));
         
         lblType = new Label(cmpoValueArea, SWT.NONE);
-        lblType.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        lblType.setText("type");
+        lblType.setText("Type");
         
         txtKeyName = new Text(cmpoValueArea, SWT.BORDER);
         txtKeyName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         
         cmpoInnerValue = new Composite(cmpoValueArea, SWT.NONE);
-        cmpoInnerValue.setLayout(new GridLayout(1, false));
+        GridLayout cmpoInnerValueLayout = new GridLayout(1, false);
+        cmpoInnerValueLayout.marginWidth = 0;
+        cmpoInnerValue.setLayout(cmpoInnerValueLayout);
         cmpoInnerValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+        cmpoInnerValue.setVisible(false);
         
         tblInnerValue = new Table(cmpoInnerValue, SWT.BORDER | SWT.FULL_SELECTION);
         tblInnerValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
@@ -144,14 +154,17 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         tblInnerValue.setLinesVisible(true);
         
         cmpoStringValue = new Composite(cmpoValueArea, SWT.NONE);
-        cmpoStringValue.setLayout(new GridLayout(1, false));
+        GridLayout cmpoStringValueLayout = new GridLayout(1, false);
+        cmpoStringValueLayout.marginWidth = 0;
+        cmpoStringValue.setLayout(cmpoStringValueLayout);
         cmpoStringValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 2, 1));
+        cmpoStringValue.setVisible(false);
         
         Label lblStringValue = new Label(cmpoStringValue, SWT.NONE);
         lblStringValue.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
         lblStringValue.setText("Value");
         
-        txtStringValue = new Text(cmpoStringValue, SWT.BORDER | SWT.MULTI);
+        txtStringValue = new Text(cmpoStringValue, SWT.BORDER | SWT.READ_ONLY | SWT.MULTI);
         txtStringValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         sashForm.setWeights(new int[] {1, 1});
         scrolledComposite.setContent(cmpoMain);
@@ -159,6 +172,23 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         
         cbDatabase.addListener(SWT.Selection, event -> {
             onDataBaseSelect();
+        });
+        
+        btnScanKey.addListener(SWT.Selection, event -> {
+            redisExplorerPresenter.onKeyList(sid, id, cbDatabase.getSelectionIndex(), SCAN_POINTER_START, txtKeyScanPattern.getText());
+        });
+        
+        btnScanMoreKey.addListener(SWT.Selection, event -> {
+            redisExplorerPresenter.onKeyList(sid, id, cbDatabase.getSelectionIndex(), currentCursor, txtKeyScanPattern.getText());
+        });
+        
+        lstKey.addListener(SWT.Selection, event -> {
+            String selectedKey = lstKey.getItem(lstKey.getSelectionIndex());
+            if (selectedKey.equals(lastChosenKey)) {
+                return;
+            }
+            lastChosenKey = selectedKey;
+            redisExplorerPresenter.onkeySelect(sid, id, cbDatabase.getSelectionIndex(), selectedKey);
         });
     }
     
@@ -185,6 +215,44 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
             lstKey.add(key);
         }
         currentCursor = result.getNextCursor();
+    }
+    
+    @Override
+    public void showContent(RedisValueData val) {
+        String type = val.getKeyType();
+        lblType.setText(type);
+        txtKeyName.setText(lstKey.getItem(lstKey.getSelectionIndex()));
+        if (type.equals(RedisKeyType.STRING.toString())) {
+            if (val.getRowData().size() > 0 && val.getRowData().get(0).length > 0) {
+                txtStringValue.setText(val.getRowData().get(0)[0]);
+            }
+            setValueCompositeVisiable(false, true);
+        } else {
+            tblInnerValue.setRedraw(false);
+            // remove all the columns
+            while ( tblInnerValue.getColumnCount() > 0 ) {
+                tblInnerValue.getColumns()[0].dispose();
+            }
+            //remove all the items
+            tblInnerValue.removeAll();
+            // set column title and the number of columns
+            TableColumn[] cols = new TableColumn[val.getColumnName().length];
+            for (int i = 0; i < val.getColumnName().length; i++) {
+                cols[i] = new TableColumn(tblInnerValue, SWT.LEFT);
+                cols[i].setText(val.getColumnName()[i]);
+            }
+            // fill in the data for each row
+            for (String[] data: val.getRowData()) {
+                TableItem item = new TableItem(tblInnerValue, SWT.NONE);
+                item.setText(data);
+            }
+            // after all the data are filled in, call pack() to tell the table calculate each column's width
+            for (int i = 0; i < val.getColumnName().length; i++) {
+                cols[i].pack();
+            }
+            tblInnerValue.setRedraw(true);
+            setValueCompositeVisiable(true, false);
+        }
     }
     
     @Override
@@ -247,5 +315,13 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     private void onDataBaseSelect() {
         txtKeyScanPattern.setText(DEFAULT_SCAN_PATTERN);
         redisExplorerPresenter.onDbSelect(sid, id, cbDatabase.getSelectionIndex());
+    }
+    
+    private void setValueCompositeVisiable(boolean tblCompoVisiable, boolean txtCompoVisiable) {
+        ((GridData)cmpoInnerValue.getLayoutData()).exclude = !tblCompoVisiable;
+        ((GridData)cmpoStringValue.getLayoutData()).exclude = !txtCompoVisiable;
+        cmpoInnerValue.setVisible(tblCompoVisiable);
+        cmpoStringValue.setVisible(txtCompoVisiable);
+        cmpoValueArea.layout();
     }
 }

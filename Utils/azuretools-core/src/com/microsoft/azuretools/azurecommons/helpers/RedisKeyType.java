@@ -20,19 +20,13 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
+package com.microsoft.azuretools.azurecommons.helpers;
 
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisScanResult;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisValueData;
-
-public interface RedisExplorerMvpView extends MvpView {
-    
-    void onReadRedisDatabaseNum(String sid, String id);
-    
-    void renderDbCombo(int num);
-    
-    void showScanResult(RedisScanResult result);
-    
-    void showContent(RedisValueData val);
+public enum RedisKeyType {
+    STRING,
+    LIST,
+    SET,
+    ZSET,
+    HASH,
+    NONE;
 }
