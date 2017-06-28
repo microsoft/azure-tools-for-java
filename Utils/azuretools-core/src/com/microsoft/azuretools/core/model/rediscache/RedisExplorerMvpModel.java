@@ -35,6 +35,7 @@ import redis.clients.jedis.exceptions.JedisException;
 public class RedisExplorerMvpModel {
 
     private static final int DEFAULT_REDIS_DB_NUMBER = 16;
+    private static final int MAX_DATABASE_NUMBER = 64;
     private static final int DEFAULT_KEY_COUNT = 50;
     private static final long DEFAULT_RANGE_START = 0;
     private static final int DEFAULT_VAL_COUNT = 500;
@@ -62,19 +63,31 @@ public class RedisExplorerMvpModel {
      *             Error getting the Redis Cache
      */
     public int getDbNumber(String sid, String id) throws Exception {
-        int dbNum = DEFAULT_REDIS_DB_NUMBER;
         try (Jedis jedis = RedisConnectionPools.getInstance().getJedis(sid, id)) {
             try {
                 List<String> dbs = jedis.configGet("databases");
                 if (dbs.size() > 0) {
-                    dbNum = Integer.parseInt(dbs.get(1));
+                    return Integer.parseInt(dbs.get(1));
                 }
             } catch (JedisException e) {
-                // TODO: keep ping to different db index to figure out how many
-                // dbs the redis has.
+                // Use binary search to determine the number of database the Redis has.
+                int start = 0, end = MAX_DATABASE_NUMBER - 1, mid;
+                while (start < end) {
+                    mid = start + (end - start) / 2;
+                    if (canConnect(jedis, mid)) {
+                        start = mid + 1;
+                    } else {
+                        end = mid;
+                    }
+                }
+                if (canConnect(jedis, start + 1)) {
+                    return start + 1;
+                } else {
+                    return start;
+                }
             }
         }
-        return dbNum;
+        return DEFAULT_REDIS_DB_NUMBER;
     }
 
     /**
@@ -233,6 +246,15 @@ public class RedisExplorerMvpModel {
         try (Jedis jedis = RedisConnectionPools.getInstance().getJedis(sid, id)) {
             jedis.select(db);
             return jedis.hscan(key, cursor, new ScanParams().count(DEFAULT_VAL_COUNT));
+        }
+    }
+    
+    private boolean canConnect(Jedis jedis, int index) {
+        try {
+            jedis.select(index);
+            return true;
+        } catch (JedisException ex) {
+            return false;
         }
     }
 }
