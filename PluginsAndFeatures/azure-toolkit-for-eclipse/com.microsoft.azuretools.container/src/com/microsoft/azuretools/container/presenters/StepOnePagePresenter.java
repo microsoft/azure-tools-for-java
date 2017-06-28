@@ -63,21 +63,26 @@ public class StepOnePagePresenter<V extends StepOnePageView> extends MvpPresente
                 // persist registry information
                 DefaultLoader.getIdeHelper().invokeAndWait(() -> {
                     doUpdateRuntimeRegistryInfo(registryUrl, registryUsername, registryPassword);
-                    getMvpView().showInfomation("Task OK");
-                    getMvpView().setWidgetsEnabledStatus(false);
-                    getMvpView().setCompleteStatus(true);
+                    V v = getMvpView();
+                    if (v != null) {
+                        v.showInfomation("Task OK");
+                        v.setWidgetsEnabledStatus(false);
+                        v.setCompleteStatus(true);
+                    }
                 });
             }, e -> {
                 DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                    getMvpView().showInfomation("Task FAIL");
-                    getMvpView().setWidgetsEnabledStatus(true);
-                    getMvpView().setCompleteStatus(false);
+                    V v = getMvpView();
+                    if (v != null) {
+                        v.showInfomation("Task FAIL");
+                        v.setWidgetsEnabledStatus(true);
+                        v.setCompleteStatus(false);
+                    }
                     ConsoleLogger.error("onPushLatestImageToRegistry@StepOnePagePresenter");
                 });
             });
         } catch (Exception e) {
             e.printStackTrace();
-            getMvpView().showInfomation(e.getMessage());
             return false;
         }
         return true;

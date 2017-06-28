@@ -56,8 +56,8 @@ public class StepTwoPopupDialogPresenter<V extends StepTwoPopupDialogView> exten
             if (binderSubscriptionDetails.size() > 0) {
                 doFetchResourceGroup(binderSubscriptionDetails.get(0));
             }
-            this.getMvpView().fillSubscriptions(binderSubscriptionDetails);
-            this.getMvpView().fillResourceGroups(binderResourceGroup);
+            getMvpView().fillSubscriptions(binderSubscriptionDetails);
+            getMvpView().fillResourceGroups(binderResourceGroup);
         } catch (Exception ex) {
             ex.printStackTrace();
             this.getMvpView().onErrorWithException(ex.getMessage(), ex);
@@ -71,12 +71,14 @@ public class StepTwoPopupDialogPresenter<V extends StepTwoPopupDialogView> exten
                     resourceGroupName, appName, createNewRg);
         }).subscribeOn(Schedulers.io()).subscribe(app -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                getMvpView().finishDeploy();
+                V v = getMvpView();
+                if (v != null) {
+                    v.finishDeploy();
+                }
                 DockerRuntime.getInstance().setLatestWebAppName(appName);
                 ConsoleLogger.info("Web App on Linux Created");
             });
         }, e -> {
-            getMvpView().onErrorWithException("onDeployNew@StepTwoPopupDialogPresenter", (Exception) e);
             ConsoleLogger.error("onDeployNew@StepTwoPopupDialogPresenter");
         });
     }

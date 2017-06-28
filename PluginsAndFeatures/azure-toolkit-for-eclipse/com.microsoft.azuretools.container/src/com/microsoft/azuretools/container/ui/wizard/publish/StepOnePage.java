@@ -93,9 +93,8 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView {
         super("wizardPage");
         presenter = new StepOnePagePresenter<StepOnePage>();
         presenter.onAttachView(this);
-
         setTitle("Setting Private Docker Repo Credential");
-        setDescription("TBD");
+        setDescription("Setting Private Docker Repo Credential");
     }
 
     /**

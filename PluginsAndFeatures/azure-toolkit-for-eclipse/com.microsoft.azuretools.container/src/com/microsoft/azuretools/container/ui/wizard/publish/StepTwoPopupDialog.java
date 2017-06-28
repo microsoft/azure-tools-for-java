@@ -185,6 +185,9 @@ public class StepTwoPopupDialog extends AzureTitleAreaDialogWrapper implements S
     protected void okPressed() {
         Button btnOK = getButton(IDialogConstants.OK_ID);
         btnOK.setEnabled(false);
+        Button btnCancel = getButton(IDialogConstants.CANCEL_ID);
+        btnCancel.setEnabled(false);
+
         setWidgetsEnabledStatus(false);
         this.setMessage("Creating ... ");
         try {

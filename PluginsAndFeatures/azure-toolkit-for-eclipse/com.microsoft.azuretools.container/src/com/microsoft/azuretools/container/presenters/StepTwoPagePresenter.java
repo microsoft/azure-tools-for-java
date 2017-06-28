@@ -39,12 +39,13 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
         Observable.fromCallable(() -> {
             AzureModelController.updateSubscriptionMaps(null);
             return WebAppOnLinuxUtil.listAllWebAppOnLinux();
-        })
-        .subscribeOn(Schedulers.io())
-        .subscribe(wal -> {
+        }).subscribeOn(Schedulers.io()).subscribe(wal -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                getMvpView().finishLoading(wal);
-                getMvpView().setWidgetsEnabledStatus(true);
+                V v = getMvpView();
+                if (v != null) {
+                    v.finishLoading(wal);
+                    v.setWidgetsEnabledStatus(true);
+                }
             });
         }, e -> {
             ConsoleLogger.error("onLoadWebAppsOnLinux@StepTwoPagePresenter");

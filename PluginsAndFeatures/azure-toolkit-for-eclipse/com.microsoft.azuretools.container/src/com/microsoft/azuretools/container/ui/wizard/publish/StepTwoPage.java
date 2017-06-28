@@ -163,6 +163,7 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView {
         formToolkit.paintBordersFor(cmpoInformation);
 
         onLoading();
+        setPageComplete(false);
     }
 
     private void onBtnRefreshSelection() {
@@ -175,6 +176,7 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView {
         StepTwoPopupDialog dialog = new StepTwoPopupDialog(this.getShell());
         if (dialog.open() == Window.OK) {
             presenter.onLoadWebAppsOnLinux();
+            setPageComplete(true);
         }
     }
 
