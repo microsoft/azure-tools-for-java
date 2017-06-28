@@ -110,10 +110,10 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         })
         .subscribeOn(Schedulers.io())
         .subscribe(result -> {
-            if (isViewDetached()) {
-                return;
-            }
             DefaultLoader.getIdeHelper().invokeLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
                 getMvpView().showScanResult(new RedisScanResult(result));
             });
         }, e -> {
@@ -175,14 +175,14 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         })
         .subscribeOn(Schedulers.io())
         .subscribe(result -> {
-            if (isViewDetached()) {
-                return;
-            }
-            if (result == null) {
-                getMvpView().onError(CANNOT_GET_REDIS_INFO);
-                return;
-            }
             DefaultLoader.getIdeHelper().invokeLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
+                if (result == null) {
+                    getMvpView().onError(CANNOT_GET_REDIS_INFO);
+                    return;
+                }
                 getMvpView().showContent(result);
             });
         }, e -> {
@@ -206,10 +206,10 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
     }
     
     private void errorHandler(String msg, Exception e) {
-        if (isViewDetached()) {
-            return;
-        }
         DefaultLoader.getIdeHelper().invokeLater(() -> {
+            if (isViewDetached()) {
+                return;
+            }
             getMvpView().onErrorWithException(msg, e);
         });
     }

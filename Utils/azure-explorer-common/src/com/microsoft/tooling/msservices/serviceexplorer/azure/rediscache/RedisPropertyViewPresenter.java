@@ -62,17 +62,17 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
         })
         .subscribeOn(Schedulers.io())
         .subscribe(redis -> {
-            if (isViewDetached()) {
-                return;
-            }
-            if (redis == null) {
-                getMvpView().onError(CANNOT_GET_REDIS_PROPERTY);
-                return;
-            }
-            RedisCacheProperty property = new RedisCacheProperty(redis.name(), redis.type(), redis.resourceGroupName(),
-                  redis.regionName(), sid, redis.redisVersion(), redis.sslPort(), redis.nonSslPort(),
-                  redis.keys().primaryKey(), redis.keys().secondaryKey(), redis.hostName());
             DefaultLoader.getIdeHelper().invokeLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
+                if (redis == null) {
+                    getMvpView().onError(CANNOT_GET_REDIS_PROPERTY);
+                    return;
+                }
+                RedisCacheProperty property = new RedisCacheProperty(redis.name(), redis.type(), redis.resourceGroupName(),
+                      redis.regionName(), sid, redis.redisVersion(), redis.sslPort(), redis.nonSslPort(),
+                      redis.keys().primaryKey(), redis.keys().secondaryKey(), redis.hostName());
                 getMvpView().showProperty(property);
             });
         }, e -> {
@@ -81,10 +81,10 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
     }
 
     private void errorHandler(String msg, Exception e) {
-        if (isViewDetached()) {
-            return;
-        }
         DefaultLoader.getIdeHelper().invokeLater(() -> {
+            if (isViewDetached()) {
+                return;
+            }
             getMvpView().onErrorWithException(msg, e);
         });
     }
