@@ -62,6 +62,9 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
         })
         .subscribeOn(Schedulers.io())
         .subscribe(redis -> {
+            if (isViewDetached()) {
+                return;
+            }
             if (redis == null) {
                 getMvpView().onError(CANNOT_GET_REDIS_PROPERTY);
                 return;
@@ -73,7 +76,16 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
                 getMvpView().showProperty(property);
             });
         }, e -> {
-            getMvpView().onErrorWithException(CANNOT_GET_REDIS_PROPERTY, (Exception) e);
+            errorHandler(CANNOT_GET_REDIS_PROPERTY, (Exception) e);
+        });
+    }
+
+    private void errorHandler(String msg, Exception e) {
+        if (isViewDetached()) {
+            return;
+        }
+        DefaultLoader.getIdeHelper().invokeLater(() -> {
+            getMvpView().onErrorWithException(msg, e);
         });
     }
 }

@@ -66,10 +66,13 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         .subscribeOn(Schedulers.io())
         .subscribe(number -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
                 getMvpView().renderDbCombo(number);
             });
         }, e -> {
-            getMvpView().onErrorWithException(CANNOT_GET_REDIS_INFO, (Exception) e);
+            errorHandler(CANNOT_GET_REDIS_INFO, (Exception) e);
         });
     }
 
@@ -107,11 +110,14 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         })
         .subscribeOn(Schedulers.io())
         .subscribe(result -> {
+            if (isViewDetached()) {
+                return;
+            }
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 getMvpView().showScanResult(new RedisScanResult(result));
             });
         }, e -> {
-            getMvpView().onErrorWithException(CANNOT_GET_REDIS_INFO, (Exception) e);
+            errorHandler(CANNOT_GET_REDIS_INFO, (Exception) e);
         });
     }
 
@@ -169,6 +175,9 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         })
         .subscribeOn(Schedulers.io())
         .subscribe(result -> {
+            if (isViewDetached()) {
+                return;
+            }
             if (result == null) {
                 getMvpView().onError(CANNOT_GET_REDIS_INFO);
                 return;
@@ -177,7 +186,7 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
                 getMvpView().showContent(result);
             });
         }, e -> {
-            getMvpView().onErrorWithException(CANNOT_GET_REDIS_INFO, (Exception) e);
+            errorHandler(CANNOT_GET_REDIS_INFO, (Exception) e);
         });
     }
 
@@ -194,5 +203,14 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
     public void initializeResourceData(String sid, String id) {
         this.sid = sid;
         this.id = id;
+    }
+    
+    private void errorHandler(String msg, Exception e) {
+        if (isViewDetached()) {
+            return;
+        }
+        DefaultLoader.getIdeHelper().invokeLater(() -> {
+            getMvpView().onErrorWithException(msg, e);
+        });
     }
 }

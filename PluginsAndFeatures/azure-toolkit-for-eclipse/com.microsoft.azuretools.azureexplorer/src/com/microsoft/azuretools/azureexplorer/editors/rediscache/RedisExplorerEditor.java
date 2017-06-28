@@ -24,6 +24,8 @@ package com.microsoft.azuretools.azureexplorer.editors.rediscache;
 
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
+import javax.swing.JOptionPane;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -60,6 +62,9 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     
     private final RedisExplorerPresenter<RedisExplorerEditor> redisExplorerPresenter;
     
+    private String currentCursor;
+    private String lastChosenKey;
+    
     private static final String[] LIST_TITLE = new String[] { "Index", "Item" };
     private static final String[] SET_TITLE = new String[] { "Member" };
     private static final String[] ZSET_TITLE = new String[] { "Score", "Member" };
@@ -67,9 +72,6 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     
     private static final String DEFAULT_SCAN_PATTERN = "*";
     private static final String DBNameFormat = "DB<%s>";
-    
-    private String currentCursor;
-    private String lastChosenKey;
     
     private ScrolledComposite scrolledComposite;
     private Composite cmpoMain;
@@ -174,19 +176,23 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         scrolledComposite.setMinSize(cmpoMain.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         
         cbDatabase.addListener(SWT.Selection, event -> {
+            setWidgetEnableStatus(false);
             onDataBaseSelect();
         });
         
         btnScanKey.addListener(SWT.Selection, event -> {
+            setWidgetEnableStatus(false);
             redisExplorerPresenter.onKeyList(cbDatabase.getSelectionIndex(), SCAN_POINTER_START, txtKeyScanPattern.getText());
             currentCursor = SCAN_POINTER_START;
         });
         
         btnScanMoreKey.addListener(SWT.Selection, event -> {
+            setWidgetEnableStatus(false);
             redisExplorerPresenter.onKeyList(cbDatabase.getSelectionIndex(), currentCursor, txtKeyScanPattern.getText());
         });
         
         lstKey.addListener(SWT.Selection, event -> {
+            setWidgetEnableStatus(false);
             String selectedKey = lstKey.getItem(lstKey.getSelectionIndex());
             if (selectedKey.equals(lastChosenKey)) {
                 return;
@@ -214,6 +220,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
             lstKey.add(key);
         }
         currentCursor = result.getNextCursor();
+        setWidgetEnableStatus(true);
     }
     
     @Override
@@ -269,6 +276,21 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
             tblInnerValue.setRedraw(true);
             setValueCompositeVisiable(true);
         }
+        setWidgetEnableStatus(true);
+    }
+    
+    @Override
+    public void onErrorWithException(String message, Exception ex) {
+        JOptionPane.showMessageDialog(null, ex.getMessage(), message, JOptionPane.ERROR_MESSAGE, null);
+        setWidgetEnableStatus(true);
+    }
+    
+    private void setWidgetEnableStatus(boolean enabled) {
+        cbDatabase.setEnabled(enabled);
+        txtKeyScanPattern.setEnabled(enabled);
+        btnScanKey.setEnabled(enabled);
+        btnScanMoreKey.setEnabled(enabled);
+        lstKey.setEnabled(enabled);
     }
     
     @Override
@@ -293,8 +315,8 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         if (input instanceof RedisExplorerEditorInput) {
             RedisExplorerEditorInput redisInput = (RedisExplorerEditorInput) input;
             this.redisExplorerPresenter.initializeResourceData(redisInput.getSubscriptionId(), redisInput.getId());
-            this.redisExplorerPresenter.onReadDbNum();
             this.setPartName(redisInput.getRedisName());
+            this.redisExplorerPresenter.onReadDbNum();
         }
         
         IWorkbench workbench = PlatformUI.getWorkbench();
