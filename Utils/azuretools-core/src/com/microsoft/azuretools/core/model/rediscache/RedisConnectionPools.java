@@ -34,7 +34,6 @@ import redis.clients.jedis.JedisPoolConfig;
 
 public class RedisConnectionPools {
 
-    private static final int NON_SSL_PORT = 6379;
     private static final int TIMEOUT = 500;
     private static final int MAX_CONNECTIONS = 1;
     
@@ -95,7 +94,7 @@ public class RedisConnectionPools {
         String hostName = redisCache.hostName();
         String password = redisCache.keys().primaryKey();
         boolean enableSsl = !redisCache.nonSslPort();
-        int port = enableSsl ? redisCache.port() : NON_SSL_PORT;
+        int port = enableSsl ? redisCache.sslPort() : redisCache.port();
 
         // create connection pool according to redis setting
         JedisPool pool = new JedisPool(new JedisPoolConfig(), hostName, port, TIMEOUT, password, enableSsl);

@@ -66,10 +66,13 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         .subscribeOn(Schedulers.io())
         .subscribe(number -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
                 getMvpView().renderDbCombo(number);
             });
         }, e -> {
-            getMvpView().onErrorWithException(CANNOT_GET_REDIS_INFO, (Exception) e);
+            errorHandler(CANNOT_GET_REDIS_INFO, (Exception) e);
         });
     }
 
@@ -108,10 +111,13 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         .subscribeOn(Schedulers.io())
         .subscribe(result -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
                 getMvpView().showScanResult(new RedisScanResult(result));
             });
         }, e -> {
-            getMvpView().onErrorWithException(CANNOT_GET_REDIS_INFO, (Exception) e);
+            errorHandler(CANNOT_GET_REDIS_INFO, (Exception) e);
         });
     }
 
@@ -169,15 +175,18 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         })
         .subscribeOn(Schedulers.io())
         .subscribe(result -> {
-            if (result == null) {
-                getMvpView().onError(CANNOT_GET_REDIS_INFO);
-                return;
-            }
             DefaultLoader.getIdeHelper().invokeLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
+                if (result == null) {
+                    getMvpView().onError(CANNOT_GET_REDIS_INFO);
+                    return;
+                }
                 getMvpView().showContent(result);
             });
         }, e -> {
-            getMvpView().onErrorWithException(CANNOT_GET_REDIS_INFO, (Exception) e);
+            errorHandler(CANNOT_GET_REDIS_INFO, (Exception) e);
         });
     }
 
@@ -194,5 +203,14 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
     public void initializeResourceData(String sid, String id) {
         this.sid = sid;
         this.id = id;
+    }
+    
+    private void errorHandler(String msg, Exception e) {
+        DefaultLoader.getIdeHelper().invokeLater(() -> {
+            if (isViewDetached()) {
+                return;
+            }
+            getMvpView().onErrorWithException(msg, e);
+        });
     }
 }
