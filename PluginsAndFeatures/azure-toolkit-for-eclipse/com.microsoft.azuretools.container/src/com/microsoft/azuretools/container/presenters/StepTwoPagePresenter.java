@@ -24,17 +24,18 @@ package com.microsoft.azuretools.container.presenters;
 
 import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.container.ConsoleLogger;
-import com.microsoft.azuretools.container.ui.wizard.publish.StepTwoPage;
 import com.microsoft.azuretools.container.utils.WebAppOnLinuxUtil;
+import com.microsoft.azuretools.container.views.StepTwoPageView;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-public class StepTwoPagePresenter<V extends StepTwoPage> extends MvpPresenter<V> {
+public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresenter<V> {
 
     public void onLoadWebAppsOnLinux() {
-        getMvpView().disablePageOnLoading();
+        getMvpView().showLoading();
+        getMvpView().setWidgetsEnabledStatus(false);
         Observable.fromCallable(() -> {
             AzureModelController.updateSubscriptionMaps(null);
             return WebAppOnLinuxUtil.listAllWebAppOnLinux();
@@ -43,6 +44,7 @@ public class StepTwoPagePresenter<V extends StepTwoPage> extends MvpPresenter<V>
         .subscribe(wal -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 getMvpView().finishLoading(wal);
+                getMvpView().setWidgetsEnabledStatus(true);
             });
         }, e -> {
             ConsoleLogger.error("onLoadWebAppsOnLinux@StepTwoPagePresenter");

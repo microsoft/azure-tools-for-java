@@ -28,6 +28,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 import com.microsoft.azuretools.container.presenters.StepOnePagePresenter;
+import com.microsoft.azuretools.container.views.StepOnePageView;
 import com.microsoft.azuretools.core.components.AzureWizardPage;
 
 import org.eclipse.swt.layout.GridLayout;
@@ -41,14 +42,14 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.widgets.Button;
 
-public class StepOnePage extends AzureWizardPage {
+public class StepOnePage extends AzureWizardPage implements StepOnePageView {
     private Text txtRegistryUrl;
     private Text txtUsername;
     private Text txtPassword;
     private StyledText styledText;
     private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
     private final StepOnePagePresenter<StepOnePage> presenter;
-    private Button btnValidate;
+    private Button btnPushImage;
 
     // Call Presenter
     public void loadRegistryInfo() {
@@ -56,20 +57,28 @@ public class StepOnePage extends AzureWizardPage {
     }
 
     // View Actions
+    @Override
+    public void setCompleteStatus(boolean flag) {
+        setPageComplete(flag);
+    }
+
+    @Override
     public void setWidgetsEnabledStatus(boolean enableStatus) {
-        btnValidate.setEnabled(enableStatus);
+        btnPushImage.setEnabled(enableStatus);
 
         txtRegistryUrl.setEditable(enableStatus);
         txtUsername.setEditable(enableStatus);
         txtPassword.setEditable(enableStatus);
     }
 
+    @Override
     public void fillRegistryInfo(String registryUrl, String username, String password) {
         txtRegistryUrl.setText(registryUrl != null ? registryUrl : "");
         txtUsername.setText(username != null ? username : "");
         txtPassword.setText(password != null ? password : "");
     }
 
+    @Override
     public void showInfomation(String string) {
         if (string == null) {
             return;
@@ -128,11 +137,11 @@ public class StepOnePage extends AzureWizardPage {
         txtPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         new Label(cmpoDockerRepoCredential, SWT.NONE);
 
-        btnValidate = new Button(cmpoDockerRepoCredential, SWT.NONE);
-        btnValidate.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        formToolkit.adapt(btnValidate, true, true);
-        btnValidate.setText("Validate");
-        btnValidate.addListener(SWT.Selection, event -> onBtnValidateSelection());
+        btnPushImage = new Button(cmpoDockerRepoCredential, SWT.NONE);
+        btnPushImage.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        formToolkit.adapt(btnPushImage, true, true);
+        btnPushImage.setText("Push Image to Repositry");
+        btnPushImage.addListener(SWT.Selection, event -> onBtnPushImageSelection());
 
         ScrolledComposite cmpoInformation = new ScrolledComposite(container, SWT.BORDER | SWT.V_SCROLL);
         cmpoInformation.setAlwaysShowScrollBars(true);
@@ -155,9 +164,9 @@ public class StepOnePage extends AzureWizardPage {
         setPageComplete(false);
     }
 
-    private void onBtnValidateSelection() {
+    private void onBtnPushImageSelection() {
         setWidgetsEnabledStatus(false);
-        sendButtonClickedTelemetry("onBtnValidateSelection");
+        sendButtonClickedTelemetry("onBtnPushImageSelection");
         presenter.onPushLatestImageToRegistry(txtRegistryUrl.getText(), txtUsername.getText(), txtPassword.getText());
     }
 
@@ -166,4 +175,5 @@ public class StepOnePage extends AzureWizardPage {
         presenter.onDetachView();
         super.dispose();
     }
+
 }

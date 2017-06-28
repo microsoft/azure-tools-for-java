@@ -29,6 +29,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 import com.microsoft.azuretools.container.presenters.StepTwoPagePresenter;
+import com.microsoft.azuretools.container.views.StepTwoPageView;
 import com.microsoft.azuretools.core.components.AzureWizardPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.swt.widgets.Display;
@@ -42,13 +43,20 @@ import org.eclipse.swt.layout.FillLayout;
 
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 
-public class StepTwoPage extends AzureWizardPage {
+public class StepTwoPage extends AzureWizardPage implements StepTwoPageView {
     private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
     private Table tableWebApps;
-    private final StepTwoPagePresenter<StepTwoPage> presenter;
+    private final StepTwoPagePresenter<StepTwoPageView> presenter;
     private Button btnCreate;
     private Button btnRefresh;
-//    private Button btnDelete;
+    private Button btnDelete;
+
+    @Override
+    public void setWidgetsEnabledStatus(boolean enableStatus) {
+        btnCreate.setEnabled(enableStatus);
+        btnRefresh.setEnabled(enableStatus);
+        btnDelete.setEnabled(enableStatus);
+    }
 
     public void fillTable(List<SiteInner> wal) {
         tableWebApps.removeAll();
@@ -58,26 +66,18 @@ public class StepTwoPage extends AzureWizardPage {
         }
     }
 
-    private void onLoading() {
-        presenter.onLoadWebAppsOnLinux();
-    }
-
+    @Override
     public void finishLoading(List<SiteInner> wal) {
-        setDescription("TODO");
-        btnCreate.setEnabled(true);
-        btnRefresh.setEnabled(true);
-//        btnDelete.setEnabled(true);
+        setDescription("List of Web App on Linux");
         fillTable(wal);
     }
 
-    public void disablePageOnLoading() {
+    @Override
+    public void showLoading() {
         setDescription("Loading...");
         tableWebApps.removeAll();
         TableItem placeholderItem = new TableItem(tableWebApps, SWT.NULL);
         placeholderItem.setText("Loading...");
-        btnCreate.setEnabled(false);
-        btnRefresh.setEnabled(false);
-//        btnDelete.setEnabled(false);
     }
 
     /**
@@ -85,7 +85,7 @@ public class StepTwoPage extends AzureWizardPage {
      */
     public StepTwoPage() {
         super("wizardPage");
-        presenter = new StepTwoPagePresenter<StepTwoPage>();
+        presenter = new StepTwoPagePresenter<StepTwoPageView>();
         presenter.onAttachView(this);
 
         setTitle("Deploy to Web App On Linux");
@@ -124,15 +124,11 @@ public class StepTwoPage extends AzureWizardPage {
         tableWebApps.setLinesVisible(true);
 
         TableColumn tblclmnName = new TableColumn(tableWebApps, SWT.LEFT);
-        tblclmnName.setWidth(150);
+        tblclmnName.setWidth(215);
         tblclmnName.setText("Name");
 
-        TableColumn tblclmnWebContainer = new TableColumn(tableWebApps, SWT.LEFT);
-        tblclmnWebContainer.setWidth(110);
-        tblclmnWebContainer.setText("Web container");
-
         TableColumn tblclmnResourceGroup = new TableColumn(tableWebApps, SWT.LEFT);
-        tblclmnResourceGroup.setWidth(190);
+        tblclmnResourceGroup.setWidth(200);
         tblclmnResourceGroup.setText("Resource group");
 
         Composite cmpoActionButtons = formToolkit.createComposite(cmpoWebAppOnLinux, SWT.NONE);
@@ -154,15 +150,14 @@ public class StepTwoPage extends AzureWizardPage {
         formToolkit.adapt(btnRefresh, true, true);
         btnRefresh.setText("Refresh");
         btnRefresh.addListener(SWT.Selection, event -> onBtnRefreshSelection());
-        /**
-         * Delete Not support yet
-         */
-        /*
-         * btnDelete = new Button(cmpoActionButtons, SWT.NONE);
-         * btnDelete.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
-         * false, 1, 1)); formToolkit.adapt(btnDelete, true, true);
-         * btnDelete.setText("Delete");
-         */
+
+        btnDelete = new Button(cmpoActionButtons, SWT.NONE);
+        btnDelete.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        formToolkit.adapt(btnDelete, true, true);
+        btnDelete.setText("Delete");
+        // Delete Not support yet
+        btnDelete.setVisible(false);
+
         Composite cmpoInformation = formToolkit.createComposite(container, SWT.NONE);
         cmpoInformation.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         formToolkit.paintBordersFor(cmpoInformation);
@@ -183,9 +178,14 @@ public class StepTwoPage extends AzureWizardPage {
         }
     }
 
+    private void onLoading() {
+        presenter.onLoadWebAppsOnLinux();
+    }
+
     @Override
     public void dispose() {
         presenter.onDetachView();
         super.dispose();
     }
+
 }

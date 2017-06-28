@@ -42,26 +42,26 @@ import org.eclipse.swt.widgets.Text;
 
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
 import com.microsoft.azuretools.container.presenters.StepTwoPopupDialogPresenter;
+import com.microsoft.azuretools.container.views.StepTwoPopupDialogView;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 
-public class StepTwoPopupDialog extends AzureTitleAreaDialogWrapper implements MvpView {
+public class StepTwoPopupDialog extends AzureTitleAreaDialogWrapper implements StepTwoPopupDialogView {
 
     private Text textAppName;
     private Combo comboResourceGroup;
-    private final StepTwoPopupDialogPresenter<StepTwoPopupDialog> presenter;
+    private final StepTwoPopupDialogPresenter<StepTwoPopupDialogView> presenter;
     private Combo comboSubscription;
     private Text textResourceGroupName;
     private Button btnResourceGroupCreateNew;
     private Button btnResourceGroupUseExisting;
 
+    @Override
     public void fillSubscriptions(List<SubscriptionDetail> sdl) {
         if (sdl == null || sdl.size() <= 0) {
             System.out.println("sdl is null");
             return;
         }
-
         comboSubscription.removeAll();
         for (SubscriptionDetail sd : sdl) {
             comboSubscription.add(sd.getSubscriptionName());
@@ -71,6 +71,7 @@ public class StepTwoPopupDialog extends AzureTitleAreaDialogWrapper implements M
         }
     }
 
+    @Override
     public void fillResourceGroups(List<ResourceGroup> rgl) {
         if (rgl == null || rgl.size() <= 0) {
             System.out.println("rgl is null");
@@ -85,17 +86,18 @@ public class StepTwoPopupDialog extends AzureTitleAreaDialogWrapper implements M
         }
     }
 
+    @Override
     public void finishDeploy() {
         this.close();
     }
-    
+
     public void setWidgetsEnabledStatus(boolean enableStatus) {
         btnResourceGroupCreateNew.setEnabled(enableStatus);
         btnResourceGroupCreateNew.setEnabled(enableStatus);
         comboResourceGroup.setEnabled(enableStatus);
-
-        textResourceGroupName.setEditable(enableStatus);
-        textAppName.setEditable(enableStatus);
+        comboSubscription.setEnabled(enableStatus);
+        textResourceGroupName.setEnabled(enableStatus);
+        textAppName.setEnabled(enableStatus);
     }
 
     /**
@@ -105,7 +107,7 @@ public class StepTwoPopupDialog extends AzureTitleAreaDialogWrapper implements M
      */
     public StepTwoPopupDialog(Shell parentShell) {
         super(parentShell);
-        presenter = new StepTwoPopupDialogPresenter<StepTwoPopupDialog>();
+        presenter = new StepTwoPopupDialogPresenter<StepTwoPopupDialogView>();
         presenter.onAttachView(this);
         this.setTitle("Create Web App on Linux");
     }
@@ -178,8 +180,6 @@ public class StepTwoPopupDialog extends AzureTitleAreaDialogWrapper implements M
 
         return area;
     }
-
-
 
     @Override
     protected void okPressed() {

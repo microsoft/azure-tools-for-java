@@ -23,7 +23,7 @@
 package com.microsoft.azuretools.container.presenters;
 
 import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
-import com.microsoft.azuretools.container.ui.wizard.publish.StepOnePage;
+import com.microsoft.azuretools.container.views.StepOnePageView;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.ProgressHandler;
@@ -37,12 +37,12 @@ import rx.schedulers.Schedulers;
 import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.DockerRuntime;
 
-public class StepOnePagePresenter<V extends StepOnePage> extends MvpPresenter<V> {
+public class StepOnePagePresenter<V extends StepOnePageView> extends MvpPresenter<V> {
 
     // StepOne Page
     public boolean onPushLatestImageToRegistry(String registryUrl, String registryUsername, String registryPassword) {
         try {
-            getMvpView().showInfomation("try pushing image...");
+            getMvpView().showInfomation("Try pushing image ...");
 
             DockerClient dockerClient = DockerRuntime.getInstance().getDockerBuilder().build();
             ProgressHandler progressHandler = new ProgressHandler() {
@@ -53,27 +53,25 @@ public class StepOnePagePresenter<V extends StepOnePage> extends MvpPresenter<V>
                     }
                 }
             };
-            
+
             // push image async
             Observable.fromCallable(() -> {
                 doPushImage(dockerClient, registryUrl, registryUsername, registryPassword,
                         DockerRuntime.getInstance().getLatestImageName(), progressHandler);
                 return null;
-            })
-            .subscribeOn(Schedulers.io())
-            .subscribe(wal -> {
+            }).subscribeOn(Schedulers.io()).subscribe(wal -> {
                 // persist registry information
                 DefaultLoader.getIdeHelper().invokeAndWait(() -> {
                     doUpdateRuntimeRegistryInfo(registryUrl, registryUsername, registryPassword);
-                    getMvpView().showInfomation("Validate OK");
+                    getMvpView().showInfomation("Task OK");
                     getMvpView().setWidgetsEnabledStatus(false);
-                    getMvpView().setPageComplete(true);
+                    getMvpView().setCompleteStatus(true);
                 });
             }, e -> {
                 DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                    getMvpView().showInfomation("Validate FAIL");
+                    getMvpView().showInfomation("Task FAIL");
                     getMvpView().setWidgetsEnabledStatus(true);
-                    getMvpView().setPageComplete(false);
+                    getMvpView().setCompleteStatus(false);
                     ConsoleLogger.error("onPushLatestImageToRegistry@StepOnePagePresenter");
                 });
             });

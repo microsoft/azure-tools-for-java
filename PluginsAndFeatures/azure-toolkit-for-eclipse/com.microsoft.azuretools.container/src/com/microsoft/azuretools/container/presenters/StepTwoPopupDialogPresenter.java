@@ -32,78 +32,78 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.DockerRuntime;
-import com.microsoft.azuretools.container.ui.wizard.publish.StepTwoPopupDialog;
 import com.microsoft.azuretools.container.utils.WebAppOnLinuxUtil;
+import com.microsoft.azuretools.container.views.StepTwoPopupDialogView;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-public class StepTwoPopupDialogPresenter<V extends StepTwoPopupDialog> extends MvpPresenter<V> {
-	final private List<SubscriptionDetail> binderSubscriptionDetails =  new ArrayList<SubscriptionDetail>();
-	final private List<ResourceGroup> binderResourceGroup = new ArrayList<ResourceGroup>();
+public class StepTwoPopupDialogPresenter<V extends StepTwoPopupDialogView> extends MvpPresenter<V> {
+    final private List<SubscriptionDetail> binderSubscriptionDetails = new ArrayList<SubscriptionDetail>();
+    final private List<ResourceGroup> binderResourceGroup = new ArrayList<ResourceGroup>();
 
-	public void onChangeSubscription(int index) {
-		doFetchResourceGroup(binderSubscriptionDetails.get(index));
-		this.getMvpView().fillResourceGroups(binderResourceGroup);
+    public void onChangeSubscription(int index) {
+        doFetchResourceGroup(binderSubscriptionDetails.get(index));
+        getMvpView().fillResourceGroups(binderResourceGroup);
 
-	}
+    }
 
-	public void onLoadSubsAndRGs() {
-		try {
-			doFetchSubscriptions();
-			if (binderSubscriptionDetails.size() > 0) {
-				doFetchResourceGroup(binderSubscriptionDetails.get(0));
-			}
-			this.getMvpView().fillSubscriptions(binderSubscriptionDetails);
-			this.getMvpView().fillResourceGroups(binderResourceGroup);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			this.getMvpView().onErrorWithException(ex.getMessage(), ex);
-		}
-	}
+    public void onLoadSubsAndRGs() {
+        try {
+            doFetchSubscriptions();
+            if (binderSubscriptionDetails.size() > 0) {
+                doFetchResourceGroup(binderSubscriptionDetails.get(0));
+            }
+            this.getMvpView().fillSubscriptions(binderSubscriptionDetails);
+            this.getMvpView().fillResourceGroups(binderResourceGroup);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            this.getMvpView().onErrorWithException(ex.getMessage(), ex);
+        }
+    }
 
-	public void onDeployNew(String appName, int selectionIndex, String resourceGroupName, boolean createNewRg)
-			throws IOException {
-		Observable.fromCallable(() -> {
-			return WebAppOnLinuxUtil.deploy(binderSubscriptionDetails.get(selectionIndex).getSubscriptionId(),
-					resourceGroupName, appName, createNewRg);
-		}).subscribeOn(Schedulers.io()).subscribe(app -> {
-			DefaultLoader.getIdeHelper().invokeLater(() -> {
-				getMvpView().close();
-				DockerRuntime.getInstance().setLatestWebAppName(appName);
-				ConsoleLogger.info("Web App on Linux Created");
-			});
-		}, e -> {
-			getMvpView().onErrorWithException("onDeployNew@StepTwoPopupDialogPresenter", (Exception) e);
-			ConsoleLogger.error("onDeployNew@StepTwoPopupDialogPresenter");
-		});
-	}
+    public void onDeployNew(String appName, int selectionIndex, String resourceGroupName, boolean createNewRg)
+            throws IOException {
+        Observable.fromCallable(() -> {
+            return WebAppOnLinuxUtil.deploy(binderSubscriptionDetails.get(selectionIndex).getSubscriptionId(),
+                    resourceGroupName, appName, createNewRg);
+        }).subscribeOn(Schedulers.io()).subscribe(app -> {
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                getMvpView().finishDeploy();
+                DockerRuntime.getInstance().setLatestWebAppName(appName);
+                ConsoleLogger.info("Web App on Linux Created");
+            });
+        }, e -> {
+            getMvpView().onErrorWithException("onDeployNew@StepTwoPopupDialogPresenter", (Exception) e);
+            ConsoleLogger.error("onDeployNew@StepTwoPopupDialogPresenter");
+        });
+    }
 
-	// private helpers
-	private void doFetchResourceGroup(SubscriptionDetail subs) {
-		binderResourceGroup.clear();
-		for(ResourceGroup rg : AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(subs)){
-		    binderResourceGroup.add(rg);
-		}
-	}
+    // private helpers
+    private void doFetchResourceGroup(SubscriptionDetail subs) {
+        binderResourceGroup.clear();
+        for (ResourceGroup rg : AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(subs)) {
+            binderResourceGroup.add(rg);
+        }
+    }
 
-	private void doFetchSubscriptions() throws Exception {
-		if (AzureModel.getInstance().getSubscriptionToResourceGroupMap() == null) {
-			throw new Exception("null subscription");
-		}
-		Set<SubscriptionDetail> sdl = AzureModel.getInstance().getSubscriptionToResourceGroupMap().keySet();
-		if (sdl == null) {
-			System.out.println("sdl is null");
-			return;
-		}
-		binderSubscriptionDetails.clear();
-		for (SubscriptionDetail sd : sdl) {
-			if (sd.isSelected()) {
-				binderSubscriptionDetails.add(sd);
-			}
-		}
-	}
+    private void doFetchSubscriptions() throws Exception {
+        if (AzureModel.getInstance().getSubscriptionToResourceGroupMap() == null) {
+            throw new Exception("null subscription");
+        }
+        Set<SubscriptionDetail> sdl = AzureModel.getInstance().getSubscriptionToResourceGroupMap().keySet();
+        if (sdl == null) {
+            System.out.println("sdl is null");
+            return;
+        }
+        binderSubscriptionDetails.clear();
+        for (SubscriptionDetail sd : sdl) {
+            if (sd.isSelected()) {
+                binderSubscriptionDetails.add(sd);
+            }
+        }
+    }
 
 }
