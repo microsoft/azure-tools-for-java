@@ -1,6 +1,5 @@
 package com.microsoft.azuretools.core.components;
 
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 
 import java.util.HashMap;
@@ -9,7 +8,7 @@ import java.util.Map;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.WizardPage;
 
-public abstract class AzureWizardPage extends WizardPage implements MvpView{
+public abstract class AzureWizardPage extends WizardPage{
     private static final String WIZARD_PAGE = "WizardPage";
     private static final String TITLE = "Title";
     private static final String WIZARD_DIALOG = "WizardDialog";
