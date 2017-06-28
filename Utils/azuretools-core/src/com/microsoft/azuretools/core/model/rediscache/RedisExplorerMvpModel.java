@@ -80,7 +80,7 @@ public class RedisExplorerMvpModel {
                         end = mid;
                     }
                 }
-                if (canConnect(jedis, start + 1)) {
+                if (canConnect(jedis, start)) {
                     return start + 1;
                 } else {
                     return start;
