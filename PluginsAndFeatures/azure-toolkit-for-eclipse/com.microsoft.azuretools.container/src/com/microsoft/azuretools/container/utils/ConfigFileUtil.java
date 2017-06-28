@@ -30,8 +30,13 @@ public class ConfigFileUtil {
         try {
             ByteArrayOutputStream ous = new ByteArrayOutputStream();
             prop.store(ous, null);
-            file.create(new ByteArrayInputStream(ous.toByteArray()), true, null);
-        } catch (IOException | CoreException io) {
+            if (file.exists()) {
+                file.setContents(new ByteArrayInputStream(ous.toByteArray()), true, true, null);
+            }else {
+                file.create(new ByteArrayInputStream(ous.toByteArray()), true, null);
+            }
+            
+        } catch (Exception io) {
             io.printStackTrace();
         } 
     }

@@ -39,7 +39,6 @@ public class PublishWizard extends Wizard {
     public void addPages() {
         addPage(p1);
         addPage(p2);
-        //
     }
 
     @Override

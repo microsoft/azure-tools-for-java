@@ -40,6 +40,7 @@ import com.microsoft.azuretools.container.ui.wizard.publish.PublishWizard;
 import com.microsoft.azuretools.container.utils.ConfigFileUtil;
 import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.core.components.AzureWizardDialog;
+import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.spotify.docker.client.DockerClient;
@@ -48,29 +49,33 @@ import com.spotify.docker.client.exceptions.DockerException;
 
 public class PublishHandler extends AzureAbstractHandler {
 
-	@Override
-	public Object onExecute(ExecutionEvent event) throws ExecutionException {
-		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-		IProject project = PluginUtil.getSelectedProject();
-		Properties props = ConfigFileUtil.loadConfig(project);
-		DockerRuntime.getInstance().loadFromProps(props);
-		DockerClient dockerClient = DockerRuntime.getInstance().getDockerBuilder().build();
-		try {
-			DockerUtil.buildImage(dockerClient, project, project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER);
-		} catch (DockerCertificateException | DockerException | InterruptedException | IOException e) {
-			e.printStackTrace();
-			return null;
-		}
+    @Override
+    public Object onExecute(ExecutionEvent event) throws ExecutionException {
+        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+        IProject project = PluginUtil.getSelectedProject();
+        if (project == null || !SignInCommandHandler.doSignIn(window.getShell())) {
+            return null;
+        }
 
-		PublishWizard pw = new PublishWizard();
-		WizardDialog pwd = new AzureWizardDialog(window.getShell(), pw);
-		if (pwd.open() == Window.OK) {
-			ConsoleLogger.info(String.format("URL: http://%s.azurewebsites.net/%s",
-					DockerRuntime.getInstance().getLatestImageName(), project.getName()));
-		}
-		props = DockerRuntime.getInstance().saveToProps(props);
-		ConfigFileUtil.saveConfig(project, props);
-		return null;
-	}
+        Properties props = ConfigFileUtil.loadConfig(project);
+        DockerRuntime.getInstance().loadFromProps(props);
+        DockerClient dockerClient = DockerRuntime.getInstance().getDockerBuilder().build();
+        try {
+            DockerUtil.buildImage(dockerClient, project, project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER);
+        } catch (DockerCertificateException | DockerException | InterruptedException | IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        PublishWizard pw = new PublishWizard();
+        WizardDialog pwd = new AzureWizardDialog(window.getShell(), pw);
+        if (pwd.open() == Window.OK) {
+            ConsoleLogger.info(String.format("URL: http://%s.azurewebsites.net/%s",
+                    DockerRuntime.getInstance().getLatestWebAppName(), project.getName()));
+            props = DockerRuntime.getInstance().saveToProps(props);
+            ConfigFileUtil.saveConfig(project, props);
+        }
+        return null;
+    }
 
 }

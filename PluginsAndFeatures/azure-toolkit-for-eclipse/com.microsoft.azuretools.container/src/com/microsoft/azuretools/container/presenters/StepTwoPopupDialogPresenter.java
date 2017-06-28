@@ -41,8 +41,8 @@ import rx.Observable;
 import rx.schedulers.Schedulers;
 
 public class StepTwoPopupDialogPresenter<V extends StepTwoPopupDialog> extends MvpPresenter<V> {
-	private List<SubscriptionDetail> binderSubscriptionDetails;
-	private List<ResourceGroup> binderResourceGroup;
+	final private List<SubscriptionDetail> binderSubscriptionDetails =  new ArrayList<SubscriptionDetail>();
+	final private List<ResourceGroup> binderResourceGroup = new ArrayList<ResourceGroup>();
 
 	public void onChangeSubscription(int index) {
 		doFetchResourceGroup(binderSubscriptionDetails.get(index));
@@ -83,7 +83,10 @@ public class StepTwoPopupDialogPresenter<V extends StepTwoPopupDialog> extends M
 
 	// private helpers
 	private void doFetchResourceGroup(SubscriptionDetail subs) {
-		binderResourceGroup = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(subs);
+		binderResourceGroup.clear();
+		for(ResourceGroup rg : AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(subs)){
+		    binderResourceGroup.add(rg);
+		}
 	}
 
 	private void doFetchSubscriptions() throws Exception {
@@ -95,7 +98,7 @@ public class StepTwoPopupDialogPresenter<V extends StepTwoPopupDialog> extends M
 			System.out.println("sdl is null");
 			return;
 		}
-		binderSubscriptionDetails = new ArrayList<SubscriptionDetail>();
+		binderSubscriptionDetails.clear();
 		for (SubscriptionDetail sd : sdl) {
 			if (sd.isSelected()) {
 				binderSubscriptionDetails.add(sd);

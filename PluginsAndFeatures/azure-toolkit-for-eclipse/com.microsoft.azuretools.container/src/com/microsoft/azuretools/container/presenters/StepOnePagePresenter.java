@@ -40,7 +40,7 @@ import com.microsoft.azuretools.container.DockerRuntime;
 public class StepOnePagePresenter<V extends StepOnePage> extends MvpPresenter<V> {
 
     // StepOne Page
-    public boolean onValidateRegistry(String registryUrl, String registryUsername, String registryPassword) {
+    public boolean onPushLatestImageToRegistry(String registryUrl, String registryUsername, String registryPassword) {
         try {
             getMvpView().showInfomation("try pushing image...");
 
@@ -74,7 +74,7 @@ public class StepOnePagePresenter<V extends StepOnePage> extends MvpPresenter<V>
                     getMvpView().showInfomation("Validate FAIL");
                     getMvpView().setWidgetsEnabledStatus(true);
                     getMvpView().setPageComplete(false);
-                    ConsoleLogger.error("onValidateRegistry@StepOnePagePresenter");
+                    ConsoleLogger.error("onPushLatestImageToRegistry@StepOnePagePresenter");
                 });
             });
         } catch (Exception e) {

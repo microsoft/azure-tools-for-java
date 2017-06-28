@@ -51,17 +51,11 @@ public class StepOnePage extends AzureWizardPage {
     private Button btnValidate;
 
     // Call Presenter
-    public boolean validated() {
-        return presenter.onValidateRegistry(txtRegistryUrl.getText(), txtUsername.getText(), txtPassword.getText());
-    }
-
-    public void updateRegistryInfo() {
-        presenter.onUpdateRegistryInfo(txtRegistryUrl.getText(), txtUsername.getText(), txtPassword.getText());
-    }
-
     public void loadRegistryInfo() {
         presenter.onLoadRegistryInfo();
     }
+
+    // View Actions
     public void setWidgetsEnabledStatus(boolean enableStatus) {
         btnValidate.setEnabled(enableStatus);
 
@@ -69,7 +63,7 @@ public class StepOnePage extends AzureWizardPage {
         txtUsername.setEditable(enableStatus);
         txtPassword.setEditable(enableStatus);
     }
-    // View Actions
+
     public void fillRegistryInfo(String registryUrl, String username, String password) {
         txtRegistryUrl.setText(registryUrl != null ? registryUrl : "");
         txtUsername.setText(username != null ? username : "");
@@ -91,7 +85,7 @@ public class StepOnePage extends AzureWizardPage {
         presenter = new StepOnePagePresenter<StepOnePage>();
         presenter.onAttachView(this);
 
-        setTitle("Setting Docker Repo Credential");
+        setTitle("Setting Private Docker Repo Credential");
         setDescription("TBD");
     }
 
@@ -133,7 +127,7 @@ public class StepOnePage extends AzureWizardPage {
         txtPassword = new Text(cmpoDockerRepoCredential, SWT.BORDER | SWT.PASSWORD);
         txtPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         new Label(cmpoDockerRepoCredential, SWT.NONE);
-        
+
         btnValidate = new Button(cmpoDockerRepoCredential, SWT.NONE);
         btnValidate.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         formToolkit.adapt(btnValidate, true, true);
@@ -163,12 +157,13 @@ public class StepOnePage extends AzureWizardPage {
 
     private void onBtnValidateSelection() {
         setWidgetsEnabledStatus(false);
-        presenter.onValidateRegistry(txtRegistryUrl.getText(), txtUsername.getText(), txtPassword.getText());
+        sendButtonClickedTelemetry("onBtnValidateSelection");
+        presenter.onPushLatestImageToRegistry(txtRegistryUrl.getText(), txtUsername.getText(), txtPassword.getText());
     }
 
     @Override
-    protected void finalize() throws Throwable {
+    public void dispose() {
         presenter.onDetachView();
-        super.finalize();
+        super.dispose();
     }
 }

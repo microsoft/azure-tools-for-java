@@ -55,8 +55,9 @@ public class DockerUtil {
     /**
      * create a docker file in specified folder.
      */
-    public static void createDockerFile(IProject project, String foldername, String filename, String content) throws CoreException {
-        //create file
+    public static void createDockerFile(IProject project, String foldername, String filename, String content)
+            throws CoreException {
+        // create file
         IFolder folder = project.getFolder(foldername);
         if (!folder.exists()) {
             folder.create(true, true, null);
@@ -67,7 +68,7 @@ public class DockerUtil {
             dockerfile.create(new ByteArrayInputStream(bytes), false, null);
         }
     }
-    
+
     public static String createContainer(DockerClient docker, IProject project, String imageName)
             throws DockerException, InterruptedException {
         final Map<String, List<PortBinding>> portBindings = new HashMap<>();
@@ -91,15 +92,16 @@ public class DockerUtil {
 
         if (res.isPresent()) {
             DockerRuntime.getInstance().setRunningContainerId(res.get().id());
-            return String.format("http://%s:%s", docker.getHost(), res.get().ports().stream()
-                    .filter(item -> item.privatePort().toString().equals(Constant.TOMCAT_SERVICE_PORT)).findFirst().get().publicPort());
+            return String.format("http://%s:%s", docker.getHost(),
+                    res.get().ports().stream()
+                            .filter(item -> item.privatePort().toString().equals(Constant.TOMCAT_SERVICE_PORT))
+                            .findFirst().get().publicPort());
         } else {
             String errorMsg = String.format(Constant.ERROR_STARTING_CONTAINER, containerId);
             ConsoleLogger.error(errorMsg);
             throw new Exception(errorMsg);
         }
     }
-    
 
     public static String buildImage(DockerClient docker, IProject project, String dockerDirectory)
             throws DockerCertificateException, DockerException, InterruptedException, IOException {
@@ -119,7 +121,8 @@ public class DockerUtil {
         return imageName;
     }
 
-    public static boolean containerExists(DockerClient docker, String containerId) throws DockerException, InterruptedException {
+    public static boolean containerExists(DockerClient docker, String containerId)
+            throws DockerException, InterruptedException {
         long count = docker.listContainers().stream().filter(item -> item.id().equals(containerId)).count();
         return (count > 0);
     }
