@@ -33,6 +33,12 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.DockerClient;
 
+import rx.Observable;
+import rx.schedulers.Schedulers;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
@@ -46,18 +52,15 @@ public class DockerRunHandler extends AzureAbstractHandler {
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
         IProject project = PluginUtil.getSelectedProject();
-
-        if (project == null) {
-            ConsoleLogger.error(Constant.ERROR_NO_SELECTED_PROJECT);
-            return null;
-        }
-
-        String destinationPath = project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER + project.getName() + ".war";
-        final DockerClient docker;
+        String destinationPath;
+        DockerClient docker;
 
         try {
-            // Initialize docker client according to env DOCKER_HOST &
-            // DOCKER_CERT_PATH
+            if (project == null) {
+                throw new Exception(Constant.ERROR_NO_SELECTED_PROJECT);
+            }
+            destinationPath = project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER + project.getName() + ".war";
+            // Initialize docker client according to env DOCKER_HOST & DOCKER_CERT_PATH
             ConsoleLogger.info(Constant.MESSAGE_DOCKER_CONNECTING);
             Builder dockerBuilder = DockerRuntime.getInstance().getDockerBuilder();
             docker = dockerBuilder.build();
@@ -75,51 +78,51 @@ public class DockerRunHandler extends AzureAbstractHandler {
         } catch (Exception e) {
             e.printStackTrace();
             ConsoleLogger.error(String.format(Constant.ERROR_RUNNING_DOCKER, e.getMessage()));
+            sendTelemetryOnException(event, e);
             return null;
         }
 
-        DefaultLoader.getIdeHelper().runInBackground(project, Constant.MESSAGE_EXECUTE_DOCKER_RUN, true, true,
-                Constant.MESSAGE_EXECUTE_DOCKER_RUN, () -> {
-                    try {
-                        // export WAR file
-                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                            ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
-                        });
-                        WarUtil.export(project, destinationPath);
+        Observable.fromCallable(() -> {
+            // export WAR file
+            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
+            });
+            WarUtil.export(project, destinationPath);
 
-                        // build image based on WAR file
-                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                            ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
-                        });
-                        String imageName = DockerUtil.buildImage(docker, project,
-                                project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER);
-                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                            ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageName));
-                        });
+            // build image based on WAR file
+            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
+            });
+            String imageName = DockerUtil.buildImage(docker, project,
+                    project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER);
+            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageName));
+            });
 
-                        // create a container
-                        String containerId = DockerUtil.createContainer(docker, project, imageName);
-                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                            ConsoleLogger.info(Constant.MESSAGE_CREATING_CONTAINER);
-                            ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_INFO, containerId));
-                        });
+            // create a container
+            String containerId = DockerUtil.createContainer(docker, project, imageName);
+            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                ConsoleLogger.info(Constant.MESSAGE_CREATING_CONTAINER);
+                ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_INFO, containerId));
+            });
 
-                        // start container
-                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                            ConsoleLogger.info(Constant.MESSAGE_STARTING_CONTAINER);
-                        });
-                        String webappUrl = DockerUtil.runContainer(docker, containerId);
-                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                            ConsoleLogger.info(
-                                    String.format(Constant.MESSAGE_CONTAINER_STARTED, webappUrl, project.getName()));
-                        });
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                            ConsoleLogger.error(String.format(Constant.ERROR_RUNNING_DOCKER, e.getMessage()));
-                        });
-                    }
-                });
+            // start container
+            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                ConsoleLogger.info(Constant.MESSAGE_STARTING_CONTAINER);
+            });
+            String webappUrl = DockerUtil.runContainer(docker, containerId);
+            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_STARTED, webappUrl, project.getName()));
+            });
+            return project.getName();
+        }).subscribeOn(Schedulers.io()).subscribe(ret -> {
+            Map<String, String> extraInfo = new HashMap<>();
+            extraInfo.put("ProjectName", ret);
+            sendTelemetryOnSuccess(event, extraInfo);
+        }, e -> {
+            sendTelemetryOnException(event, e);
+        });
         return null;
     }
+
 }
