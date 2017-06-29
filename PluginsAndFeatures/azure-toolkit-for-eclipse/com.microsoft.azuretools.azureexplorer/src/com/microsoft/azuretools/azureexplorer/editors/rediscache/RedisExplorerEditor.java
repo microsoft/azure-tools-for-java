@@ -71,7 +71,6 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     private static final String[] HASH_TITLE = new String[] { "Field", "Value" };
     
     private static final String DEFAULT_SCAN_PATTERN = "*";
-    private static final String DBNameFormat = "DB<%s>";
     
     private ScrolledComposite scrolledComposite;
     private Composite cmpoMain;
@@ -113,7 +112,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         
         Label lblChooseDb = new Label(cmpoMain, SWT.NONE);
         lblChooseDb.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        lblChooseDb.setText("Choose Database");
+        lblChooseDb.setText("Choose Database Index");
         
         cbDatabase = new Combo(cmpoMain, SWT.NONE);
         cbDatabase.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
@@ -205,8 +204,9 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     @Override
     public void renderDbCombo(int num) {
         for(int i = 0; i < num; i++) {
-            cbDatabase.add(String.format(DBNameFormat, String.valueOf(i)));
+            cbDatabase.add(String.valueOf(i));
         }
+        cbDatabase.pack();
         if (num > 0) {
             cbDatabase.select(0);
             onDataBaseSelect();

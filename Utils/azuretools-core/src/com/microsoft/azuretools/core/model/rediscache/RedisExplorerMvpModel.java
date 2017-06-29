@@ -69,9 +69,10 @@ public class RedisExplorerMvpModel {
                 if (dbs.size() > 0) {
                     return Integer.parseInt(dbs.get(1));
                 }
+                return DEFAULT_REDIS_DB_NUMBER;
             } catch (JedisException e) {
                 // Use binary search to determine the number of database the Redis has.
-                int start = 0, end = MAX_DATABASE_NUMBER - 1, mid;
+                int start = 0, end = MAX_DATABASE_NUMBER, mid;
                 while (start < end) {
                     mid = start + (end - start) / 2;
                     if (canConnect(jedis, mid)) {
@@ -80,14 +81,9 @@ public class RedisExplorerMvpModel {
                         end = mid;
                     }
                 }
-                if (canConnect(jedis, start)) {
-                    return start + 1;
-                } else {
-                    return start;
-                }
+                return start;
             }
         }
-        return DEFAULT_REDIS_DB_NUMBER;
     }
 
     /**
