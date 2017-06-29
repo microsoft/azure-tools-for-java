@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.container.handlers;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import org.eclipse.core.commands.ExecutionEvent;
@@ -39,13 +38,12 @@ import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.ui.wizard.publish.PublishWizard;
 import com.microsoft.azuretools.container.utils.ConfigFileUtil;
 import com.microsoft.azuretools.container.utils.DockerUtil;
+import com.microsoft.azuretools.container.utils.WarUtil;
 import com.microsoft.azuretools.core.components.AzureWizardDialog;
 import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
-import com.spotify.docker.client.exceptions.DockerException;
 
 public class PublishHandler extends AzureAbstractHandler {
 
@@ -61,8 +59,10 @@ public class PublishHandler extends AzureAbstractHandler {
         DockerRuntime.getInstance().loadFromProps(props);
         DockerClient dockerClient = DockerRuntime.getInstance().getDockerBuilder().build();
         try {
+            String destinationPath = project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER + project.getName() + ".war";
+            WarUtil.export(project, destinationPath);
             DockerUtil.buildImage(dockerClient, project, project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER);
-        } catch (DockerCertificateException | DockerException | InterruptedException | IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
