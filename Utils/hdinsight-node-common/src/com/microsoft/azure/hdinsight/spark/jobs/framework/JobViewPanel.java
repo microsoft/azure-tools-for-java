@@ -56,12 +56,12 @@ public final class JobViewPanel extends JFXPanel {
         String url = String.format("file:///%s/com.microsoft.hdinsight/hdinsight/job/html/index.html", rootPath);
 
          // for debug only
-        final String ideaSystemPath = System.getProperty("idea.system.path");
-        if(!StringHelper.isNullOrWhiteSpace(ideaSystemPath) && ideaSystemPath.contains("idea-sandbox")) {
-            final String workFolder = System.getProperty("user.dir");
-            final String path = "Utils/hdinsight-node-common/resources/htmlResources/hdinsight/job/html/index.html";
-            url = String.format("file:///%s/%s", workFolder, path);
-        }
+//        final String ideaSystemPath = System.getProperty("idea.system.path");
+//        if(!StringHelper.isNullOrWhiteSpace(ideaSystemPath) && ideaSystemPath.contains("idea-sandbox")) {
+//            final String workFolder = System.getProperty("user.dir");
+//            final String path = "Utils/hdinsight-node-common/resources/htmlResources/hdinsight/job/html/index.html";
+//            url = String.format("file:///%s/%s", workFolder, path);
+//        }
         // end of for debug only part
 
        final String queryString = String.format(QUERY_TEMPLATE, clusterName, JobViewHttpServer.getPort());

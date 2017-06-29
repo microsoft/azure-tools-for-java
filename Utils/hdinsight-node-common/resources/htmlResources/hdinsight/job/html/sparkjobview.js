@@ -11,7 +11,6 @@ $(function () {
 });
 
 function initiate() {
-    $('#jobGraphDiv').hide();
     // hide the error messagae tab first
     // $('#myTab li:eq(0)').hide();
     // show the job output tab
@@ -117,6 +116,12 @@ function commandBinding() {
     $("#refreshButton").click(function () {
         location.reload();
         refreshGetSelectedApplication();
+    });
+
+    $('#jobGraphBackButton').click(function() {
+        $('#applicationGraphDiv').removeClass('graph-disabled');
+        renderJobGraphOnApplicationLevel(spark.currentSelectedJobs);
+        $('#jobGraphDiv').addClass('graph-disabled');
     });
 }
 
@@ -289,9 +294,12 @@ function getJobResult() {
 
 function renderApplicationGraph() {
     getMessageAsync('/applications/application_graph', 'spark', function (s) {
-        var yarnAppWithJobs= JSON.parse(s);
+        var yarnAppWithJobs = JSON.parse(s);
         spark.selectedYarnApp = yarnAppWithJobs.app;
         spark.currentSelectedJobs = yarnAppWithJobs.jobs;
+        spark.jobStartEvents = yarnAppWithJobs.startEventLogs.sort(function(left, right) {
+            return left['Job ID'] > right['Job ID'];
+        });
         renderJobGraphOnApplicationLevel(spark.currentSelectedJobs);
     }, spark.appId);
 }

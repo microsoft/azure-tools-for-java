@@ -124,3 +124,12 @@
 .jobtips {
     margin: 0;
 }
+
+.graph-disabled {
+    display: none;
+}
+
+#applicationGraphSvg g.node:hover {
+    background: yellow;
+}
+

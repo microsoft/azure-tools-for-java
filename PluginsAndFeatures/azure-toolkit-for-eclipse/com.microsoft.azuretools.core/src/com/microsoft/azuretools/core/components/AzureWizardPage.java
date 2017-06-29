@@ -8,7 +8,7 @@ import java.util.Map;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.WizardPage;
 
-public abstract class AzureWizardPage extends WizardPage {
+public abstract class AzureWizardPage extends WizardPage{
     private static final String WIZARD_PAGE = "WizardPage";
     private static final String TITLE = "Title";
     private static final String WIZARD_DIALOG = "WizardDialog";

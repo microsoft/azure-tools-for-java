@@ -84,9 +84,15 @@
                         <li><a href="#taskSummary" data-toggle="tab">Task Summary</a></li>
                         <li><a href="#myTabContent" data-toggle="tab">Logs</a></li>
                     </ul>
-                    <div id="bottomTabContent" class="tab-content row col-md-12">
-                        <div id="applicationGraph" class="tab-pane fade in active">
-                            <svg id="jobGraphSvg"  width="100%" height="400"></svg>
+                    <div id="bottomTabContent" class="tab-content" style="width: 100%; height: 100%">
+                        <div class="tab-pane fade in active" id="applicationGraph" style="width: 100%; height: 100%">
+                            <div id="applicationGraphDiv" style="width: 100%; height: 100%">
+                                <svg id="applicationGraphSvg" width="100%" height="100%"></svg>
+                            </div>
+                            <div id="jobGraphDiv" class="graph-disabled" style="width: 100%; height: 100%">
+                                <button type="button" class="btn btn-default" id="jobGraphBackButton" style="margin-top: 10px">Back</button>
+                                <svg id="jobGraphSvg" width="100%" height="80%"></svg>
+                            </div>
                         </div>
                         <div class="tab-pane fade" id="stageSummary">
                             <table id="stageSummaryTable" class="table table-bordered table-condensed table-striped sortable ui-widget-content">

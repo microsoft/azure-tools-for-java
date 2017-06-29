@@ -19,51 +19,52 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.rest.spark;
+package com.microsoft.azure.hdinsight.sdk.rest.spark.event;
 
-import com.microsoft.azure.hdinsight.sdk.rest.spark.event.JobStartEventLog;
-import com.microsoft.azure.hdinsight.sdk.rest.spark.job.Job;
-import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.App;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.List;
+public class StorageLevel {
+    @JsonProperty("Use Disk")
+    private boolean isUseDisk;
 
-public class YarnAppWithJobs {
-    private App app;
-    private List<Job> jobs;
-    private List<JobStartEventLog> startEventLogs;
+    @JsonProperty("Use Memory")
+    private boolean isUseMemory;
 
-    public YarnAppWithJobs() {
+    @JsonProperty("Deserialized")
+    private boolean isDeserialized;
+
+    @JsonProperty("Replication")
+    private int replication;
+
+    public boolean isUseDisk() {
+        return isUseDisk;
     }
 
-    public YarnAppWithJobs(@NotNull App app, @NotNull List<Job> jobs, List<JobStartEventLog> startEventLogs) {
-        this.app = app;
-        this.jobs = jobs;
-        this.startEventLogs = startEventLogs;
+    public void setUseDisk(boolean useDisk) {
+        isUseDisk = useDisk;
     }
 
-    public App getApp() {
-        return app;
+    public boolean isUseMemory() {
+        return isUseMemory;
     }
 
-    public void setApp(App app) {
-        this.app = app;
+    public void setUseMemory(boolean useMemory) {
+        isUseMemory = useMemory;
     }
 
-    public List<Job> getJobs() {
-        return jobs;
+    public boolean isDeserialized() {
+        return isDeserialized;
     }
 
-    public void setJobs(List<Job> job) {
-        this.jobs = job;
+    public void setDeserialized(boolean deserialized) {
+        isDeserialized = deserialized;
     }
 
-    public List<JobStartEventLog> getStartEventLogs() {
-        return startEventLogs;
+    public int getReplication() {
+        return replication;
     }
 
-    public void setStartEventLogs(List<JobStartEventLog> startEventLogs) {
-        this.startEventLogs = startEventLogs;
+    public void setReplication(int replication) {
+        this.replication = replication;
     }
-
 }

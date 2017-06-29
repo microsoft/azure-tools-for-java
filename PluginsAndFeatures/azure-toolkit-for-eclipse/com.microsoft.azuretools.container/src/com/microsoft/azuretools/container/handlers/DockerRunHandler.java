@@ -40,7 +40,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-
 public class DockerRunHandler extends AzureAbstractHandler {
 
     @Override
@@ -52,12 +51,13 @@ public class DockerRunHandler extends AzureAbstractHandler {
             ConsoleLogger.error(Constant.ERROR_NO_SELECTED_PROJECT);
             return null;
         }
-        
+
         String destinationPath = project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER + project.getName() + ".war";
         final DockerClient docker;
 
         try {
-            // Initialize docker client according to env DOCKER_HOST & DOCKER_CERT_PATH
+            // Initialize docker client according to env DOCKER_HOST &
+            // DOCKER_CERT_PATH
             ConsoleLogger.info(Constant.MESSAGE_DOCKER_CONNECTING);
             Builder dockerBuilder = DockerRuntime.getInstance().getDockerBuilder();
             docker = dockerBuilder.build();

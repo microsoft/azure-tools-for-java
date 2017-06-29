@@ -55,8 +55,8 @@ public class JobViewManager {
         return null;
     }
 
-    public static void registerJovViewNode(@NotNull String uuid, @NotNull IClusterDetail clusterDetail) {
-        jobViewPanelMap.put(uuid, clusterDetail);
+    public static void registerJovViewNode(@NotNull String clusterName, @NotNull IClusterDetail clusterDetail) {
+        jobViewPanelMap.put(clusterName, clusterDetail);
     }
 
     @Nullable

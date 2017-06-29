@@ -21,7 +21,7 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <property>
-                    <name>html.build.enabled</name>
+                    <name>hdinsight.htmlcopy.enabled</name>
                     <value>true</value>
                 </property>
             </activation>
@@ -175,10 +175,10 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-data-lake-store-sdk</artifactId>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>net.sourceforge.htmlunit</groupId>-->
-            <!--<artifactId>htmlunit</artifactId>-->
-         <!--</dependency>-->
+        <dependency>
+            <groupId>net.sourceforge.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+         </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>

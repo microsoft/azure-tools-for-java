@@ -46,6 +46,15 @@ public final class ObjectConvertUtils {
         return Optional.ofNullable(objectMapper.readValue(jsonString, tClass));
     }
 
+    public static <T> T convertToObjectQuietly(@NotNull String jsonString, @NotNull Class<T> tClass) {
+        try {
+            return objectMapper.readValue(jsonString, tClass);
+        } catch (IOException e) {
+            // ignore the exception
+        }
+        return null;
+    }
+
     public static <T> Optional<T> convertEntityToObject(@NotNull HttpEntity entity, @NotNull Class<T> tClass) throws IOException {
         final String type = entity.getContentType().getValue().toLowerCase();
 

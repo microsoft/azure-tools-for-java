@@ -27,6 +27,7 @@ import com.google.common.cache.LoadingCache;
 import com.microsoft.azure.hdinsight.common.JobViewManager;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.Application;
+import com.microsoft.azure.hdinsight.sdk.rest.spark.event.JobStartEventLog;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.executor.Executor;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.job.Job;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.stage.Stage;
@@ -34,7 +35,6 @@ import com.microsoft.azure.hdinsight.sdk.rest.spark.task.Task;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.App;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.ApplicationMasterLogs;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -118,6 +118,20 @@ public class JobViewCacheManager {
                     return YarnRestUtil.getApp(key);
                 }
             });
+
+    private static final LoadingCache<ApplicationKey, List<JobStartEventLog>> sparkJobStartEventLogCache = CacheBuilder.newBuilder()
+            .maximumSize(100)
+            .initialCapacity(20)
+            .build(new CacheLoader<ApplicationKey, List<JobStartEventLog>>() {
+                @Override
+                public List<JobStartEventLog> load(ApplicationKey key) throws Exception {
+                    return SparkRestUtil.getSparkEventLogs(key);
+                }
+            });
+
+    public static List<JobStartEventLog> getJobStartEventLogs(@NotNull ApplicationKey key) throws ExecutionException {
+        return sparkJobStartEventLogCache.get(key);
+    }
 
     public static ApplicationMasterLogs getYarnLogs(@NotNull ApplicationKey key) throws ExecutionException {
             return yarnAppLogLocalCache.get(key);

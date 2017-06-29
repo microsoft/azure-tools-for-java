@@ -21,25 +21,34 @@
  */
 package com.microsoft.azure.hdinsight.spark.jobs;
 
+import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.rest.AttemptWithAppId;
 import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
 import com.microsoft.azure.hdinsight.sdk.rest.RestUtil;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.Application;
+import com.microsoft.azure.hdinsight.sdk.rest.spark.event.JobStartEventLog;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.executor.Executor;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.job.Job;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.stage.Stage;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.task.Task;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
+import org.json.JSONObject;
 
 
+import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class SparkRestUtil {
     public static final String SPARK_REST_API_ENDPOINT = "%s/sparkhistory/api/v1/applications/%s";
@@ -88,6 +97,41 @@ public class SparkRestUtil {
 
         Optional<List<Task>> tasks = ObjectConvertUtils.convertEntityToList(entity, Task.class);
         return tasks.orElse(RestUtil.getEmptyList(Task.class));
+    }
+    
+    public static List<JobStartEventLog> getSparkEventLogs(@NotNull ApplicationKey key) throws HDIException, IOException {
+        String url = String.format("%s/logs", key.getAppId());
+        String eventLogsPath = String.format("%s/SparkEventLogs/%s/eventLogs.zip", HDInsightLoader.getHDInsightHelper().getPluginRootPath(), key.getAppId());
+        File file = new File(eventLogsPath);
+        HttpEntity entity = getSparkRestEntity(key.getClusterDetails(), url);
+        InputStream inputStream = entity.getContent();
+        FileUtils.copyInputStreamToFile(inputStream, file);
+        IOUtils.closeQuietly(inputStream);
+
+        ZipFile zipFile = new ZipFile(file);
+        List<? extends ZipEntry> entities =  Collections.list(zipFile.entries());
+        // every application has an attempt in event log
+        // and the entity name should be in formation "{appId}_{attemptId}"
+        String entityName = String.format("%s_%s", key.getAppId(), entities.size());
+        ZipEntry lastEntity = zipFile.getEntry(entityName);
+        if (lastEntity == null) {
+            throw new HDIException(String.format("No Spark event log entity found for app: %s", key.getAppId()));
+        }
+        InputStream zipFileInputStream = zipFile.getInputStream(lastEntity);
+        String entityContent = IOUtils.toString(zipFileInputStream, Charset.forName("utf-8"));
+
+        String[] lines = entityContent.split("\n");
+        List<JobStartEventLog> jobStartEvents = Arrays.stream(lines)
+                .filter(line -> {
+                    JSONObject jsonObject = new JSONObject(line);
+                    String eventName = jsonObject.getString("Event");
+                    return eventName.equalsIgnoreCase("SparkListenerJobStart");
+                    })
+                .map(oneLine -> ObjectConvertUtils.convertToObjectQuietly(oneLine, JobStartEventLog.class))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        return jobStartEvents;
     }
 
     private static AttemptWithAppId getLastAttemptFromLocalCache(@NotNull ApplicationKey key) throws ExecutionException, HDIException {
