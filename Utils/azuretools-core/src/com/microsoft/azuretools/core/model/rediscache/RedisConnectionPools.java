@@ -93,11 +93,10 @@ public class RedisConnectionPools {
         // get redis setting
         String hostName = redisCache.hostName();
         String password = redisCache.keys().primaryKey();
-        boolean enableSsl = !redisCache.nonSslPort();
-        int port = enableSsl ? redisCache.sslPort() : redisCache.port();
+        int port = redisCache.sslPort();
 
         // create connection pool according to redis setting
-        JedisPool pool = new JedisPool(new JedisPoolConfig(), hostName, port, TIMEOUT, password, enableSsl);
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hostName, port, TIMEOUT, password, true);
         pools.put(id, pool);
     }
 }
