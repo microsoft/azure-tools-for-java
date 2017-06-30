@@ -37,9 +37,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.microsoft.azuretools.core.mvp.model.rediscache.RedisConnectionPools;
-import com.microsoft.azuretools.core.mvp.model.rediscache.RedisExplorerMvpModel;
-
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
 

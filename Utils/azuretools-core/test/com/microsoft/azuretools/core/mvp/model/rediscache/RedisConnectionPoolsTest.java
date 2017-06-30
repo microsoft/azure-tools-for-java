@@ -39,7 +39,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.microsoft.azure.management.redis.RedisAccessKeys;
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModelHelper;
-import com.microsoft.azuretools.core.mvp.model.rediscache.RedisConnectionPools;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
