@@ -65,7 +65,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.AzurePlugin");
     public static final String PLUGIN_VERSION = CommonConst.PLUGIN_VERISON;
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
-    public static final String JDBC_LIBRARIES_VERSION = "6.0.8112.100";
+    public static final String JDBC_LIBRARIES_VERSION = "6.1.0.jre8";
     public final static int REST_SERVICE_MAX_RETRY_COUNT = 7;
 
     // User-agent header for Azure SDK calls

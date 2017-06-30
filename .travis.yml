@@ -6,5 +6,4 @@ before_install:
 - chmod +x ./gradlew
 - chmod +x ./BuildDevint
 script:
-- touch PluginsAndFeatures/AddLibrary/JDBCLibrary/JavaEE6/com.microsoft.sqljdbc4/sqljdbc42.jar
 - ./BuildDevint -q

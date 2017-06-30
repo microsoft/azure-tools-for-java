@@ -10,6 +10,6 @@
   </parent>
   <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
   <artifactId>com.microsoft.sqljdbc4.ui</artifactId>
-  <version>6.0.8112.100</version>
+  <version>6.1.0.jre8</version>
   <packaging>eclipse-plugin</packaging>
 </project>
