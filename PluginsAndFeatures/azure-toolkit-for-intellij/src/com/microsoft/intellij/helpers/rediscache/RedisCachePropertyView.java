@@ -23,7 +23,7 @@
 package com.microsoft.intellij.helpers.rediscache;
 
 import com.microsoft.intellij.helpers.base.BaseEditor;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheProperty;
+import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisCacheProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyViewPresenter;
 import org.jetbrains.annotations.NotNull;
