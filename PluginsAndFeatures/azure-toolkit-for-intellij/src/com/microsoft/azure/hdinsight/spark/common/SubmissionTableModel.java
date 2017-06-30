@@ -31,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class SubmissionTableModel extends InteractiveTableModel{
     private List<SparkSubmissionJobConfigCheckResult> checkResults;
@@ -85,6 +86,28 @@ public class SubmissionTableModel extends InteractiveTableModel{
         }
 
         return jobConfigMap;
+    }
+
+    public void loadJobConfigMap(Map<String, Object> jobConf) {
+        removeAllRows();
+
+        Stream.concat(
+                jobConf.entrySet().stream()
+                        .filter(entry -> SparkSubmissionParameter.isSubmissionParameter(entry.getKey())),
+                // The Spark Job Configuration needs to be separated
+                jobConf.entrySet().stream()
+                        .filter(entry -> !SparkSubmissionParameter.isSubmissionParameter(entry.getKey()))
+                        .filter(entry -> entry.getKey().equals(SparkSubmissionParameter.Conf))
+                        .flatMap(entry -> new SparkConfigures(entry.getValue()).entrySet().stream())
+        )
+        .filter(entry -> !entry.getKey().trim().isEmpty())
+        .forEach(entry -> super.addRow(entry.getKey(), entry.getValue()));
+
+        if (!hasEmptyRow()) {
+            addEmptyRow();
+        }
+
+        checkParameter();
     }
 
     public void loadJobConfigMapFromPropertyFile(String propertyFilePath) {

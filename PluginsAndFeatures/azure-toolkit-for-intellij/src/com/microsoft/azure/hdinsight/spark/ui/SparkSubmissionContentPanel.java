@@ -149,11 +149,17 @@ public class SparkSubmissionContentPanel extends JPanel{
     private final JLabel[] errorMessageLabels = new JLabel[5];
     private SparkSubmissionAdvancedConfigDialog advancedConfigDialog;
 
-    public void apply(SparkSubmitModel submitModel) {
-        this.submitModel = submitModel;
-        initializeModel();
-        updateTableColumn();
-        loadParameter();
+    /**
+     * Apply the parameters in new SubmitModel
+     *
+     * @param newSubmitModel the new submit model to apply
+     */
+    public void apply(SparkSubmitModel newSubmitModel) {
+        SparkSubmissionParameter parameter = newSubmitModel.getSubmissionParameter();
+        SubmissionTableModel tableModel = (SubmissionTableModel) jobConfigurationTable.getModel();
+
+        loadParameter(parameter);
+        tableModel.loadJobConfigMap(parameter.getJobConfig());
     }
 
     private enum ErrorMessageLabelTag {
@@ -169,11 +175,10 @@ public class SparkSubmissionContentPanel extends JPanel{
         initializeComponents();
         initializeModel();
         updateTableColumn();
-        loadParameter();
+        loadParameter(submitModel.getSubmissionParameter());
     }
 
-    private void loadParameter() {
-        SparkSubmissionParameter parameter = submitModel.getSubmissionParameter();
+    private void loadParameter(SparkSubmissionParameter parameter) {
         if (parameter != null) {
             if (parameter.isLocalArtifact()) {
                 localArtifactRadioButton.setSelected(true);

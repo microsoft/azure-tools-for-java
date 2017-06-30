@@ -27,6 +27,8 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.compiler.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.InvalidDataException;
+import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.artifacts.ArtifactUtil;
 import com.intellij.packaging.impl.compiler.ArtifactCompileScope;
@@ -46,20 +48,47 @@ import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.JDomWriter;
 import org.apache.commons.lang.StringUtils;
+import org.jdom.Attribute;
+import org.jdom.Element;
+import org.jdom.Text;
 import rx.Single;
 
 import javax.swing.*;
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class SparkSubmitModel {
 
     private static final String[] columns = {"Key", "Value", ""};
     private  static final String SparkYarnLogUrlFormat = "%s/yarnui/hn/cluster/app/%s";
 
+    private static final String SUBMISSION_CONTENT_NAME = "spark_submission";
+    private static final String SUBMISSION_ATTRIBUTE_CLUSTER_NAME = "cluster_name";
+    private static final String SUBMISSION_ATTRIBUTE_SELECTED_CLUSTER = "selected_cluster";
+    private static final String SUBMISSION_ATTRIBUTE_IS_LOCAL_ARTIFACT = "is_local_artifact";
+    private static final String SUBMISSION_ATTRIBUTE_ARTIFACT_NAME = "artifact_name";
+    private static final String SUBMISSION_ATTRIBUTE_LOCAL_ARTIFACT_PATH = "local_artifact_path";
+    private static final String SUBMISSION_ATTRIBUTE_FILE_PATH = "file_path";
+    private static final String SUBMISSION_ATTRIBUTE_CLASSNAME = "classname";
+    private static final String SUBMISSION_CONTENT_JOB_CONF = "job_conf";
+    private static final String SUBMISSION_CONTENT_COMMAND_LINE_ARGS = "cmd_line_args";
+    private static final String SUBMISSION_CONTENT_REF_JARS = "ref_jars";
+    private static final String SUBMISSION_CONTENT_REF_FILES = "ref_files";
+    private static final String SUBMISSION_CONTENT_SSH_CERT= "ssh_cert";
+    private static final String SUBMISSION_ATTRIBUTE_SSH_CERT_AUTHTYPE_NAME= "auth_type";
+    private static final String SUBMISSION_ATTRIBUTE_SSH_CERT_USER_NAME= "user";
+    private static final String SUBMISSION_ATTRIBUTE_SSH_CERT_PRIVATE_KEYPATH_NAME= "private_key_path";
+
     private static Map<Project, SparkSubmissionParameter> submissionParameterMap = new HashMap<>();
+
     private static Map<Project, SparkSubmitAdvancedConfigModel> submissionAdvancedConfigModelMap = new HashMap<>();
 
     private final Project project;
@@ -69,21 +98,29 @@ public class SparkSubmitModel {
     private Map<String, Artifact> artifactHashMap = new HashMap<>();
 
     private SparkSubmissionParameter submissionParameter;
+
     private SparkSubmitAdvancedConfigModel advancedConfigModel;
 
     private DefaultComboBoxModel<String> clusterComboBoxModel;
+
     private DefaultComboBoxModel<String> artifactComboBoxModel;
+
     private SubmissionTableModel tableModel = new SubmissionTableModel(columns);
+
     private final Map<String, String> postEventProperty = new HashMap<>();
 
 
     public SparkSubmitModel(@NotNull Project project) {
+        this(project, submissionParameterMap.get(project));
+    }
+
+    public SparkSubmitModel(@NotNull Project project, @NotNull SparkSubmissionParameter submissionParameter) {
         this.cachedClusterDetails = new ArrayList();
         this.project = project;
 
         this.clusterComboBoxModel = new DefaultComboBoxModel<>();
         this.artifactComboBoxModel = new DefaultComboBoxModel<>();
-        this.submissionParameter = submissionParameterMap.get(project);
+        this.submissionParameter = submissionParameter;
         this.advancedConfigModel = submissionAdvancedConfigModelMap.get(project);
 
         final List<Artifact> artifacts = ArtifactUtil.getArtifactWithOutputPaths(project);
@@ -535,10 +572,10 @@ public class SparkSubmitModel {
                 Object jobConfigValue = jobConfigEntry.getValue();
 
                 if (!StringHelper.isNullOrWhiteSpace(jobConfigKey) && !SparkSubmissionParameter.isSubmissionParameter(jobConfigKey)) {
-                    if (jobConfigKey == SparkSubmissionParameter.Conf) {
+                    if (jobConfigKey.equals(SparkSubmissionParameter.Conf)) {
                         SparkConfigures sparkConfigs;
 
-                        if (jobConfigValue instanceof Map && (sparkConfigs = (SparkConfigures)(jobConfigValue)) != null) {
+                        if (jobConfigValue instanceof Map && !(sparkConfigs = new SparkConfigures(jobConfigValue)).isEmpty()) {
                             for (Map.Entry<String, Object> sparkConfigEntry : sparkConfigs.entrySet()) {
                                 if (!StringHelper.isNullOrWhiteSpace(sparkConfigEntry.getKey())) {
                                     tableModel.addRow(sparkConfigEntry.getKey(), sparkConfigEntry.getValue());
@@ -555,5 +592,142 @@ public class SparkSubmitModel {
         if (!tableModel.hasEmptyRow()) {
             tableModel.addEmptyRow();
         }
+    }
+
+    public Element exportToElement() {
+        Element submitModelElement = new Element(SUBMISSION_CONTENT_NAME);
+
+        SparkSubmissionParameter submissionParameter = getSubmissionParameter();
+
+        if (submissionParameter == null) {
+            return submitModelElement;
+        }
+
+        submitModelElement.setAttribute(
+                SUBMISSION_ATTRIBUTE_CLUSTER_NAME, submissionParameter.getClusterName());
+        submitModelElement.setAttribute(
+                SUBMISSION_ATTRIBUTE_IS_LOCAL_ARTIFACT, Boolean.toString(isLocalArtifact()));
+        submitModelElement.setAttribute(
+                SUBMISSION_ATTRIBUTE_ARTIFACT_NAME, submissionParameter.getArtifactName());
+        submitModelElement.setAttribute(
+                SUBMISSION_ATTRIBUTE_CLASSNAME, submissionParameter.getMainClassName());
+
+        Map<String, Object> jobConf = submissionParameter.getJobConfig();
+        Element jobConfElement = new Element(SUBMISSION_CONTENT_JOB_CONF);
+
+        jobConfElement.setAttributes(Stream.concat(
+                        jobConf.entrySet().stream()
+                                .filter(entry -> SparkSubmissionParameter.isSubmissionParameter(entry.getKey())),
+                        // The Spark Job Configuration needs to be separated
+                        jobConf.entrySet().stream()
+                                .filter(entry -> !SparkSubmissionParameter.isSubmissionParameter(entry.getKey()))
+                                .filter(entry -> entry.getKey().equals(SparkSubmissionParameter.Conf))
+                                .flatMap(entry -> new SparkConfigures(entry.getValue()).entrySet().stream())
+                )
+                .filter(entry -> !entry.getKey().trim().isEmpty())
+                .map(entry -> new Attribute(entry.getKey(), entry.getValue().toString()))
+                .collect(Collectors.toList()));
+
+        submitModelElement.addContent(jobConfElement);
+
+        Element cmdLineArgsElement = new Element(SUBMISSION_CONTENT_COMMAND_LINE_ARGS);
+        cmdLineArgsElement.addContent(
+                submissionParameter.getArgs().stream()
+                        .filter(e -> !e.trim().isEmpty())
+                        .map(Text::new).collect(Collectors.toList()));
+        submitModelElement.addContent(cmdLineArgsElement);
+
+        Element refJarsElement = new Element(SUBMISSION_CONTENT_REF_JARS);
+        refJarsElement.addContent(
+                submissionParameter.getReferencedJars().stream()
+                        .filter(e -> !e.trim().isEmpty())
+                        .map(Text::new).collect(Collectors.toList()));
+        submitModelElement.addContent(refJarsElement);
+
+        Element refFilesElement = new Element(SUBMISSION_CONTENT_REF_FILES);
+        refFilesElement.addContent(
+                submissionParameter.getReferencedFiles().stream()
+                        .filter(e -> !e.trim().isEmpty())
+                        .map(Text::new).collect(Collectors.toList()));
+        submitModelElement.addContent(refFilesElement);
+
+        SparkSubmitAdvancedConfigModel advConfModel = getAdvancedConfigModel();
+        if (advConfModel != null && advConfModel.enableRemoteDebug) {
+            Element sshCertElement = new Element(SUBMISSION_CONTENT_SSH_CERT);
+            sshCertElement.setAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_USER_NAME, advConfModel.sshUserName);
+
+            sshCertElement.setAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_AUTHTYPE_NAME, advConfModel.sshAuthType.name());
+            if (advConfModel.sshAuthType == SparkSubmitAdvancedConfigModel.SSHAuthType.UseKeyFile) {
+                sshCertElement.setAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_PRIVATE_KEYPATH_NAME, advConfModel.sshKyeFile.toString());
+            }
+
+            submitModelElement.addContent(sshCertElement);
+        }
+
+        return submitModelElement;
+    }
+
+    static public SparkSubmitModel factoryFromElement(@NotNull Project project, @NotNull Element rootElement)
+            throws InvalidDataException{
+        Attribute nilValueAttribute = new Attribute("Nil", "");
+        Attribute falseValueAttribute = new Attribute("False", "false");
+        Element emptyElement = new Element("Empty");
+
+        return Optional.ofNullable(rootElement.getChild(SUBMISSION_CONTENT_NAME)).map(element -> {
+            SubmissionTableModel tableModel = new SubmissionTableModel(
+                    new String[]{"Key", "Value", ""});
+
+            Optional.ofNullable(element.getChild(SUBMISSION_CONTENT_JOB_CONF))
+                    .ifPresent(jobConfElem -> {
+                        jobConfElem.getAttributes().forEach(attr -> {
+                            tableModel.addRow(attr.getName(), attr.getValue());
+                        });
+                    });
+
+            SparkSubmissionParameter parameter = new SparkSubmissionParameter(
+                    Optional.ofNullable(element.getAttribute(SUBMISSION_ATTRIBUTE_CLUSTER_NAME))
+                            .orElse(nilValueAttribute).getValue(),
+                    Optional.ofNullable(element.getAttribute(SUBMISSION_ATTRIBUTE_IS_LOCAL_ARTIFACT))
+                            .orElse(falseValueAttribute).getValue().toLowerCase().equals("true"),
+                    Optional.ofNullable(element.getAttribute(SUBMISSION_ATTRIBUTE_ARTIFACT_NAME))
+                            .orElse(nilValueAttribute).getValue(),
+                    Optional.ofNullable(element.getAttribute(SUBMISSION_ATTRIBUTE_LOCAL_ARTIFACT_PATH))
+                            .orElse(nilValueAttribute).getValue(),
+                    Optional.ofNullable(element.getAttribute(SUBMISSION_ATTRIBUTE_FILE_PATH))
+                            .orElse(nilValueAttribute).getValue(),
+                    Optional.ofNullable(element.getAttribute(SUBMISSION_ATTRIBUTE_CLASSNAME))
+                            .orElse(nilValueAttribute).getValue(),
+                    Optional.ofNullable(element.getChild(SUBMISSION_CONTENT_REF_FILES))
+                            .orElse(emptyElement).getContent().stream().map(cont -> ((Text) cont).getText()).collect
+                            (Collectors.toList()),
+                    Optional.ofNullable(element.getChild(SUBMISSION_CONTENT_REF_JARS))
+                            .orElse(emptyElement).getContent().stream().map(cont -> ((Text) cont).getText()).collect
+                            (Collectors.toList()),
+                    Optional.ofNullable(element.getChild(SUBMISSION_CONTENT_COMMAND_LINE_ARGS))
+                            .orElse(emptyElement).getContent().stream().map(cont -> ((Text) cont).getText()).collect
+                            (Collectors.toList()),
+                    tableModel.getJobConfigMap()
+            );
+
+            SparkSubmitModel newSubmitModel = new SparkSubmitModel(project, parameter);
+            Optional.ofNullable(element.getChild(SUBMISSION_CONTENT_SSH_CERT))
+                    .ifPresent(sshCertElem -> {
+                        SparkSubmitAdvancedConfigModel advConfigModel = new SparkSubmitAdvancedConfigModel();
+
+                        advConfigModel.enableRemoteDebug = true;
+
+                        Optional.ofNullable(sshCertElem.getAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_USER_NAME))
+                                .ifPresent(attribute -> advConfigModel.sshUserName = attribute.getValue());
+                        Optional.ofNullable(sshCertElem.getAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_AUTHTYPE_NAME))
+                                .ifPresent(attribute -> advConfigModel.sshAuthType =
+                                        SparkSubmitAdvancedConfigModel.SSHAuthType.valueOf(attribute.getValue()));
+                        Optional.ofNullable(sshCertElem.getAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_PRIVATE_KEYPATH_NAME))
+                                .ifPresent(attribute -> advConfigModel.sshKyeFile = new File(attribute.getValue()));
+
+                        newSubmitModel.setAdvancedConfigModel(advConfigModel);
+                    });
+
+            return newSubmitModel;
+        }).orElseThrow(() -> new InvalidDataException("Bad submission parameters"));
     }
 }

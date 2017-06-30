@@ -35,16 +35,8 @@ public class InteractiveRenderer extends DefaultTableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         Component component =  super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        if (column == interactiveColumn && hasFocus) {
-
-            InteractiveTableModel tableModel = (InteractiveTableModel)table.getModel();
-            if(tableModel != null)
-
-            if ((tableModel.getRowCount() - 1) == row && !tableModel.hasEmptyRow())
-            {
-               tableModel.addEmptyRow();
-            }
-
+        InteractiveTableModel tableModel = (InteractiveTableModel)table.getModel();
+        if (column == interactiveColumn && hasFocus && tableModel != null) {
             int lastRow = tableModel.getRowCount();
             if (row == lastRow - 1) {
                 table.setRowSelectionInterval(lastRow - 1, lastRow - 1);

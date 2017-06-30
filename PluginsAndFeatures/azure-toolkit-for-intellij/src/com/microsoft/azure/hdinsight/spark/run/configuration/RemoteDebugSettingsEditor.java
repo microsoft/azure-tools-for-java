@@ -24,8 +24,9 @@ package com.microsoft.azure.hdinsight.spark.run.configuration;
 
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 

@@ -186,9 +186,13 @@ public class SparkBatchRemoteDebugJob implements ISparkBatchDebugJob, ILogger {
                             "Bad spark job response: " + httpResponse.getMessage()));
 
             this.setBatchId(jobResp.getId());
+
+            return this;
         }
 
-        return this;
+        throw new UnknownServiceException(String.format(
+                "Failed to submit Spark remove debug job. error code: %d, type: %s, reason: %s.",
+                httpResponse.getCode(), httpResponse.getContent(), httpResponse.getMessage()));
     }
 
     /**
@@ -493,7 +497,7 @@ public class SparkBatchRemoteDebugJob implements ISparkBatchDebugJob, ILogger {
                 submissionParameter.getFile(),
                 submissionParameter.getMainClassName(),
                 submissionParameter.getReferencedFiles(),
-                submissionParameter.getReferencedFiles(),
+                submissionParameter.getReferencedJars(),
                 submissionParameter.getArgs(),
                 jobConfigWithDebug
         );
