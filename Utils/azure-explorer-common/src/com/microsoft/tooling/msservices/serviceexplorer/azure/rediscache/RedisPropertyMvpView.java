@@ -22,7 +22,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisCacheProperty;
 
 public interface RedisPropertyMvpView extends MvpView {
     

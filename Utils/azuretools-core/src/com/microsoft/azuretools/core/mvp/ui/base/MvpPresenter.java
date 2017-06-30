@@ -20,28 +20,25 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.azurecommons.mvp.ui.base;
+package com.microsoft.azuretools.core.mvp.ui.base;
 
-import java.util.List;
+public abstract class MvpPresenter<V extends MvpView> {
 
-import redis.clients.jedis.ScanResult;
+    private V mvpView;
 
-public class RedisScanResult {
-    
-    private List<String> keys;
-    private String nextCursor;
-    
-    
-    public RedisScanResult(ScanResult<String> result) {
-        this.keys = result.getResult();
-        this.nextCursor = result.getStringCursor();
+    public V getMvpView() {
+        return mvpView;
     }
 
-    public String getNextCursor() {
-        return nextCursor;
+    public void onAttachView(V mvpView) {
+        this.mvpView = mvpView;
     }
 
-    public List<String> getKeys() {
-        return keys;
+    public void onDetachView() {
+        this.mvpView = null;
+    }
+    
+    public boolean isViewDetached() {
+        return this.mvpView == null;
     }
 }

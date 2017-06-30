@@ -24,9 +24,9 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.redis.RedisCaches;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.NodeContent;
-import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModelHelper;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
+import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 import java.io.IOException;

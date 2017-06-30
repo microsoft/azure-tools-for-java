@@ -20,10 +20,10 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.core.model.rediscache;
+package com.microsoft.azuretools.core.mvp.model.rediscache;
 
 import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.azuretools.core.model.AzureMvpModelHelper;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModelHelper;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;

@@ -22,7 +22,7 @@
 
 package com.microsoft.azuretools.container.presenters;
 
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.utils.WebAppOnLinuxUtil;
 import com.microsoft.azuretools.container.views.StepTwoPageView;

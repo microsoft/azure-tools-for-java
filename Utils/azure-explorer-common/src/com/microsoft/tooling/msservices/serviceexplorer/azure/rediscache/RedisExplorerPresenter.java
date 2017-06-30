@@ -25,11 +25,11 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
 import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisScanResult;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisValueData;
-import com.microsoft.azuretools.core.model.rediscache.RedisConnectionPools;
-import com.microsoft.azuretools.core.model.rediscache.RedisExplorerMvpModel;
+import com.microsoft.azuretools.core.mvp.model.rediscache.RedisConnectionPools;
+import com.microsoft.azuretools.core.mvp.model.rediscache.RedisExplorerMvpModel;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
+import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
+import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import java.util.ArrayList;
