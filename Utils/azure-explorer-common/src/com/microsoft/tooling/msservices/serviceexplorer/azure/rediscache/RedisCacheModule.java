@@ -23,7 +23,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.NodeContent;
+import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 

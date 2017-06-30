@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.azurecommons.mvp.ui.base;
+package com.microsoft.azuretools.core.mvp.ui.base;
 
 public class ResourceProperty {
     private String name;

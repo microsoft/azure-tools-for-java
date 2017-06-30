@@ -20,17 +20,52 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.azurecommons.mvp.ui.base;
+package com.microsoft.azuretools.core.mvp.ui.base;
 
-import javax.swing.JOptionPane;
-
-public interface MvpView {
-    
-    default void onError(String message) {
-        JOptionPane.showMessageDialog(null, null, message, JOptionPane.ERROR_MESSAGE, null);
+public class NodeContent {
+    /**
+     * Basic information for the node.
+     * 
+     * @param id
+     *            resource id
+     * @param name
+     *            resource name
+     * @param provisionState
+     *            resource provision state
+     */
+    public NodeContent(String id, String name, String provisionState) {
+        this.id = id;
+        this.name = name;
+        this.provisionState = provisionState;
     }
-    
-    default void onErrorWithException(String message, Exception ex) {
-        JOptionPane.showMessageDialog(null, ex.getMessage(), message, JOptionPane.ERROR_MESSAGE, null);
+
+    private String id;
+
+    private String name;
+
+    private String provisionState;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getProvisionState() {
+        return provisionState;
+    }
+
+    public void setProvisionState(String provisionState) {
+        this.provisionState = provisionState;
     }
 }

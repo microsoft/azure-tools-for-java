@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.core.model;
+package com.microsoft.azuretools.core.mvp.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -48,6 +48,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.redis.RedisCaches;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModelHelper;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 
 

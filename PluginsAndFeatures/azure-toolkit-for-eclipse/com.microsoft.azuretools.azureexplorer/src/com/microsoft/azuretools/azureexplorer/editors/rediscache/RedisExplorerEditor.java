@@ -51,8 +51,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
 import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisScanResult;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisValueData;
+import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
+import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerPresenter;
 
@@ -129,13 +129,13 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         
         btnScanKey = new Button(cmpoKeyArea, SWT.NONE);
         btnScanKey.setText("Scan Keys");
-        
+
         btnScanMoreKey = new Button(cmpoKeyArea, SWT.NONE);
         btnScanMoreKey.setText("Scan More Keys");
         
         lstKey = new List(cmpoKeyArea, SWT.BORDER | SWT.V_SCROLL);
         lstKey.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 3, 1));
-
+        
         cmpoValueArea = new Composite(sashForm, SWT.BORDER);
         cmpoValueArea.setLayout(new GridLayout(2, false));
         
