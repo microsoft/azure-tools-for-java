@@ -22,7 +22,7 @@
 
 package com.microsoft.azuretools.container.views;
 
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 
 public interface StepOnePageView extends MvpView{
     void showInfomation(String string);
