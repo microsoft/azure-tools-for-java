@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.core.model;
+package com.microsoft.azuretools.core.mvp.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.core.model.rediscache;
+package com.microsoft.azuretools.core.mvp.model.rediscache;
 
 import java.util.List;
 import java.util.Map.Entry;

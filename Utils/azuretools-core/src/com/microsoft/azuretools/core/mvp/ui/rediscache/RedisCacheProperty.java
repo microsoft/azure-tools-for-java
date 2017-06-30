@@ -20,9 +20,9 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
+package com.microsoft.azuretools.core.mvp.ui.rediscache;
 
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.ResourceProperty;
+import com.microsoft.azuretools.core.mvp.ui.base.ResourceProperty;
 
 public class RedisCacheProperty extends ResourceProperty {
 

@@ -22,7 +22,7 @@
 
 package com.microsoft.azuretools.container.presenters;
 
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpPresenter;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.container.views.StepOnePageView;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DockerClient;

@@ -26,7 +26,7 @@ import java.util.List;
 
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 
 public interface StepTwoPopupDialogView extends MvpView{
 

@@ -22,9 +22,9 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.MvpView;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisScanResult;
-import com.microsoft.azuretools.azurecommons.mvp.ui.base.RedisValueData;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
+import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
 
 public interface RedisExplorerMvpView extends MvpView {
     
