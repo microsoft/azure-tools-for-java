@@ -25,17 +25,21 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModelHelper;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
+import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisCacheProperty;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import rx.Observable;
-import rx.schedulers.Schedulers;
 
 public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends MvpPresenter<V> {
 
     private static final String CANNOT_GET_SUBCROPTION_ID = "Cannot get Subscription ID.";
     private static final String CANNOT_GET_REDIS_ID = "Cannot get Redis Cache's ID.";
     private static final String CANNOT_GET_REDIS_PROPERTY = "Cannot get Redis Cache's property.";
+    
+    public RedisPropertyViewPresenter(SchedulerProvider schedulerProvider) {
+        super(schedulerProvider);
+    }
 
     /**
      * Called from view when the view needs to show the property.
@@ -60,7 +64,7 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
         Observable.fromCallable(() -> {
             return AzureMvpModelHelper.getInstance().getRedisCache(sid, id);
         })
-        .subscribeOn(Schedulers.io())
+        .subscribeOn(getSchedulerProvider().io())
         .subscribe(redis -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 if (isViewDetached()) {

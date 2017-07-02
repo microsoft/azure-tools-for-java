@@ -45,6 +45,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisCacheProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyViewPresenter;
@@ -95,7 +96,7 @@ public class RedisPropertyView extends ViewPart implements RedisPropertyMvpView 
     private String secondaryKey = "";
     
     public RedisPropertyView() {
-        this.redisPropertyViewPresenter = new RedisPropertyViewPresenter<RedisPropertyView>();
+        this.redisPropertyViewPresenter = new RedisPropertyViewPresenter<RedisPropertyView>(AppSchedulerProvider.getInstance());
         this.redisPropertyViewPresenter.onAttachView(this);
     }
 

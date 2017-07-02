@@ -51,6 +51,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
 import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
+import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerMvpView;
@@ -90,7 +91,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     private Text txtKeyName;
 
     public RedisExplorerEditor() {
-        this.redisExplorerPresenter = new RedisExplorerPresenter<RedisExplorerEditor>();
+        this.redisExplorerPresenter = new RedisExplorerPresenter<RedisExplorerEditor>(AppSchedulerProvider.getInstance());
         this.redisExplorerPresenter.onAttachView(this);
         currentCursor = DEFAULT_SCAN_PATTERN;
         lastChosenKey = "";
