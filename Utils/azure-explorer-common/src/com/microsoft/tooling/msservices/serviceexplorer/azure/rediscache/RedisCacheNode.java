@@ -133,7 +133,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         if (!CREATING_STATE.equals(this.provisionState)) {
             addAction(DELETE_ACTION, null, new DeleteRedisCacheAction());
             addAction(SHOW_PROPERTY_ACTION, null, new ShowRedisCachePropertyAction());
-            addAction(OPEN_EXPLORER, null, new OpenRedisExplorerAction());
+            //addAction(OPEN_EXPLORER, null, new OpenRedisExplorerAction());
         }
         addAction(OPEN_IN_BROWSER_ACTION, null, new OpenInBrowserAction());
         super.loadActions();
