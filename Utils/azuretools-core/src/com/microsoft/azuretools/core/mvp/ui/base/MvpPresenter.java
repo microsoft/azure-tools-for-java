@@ -25,12 +25,7 @@ package com.microsoft.azuretools.core.mvp.ui.base;
 public abstract class MvpPresenter<V extends MvpView> {
 
     private V mvpView;
-    private final SchedulerProvider schedulerProvider;
     
-    public MvpPresenter(SchedulerProvider schedulerProvider) {
-        this.schedulerProvider = schedulerProvider;
-    }
-
     public V getMvpView() {
         return mvpView;
     }
@@ -48,6 +43,6 @@ public abstract class MvpPresenter<V extends MvpView> {
     }
 
     public SchedulerProvider getSchedulerProvider() {
-        return schedulerProvider;
+        return SchedulerProviderFactory.getInstance().getSchedulerProvider();
     }
 }

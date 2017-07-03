@@ -20,27 +20,26 @@
 
 package com.microsoft.azuretools.core.mvp.ui.base;
 
-import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProvider;
+public class SchedulerProviderFactory {
+    
+    private SchedulerProvider schedulerProvider;
 
-import rx.Scheduler;
-import rx.schedulers.TestScheduler;
-
-public class TestSchedulerProvider implements SchedulerProvider {
-    
-    private TestScheduler testScheduler = new TestScheduler();
-    
-    @Override
-    public Scheduler io() {
-        return testScheduler;
-    }
-    
-    @Override
-    public Scheduler computation() {
-        return testScheduler;
-    }
-    
-    public void triggerActions() {
-        testScheduler.triggerActions();
+    private SchedulerProviderFactory() {
     }
 
+    private static final class SchedulerProviderFactoryHolder {
+        private static final SchedulerProviderFactory INSTANCE = new SchedulerProviderFactory();
+    }
+
+    public static SchedulerProviderFactory getInstance() {
+        return SchedulerProviderFactoryHolder.INSTANCE;
+    }
+    
+    public void init(SchedulerProvider schedulerProvider) {
+        this.schedulerProvider = schedulerProvider;
+    }
+    
+    public SchedulerProvider getSchedulerProvider() {
+        return this.schedulerProvider;
+    }
 }

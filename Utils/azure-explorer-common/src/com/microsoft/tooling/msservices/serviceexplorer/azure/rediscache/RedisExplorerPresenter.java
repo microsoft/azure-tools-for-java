@@ -28,7 +28,6 @@ import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
 import com.microsoft.azuretools.core.mvp.model.rediscache.RedisConnectionPools;
 import com.microsoft.azuretools.core.mvp.model.rediscache.RedisExplorerMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
-import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -51,10 +50,6 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
 
     private static final String CANNOT_GET_REDIS_INFO = "Cannot get Redis Cache's information.";
     
-    public RedisExplorerPresenter(SchedulerProvider schedulerProvider) {
-        super(schedulerProvider);
-    } 
-
     /**
      * Called when the explorer needs the number of databases in Redis Cache.
      * 

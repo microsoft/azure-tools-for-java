@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.helpers.rediscache;
 
-import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisCacheProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyMvpView;
@@ -60,7 +59,7 @@ public class RedisCachePropertyView extends BaseEditor implements RedisPropertyM
 
 
     public RedisCachePropertyView() {
-        this.redisPropertyViewPresenter = new RedisPropertyViewPresenter<>(AppSchedulerProvider.getInstance());
+        this.redisPropertyViewPresenter = new RedisPropertyViewPresenter<>();
         this.redisPropertyViewPresenter.onAttachView(this);
 
         disableTxtBoard();

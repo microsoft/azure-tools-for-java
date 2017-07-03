@@ -27,7 +27,6 @@ import com.microsoft.azure.management.redis.RedisCaches;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModelHelper;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
-import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProvider;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 import java.io.IOException;
@@ -40,10 +39,6 @@ public class RedisCacheModulePresenter<V extends RedisCacheModule> extends MvpPr
     private static final String CANNOT_GET_REDIS_ID = "Cannot get Redis Cache's ID.";
     private static final String CANNOT_DELETE_REDIS = "Cannot delete Redis Cache.";
     
-    public RedisCacheModulePresenter(SchedulerProvider schedulerProvider) {
-        super(schedulerProvider);
-    }
-
     private final AzureMvpModelHelper azureMvpModelHelper = AzureMvpModelHelper.getInstance();
 
     /**
