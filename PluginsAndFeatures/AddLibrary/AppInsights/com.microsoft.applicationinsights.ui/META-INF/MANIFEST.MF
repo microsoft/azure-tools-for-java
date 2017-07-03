@@ -10,9 +10,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jdt.ui,
  org.eclipse.jdt.core,
  org.eclipse.core.resources,
- com.microsoft.azuretools.sdk;bundle-version="3.0.4",
- com.microsoft.azuretools.wasdkjava.ui;bundle-version="3.0.4",
- com.microsoft.azuretools.core;bundle-version="3.0.4"
+ com.microsoft.azuretools.sdk;bundle-version="3.0.5",
+ com.microsoft.azuretools.wasdkjava.ui;bundle-version="3.0.5",
+ com.microsoft.azuretools.core;bundle-version="3.0.5"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Localization: plugin

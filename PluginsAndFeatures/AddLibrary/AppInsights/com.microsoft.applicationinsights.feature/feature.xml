@@ -73,7 +73,7 @@ c. Germany and Austria.
 </license>
 
    <requires>
-      <import feature="com.microsoft.azuretools.sdk.feature" version="3.0.4.qualifier"/>
+      <import feature="com.microsoft.azuretools.sdk.feature" version="3.0.5.qualifier"/>
    </requires>
 
    <plugin

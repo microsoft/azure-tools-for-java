@@ -28,18 +28,18 @@
     <parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>utils</artifactId>
-    <version>3.0.4-SNAPSHOT</version>
+    <version>3.0.5</version>
     </parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>com.microsoft.azuretools.sdk.lib</artifactId>
-    <version>3.0.4-SNAPSHOT</version>
+    <version>3.0.5-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <name>Package for Microsoft Azure Libraries for Java Plugin</name>
     <organization><name>Microsoft Corp.</name></organization>
 
     <properties>
-        <azuretool.version>3.0.4-SNAPSHOT</azuretool.version>
-        <azuretool.sdk.version>3.0.4.qualifier</azuretool.sdk.version>
+        <azuretool.version>3.0.5</azuretool.version>
+        <azuretool.sdk.version>3.0.5.qualifier</azuretool.sdk.version>
     </properties>
     <dependencies>
         <dependency>
