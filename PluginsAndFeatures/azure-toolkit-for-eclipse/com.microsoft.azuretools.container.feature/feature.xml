@@ -2,7 +2,7 @@
 <feature
       id="com.microsoft.azuretools.container.feature"
       label="Azure Container Tools for Eclipse"
-      version="3.0.4.qualifier"
+      version="3.0.5.qualifier"
       provider-name="Microsoft Corp.">
 
    <description>

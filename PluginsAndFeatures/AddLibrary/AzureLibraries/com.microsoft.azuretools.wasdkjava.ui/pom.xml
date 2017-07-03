@@ -6,7 +6,7 @@
 	<relativePath>../../../azure-toolkit-for-eclipse/pom.xml</relativePath>
     <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
     <artifactId>parent</artifactId>
-    <version>3.0.4-SNAPSHOT</version>
+    <version>3.0.5-SNAPSHOT</version>
   </parent>
   <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
   <artifactId>com.microsoft.azuretools.wasdkjava.ui</artifactId>
