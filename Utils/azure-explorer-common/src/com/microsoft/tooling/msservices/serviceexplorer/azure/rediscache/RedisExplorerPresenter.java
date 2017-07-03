@@ -42,14 +42,14 @@ import redis.clients.jedis.Tuple;
 import rx.Observable;
 
 public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpPresenter<V> {
-    
+
     private String sid;
     private String id;
 
     private static final String DEFAULT_SCAN_PATTERN = "*";
 
     private static final String CANNOT_GET_REDIS_INFO = "Cannot get Redis Cache's information.";
-    
+
     /**
      * Called when the explorer needs the number of databases in Redis Cache.
      * 
@@ -203,7 +203,7 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         this.sid = sid;
         this.id = id;
     }
-    
+
     private void errorHandler(String msg, Exception e) {
         DefaultLoader.getIdeHelper().invokeLater(() -> {
             if (isViewDetached()) {

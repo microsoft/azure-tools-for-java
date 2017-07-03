@@ -37,7 +37,7 @@ public abstract class MvpPresenter<V extends MvpView> {
     public void onDetachView() {
         this.mvpView = null;
     }
-    
+
     public boolean isViewDetached() {
         return this.mvpView == null;
     }

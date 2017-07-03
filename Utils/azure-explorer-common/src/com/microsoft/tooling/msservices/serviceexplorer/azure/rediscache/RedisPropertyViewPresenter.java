@@ -35,7 +35,7 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
     private static final String CANNOT_GET_SUBCROPTION_ID = "Cannot get Subscription ID.";
     private static final String CANNOT_GET_REDIS_ID = "Cannot get Redis Cache's ID.";
     private static final String CANNOT_GET_REDIS_PROPERTY = "Cannot get Redis Cache's property.";
-    
+
     /**
      * Called from view when the view needs to show the property.
      * 

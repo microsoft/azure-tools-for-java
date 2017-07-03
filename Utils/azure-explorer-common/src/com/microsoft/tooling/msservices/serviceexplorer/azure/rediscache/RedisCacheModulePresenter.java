@@ -38,7 +38,7 @@ public class RedisCacheModulePresenter<V extends RedisCacheModule> extends MvpPr
     private static final String CANNOT_GET_SUBCROPTION_ID = "Cannot get Subscription ID.";
     private static final String CANNOT_GET_REDIS_ID = "Cannot get Redis Cache's ID.";
     private static final String CANNOT_DELETE_REDIS = "Cannot delete Redis Cache.";
-    
+
     private final AzureMvpModelHelper azureMvpModelHelper = AzureMvpModelHelper.getInstance();
 
     /**
