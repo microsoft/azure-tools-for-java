@@ -29,7 +29,6 @@ import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisCacheProperty;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import rx.Observable;
-import rx.schedulers.Schedulers;
 
 public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends MvpPresenter<V> {
 
@@ -60,7 +59,7 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
         Observable.fromCallable(() -> {
             return AzureMvpModelHelper.getInstance().getRedisCache(sid, id);
         })
-        .subscribeOn(Schedulers.io())
+        .subscribeOn(getSchedulerProvider().io())
         .subscribe(redis -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 if (isViewDetached()) {

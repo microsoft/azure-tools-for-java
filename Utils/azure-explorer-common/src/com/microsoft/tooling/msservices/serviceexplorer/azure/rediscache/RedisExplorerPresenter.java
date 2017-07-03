@@ -40,10 +40,9 @@ import java.util.Set;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Tuple;
 import rx.Observable;
-import rx.schedulers.Schedulers;
 
 public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpPresenter<V> {
-    
+
     private String sid;
     private String id;
 
@@ -63,7 +62,7 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         Observable.fromCallable(() -> {
             return RedisExplorerMvpModel.getInstance().getDbNumber(sid, id);
         })
-        .subscribeOn(Schedulers.io())
+        .subscribeOn(getSchedulerProvider().io())
         .subscribe(number -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 if (isViewDetached()) {
@@ -108,7 +107,7 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         Observable.fromCallable(() -> {
             return RedisExplorerMvpModel.getInstance().scanKeys(sid, id, db, cursor, pattern);
         })
-        .subscribeOn(Schedulers.io())
+        .subscribeOn(getSchedulerProvider().io())
         .subscribe(result -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 if (isViewDetached()) {
@@ -173,7 +172,7 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
 
             }
         })
-        .subscribeOn(Schedulers.io())
+        .subscribeOn(getSchedulerProvider().io())
         .subscribe(result -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 if (isViewDetached()) {
@@ -204,7 +203,7 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         this.sid = sid;
         this.id = id;
     }
-    
+
     private void errorHandler(String msg, Exception e) {
         DefaultLoader.getIdeHelper().invokeLater(() -> {
             if (isViewDetached()) {

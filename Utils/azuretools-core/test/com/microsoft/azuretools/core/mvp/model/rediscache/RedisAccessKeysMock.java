@@ -20,29 +20,19 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.core.mvp.ui.base;
+package com.microsoft.azuretools.core.mvp.model.rediscache;
 
-public abstract class MvpPresenter<V extends MvpView> {
+import com.microsoft.azure.management.redis.RedisAccessKeys;
 
-    private V mvpView;
-    
-    public V getMvpView() {
-        return mvpView;
+public class RedisAccessKeysMock implements RedisAccessKeys {
+
+    private static final String MOCK_STRING = "test";
+
+    public String primaryKey() {
+        return MOCK_STRING;
     }
 
-    public void onAttachView(V mvpView) {
-        this.mvpView = mvpView;
-    }
-
-    public void onDetachView() {
-        this.mvpView = null;
-    }
-
-    public boolean isViewDetached() {
-        return this.mvpView == null;
-    }
-
-    public SchedulerProvider getSchedulerProvider() {
-        return SchedulerProviderFactory.getInstance().getSchedulerProvider();
+    public String secondaryKey() {
+        return MOCK_STRING;
     }
 }
