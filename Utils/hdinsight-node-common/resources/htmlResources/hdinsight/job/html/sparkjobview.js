@@ -296,10 +296,16 @@ function renderApplicationGraph() {
     getMessageAsync('/applications/application_graph', 'spark', function (s) {
         var yarnAppWithJobs = JSON.parse(s);
         spark.selectedYarnApp = yarnAppWithJobs.app;
-        spark.currentSelectedJobs = yarnAppWithJobs.jobs;
+
+        spark.currentSelectedJobs =
+            yarnAppWithJobs.jobs.sort(function(left, right) {
+                return left['jobId'] > right['jobId'];
+            });
+
         spark.jobStartEvents = yarnAppWithJobs.startEventLogs.sort(function(left, right) {
             return left['Job ID'] > right['Job ID'];
         });
+
         renderJobGraphOnApplicationLevel(spark.currentSelectedJobs);
     }, spark.appId);
 }
