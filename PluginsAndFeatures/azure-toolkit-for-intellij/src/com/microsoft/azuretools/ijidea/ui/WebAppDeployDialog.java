@@ -526,6 +526,8 @@ public class WebAppDeployDialog extends AzureDialogWrapper {
         WebAppDetails wad = webAppWebAppDetailsMap.get(tableModel.getValueAt(selectedRow, 0));
         WebApp webApp = wad.webApp;
         boolean isDeployToRoot = deployToRootCheckBox.isSelected();
+        Map<String, String> postEventProperties = new HashMap<String, String>();
+        postEventProperties.put("Java App Name", project.getName());
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Deploy Web App Progress", true) {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
@@ -573,6 +575,7 @@ public class WebAppDeployDialog extends AzureDialogWrapper {
                     azureDeploymentProgressNotification.notifyProgress(webApp.name(), startDate, sitePath, 100, message("runStatus"));
                     showLink(sitePath);
                 } catch (IOException | InterruptedException ex) {
+                    postEventProperties.put("PublishError", ex.getMessage());
                     ex.printStackTrace();
                     //LOGGER.error("deploy", ex);
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -581,6 +584,7 @@ public class WebAppDeployDialog extends AzureDialogWrapper {
                             ErrorWindow.show(project, ex.getMessage(), "Deploy Web App Error");
                         }
                     });
+                    AppInsightsClient.createByType(AppInsightsClient.EventType.WebApp, "Deploy as WebApp", "", postEventProperties);
                 }
             }
         });
