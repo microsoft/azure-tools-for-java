@@ -85,9 +85,9 @@ apply plugin: 'java'
 dependencies {
     compile fileTree(dir: '../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies', include: ['applicationinsights-management-1.0.3.jar'])
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
-    compile 'com.microsoft.azuretools:azuretools-core:3.0.4-SNAPSHOT'
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.0.4-SNAPSHOT'
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.0.4-SNAPSHOT'
+    compile 'com.microsoft.azuretools:azuretools-core:3.0.5'
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.0.5'
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.0.5'
     testCompile 'junit:junit:4.12'
     testCompile 'info.cukes:cucumber-junit:1.2.5'
     testCompile 'info.cukes:cucumber-java:1.2.5'

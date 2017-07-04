@@ -27,11 +27,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>utils</artifactId>
-    <version>3.0.4-SNAPSHOT</version>
+    <version>3.0.5</version>
     <packaging>pom</packaging>
     <name>${project.artifactId}-${project.version}</name>
     <properties>
-        <azuretool.version>3.0.4-SNAPSHOT</azuretool.version>
+        <azuretool.version>3.0.5</azuretool.version>
     </properties>
     <modules>
         <module>./check-tools</module>
