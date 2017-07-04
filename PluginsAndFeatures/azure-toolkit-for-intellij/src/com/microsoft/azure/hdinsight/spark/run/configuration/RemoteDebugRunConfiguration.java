@@ -68,19 +68,12 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
         super.readExternal(rootElement);
 
         SparkSubmitModel model = getSubmitModel();
-        SparkSubmissionParameter parameter = Optional.ofNullable(model.getSubmissionParameter())
-                .orElse(new SparkSubmissionParameter(
-                        "",
-                        false,
-                        "",
-                        "",
-                        "",
-                        "",
-                        new ArrayList<String>(),
-                        new ArrayList<String>(),
-                        new ArrayList<String>(),
-                        Arrays.stream(SparkSubmissionParameter.defaultParameters)
-                            .collect(Collectors.toMap(Pair::first, Pair::second))));
+
+        if (model == null || model.getSubmissionParameter() == null) {
+            return;
+        }
+
+        SparkSubmissionParameter parameter = model.getSubmissionParameter();
 
         Optional.ofNullable(rootElement.getChild(SUBMISSION_CONTENT_NAME)).ifPresent((element -> {
             Optional.ofNullable(element.getAttribute(SUBMISSION_ATTRIBUTE_CLUSTER_NAME))

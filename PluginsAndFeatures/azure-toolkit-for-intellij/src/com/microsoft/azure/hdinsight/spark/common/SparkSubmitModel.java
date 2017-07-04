@@ -538,7 +538,7 @@ public class SparkSubmitModel {
                     if (jobConfigKey == SparkSubmissionParameter.Conf) {
                         SparkConfigures sparkConfigs;
 
-                        if (jobConfigValue instanceof Map && (sparkConfigs = (SparkConfigures)(jobConfigValue)) != null) {
+                        if (jobConfigValue instanceof Map && !(sparkConfigs = new SparkConfigures(jobConfigValue)).isEmpty()) {
                             for (Map.Entry<String, Object> sparkConfigEntry : sparkConfigs.entrySet()) {
                                 if (!StringHelper.isNullOrWhiteSpace(sparkConfigEntry.getKey())) {
                                     tableModel.addRow(sparkConfigEntry.getKey(), sparkConfigEntry.getValue());
