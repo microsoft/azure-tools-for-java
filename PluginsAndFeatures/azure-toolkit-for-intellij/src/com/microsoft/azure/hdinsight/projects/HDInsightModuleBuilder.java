@@ -112,6 +112,8 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
     @Override
     public Module createModule(@NotNull ModifiableModuleModel moduleModel) throws InvalidDataException, IOException, ModuleWithNameAlreadyExists, JDOMException, ConfigurationException {
         if (this.selectedExternalSystem == HDInsightExternalSystem.SBT) {
+            // update module file name to lower case
+            // some with the logic in scala plugin when create SBT module
             this.updateModulePath();
         }
         return super.createModule(moduleModel);
