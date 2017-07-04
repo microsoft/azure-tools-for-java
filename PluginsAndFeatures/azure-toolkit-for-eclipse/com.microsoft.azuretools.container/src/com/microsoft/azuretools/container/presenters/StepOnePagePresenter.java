@@ -34,16 +34,12 @@ import com.spotify.docker.client.messages.RegistryAuth;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.DockerRuntime;
 
 public class StepOnePagePresenter<V extends StepOnePageView> extends MvpPresenter<V> {
-
-    // StepOne Page
     public boolean onPushLatestImageToRegistry(String registryUrl, String registryUsername, String registryPassword) {
         try {
-            getMvpView().showInfomation("Try pushing image ...");
-
+            getMvpView().onRequestPending();
             DockerClient dockerClient = DockerRuntime.getInstance().getDockerBuilder().build();
             ProgressHandler progressHandler = new ProgressHandler() {
                 @Override
@@ -62,23 +58,18 @@ public class StepOnePagePresenter<V extends StepOnePageView> extends MvpPresente
             }).subscribeOn(Schedulers.io()).subscribe(wal -> {
                 // persist registry information
                 DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                    doUpdateRuntimeRegistryInfo(registryUrl, registryUsername, registryPassword);
+                    updateRuntimeRegistryInfo(registryUrl, registryUsername, registryPassword);
                     V v = getMvpView();
                     if (v != null) {
-                        v.showInfomation("Task OK");
-                        v.setWidgetsEnabledStatus(false);
-                        v.setCompleteStatus(true);
+                        v.onRequestSucceed();
                     }
                 });
             }, e -> {
                 DefaultLoader.getIdeHelper().invokeAndWait(() -> {
                     V v = getMvpView();
                     if (v != null) {
-                        v.showInfomation("Task FAIL");
-                        v.setWidgetsEnabledStatus(true);
-                        v.setCompleteStatus(false);
+                        v.onRequestFail("onPushLatestImageToRegistry@StepOnePagePresenter");
                     }
-                    ConsoleLogger.error("onPushLatestImageToRegistry@StepOnePagePresenter");
                 });
             });
         } catch (Exception e) {
@@ -89,7 +80,7 @@ public class StepOnePagePresenter<V extends StepOnePageView> extends MvpPresente
     }
 
     public void onUpdateRegistryInfo(String registryUrl, String registryUsername, String registryPassword) {
-        doUpdateRuntimeRegistryInfo(registryUrl, registryUsername, registryPassword);
+        updateRuntimeRegistryInfo(registryUrl, registryUsername, registryPassword);
     }
 
     public void onLoadRegistryInfo() {
@@ -98,7 +89,7 @@ public class StepOnePagePresenter<V extends StepOnePageView> extends MvpPresente
     }
 
     // Private Helpers
-    private void doUpdateRuntimeRegistryInfo(String registryUrl, String registryUsername, String registryPassword) {
+    private void updateRuntimeRegistryInfo(String registryUrl, String registryUsername, String registryPassword) {
         DockerRuntime.getInstance().setRegistryUrl(registryUrl);
         DockerRuntime.getInstance().setRegistryUsername(registryUsername);
         DockerRuntime.getInstance().setRegistryPassword(registryPassword);

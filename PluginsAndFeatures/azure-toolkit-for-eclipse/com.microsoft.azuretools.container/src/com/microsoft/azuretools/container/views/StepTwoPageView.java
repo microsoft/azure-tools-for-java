@@ -25,12 +25,22 @@ package com.microsoft.azuretools.container.views;
 import java.util.List;
 
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
+import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 
 public interface StepTwoPageView extends MvpView {
-    public void finishLoading(List<SiteInner> wal);
+    void fillWebApps(List<SiteInner> wal);
+    
+    void fillSubscriptions(List<SubscriptionDetail> sdl);
 
-    void setWidgetsEnabledStatus(boolean enableStatus);
+    void fillResourceGroups(List<ResourceGroup> rgl);
+    
+    void finishDeploy();
+    
+    void onRequestPending();
 
-    void showLoading();
+    void onRequestSucceed();
+
+    void onRequestFail(String errorMsg);
 }

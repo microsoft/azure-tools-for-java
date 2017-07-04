@@ -28,6 +28,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 import com.microsoft.azuretools.container.presenters.StepOnePagePresenter;
+import com.microsoft.azuretools.container.views.PublishWizardPageView;
 import com.microsoft.azuretools.container.views.StepOnePageView;
 import com.microsoft.azuretools.core.components.AzureWizardPage;
 
@@ -38,48 +39,36 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.custom.StyledText;
-
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.widgets.Button;
 
-public class StepOnePage extends AzureWizardPage implements StepOnePageView {
+public class StepOnePage extends AzureWizardPage implements StepOnePageView, PublishWizardPageView {
+    private static final String TEXT_TITLE = "Push Docker Image to Azure Container Registry";
+    private static final String TEXT_DESCRIPTION = "Complete the credential of your Azure Container Registry";
     private Text txtRegistryUrl;
     private Text txtUsername;
     private Text txtPassword;
     private StyledText styledText;
     private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
     private final StepOnePagePresenter<StepOnePage> presenter;
-    private Button btnPushImage;
 
-    // Call Presenter
-    public void loadRegistryInfo() {
+    private void initilize() {
         presenter.onLoadRegistryInfo();
     }
 
-    // View Actions
-    @Override
-    public void setCompleteStatus(boolean flag) {
-        setPageComplete(flag);
-    }
-
-    @Override
-    public void setWidgetsEnabledStatus(boolean enableStatus) {
-        btnPushImage.setEnabled(enableStatus);
-
+    private void setWidgetsEnabledStatus(boolean enableStatus) {
         txtRegistryUrl.setEditable(enableStatus);
         txtUsername.setEditable(enableStatus);
         txtPassword.setEditable(enableStatus);
+
+        ((PublishWizardDialog) this.getContainer()).setNextEnabled(enableStatus);
+        ((PublishWizardDialog) this.getContainer()).setFinishEnabled(enableStatus);
+        ((PublishWizardDialog) this.getContainer()).setCancelEnabled(enableStatus);
     }
 
-    @Override
-    public void fillRegistryInfo(String registryUrl, String username, String password) {
-        txtRegistryUrl.setText(registryUrl != null ? registryUrl : "");
-        txtUsername.setText(username != null ? username : "");
-        txtPassword.setText(password != null ? password : "");
-    }
-
-    @Override
-    public void showInfomation(String string) {
+    private void showInformation(String string) {
         if (string == null) {
             return;
         }
@@ -90,11 +79,11 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView {
      * Create the wizard.
      */
     public StepOnePage() {
-        super("wizardPage");
+        super("StepOnePage");
         presenter = new StepOnePagePresenter<StepOnePage>();
         presenter.onAttachView(this);
-        setTitle("Setting Private Docker Repo Credential");
-        setDescription("Setting Private Docker Repo Credential");
+        setTitle(TEXT_TITLE);
+        setDescription(TEXT_DESCRIPTION);
     }
 
     /**
@@ -106,41 +95,47 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView {
         Composite container = new Composite(parent, SWT.NULL);
 
         setControl(container);
-        container.setLayout(new GridLayout(1, false));
-
-        Composite cmpoDockerRepoCredential = new Composite(container, SWT.NONE);
-        GridData gd_cmpoDockerRepoCredential = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-        gd_cmpoDockerRepoCredential.widthHint = 550;
-        cmpoDockerRepoCredential.setLayoutData(gd_cmpoDockerRepoCredential);
-        cmpoDockerRepoCredential.setLayout(new GridLayout(2, false));
-
-        Label lblServerUrl = new Label(cmpoDockerRepoCredential, SWT.NONE);
-        lblServerUrl.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        GridLayout gl_container = new GridLayout(2, false);
+        gl_container.verticalSpacing = 20;
+        gl_container.marginWidth = 10;
+        gl_container.marginTop = 20;
+        gl_container.marginBottom = 20;
+        gl_container.marginRight = 40;
+        gl_container.marginLeft = 40;
+        container.setLayout(gl_container);
+        
+        Font boldFont = new Font(this.getShell().getDisplay(), new FontData("Segoe UI", 9, SWT.BOLD));
+        
+        Label lblServerUrl = new Label(container, SWT.NONE);
+        lblServerUrl.setFont(boldFont);
+        GridData gd_lblServerUrl = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gd_lblServerUrl.widthHint = 75;
+        lblServerUrl.setLayoutData(gd_lblServerUrl);
         lblServerUrl.setText("Server URL");
 
-        txtRegistryUrl = new Text(cmpoDockerRepoCredential, SWT.BORDER);
+        txtRegistryUrl = new Text(container, SWT.BORDER);
         txtRegistryUrl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        Label lblUsername = new Label(cmpoDockerRepoCredential, SWT.NONE);
-        lblUsername.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        Label lblUsername = new Label(container, SWT.NONE);
+        lblUsername.setFont(boldFont);
+        GridData gd_lblUsername = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gd_lblUsername.widthHint = 75;
+        lblUsername.setLayoutData(gd_lblUsername);
         lblUsername.setText("Username");
 
-        txtUsername = new Text(cmpoDockerRepoCredential, SWT.BORDER);
+        txtUsername = new Text(container, SWT.BORDER);
         txtUsername.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        Label lblPassword = new Label(cmpoDockerRepoCredential, SWT.NONE);
-        lblPassword.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        Label lblPassword = new Label(container, SWT.NONE);
+        lblPassword.setFont(boldFont);
+        GridData gd_lblPassword = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gd_lblPassword.widthHint = 75;
+        lblPassword.setLayoutData(gd_lblPassword);
         lblPassword.setText("Password");
 
-        txtPassword = new Text(cmpoDockerRepoCredential, SWT.BORDER | SWT.PASSWORD);
+        txtPassword = new Text(container, SWT.BORDER | SWT.PASSWORD);
         txtPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        new Label(cmpoDockerRepoCredential, SWT.NONE);
-
-        btnPushImage = new Button(cmpoDockerRepoCredential, SWT.NONE);
-        btnPushImage.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        formToolkit.adapt(btnPushImage, true, true);
-        btnPushImage.setText("Push Image to Repositry");
-        btnPushImage.addListener(SWT.Selection, event -> onBtnPushImageSelection());
+        new Label(container, SWT.NONE);
 
         ScrolledComposite cmpoInformation = new ScrolledComposite(container, SWT.BORDER | SWT.V_SCROLL);
         cmpoInformation.setAlwaysShowScrollBars(true);
@@ -159,20 +154,56 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView {
         // always scroll styledText to end
         styledText.addListener(SWT.Modify, event -> styledText.setTopIndex(styledText.getLineCount() - 1));
 
-        loadRegistryInfo();
-        setPageComplete(false);
-    }
-
-    private void onBtnPushImageSelection() {
-        setWidgetsEnabledStatus(false);
-        sendButtonClickedTelemetry("onBtnPushImageSelection");
-        presenter.onPushLatestImageToRegistry(txtRegistryUrl.getText(), txtUsername.getText(), txtPassword.getText());
+        Point size = getShell().computeSize(600, 450);
+        getShell().setSize(size);
+        
+        initilize();
     }
 
     @Override
     public void dispose() {
         presenter.onDetachView();
         super.dispose();
+    }
+
+    @Override
+    public void onWizardNextPressed() {
+        setWidgetsEnabledStatus(false);
+        presenter.onPushLatestImageToRegistry(txtRegistryUrl.getText(), txtUsername.getText(), txtPassword.getText());
+    }
+
+    @Override
+    public void onWizardFinishPressed() {
+        return;
+    }
+
+    @Override
+    public void fillRegistryInfo(String registryUrl, String username, String password) {
+        txtRegistryUrl.setText(registryUrl != null ? registryUrl : "");
+        txtUsername.setText(username != null ? username : "");
+        txtPassword.setText(password != null ? password : "");
+    }
+
+    @Override
+    public void onRequestPending() {
+        showInformation("Try pushing image ...");
+        setWidgetsEnabledStatus(false);
+    }
+
+    @Override
+    public void onRequestSucceed() {
+        showInformation("Task OK");
+        setWidgetsEnabledStatus(true);
+        ((PublishWizardDialog) this.getContainer()).doNextPressed();
+    }
+
+    @Override
+    public void onRequestFail(String errorMsg) {
+        if(errorMsg != null) {
+            showInformation(errorMsg);
+        }
+        showInformation("Task FAIL");
+        setWidgetsEnabledStatus(true);
     }
 
 }

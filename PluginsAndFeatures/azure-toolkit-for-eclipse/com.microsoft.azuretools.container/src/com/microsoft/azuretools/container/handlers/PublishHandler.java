@@ -35,6 +35,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.Constant;
 import com.microsoft.azuretools.container.DockerRuntime;
+import com.microsoft.azuretools.container.ui.wizard.publish.PublishWizardDialog;
 import com.microsoft.azuretools.container.ui.wizard.publish.PublishWizard;
 import com.microsoft.azuretools.container.utils.ConfigFileUtil;
 import com.microsoft.azuretools.container.utils.DockerUtil;
@@ -68,7 +69,7 @@ public class PublishHandler extends AzureAbstractHandler {
         }
 
         PublishWizard pw = new PublishWizard();
-        WizardDialog pwd = new AzureWizardDialog(window.getShell(), pw);
+        WizardDialog pwd = new PublishWizardDialog(window.getShell(), pw);
         if (pwd.open() == Window.OK) {
             ConsoleLogger.info(String.format("URL: http://%s.azurewebsites.net/%s",
                     DockerRuntime.getInstance().getLatestWebAppName(), project.getName()));

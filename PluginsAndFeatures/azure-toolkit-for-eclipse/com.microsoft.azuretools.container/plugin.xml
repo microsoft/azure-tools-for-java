@@ -4,7 +4,7 @@
   <extension point="org.eclipse.ui.commands">
     <command id="com.microsoft.azuretools.container.commands.dockerize" name="Add Docker Support" categoryId="com.microsoft.ui.dropdown.category"></command>
     <command id="com.microsoft.azuretools.container.commands.dockerrun" name="Docker Run" categoryId="com.microsoft.ui.dropdown.category"></command>
-    <command id="com.microsoft.azuretools.container.commands.publish" name="Publish" categoryId="com.microsoft.ui.dropdown.category"></command>
+    <command id="com.microsoft.azuretools.container.commands.publish" name="Publish to Web App on Linux" categoryId="com.microsoft.ui.dropdown.category"></command>
   </extension>
   <extension point="org.eclipse.ui.handlers">
     <handler commandId="com.microsoft.azuretools.container.commands.dockerize" class="com.microsoft.azuretools.container.handlers.DockerizeHandler"></handler>
@@ -14,6 +14,7 @@
   <extension point="org.eclipse.ui.menus">
     <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
       <menu label="Azure" id="com.microsoft.azuretools.webprojmenu" icon="icons/windowsAzure.png">
+        <separator visible="true" name="Docker related commands"/>
         <command name="dockerize" commandId="com.microsoft.azuretools.container.commands.dockerize">
           <visibleWhen checkEnabled="false">
             <not>
@@ -26,7 +27,7 @@
             <reference definitionId="when.is.dockerized"/>
           </visibleWhen>
         </command>
-        <command name="dockerrun" commandId="com.microsoft.azuretools.container.commands.publish">
+        <command name="publish" commandId="com.microsoft.azuretools.container.commands.publish">
           <visibleWhen checkEnabled="false">
             <reference definitionId="when.is.dockerized"/>
           </visibleWhen>
@@ -41,5 +42,10 @@
   </extension>
   <extension point="org.eclipse.core.expressions.propertyTesters">
     <propertyTester class="com.microsoft.azuretools.container.testers.DockerizedTester" id="com.microsoft.azuretools.container.testers.DockerizedTester" namespace="com.microsoft.azuretools.container.testers" properties="isDockerized" type="java.lang.Object"></propertyTester>
+  </extension>
+  <extension point="org.eclipse.ui.commandImages">
+    <image commandId="com.microsoft.azuretools.container.commands.publish" icon="icons/PublishWebAppOnLinux_16.png"></image>
+    <image commandId="com.microsoft.azuretools.container.commands.dockerrun" icon="icons/DockerRun_16.png"></image>
+    <image commandId="com.microsoft.azuretools.container.commands.dockerize" icon="icons/Dockerize_16.png"></image>
   </extension>
 </plugin>

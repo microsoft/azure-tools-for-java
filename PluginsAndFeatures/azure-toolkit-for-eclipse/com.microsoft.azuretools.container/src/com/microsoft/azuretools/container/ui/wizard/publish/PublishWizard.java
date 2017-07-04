@@ -29,10 +29,9 @@ public class PublishWizard extends Wizard {
     private StepTwoPage p2;
 
     public PublishWizard() {
-        setWindowTitle("New Wizard");
+        setWindowTitle("Publish to Web App on Linux");
         p1 = new StepOnePage();
         p2 = new StepTwoPage();
-
     }
 
     @Override

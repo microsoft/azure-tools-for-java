@@ -47,12 +47,19 @@ public class WebAppOnLinuxUtil {
     private static Region defaultRegion = Region.US_WEST;
     private static PricingTier defaultPricingTier = PricingTier.STANDARD_S1;
 
-    public static WebApp deploy(String subscriptionId, String resourceGroup, String appName, boolean createNewRg)
+    public static WebApp deployToNew(String subscriptionId, String resourceGroup, String appName, boolean createNewRg)
             throws IOException {
         PrivateRegistry pr = new PrivateRegistry(DockerRuntime.getInstance().getRegistryUrl(),
                 DockerRuntime.getInstance().getRegistryUsername(), DockerRuntime.getInstance().getRegistryPassword());
         String imageName = DockerRuntime.getInstance().getLatestImageName();
         return deploy(subscriptionId, resourceGroup, appName, pr, imageName, createNewRg);
+    }
+
+    public static WebApp deployToExisting(WebApp app) {
+        PrivateRegistry pr = new PrivateRegistry(DockerRuntime.getInstance().getRegistryUrl(),
+                DockerRuntime.getInstance().getRegistryUsername(), DockerRuntime.getInstance().getRegistryPassword());
+        String imageName = DockerRuntime.getInstance().getLatestImageName();
+        return updateApp(app, pr, imageName);
     }
 
     public static WebApp deploy(String subscriptionId, String resourceGroup, String appName, PrivateRegistry pr,
@@ -84,14 +91,12 @@ public class WebAppOnLinuxUtil {
             }
         } else {
             // update existing app
-            app.update().withPrivateRegistryImage(String.format("%s/%s", pr.getUrl(), imageName), pr.getUrl())
-                    .withCredentials(pr.getUsername(), pr.getPassword()).withStartUpCommand(pr.getStartupFile())
-                    .withAppSettings(defaultAppSettings).apply();
+            updateApp(app, pr, imageName);
         }
         return app;
     }
 
-    public static List<SiteInner> listAllWebAppOnLinux() {
+    public static List<SiteInner> listAllWebAppOnLinux(boolean update) {
         List<SiteInner> wal = new ArrayList<SiteInner>();
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
@@ -99,13 +104,15 @@ public class WebAppOnLinuxUtil {
             if (azureManager == null) {
                 return wal;
             }
-            AzureModelController.updateSubscriptionMaps(null);
+            if (update) {
+                AzureModelController.updateSubscriptionMaps(null);
+            }
 
             for (Subscription sb : azureManager.getSubscriptions()) {
                 Azure azure = azureManager.getAzure(sb.subscriptionId());
                 for (ResourceGroup rg : azure.resourceGroups().list()) {
                     for (SiteInner si : azure.webApps().inner().listByResourceGroup(rg.name())) {
-                        if (si.kind().equals("app;linux")) {
+                        if (si.kind().equals("app,linux")) {
                             wal.add(si);
                         }
                     }
@@ -134,6 +141,13 @@ public class WebAppOnLinuxUtil {
                 .withPrivateRegistryImage(String.format("%s/%s", pr.getUrl(), imageName), pr.getUrl())
                 .withCredentials(pr.getUsername(), pr.getPassword()).withStartUpCommand(pr.getStartupFile())
                 .withAppSettings(defaultAppSettings).create();
+    }
+
+    private static WebApp updateApp(WebApp app, PrivateRegistry pr, String imageName) {
+        app.update().withPrivateRegistryImage(String.format("%s/%s", pr.getUrl(), imageName), pr.getUrl())
+                .withCredentials(pr.getUsername(), pr.getPassword()).withStartUpCommand(pr.getStartupFile())
+                .withAppSettings(defaultAppSettings).apply();
+        return app;
     }
 
 }
