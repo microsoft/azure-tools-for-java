@@ -29,7 +29,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
@@ -403,16 +402,16 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
 
     @Override
     public void onRequestFail(String errorMsg) {
-        if(errorMsg != null) {
+        if (errorMsg != null) {
             ConsoleLogger.error(errorMsg);
         }
         setWidgetsEnabledStatus(true);
+        ((PublishWizardDialog) this.getContainer()).setButtonsEnabled(true);
         ((PublishWizardDialog) this.getContainer()).updateButtons();
-        ((PublishWizardDialog) this.getContainer()).doCancelPressed();
+        // ((PublishWizardDialog) this.getContainer()).doCancelPressed();
     }
 
     public void setWidgetsEnabledStatus(boolean enableStatus) {
-        btnRefresh.setEnabled(enableStatus);
         tabFolder.setEnabled(enableStatus);
     }
 

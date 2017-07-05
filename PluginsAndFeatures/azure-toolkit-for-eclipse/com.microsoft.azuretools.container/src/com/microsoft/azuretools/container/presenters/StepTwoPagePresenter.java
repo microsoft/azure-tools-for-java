@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.adauth.AuthException;
@@ -53,31 +52,17 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
         getMvpView().fillResourceGroups(binderResourceGroup);
     }
 
-    public void onLoadSubsAndRGs() {
-        try {
-            doFetchSubscriptions();
-            if (binderSubscriptionDetails.size() > 0) {
-                doFetchResourceGroup(binderSubscriptionDetails.get(0));
-            }
-            getMvpView().fillSubscriptions(binderSubscriptionDetails);
-            getMvpView().fillResourceGroups(binderResourceGroup);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            getMvpView().onErrorWithException(ex.getMessage(), ex);
-        }
-    }
-
     public void onRefreshWebAppsOnLinux() {
         getMvpView().onRequestPending();
         Observable.fromCallable(() -> {
             updateWebAppOnLinuxList();
             return null;
         }).subscribeOn(Schedulers.io()).subscribe(res -> {
+            doFetchSubscriptions();
+            if (binderSubscriptionDetails.size() > 0) {
+                doFetchResourceGroup(binderSubscriptionDetails.get(0));
+            }
             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                doFetchSubscriptions();
-                if (binderSubscriptionDetails.size() > 0) {
-                    doFetchResourceGroup(binderSubscriptionDetails.get(0));
-                }
                 V v = getMvpView();
                 if (v != null) {
                     v.fillWebApps(binderWebAppOnLinux);
@@ -86,11 +71,15 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
                     v.onRequestSucceed();
                 }
             });
-        }, e -> {
-            V v = getMvpView();
-            if (v != null) {
-                v.onRequestFail("onRefreshWebAppsOnLinux@StepTwoPagePresenter");
-            }
+        }, err -> {
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                V v = getMvpView();
+                if (v != null) {
+                    String message = "onRefreshWebAppsOnLinux@StepTwoPagePresenter ";
+                    v.onRequestFail(message + err.getMessage());
+                    v.onErrorWithException(message, (Exception) err);
+                }
+            });
         });
     }
 
@@ -112,17 +101,43 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
                     v.fillResourceGroups(binderResourceGroup);
                 }
             });
-        }, e -> {
-            V v = getMvpView();
-            if (v != null) {
-                v.onRequestFail("onListWebAppsOnLinux@StepTwoPagePresenter");
-            }
+        }, err -> {
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                V v = getMvpView();
+                if (v != null) {
+                    String message = "onListWebAppsOnLinux@StepTwoPagePresenter ";
+                    v.onRequestFail(message + err.getMessage());
+                    v.onErrorWithException(message, (Exception) err);
+                }
+            });
         });
     }
 
     public void onDeployToExisitingWebApp(int selectionIndex) {
-        WebApp app = (WebApp) this.binderWebAppOnLinux.get(selectionIndex);
-        WebAppOnLinuxUtil.deployToExisting(app);
+        getMvpView().onRequestPending();
+        Observable.fromCallable(() -> {
+            SiteInner si = binderWebAppOnLinux.get(selectionIndex);
+            return WebAppOnLinuxUtil.deployToExisting(si);
+        }).subscribeOn(Schedulers.io()).subscribe(app -> {
+            DockerRuntime.getInstance().setLatestWebAppName(app.name());
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                V v = getMvpView();
+                if (v != null) {
+                    v.onRequestSucceed();
+                    v.finishDeploy();
+                }
+            });
+        }, err -> {
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                V v = getMvpView();
+                if (v != null) {
+                    String message = "onDeployToExisitingWebApp@StepTwoPopupDialogPresenter ";
+                    v.onRequestFail(message + err.getMessage());
+                    v.onErrorWithException(message, (Exception) err);
+                }
+            });
+        });
+
     }
 
     public void onDeployToNewWebApp(String appName, int subscriptionSelectionIndex, String resourceGroupName,
@@ -133,25 +148,28 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
                     binderSubscriptionDetails.get(subscriptionSelectionIndex).getSubscriptionId(), resourceGroupName,
                     appName, createNewRg);
         }).subscribeOn(Schedulers.io()).subscribe(app -> {
+            DockerRuntime.getInstance().setLatestWebAppName(appName);
             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                DockerRuntime.getInstance().setLatestWebAppName(appName);
                 V v = getMvpView();
                 if (v != null) {
                     v.onRequestSucceed();
                     v.finishDeploy();
                 }
             });
-        }, e -> {
-            V v = getMvpView();
-            if (v != null) {
-                v.onRequestFail("onDeployNew@StepTwoPopupDialogPresenter");
-            }
+        }, err -> {
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                V v = getMvpView();
+                if (v != null) {
+                    String message = "onDeployNew@StepTwoPopupDialogPresenter ";
+                    v.onRequestFail(message + err.getMessage());
+                    v.onErrorWithException(message, (Exception) err);
+                }
+            });
         });
     }
 
     // private helpers
     private void updateWebAppOnLinuxList() throws AuthException, IOException, CanceledByUserException {
-
         binderWebAppOnLinux.clear();
         for (SiteInner si : WebAppOnLinuxUtil.listAllWebAppOnLinux(true)) {
             binderWebAppOnLinux.add(si);

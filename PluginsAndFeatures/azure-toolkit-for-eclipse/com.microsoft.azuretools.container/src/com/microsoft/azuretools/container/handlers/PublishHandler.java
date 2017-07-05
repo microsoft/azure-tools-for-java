@@ -40,7 +40,6 @@ import com.microsoft.azuretools.container.ui.wizard.publish.PublishWizard;
 import com.microsoft.azuretools.container.utils.ConfigFileUtil;
 import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.container.utils.WarUtil;
-import com.microsoft.azuretools.core.components.AzureWizardDialog;
 import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;

@@ -55,11 +55,26 @@ public class WebAppOnLinuxUtil {
         return deploy(subscriptionId, resourceGroup, appName, pr, imageName, createNewRg);
     }
 
-    public static WebApp deployToExisting(WebApp app) {
+    public static WebApp deployToExisting(SiteInner app) {
         PrivateRegistry pr = new PrivateRegistry(DockerRuntime.getInstance().getRegistryUrl(),
                 DockerRuntime.getInstance().getRegistryUsername(), DockerRuntime.getInstance().getRegistryPassword());
         String imageName = DockerRuntime.getInstance().getLatestImageName();
-        return updateApp(app, pr, imageName);
+        AzureManager azureManager;
+        try {
+            azureManager = AuthMethodManager.getInstance().getAzureManager();
+            WebApp webapp = null;
+            for (Subscription sb : azureManager.getSubscriptions()) {
+                Azure azure = azureManager.getAzure(sb.subscriptionId());
+                webapp = azure.webApps().getByResourceGroup(app.resourceGroup(), app.name());
+                if (webapp != null) {
+                    return updateApp(webapp, pr, imageName);
+                }
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static WebApp deploy(String subscriptionId, String resourceGroup, String appName, PrivateRegistry pr,

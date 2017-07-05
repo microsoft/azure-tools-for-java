@@ -68,7 +68,8 @@ public class StepOnePagePresenter<V extends StepOnePageView> extends MvpPresente
                 DefaultLoader.getIdeHelper().invokeAndWait(() -> {
                     V v = getMvpView();
                     if (v != null) {
-                        v.onRequestFail("onPushLatestImageToRegistry@StepOnePagePresenter");
+                        String message = "onPushLatestImageToRegistry@StepOnePagePresenter";
+                        v.onRequestFail(message);
                     }
                 });
             });
