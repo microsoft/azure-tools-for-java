@@ -25,10 +25,8 @@
         <module>com.microsoft.azuretools.webapp.feature</module>
         <module>com.microsoft.azuretools.docker</module>
         <module>com.microsoft.azuretools.docker.feature</module>
-        <!--
         <module>com.microsoft.azuretools.container</module>
         <module>com.microsoft.azuretools.container.feature</module>
-        -->
         <module>WindowsAzurePlugin4EJ</module>
     </modules>
     <properties>
