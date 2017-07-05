@@ -24,14 +24,12 @@ package com.microsoft.azuretools.container.ui.wizard.publish;
 
 import java.util.Date;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-
 import com.microsoft.azuretools.container.presenters.StepOnePagePresenter;
 import com.microsoft.azuretools.container.views.PublishWizardPageView;
 import com.microsoft.azuretools.container.views.StepOnePageView;
 import com.microsoft.azuretools.core.components.AzureWizardPage;
-
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.layout.GridData;
@@ -54,25 +52,53 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView, Pub
     private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
     private final StepOnePagePresenter<StepOnePage> presenter;
 
-    private void initilize() {
-        presenter.onLoadRegistryInfo();
+    // org.eclipse.jface.dialogs.DialogPage
+    @Override
+    public void dispose() {
+        presenter.onDetachView();
+        super.dispose();
     }
 
-    private void setWidgetsEnabledStatus(boolean enableStatus) {
-        txtRegistryUrl.setEditable(enableStatus);
-        txtUsername.setEditable(enableStatus);
-        txtPassword.setEditable(enableStatus);
-
-        ((PublishWizardDialog) this.getContainer()).setNextEnabled(enableStatus);
-        ((PublishWizardDialog) this.getContainer()).setFinishEnabled(enableStatus);
-        ((PublishWizardDialog) this.getContainer()).setCancelEnabled(enableStatus);
+    // com.microsoft.azuretools.container.views.PublishWizardPageView
+    @Override
+    public void onWizardNextPressed() {
+        setWidgetsEnabledStatus(false);
+        presenter.onPushLatestImageToRegistry(txtRegistryUrl.getText(), txtUsername.getText(), txtPassword.getText());
     }
 
-    private void showInformation(String string) {
-        if (string == null) {
-            return;
+    @Override
+    public void onWizardFinishPressed() {
+        return;
+    }
+
+    // com.microsoft.azuretools.container.views.StepOnePageView
+    @Override
+    public void fillRegistryInfo(String registryUrl, String username, String password) {
+        txtRegistryUrl.setText(registryUrl != null ? registryUrl : "");
+        txtUsername.setText(username != null ? username : "");
+        txtPassword.setText(password != null ? password : "");
+    }
+
+    @Override
+    public void onRequestPending() {
+        showInformation("Try pushing image ...");
+        setWidgetsEnabledStatus(false);
+    }
+
+    @Override
+    public void onRequestSucceed() {
+        showInformation("Task OK");
+        setWidgetsEnabledStatus(true);
+        ((PublishWizardDialog) this.getContainer()).doNextPressed();
+    }
+
+    @Override
+    public void onRequestFail(String errorMsg) {
+        if (errorMsg != null) {
+            showInformation(errorMsg);
         }
-        styledText.append(String.format("[%s]\t%s\n", (new Date()).toString(), string));
+        showInformation("Task FAIL");
+        setWidgetsEnabledStatus(true);
     }
 
     /**
@@ -103,9 +129,9 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView, Pub
         gl_container.marginRight = 40;
         gl_container.marginLeft = 40;
         container.setLayout(gl_container);
-        
+
         Font boldFont = new Font(this.getShell().getDisplay(), new FontData("Segoe UI", 9, SWT.BOLD));
-        
+
         Label lblServerUrl = new Label(container, SWT.NONE);
         lblServerUrl.setFont(boldFont);
         GridData gd_lblServerUrl = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
@@ -156,54 +182,29 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView, Pub
 
         Point size = getShell().computeSize(600, 450);
         getShell().setSize(size);
-        
+
         initilize();
     }
 
-    @Override
-    public void dispose() {
-        presenter.onDetachView();
-        super.dispose();
+    // private helpers
+    private void initilize() {
+        presenter.onLoadRegistryInfo();
     }
 
-    @Override
-    public void onWizardNextPressed() {
-        setWidgetsEnabledStatus(false);
-        presenter.onPushLatestImageToRegistry(txtRegistryUrl.getText(), txtUsername.getText(), txtPassword.getText());
+    private void setWidgetsEnabledStatus(boolean enableStatus) {
+        txtRegistryUrl.setEditable(enableStatus);
+        txtUsername.setEditable(enableStatus);
+        txtPassword.setEditable(enableStatus);
+
+        ((PublishWizardDialog) this.getContainer()).setNextEnabled(enableStatus);
+        ((PublishWizardDialog) this.getContainer()).setFinishEnabled(enableStatus);
+        ((PublishWizardDialog) this.getContainer()).setCancelEnabled(enableStatus);
     }
 
-    @Override
-    public void onWizardFinishPressed() {
-        return;
-    }
-
-    @Override
-    public void fillRegistryInfo(String registryUrl, String username, String password) {
-        txtRegistryUrl.setText(registryUrl != null ? registryUrl : "");
-        txtUsername.setText(username != null ? username : "");
-        txtPassword.setText(password != null ? password : "");
-    }
-
-    @Override
-    public void onRequestPending() {
-        showInformation("Try pushing image ...");
-        setWidgetsEnabledStatus(false);
-    }
-
-    @Override
-    public void onRequestSucceed() {
-        showInformation("Task OK");
-        setWidgetsEnabledStatus(true);
-        ((PublishWizardDialog) this.getContainer()).doNextPressed();
-    }
-
-    @Override
-    public void onRequestFail(String errorMsg) {
-        if(errorMsg != null) {
-            showInformation(errorMsg);
+    private void showInformation(String string) {
+        if (string == null) {
+            return;
         }
-        showInformation("Task FAIL");
-        setWidgetsEnabledStatus(true);
+        styledText.append(String.format("[%s]\t%s\n", (new Date()).toString(), string));
     }
-
 }

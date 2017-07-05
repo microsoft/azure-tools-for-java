@@ -22,26 +22,25 @@
 
 package com.microsoft.azuretools.container.ui.wizard.publish;
 
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.container.ConsoleLogger;
+import com.microsoft.azuretools.container.presenters.StepTwoPagePresenter;
+import com.microsoft.azuretools.container.views.PublishWizardPageView;
+import com.microsoft.azuretools.container.views.StepTwoPageView;
+import com.microsoft.azuretools.core.components.AzureWizardPage;
+import com.microsoft.azure.management.appservice.implementation.SiteInner;
+import com.microsoft.azure.management.resources.ResourceGroup;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
-
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.container.ConsoleLogger;
-import com.microsoft.azuretools.container.presenters.StepTwoPagePresenter;
-
-import com.microsoft.azuretools.container.views.PublishWizardPageView;
-import com.microsoft.azuretools.container.views.StepTwoPageView;
-
-import com.microsoft.azuretools.core.components.AzureWizardPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
@@ -54,13 +53,10 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.layout.FillLayout;
-
-import com.microsoft.azure.management.appservice.implementation.SiteInner;
-import com.microsoft.azure.management.resources.ResourceGroup;
-
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.ProgressBar;
 
 public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, PublishWizardPageView {
     private static final String TEXT_BUTTON_REFRESH = "Refresh List";
@@ -83,7 +79,109 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
     private TabItem tbtmCreate;
     private TabItem tbtmUpdate;
     private TabFolder tabFolder;
+    private ProgressBar progressBar;
 
+    // org.eclipse.jface.dialogs.DialogPage
+    @Override
+    public void dispose() {
+        presenter.onDetachView();
+        super.dispose();
+    }
+
+    // com.microsoft.azuretools.core.mvp.ui.base.MvpView
+    @Override
+    public void onErrorWithException(String message, Exception ex) {
+        MessageDialog.openError(getShell(), message, ex.getMessage());
+    }
+
+    // com.microsoft.azuretools.container.views.PublishWizardPageView
+    @Override
+    public void onWizardNextPressed() {
+        return;
+    }
+
+    @Override
+    public void onWizardFinishPressed() {
+        int index = tabFolder.getSelectionIndex();
+        if (tabFolder.getItem(index).getText().equals(TEXT_TAB_CREATE)) {
+            deployToNewWebApp();
+        } else if (tabFolder.getItem(index).getText().equals(TEXT_TAB_UPDATE)) {
+            deployToExisitingWebApp();
+        }
+    }
+
+    // com.microsoft.azuretools.container.views.StepTwoPageView
+    @Override
+    public void onRequestPending() {
+        setWidgetsEnabledStatus(false);
+        ((PublishWizardDialog) this.getContainer()).setButtonsEnabled(false);
+    }
+
+    @Override
+    public void onRequestSucceed() {
+        setWidgetsEnabledStatus(true);
+        ((PublishWizardDialog) this.getContainer()).updateButtons();
+    }
+
+    @Override
+    public void onRequestFail(String errorMsg) {
+        if (errorMsg != null) {
+            ConsoleLogger.error(errorMsg);
+        }
+        setWidgetsEnabledStatus(true);
+        ((PublishWizardDialog) this.getContainer()).setButtonsEnabled(true);
+        ((PublishWizardDialog) this.getContainer()).updateButtons();
+        // ((PublishWizardDialog) this.getContainer()).doCancelPressed();
+    }
+
+    @Override
+    public void fillSubscriptions(List<SubscriptionDetail> sdl) {
+        if (sdl == null || sdl.size() <= 0) {
+            System.out.println("sdl is null");
+            return;
+        }
+        comboSubscription.removeAll();
+        for (SubscriptionDetail sd : sdl) {
+            comboSubscription.add(sd.getSubscriptionName());
+        }
+        if (comboSubscription.getItemCount() > 0) {
+            comboSubscription.select(0);
+        }
+    }
+
+    @Override
+    public void fillResourceGroups(List<ResourceGroup> rgl) {
+        if (rgl == null || rgl.size() <= 0) {
+            System.out.println("rgl is null");
+            return;
+        }
+        comboResourceGroup.removeAll();
+        for (ResourceGroup rg : rgl) {
+            comboResourceGroup.add(rg.name());
+        }
+        if (comboResourceGroup.getItemCount() > 0) {
+            comboResourceGroup.select(0);
+        }
+    }
+
+    @Override
+    public void finishDeploy() {
+        ConsoleLogger.info("Web App on Linux Created");
+        ((PublishWizardDialog) this.getContainer()).doFinishPressed();
+    }
+
+    @Override
+    public void fillWebApps(List<SiteInner> wal) {
+        setDescription("List of Web App on Linux");
+        fillTable(wal);
+    }
+
+    /**
+     * Fill Web Apps on Linux into the table.
+     * 
+     * @param wal
+     *            list of Web Apps on Linux
+     */
     public void fillTable(List<SiteInner> wal) {
         tableWebApps.removeAll();
         for (SiteInner si : wal) {
@@ -118,7 +216,7 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         gl_container.marginWidth = 10;
         gl_container.marginTop = 10;
         gl_container.marginRight = 20;
-        gl_container.marginBottom = 10;
+        gl_container.marginBottom = 5;
         gl_container.marginLeft = 20;
         container.setLayout(gl_container);
 
@@ -190,7 +288,9 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         tbtmCreate.setControl(composite);
         formToolkit.paintBordersFor(composite);
 
-        composite.setLayout(new GridLayout(1, false));
+        GridLayout gl_composite = new GridLayout(1, false);
+        gl_composite.marginHeight = 0;
+        composite.setLayout(gl_composite);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 
         Group grpAppService = new Group(composite, SWT.NONE);
@@ -256,12 +356,20 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         comboResourceGroup.setEnabled(false);
         comboResourceGroup.setBounds(0, 0, 26, 22);
 
+        progressBar = new ProgressBar(container, SWT.INDETERMINATE);
+        GridData gd_progressBar = new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1);
+        gd_progressBar.widthHint = 75;
+        progressBar.setLayoutData(gd_progressBar);
+        progressBar.setVisible(false);
+        formToolkit.adapt(progressBar, true, true);
+
         Point size = getShell().computeSize(600, 450);
         getShell().setSize(size);
 
         initialize();
     }
 
+    // private helpers
     private void onTableWebAppsSelection() {
         setPageComplete(pageCompleteStatus());
     }
@@ -345,27 +453,6 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         return text.matches(REGEX_VALID_RG_NAME);
     }
 
-    @Override
-    public void dispose() {
-        presenter.onDetachView();
-        super.dispose();
-    }
-
-    @Override
-    public void onWizardNextPressed() {
-        return;
-    }
-
-    @Override
-    public void onWizardFinishPressed() {
-        int index = tabFolder.getSelectionIndex();
-        if (tabFolder.getItem(index).getText().equals(TEXT_TAB_CREATE)) {
-            deployToNewWebApp();
-        } else if (tabFolder.getItem(index).getText().equals(TEXT_TAB_UPDATE)) {
-            deployToExisitingWebApp();
-        }
-    }
-
     private void deployToExisitingWebApp() {
         presenter.onDeployToExisitingWebApp(tableWebApps.getSelectionIndex());
     }
@@ -388,76 +475,12 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         }
     }
 
-    @Override
-    public void onRequestPending() {
-        setWidgetsEnabledStatus(false);
-        ((PublishWizardDialog) this.getContainer()).setButtonsEnabled(false);
-    }
-
-    @Override
-    public void onRequestSucceed() {
-        setWidgetsEnabledStatus(true);
-        ((PublishWizardDialog) this.getContainer()).updateButtons();
-    }
-
-    @Override
-    public void onRequestFail(String errorMsg) {
-        if (errorMsg != null) {
-            ConsoleLogger.error(errorMsg);
-        }
-        setWidgetsEnabledStatus(true);
-        ((PublishWizardDialog) this.getContainer()).setButtonsEnabled(true);
-        ((PublishWizardDialog) this.getContainer()).updateButtons();
-        // ((PublishWizardDialog) this.getContainer()).doCancelPressed();
-    }
-
-    public void setWidgetsEnabledStatus(boolean enableStatus) {
+    private void setWidgetsEnabledStatus(boolean enableStatus) {
         tabFolder.setEnabled(enableStatus);
+        progressBar.setVisible(!enableStatus);
     }
 
-    @Override
-    public void fillSubscriptions(List<SubscriptionDetail> sdl) {
-        if (sdl == null || sdl.size() <= 0) {
-            System.out.println("sdl is null");
-            return;
-        }
-        comboSubscription.removeAll();
-        for (SubscriptionDetail sd : sdl) {
-            comboSubscription.add(sd.getSubscriptionName());
-        }
-        if (comboSubscription.getItemCount() > 0) {
-            comboSubscription.select(0);
-        }
-    }
-
-    @Override
-    public void fillResourceGroups(List<ResourceGroup> rgl) {
-        if (rgl == null || rgl.size() <= 0) {
-            System.out.println("rgl is null");
-            return;
-        }
-        comboResourceGroup.removeAll();
-        for (ResourceGroup rg : rgl) {
-            comboResourceGroup.add(rg.name());
-        }
-        if (comboResourceGroup.getItemCount() > 0) {
-            comboResourceGroup.select(0);
-        }
-    }
-
-    @Override
-    public void finishDeploy() {
-        ConsoleLogger.info("Web App on Linux Created");
-        ((PublishWizardDialog) this.getContainer()).doFinishPressed();
-    }
-
-    @Override
-    public void fillWebApps(List<SiteInner> wal) {
-        setDescription("List of Web App on Linux");
-        fillTable(wal);
-    }
-
-    public void showLoading() {
+    private void showLoading() {
         tableWebApps.removeAll();
         TableItem placeholderItem = new TableItem(tableWebApps, SWT.NULL);
         placeholderItem.setText("Loading...");

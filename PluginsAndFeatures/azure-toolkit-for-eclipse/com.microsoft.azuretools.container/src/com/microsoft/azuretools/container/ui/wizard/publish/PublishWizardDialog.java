@@ -34,6 +34,7 @@ public class PublishWizardDialog extends AzureWizardDialog {
 
     public PublishWizardDialog(Shell parentShell, IWizard newWizard) {
         super(parentShell, newWizard);
+        this.setHelpAvailable(false);
     }
 
     @Override
