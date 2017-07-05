@@ -25,7 +25,6 @@ import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 
-import org.bouncycastle.jce.provider.BrokenJCEBlockCipher.BrokePBEWithMD5AndDES;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -39,14 +38,11 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
@@ -55,15 +51,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.scalaide.core.IScalaProject;
-import org.scalaide.core.internal.jdt.model.ScalaAccessorElement;
-import org.scalaide.core.internal.launching.MainClassFinalCheckForLaunchDelegate;
 
-import com.gargoylesoftware.htmlunit.javascript.host.Set;
 import com.microsoft.azure.hdinsight.common.CallBack;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -75,7 +66,6 @@ import com.microsoft.azuretools.hdinsight.Activator;
 import com.microsoft.azuretools.hdinsight.projects.HDInsightProjectNature;
 import com.microsoft.azuretools.hdinsight.spark.common2.SparkSubmitModel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -534,8 +524,9 @@ public class SparkSubmissionExDialog extends Dialog {
 
 	private java.util.Set<String> getClassesWithMainMethod() throws CoreException {
 		java.util.Set<String> filterClassSet = new HashSet<String>();
-		if (myProject.isNatureEnabled(JAVA_NATURE_ID)) {
+		if (myProject != null && myProject.isNatureEnabled(JAVA_NATURE_ID)) {
 			IJavaProject javaProject = JavaCore.create(myProject);
+			
 			if (javaProject == null) {
 				return filterClassSet;
 			}

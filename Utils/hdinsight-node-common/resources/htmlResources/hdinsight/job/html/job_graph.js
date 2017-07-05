@@ -8,7 +8,7 @@ function renderJobGraphOnApplicationLevel(jobs) {
     var counters = jobs.length, i = 0;
     g.setNode(0, {label :"Driver",   class : "type-TOP"});
     for(i = 1; i <= counters; ++i) {
-        var s = "Job " + i;
+        var s = "Job " + (i - 1);
         var currentClass = jobs[i - 1]["status"] === "SUCCEEDED" ? "sparkJob-success" : "sparkJob-error";
         g.setNode(i, {label: s,  class : currentClass});
     }

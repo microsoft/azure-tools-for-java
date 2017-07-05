@@ -19,24 +19,18 @@
  */
 package com.microsoft.azuretools.hdinsight.spark.actions;
 
-import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.internal.resources.Project;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.TreePath;
+import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.management.network.EffectiveNetworkSecurityGroup;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.hdinsight.Activator;
@@ -51,11 +45,16 @@ public class SubmitHandler extends AzureAbstractHandler {
 	public Object onExecute(ExecutionEvent event) throws ExecutionException {
 		synchronized (SubmitHandler.class) {
 					TreeSelection selection = (TreeSelection)HandlerUtil.getCurrentSelection(event);
+					 
+					IProject project = null;
+					Object selectedObj = selection.getFirstElement();
 					
-					IProject project = (IProject)selection.getFirstElement();
-					if (project == null) {
-						HDInsightUtil.showErrorMessageOnSubmissionMessageWindow("Please select a project to submit Spark application");
-						return null;
+					// for different version of Eclipse
+					if (selectedObj instanceof IProjectNature) {
+						IProjectNature projectNature = (IProjectNature)selectedObj;
+						project = projectNature.getProject();
+					} else if (selectedObj instanceof IProject){
+						project = (IProject)selectedObj;
 					}
 					
 					AppInsightsClient.create(Messages.SparkSubmissionRightClickProject, Activator.getDefault().getBundle().getVersion().toString());
