@@ -33,10 +33,12 @@ import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.ijidea.ui.UIFactory;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.helpers.IDEHelperImpl;
+import com.microsoft.intellij.helpers.MvpUIHelperImpl;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
 import com.microsoft.intellij.util.PluginUtil;
@@ -72,6 +74,7 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
         Node.setNode2Actions(NodeActionsMap.node2Actions);
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
+        MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
 
         HDInsightLoader.setHHDInsightHelper(new HDInsightHelperImpl());
         try {
