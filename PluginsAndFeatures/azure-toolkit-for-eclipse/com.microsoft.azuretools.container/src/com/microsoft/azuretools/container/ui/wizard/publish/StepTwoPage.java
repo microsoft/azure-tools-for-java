@@ -22,43 +22,47 @@
 
 package com.microsoft.azuretools.container.ui.wizard.publish;
 
+import com.microsoft.azure.management.appservice.implementation.SiteInner;
+import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.container.ConsoleLogger;
+import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.presenters.StepTwoPagePresenter;
 import com.microsoft.azuretools.container.views.PublishWizardPageView;
 import com.microsoft.azuretools.container.views.StepTwoPageView;
 import com.microsoft.azuretools.core.components.AzureWizardPage;
-import com.microsoft.azure.management.appservice.implementation.SiteInner;
-import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.forms.widgets.FormToolkit;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.swt.widgets.ProgressBar;
+import org.eclipse.ui.forms.widgets.FormToolkit;
 
 public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, PublishWizardPageView {
+    private static final String MESSAGE_DEPLOY_SUCCESS = "Web App on Linux successfully deployed.";
+    private static final String TEXT_DESCRIPTION = "Select existing or create new Web App to deploy";
+    private static final String TEXT_TITLE = "Deploy to Azure Web App on Linux";
     private static final String TEXT_BUTTON_REFRESH = "Refresh List";
     private static final String TEXT_TAB_UPDATE = "Use Existing";
     private static final String TEXT_TAB_CREATE = "Create New";
@@ -79,7 +83,6 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
     private TabItem tbtmCreate;
     private TabItem tbtmUpdate;
     private TabFolder tabFolder;
-    private ProgressBar progressBar;
 
     // org.eclipse.jface.dialogs.DialogPage
     @Override
@@ -91,6 +94,7 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
     // com.microsoft.azuretools.core.mvp.ui.base.MvpView
     @Override
     public void onErrorWithException(String message, Exception ex) {
+        ConsoleLogger.error(String.format("%s\n%s", message, ex.getMessage()));
         MessageDialog.openError(getShell(), message, ex.getMessage());
     }
 
@@ -112,32 +116,36 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
 
     // com.microsoft.azuretools.container.views.StepTwoPageView
     @Override
-    public void onRequestPending() {
+    public void onRequestPending(Object payload) {
         setWidgetsEnabledStatus(false);
         ((PublishWizardDialog) this.getContainer()).setButtonsEnabled(false);
+        AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(payload.toString(),
+                payload.toString(), null, null, "Start");
     }
 
     @Override
-    public void onRequestSucceed() {
+    public void onRequestSucceed(Object payload) {
         setWidgetsEnabledStatus(true);
         ((PublishWizardDialog) this.getContainer()).updateButtons();
+        AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(payload.toString(),
+                payload.toString(),
+                String.format("http://%s.azurewebsites.net/%s", DockerRuntime.getInstance().getLatestWebAppName(),
+                        DockerRuntime.getInstance().getLatestArtifactName()),
+                null, "Success");
     }
 
     @Override
-    public void onRequestFail(String errorMsg) {
-        if (errorMsg != null) {
-            ConsoleLogger.error(errorMsg);
-        }
+    public void onRequestFail(Object payload) {
         setWidgetsEnabledStatus(true);
         ((PublishWizardDialog) this.getContainer()).setButtonsEnabled(true);
         ((PublishWizardDialog) this.getContainer()).updateButtons();
-        // ((PublishWizardDialog) this.getContainer()).doCancelPressed();
+        AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(payload.toString(),
+                payload.toString(), null, null, "Fail");
     }
 
     @Override
     public void fillSubscriptions(List<SubscriptionDetail> sdl) {
         if (sdl == null || sdl.size() <= 0) {
-            System.out.println("sdl is null");
             return;
         }
         comboSubscription.removeAll();
@@ -152,7 +160,6 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
     @Override
     public void fillResourceGroups(List<ResourceGroup> rgl) {
         if (rgl == null || rgl.size() <= 0) {
-            System.out.println("rgl is null");
             return;
         }
         comboResourceGroup.removeAll();
@@ -166,14 +173,8 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
 
     @Override
     public void finishDeploy() {
-        ConsoleLogger.info("Web App on Linux Created");
+        ConsoleLogger.info(MESSAGE_DEPLOY_SUCCESS);
         ((PublishWizardDialog) this.getContainer()).doFinishPressed();
-    }
-
-    @Override
-    public void fillWebApps(List<SiteInner> wal) {
-        setDescription("List of Web App on Linux");
-        fillTable(wal);
     }
 
     /**
@@ -182,7 +183,8 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
      * @param wal
      *            list of Web Apps on Linux
      */
-    public void fillTable(List<SiteInner> wal) {
+    @Override
+    public void fillWebApps(List<SiteInner> wal) {
         tableWebApps.removeAll();
         for (SiteInner si : wal) {
             TableItem it = new TableItem(tableWebApps, SWT.NULL);
@@ -198,8 +200,8 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         presenter = new StepTwoPagePresenter<StepTwoPageView>();
         presenter.onAttachView(this);
 
-        setTitle("Deploy to Azure Web App on Linux");
-        setDescription("Select existing or create new Web App to deploy");
+        setTitle(TEXT_TITLE);
+        setDescription(TEXT_DESCRIPTION);
     }
 
     /**
@@ -208,20 +210,19 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
      * @param parent
      */
     public void createControl(Composite parent) {
-        Font boldFont = new Font(Display.getCurrent(), new FontData("Segoe UI", 9, SWT.BOLD));
         Composite container = new Composite(parent, SWT.NULL);
 
         setControl(container);
-        GridLayout gl_container = new GridLayout(1, false);
-        gl_container.marginWidth = 10;
-        gl_container.marginTop = 10;
-        gl_container.marginRight = 20;
-        gl_container.marginBottom = 5;
-        gl_container.marginLeft = 20;
-        container.setLayout(gl_container);
+        GridLayout gridLayoutContainer = new GridLayout(1, false);
+        gridLayoutContainer.verticalSpacing = 0;
+        gridLayoutContainer.marginHeight = 0;
+        gridLayoutContainer.marginWidth = 0;
+        container.setLayout(gridLayoutContainer);
 
         tabFolder = new TabFolder(container, SWT.NONE);
-        tabFolder.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true, 1, 1));
+        GridData gd_tabFolder = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gd_tabFolder.minimumWidth = 580;
+        tabFolder.setLayoutData(gd_tabFolder);
         formToolkit.adapt(tabFolder);
         formToolkit.paintBordersFor(tabFolder);
         tabFolder.addListener(SWT.Selection, event -> onTabFolderSelection());
@@ -229,23 +230,25 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         tbtmUpdate = new TabItem(tabFolder, SWT.NONE);
         tbtmUpdate.setText(TEXT_TAB_UPDATE);
 
-        Composite composite_1 = new Composite(tabFolder, SWT.NONE);
-        tbtmUpdate.setControl(composite_1);
-        formToolkit.paintBordersFor(composite_1);
-        composite_1.setLayout(new GridLayout(1, false));
+        Composite compositeExisting = new Composite(tabFolder, SWT.NONE);
+        tbtmUpdate.setControl(compositeExisting);
+        formToolkit.paintBordersFor(compositeExisting);
+        compositeExisting.setLayout(new GridLayout(1, false));
 
-        Composite cmpoWebAppOnLinux = formToolkit.createComposite(composite_1, SWT.NONE);
-        GridData gd_cmpoWebAppOnLinux = new GridData(SWT.CENTER, SWT.CENTER, true, true, 1, 1);
-        gd_cmpoWebAppOnLinux.widthHint = 512;
-        gd_cmpoWebAppOnLinux.heightHint = 255;
-        cmpoWebAppOnLinux.setLayoutData(gd_cmpoWebAppOnLinux);
+        Composite cmpoWebAppOnLinux = formToolkit.createComposite(compositeExisting, SWT.NONE);
+        GridData gridDataCmpoWebAppOnLinux = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gridDataCmpoWebAppOnLinux.minimumWidth = 530;
+        gridDataCmpoWebAppOnLinux.widthHint = 569;
+        gridDataCmpoWebAppOnLinux.heightHint = 255;
+        cmpoWebAppOnLinux.setLayoutData(gridDataCmpoWebAppOnLinux);
         formToolkit.paintBordersFor(cmpoWebAppOnLinux);
         cmpoWebAppOnLinux.setLayout(new GridLayout(2, false));
 
         Composite cmpoWebAppsTable = formToolkit.createComposite(cmpoWebAppOnLinux, SWT.NONE);
-        GridData gd_cmpoWebAppsTable = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_cmpoWebAppsTable.widthHint = 400;
-        cmpoWebAppsTable.setLayoutData(gd_cmpoWebAppsTable);
+        GridData gridDataCmpoWebAppsTable = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gridDataCmpoWebAppsTable.minimumWidth = 455;
+        gridDataCmpoWebAppsTable.widthHint = 457;
+        cmpoWebAppsTable.setLayoutData(gridDataCmpoWebAppsTable);
         cmpoWebAppsTable.setLayout(new FillLayout(SWT.HORIZONTAL));
         formToolkit.paintBordersFor(cmpoWebAppsTable);
 
@@ -257,56 +260,61 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         tableWebApps.addListener(SWT.Selection, ecent -> onTableWebAppsSelection());
 
         TableColumn tblclmnName = new TableColumn(tableWebApps, SWT.LEFT);
-        tblclmnName.setWidth(180);
+        tblclmnName.setWidth(200);
         tblclmnName.setText("Name");
 
         TableColumn tblclmnResourceGroup = new TableColumn(tableWebApps, SWT.LEFT);
-        tblclmnResourceGroup.setWidth(220);
+        tblclmnResourceGroup.setWidth(275);
         tblclmnResourceGroup.setText("Resource group");
 
         Composite cmpoActionButtons = formToolkit.createComposite(cmpoWebAppOnLinux, SWT.NONE);
-        cmpoActionButtons.setLayout(new GridLayout(1, false));
-        cmpoActionButtons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        GridLayout gl_cmpoActionButtons = new GridLayout(1, false);
+        gl_cmpoActionButtons.verticalSpacing = 0;
+        gl_cmpoActionButtons.marginWidth = 0;
+        gl_cmpoActionButtons.marginHeight = 0;
+        cmpoActionButtons.setLayout(gl_cmpoActionButtons);
+        GridData gd_cmpoActionButtons = new GridData(SWT.RIGHT, SWT.FILL, false, true, 1, 1);
+        gd_cmpoActionButtons.minimumWidth = 75;
+        gd_cmpoActionButtons.widthHint = 75;
+        cmpoActionButtons.setLayoutData(gd_cmpoActionButtons);
         formToolkit.paintBordersFor(cmpoActionButtons);
 
         btnRefresh = new Button(cmpoActionButtons, SWT.NONE);
-        GridData gd_btnRefresh = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_btnRefresh.widthHint = 75;
-        btnRefresh.setLayoutData(gd_btnRefresh);
+        GridData gridDataBtnRefresh = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gridDataBtnRefresh.minimumWidth = 75;
+        gridDataBtnRefresh.widthHint = 75;
+        btnRefresh.setLayoutData(gridDataBtnRefresh);
         formToolkit.adapt(btnRefresh, true, true);
         btnRefresh.setText(TEXT_BUTTON_REFRESH);
         btnRefresh.addListener(SWT.Selection, event -> onBtnRefreshSelection());
 
-        Composite cmpoInformation = formToolkit.createComposite(composite_1, SWT.NONE);
-        cmpoInformation.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true, 1, 1));
-        formToolkit.paintBordersFor(cmpoInformation);
-
         tbtmCreate = new TabItem(tabFolder, SWT.NONE);
         tbtmCreate.setText(TEXT_TAB_CREATE);
 
-        Composite composite = new Composite(tabFolder, SWT.NONE);
-        tbtmCreate.setControl(composite);
-        formToolkit.paintBordersFor(composite);
+        Composite compositeNew = new Composite(tabFolder, SWT.NONE);
+        tbtmCreate.setControl(compositeNew);
+        formToolkit.paintBordersFor(compositeNew);
 
-        GridLayout gl_composite = new GridLayout(1, false);
-        gl_composite.marginHeight = 0;
-        composite.setLayout(gl_composite);
-        composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+        GridLayout gridLayoutComposite = new GridLayout(1, false);
+        gridLayoutComposite.marginHeight = 0;
+        compositeNew.setLayout(gridLayoutComposite);
+        compositeNew.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 
-        Group grpAppService = new Group(composite, SWT.NONE);
-        GridData gd_grpAppService = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_grpAppService.heightHint = 75;
-        grpAppService.setLayoutData(gd_grpAppService);
-        GridLayout gl_grpAppService = new GridLayout(3, false);
-        gl_grpAppService.verticalSpacing = 15;
-        gl_grpAppService.marginWidth = 10;
-        grpAppService.setLayout(gl_grpAppService);
+        Group grpAppService = new Group(compositeNew, SWT.NONE);
+        GridData gridDataGrpAppService = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gridDataGrpAppService.heightHint = 75;
+        grpAppService.setLayoutData(gridDataGrpAppService);
+        GridLayout gridLayoutGrpAppService = new GridLayout(3, false);
+        gridLayoutGrpAppService.verticalSpacing = 15;
+        gridLayoutGrpAppService.marginWidth = 10;
+        grpAppService.setLayout(gridLayoutGrpAppService);
 
+        Font boldFont = new Font(Display.getCurrent(), new FontData("Segoe UI", 9, SWT.BOLD));
         Label lblAppName = new Label(grpAppService, SWT.NONE);
         lblAppName.setFont(boldFont);
-        GridData gd_lblAppName = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_lblAppName.widthHint = 75;
-        lblAppName.setLayoutData(gd_lblAppName);
+        GridData gridDataLblAppName = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gridDataLblAppName.widthHint = 75;
+        lblAppName.setLayoutData(gridDataLblAppName);
         lblAppName.setText("Enter name");
 
         textAppName = new Text(grpAppService, SWT.BORDER);
@@ -355,16 +363,6 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         comboResourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
         comboResourceGroup.setEnabled(false);
         comboResourceGroup.setBounds(0, 0, 26, 22);
-
-        progressBar = new ProgressBar(container, SWT.INDETERMINATE);
-        GridData gd_progressBar = new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1);
-        gd_progressBar.widthHint = 75;
-        progressBar.setLayoutData(gd_progressBar);
-        progressBar.setVisible(false);
-        formToolkit.adapt(progressBar, true, true);
-
-        Point size = getShell().computeSize(600, 450);
-        getShell().setSize(size);
 
         initialize();
     }
@@ -477,7 +475,7 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
 
     private void setWidgetsEnabledStatus(boolean enableStatus) {
         tabFolder.setEnabled(enableStatus);
-        progressBar.setVisible(!enableStatus);
+        ((PublishWizardDialog) this.getContainer()).setProgressBarVisible(!enableStatus);
     }
 
     private void showLoading() {

@@ -37,7 +37,8 @@ public class Constant {
     public static final String MESSAGE_CONFIRM_STOP_CONTAINER = "Running container detected. We will stop and remove "
             + "it.\n Continue?";
     public static final String MESSAGE_DOCKER_CONNECTING = "Connecting to docker daemon ... ";
-    public static final String ERROR_CREATING_DOCKERFILE = "Error occurred in generating Dockerfile, with exception:\n%s";
+    public static final String ERROR_CREATING_DOCKERFILE = "Error occurred in generating Dockerfile, "
+            + "with exception:\n%s";
     public static final String ERROR_RUNNING_DOCKER = "Error occurred in Docker Run, with exception:\n%s";
     public static final String DOCKERFILE_CONTENT_TOMCAT = "FROM tomcat:8.5-jre8\r\n"
             + "COPY %s.war /usr/local/tomcat/webapps/\r\n";

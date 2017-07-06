@@ -44,7 +44,8 @@ public class DockerizeHandler extends AzureAbstractHandler {
             if (project == null) {
                 throw new Exception(Constant.ERROR_NO_SELECTED_PROJECT);
             }
-            DockerUtil.createDockerFile(project, Constant.DOCKER_CONTEXT_FOLDER, Constant.DOCKERFILE_NAME, Constant.DOCKERFILE_CONTENT_TOMCAT);
+            DockerUtil.createDockerFile(project, Constant.DOCKER_CONTEXT_FOLDER, Constant.DOCKERFILE_NAME,
+                    Constant.DOCKERFILE_CONTENT_TOMCAT);
             ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKERFILE_CREATED,
                     project.getFolder(Constant.DOCKER_CONTEXT_FOLDER).getFile(Constant.DOCKERFILE_NAME).getFullPath()));
             Builder builder = DockerRuntime.getInstance().getDockerBuilder();

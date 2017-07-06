@@ -22,21 +22,6 @@
 
 package com.microsoft.azuretools.container.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-
 import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.Constant;
 import com.microsoft.azuretools.container.DockerRuntime;
@@ -50,6 +35,19 @@ import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.ProgressMessage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 
 public class DockerUtil {
     /**
@@ -69,6 +67,16 @@ public class DockerUtil {
         }
     }
 
+    /**
+     * createContainer.
+     * 
+     * @param docker
+     * @param project
+     * @param imageName
+     * @return
+     * @throws DockerException
+     * @throws InterruptedException
+     */
     public static String createContainer(DockerClient docker, IProject project, String imageName)
             throws DockerException, InterruptedException {
         final Map<String, List<PortBinding>> portBindings = new HashMap<>();
@@ -85,6 +93,14 @@ public class DockerUtil {
         return container.id();
     }
 
+    /**
+     * runContainer.
+     * 
+     * @param docker
+     * @param containerId
+     * @return
+     * @throws Exception
+     */
     public static String runContainer(DockerClient docker, String containerId) throws Exception {
         docker.startContainer(containerId);
         final List<Container> containers = docker.listContainers();
@@ -103,6 +119,18 @@ public class DockerUtil {
         }
     }
 
+    /**
+     * buildImage.
+     * 
+     * @param docker
+     * @param project
+     * @param dockerDirectory
+     * @return
+     * @throws DockerCertificateException
+     * @throws DockerException
+     * @throws InterruptedException
+     * @throws IOException
+     */
     public static String buildImage(DockerClient docker, IProject project, String dockerDirectory)
             throws DockerCertificateException, DockerException, InterruptedException, IOException {
         final AtomicReference<String> imageIdFromMessage = new AtomicReference<>();

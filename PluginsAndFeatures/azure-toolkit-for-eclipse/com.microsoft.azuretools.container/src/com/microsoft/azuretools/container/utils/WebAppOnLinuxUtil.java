@@ -22,13 +22,6 @@
 
 package com.microsoft.azuretools.container.utils;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
@@ -41,44 +34,94 @@ import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.CanceledByUserException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class WebAppOnLinuxUtil {
     private static Map<String, String> defaultAppSettings = new HashMap<>();
     private static Region defaultRegion = Region.US_WEST;
     private static PricingTier defaultPricingTier = PricingTier.STANDARD_S1;
 
-    public static WebApp deployToNew(String subscriptionId, String resourceGroup, String appName, boolean createNewRg)
+    /**
+     * Create a new Web App on Linux and deploy on it.
+     * 
+     * @param subscriptionId
+     * @param resourceGroup
+     * @param appName
+     * @param createRgFlag
+     * @return
+     * @throws IOException
+     */
+    public static WebApp deployToNew(String subscriptionId, String resourceGroup, String appName, boolean createRgFlag)
             throws IOException {
         PrivateRegistry pr = new PrivateRegistry(DockerRuntime.getInstance().getRegistryUrl(),
                 DockerRuntime.getInstance().getRegistryUsername(), DockerRuntime.getInstance().getRegistryPassword());
         String imageName = DockerRuntime.getInstance().getLatestImageName();
-        return deploy(subscriptionId, resourceGroup, appName, pr, imageName, createNewRg);
+        return deploy(subscriptionId, resourceGroup, appName, pr, imageName, createRgFlag);
     }
 
-    public static WebApp deployToExisting(SiteInner app) {
+    /**
+     * Deploy on an existing Web App on Linux.
+     * 
+     * @param app
+     * @return
+     * @throws IOException
+     */
+    public static WebApp deployToExisting(SiteInner app) throws IOException {
         PrivateRegistry pr = new PrivateRegistry(DockerRuntime.getInstance().getRegistryUrl(),
                 DockerRuntime.getInstance().getRegistryUsername(), DockerRuntime.getInstance().getRegistryPassword());
         String imageName = DockerRuntime.getInstance().getLatestImageName();
         AzureManager azureManager;
-        try {
-            azureManager = AuthMethodManager.getInstance().getAzureManager();
-            WebApp webapp = null;
-            for (Subscription sb : azureManager.getSubscriptions()) {
-                Azure azure = azureManager.getAzure(sb.subscriptionId());
-                webapp = azure.webApps().getByResourceGroup(app.resourceGroup(), app.name());
-                if (webapp != null) {
-                    return updateApp(webapp, pr, imageName);
-                }
+        azureManager = AuthMethodManager.getInstance().getAzureManager();
+        WebApp webapp = null;
+        for (Subscription sb : azureManager.getSubscriptions()) {
+            Azure azure = azureManager.getAzure(sb.subscriptionId());
+            webapp = azure.webApps().getByResourceGroup(app.resourceGroup(), app.name());
+            if (webapp != null) {
+                return updateApp(webapp, pr, imageName);
             }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
         return null;
     }
 
-    public static WebApp deploy(String subscriptionId, String resourceGroup, String appName, PrivateRegistry pr,
-            String imageName, boolean createNewRg) throws IOException {
+    /**
+     * List all Web App on Linux under all subscriptions.
+     * 
+     * @param update
+     * @return list of Web App on Linux
+     * @throws IOException
+     * @throws CanceledByUserException
+     */
+    public static List<SiteInner> listAllWebAppOnLinux(boolean update) throws IOException, CanceledByUserException {
+        List<SiteInner> wal = new ArrayList<SiteInner>();
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        // not signed in
+        if (azureManager == null) {
+            return wal;
+        }
+        if (update) {
+            AzureModelController.updateSubscriptionMaps(null);
+        }
+        for (Subscription sb : azureManager.getSubscriptions()) {
+            Azure azure = azureManager.getAzure(sb.subscriptionId());
+            for (ResourceGroup rg : azure.resourceGroups().list()) {
+                for (SiteInner si : azure.webApps().inner().listByResourceGroup(rg.name())) {
+                    if (si.kind().equals("app,linux")) {
+                        wal.add(si);
+                    }
+                }
+            }
+        }
+        return wal;
+    }
+
+    // private helpers
+    private static WebApp deploy(String subscriptionId, String resourceGroup, String appName,
+            PrivateRegistry privateRegistry, String imageName, boolean createRgFlag) throws IOException {
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         // not signed in
         if (azureManager == null) {
@@ -96,47 +139,18 @@ public class WebAppOnLinuxUtil {
         } catch (NoSuchElementException e) {
             // DO NOTHING
         }
-
         if (app == null) {
             // create new app
-            if (createNewRg) {
-                app = createAppWithNewResourceGroup(azure, appName, resourceGroup, pr, imageName);
+            if (createRgFlag) {
+                app = createAppWithNewResourceGroup(azure, appName, resourceGroup, privateRegistry, imageName);
             } else {
-                app = createAppWithExisitingResourceGroup(azure, appName, resourceGroup, pr, imageName);
+                app = createAppWithExisitingResourceGroup(azure, appName, resourceGroup, privateRegistry, imageName);
             }
         } else {
             // update existing app
-            updateApp(app, pr, imageName);
+            updateApp(app, privateRegistry, imageName);
         }
         return app;
-    }
-
-    public static List<SiteInner> listAllWebAppOnLinux(boolean update) {
-        List<SiteInner> wal = new ArrayList<SiteInner>();
-        try {
-            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            // not signed in
-            if (azureManager == null) {
-                return wal;
-            }
-            if (update) {
-                AzureModelController.updateSubscriptionMaps(null);
-            }
-
-            for (Subscription sb : azureManager.getSubscriptions()) {
-                Azure azure = azureManager.getAzure(sb.subscriptionId());
-                for (ResourceGroup rg : azure.resourceGroups().list()) {
-                    for (SiteInner si : azure.webApps().inner().listByResourceGroup(rg.name())) {
-                        if (si.kind().equals("app,linux")) {
-                            wal.add(si);
-                        }
-                    }
-                }
-            }
-        } catch (IOException | CanceledByUserException e) {
-            e.printStackTrace();
-        }
-        return wal;
     }
 
     private static WebApp createAppWithExisitingResourceGroup(Azure azure, String appName, String resourceGroup,

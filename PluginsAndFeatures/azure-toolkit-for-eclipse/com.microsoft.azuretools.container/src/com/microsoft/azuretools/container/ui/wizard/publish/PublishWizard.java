@@ -25,11 +25,16 @@ package com.microsoft.azuretools.container.ui.wizard.publish;
 import org.eclipse.jface.wizard.Wizard;
 
 public class PublishWizard extends Wizard {
+    private static final String TEXT_WINDOW_TITLE = "Publish to Web App on Linux";
     private StepOnePage p1;
     private StepTwoPage p2;
 
+    /**
+     *  Constructor.
+     */
     public PublishWizard() {
-        setWindowTitle("Publish to Web App on Linux");
+        setWindowTitle(TEXT_WINDOW_TITLE);
+        this.setNeedsProgressMonitor(false);
         p1 = new StepOnePage();
         p2 = new StepTwoPage();
     }

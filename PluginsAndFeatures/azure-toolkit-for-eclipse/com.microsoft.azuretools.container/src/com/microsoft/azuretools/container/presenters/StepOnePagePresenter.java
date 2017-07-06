@@ -22,8 +22,9 @@
 
 package com.microsoft.azuretools.container.presenters;
 
-import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
+import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.views.StepOnePageView;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.ProgressHandler;
@@ -34,12 +35,21 @@ import com.spotify.docker.client.messages.RegistryAuth;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import com.microsoft.azuretools.container.DockerRuntime;
-
 public class StepOnePagePresenter<V extends StepOnePageView> extends MvpPresenter<V> {
+
+    private static final String TEXT_PUSHING_LATEST_IMAGE_TO_REGISTRY = "Pushing latest image to registry";
+
+    /**
+     * onPushLatestImageToRegistry.
+     * 
+     * @param registryUrl
+     * @param registryUsername
+     * @param registryPassword
+     * @return
+     */
     public boolean onPushLatestImageToRegistry(String registryUrl, String registryUsername, String registryPassword) {
         try {
-            getMvpView().onRequestPending();
+            getMvpView().onRequestPending(TEXT_PUSHING_LATEST_IMAGE_TO_REGISTRY);
             DockerClient dockerClient = DockerRuntime.getInstance().getDockerBuilder().build();
             ProgressHandler progressHandler = new ProgressHandler() {
                 @Override
@@ -61,15 +71,16 @@ public class StepOnePagePresenter<V extends StepOnePageView> extends MvpPresente
                     updateRuntimeRegistryInfo(registryUrl, registryUsername, registryPassword);
                     V v = getMvpView();
                     if (v != null) {
-                        v.onRequestSucceed();
+                        v.onRequestSucceed(TEXT_PUSHING_LATEST_IMAGE_TO_REGISTRY);
                     }
                 });
-            }, e -> {
+            }, err -> {
                 DefaultLoader.getIdeHelper().invokeAndWait(() -> {
                     V v = getMvpView();
                     if (v != null) {
-                        String message = "onPushLatestImageToRegistry@StepOnePagePresenter";
-                        v.onRequestFail(message);
+                        System.err.println("onPushLatestImageToRegistry@StepOnePagePresenter");
+                        v.onRequestFail(TEXT_PUSHING_LATEST_IMAGE_TO_REGISTRY);
+                        v.onErrorWithException(TEXT_PUSHING_LATEST_IMAGE_TO_REGISTRY, (Exception) err);
                     }
                 });
             });

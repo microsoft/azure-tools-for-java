@@ -31,6 +31,21 @@ import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 public class AzureDeploymentProgressNotification {
 	private static final Logger log =  Logger.getLogger(AzureDeploymentProgressNotification.class.getName());
 
+    public static void createAzureDeploymentProgressNotification(String key, String desc, String url, String urltext, String status) {
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    WindowsAzureActivityLogView waView = (WindowsAzureActivityLogView) PlatformUI.getWorkbench()
+                            .getActiveWorkbenchWindow().getActivePage().showView("com.microsoft.azuretools.core.ui.views.WindowsAzureActivityLogView");
+                    waView.addDeployment(key, desc, new Date(), url, urltext, status);
+                } catch (Exception e) {
+                    log.log(Level.WARNING, "createAzureDeploymentProgressNotification: can't open Azure Activity Window", e);
+                }
+            }
+        });
+    }
+
 	public static void createAzureDeploymentProgressNotification(String deploymentName, String deploymentDescription) {
 		Display.getDefault().syncExec(new Runnable() {
 			@Override

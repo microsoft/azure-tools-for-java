@@ -22,14 +22,12 @@
 
 package com.microsoft.azuretools.container;
 
-import com.spotify.docker.client.DockerClient;
-
-import java.util.Properties;
-
-import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
+import java.util.Properties;
 
 public class DockerRuntime {
     private static final DockerRuntime INSTANCE = new DockerRuntime();
@@ -37,13 +35,22 @@ public class DockerRuntime {
     private Builder dockerBuilder = null;
 
     private String latestImageName = null;
-    
+
     private String registryUrl = null;
     private String registryUsername = null;
     private String registryPassword = null;
     private String latestWebAppName = null;
+    private String latestArtifactName = null;
+    
+    public synchronized String getLatestArtifactName() {
+        return latestArtifactName;
+    }
 
-	public synchronized String getLatestWebAppName() {
+    public synchronized void setLatestArtifactName(String latestArtifactName) {
+        this.latestArtifactName = latestArtifactName;
+    }
+
+    public synchronized String getLatestWebAppName() {
         return latestWebAppName;
     }
 
@@ -99,11 +106,20 @@ public class DockerRuntime {
         return runningContainerId;
     }
 
-    public synchronized void setRunningContainerId(String runningContainerId) throws DockerException, InterruptedException {
+    /**
+     * setRunningContainerId.
+     * 
+     * @param runningContainerId
+     * @throws DockerException
+     * @throws InterruptedException
+     */
+    public synchronized void setRunningContainerId(String runningContainerId)
+            throws DockerException, InterruptedException {
         // return if current running container is not clean.
         if (this.runningContainerId != null) {
             DockerClient docker = dockerBuilder.build();
-            long count = docker.listContainers().stream().filter(item -> item.id().equals(this.runningContainerId)).count();
+            long count = docker.listContainers().stream().filter(item -> item.id().equals(this.runningContainerId))
+                    .count();
             if (count > 0) {
                 return;
             }
@@ -117,6 +133,7 @@ public class DockerRuntime {
 
     /**
      * clean running container.
+     * 
      * @throws DockerException
      * @throws InterruptedException
      */
@@ -130,14 +147,33 @@ public class DockerRuntime {
         return;
     }
 
+    /**
+     * saveToProps.
+     * 
+     * @param props
+     * @return
+     */
     public Properties saveToProps(Properties props) {
-        if(registryUrl != null) props.setProperty("registryUrl", registryUrl);
-        if(registryUsername != null) props.setProperty("registryUsername", registryUsername);
-        if(registryPassword != null) props.setProperty("registryPassword", registryPassword);
-        if(latestWebAppName != null) props.setProperty("latestWebAppName", latestWebAppName);
+        if (registryUrl != null) {
+            props.setProperty("registryUrl", registryUrl);
+        }
+        if (registryUsername != null) {
+            props.setProperty("registryUsername", registryUsername);
+        }
+        if (registryPassword != null) {
+            props.setProperty("registryPassword", registryPassword);
+        }
+        if (latestWebAppName != null) {
+            props.setProperty("latestWebAppName", latestWebAppName);
+        }
         return props;
     }
 
+    /**
+     * loadFromProps.
+     * 
+     * @param props
+     */
     public void loadFromProps(Properties props) {
         registryUrl = props.getProperty("registryUrl");
         registryUsername = props.getProperty("registryUsername");

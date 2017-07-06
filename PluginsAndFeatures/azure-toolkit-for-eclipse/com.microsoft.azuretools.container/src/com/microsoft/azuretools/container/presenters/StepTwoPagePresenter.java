@@ -22,13 +22,6 @@
 
 package com.microsoft.azuretools.container.presenters;
 
-import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.adauth.AuthException;
@@ -36,24 +29,41 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.utils.WebAppOnLinuxUtil;
 import com.microsoft.azuretools.container.views.StepTwoPageView;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.CanceledByUserException;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
 public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresenter<V> {
-    final private List<SubscriptionDetail> binderSubscriptionDetails = new ArrayList<SubscriptionDetail>();
-    final private List<ResourceGroup> binderResourceGroup = new ArrayList<ResourceGroup>();
-    final private List<SiteInner> binderWebAppOnLinux = new ArrayList<>();
+    private static final String TEXT_LISTING_AEB_APP_ON_LINUX = "List Web App on Linux";
+    private static final String TEXT_DEPLOYING_TO_NEW_WEB_APP = "Deploy to new Web App on Linux";
+    private static final String TEXT_DEPLOYING_TO_EXISTING_WEB_APP = "Deploy to existing Web App on Linux";
+    private final List<SubscriptionDetail> binderSubscriptionDetails = new ArrayList<SubscriptionDetail>();
+    private final List<ResourceGroup> binderResourceGroup = new ArrayList<ResourceGroup>();
+    private final List<SiteInner> binderWebAppOnLinux = new ArrayList<>();
 
+    /**
+     * Action on subscription change.
+     * 
+     * @param index
+     *            subscription index on selection
+     */
     public void onChangeSubscription(int index) {
         doFetchResourceGroup(binderSubscriptionDetails.get(index));
         getMvpView().fillResourceGroups(binderResourceGroup);
     }
 
+    /**
+     * used for refreshing list.
+     */
     public void onRefreshWebAppsOnLinux() {
-        getMvpView().onRequestPending();
+        getMvpView().onRequestPending(TEXT_LISTING_AEB_APP_ON_LINUX);
         Observable.fromCallable(() -> {
             updateWebAppOnLinuxList();
             return null;
@@ -68,22 +78,24 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
                     v.fillWebApps(binderWebAppOnLinux);
                     v.fillSubscriptions(binderSubscriptionDetails);
                     v.fillResourceGroups(binderResourceGroup);
-                    v.onRequestSucceed();
+                    v.onRequestSucceed(TEXT_LISTING_AEB_APP_ON_LINUX);
                 }
             });
         }, err -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 V v = getMvpView();
                 if (v != null) {
-                    String message = "onRefreshWebAppsOnLinux@StepTwoPagePresenter ";
-                    v.onRequestFail(message + err.getMessage());
-                    v.onErrorWithException(message, (Exception) err);
+                    System.err.println("onRefreshWebAppsOnLinux@StepTwoPagePresenter ");
+                    v.onRequestFail(TEXT_LISTING_AEB_APP_ON_LINUX);
+                    v.onErrorWithException(TEXT_LISTING_AEB_APP_ON_LINUX, (Exception) err);
                 }
             });
         });
     }
 
-    // used for 1st-time retrieving list
+    /**
+     * used for first time retrieving list.
+     */
     public void onListWebAppsOnLinux() {
         Observable.fromCallable(() -> {
             updateWebAppOnLinuxList();
@@ -105,16 +117,22 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 V v = getMvpView();
                 if (v != null) {
-                    String message = "onListWebAppsOnLinux@StepTwoPagePresenter ";
-                    v.onRequestFail(message + err.getMessage());
-                    v.onErrorWithException(message, (Exception) err);
+                    System.err.println("onListWebAppsOnLinux@StepTwoPagePresenter ");
+                    v.onRequestFail(TEXT_LISTING_AEB_APP_ON_LINUX);
+                    v.onErrorWithException(TEXT_LISTING_AEB_APP_ON_LINUX, (Exception) err);
                 }
             });
         });
     }
 
+    /**
+     * Deploy to existing Web App on Linux.
+     * 
+     * @param selectionIndex
+     *            Web App index on selection
+     */
     public void onDeployToExisitingWebApp(int selectionIndex) {
-        getMvpView().onRequestPending();
+        getMvpView().onRequestPending(TEXT_DEPLOYING_TO_EXISTING_WEB_APP);
         Observable.fromCallable(() -> {
             SiteInner si = binderWebAppOnLinux.get(selectionIndex);
             return WebAppOnLinuxUtil.deployToExisting(si);
@@ -123,7 +141,7 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 V v = getMvpView();
                 if (v != null) {
-                    v.onRequestSucceed();
+                    v.onRequestSucceed(TEXT_DEPLOYING_TO_EXISTING_WEB_APP);
                     v.finishDeploy();
                 }
             });
@@ -131,18 +149,27 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 V v = getMvpView();
                 if (v != null) {
-                    String message = "onDeployToExisitingWebApp@StepTwoPopupDialogPresenter ";
-                    v.onRequestFail(message + err.getMessage());
-                    v.onErrorWithException(message, (Exception) err);
+                    System.err.println("onDeployToExisitingWebApp@StepTwoPopupDialogPresenter");
+                    v.onRequestFail(TEXT_DEPLOYING_TO_EXISTING_WEB_APP);
+                    v.onErrorWithException(TEXT_DEPLOYING_TO_EXISTING_WEB_APP, (Exception) err);
                 }
             });
         });
-
     }
 
+    /**
+     * Create new Web App on Linux and deploy on it.
+     * 
+     * @param appName
+     * @param subscriptionSelectionIndex
+     * @param resourceGroupName
+     * @param createNewRg
+     *            flag indicating whether resource group should be created.
+     * @throws IOException
+     */
     public void onDeployToNewWebApp(String appName, int subscriptionSelectionIndex, String resourceGroupName,
             boolean createNewRg) throws IOException {
-        getMvpView().onRequestPending();
+        getMvpView().onRequestPending(TEXT_DEPLOYING_TO_NEW_WEB_APP);
         Observable.fromCallable(() -> {
             return WebAppOnLinuxUtil.deployToNew(
                     binderSubscriptionDetails.get(subscriptionSelectionIndex).getSubscriptionId(), resourceGroupName,
@@ -152,7 +179,7 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 V v = getMvpView();
                 if (v != null) {
-                    v.onRequestSucceed();
+                    v.onRequestSucceed(TEXT_DEPLOYING_TO_NEW_WEB_APP);
                     v.finishDeploy();
                 }
             });
@@ -160,9 +187,9 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 V v = getMvpView();
                 if (v != null) {
-                    String message = "onDeployNew@StepTwoPopupDialogPresenter ";
-                    v.onRequestFail(message + err.getMessage());
-                    v.onErrorWithException(message, (Exception) err);
+                    System.err.println("onDeployNew@StepTwoPopupDialogPresenter ");
+                    v.onRequestFail(TEXT_DEPLOYING_TO_NEW_WEB_APP);
+                    v.onErrorWithException(TEXT_DEPLOYING_TO_NEW_WEB_APP, (Exception) err);
                 }
             });
         });

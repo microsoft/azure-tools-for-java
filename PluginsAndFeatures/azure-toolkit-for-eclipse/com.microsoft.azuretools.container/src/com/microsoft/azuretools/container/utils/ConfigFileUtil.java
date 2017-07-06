@@ -33,11 +33,19 @@ import org.eclipse.core.runtime.CoreException;
 
 public class ConfigFileUtil {
     private static String configFileName = "azuretools-config.properties";
-    
+
+    /**
+     * load config.
+     * 
+     * @param project
+     * @return
+     */
     public static Properties loadConfig(IProject project) {
         Properties prop = new Properties();
         IFile file = project.getFile(configFileName);
-        if(!file.exists()) return prop;
+        if (!file.exists()) {
+            return prop;
+        }
         try {
             prop.load(file.getContents());
         } catch (IOException | CoreException e) {
@@ -45,22 +53,28 @@ public class ConfigFileUtil {
         }
         return prop;
     }
-    
-    public static void saveConfig(IProject project, Properties prop){
+
+    /**
+     * save config.
+     * 
+     * @param project
+     * @param prop
+     */
+    public static void saveConfig(IProject project, Properties prop) {
         IFile file = project.getFile(configFileName);
-        
+
         try {
             ByteArrayOutputStream ous = new ByteArrayOutputStream();
             prop.store(ous, null);
             if (file.exists()) {
                 file.setContents(new ByteArrayInputStream(ous.toByteArray()), true, true, null);
-            }else {
+            } else {
                 file.create(new ByteArrayInputStream(ous.toByteArray()), true, null);
             }
-            
+
         } catch (Exception io) {
             io.printStackTrace();
-        } 
+        }
     }
-    
+
 }

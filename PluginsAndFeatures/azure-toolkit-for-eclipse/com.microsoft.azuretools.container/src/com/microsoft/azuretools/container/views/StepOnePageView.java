@@ -27,9 +27,9 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 public interface StepOnePageView extends MvpView {
     void fillRegistryInfo(String registryUrl, String username, String password);
 
-    void onRequestPending();
+    void onRequestPending(Object payload);
 
-    void onRequestSucceed();
+    void onRequestSucceed(Object payload);
 
-    void onRequestFail(String errorMsg);
+    void onRequestFail(Object payload);
 }

@@ -32,19 +32,16 @@ import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.DockerClient;
-
-import rx.Observable;
-import rx.schedulers.Schedulers;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 public class DockerRunHandler extends AzureAbstractHandler {
 
@@ -60,7 +57,8 @@ public class DockerRunHandler extends AzureAbstractHandler {
                 throw new Exception(Constant.ERROR_NO_SELECTED_PROJECT);
             }
             destinationPath = project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER + project.getName() + ".war";
-            // Initialize docker client according to env DOCKER_HOST & DOCKER_CERT_PATH
+            // Initialize docker client according to env DOCKER_HOST &
+            // DOCKER_CERT_PATH
             ConsoleLogger.info(Constant.MESSAGE_DOCKER_CONNECTING);
             Builder dockerBuilder = DockerRuntime.getInstance().getDockerBuilder();
             docker = dockerBuilder.build();

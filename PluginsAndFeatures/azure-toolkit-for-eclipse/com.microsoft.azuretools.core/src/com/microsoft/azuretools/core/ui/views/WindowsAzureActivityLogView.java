@@ -127,7 +127,31 @@ public class WindowsAzureActivityLogView extends ViewPart {
 
 		rows.put(key, new TableRowDescriptor(item, bar, link));
 	}
-
+	
+	public void addDeployment(String key, String desc, Date date, String url, String urltext, String status){
+	    addDeployment(key, desc, date);
+	    TableRowDescriptor row = rows.get(key);
+	    row.getProgressBar().setVisible(false);
+	    if(url != null){
+	        Link link = row.getLink();
+	        TableEditor editor = new TableEditor(table);
+	        editor.grabHorizontal = editor.grabVertical = true;
+	        link.setVisible(true);
+	        link.setText(String.format("  <a>%s</a>", (urltext==null?"Link":urltext)));
+	        row.getLink().addListener(SWT.Selection, event -> {
+	            try {
+                    PlatformUI.getWorkbench().getBrowserSupport().
+                    getExternalBrowser().openURL(new URL(url));
+                } catch (Exception e) {
+                }
+	        });
+	        editor.setEditor(link, row.getItem(), 1);
+	    }
+	    if(status != null){
+	        row.getItem().setText(2, status);
+	    }
+	}
+	
 	public void registerDeploymentListener() {
 		Activator.getDefault().addDeploymentEventListener(
 				new DeploymentEventListener() {

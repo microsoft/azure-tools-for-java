@@ -22,25 +22,30 @@
 
 package com.microsoft.azuretools.container.ui.wizard.publish;
 
-import java.util.Date;
-
+import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.presenters.StepOnePagePresenter;
 import com.microsoft.azuretools.container.views.PublishWizardPageView;
 import com.microsoft.azuretools.container.views.StepOnePageView;
 import com.microsoft.azuretools.core.components.AzureWizardPage;
+import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.forms.widgets.FormToolkit;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.forms.widgets.FormToolkit;
 
 public class StepOnePage extends AzureWizardPage implements StepOnePageView, PublishWizardPageView {
     private static final String TEXT_TITLE = "Push Docker Image to Azure Container Registry";
@@ -57,6 +62,13 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView, Pub
     public void dispose() {
         presenter.onDetachView();
         super.dispose();
+    }
+
+    // com.microsoft.azuretools.core.mvp.ui.base.MvpView
+    @Override
+    public void onErrorWithException(String message, Exception ex) {
+        ConsoleLogger.error(String.format("%s\n%s", message, ex.getMessage()));
+        this.showInformation(String.format("%s\n%s", message, ex.getMessage()));
     }
 
     // com.microsoft.azuretools.container.views.PublishWizardPageView
@@ -80,25 +92,28 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView, Pub
     }
 
     @Override
-    public void onRequestPending() {
+    public void onRequestPending(Object payload) {
         showInformation("Try pushing image ...");
         setWidgetsEnabledStatus(false);
+        AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(payload.toString(),
+                payload.toString(), null, null, "Start");
     }
 
     @Override
-    public void onRequestSucceed() {
+    public void onRequestSucceed(Object payload) {
         showInformation("Task OK");
         setWidgetsEnabledStatus(true);
         ((PublishWizardDialog) this.getContainer()).doNextPressed();
+        AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(payload.toString(),
+                payload.toString(), null, null, "Success");
     }
 
     @Override
-    public void onRequestFail(String errorMsg) {
-        if (errorMsg != null) {
-            showInformation(errorMsg);
-        }
+    public void onRequestFail(Object payload) {
         showInformation("Task FAIL");
         setWidgetsEnabledStatus(true);
+        AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(payload.toString(),
+                payload.toString(), null, null, "Fail");
     }
 
     /**
@@ -116,27 +131,28 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView, Pub
      * Create contents of the wizard.
      * 
      * @param parent
+     *            parent composite
      */
     public void createControl(Composite parent) {
         Composite container = new Composite(parent, SWT.NULL);
 
         setControl(container);
-        GridLayout gl_container = new GridLayout(2, false);
-        gl_container.verticalSpacing = 20;
-        gl_container.marginWidth = 10;
-        gl_container.marginTop = 20;
-        gl_container.marginBottom = 20;
-        gl_container.marginRight = 40;
-        gl_container.marginLeft = 40;
-        container.setLayout(gl_container);
+        GridLayout gridLayoutContainer = new GridLayout(2, false);
+        gridLayoutContainer.verticalSpacing = 20;
+        gridLayoutContainer.marginWidth = 10;
+        gridLayoutContainer.marginTop = 20;
+        gridLayoutContainer.marginBottom = 20;
+        gridLayoutContainer.marginRight = 40;
+        gridLayoutContainer.marginLeft = 40;
+        container.setLayout(gridLayoutContainer);
 
         Font boldFont = new Font(this.getShell().getDisplay(), new FontData("Segoe UI", 9, SWT.BOLD));
 
         Label lblServerUrl = new Label(container, SWT.NONE);
         lblServerUrl.setFont(boldFont);
-        GridData gd_lblServerUrl = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_lblServerUrl.widthHint = 75;
-        lblServerUrl.setLayoutData(gd_lblServerUrl);
+        GridData gridDataLblServerUrl = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gridDataLblServerUrl.widthHint = 75;
+        lblServerUrl.setLayoutData(gridDataLblServerUrl);
         lblServerUrl.setText("Server URL");
 
         txtRegistryUrl = new Text(container, SWT.BORDER);
@@ -144,9 +160,9 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView, Pub
 
         Label lblUsername = new Label(container, SWT.NONE);
         lblUsername.setFont(boldFont);
-        GridData gd_lblUsername = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_lblUsername.widthHint = 75;
-        lblUsername.setLayoutData(gd_lblUsername);
+        GridData gridDataLblUsername = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gridDataLblUsername.widthHint = 75;
+        lblUsername.setLayoutData(gridDataLblUsername);
         lblUsername.setText("Username");
 
         txtUsername = new Text(container, SWT.BORDER);
@@ -154,9 +170,9 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView, Pub
 
         Label lblPassword = new Label(container, SWT.NONE);
         lblPassword.setFont(boldFont);
-        GridData gd_lblPassword = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_lblPassword.widthHint = 75;
-        lblPassword.setLayoutData(gd_lblPassword);
+        GridData gridDataLblPassword = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gridDataLblPassword.widthHint = 75;
+        lblPassword.setLayoutData(gridDataLblPassword);
         lblPassword.setText("Password");
 
         txtPassword = new Text(container, SWT.BORDER | SWT.PASSWORD);
@@ -195,7 +211,7 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView, Pub
         txtRegistryUrl.setEditable(enableStatus);
         txtUsername.setEditable(enableStatus);
         txtPassword.setEditable(enableStatus);
-
+        ((PublishWizardDialog) this.getContainer()).setProgressBarVisible(!enableStatus);
         ((PublishWizardDialog) this.getContainer()).setNextEnabled(enableStatus);
         ((PublishWizardDialog) this.getContainer()).setFinishEnabled(enableStatus);
         ((PublishWizardDialog) this.getContainer()).setCancelEnabled(enableStatus);
@@ -205,6 +221,8 @@ public class StepOnePage extends AzureWizardPage implements StepOnePageView, Pub
         if (string == null) {
             return;
         }
-        styledText.append(String.format("[%s]\t%s\n", (new Date()).toString(), string));
+        DateFormat df = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
+        String date = df.format(new Date());
+        styledText.append(String.format("[%s]\t%s\n", date, string));
     }
 }
