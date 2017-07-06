@@ -85,7 +85,7 @@ public class WebAppOnLinuxUtil {
                 return updateApp(webapp, pr, imageName);
             }
         }
-        return null;
+        throw new IOException("Cannot find such Web App on Linux in subscriptions.");
     }
 
     /**
@@ -128,7 +128,6 @@ public class WebAppOnLinuxUtil {
             return null;
         }
         Azure azure = azureManager.getAzure(subscriptionId);
-
         WebApp app = null;
         /**
          * java.util.NoSuchElementException: Sequence contains no elements
@@ -146,11 +145,12 @@ public class WebAppOnLinuxUtil {
             } else {
                 app = createAppWithExisitingResourceGroup(azure, appName, resourceGroup, privateRegistry, imageName);
             }
-        } else {
-            // update existing app
-            updateApp(app, privateRegistry, imageName);
         }
-        return app;
+        if (app == null) {
+            throw new IOException("Fail to create Web App on Linux.");
+        } else {
+            return app;
+        }
     }
 
     private static WebApp createAppWithExisitingResourceGroup(Azure azure, String appName, String resourceGroup,

@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.container.presenters;
 
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.adauth.AuthException;
@@ -38,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import rx.Observable;
-import rx.schedulers.Schedulers;
 
 public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresenter<V> {
     private static final String TEXT_LISTING_AEB_APP_ON_LINUX = "List Web App on Linux";
@@ -66,29 +66,31 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
         getMvpView().onRequestPending(TEXT_LISTING_AEB_APP_ON_LINUX);
         Observable.fromCallable(() -> {
             updateWebAppOnLinuxList();
-            return null;
-        }).subscribeOn(Schedulers.io()).subscribe(res -> {
             doFetchSubscriptions();
             if (binderSubscriptionDetails.size() > 0) {
                 doFetchResourceGroup(binderSubscriptionDetails.get(0));
             }
+            return null;
+        }).subscribeOn(getSchedulerProvider().io()).subscribe(res -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                V v = getMvpView();
-                if (v != null) {
-                    v.fillWebApps(binderWebAppOnLinux);
-                    v.fillSubscriptions(binderSubscriptionDetails);
-                    v.fillResourceGroups(binderResourceGroup);
-                    v.onRequestSucceed(TEXT_LISTING_AEB_APP_ON_LINUX);
+                if (isViewDetached()) {
+                    return;
                 }
+                V v = getMvpView();
+                v.fillWebApps(binderWebAppOnLinux);
+                v.fillSubscriptions(binderSubscriptionDetails);
+                v.fillResourceGroups(binderResourceGroup);
+                v.onRequestSucceed(TEXT_LISTING_AEB_APP_ON_LINUX);
             });
         }, err -> {
+            System.err.println("onRefreshWebAppsOnLinux@StepTwoPagePresenter ");
             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                V v = getMvpView();
-                if (v != null) {
-                    System.err.println("onRefreshWebAppsOnLinux@StepTwoPagePresenter ");
-                    v.onRequestFail(TEXT_LISTING_AEB_APP_ON_LINUX);
-                    v.onErrorWithException(TEXT_LISTING_AEB_APP_ON_LINUX, (Exception) err);
+                if (isViewDetached()) {
+                    return;
                 }
+                V v = getMvpView();
+                v.onRequestFail(TEXT_LISTING_AEB_APP_ON_LINUX);
+                v.onErrorWithException(TEXT_LISTING_AEB_APP_ON_LINUX, (Exception) err);
             });
         });
     }
@@ -99,28 +101,30 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
     public void onListWebAppsOnLinux() {
         Observable.fromCallable(() -> {
             updateWebAppOnLinuxList();
+            doFetchSubscriptions();
+            if (binderSubscriptionDetails.size() > 0) {
+                doFetchResourceGroup(binderSubscriptionDetails.get(0));
+            }
             return null;
-        }).subscribeOn(Schedulers.io()).subscribe(res -> {
+        }).subscribeOn(getSchedulerProvider().io()).subscribe(res -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                doFetchSubscriptions();
-                if (binderSubscriptionDetails.size() > 0) {
-                    doFetchResourceGroup(binderSubscriptionDetails.get(0));
+                if (isViewDetached()) {
+                    return;
                 }
                 V v = getMvpView();
-                if (v != null) {
-                    v.fillWebApps(binderWebAppOnLinux);
-                    v.fillSubscriptions(binderSubscriptionDetails);
-                    v.fillResourceGroups(binderResourceGroup);
-                }
+                v.fillWebApps(binderWebAppOnLinux);
+                v.fillSubscriptions(binderSubscriptionDetails);
+                v.fillResourceGroups(binderResourceGroup);
             });
         }, err -> {
+            System.err.println("onListWebAppsOnLinux@StepTwoPagePresenter ");
             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                V v = getMvpView();
-                if (v != null) {
-                    System.err.println("onListWebAppsOnLinux@StepTwoPagePresenter ");
-                    v.onRequestFail(TEXT_LISTING_AEB_APP_ON_LINUX);
-                    v.onErrorWithException(TEXT_LISTING_AEB_APP_ON_LINUX, (Exception) err);
+                if (isViewDetached()) {
+                    return;
                 }
+                V v = getMvpView();
+                v.onRequestFail(TEXT_LISTING_AEB_APP_ON_LINUX);
+                v.onErrorWithException(TEXT_LISTING_AEB_APP_ON_LINUX, (Exception) err);
             });
         });
     }
@@ -135,24 +139,27 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
         getMvpView().onRequestPending(TEXT_DEPLOYING_TO_EXISTING_WEB_APP);
         Observable.fromCallable(() -> {
             SiteInner si = binderWebAppOnLinux.get(selectionIndex);
-            return WebAppOnLinuxUtil.deployToExisting(si);
-        }).subscribeOn(Schedulers.io()).subscribe(app -> {
+            WebApp app = WebAppOnLinuxUtil.deployToExisting(si);
             DockerRuntime.getInstance().setLatestWebAppName(app.name());
+            return app;
+        }).subscribeOn(getSchedulerProvider().io()).subscribe(empty -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                V v = getMvpView();
-                if (v != null) {
-                    v.onRequestSucceed(TEXT_DEPLOYING_TO_EXISTING_WEB_APP);
-                    v.finishDeploy();
+                if (isViewDetached()) {
+                    return;
                 }
+                V v = getMvpView();
+                v.onRequestSucceed(TEXT_DEPLOYING_TO_EXISTING_WEB_APP);
+                v.finishDeploy();
             });
         }, err -> {
+            System.err.println("onDeployToExisitingWebApp@StepTwoPopupDialogPresenter");
             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                V v = getMvpView();
-                if (v != null) {
-                    System.err.println("onDeployToExisitingWebApp@StepTwoPopupDialogPresenter");
-                    v.onRequestFail(TEXT_DEPLOYING_TO_EXISTING_WEB_APP);
-                    v.onErrorWithException(TEXT_DEPLOYING_TO_EXISTING_WEB_APP, (Exception) err);
+                if (isViewDetached()) {
+                    return;
                 }
+                V v = getMvpView();
+                v.onRequestFail(TEXT_DEPLOYING_TO_EXISTING_WEB_APP);
+                v.onErrorWithException(TEXT_DEPLOYING_TO_EXISTING_WEB_APP, (Exception) err);
             });
         });
     }
@@ -171,26 +178,29 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
             boolean createNewRg) throws IOException {
         getMvpView().onRequestPending(TEXT_DEPLOYING_TO_NEW_WEB_APP);
         Observable.fromCallable(() -> {
-            return WebAppOnLinuxUtil.deployToNew(
+            WebApp app = WebAppOnLinuxUtil.deployToNew(
                     binderSubscriptionDetails.get(subscriptionSelectionIndex).getSubscriptionId(), resourceGroupName,
                     appName, createNewRg);
-        }).subscribeOn(Schedulers.io()).subscribe(app -> {
-            DockerRuntime.getInstance().setLatestWebAppName(appName);
+            DockerRuntime.getInstance().setLatestWebAppName(app.name());
+            return app;
+        }).subscribeOn(getSchedulerProvider().io()).subscribe(app -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                V v = getMvpView();
-                if (v != null) {
-                    v.onRequestSucceed(TEXT_DEPLOYING_TO_NEW_WEB_APP);
-                    v.finishDeploy();
+                if (isViewDetached()) {
+                    return;
                 }
+                V v = getMvpView();
+                v.onRequestSucceed(TEXT_DEPLOYING_TO_NEW_WEB_APP);
+                v.finishDeploy();
             });
         }, err -> {
+            System.err.println("onDeployNew@StepTwoPopupDialogPresenter ");
             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                V v = getMvpView();
-                if (v != null) {
-                    System.err.println("onDeployNew@StepTwoPopupDialogPresenter ");
-                    v.onRequestFail(TEXT_DEPLOYING_TO_NEW_WEB_APP);
-                    v.onErrorWithException(TEXT_DEPLOYING_TO_NEW_WEB_APP, (Exception) err);
+                if (isViewDetached()) {
+                    return;
                 }
+                V v = getMvpView();
+                v.onRequestFail(TEXT_DEPLOYING_TO_NEW_WEB_APP);
+                v.onErrorWithException(TEXT_DEPLOYING_TO_NEW_WEB_APP, (Exception) err);
             });
         });
     }

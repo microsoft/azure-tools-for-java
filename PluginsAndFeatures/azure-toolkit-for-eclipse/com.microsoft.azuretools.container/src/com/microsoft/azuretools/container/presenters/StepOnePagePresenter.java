@@ -33,7 +33,6 @@ import com.spotify.docker.client.messages.ProgressMessage;
 import com.spotify.docker.client.messages.RegistryAuth;
 
 import rx.Observable;
-import rx.schedulers.Schedulers;
 
 public class StepOnePagePresenter<V extends StepOnePageView> extends MvpPresenter<V> {
 
@@ -64,24 +63,26 @@ public class StepOnePagePresenter<V extends StepOnePageView> extends MvpPresente
             Observable.fromCallable(() -> {
                 doPushImage(dockerClient, registryUrl, registryUsername, registryPassword,
                         DockerRuntime.getInstance().getLatestImageName(), progressHandler);
+                updateRuntimeRegistryInfo(registryUrl, registryUsername, registryPassword);
                 return null;
-            }).subscribeOn(Schedulers.io()).subscribe(wal -> {
+            }).subscribeOn(getSchedulerProvider().io()).subscribe(wal -> {
                 // persist registry information
                 DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                    updateRuntimeRegistryInfo(registryUrl, registryUsername, registryPassword);
-                    V v = getMvpView();
-                    if (v != null) {
-                        v.onRequestSucceed(TEXT_PUSHING_LATEST_IMAGE_TO_REGISTRY);
+                    if (isViewDetached()) {
+                        return;
                     }
+                    V v = getMvpView();
+                    v.onRequestSucceed(TEXT_PUSHING_LATEST_IMAGE_TO_REGISTRY);
                 });
             }, err -> {
+                System.err.println("onPushLatestImageToRegistry@StepOnePagePresenter");
                 DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                    V v = getMvpView();
-                    if (v != null) {
-                        System.err.println("onPushLatestImageToRegistry@StepOnePagePresenter");
-                        v.onRequestFail(TEXT_PUSHING_LATEST_IMAGE_TO_REGISTRY);
-                        v.onErrorWithException(TEXT_PUSHING_LATEST_IMAGE_TO_REGISTRY, (Exception) err);
+                    if (isViewDetached()) {
+                        return;
                     }
+                    V v = getMvpView();
+                    v.onRequestFail(TEXT_PUSHING_LATEST_IMAGE_TO_REGISTRY);
+                    v.onErrorWithException(TEXT_PUSHING_LATEST_IMAGE_TO_REGISTRY, (Exception) err);
                 });
             });
         } catch (Exception e) {
