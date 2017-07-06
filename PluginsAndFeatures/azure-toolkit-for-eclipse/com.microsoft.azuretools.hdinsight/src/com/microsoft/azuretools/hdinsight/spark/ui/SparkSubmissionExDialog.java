@@ -83,9 +83,9 @@ public class SparkSubmissionExDialog extends Dialog {
 	private Combo selectedArtifactComboBox;
 	private Text selectedArtifactTextField;
 	private Button artifactBrowseButton;
-	private Text mainClassTextField;
 	private Table jobConfigurationTable;
 	private TableViewer tableViewer;
+	private Combo mainClassCombo;
 	private Text commandLineTextField;
 	private Text referencedJarsTextField;
 	private Text referencedFilesTextField;
@@ -280,7 +280,7 @@ public class SparkSubmissionExDialog extends Dialog {
 		gridData.horizontalAlignment = SWT.FILL;
 		gridData.grabExcessHorizontalSpace = true;
 
-		Combo mainClassCombo = new Combo(composite, SWT.DROP_DOWN);
+		mainClassCombo = new Combo(composite, SWT.DROP_DOWN);
 		mainClassCombo.setLayoutData(gridData);
 		try {
 			java.util.Set<String> classes = getClassesWithMainMethod();
@@ -469,7 +469,7 @@ public class SparkSubmissionExDialog extends Dialog {
 				.getData(clustersListComboBox.getText());
 
 		String selectedArtifactName = selectedArtifactComboBox.getText();
-		String className = mainClassTextField.getText().trim();
+		String className = mainClassCombo.getText().trim();
 		String commandLine = commandLineTextField.getText().trim();
 		String localArtifactPath = selectedArtifactTextField.getText();
 		String selectedClusterName = selectedClusterDetail.getName();
