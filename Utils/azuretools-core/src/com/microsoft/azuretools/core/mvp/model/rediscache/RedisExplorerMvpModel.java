@@ -86,6 +86,13 @@ public class RedisExplorerMvpModel {
         }
     }
 
+    public boolean checkKeyExistance(String sid, String id, int db, String key) throws Exception {
+        try (Jedis jedis = RedisConnectionPools.getInstance().getJedis(sid, id)) {
+            jedis.select(db);
+            return jedis.exists(key);
+        }
+    }
+
     /**
      * Scan the keys with count defined in DEFAULT_KEY_COUNT
      * 

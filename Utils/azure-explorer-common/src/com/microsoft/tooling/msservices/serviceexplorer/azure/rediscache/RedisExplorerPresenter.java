@@ -120,6 +120,33 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
         });
     }
 
+    public void onGetKeyAndValue(int db, String key) {
+        Observable.fromCallable(() -> {
+            boolean isExist = RedisExplorerMvpModel.getInstance().checkKeyExistance(sid, id, db, key);
+            if (!isExist) {
+                return null;
+            } else {
+                return getValueByKey(db, key);
+            }
+        })
+        .subscribeOn(getSchedulerProvider().io())
+        .subscribe(result -> {
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
+                if (result == null) {
+                    getMvpView().getKeyFail();
+                    return;
+                }
+                getMvpView().updateKeyList();
+                getMvpView().showContent(result);
+            });
+        }, e -> {
+            errorHandler(CANNOT_GET_REDIS_INFO, (Exception) e);
+        });
+    }
+
     /**
      * Called when one list item is selected.
      * 
@@ -134,43 +161,7 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
      */
     public void onkeySelect(int db, String key) {
         Observable.fromCallable(() -> {
-            String type = RedisExplorerMvpModel.getInstance().getKeyType(sid, id, db, key).toUpperCase();
-            ArrayList<String[]> columnData = new ArrayList<String[]>();
-            switch (RedisKeyType.valueOf(type)) {
-                case STRING:
-                    String stringVal = RedisExplorerMvpModel.getInstance().getStringValue(sid, id, db, key);
-                    columnData.add(new String[] { stringVal });
-                    return new RedisValueData(columnData, RedisKeyType.STRING);
-                case LIST:
-                    List<String> listVal = RedisExplorerMvpModel.getInstance().getListValue(sid, id, db, key);
-                    for (int i = 0; i < listVal.size(); i++) {
-                        columnData.add(new String[] { String.valueOf(i + 1), listVal.get(i) });
-                    }
-                    return new RedisValueData(columnData, RedisKeyType.LIST);
-                case SET:
-                    ScanResult<String> setVal = RedisExplorerMvpModel.getInstance().getSetValue(sid, id, db, key,
-                            SCAN_POINTER_START);
-                    for (String row : setVal.getResult()) {
-                        columnData.add(new String[] { row });
-                    }
-                    return new RedisValueData(columnData, RedisKeyType.SET);
-                case ZSET:
-                    Set<Tuple> zsetVal = RedisExplorerMvpModel.getInstance().getZSetValue(sid, id, db, key);
-                    for (Tuple tuple : zsetVal) {
-                        columnData.add(new String[] { String.valueOf(tuple.getScore()), tuple.getElement() });
-                    }
-                    return new RedisValueData(columnData, RedisKeyType.ZSET);
-                case HASH:
-                    ScanResult<Entry<String, String>> hashVal = RedisExplorerMvpModel.getInstance().getHashValue(sid,
-                            id, db, key, SCAN_POINTER_START);
-                    for (Entry<String, String> hash : hashVal.getResult()) {
-                        columnData.add(new String[] { hash.getKey(), hash.getValue() });
-                    }
-                    return new RedisValueData(columnData, RedisKeyType.HASH);
-                default:
-                    return null;
-
-            }
+            return getValueByKey(db, key);
         })
         .subscribeOn(getSchedulerProvider().io())
         .subscribe(result -> {
@@ -202,6 +193,45 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
     public void initializeResourceData(String sid, String id) {
         this.sid = sid;
         this.id = id;
+    }
+
+    private RedisValueData getValueByKey(int db, String key) throws Exception {
+        String type = RedisExplorerMvpModel.getInstance().getKeyType(sid, id, db, key).toUpperCase();
+        ArrayList<String[]> columnData = new ArrayList<String[]>();
+        switch (RedisKeyType.valueOf(type)) {
+            case STRING:
+                String stringVal = RedisExplorerMvpModel.getInstance().getStringValue(sid, id, db, key);
+                columnData.add(new String[] { stringVal });
+                return new RedisValueData(columnData, RedisKeyType.STRING);
+            case LIST:
+                List<String> listVal = RedisExplorerMvpModel.getInstance().getListValue(sid, id, db, key);
+                for (int i = 0; i < listVal.size(); i++) {
+                    columnData.add(new String[] { String.valueOf(i + 1), listVal.get(i) });
+                }
+                return new RedisValueData(columnData, RedisKeyType.LIST);
+            case SET:
+                ScanResult<String> setVal = RedisExplorerMvpModel.getInstance().getSetValue(sid, id, db, key,
+                        SCAN_POINTER_START);
+                for (String row : setVal.getResult()) {
+                    columnData.add(new String[] { row });
+                }
+                return new RedisValueData(columnData, RedisKeyType.SET);
+            case ZSET:
+                Set<Tuple> zsetVal = RedisExplorerMvpModel.getInstance().getZSetValue(sid, id, db, key);
+                for (Tuple tuple : zsetVal) {
+                    columnData.add(new String[] { String.valueOf(tuple.getScore()), tuple.getElement() });
+                }
+                return new RedisValueData(columnData, RedisKeyType.ZSET);
+            case HASH:
+                ScanResult<Entry<String, String>> hashVal = RedisExplorerMvpModel.getInstance().getHashValue(sid,
+                        id, db, key, SCAN_POINTER_START);
+                for (Entry<String, String> hash : hashVal.getResult()) {
+                    columnData.add(new String[] { hash.getKey(), hash.getValue() });
+                }
+                return new RedisValueData(columnData, RedisKeyType.HASH);
+            default:
+                return null;
+        }
     }
 
     private void errorHandler(String msg, Exception e) {

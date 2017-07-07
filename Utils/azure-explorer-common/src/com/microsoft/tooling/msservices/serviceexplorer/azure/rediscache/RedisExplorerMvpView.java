@@ -27,10 +27,14 @@ import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
 
 public interface RedisExplorerMvpView extends MvpView {
-    
+
     void renderDbCombo(int num);
-    
+
     void showScanResult(RedisScanResult result);
-    
+
     void showContent(RedisValueData val);
+
+    void updateKeyList();
+
+    void getKeyFail();
 }

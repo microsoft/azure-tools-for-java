@@ -53,7 +53,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     private static final String DELETE_ACTION = "Delete";
     private static final String SHOW_PROPERTY_ACTION = "Show properties";
     private static final String OPEN_IN_BROWSER_ACTION = "Open in browser";
-    private static final String OPEN_EXPLORER = "Open Explorer";
+    private static final String OPEN_EXPLORER = "Open Redis Explorer";
     
     // string format
     private static final String DELETE_CONFIRM_DIALOG_FORMAT = "This operation will delete redis cache: %s."
@@ -133,7 +133,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         if (!CREATING_STATE.equals(this.provisionState)) {
             addAction(DELETE_ACTION, null, new DeleteRedisCacheAction());
             addAction(SHOW_PROPERTY_ACTION, null, new ShowRedisCachePropertyAction());
-            //addAction(OPEN_EXPLORER, null, new OpenRedisExplorerAction());
+            addAction(OPEN_EXPLORER, null, new OpenRedisExplorerAction());
         }
         addAction(OPEN_IN_BROWSER_ACTION, null, new OpenInBrowserAction());
         super.loadActions();

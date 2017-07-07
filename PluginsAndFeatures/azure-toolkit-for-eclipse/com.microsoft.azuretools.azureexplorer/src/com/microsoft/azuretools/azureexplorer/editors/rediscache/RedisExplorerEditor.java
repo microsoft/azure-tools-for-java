@@ -24,9 +24,10 @@ package com.microsoft.azuretools.azureexplorer.editors.rediscache;
 
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
-import javax.swing.JOptionPane;
+import java.util.Collections;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -35,8 +36,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -51,6 +54,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
 import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
+import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerMvpView;
@@ -58,41 +62,54 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisEx
 
 public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpView {
 
+    // Identifier of this class
     public static final String ID = "com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor";
 
+    // Icon path for the search button
+    private static final String SEARCH_ICON_PATH = "icons/search.png";
+
+    // Presenter instance
     private final RedisExplorerPresenter<RedisExplorerEditor> redisExplorerPresenter;
 
+    // Local variables
     private String currentCursor;
     private String lastChosenKey;
 
+    // Constants
     private static final String[] LIST_TITLE = new String[] { "Index", "Item" };
     private static final String[] SET_TITLE = new String[] { "Member" };
     private static final String[] ZSET_TITLE = new String[] { "Score", "Member" };
     private static final String[] HASH_TITLE = new String[] { "Field", "Value" };
 
     private static final String DEFAULT_SCAN_PATTERN = "*";
+    private static final String ACTION_GET = "GET";
+    private static final String ACTION_SCAN = "SCAN";
 
-    private ScrolledComposite scrolledComposite;
-    private Composite cmpoMain;
+    private static final int NO_MARGIN = 0;
+    private static final int PROGRESS_MARGIN_TOP = 2;
+    private static final int PROGRESS_MARGIN_BOTTOM = 3;
+    private static final int PROGRESS_WIDTH = 75;
+
+    // Widgets
     private Combo cbDatabase;
-    private SashForm sashForm;
-    private Composite cmpoKeyArea;
-    private Composite cmpoValueArea;
-    private Text txtKeyScanPattern;
-    private Button btnScanKey;
-    private Label lblType;
+    private Text txtKeyPattern;
+    private Button btnSearch;
     private List lstKey;
     private Composite cmpoInnerValue;
     private Composite cmpoStringValue;
     private Table tblInnerValue;
     private Text txtStringValue;
     private Button btnScanMoreKey;
-    private Text txtKeyName;
+    private Combo cbActionType;
+    private ProgressBar progressBar;
+    private Label lblKeyValue;
+    private Label lblTypeValue;
+    private Composite cmpoValue;
 
     public RedisExplorerEditor() {
         this.redisExplorerPresenter = new RedisExplorerPresenter<RedisExplorerEditor>();
         this.redisExplorerPresenter.onAttachView(this);
-        currentCursor = DEFAULT_SCAN_PATTERN;
+        currentCursor = SCAN_POINTER_START;
         lastChosenKey = "";
     }
 
@@ -103,105 +120,174 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
      */
     @Override
     public void createPartControl(Composite parent) {
-        scrolledComposite = new ScrolledComposite(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         scrolledComposite.setExpandHorizontal(true);
         scrolledComposite.setExpandVertical(true);
 
-        cmpoMain = new Composite(scrolledComposite, SWT.NONE);
+        Composite cmpoMain = new Composite(scrolledComposite, SWT.NONE);
         GridLayout gridLayout = new GridLayout(2, false);
         cmpoMain.setLayout(gridLayout);
 
         Label lblChooseDb = new Label(cmpoMain, SWT.NONE);
         lblChooseDb.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        lblChooseDb.setText("Choose Database Index");
+        lblChooseDb.setText("Database :");
 
-        cbDatabase = new Combo(cmpoMain, SWT.NONE);
+        cbDatabase = new Combo(cmpoMain, SWT.READ_ONLY);
+        cbDatabase.setEnabled(false);
         cbDatabase.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 
-        sashForm = new SashForm(cmpoMain, SWT.HORIZONTAL);
+        SashForm sashForm = new SashForm(cmpoMain, SWT.HORIZONTAL);
         sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 2, 1));
 
-        cmpoKeyArea = new Composite(sashForm, SWT.BORDER);
+        Composite cmpoKeyArea = new Composite(sashForm, SWT.BORDER);
         cmpoKeyArea.setLayout(new GridLayout(3, false));
 
-        txtKeyScanPattern = new Text(cmpoKeyArea, SWT.BORDER);
-        txtKeyScanPattern.setText(DEFAULT_SCAN_PATTERN);
-        txtKeyScanPattern.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        cbActionType = new Combo(cmpoKeyArea, SWT.READ_ONLY);
+        cbActionType.setEnabled(false);
+        cbActionType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        cbActionType.add(ACTION_SCAN);
+        cbActionType.add(ACTION_GET);
+        cbActionType.select(0);
 
-        btnScanKey = new Button(cmpoKeyArea, SWT.NONE);
-        btnScanKey.setText("Scan Keys");
+        txtKeyPattern = new Text(cmpoKeyArea, SWT.BORDER);
+        txtKeyPattern.setEditable(false);
+        txtKeyPattern.setText(DEFAULT_SCAN_PATTERN);
+        txtKeyPattern.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        btnScanMoreKey = new Button(cmpoKeyArea, SWT.NONE);
-        btnScanMoreKey.setText("Scan More Keys");
+        btnSearch = new Button(cmpoKeyArea, SWT.NONE);
+        btnSearch.setEnabled(false);
+        btnSearch.setImage(Activator.getImageDescriptor(SEARCH_ICON_PATH).createImage());
 
         lstKey = new List(cmpoKeyArea, SWT.BORDER | SWT.V_SCROLL);
+        lstKey.setEnabled(false);
         lstKey.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 3, 1));
 
-        cmpoValueArea = new Composite(sashForm, SWT.BORDER);
-        cmpoValueArea.setLayout(new GridLayout(2, false));
+        btnScanMoreKey = new Button(cmpoKeyArea, SWT.NONE);
+        btnScanMoreKey.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 3, 1));
+        btnScanMoreKey.setEnabled(false);
+        btnScanMoreKey.setText("Scan More");
 
-        lblType = new Label(cmpoValueArea, SWT.NONE);
-        lblType.setText("Type");
+        Composite cmpoValueArea = new Composite(sashForm, SWT.NONE);
+        GridLayout cmpoValueAreaLayout = new GridLayout(2, false);
+        cmpoValueAreaLayout.marginWidth = NO_MARGIN;
+        cmpoValueAreaLayout.marginHeight = NO_MARGIN;
+        cmpoValueArea.setLayout(cmpoValueAreaLayout);
 
-        txtKeyName = new Text(cmpoValueArea, SWT.BORDER);
-        txtKeyName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        cmpoValue = new Composite(cmpoValueArea, SWT.BORDER);
+        cmpoValue.setLayout(new GridLayout(2, false));
+        cmpoValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
-        cmpoInnerValue = new Composite(cmpoValueArea, SWT.NONE);
-        GridLayout cmpoInnerValueLayout = new GridLayout(1, false);
-        cmpoInnerValueLayout.marginWidth = 0;
-        cmpoInnerValue.setLayout(cmpoInnerValueLayout);
+        Composite cmpoKeyInfo = new Composite(cmpoValue, SWT.NONE);
+        GridLayout cmpoKeyInfoLayout = new GridLayout(2, false);
+        cmpoKeyInfoLayout.verticalSpacing = 8;
+        cmpoKeyInfoLayout.marginHeight = NO_MARGIN;
+        cmpoKeyInfoLayout.marginTop = NO_MARGIN;
+        cmpoKeyInfoLayout.marginWidth = NO_MARGIN;
+        cmpoKeyInfo.setLayout(cmpoKeyInfoLayout);
+        cmpoKeyInfo.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false, 2, 1));
+
+        Label lblType = new Label(cmpoKeyInfo, SWT.NONE);
+        lblType.setText("Type :");
+
+        lblTypeValue = new Label(cmpoKeyInfo, SWT.NONE);
+        lblTypeValue.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+        Label lblKey = new Label(cmpoKeyInfo, SWT.NONE);
+        lblKey.setText("Key :");
+
+        lblKeyValue = new Label(cmpoKeyInfo, SWT.NONE);
+        lblKeyValue.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+        Label lblValue = new Label(cmpoKeyInfo, SWT.NONE);
+        lblValue.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+        lblValue.setText("Value :");
+
+        cmpoInnerValue = new Composite(cmpoValue, SWT.NONE);
         cmpoInnerValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
         cmpoInnerValue.setVisible(false);
+        GridLayout cmpoInnerValueLayout = new GridLayout(1, false);
+        cmpoInnerValueLayout.marginHeight = NO_MARGIN;
+        cmpoInnerValueLayout.marginWidth = NO_MARGIN;
+        cmpoInnerValue.setLayout(cmpoInnerValueLayout);
 
         tblInnerValue = new Table(cmpoInnerValue, SWT.BORDER | SWT.FULL_SELECTION);
-        tblInnerValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
+        tblInnerValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         tblInnerValue.setHeaderVisible(true);
         tblInnerValue.setLinesVisible(true);
 
-        cmpoStringValue = new Composite(cmpoValueArea, SWT.NONE);
-        GridLayout cmpoStringValueLayout = new GridLayout(1, false);
-        cmpoStringValueLayout.marginWidth = 0;
-        cmpoStringValue.setLayout(cmpoStringValueLayout);
-        cmpoStringValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 2, 1));
+        cmpoStringValue = new Composite(cmpoValue, SWT.NONE);
+        cmpoStringValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
         cmpoStringValue.setVisible(false);
-
-        Label lblStringValue = new Label(cmpoStringValue, SWT.NONE);
-        lblStringValue.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
-        lblStringValue.setText("Value");
+        GridLayout cmpoStringValueLayout = new GridLayout(1, false);
+        cmpoStringValueLayout.marginHeight = NO_MARGIN;
+        cmpoStringValueLayout.marginWidth = NO_MARGIN;
+        cmpoStringValue.setLayout(cmpoStringValueLayout);
 
         txtStringValue = new Text(cmpoStringValue, SWT.BORDER | SWT.READ_ONLY | SWT.MULTI);
         txtStringValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        txtStringValue.setBackground(tblInnerValue.getBackground());
+
+        Composite cmpoProgress = new Composite(cmpoValueArea, SWT.NONE);
+        GridLayout cmpoProgressLayout = new GridLayout(1, false);
+        cmpoProgressLayout.marginWidth = NO_MARGIN;
+        cmpoProgressLayout.marginTop = PROGRESS_MARGIN_TOP;
+        cmpoProgressLayout.marginBottom = PROGRESS_MARGIN_BOTTOM;
+        cmpoProgress.setLayout(cmpoProgressLayout);
+        cmpoProgress.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 2, 1));
+
+        progressBar = new ProgressBar(cmpoProgress, SWT.HORIZONTAL | SWT.INDETERMINATE);
+        GridData progressBarLayout = new GridData(SWT.RIGHT, SWT.BOTTOM, false, false, 1, 1);
+        progressBarLayout.widthHint = PROGRESS_WIDTH;
+        progressBar.setLayoutData(progressBarLayout);
         sashForm.setWeights(new int[] { 1, 1 });
+
         scrolledComposite.setContent(cmpoMain);
         scrolledComposite.setMinSize(cmpoMain.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 
         cbDatabase.addListener(SWT.Selection, event -> {
+            if (cbActionType.getText().equals(ACTION_GET)) {
+                return;
+            }
             setWidgetEnableStatus(false);
+            txtKeyPattern.setText(DEFAULT_SCAN_PATTERN);
             onDataBaseSelect();
         });
 
-        btnScanKey.addListener(SWT.Selection, event -> {
-            setWidgetEnableStatus(false);
-            redisExplorerPresenter.onKeyList(cbDatabase.getSelectionIndex(), SCAN_POINTER_START,
-                    txtKeyScanPattern.getText());
-            currentCursor = SCAN_POINTER_START;
-        });
-
-        btnScanMoreKey.addListener(SWT.Selection, event -> {
-            setWidgetEnableStatus(false);
-            redisExplorerPresenter.onKeyList(cbDatabase.getSelectionIndex(), currentCursor,
-                    txtKeyScanPattern.getText());
-        });
-
         lstKey.addListener(SWT.Selection, event -> {
-            setWidgetEnableStatus(false);
             String selectedKey = lstKey.getItem(lstKey.getSelectionIndex());
             if (selectedKey.equals(lastChosenKey)) {
                 return;
             }
+            setWidgetEnableStatus(false);
             lastChosenKey = selectedKey;
             redisExplorerPresenter.onkeySelect(cbDatabase.getSelectionIndex(), selectedKey);
         });
+
+        btnSearch.addListener(SWT.Selection, event -> {
+            onBtnSearchClick();
+        });
+
+        btnScanMoreKey.addListener(SWT.Selection, event -> {
+            setWidgetEnableStatus(false);
+            redisExplorerPresenter.onKeyList(cbDatabase.getSelectionIndex(), currentCursor, txtKeyPattern.getText());
+        });
+
+        txtKeyPattern.addListener(SWT.KeyDown, event -> {
+            // Enter key pressed
+            if (event.keyCode == SWT.CR) {
+                onBtnSearchClick();
+            }
+        });
+
+        cbActionType.addListener(SWT.Selection, event -> {
+            String selected = cbActionType.getText();
+            if (selected.equals(ACTION_GET)) {
+                btnScanMoreKey.setEnabled(false);
+            } else if (selected.equals(ACTION_SCAN)){
+                btnScanMoreKey.setEnabled(true);
+            }
+        });
+
     }
 
     @Override
@@ -219,18 +305,28 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     @Override
     public void showScanResult(RedisScanResult result) {
         lstKey.removeAll();
-        for (String key : result.getKeys()) {
+        java.util.List<String> keys = result.getKeys();
+        Collections.sort(keys);
+        for (String key : keys) {
             lstKey.add(key);
         }
         currentCursor = result.getNextCursor();
         setWidgetEnableStatus(true);
+        clearValueArea();
+    }
+
+    @Override
+    public void updateKeyList() {
+        lstKey.removeAll();
+        lstKey.add(txtKeyPattern.getText());
+        lstKey.select(0);
     }
 
     @Override
     public void showContent(RedisValueData val) {
         RedisKeyType type = val.getKeyType();
-        lblType.setText(type.toString());
-        txtKeyName.setText(lstKey.getItem(lstKey.getSelectionIndex()));
+        lblTypeValue.setText(type.toString());
+        lblKeyValue.setText(lstKey.getItem(lstKey.getSelectionIndex()));
         if (type.equals(RedisKeyType.STRING)) {
             if (val.getRowData().size() > 0 && val.getRowData().get(0).length > 0) {
                 txtStringValue.setText(val.getRowData().get(0)[0]);
@@ -285,16 +381,21 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
 
     @Override
     public void onErrorWithException(String message, Exception ex) {
-        JOptionPane.showMessageDialog(null, ex.getMessage(), message, JOptionPane.ERROR_MESSAGE, null);
+        RedisExplorerMvpView.super.onErrorWithException(message, ex);
         setWidgetEnableStatus(true);
     }
 
-    private void setWidgetEnableStatus(boolean enabled) {
-        cbDatabase.setEnabled(enabled);
-        txtKeyScanPattern.setEnabled(enabled);
-        btnScanKey.setEnabled(enabled);
-        btnScanMoreKey.setEnabled(enabled);
-        lstKey.setEnabled(enabled);
+    @Override
+    public void onError(String message) {
+        RedisExplorerMvpView.super.onError(message);
+        setWidgetEnableStatus(true);
+    }
+
+    @Override
+    public void getKeyFail() {
+        lstKey.removeAll();
+        setWidgetEnableStatus(true);
+        clearValueArea();
     }
 
     @Override
@@ -355,7 +456,6 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     }
 
     private void onDataBaseSelect() {
-        txtKeyScanPattern.setText(DEFAULT_SCAN_PATTERN);
         redisExplorerPresenter.onDbSelect(cbDatabase.getSelectionIndex());
     }
 
@@ -364,6 +464,37 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         ((GridData) cmpoStringValue.getLayoutData()).exclude = showTable;
         cmpoInnerValue.setVisible(showTable);
         cmpoStringValue.setVisible(!showTable);
-        cmpoValueArea.layout();
+        cmpoValue.layout();
+    }
+
+    private void setWidgetEnableStatus(boolean enabled) {
+        progressBar.setVisible(!enabled);
+        cbDatabase.setEnabled(enabled);
+        txtKeyPattern.setEditable(enabled);
+        btnSearch.setEnabled(enabled);
+        lstKey.setEnabled(enabled);
+        cbActionType.setEnabled(enabled);
+        btnScanMoreKey.setEnabled(enabled && cbActionType.getText().equals(ACTION_SCAN));
+    }
+
+    private void clearValueArea() {
+        lblKeyValue.setText("");
+        lblTypeValue.setText("");
+        cmpoInnerValue.setVisible(false);
+        cmpoStringValue.setVisible(false);
+    }
+
+    private void onBtnSearchClick() {
+        setWidgetEnableStatus(false);
+        String actionType = cbActionType.getText();
+        String key = txtKeyPattern.getText();
+        int dbIdx = cbDatabase.getSelectionIndex();
+        if (actionType.equals(ACTION_GET)) {
+            redisExplorerPresenter.onGetKeyAndValue(dbIdx, key);
+        } else if (actionType.equals(ACTION_SCAN)) {
+            redisExplorerPresenter.onKeyList(dbIdx, SCAN_POINTER_START, key);
+            currentCursor = SCAN_POINTER_START;
+        }
+        lastChosenKey = "";
     }
 }
