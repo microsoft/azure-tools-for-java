@@ -25,10 +25,18 @@ package com.microsoft.azuretools.core.mvp.ui.base;
 public interface MvpView {
     
     default void onError(String message) {
-        MvpUIHelperFactory.getInstance().getMvpUIHelper().showError(message);;
+        MvpUIHelper uiHelper = MvpUIHelperFactory.getInstance().getMvpUIHelper();
+        if (uiHelper == null) {
+            return;
+        }
+        uiHelper.showError(message);;
     }
     
     default void onErrorWithException(String message, Exception ex) {
-        MvpUIHelperFactory.getInstance().getMvpUIHelper().showException(message, ex);;
+        MvpUIHelper uiHelper = MvpUIHelperFactory.getInstance().getMvpUIHelper();
+        if (uiHelper == null) {
+            return;
+        }
+        uiHelper.showException(message, ex);;
     }
 }
