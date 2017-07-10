@@ -46,6 +46,7 @@
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.TableExplorerFileEditorProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider"/>
     <toolWindow
           anchor="left"
           factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"

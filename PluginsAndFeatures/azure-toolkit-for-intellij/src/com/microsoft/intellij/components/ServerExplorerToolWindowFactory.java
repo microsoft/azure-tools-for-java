@@ -47,7 +47,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -152,10 +151,6 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         JPopupMenu menu = new JPopupMenu();
 
         for (final NodeAction nodeAction : node.getNodeActions()) {
-            // Remove this if block when intellij's redis explorer is finished
-            if (nodeAction.getNode() instanceof RedisCacheNode && nodeAction.getName().equals("Open Explorer")) {
-                continue;
-            }
             JMenuItem menuItem = new JMenuItem(nodeAction.getName());
 //            menuItem.setIconTextGap(16);
             menuItem.setEnabled(nodeAction.isEnabled());

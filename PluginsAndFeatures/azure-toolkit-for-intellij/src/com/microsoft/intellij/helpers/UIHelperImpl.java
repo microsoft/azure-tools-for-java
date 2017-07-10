@@ -40,12 +40,13 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
 import com.microsoft.intellij.forms.OpenSSLFinderForm;
+import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
+import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
 import com.microsoft.intellij.helpers.storage.*;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.*;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 
 import javax.swing.*;
@@ -290,23 +291,13 @@ public class UIHelperImpl implements UIHelper {
             return;
         }
         Project project = (Project) node.getProject();
-        LightVirtualFile itemVirtualFile = null;
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         if (fileEditorManager == null) {
             return;
         }
-        for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
-            String fileSid = editedFile.getUserData(SUBSCRIPTION_ID);
-            if (fileSid != null && fileSid.equals(sid) &&
-                    editedFile.getName().equals(redisName) &&
-                    editedFile.getFileType().getName().equals(RedisCacheNode.TYPE)) {
-                itemVirtualFile = (LightVirtualFile) editedFile;
-                break;
-            }
-        }
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, redisName, RedisCachePropertyViewProvider.TYPE, sid, SUBSCRIPTION_ID);
         if (itemVirtualFile == null) {
-            itemVirtualFile = new LightVirtualFile(redisName);
-            itemVirtualFile.setFileType(getFileType(RedisCacheNode.TYPE, RedisCacheNode.REDISCACHE_ICON_PATH));
+            itemVirtualFile = createVirtualFile(redisName, RedisCachePropertyViewProvider.TYPE, RedisCacheNode.REDISCACHE_ICON_PATH );
             itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
             itemVirtualFile.putUserData(RESOURCE_ID, resId);
         }
@@ -321,7 +312,24 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openRedisExplorer(RedisCacheNode redisCacheNode) {
-        //TODO: implement for intellij
+        String redisName = redisCacheNode.getName() != null ? redisCacheNode.getName() : RedisCacheNode.TYPE;
+        String sid = redisCacheNode.getSubscriptionId();
+        String resId = redisCacheNode.getResourceId();
+        if (sid == null || resId == null) {
+            return;
+        }
+        Project project = (Project) redisCacheNode.getProject();
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        if (fileEditorManager == null) {
+            return;
+        }
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, redisName, RedisCacheExplorerProvider.TYPE, sid, SUBSCRIPTION_ID);
+        if (itemVirtualFile == null) {
+            itemVirtualFile = createVirtualFile(redisName, RedisCacheExplorerProvider.TYPE, RedisCacheNode.REDISCACHE_ICON_PATH);
+            itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
+            itemVirtualFile.putUserData(RESOURCE_ID, resId);
+        }
+        fileEditorManager.openFile( itemVirtualFile, true, true);
     }
 
     @Override
@@ -403,6 +411,26 @@ public class UIHelperImpl implements UIHelper {
     public static ImageIcon loadIcon(@Nullable String name) {
         java.net.URL url = UIHelperImpl.class.getResource("/icons/" + name);
         return new ImageIcon(url);
+    }
+
+    private LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String name, String type, String sid, Key<String> sidKey) {
+        LightVirtualFile virtualFile = null;
+        for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
+            String fileSid = editedFile.getUserData(SUBSCRIPTION_ID);
+            if (fileSid != null && fileSid.equals(sid) &&
+                    editedFile.getName().equals(name) &&
+                    editedFile.getFileType().getName().equals(type)) {
+                virtualFile = (LightVirtualFile) editedFile;
+                break;
+            }
+        }
+        return virtualFile;
+    }
+
+    private LightVirtualFile createVirtualFile(String name, String type, String icon) {
+        LightVirtualFile itemVirtualFile = new LightVirtualFile(name);
+        itemVirtualFile.setFileType(getFileType(type, icon));
+        return itemVirtualFile;
     }
 
     public static String readableFileSize(long size) {

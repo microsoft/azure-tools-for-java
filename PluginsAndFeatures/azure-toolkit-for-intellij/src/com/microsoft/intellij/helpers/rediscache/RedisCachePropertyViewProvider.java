@@ -31,11 +31,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class RedisCachePropertyViewProvider implements FileEditorProvider {
 
-    private static final String REDIS_PROPERTY_TYPE = "Microsoft.Cache/Redis";
+    public static final String TYPE = "REDIS_PROPERTY_VIEW";
 
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        return virtualFile.getFileType().getName().equals(REDIS_PROPERTY_TYPE);
+        return virtualFile.getFileType().getName().equals(TYPE);
     }
 
     @NotNull
@@ -48,7 +48,7 @@ public class RedisCachePropertyViewProvider implements FileEditorProvider {
     @NotNull
     @Override
     public String getEditorTypeId() {
-        return REDIS_PROPERTY_TYPE;
+        return TYPE;
     }
 
     @NotNull
