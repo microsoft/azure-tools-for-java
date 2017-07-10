@@ -186,6 +186,27 @@ public class RedisExplorerPresenterTest {
     }
 
     @Test
+    public void testOnGetKeyAndValue() throws Exception {
+        when(redisExplorerMvpModelMock.checkKeyExistance(MOCK_SUBSCRIPTION, MOCK_ID, MOCK_DB, MOCK_KEY)).thenReturn(true);
+        when(redisExplorerMvpModelMock.getKeyType(MOCK_SUBSCRIPTION, MOCK_ID, MOCK_DB, MOCK_KEY)).thenReturn(TYPE_STRING);
+        when(redisExplorerMvpModelMock.getStringValue(MOCK_SUBSCRIPTION, MOCK_ID, MOCK_DB, MOCK_KEY)).thenReturn("");
+
+        redisExplorerPresenter.onGetKeyAndValue(MOCK_DB, MOCK_KEY);
+        testSchedulerProvider.triggerActions();
+        verify(redisExplorerMvpViewMock).updateKeyList();
+        verify(redisExplorerMvpViewMock).showContent(Mockito.any(RedisValueData.class));
+    }
+
+    @Test
+    public void testOnGetKeyAndValueWithNoneExistKey() throws Exception {
+        when(redisExplorerMvpModelMock.checkKeyExistance(MOCK_SUBSCRIPTION, MOCK_ID, MOCK_DB, MOCK_KEY)).thenReturn(false);
+
+        redisExplorerPresenter.onGetKeyAndValue(MOCK_DB, MOCK_KEY);
+        testSchedulerProvider.triggerActions();
+        verify(redisExplorerMvpViewMock).getKeyFail();
+    }
+
+    @Test
     public void testOnRelease() {
         PowerMockito.mockStatic(RedisConnectionPools.class);
         when(RedisConnectionPools.getInstance()).thenReturn(redisConnectionPoolsMock);

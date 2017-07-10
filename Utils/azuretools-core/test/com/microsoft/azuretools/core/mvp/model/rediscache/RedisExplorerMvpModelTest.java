@@ -133,4 +133,11 @@ public class RedisExplorerMvpModelTest {
         verify(jedisMock, times(1)).select(Mockito.eq(MOCK_DB));
         verify(jedisMock, times(1)).hscan(Mockito.eq(MOCK_KEY), Mockito.eq(MOCK_CURSOR), Mockito.any(ScanParams.class));
     }
+
+    @Test
+    public void testCheckKeyExistance() throws Exception {
+        RedisExplorerMvpModel.getInstance().checkKeyExistance(MOCK_SUBSCRIPTION, MOCK_REDIS_ID, MOCK_DB, MOCK_KEY);
+        verify(jedisMock, times(1)).select(Mockito.eq(MOCK_DB));
+        verify(jedisMock, times(1)).exists(Mockito.eq(MOCK_KEY));
+    }
 }
