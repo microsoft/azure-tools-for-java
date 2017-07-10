@@ -30,8 +30,10 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.CanceledByUserException;
 import java.io.IOException;
@@ -72,6 +74,10 @@ public class WebAppOnLinuxUtil {
      * @throws IOException
      */
     public static WebApp deployToExisting(SiteInner app) throws IOException {
+        /**
+         * TODO: workaround to get WebApp instance for it. should persist subsId
+         * or wait for API ready
+         */
         PrivateRegistry pr = new PrivateRegistry(DockerRuntime.getInstance().getRegistryUrl(),
                 DockerRuntime.getInstance().getRegistryUsername(), DockerRuntime.getInstance().getRegistryPassword());
         String imageName = DockerRuntime.getInstance().getLatestImageName();
@@ -80,7 +86,10 @@ public class WebAppOnLinuxUtil {
         WebApp webapp = null;
         for (Subscription sb : azureManager.getSubscriptions()) {
             Azure azure = azureManager.getAzure(sb.subscriptionId());
-            webapp = azure.webApps().getByResourceGroup(app.resourceGroup(), app.name());
+            try {
+                webapp = azure.webApps().getByResourceGroup(app.resourceGroup(), app.name());
+            } catch (Exception e) {
+            }
             if (webapp != null) {
                 return updateApp(webapp, pr, imageName);
             }
@@ -106,9 +115,12 @@ public class WebAppOnLinuxUtil {
         if (update) {
             AzureModelController.updateSubscriptionMaps(null);
         }
-        for (Subscription sb : azureManager.getSubscriptions()) {
-            Azure azure = azureManager.getAzure(sb.subscriptionId());
-            for (ResourceGroup rg : azure.resourceGroups().list()) {
+        AzureModel azureModel = AzureModel.getInstance();
+        Map<SubscriptionDetail, List<ResourceGroup>> subscriptionToResourceGroupMap = azureModel
+                .getSubscriptionToResourceGroupMap();
+        for (SubscriptionDetail sb : subscriptionToResourceGroupMap.keySet()) {
+            Azure azure = azureManager.getAzure(sb.getSubscriptionId());
+            for (ResourceGroup rg : subscriptionToResourceGroupMap.get(sb)) {
                 for (SiteInner si : azure.webApps().inner().listByResourceGroup(rg.name())) {
                     if (si.kind().equals("app,linux")) {
                         wal.add(si);
