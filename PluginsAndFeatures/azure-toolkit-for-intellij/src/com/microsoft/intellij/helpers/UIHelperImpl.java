@@ -295,7 +295,7 @@ public class UIHelperImpl implements UIHelper {
         if (fileEditorManager == null) {
             return;
         }
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, redisName, RedisCachePropertyViewProvider.TYPE, sid, SUBSCRIPTION_ID);
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, RedisCachePropertyViewProvider.TYPE, resId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(redisName, RedisCachePropertyViewProvider.TYPE, RedisCacheNode.REDISCACHE_ICON_PATH );
             itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
@@ -323,7 +323,7 @@ public class UIHelperImpl implements UIHelper {
         if (fileEditorManager == null) {
             return;
         }
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, redisName, RedisCacheExplorerProvider.TYPE, sid, SUBSCRIPTION_ID);
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, RedisCacheExplorerProvider.TYPE, resId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(redisName, RedisCacheExplorerProvider.TYPE, RedisCacheNode.REDISCACHE_ICON_PATH);
             itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
@@ -413,13 +413,12 @@ public class UIHelperImpl implements UIHelper {
         return new ImageIcon(url);
     }
 
-    private LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String name, String type, String sid, Key<String> sidKey) {
+    private LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String fileType, String resourceId) {
         LightVirtualFile virtualFile = null;
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
-            String fileSid = editedFile.getUserData(SUBSCRIPTION_ID);
-            if (fileSid != null && fileSid.equals(sid) &&
-                    editedFile.getName().equals(name) &&
-                    editedFile.getFileType().getName().equals(type)) {
+            String fileResourceId = editedFile.getUserData(RESOURCE_ID);
+            if (fileResourceId != null && fileResourceId.equals(resourceId) &&
+                    editedFile.getFileType().getName().equals(fileType)) {
                 virtualFile = (LightVirtualFile) editedFile;
                 break;
             }
