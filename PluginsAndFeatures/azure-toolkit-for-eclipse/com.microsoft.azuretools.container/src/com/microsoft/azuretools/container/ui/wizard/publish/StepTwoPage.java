@@ -325,11 +325,10 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         textAppName.setText("linuxwebapp-" + date);
 
         Label lblResourceGroup = new Label(grpAppService, SWT.NONE);
-        lblResourceGroup.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+        lblResourceGroup.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
         formToolkit.adapt(lblResourceGroup, true, true);
         lblResourceGroup.setText("Resource Group:");
         lblResourceGroup.setBackground(grpAppService.getBackground());
-        new Label(grpAppService, SWT.NONE);
 
         btnResourceGroupCreateNew = new Button(grpAppService, SWT.RADIO);
         btnResourceGroupCreateNew.addListener(SWT.Selection, event -> radioResourceGroupLogic());
