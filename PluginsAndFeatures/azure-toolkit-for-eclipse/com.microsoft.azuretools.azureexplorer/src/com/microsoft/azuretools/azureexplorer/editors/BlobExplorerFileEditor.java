@@ -91,7 +91,7 @@ import com.microsoft.tooling.msservices.model.storage.BlobItem;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
-import sun.misc.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 public class BlobExplorerFileEditor extends EditorPart implements TelemetryProperties {
 	private static final String COPY_URL = "Copy URL";
@@ -101,7 +101,7 @@ public class BlobExplorerFileEditor extends EditorPart implements TelemetryPrope
 	private static final String REFRESH = "Refresh";
 	private static final String UPLOAD_BLOB = "Upload Blob";
 	private static final String DELETE_SELECTED_BLOB = "Delete Selected Blob";
-	
+
     private Text queryTextField;
     private Button queryButton;
     private Button refreshButton;
@@ -599,7 +599,7 @@ public class BlobExplorerFileEditor extends EditorPart implements TelemetryPrope
                                                 targetFile.getParentFile());
 
                                         InputStream errorStream = p.getErrorStream();
-                                        String errResponse = new String(IOUtils.readFully(errorStream, -1, true));
+                                        String errResponse = new String(IOUtils.readFully(errorStream, -1));
 
                                         if (p.waitFor() != 0) {
                                             throw new Exception(errResponse);

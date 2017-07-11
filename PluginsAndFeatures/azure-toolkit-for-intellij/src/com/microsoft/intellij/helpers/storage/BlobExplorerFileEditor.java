@@ -52,7 +52,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import sun.misc.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -635,7 +635,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                                                     targetFile.getParentFile());
 
                                             InputStream errorStream = p.getErrorStream();
-                                            String errResponse = new String(IOUtils.readFully(errorStream, -1, true));
+                                            String errResponse = new String(IOUtils.readFully(errorStream, -1));
 
                                             if (p.waitFor() != 0) {
                                                 throw new Exception(errResponse);
