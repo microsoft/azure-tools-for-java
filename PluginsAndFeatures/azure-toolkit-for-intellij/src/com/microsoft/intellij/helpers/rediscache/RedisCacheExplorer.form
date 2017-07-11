@@ -227,6 +227,7 @@
                               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                             </constraints>
                             <properties>
+                              <autoscrolls value="true"/>
                               <font size="16" style="1"/>
                               <opaque value="false"/>
                               <visible value="false"/>
@@ -236,6 +237,7 @@
                               <component id="d648f" class="javax.swing.JTable" binding="tblInnerValue">
                                 <constraints/>
                                 <properties>
+                                  <cellSelectionEnabled value="true"/>
                                   <fillsViewportHeight value="true"/>
                                   <font size="16"/>
                                   <intercellSpacing width="1" height="5"/>
