@@ -73,7 +73,9 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
         splitPane.setResizeWeight(SPLIT_PANE_WEIGHT);
         splitPane.setDividerSize(SPLIT_PANE_DIVIDER_SIZE);
 
-        tblInnerValue.getTableHeader().setFont(new Font(TABLE_HEADER_FONT, Font.PLAIN, TABLE_HEADER_FONT_SIZE));
+        Font valueFont = new Font(TABLE_HEADER_FONT, Font.PLAIN, TABLE_HEADER_FONT_SIZE);
+        tblInnerValue.getTableHeader().setFont(valueFont);
+        txtStringValue.setFont(valueFont);
         DefaultTableCellRenderer cellRenderer = (DefaultTableCellRenderer) tblInnerValue.getTableHeader().getDefaultRenderer();
         cellRenderer.setHorizontalAlignment(JLabel.LEFT);
         pnlInnerValue.setBackground(lstKey.getBackground());
@@ -194,7 +196,7 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
             String[][] data = new String[val.getRowData().size()][columnNames.length];
             data = val.getRowData().toArray(data);
 
-            DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
+            ReadOnlyTableModel tableModel = new ReadOnlyTableModel(data, columnNames);
             setValueCompositeVisible(true);
             tblInnerValue.setModel(tableModel);
         }
@@ -264,5 +266,16 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
             currentCursor = SCAN_POINTER_START;
         }
         lastChosenKey = "";
+    }
+
+    private class ReadOnlyTableModel extends DefaultTableModel {
+        ReadOnlyTableModel(Object[][] data, String[] columnNames) {
+            super(data, columnNames);
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
     }
 }
