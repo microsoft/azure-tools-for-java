@@ -28,6 +28,7 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.container.DockerRuntime;
+import com.microsoft.azuretools.container.utils.RequestPayload;
 import com.microsoft.azuretools.container.utils.WebAppOnLinuxUtil;
 import com.microsoft.azuretools.container.views.StepTwoPageView;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
@@ -80,7 +81,7 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
                 v.fillWebApps(binderWebAppOnLinux);
                 v.fillSubscriptions(binderSubscriptionDetails);
                 v.fillResourceGroups(binderResourceGroup);
-                v.onRequestSucceed(TEXT_LISTING_AEB_APP_ON_LINUX);
+                v.onRequestSucceed(new RequestPayload(TEXT_LISTING_AEB_APP_ON_LINUX, null));
             });
         }, err -> {
             System.err.println("onRefreshWebAppsOnLinux@StepTwoPagePresenter ");
@@ -148,7 +149,10 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
                     return;
                 }
                 V v = getMvpView();
-                v.onRequestSucceed(TEXT_DEPLOYING_TO_EXISTING_WEB_APP);
+                v.onRequestSucceed(new RequestPayload(TEXT_DEPLOYING_TO_EXISTING_WEB_APP,
+                        String.format("http://%s.azurewebsites.net/%s",
+                                DockerRuntime.getInstance().getLatestWebAppName(),
+                                DockerRuntime.getInstance().getLatestArtifactName())));
                 v.finishDeploy();
             });
         }, err -> {
@@ -189,7 +193,10 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
                     return;
                 }
                 V v = getMvpView();
-                v.onRequestSucceed(TEXT_DEPLOYING_TO_NEW_WEB_APP);
+                v.onRequestSucceed(new RequestPayload(TEXT_DEPLOYING_TO_NEW_WEB_APP,
+                        String.format("http://%s.azurewebsites.net/%s",
+                                DockerRuntime.getInstance().getLatestWebAppName(),
+                                DockerRuntime.getInstance().getLatestArtifactName())));
                 v.finishDeploy();
             });
         }, err -> {

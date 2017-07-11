@@ -28,6 +28,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.presenters.StepTwoPagePresenter;
+import com.microsoft.azuretools.container.utils.RequestPayload;
 import com.microsoft.azuretools.container.views.PublishWizardPageView;
 import com.microsoft.azuretools.container.views.StepTwoPageView;
 import com.microsoft.azuretools.core.components.AzureWizardPage;
@@ -127,11 +128,8 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
     public void onRequestSucceed(Object payload) {
         setWidgetsEnabledStatus(true);
         ((PublishWizardDialog) this.getContainer()).updateButtons();
-        AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(payload.toString(),
-                payload.toString(),
-                String.format("http://%s.azurewebsites.net/%s", DockerRuntime.getInstance().getLatestWebAppName(),
-                        DockerRuntime.getInstance().getLatestArtifactName()),
-                null, "Success");
+        AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(((RequestPayload) payload).name(),
+                ((RequestPayload) payload).name(), ((RequestPayload) payload).url(), null, "Success");
     }
 
     @Override
@@ -245,10 +243,7 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         cmpoWebAppOnLinux.setLayout(new GridLayout(2, false));
 
         Composite cmpoWebAppsTable = formToolkit.createComposite(cmpoWebAppOnLinux, SWT.NONE);
-        GridData gridDataCmpoWebAppsTable = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gridDataCmpoWebAppsTable.minimumWidth = 455;
-        gridDataCmpoWebAppsTable.widthHint = 457;
-        cmpoWebAppsTable.setLayoutData(gridDataCmpoWebAppsTable);
+        cmpoWebAppsTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         cmpoWebAppsTable.setLayout(new FillLayout(SWT.HORIZONTAL));
         formToolkit.paintBordersFor(cmpoWebAppsTable);
 
@@ -273,17 +268,12 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         gl_cmpoActionButtons.marginWidth = 0;
         gl_cmpoActionButtons.marginHeight = 0;
         cmpoActionButtons.setLayout(gl_cmpoActionButtons);
-        GridData gd_cmpoActionButtons = new GridData(SWT.RIGHT, SWT.FILL, false, true, 1, 1);
-        gd_cmpoActionButtons.minimumWidth = 75;
-        gd_cmpoActionButtons.widthHint = 75;
-        cmpoActionButtons.setLayoutData(gd_cmpoActionButtons);
+        cmpoActionButtons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
         formToolkit.paintBordersFor(cmpoActionButtons);
 
         btnRefresh = new Button(cmpoActionButtons, SWT.NONE);
-        GridData gridDataBtnRefresh = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gridDataBtnRefresh.minimumWidth = 75;
-        gridDataBtnRefresh.widthHint = 75;
-        btnRefresh.setLayoutData(gridDataBtnRefresh);
+
+        btnRefresh.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1));
         formToolkit.adapt(btnRefresh, true, true);
         btnRefresh.setText(TEXT_BUTTON_REFRESH);
         btnRefresh.addListener(SWT.Selection, event -> onBtnRefreshSelection());
@@ -309,9 +299,7 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         gridLayoutGrpAppService.marginWidth = 10;
         grpAppService.setLayout(gridLayoutGrpAppService);
 
-        Font boldFont = new Font(Display.getCurrent(), new FontData("Segoe UI", 9, SWT.BOLD));
         Label lblAppName = new Label(grpAppService, SWT.NONE);
-        lblAppName.setFont(boldFont);
         GridData gridDataLblAppName = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
         gridDataLblAppName.widthHint = 75;
         lblAppName.setLayoutData(gridDataLblAppName);
@@ -326,7 +314,6 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         lblazurewebsitescom.setText(".azurewebsites.net");
 
         Label lblSubscription = new Label(grpAppService, SWT.NONE);
-        lblSubscription.setFont(boldFont);
         lblSubscription.setText("Subscription");
 
         comboSubscription = new Combo(grpAppService, SWT.READ_ONLY);
@@ -338,10 +325,11 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         textAppName.setText("linuxwebapp-" + date);
 
         Label lblResourceGroup = new Label(grpAppService, SWT.NONE);
-        lblResourceGroup.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
-        lblResourceGroup.setFont(boldFont);
+        lblResourceGroup.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
         formToolkit.adapt(lblResourceGroup, true, true);
         lblResourceGroup.setText("Resource Group:");
+        lblResourceGroup.setBackground(grpAppService.getBackground());
+        new Label(grpAppService, SWT.NONE);
 
         btnResourceGroupCreateNew = new Button(grpAppService, SWT.RADIO);
         btnResourceGroupCreateNew.addListener(SWT.Selection, event -> radioResourceGroupLogic());
