@@ -54,7 +54,7 @@ public abstract class AzureListenerWrapper implements Listener {
     }
 
     @Override
-    public void handleEvent(Event event) {
+    public final void handleEvent(Event event) {
         sendTelemetry(event);
         handleEventFunc(event);        
     }
