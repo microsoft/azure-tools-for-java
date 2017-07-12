@@ -118,9 +118,24 @@
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
             description="ShowSubscriptionsAction" />
+    <action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.DockerizeAction"
+            text="Add Docker Support..." description="Azure website deployment for Java"
+            icon="/icons/AddDockerSupport_16.png">
+    </action>
+    <action id="Actions.DockerRun" class="com.microsoft.intellij.actions.DockerRunAction"
+            text="Docker Run..." description="Azure website deployment for Java"
+            icon="/icons/DockerRun_16.png">
+    </action>
+    <action id="Actions.DockerPublish" class="com.microsoft.intellij.actions.DockerPublish"
+            text="Publish to Web App on Linux..." description="Azure website deployment for Java"
+            icon="/icons/PublishWebAppOnLinux_16.png">
+    </action>
 
     <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/azure.png" popup="true"
            class="com.microsoft.intellij.actions.AzurePopupGroup">
+      <reference ref="Actions.AddDockerSupport"/>
+      <reference ref="Actions.DockerRun"/>
+      <reference ref="Actions.DockerPublish"/>
       <reference ref="Actions.AzureWebDeploy"/>
       <reference ref="Actions.AzureDockerHostDeploy"/>
       <separator/>

@@ -53,16 +53,32 @@ public abstract class AzureAnAction extends AnAction {
 
     @Override
     public final void actionPerformed(AnActionEvent anActionEvent) {
+        sendTelemetryOnAction(anActionEvent, "Execute", null);
+        onActionPerformed(anActionEvent);
+    }
+
+    public void sendTelemetryOnAction(AnActionEvent anActionEvent, final String action, Map<String, String> extraInfo) {
         final Map<String, String> properties = new HashMap<>();
         properties.put("Text", anActionEvent.getPresentation().getText());
         properties.put("Description", anActionEvent.getPresentation().getDescription());
         properties.put("Place", anActionEvent.getPlace());
         properties.put("ActionId", anActionEvent.getActionManager().getId(this));
+        if (extraInfo != null) {
+            properties.putAll(extraInfo);
+        }
         if (this instanceof TelemetryProperties) {
             properties.putAll(((TelemetryProperties) this).toProperties());
         }
         AppInsightsClient.createByType(AppInsightsClient.EventType.Action, anActionEvent.getPresentation().getText(), null, properties);
+    }
 
-        onActionPerformed(anActionEvent);
+    public void sendTelemetryOnSuccess(AnActionEvent anActionEvent, Map<String, String> extraInfo) {
+        sendTelemetryOnAction(anActionEvent, "Success", extraInfo);
+    }
+
+    public void sendTelemetryOnException(AnActionEvent anActionEvent, Throwable e) {
+        Map<String, String> extraInfo = new HashMap<>();
+        extraInfo.put("ErrorMessage", e.getMessage());
+        this.sendTelemetryOnAction(anActionEvent, "Exception", extraInfo);
     }
 }
