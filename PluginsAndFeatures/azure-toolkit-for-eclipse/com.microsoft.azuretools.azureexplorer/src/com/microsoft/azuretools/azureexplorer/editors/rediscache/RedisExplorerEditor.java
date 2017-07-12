@@ -24,6 +24,14 @@ package com.microsoft.azuretools.azureexplorer.editors.rediscache;
 
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
+import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
+import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.core.components.AzureListenerWrapper;
+import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
+import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerMvpView;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerPresenter;
+
 import java.util.Collections;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -35,6 +43,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.ProgressBar;
@@ -50,13 +59,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
-
-import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
-import com.microsoft.azuretools.azureexplorer.Activator;
-import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
-import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerMvpView;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerPresenter;
 
 public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpView {
 
@@ -104,6 +106,9 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     private Label lblTypeValue;
     private Composite cmpoValue;
 
+    /**
+     * Constructor.
+     */
     public RedisExplorerEditor() {
         this.redisExplorerPresenter = new RedisExplorerPresenter<RedisExplorerEditor>();
         this.redisExplorerPresenter.onAttachView(this);
@@ -114,7 +119,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
     /**
      * Create contents of the editor part.
      * 
-     * @param parent
+     * @param parent.
      */
     @Override
     public void createPartControl(Composite parent) {
@@ -177,12 +182,12 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         cmpoValue.setLayout(new GridLayout(2, false));
         cmpoValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
-        Composite cmpoKeyInfo = new Composite(cmpoValue, SWT.NONE);
         GridLayout cmpoKeyInfoLayout = new GridLayout(2, false);
         cmpoKeyInfoLayout.verticalSpacing = 8;
         cmpoKeyInfoLayout.marginHeight = NO_MARGIN;
         cmpoKeyInfoLayout.marginTop = NO_MARGIN;
         cmpoKeyInfoLayout.marginWidth = NO_MARGIN;
+        Composite cmpoKeyInfo = new Composite(cmpoValue, SWT.NONE);
         cmpoKeyInfo.setLayout(cmpoKeyInfoLayout);
         cmpoKeyInfo.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false, 2, 1));
 
@@ -227,11 +232,11 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         txtStringValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         txtStringValue.setBackground(tblInnerValue.getBackground());
 
-        Composite cmpoProgress = new Composite(cmpoValueArea, SWT.NONE);
         GridLayout cmpoProgressLayout = new GridLayout(1, false);
         cmpoProgressLayout.marginWidth = NO_MARGIN;
         cmpoProgressLayout.marginTop = PROGRESS_MARGIN_TOP;
         cmpoProgressLayout.marginBottom = PROGRESS_MARGIN_BOTTOM;
+        Composite cmpoProgress = new Composite(cmpoValueArea, SWT.NONE);
         cmpoProgress.setLayout(cmpoProgressLayout);
         cmpoProgress.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 2, 1));
 
@@ -244,32 +249,46 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         scrolledComposite.setContent(cmpoMain);
         scrolledComposite.setMinSize(cmpoMain.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 
-        cbDatabase.addListener(SWT.Selection, event -> {
-            if (cbActionType.getText().equals(ACTION_GET)) {
-                return;
+        
+        cbDatabase.addListener(SWT.Selection, new AzureListenerWrapper(ID, "cbDatabase", null) {
+            @Override 
+            protected void handleEventFunc(Event event) {
+                if (cbActionType.getText().equals(ACTION_GET)) {
+                    return;
+                }
+                setWidgetEnableStatus(false);
+                txtKeyPattern.setText(DEFAULT_SCAN_PATTERN);
+                onDataBaseSelect();
             }
-            setWidgetEnableStatus(false);
-            txtKeyPattern.setText(DEFAULT_SCAN_PATTERN);
-            onDataBaseSelect();
         });
 
-        lstKey.addListener(SWT.Selection, event -> {
-            String selectedKey = lstKey.getItem(lstKey.getSelectionIndex());
-            if (selectedKey.equals(lastChosenKey)) {
-                return;
+        lstKey.addListener(SWT.Selection, new AzureListenerWrapper(ID, "lstKey", null) {
+            @Override
+            protected void handleEventFunc(Event event) {
+                String selectedKey = lstKey.getItem(lstKey.getSelectionIndex());
+                if (selectedKey.equals(lastChosenKey)) {
+                    return;
+                }
+                setWidgetEnableStatus(false);
+                lastChosenKey = selectedKey;
+                redisExplorerPresenter.onkeySelect(cbDatabase.getSelectionIndex(), selectedKey);
             }
-            setWidgetEnableStatus(false);
-            lastChosenKey = selectedKey;
-            redisExplorerPresenter.onkeySelect(cbDatabase.getSelectionIndex(), selectedKey);
         });
 
-        btnSearch.addListener(SWT.Selection, event -> {
-            onBtnSearchClick();
+        btnSearch.addListener(SWT.Selection, new AzureListenerWrapper(ID, "btnSearch", null) {
+            @Override
+            protected void handleEventFunc(Event event) {
+                onBtnSearchClick();
+            }
         });
 
-        btnScanMoreKey.addListener(SWT.Selection, event -> {
-            setWidgetEnableStatus(false);
-            redisExplorerPresenter.onKeyList(cbDatabase.getSelectionIndex(), currentCursor, txtKeyPattern.getText());
+        btnScanMoreKey.addListener(SWT.Selection, new AzureListenerWrapper(ID, "btnScanMoreKey", null) {
+            @Override
+            protected void handleEventFunc(Event event) {
+                setWidgetEnableStatus(false);
+                redisExplorerPresenter.onKeyList(cbDatabase.getSelectionIndex(),
+                        currentCursor, txtKeyPattern.getText());
+            }
         });
 
         txtKeyPattern.addListener(SWT.KeyDown, event -> {
@@ -279,12 +298,15 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
             }
         });
 
-        cbActionType.addListener(SWT.Selection, event -> {
-            String selected = cbActionType.getText();
-            if (selected.equals(ACTION_GET)) {
-                btnScanMoreKey.setEnabled(false);
-            } else if (selected.equals(ACTION_SCAN)){
-                btnScanMoreKey.setEnabled(true);
+        cbActionType.addListener(SWT.Selection, new AzureListenerWrapper(ID, "cbActionType", null) {
+            @Override
+            protected void handleEventFunc(Event event) {
+                String selected = cbActionType.getText();
+                if (selected.equals(ACTION_GET)) {
+                    btnScanMoreKey.setEnabled(false);
+                } else if (selected.equals(ACTION_SCAN)) {
+                    btnScanMoreKey.setEnabled(true);
+                }
             }
         });
 
@@ -334,20 +356,20 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         } else {
             String[] columnNames;
             switch (type) {
-            case LIST:
-                columnNames = LIST_TITLE;
-                break;
-            case SET:
-                columnNames = SET_TITLE;
-                break;
-            case ZSET:
-                columnNames = ZSET_TITLE;
-                break;
-            case HASH:
-                columnNames = HASH_TITLE;
-                break;
-            default:
-                return;
+                case LIST:
+                    columnNames = LIST_TITLE;
+                    break;
+                case SET:
+                    columnNames = SET_TITLE;
+                    break;
+                case ZSET:
+                    columnNames = ZSET_TITLE;
+                    break;
+                case HASH:
+                    columnNames = HASH_TITLE;
+                    break;
+                default:
+                    return;
             }
             tblInnerValue.setRedraw(false);
             // remove all the columns
