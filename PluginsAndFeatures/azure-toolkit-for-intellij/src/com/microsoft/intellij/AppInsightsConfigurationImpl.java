@@ -33,9 +33,14 @@ import java.util.UUID;
 
 public class AppInsightsConfigurationImpl implements AppInsightsConfiguration {
     static final String EVENT_NAME_PREFIX_INTELLIJ = "AzurePlugin.Intellij.";
-    static String sessionId = UUID.randomUUID().toString();
-    static String dataFile = PluginHelper.getTemplateFile(AzureBundle.message("dataFileName"));
-    static String ide = ApplicationInfo.getInstance().getVersionName() + " " + ApplicationInfo.getInstance().getFullVersion();
+    static final String sessionId = UUID.randomUUID().toString();
+    static final String dataFile = PluginHelper.getTemplateFile(AzureBundle.message("dataFileName"));
+    static final String ide = getIDE();
+
+    private static final String getIDE() {
+        ApplicationInfo info = ApplicationInfo.getInstance();
+        return String.format("%s_%s_%s", info.getVersionName(), info.getFullVersion(), info.getBuild());
+    }
 
     @Override
     public String sessionId() {
