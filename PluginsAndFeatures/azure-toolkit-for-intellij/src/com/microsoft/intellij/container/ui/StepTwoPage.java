@@ -27,8 +27,8 @@ public class StepTwoPage extends AzureWizardStep<PublishWizardModel> implements 
     private static final String TEXT_DESCRIPTION = "Select existing or create new Web App to deploy";
     private static final String TEXT_TITLE = "Deploy to Azure Web App on Linux";
     private static final String REGEX_VALID_RG_NAME = "^[\\w-]*\\w+$";
-    private static final String TEXT_TAB_CREATE = "Use Existing";
-    private static final String TEXT_TAB_UPDATE = "Refresh List";
+    private static final String TEXT_TAB_CREATE = "Create New";
+    private static final String TEXT_TAB_UPDATE = "Use Existing";
     private static final String REGEX_VALID_APP_NAME = "^[\\w-]*\\w+$";
 
     private final StepTwoPagePresenter<StepTwoPage> presenter;
@@ -56,13 +56,14 @@ public class StepTwoPage extends AzureWizardStep<PublishWizardModel> implements 
         tableWebApps.setSelectionMode(SINGLE_SELECTION);
         setTableWebAppsLoading();
 
-        presenter.onListWebAppsOnLinux();
+        tbtmCreate.setName(TEXT_TAB_CREATE);
+        tbtmUpdate.setName(TEXT_TAB_UPDATE);
 
         btnRefreshList.addActionListener(event -> onRefreshButtonSelection());
         comboSubscription.addActionListener(event -> onComboSubscriptionSelection());
         btnResourceGroupCreateNew.addActionListener(event -> radioResourceGroupLogic());
         btnResourceGroupUseExisting.addActionListener(event -> radioResourceGroupLogic());
-
+        tabFolder.addChangeListener(event -> onTabFolderChange());
         textResourceGroupName.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -96,10 +97,23 @@ public class StepTwoPage extends AzureWizardStep<PublishWizardModel> implements 
                 onTextAppNameModify();
             }
         });
+//        presenter.onRefreshWebAppsOnLinux();
+        presenter.onListWebAppsOnLinux();
+    }
+
+    private void onTabFolderChange() {
+        setControlButtonEnabledStatus(true);
+    }
+
+    @Override
+    public JComponent prepare(WizardNavigationState wizardNavigationState) {
+        model.getDialog().setOKActionEnabled(false);
+        setControlButtonEnabledStatus(true);
+        return rootPanel;
     }
 
     private void setTableWebAppsLoading() {
-        DefaultTableModel tableModel = new DefaultTableModel(new String[][]{{"Loading...",""}}, new String[]{"WebApp", "ResourceGroup"}){
+        DefaultTableModel tableModel = new DefaultTableModel(new String[][]{{"Loading...", ""}}, new String[]{"WebApp", "ResourceGroup"}) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -109,20 +123,46 @@ public class StepTwoPage extends AzureWizardStep<PublishWizardModel> implements 
         tableWebApps.setModel(tableModel);
     }
 
+    private boolean isPageCompleted() {
+        int index = tabFolder.getSelectedIndex();
+        if (tabFolder.getTitleAt(index).equals(tbtmCreate.getName())) {
+            return isTabCreateComplete();
+        } else if (tabFolder.getTitleAt(index).equals(tbtmUpdate.getName())) {
+            return isTabUpdateComplete();
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isTabUpdateComplete() {
+        return this.tableWebApps.getSelectedRow() >= 0;
+    }
+
+    private boolean isTabCreateComplete() {
+        boolean a = this.comboSubscription.getSelectedIndex() >= 0;
+        boolean d = textAppName.getText().matches(REGEX_VALID_APP_NAME);
+        boolean b = btnResourceGroupCreateNew.isSelected()
+                && textResourceGroupName.getText().matches(REGEX_VALID_RG_NAME);
+        boolean c = this.btnResourceGroupUseExisting.isSelected() && this.comboResourceGroup.getSelectedIndex() >= 0;
+        return a && d && (b || c);
+    }
+
     private void onTextAppNameModify() {
         if (textAppName.getText().matches(REGEX_VALID_APP_NAME)) {
-            textAppName.setForeground(new Color(0,0,0));
+            textAppName.setForeground(new Color(0, 0, 0));
         } else {
-            textAppName.setForeground(new Color(255,0,0));
+            textAppName.setForeground(new Color(255, 0, 0));
         }
+        setControlButtonEnabledStatus(true);
     }
 
     private void onTextResourceGroupNameModify() {
         if (textResourceGroupName.getText().matches(REGEX_VALID_RG_NAME)) {
-            textResourceGroupName.setForeground(new Color(0,0,0));
+            textResourceGroupName.setForeground(new Color(0, 0, 0));
         } else {
-            textResourceGroupName.setForeground(new Color(255,0,0));
+            textResourceGroupName.setForeground(new Color(255, 0, 0));
         }
+        setControlButtonEnabledStatus(true);
     }
 
     private void radioResourceGroupLogic() {
@@ -137,19 +177,49 @@ public class StepTwoPage extends AzureWizardStep<PublishWizardModel> implements 
     }
 
     private void setWidgetsEnabledStatus(boolean enabledStatus) {
-        tabFolder.setEnabled(enabledStatus);
-        tbtmCreate.setEnabled(enabledStatus);
-        tbtmUpdate.setEnabled(enabledStatus);
+        setEnabledRecursively(tabFolder, enabledStatus);
+        if (enabledStatus == true) {
+            radioResourceGroupLogic();
+        }
+    }
+
+    private void setControlButtonEnabledStatus(boolean enabled) {
+        if (model.getCurrentStep() != this) {
+            return;
+        }
+        if (enabled) {
+            model.resetDefaultButtonEnabledStatus();
+            model.setAndCacheFinishEnabled(isPageCompleted());
+        } else {
+            model.getCurrentNavigationState().setEnabledToAll(false);
+        }
     }
 
     private void onComboSubscriptionSelection() {
         int index = comboSubscription.getSelectedIndex();
+        if (index < 0) {
+            return;
+        }
         presenter.onChangeSubscription(index);
     }
 
+    void setEnabledRecursively(Component component, boolean enabled) {
+        component.setEnabled(enabled);
+        if (component instanceof Container) {
+            for (Component child : ((Container) component).getComponents()) {
+                setEnabledRecursively(child, enabled);
+            }
+        }
+    }
+
     @Override
-    public JComponent prepare(WizardNavigationState wizardNavigationState) {
-        return rootPanel;
+    public boolean onFinish() {
+        if (model.getDialog().isOKActionEnabled()) {
+            return super.onFinish();
+        } else {
+            onWizardFinishPressed();
+            return true; //avoid going to doCancel()
+        }
     }
 
     @Override
@@ -160,10 +230,10 @@ public class StepTwoPage extends AzureWizardStep<PublishWizardModel> implements 
     @Override
     public void onWizardFinishPressed() {
         int index = tabFolder.getSelectedIndex();
-        
-        if (tabFolder.getTitleAt(index).equals(TEXT_TAB_CREATE)) {
+
+        if (tabFolder.getTitleAt(index).equals(tbtmCreate.getName())) {
             deployToNewWebApp();
-        } else if (tabFolder.getTitleAt(index).equals(TEXT_TAB_UPDATE)) {
+        } else if (tabFolder.getTitleAt(index).equals(tbtmUpdate.getName())) {
             deployToExisitingWebApp();
         }
     }
@@ -199,9 +269,19 @@ public class StepTwoPage extends AzureWizardStep<PublishWizardModel> implements 
         }
         String[][] rowData = new String[data.size()][2];
         data.toArray(rowData);
-        DefaultTableModel tableModel = new DefaultTableModel(rowData, new String[]{"WebApp", "ResourceGroup"});
+        DefaultTableModel tableModel = new DefaultTableModel(rowData, new String[]{"WebApp", "ResourceGroup"}) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         tableWebApps.setModel(tableModel);
+        tableWebApps.getSelectionModel().addListSelectionListener(e -> onTableWebAppsSelection());
 
+    }
+
+    private void onTableWebAppsSelection() {
+        setControlButtonEnabledStatus(true);
     }
 
     @Override
@@ -236,29 +316,28 @@ public class StepTwoPage extends AzureWizardStep<PublishWizardModel> implements 
 
     @Override
     public void finishDeploy() {
-
+        this.model.getDialog().setOKActionEnabled(true);
+        model.finish();
     }
 
     @Override
     public void onRequestPending(Object payload) {
         setWidgetsEnabledStatus(false);
-        setDialogButtonsEnabled(false);
-    }
-    private void setDialogButtonsEnabled(boolean enabledStatus){
-        model.getDialog().getPrevButton().setEnabled(enabledStatus);
-        model.getDialog().getFinishButton().setEnabled(enabledStatus);
-        model.getDialog().getCancelButton().setEnabled(enabledStatus);
+        setControlButtonEnabledStatus(false);
     }
 
     @Override
     public void onRequestSucceed(Object payload) {
         setWidgetsEnabledStatus(true);
-        setDialogButtonsEnabled(true);
+        setControlButtonEnabledStatus(true);
     }
 
     @Override
     public void onRequestFail(Object payload) {
         setWidgetsEnabledStatus(true);
-        setDialogButtonsEnabled(true);
+        setControlButtonEnabledStatus(true);
     }
+
+
+    // TODO: dispose detach presenter
 }

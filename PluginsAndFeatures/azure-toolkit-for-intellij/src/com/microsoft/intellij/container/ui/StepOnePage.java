@@ -5,7 +5,6 @@ import com.intellij.ui.wizard.WizardStep;
 import com.microsoft.intellij.container.mvp.PublishWizardPageView;
 import com.microsoft.intellij.container.mvp.StepOnePagePresenter;
 import com.microsoft.intellij.container.mvp.StepOnePageView;
-import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification;
 import com.microsoft.intellij.ui.components.AzureWizardStep;
 
 import javax.swing.*;
@@ -25,28 +24,33 @@ public class StepOnePage extends AzureWizardStep<PublishWizardModel> implements 
     private JTextArea txtInformation;
     private JPanel rootPanel;
     private final StepOnePagePresenter<StepOnePage> presenter;
-    private boolean validated = false;
     private PublishWizardModel model;
+    private boolean isFirstTimeRender = true;
 
     public StepOnePage(PublishWizardModel publishWizardModel) {
         super(TEXT_TITLE, TEXT_DESCRIPTION);
         model = publishWizardModel;
-        presenter = new StepOnePagePresenter<StepOnePage>();
+        presenter = new StepOnePagePresenter<>();
         presenter.onAttachView(this);
+
+        initilize();
     }
 
     @Override
     public JComponent prepare(WizardNavigationState wizardNavigationState) {
-        initilize();
+        if (!isFirstTimeRender) {
+            model.loadCachedButtonEnabledStatus();
+        }
+        model.cacheButtonEnabledStatus();
+        isFirstTimeRender = false;
         return rootPanel;
     }
 
     @Override
-    public WizardStep onNext(PublishWizardModel model) {
-        if(validated) {
+    public WizardStep onNext(PublishWizardModel publishWizardModel) {
+        if (model.isImagePushed()) {
             return super.onNext(model);
-        }
-        else{
+        } else {
             onWizardNextPressed();
             return this;
         }
@@ -76,16 +80,18 @@ public class StepOnePage extends AzureWizardStep<PublishWizardModel> implements 
     public void onRequestPending(Object payload) {
         //TODO
         showInformation("Try pushing image ...");
-        model.getDialog().getNextButton().setEnabled(false);
+        model.setAndCacheAllEnabled(false);
         System.out.println(payload);
     }
 
     @Override
     public void onRequestSucceed(Object payload) {
         //TODO
-        showInformation("Task OK, please click `Next` again to continue.");
-        model.getDialog().getNextButton().setEnabled(true);
-        validated = true;
+        showInformation("Task OK.");
+        model.resetDefaultButtonEnabledStatus();
+        model.cacheButtonEnabledStatus();
+        model.setImagePushed(true);
+        model.next();
         System.out.println(payload);
     }
 
@@ -93,8 +99,8 @@ public class StepOnePage extends AzureWizardStep<PublishWizardModel> implements 
     public void onRequestFail(Object payload) {
         //TODO
         showInformation("Task FAIL");
-        model.getDialog().getNextButton().setEnabled(true);
-        validated = false;
+        model.resetDefaultButtonEnabledStatus();
+        model.cacheButtonEnabledStatus();
         System.out.println(payload);
     }
     // TODO: dispose detach presenter

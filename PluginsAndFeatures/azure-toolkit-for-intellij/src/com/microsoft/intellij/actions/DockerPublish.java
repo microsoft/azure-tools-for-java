@@ -4,11 +4,12 @@ package com.microsoft.intellij.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.wm.WindowManager;
-
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.intellij.container.ConsoleLogger;
 import com.microsoft.intellij.container.Constant;
 import com.microsoft.intellij.container.DockerRuntime;
 import com.microsoft.intellij.container.ui.PublishWizardDialog;
@@ -32,7 +33,7 @@ public class DockerPublish extends AzureAnAction {
         Project project = DataKeys.PROJECT.getData(anActionEvent.getDataContext());
         JFrame frame = WindowManager.getInstance().getFrame(project);
         try {
-            if (!AzureSignInAction.doSignIn( AuthMethodManager.getInstance(), project)){
+            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
                 return;
             }
         } catch (Exception e) {
@@ -43,7 +44,7 @@ public class DockerPublish extends AzureAnAction {
         DockerRuntime.getInstance().loadFromProps(props);
         DockerClient dockerClient = DockerRuntime.getInstance().getDockerBuilder().build();
         try {
-            Path destinationPath = Paths.get(project.getBasePath(),Constant.DOCKER_CONTEXT_FOLDER, project.getName() + ".war");
+            Path destinationPath = Paths.get(project.getBasePath(), Constant.DOCKER_CONTEXT_FOLDER, project.getName() + ".war");
             WarUtil.export(project, destinationPath);
             DockerUtil.buildImage(dockerClient, project, Paths.get(project.getBasePath(), Constant.DOCKER_CONTEXT_FOLDER));
         } catch (Exception e) {
@@ -52,14 +53,12 @@ public class DockerPublish extends AzureAnAction {
         DockerRuntime.getInstance().setLatestArtifactName(project.getName());
         PublishWizardDialog pwd = new PublishWizardDialog(true, true, new PublishWizardModel());
         pwd.show();
-//        PublishWizard pw = new PublishWizard();
-//        PublishWizardDialog pwd = new PublishWizardDialog(window.getShell(), pw);
-//        if (pwd.open() == Window.OK) {
-//            ConsoleLogger.info(String.format("URL: http://%s.azurewebsites.net/%s",
-//                    DockerRuntime.getInstance().getLatestWebAppName(), project.getName()));
-//            props = DockerRuntime.getInstance().saveToProps(props);
-//            ConfigFileUtil.saveConfig(project, props);
-//        }
+        if (pwd.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+            ConsoleLogger.info(String.format("URL: http://%s.azurewebsites.net/%s",
+                    DockerRuntime.getInstance().getLatestWebAppName(), project.getName()));
+            props = DockerRuntime.getInstance().saveToProps(props);
+            ConfigFileUtil.saveConfig(project, props);
+        }
 
     }
 }
