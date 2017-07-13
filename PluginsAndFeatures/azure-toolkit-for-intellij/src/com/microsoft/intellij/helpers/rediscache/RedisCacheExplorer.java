@@ -1,23 +1,52 @@
+/**
+ * Copyright (c) Microsoft Corporation
+ * <p/>
+ * All rights reserved.
+ * <p/>
+ * MIT License
+ * <p/>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p/>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ * <p/>
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.intellij.helpers.rediscache;
+
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
 import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
 import com.microsoft.intellij.helpers.base.BaseEditor;
+import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
+import com.microsoft.intellij.ui.components.AzureListSelectionListenerWrapper;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerPresenter;
+
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.Collections;
 
-
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
 public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpView {
 
@@ -60,6 +89,11 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
     private JSplitPane splitPane;
     private JPanel pnlProgressBar;
 
+    /**
+     *
+     * @param sid String, subscription id.
+     * @param id String, resource id.
+     */
     public RedisCacheExplorer(String sid, String id) {
         redisExplorerPresenter = new RedisExplorerPresenter<>();
         redisExplorerPresenter.onAttachView(this);
@@ -76,46 +110,65 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
         Font valueFont = new Font(TABLE_HEADER_FONT, Font.PLAIN, TABLE_HEADER_FONT_SIZE);
         tblInnerValue.getTableHeader().setFont(valueFont);
         txtStringValue.setFont(valueFont);
-        DefaultTableCellRenderer cellRenderer = (DefaultTableCellRenderer) tblInnerValue.getTableHeader().getDefaultRenderer();
+        DefaultTableCellRenderer cellRenderer = (DefaultTableCellRenderer) tblInnerValue.getTableHeader()
+                .getDefaultRenderer();
         cellRenderer.setHorizontalAlignment(JLabel.LEFT);
         pnlInnerValue.setBackground(lstKey.getBackground());
 
         progressBar.setIndeterminate(true);
 
-        cbDatabase.addActionListener(event -> {
-            if (cbActionType.getSelectedItem().equals(ACTION_GET)) {
-                return;
+        cbDatabase.addActionListener(new AzureActionListenerWrapper(ID, "cbDatabase", null) {
+            @Override
+            public void actionPerformedFunc(ActionEvent event) {
+                if (cbActionType.getSelectedItem().equals(ACTION_GET)) {
+                    return;
+                }
+                RedisCacheExplorer.this.setWidgetEnableStatus(false);
+                txtKeyPattern.setText(DEFAULT_SCAN_PATTERN);
+                RedisCacheExplorer.this.onDataBaseSelect();
             }
-            setWidgetEnableStatus(false);
-            txtKeyPattern.setText(DEFAULT_SCAN_PATTERN);
-            onDataBaseSelect();
         });
 
-        lstKey.addListSelectionListener(event -> {
-            String selectedKey = (String) lstKey.getSelectedValue();
-            if (selectedKey == null || selectedKey.equals(lastChosenKey)) {
-                return;
+        lstKey.addListSelectionListener(new AzureListSelectionListenerWrapper(ID, "lstKey", null) {
+            @Override
+            public void valueChangedFunc(ListSelectionEvent event) {
+                String selectedKey = (String) lstKey.getSelectedValue();
+                if (selectedKey == null || selectedKey.equals(lastChosenKey)) {
+                    return;
+                }
+                RedisCacheExplorer.this.setWidgetEnableStatus(false);
+                lastChosenKey = selectedKey;
+                redisExplorerPresenter.onkeySelect(cbDatabase.getSelectedIndex(), selectedKey);
             }
-            setWidgetEnableStatus(false);
-            lastChosenKey = selectedKey;
-            redisExplorerPresenter.onkeySelect(cbDatabase.getSelectedIndex(), selectedKey);
         });
 
-        btnSearch.addActionListener(event -> onBtnSearchClick());
+        btnSearch.addActionListener(new AzureActionListenerWrapper(ID, "btnSearch", null) {
+            @Override
+            public void actionPerformedFunc(ActionEvent event) {
+                RedisCacheExplorer.this.onBtnSearchClick();
+            }
+        });
 
-        btnScanMore.addActionListener(event -> {
-            setWidgetEnableStatus(false);
-            redisExplorerPresenter.onKeyList(cbDatabase.getSelectedIndex(), currentCursor, txtKeyPattern.getText());
+        btnScanMore.addActionListener(new AzureActionListenerWrapper(ID, "btnScanMore", null) {
+            @Override
+            public void actionPerformedFunc(ActionEvent event) {
+                RedisCacheExplorer.this.setWidgetEnableStatus(false);
+                redisExplorerPresenter.onKeyList(cbDatabase.getSelectedIndex(),
+                        currentCursor, txtKeyPattern.getText());
+            }
         });
 
         txtKeyPattern.addActionListener(event -> onBtnSearchClick());
 
-        cbActionType.addActionListener(event -> {
-            String selected = (String) cbActionType.getSelectedItem();
-            if (selected.equals(ACTION_GET)) {
-                btnScanMore.setEnabled(false);
-            } else if (selected.equals(ACTION_SCAN)) {
-                btnScanMore.setEnabled(true);
+        cbActionType.addActionListener(new AzureActionListenerWrapper(ID, "cbActionType", null) {
+            @Override
+            public void actionPerformedFunc(ActionEvent event) {
+                String selected = (String) cbActionType.getSelectedItem();
+                if (selected.equals(ACTION_GET)) {
+                    btnScanMore.setEnabled(false);
+                } else if (selected.equals(ACTION_SCAN)) {
+                    btnScanMore.setEnabled(true);
+                }
             }
         });
 
