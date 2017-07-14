@@ -126,7 +126,7 @@
             text="Docker Run..." description="Azure website deployment for Java"
             icon="/icons/DockerRun_16.png">
     </action>
-    <action id="Actions.DockerPublish" class="com.microsoft.intellij.actions.DockerPublish"
+    <action id="Actions.DockerPublish" class="com.microsoft.intellij.actions.DockerPublishAction"
             text="Publish to Web App on Linux..." description="Azure website deployment for Java"
             icon="/icons/PublishWebAppOnLinux_16.png">
     </action>
