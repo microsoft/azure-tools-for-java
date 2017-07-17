@@ -20,39 +20,29 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.run.configuration;
+package com.microsoft.intellij.runner.webapp.webappconfig;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.*;
-import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.openapi.options.SettingsEditor;
+import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class MavenWebAppConfiguration extends RunConfigurationBase {
+public class WebAppRunState implements RunProfileState {
 
-    private static final String NAME = "Deploy to Azure";
+    private Project project;
 
-    public MavenWebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory) {
-        super(project, factory, NAME);
-    }
-
-    @NotNull
-    @Override
-    public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new MavenWebAppSettingEditor();
-    }
-
-    @Override
-    public void checkConfiguration() throws RuntimeConfigurationException {
-
+    public WebAppRunState(Project project) {
+        this.project = project;
     }
 
     @Nullable
     @Override
-    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) throws ExecutionException {
-        return new MavenWebAppRunState(getProject());
+    public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) throws ExecutionException {
+        // TODO: execution task
+        return null;
     }
 }

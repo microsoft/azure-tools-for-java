@@ -20,24 +20,25 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.run.configuration;
+package com.microsoft.intellij.runner.webapp;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
+import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfigurationFactory;
 import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-public class MavenWebAppConfigurationType implements ConfigurationType {
+public class WebAppConfigurationType implements ConfigurationType {
 
-    private static final String ID = "com.microsoft.intellij.run.configuration.MavenWebAppConfigurationType";
+    private static final String ID = "com.microsoft.intellij.run.configuration.WebAppConfigurationType";
     private static final String DISPLAY_NAME = "Deploy to Azure";
     private static final String ICON_PATH = "/icons/PublishWebApp_16.png";
 
-    public static MavenWebAppConfigurationType getInstance() {
-        return ConfigurationTypeUtil.findConfigurationType(MavenWebAppConfigurationType.class);
+    public static WebAppConfigurationType getInstance() {
+        return ConfigurationTypeUtil.findConfigurationType(WebAppConfigurationType.class);
     }
 
     @Override
@@ -63,6 +64,6 @@ public class MavenWebAppConfigurationType implements ConfigurationType {
 
     @Override
     public ConfigurationFactory[] getConfigurationFactories() {
-        return new ConfigurationFactory[]{new MavenWebAppConfigurationFactory(this)};
+        return new ConfigurationFactory[]{new WebAppConfigurationFactory(this)};
     }
 }

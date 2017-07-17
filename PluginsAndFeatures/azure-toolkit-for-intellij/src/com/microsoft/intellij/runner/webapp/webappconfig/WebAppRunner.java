@@ -20,29 +20,26 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.run.configuration;
+package com.microsoft.intellij.runner.webapp.webappconfig;
 
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.ExecutionResult;
-import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.RunProfileState;
-import com.intellij.execution.runners.ProgramRunner;
-import com.intellij.openapi.project.Project;
+import com.intellij.execution.configurations.RunProfile;
+import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.runners.DefaultProgramRunner;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public class MavenWebAppRunState implements RunProfileState {
+public class WebAppRunner extends DefaultProgramRunner {
 
-    private Project project;
+    private static final String ID = "com.microsoft.intellij.run.configuration.WebAppRunner";
 
-    public MavenWebAppRunState(Project project) {
-        this.project = project;
-    }
-
-    @Nullable
     @Override
-    public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) throws ExecutionException {
-        // TODO: execution task
-        return null;
+    public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
+        return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) && profile instanceof WebAppConfiguration;
     }
+
+    @NotNull
+    @Override
+    public String getRunnerId() {
+        return ID;
+    }
+
 }

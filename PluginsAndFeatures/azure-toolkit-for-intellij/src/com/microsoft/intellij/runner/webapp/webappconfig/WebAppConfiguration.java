@@ -20,33 +20,37 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.run.configuration;
+package com.microsoft.intellij.runner.webapp.webappconfig;
 
-import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.Executor;
+import com.intellij.execution.configurations.*;
+import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.SettingsEditor;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+public class WebAppConfiguration extends RunConfigurationBase {
 
-public class MavenWebAppSettingEditor extends SettingsEditor<MavenWebAppConfiguration> {
-
-    private JPanel myPanel;
-
-    public MavenWebAppSettingEditor() {
-        myPanel = new JPanel();
-    }
-
-    @Override
-    protected void resetEditorFrom(@NotNull MavenWebAppConfiguration mavenWebAppConfiguration) {
-    }
-
-    @Override
-    protected void applyEditorTo(@NotNull MavenWebAppConfiguration mavenWebAppConfiguration) throws ConfigurationException {
+    public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory) {
+        super(project, factory, project.getName());
     }
 
     @NotNull
     @Override
-    protected JComponent createEditor() {
-        return myPanel;
+    public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
+        return new WebAppSettingEditor();
+    }
+
+    @Override
+    public void checkConfiguration() throws RuntimeConfigurationException {
+
+    }
+
+    @Nullable
+    @Override
+    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) throws ExecutionException {
+        return new WebAppRunState(getProject());
     }
 }

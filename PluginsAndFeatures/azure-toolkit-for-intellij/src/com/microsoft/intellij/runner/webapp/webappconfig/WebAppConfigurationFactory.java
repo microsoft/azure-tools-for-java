@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.run.configuration;
+package com.microsoft.intellij.runner.webapp.webappconfig;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
@@ -28,15 +28,15 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
-public class MavenWebAppConfigurationFactory extends ConfigurationFactory {
+public class WebAppConfigurationFactory extends ConfigurationFactory {
 
-    protected MavenWebAppConfigurationFactory(@NotNull ConfigurationType type) {
+    public WebAppConfigurationFactory(@NotNull ConfigurationType type) {
         super(type);
     }
 
     @NotNull
     @Override
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-        return new MavenWebAppConfiguration(project, this);
+        return new WebAppConfiguration(project, this);
     }
 }

@@ -35,7 +35,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.microsoft.intellij.run.configuration.MavenWebAppConfigurationType;
+import com.microsoft.intellij.runner.webapp.WebAppConfigurationType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
@@ -43,7 +43,7 @@ import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
 import java.io.File;
 import java.util.List;
 
-public class MavenWebDeployAction extends AnAction {
+public class WebDeployAction extends AnAction {
 
     private static final String MAVEN_TASK_PACKAGE = "package";
     private static final String POM_FILE_NAME = "pom.xml";
@@ -51,8 +51,8 @@ public class MavenWebDeployAction extends AnAction {
 
     private ConfigurationType configType;
 
-    public MavenWebDeployAction() {
-        this.configType = MavenWebAppConfigurationType.getInstance();
+    public WebDeployAction() {
+        this.configType = WebAppConfigurationType.getInstance();
     }
 
     @Override
@@ -69,7 +69,8 @@ public class MavenWebDeployAction extends AnAction {
 
     private void runConfiguration(Project project) {
         final RunManagerImpl manager = RunManagerImpl.getInstanceImpl(project);
-        RunnerAndConfigurationSettings settings = manager.findConfigurationByName(configType.getDisplayName());
+        RunnerAndConfigurationSettings settings = manager.findConfigurationByTypeAndName(configType.getId(),
+                project.getName());
         boolean shouldCreateBeforeRunTask = (settings == null);
         List<BeforeRunTask> beforeRunTasks = null;
         if (shouldCreateBeforeRunTask) {

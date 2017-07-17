@@ -62,11 +62,14 @@
         canCloseContents="false"
         icon="/icons/SparkSubmissionToolWindow.png"/>
 
+    <configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType"/>
+    <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
-
   </extensions>
+
+
 
   <application-components>
     <component>
@@ -97,6 +100,9 @@
     <action id="Actions.AzureWebDeploy" class="com.microsoft.intellij.actions.AzureWebDeployAction"
             text="Publish as Azure Web App..." description="Azure website deployment for Java"
             icon="/icons/PublishWebApp_16.png">
+    </action>
+    <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
+            text="Deploy to Azure" description="Deploy to Azure">
     </action>
     <action id="Actions.AzureDockerHostDeploy" class="com.microsoft.intellij.actions.AzureDockerHostDeployAction"
             text="Publish as Docker Container..." description="Azure website deployment for Java on Docker"
@@ -144,6 +150,8 @@
       <reference ref="Actions.LibraryConfigurationAction"/>
       <separator/>
       <reference ref="AzureToolkit.AzureSignIn"/>
+      <separator/>
+      <reference ref="Actions.WebDeployAction"/>
     </group>
 
     <group id="AzureToolbarGroup" text="Azure" description="Azure">

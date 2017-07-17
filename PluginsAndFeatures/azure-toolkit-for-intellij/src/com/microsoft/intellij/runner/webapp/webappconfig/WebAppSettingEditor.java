@@ -20,26 +20,33 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.run.configuration;
+package com.microsoft.intellij.runner.webapp.webappconfig;
 
-import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.executors.DefaultRunExecutor;
-import com.intellij.execution.runners.DefaultProgramRunner;
+import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.options.SettingsEditor;
 import org.jetbrains.annotations.NotNull;
 
-public class MavenWebAppRunner extends DefaultProgramRunner {
+import javax.swing.*;
 
-    private static final String ID = "com.microsoft.intellij.run.configuration.MavenWebAppRunner";
+public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
+
+    private JPanel myPanel;
+
+    public WebAppSettingEditor() {
+        myPanel = new JPanel();
+    }
 
     @Override
-    public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-        return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) && profile instanceof MavenWebAppConfiguration;
+    protected void resetEditorFrom(@NotNull WebAppConfiguration webAppConfiguration) {
+    }
+
+    @Override
+    protected void applyEditorTo(@NotNull WebAppConfiguration webAppConfiguration) throws ConfigurationException {
     }
 
     @NotNull
     @Override
-    public String getRunnerId() {
-        return ID;
+    protected JComponent createEditor() {
+        return myPanel;
     }
-
 }
