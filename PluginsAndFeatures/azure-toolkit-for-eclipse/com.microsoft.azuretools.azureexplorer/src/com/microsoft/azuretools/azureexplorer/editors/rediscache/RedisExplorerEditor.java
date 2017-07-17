@@ -137,9 +137,9 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
 
         cbDatabase = new Combo(cmpoMain, SWT.READ_ONLY);
         cbDatabase.setEnabled(false);
-        GridData cnDataBaseLayout = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
-        cnDataBaseLayout.minimumWidth = 50;
-        cbDatabase.setLayoutData(cnDataBaseLayout);
+        GridData cbDataBaseLayout = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
+        cbDataBaseLayout.minimumWidth = 50;
+        cbDatabase.setLayoutData(cbDataBaseLayout);
 
         SashForm sashForm = new SashForm(cmpoMain, SWT.HORIZONTAL);
         sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 2, 1));
