@@ -13,9 +13,9 @@ The two projects use a lot of shared code and as of v2.8.2 (March 2016 release) 
 * Update site: http://dl.microsoft.com/eclipse 
 
 ### Documentation
-* Specific to the Toolkit: https://azure.microsoft.com/en-us/documentation/articles/azure-toolkit-for-eclipse/
-* General about Java on Azure: http://azure.com/java
-* [Getting-started tutorial](https://azure.microsoft.com/en-us/documentation/articles/create-a-hello-world-web-app-for-azure-in-eclipse/)
+* Specific to the Toolkit: https://docs.microsoft.com/azure/azure-toolkit-for-eclipse
+* General about Java on Azure: https://docs.microsoft.com/java/azure/
+* [Getting-started tutorial](https://docs.microsoft.com/azure/app-service-web/app-service-web-eclipse-create-hello-world-web-app)
 
 ## Azure Toolkit for IntelliJ IDEA
 
@@ -23,4 +23,4 @@ The two projects use a lot of shared code and as of v2.8.2 (March 2016 release) 
 * [IntelliJ IDEA Plugin Repository](https://plugins.jetbrains.com/plugin/8053?pr=idea)
 
 ### Documentation 
-* Specific to the Toolkit: https://azure.microsoft.com/en-us/documentation/articles/azure-toolkit-for-intellij/
+* Specific to the Toolkit: https://docs.microsoft.com/azure/azure-toolkit-for-intellij
