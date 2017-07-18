@@ -261,32 +261,6 @@
       }
     },
     {
-      "Method": "GET",
-      "Uri": "http://localhost:3144/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Cache/Redis/?api-version=2016-04-01",
-      "Headers": {
-        "x-ms-logging-context": "com.microsoft.azure.management.redis.Redis list",
-        "accept-language": "en-US",
-        "User-Agent": "Azure-SDK-For-Java/1.1.2 OS:Windows 10/10.0 MacAddressHash:2281d6bbb638638d739cbc3ca05da598ff64ca580d0e28984d2d759e5e28fba0 (RedisManagementClient, 2016-04-01)",
-        "x-ms-client-request-id": "b6e3a74b-6eb6-4457-83a0-229670785fd6",
-        "Content-Type": "application/json; charset=utf-8"
-      },
-      "Response": {
-        "Pragma": "no-cache",
-        "x-ms-ratelimit-remaining-subscription-reads": "14997",
-        "StatusCode": "200",
-        "Date": "Fri, 14 Jul 2017 11:24:16 GMT",
-        "x-ms-correlation-request-id": "9b74e523-3752-4e32-8d43-7c7eb6dd4789",
-        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-        "Cache-Control": "no-cache",
-        "x-ms-routing-request-id": "WESTUS2:20170714T112416Z:9b74e523-3752-4e32-8d43-7c7eb6dd4789",
-        "Vary": "Accept-Encoding",
-        "Expires": "-1",
-        "Body": "{\"value\":[]}",
-        "x-ms-request-id": "9b74e523-3752-4e32-8d43-7c7eb6dd4789",
-        "Content-Type": "application/json; charset=utf-8"
-      }
-    },
-    {
       "Method": "PUT",
       "Uri": "http://localhost:3144/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaExist/providers/Microsoft.Cache/Redis/MonaC3BasicExist?api-version=2016-04-01",
       "Headers": {
@@ -371,6 +345,63 @@
         "Expires": "-1",
         "Body": "{\"value\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaExist/providers/Microsoft.Cache/Redis/MonaC3BasicExist\",\"location\":\"East US\",\"name\":\"MonaC3BasicExist\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Succeeded\",\"redisVersion\":\"3.2.7\",\"sku\":{\"name\":\"Basic\",\"family\":\"C\",\"capacity\":3},\"enableNonSslPort\":false,\"redisConfiguration\":{\"maxclients\":\"5000\",\"maxmemory-reserved\":\"200\",\"maxfragmentationmemory-reserved\":\"300\",\"maxmemory-delta\":\"200\"},\"accessKeys\":null,\"hostName\":\"MonaC3BasicExist.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380}}]}",
         "x-ms-request-id": "1c890f34-1328-41dc-8d02-59ac7f37390e",
+        "Content-Type": "application/json; charset=utf-8"
+      }
+    },
+     {
+      "Method": "GET",
+      "Uri": "http://localhost:3122/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaExist/providers/Microsoft.Cache/Redis/MonaExist?api-version=2016-04-01",
+      "Headers": {
+        "x-ms-logging-context": "com.microsoft.azure.management.redis.Redis getByResourceGroup",
+        "accept-language": "en-US",
+        "User-Agent": "Azure-SDK-For-Java/1.1.0 OS:Windows 10/10.0 MacAddressHash:bf4da03c6236588ba83b23816e3b30c5f0b573dbbe7575e84dc64e66d04010f2 (RedisManagementClient, 2016-04-01)",
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "Response": {
+        "Transfer-Encoding": "chunked",
+        "Server": "Microsoft-HTTPAPI/2.0",
+        "Pragma": "no-cache",
+        "x-ms-ratelimit-remaining-subscription-reads": "14942",
+        "StatusCode": "200",
+        "Date": "Tue, 18 Jul 2017 04:30:04 GMT",
+        "x-ms-correlation-request-id": "b1a767a6-3ea2-42ba-b46f-79a1fbf3578c",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "x-rp-server-mvid": "591bd6c7-22e4-4539-8fd3-9f5a21a5e75f",
+        "Cache-Control": "no-cache",
+        "x-content-type-options": "nosniff",
+        "x-ms-routing-request-id": "WESTUS:20170718T043005Z:b1a767a6-3ea2-42ba-b46f-79a1fbf3578c",
+        "Vary": "Accept-Encoding",
+        "Expires": "-1",
+        "Body": "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaExist/providers/Microsoft.Cache/Redis/MonaC3BasicExist\",\"location\":\"East US\",\"name\":\"MonaC3BasicExist\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Succeeded\",\"redisVersion\":\"3.2.7\",\"sku\":{\"name\":\"Basic\",\"family\":\"C\",\"capacity\":3},\"enableNonSslPort\":false,\"redisConfiguration\":{\"maxclients\":\"5000\",\"maxmemory-reserved\":\"200\",\"maxfragmentationmemory-reserved\":\"300\",\"maxmemory-delta\":\"200\"},\"accessKeys\":null,\"hostName\":\"MonaC3BasicExist.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380}}",
+        "x-ms-request-id": "cc3a0720-8acf-43d0-a198-c5c93ecf52f2",
+        "Content-Type": "application/json; charset=utf-8"
+      }
+    },
+    {
+      "Method": "POST",
+      "Uri": "http://localhost:3614/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaExist/providers/Microsoft.Cache/Redis/MonaC3BasicExist/listKeys?api-version=2016-04-01",
+      "Headers": {
+        "x-ms-logging-context": "com.microsoft.azure.management.redis.Redis listKeys",
+        "accept-language": "en-US",
+        "User-Agent": "Azure-SDK-For-Java/1.1.0 OS:Windows 10/10.0 MacAddressHash:bf4da03c6236588ba83b23816e3b30c5f0b573dbbe7575e84dc64e66d04010f2 (RedisManagementClient, 2016-04-01)"
+      },
+      "Response": {
+        "Transfer-Encoding": "chunked",
+        "Server": "Microsoft-HTTPAPI/2.0",
+        "x-ms-ratelimit-remaining-subscription-writes": "1190",
+        "Pragma": "no-cache",
+        "StatusCode": "200",
+        "Date": "Tue, 18 Jul 2017 04:30:04 GMT",
+        "x-ms-correlation-request-id": "76517e07-06b6-438b-8db2-111472990688",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "x-rp-server-mvid": "591bd6c7-22e4-4539-8fd3-9f5a21a5e75f",
+        "Cache-Control": "no-cache",
+        "x-content-type-options": "nosniff",
+        "x-ms-routing-request-id": "WESTUS:20170718T043005Z:76517e07-06b6-438b-8db2-111472990688",
+        "Vary": "Accept-Encoding",
+        "Expires": "-1",
+        "Body": "{\"primaryKey\":\"LHH7JxG6mCunDAjlNKDFFlv8sCGpp7Raw7NGLmfztVI=\",\"secondaryKey\":\"QoYVHaaf5m5upT6+3p/Cx1spx6T0cBo36RYfXUb9u3Q=\"}",
+        "x-ms-request-id": "8562ea84-8b4d-402c-81ba-b30b31030c36",
         "Content-Type": "application/json; charset=utf-8"
       }
     }
