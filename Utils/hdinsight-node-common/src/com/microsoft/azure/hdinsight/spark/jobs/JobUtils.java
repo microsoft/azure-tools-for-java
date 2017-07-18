@@ -51,13 +51,14 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 
 public class JobUtils {
@@ -192,27 +193,101 @@ public class JobUtils {
     private static ApplicationMasterLogs getYarnLogsFromWebClient(@NotNull final IClusterDetail clusterDetail, @NotNull final String url) throws HDIException, IOException {
         final CredentialsProvider credentialsProvider  =  new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword()));
-        HTTP_WEB_CLIENT.setCredentialsProvider(credentialsProvider);
 
-        String standerr = getInformationFromYarnLogDom(url + "/stderr/?start=0");
-        String standout = getInformationFromYarnLogDom(url + "/stout/?start=0");
-        String directoryInfo = getInformationFromYarnLogDom(url + "/directory.info/?start=0");
+        String standerr = getInformationFromYarnLogDom(credentialsProvider, url, "stderr", 0, 0);
+        String standout = getInformationFromYarnLogDom(credentialsProvider, url, "stout", 0, 0);
+        String directoryInfo = getInformationFromYarnLogDom(credentialsProvider, url, "directory.info", 0, 0);
+
         return new ApplicationMasterLogs(standout, standerr, directoryInfo);
     }
 
-    private static String getInformationFromYarnLogDom(@NotNull String url) {
+    public static String getInformationFromYarnLogDom(final CredentialsProvider credentialsProvider,
+                                                      @NotNull String baseUrl,
+                                                      @NotNull String type,
+                                                      long start,
+                                                      int size) {
+        if (credentialsProvider != null) {
+            HTTP_WEB_CLIENT.setCredentialsProvider(credentialsProvider);
+        }
+
         try {
-            HtmlPage htmlPage = HTTP_WEB_CLIENT.getPage(url);
+            URI url = new URI(baseUrl + "/").resolve(
+                    String.format("%s?start=%d", type, start) +
+                        (size <= 0 ? "" : String.format("&&end=%d", start + size)));
+            HtmlPage htmlPage = HTTP_WEB_CLIENT.getPage(url.toString());
             // parse pre tag from html response
             // there's only one 'pre' in response
             DomNodeList<DomElement> preTagElements = htmlPage.getElementsByTagName("pre");
             if (preTagElements.size() != 0) {
-                return preTagElements.get(0).asText();
+                return preTagElements.get(preTagElements.size() - 1).asText();
             }
         } catch (IOException e) {
             LOGGER.error("get Driver Log Error", e);
+        } catch (URISyntaxException e) {
+            LOGGER.error("baseUrl has syntax error: " + baseUrl);
         }
         return "";
+    }
+
+    public static Observable<String> createYarnLogObservable(@NotNull final CredentialsProvider credentialsProvider,
+                                                             @NotNull final String driverLogUrl,
+                                                             @NotNull final String type,
+                                                             final int blockSize) {
+        int retryIntervalMs = 1000;
+
+        if (blockSize <= 0)
+            return Observable.empty();
+
+        return Observable.create((Observable.OnSubscribe<String>) ob -> {
+            long nextStart = 0;
+            String remainedLine = "";
+            String logs;
+
+            try {
+                while (!ob.isUnsubscribed()) {
+                    logs = JobUtils.getInformationFromYarnLogDom(
+                            credentialsProvider, driverLogUrl, type, nextStart, blockSize);
+                    int lastLineBreak = logs.lastIndexOf('\n');
+
+                    if (lastLineBreak < 0) {
+                        if (logs.isEmpty() && !remainedLine.isEmpty()) {
+                            // Remained line is a full line since the backend producing logs line by line
+                            ob.onNext(remainedLine);
+                            remainedLine = "";
+                        } else {
+                            remainedLine += logs;
+                            nextStart += logs.length();
+                        }
+                    } else {
+                        long handledLength = new BufferedReader(new StringReader(
+                                                remainedLine + logs.substring(0, lastLineBreak)))
+                                .lines()
+                                .map(line -> {
+                                    ob.onNext(line);
+
+                                    // Count the line length with linebreak
+                                    // We need to handle this since the web client may convert the LF to CRLF
+                                    return (line.length() + 1);
+                                })
+                                .reduce((x, y) -> x + y)
+                                .orElse(0);
+
+                        remainedLine = "";
+                        nextStart += handledLength;
+                    }
+
+                    Thread.sleep(retryIntervalMs);
+                }
+            } catch (InterruptedException ignore) {
+            } finally {
+                // Get the rest logs
+                logs = JobUtils.getInformationFromYarnLogDom(credentialsProvider, driverLogUrl, type, nextStart, 0);
+
+                new BufferedReader(new StringReader(remainedLine + logs)).lines().forEach(ob::onNext);
+            }
+
+            ob.onCompleted();
+        }).subscribeOn(Schedulers.io());
     }
 
     public static HttpEntity getEntity(@NotNull final IClusterDetail clusterDetail, @NotNull final String url) throws IOException, HDIException {

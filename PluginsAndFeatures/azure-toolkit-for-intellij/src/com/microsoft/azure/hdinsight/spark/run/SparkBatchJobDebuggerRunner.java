@@ -26,21 +26,28 @@ package com.microsoft.azure.hdinsight.spark.run;
 import com.intellij.debugger.impl.GenericDebuggerRunner;
 import com.intellij.debugger.impl.GenericDebuggerRunnerSettings;
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.ConfigurationInfoProvider;
-import com.intellij.execution.configurations.RemoteConnection;
-import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.configurations.*;
 import com.intellij.execution.executors.DefaultDebugExecutor;
+import com.intellij.execution.process.ProcessHandler;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.openapi.util.Key;
 import com.jcraft.jsch.JSchException;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.spark.common.*;
+import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Single;
@@ -52,13 +59,19 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
+    private Optional<ProcessHandler> remoteDebuggerProcessHandler = Optional.empty();
+
+    // More complex pattern, please use grok
+    private Pattern simpleLogPattern = Pattern.compile("\\d{1,2}[\\/-]\\d{1,2}[\\/-]\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2} (INFO|WARN|ERROR) .*", Pattern.DOTALL);
+
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
         // Only support debug now, will enable run in future
@@ -74,6 +87,13 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
     @Override
     public GenericDebuggerRunnerSettings createConfigurationData(ConfigurationInfoProvider settingsProvider) {
         return null;
+    }
+
+    @Override
+    public void onProcessStarted(RunnerSettings settings, ExecutionResult executionResult) {
+        super.onProcessStarted(settings, executionResult);
+
+        remoteDebuggerProcessHandler = Optional.ofNullable(executionResult.getProcessHandler());
     }
 
     @Override
@@ -114,7 +134,8 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                                     remoteDebugJob.killBatchJob();
                                     HDInsightUtil.setJobRunningStatus(submitModel.getProject(), false);
                                 } catch (IOException ignore) { }
-                            }))
+                            })
+                )
                 .subscribe(
                         sparkBatchDebugSession -> {
                             // Spark Job is done
@@ -191,7 +212,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
             SparkSubmitModel submitModel,
             SparkBatchRemoteDebugJob remoteDebugJob
     )
-            throws URISyntaxException, JSchException, IOException, SparkJobException {
+            throws URISyntaxException, JSchException, IOException, HDIException {
         SparkSubmitAdvancedConfigModel advModel = submitModel.getAdvancedConfigModel();
 
         if (advModel == null) {
@@ -224,6 +245,41 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
 
         int localPort = session.getForwardedLocalPort(driverHost, driverDebugPort);
 
+        String driverLogUrl = remoteDebugJob.getSparkJobDriverLogUrl(remoteDebugJob.getConnectUri(), remoteDebugJob.getBatchId());
+
+        IClusterDetail clusterDetail = submitModel.getSelectedClusterDetail();
+        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword()));
+
+        session.setLogSubscription(JobUtils.createYarnLogObservable(
+                                        credentialsProvider,
+                                        driverLogUrl,
+                                        "stderr",
+                                        getLogReadBlockSize())
+                .scan(new SimpleEntry<>(null, ProcessOutputTypes.STDERR), (lastLineKeyPair, line) -> {
+                    Matcher logMatcher = simpleLogPattern.matcher(line);
+
+                    if (logMatcher.matches()) {
+                        String logType = logMatcher.group(1);
+                        Key logKey = (logType.equals("ERROR") || logType.equals("WARN")) ?
+                                ProcessOutputTypes.STDERR :
+                                ProcessOutputTypes.STDOUT;
+
+                        return new SimpleEntry<>(line, logKey);
+                    }
+
+                    return new SimpleEntry<>(line, lastLineKeyPair.getValue());
+                })
+                .subscribe(
+                        lineKeyPair -> remoteDebuggerProcessHandler.ifPresent(processHandler -> {
+                            if (lineKeyPair.getKey() != null) {
+                                processHandler.notifyTextAvailable(
+                                        lineKeyPair.getKey() + "\n", lineKeyPair.getValue());
+                            }
+                        }),
+                        error -> HDInsightUtil.showInfoOnSubmissionMessageWindow(
+                                submitModel.getProject(), error.getMessage())));
+
         HDInsightUtil.showInfoOnSubmissionMessageWindow(
                 submitModel.getProject(),
                 String.format("Info : Local port %d is forwarded to %s:%d for Spark job driver debugging",
@@ -250,9 +306,11 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
         IClusterDetail clusterDetail = submitModel.getSelectedClusterDetail();
 
         return Single.fromEmitter(em -> {
+            SimpleEntry<SparkBatchDebugSession, Integer> sessionPortPair = null;
+
             try {
                 // Create SSH port forwarding session for debugging
-                SimpleEntry<SparkBatchDebugSession, Integer> sessionPortPair =
+                sessionPortPair =
                         createSshPortForwardDebugSession(
                                 clusterDetail.getConnectionUrl(), submitModel, remoteDebugJob);
 
@@ -268,8 +326,16 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
 
                 em.onSuccess(sessionPortPair.getKey());
             } catch (Exception ex) {
+                if (sessionPortPair != null) {
+                    sessionPortPair.getKey().close();
+                }
+
                 em.onError(ex);
             }
         });
+    }
+
+    protected int getLogReadBlockSize() {
+        return 4096;
     }
 }

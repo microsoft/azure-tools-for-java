@@ -75,6 +75,10 @@ public class SparkBatchSubmission {
         credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY), new UsernamePasswordCredentials(username, password));
     }
 
+    public CredentialsProvider getCredentialsProvider() {
+        return credentialsProvider;
+    }
+
     public HttpResponse getHttpResponseViaGet(String connectUrl) throws IOException {
         CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
 

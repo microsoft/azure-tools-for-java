@@ -27,6 +27,7 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import rx.Subscription;
 
 import java.io.File;
 import java.net.UnknownServiceException;
@@ -38,10 +39,29 @@ import java.util.Arrays;
 public class SparkBatchDebugSession implements ILogger{
     private Session portForwardingSession;
     private JSch jsch;
+    private Subscription logSubscription;
 
     SparkBatchDebugSession(JSch jsch, Session portForwardingSession) {
         this.jsch = jsch;
         this.portForwardingSession = portForwardingSession;
+    }
+
+    /**
+     * Getter of the log subscription
+     *
+     * @return Subscription instance
+     */
+    public Subscription getLogSubscription() {
+        return logSubscription;
+    }
+
+    /**
+     * Setter of the log subscription
+     *
+     * @param logSubscription log Rx Subscription instance
+     */
+    public void setLogSubscription(Subscription logSubscription) {
+        this.logSubscription = logSubscription;
     }
 
     /**
@@ -93,6 +113,10 @@ public class SparkBatchDebugSession implements ILogger{
      * @return the current instance for chain calling
      */
     public SparkBatchDebugSession close() {
+        if (getLogSubscription() != null) {
+            getLogSubscription().unsubscribe();
+        }
+
         this.getPortForwardingSession().disconnect();
 
         return this;
