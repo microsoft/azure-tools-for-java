@@ -57,7 +57,6 @@ public class HDInsightModuleType extends ModuleType<HDInsightModuleBuilder> {
         return "Support HDInsight products.";
     }
 
-    @Override
     public Icon getBigIcon() {
         return null;
     }

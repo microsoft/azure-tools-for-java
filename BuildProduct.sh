@@ -71,27 +71,27 @@ cp ./PluginsAndFeatures/azure-toolkit-for-eclipse/WindowsAzurePlugin4EJ/target/W
 chmod +x ./gradlew
 chmod +x ./tools/IntellijVersionHelper
 
-# Build intellij 2016 plugin
-if [ $INTELLIJ_VERSION == "true" ] ; then
-    ./tools/IntellijVersionHelper 2016.3
-fi
-
-./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IU-2016.3 -Pdep_plugins=org.intellij.scala:2016.3.5
-
-cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2016.zip
-
-# Build intellij 2017 plugin
+# Build intellij 2017.1 plugin
 if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2017.1
 fi
+
+./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-2017.1 -Pdep_plugins=org.intellij.scala:2017.1.15
+
+cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2017.1.zip
+
+# Build intellij 2017.2 plugin
+if [ $INTELLIJ_VERSION == "true" ] ; then
+    ./tools/IntellijVersionHelper 2017.2
+fi
 ./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Papplicationinsights.key=${INTELLIJ_KEY}
-cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2017.zip
+cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2017.2.zip
 
 # Extract jars to sign
 # intelliJ
 rm -rf ${INTELLIJ_TOSIGN}/*
-unzip -p ./artifacts/azure-toolkit-for-intellij-2016.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_2016.jar
-unzip -p ./artifacts/azure-toolkit-for-intellij-2017.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_2017.jar
+unzip -p ./artifacts/azure-toolkit-for-intellij-2017.1.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_2017.1.jar
+unzip -p ./artifacts/azure-toolkit-for-intellij-2017.2.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_2017.2.jar
 
 # Eclipse
 rm -rf ${ECLIPSE_TOSIGN}/*
