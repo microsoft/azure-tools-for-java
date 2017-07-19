@@ -71,7 +71,6 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
         return "HDInsight";
     }
 
-    @Override
     public Icon getBigIcon() {
         return null;
     }

@@ -13,7 +13,7 @@
   </change-notes>
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="141"/>
+  <idea-version since-build="171.3780" until-build="172.*"/>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
   <depends optional="true">org.intellij.scala</depends>
@@ -68,7 +68,7 @@
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
   </extensions>
-  
+
   <application-components>
     <component>
       <implementation-class>com.microsoft.azure.hdinsight.jobs.JobViewApplicationComponent</implementation-class>
