@@ -70,7 +70,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
     private Optional<ProcessHandler> remoteDebuggerProcessHandler = Optional.empty();
 
     // More complex pattern, please use grok
-    private Pattern simpleLogPattern = Pattern.compile("\\d{1,2}[\\/-]\\d{1,2}[\\/-]\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2} (INFO|WARN|ERROR) .*", Pattern.DOTALL);
+    private Pattern simpleLogPattern = Pattern.compile("\\d{1,2}[/-]\\d{1,2}[/-]\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2} (INFO|WARN|ERROR) .*", Pattern.DOTALL);
 
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
@@ -249,7 +249,9 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
 
         IClusterDetail clusterDetail = submitModel.getSelectedClusterDetail();
         final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword()));
+        credentialsProvider.setCredentials(
+                AuthScope.ANY,
+                new UsernamePasswordCredentials(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword()));
 
         session.setLogSubscription(JobUtils.createYarnLogObservable(
                                         credentialsProvider,
@@ -270,13 +272,11 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
 
                     return new SimpleEntry<>(line, lastLineKeyPair.getValue());
                 })
+                .filter(lineKeyPair -> lineKeyPair.getKey() != null)
                 .subscribe(
-                        lineKeyPair -> remoteDebuggerProcessHandler.ifPresent(processHandler -> {
-                            if (lineKeyPair.getKey() != null) {
+                        lineKeyPair -> remoteDebuggerProcessHandler.ifPresent(processHandler ->
                                 processHandler.notifyTextAvailable(
-                                        lineKeyPair.getKey() + "\n", lineKeyPair.getValue());
-                            }
-                        }),
+                                        lineKeyPair.getKey() + "\n", lineKeyPair.getValue())),
                         error -> HDInsightUtil.showInfoOnSubmissionMessageWindow(
                                 submitModel.getProject(), error.getMessage())));
 
