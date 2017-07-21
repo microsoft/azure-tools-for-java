@@ -137,9 +137,9 @@
 
     <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/azure.png" popup="true"
            class="com.microsoft.intellij.actions.AzurePopupGroup">
-      <reference ref="Actions.AddDockerSupport"/>
+      <!-- <reference ref="Actions.AddDockerSupport"/>
       <reference ref="Actions.DockerRun"/>
-      <reference ref="Actions.DockerPublish"/>
+      <reference ref="Actions.DockerPublish"/> -->
       <reference ref="Actions.AzureWebDeploy"/>
       <reference ref="Actions.AzureDockerHostDeploy"/>
       <separator/>
