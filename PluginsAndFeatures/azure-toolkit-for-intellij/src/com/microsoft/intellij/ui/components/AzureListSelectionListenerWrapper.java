@@ -76,7 +76,7 @@ public abstract  class AzureListSelectionListenerWrapper implements ListSelectio
             telemetryProperties.putAll(properties);
         }
 
-        String eventName = String.format("%s_%s_%s", compositeName, widgetName, SELECTEVENT);
+        String eventName = String.format("%s.%s.%s", compositeName, widgetName, SELECTEVENT);
         AppInsightsClient.create(eventName, null, telemetryProperties, false);
     }
 }

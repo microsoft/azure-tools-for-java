@@ -89,7 +89,7 @@ public abstract class AzureActionListenerWrapper implements ActionListener {
             telemetryProperties.putAll(properties);
         }
 
-        String eventName = String.format("%s_%s_%s", compositeName, widgetName, cmd);
+        String eventName = String.format("%s.%s.%s", compositeName, widgetName, cmd);
         AppInsightsClient.create(eventName, null, telemetryProperties, false);
     }
 }

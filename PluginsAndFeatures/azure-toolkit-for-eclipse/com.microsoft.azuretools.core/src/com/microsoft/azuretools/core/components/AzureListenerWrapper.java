@@ -78,7 +78,7 @@ public abstract class AzureListenerWrapper implements Listener {
         if (null != properties) {
             telemetryProperties.putAll(properties);
         }
-        String eventName = String.format("%s_%s_%d", compositeName, widgetName, event.type);
+        String eventName = String.format("%s.%s.%d", compositeName, widgetName, event.type);
         AppInsightsClient.create(eventName, null, telemetryProperties, false);
     }
 }

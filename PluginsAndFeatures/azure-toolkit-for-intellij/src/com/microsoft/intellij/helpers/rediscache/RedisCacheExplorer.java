@@ -51,6 +51,7 @@ import java.util.Collections;
 public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpView {
 
     public static final String ID = "com.microsoft.intellij.helpers.rediscache.RedisCacheExplorer";
+    public static final String INSIGHT_NAME = "AzurePlugin.IntelliJ.Editor.RedisCacheExplorer";
 
     private String currentCursor;
     private String lastChosenKey;
@@ -117,7 +118,7 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
 
         progressBar.setIndeterminate(true);
 
-        cbDatabase.addActionListener(new AzureActionListenerWrapper(ID, "cbDatabase", null) {
+        cbDatabase.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "cbDatabase", null) {
             @Override
             public void actionPerformedFunc(ActionEvent event) {
                 if (cbActionType.getSelectedItem().equals(ACTION_GET)) {
@@ -129,7 +130,7 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
             }
         });
 
-        lstKey.addListSelectionListener(new AzureListSelectionListenerWrapper(ID, "lstKey", null) {
+        lstKey.addListSelectionListener(new AzureListSelectionListenerWrapper(INSIGHT_NAME, "lstKey", null) {
             @Override
             public void valueChangedFunc(ListSelectionEvent event) {
                 String selectedKey = (String) lstKey.getSelectedValue();
@@ -142,14 +143,14 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
             }
         });
 
-        btnSearch.addActionListener(new AzureActionListenerWrapper(ID, "btnSearch", null) {
+        btnSearch.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "btnSearch", null) {
             @Override
             public void actionPerformedFunc(ActionEvent event) {
                 RedisCacheExplorer.this.onBtnSearchClick();
             }
         });
 
-        btnScanMore.addActionListener(new AzureActionListenerWrapper(ID, "btnScanMore", null) {
+        btnScanMore.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "btnScanMore", null) {
             @Override
             public void actionPerformedFunc(ActionEvent event) {
                 RedisCacheExplorer.this.setWidgetEnableStatus(false);
@@ -160,7 +161,7 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
 
         txtKeyPattern.addActionListener(event -> onBtnSearchClick());
 
-        cbActionType.addActionListener(new AzureActionListenerWrapper(ID, "cbActionType", null) {
+        cbActionType.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "cbActionType", null) {
             @Override
             public void actionPerformedFunc(ActionEvent event) {
                 String selected = (String) cbActionType.getSelectedItem();

@@ -64,6 +64,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
 
     // Identifier of this class
     public static final String ID = "com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor";
+    public static final String INSIGHT_NAME = "AzurePlugin.Eclipse.Editor.RedisExplorerEditor";
 
     // Icon path for the search button
     private static final String SEARCH_ICON_PATH = "icons/search.png";
@@ -250,7 +251,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
         scrolledComposite.setMinSize(cmpoMain.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 
         
-        cbDatabase.addListener(SWT.Selection, new AzureListenerWrapper(ID, "cbDatabase", null) {
+        cbDatabase.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "cbDatabase", null) {
             @Override 
             protected void handleEventFunc(Event event) {
                 if (cbActionType.getText().equals(ACTION_GET)) {
@@ -262,7 +263,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
             }
         });
 
-        lstKey.addListener(SWT.Selection, new AzureListenerWrapper(ID, "lstKey", null) {
+        lstKey.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "lstKey", null) {
             @Override
             protected void handleEventFunc(Event event) {
                 String selectedKey = lstKey.getItem(lstKey.getSelectionIndex());
@@ -275,14 +276,14 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
             }
         });
 
-        btnSearch.addListener(SWT.Selection, new AzureListenerWrapper(ID, "btnSearch", null) {
+        btnSearch.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "btnSearch", null) {
             @Override
             protected void handleEventFunc(Event event) {
                 onBtnSearchClick();
             }
         });
 
-        btnScanMoreKey.addListener(SWT.Selection, new AzureListenerWrapper(ID, "btnScanMoreKey", null) {
+        btnScanMoreKey.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "btnScanMoreKey", null) {
             @Override
             protected void handleEventFunc(Event event) {
                 setWidgetEnableStatus(false);
@@ -298,7 +299,7 @@ public class RedisExplorerEditor extends EditorPart implements RedisExplorerMvpV
             }
         });
 
-        cbActionType.addListener(SWT.Selection, new AzureListenerWrapper(ID, "cbActionType", null) {
+        cbActionType.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "cbActionType", null) {
             @Override
             protected void handleEventFunc(Event event) {
                 String selected = cbActionType.getText();
