@@ -8,7 +8,15 @@
       Azure Toolkit for IntelliJ IDEA.
     ]]></description>
 
-  <change-notes><![CDATA[
+  <change-notes>
+    <![CDATA[
+    <html>
+      <h2>[3.0.6]</h2>
+      <h3>Added</h3>
+      <ul>
+        <li>Added the Redis Cache Explorer that allow user to scan/get keys and its values.</li>
+      </ul>
+    </html>
     ]]>
   </change-notes>
 
