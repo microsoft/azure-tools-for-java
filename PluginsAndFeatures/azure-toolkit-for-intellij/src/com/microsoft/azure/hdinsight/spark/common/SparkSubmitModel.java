@@ -562,10 +562,15 @@ public class SparkSubmitModel {
             }
         } else {
             Map<String, Object> configs = submissionParameter.getJobConfig();
-            for (int i = 0; i < SparkSubmissionParameter.parameterList.length; ++i) {
-                tableModel.addRow(SparkSubmissionParameter.parameterList[i], configs.containsKey(SparkSubmissionParameter.parameterList[i]) ?
-                        configs.get(SparkSubmissionParameter.parameterList[i]) : "");
-            }
+
+            Arrays.stream(SparkSubmissionParameter.parameterList).forEach(key -> {
+                // Put the default empty value into the submission parameters job configuration
+                if (!configs.containsKey(key)) {
+                    configs.put(key, "");
+                }
+
+                tableModel.addRow(key, configs.get(key));
+            });
 
             for (Map.Entry<String, Object> jobConfigEntry : configs.entrySet()) {
                 String jobConfigKey = jobConfigEntry.getKey();
