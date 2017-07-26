@@ -11,10 +11,11 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h2>[3.0.6]</h2>
-      <h3>Added</h3>
+      <h3>[3.0.6]</h3>
       <ul>
         <li>Added the Redis Cache Explorer that allow user to scan/get keys and its values.</li>
+        <li>Improved Spark job remote debugging support(show log in console, apply and load debugging config.)</li>
+        <li>Fixed some bugs.</li>
       </ul>
     </html>
     ]]>
