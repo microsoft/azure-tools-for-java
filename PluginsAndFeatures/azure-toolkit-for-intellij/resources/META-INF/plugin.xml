@@ -8,7 +8,16 @@
       Azure Toolkit for IntelliJ IDEA.
     ]]></description>
 
-  <change-notes><![CDATA[
+  <change-notes>
+    <![CDATA[
+    <html>
+      <h3>[3.0.6]</h3>
+      <ul>
+        <li>Added the Redis Cache Explorer that allows users to scan/get keys and their values.</li>
+        <li>Improved Spark job remote debugging support(show log in console, apply and load debugging config).</li>
+        <li>Fixed some bugs.</li>
+      </ul>
+    </html>
     ]]>
   </change-notes>
 
@@ -67,7 +76,6 @@
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType"/>
     <!--<programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>-->
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
-    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
   </extensions>
 
   <application-components>

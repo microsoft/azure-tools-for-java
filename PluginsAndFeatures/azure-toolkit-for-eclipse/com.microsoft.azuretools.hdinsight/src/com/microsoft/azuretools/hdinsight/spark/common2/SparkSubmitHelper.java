@@ -194,7 +194,7 @@ public class SparkSubmitHelper {
                         }.getType());
                 if (submitStatus != null && submitStatus.getLog() != null && submitStatus.getLog().size() > 0) {
                     List<String> logs = submitStatus.getLog();
-                    postEventProperty.put("SubmitFailedReason", logs.get(logs.size() - 1).substring(0, 50));
+                    postEventProperty.put("SubmitFailedReason", truncateTelemetryMessage(logs.get(logs.size() - 1)));
                 }
 				
 				HDInsightUtil.getSparkSubmissionToolWindowView().setError("Error : Your submitted job run failed");
@@ -211,7 +211,7 @@ public class SparkSubmitHelper {
 				HDInsightUtil.getSparkSubmissionToolWindowView()
 						.setError("Error : Failed to getting running log. Exception : " + e.toString());
 
-				postEventProperty.put("SubmitFailedReason", e.toString().substring(0, 50));
+				postEventProperty.put("SubmitFailedReason", truncateTelemetryMessage(e.toString()));
 			} else {
 				postEventProperty.put("IsKilled", "true");
 			}
@@ -266,7 +266,12 @@ public class SparkSubmitHelper {
 			throw new UnsupportedOperationException("unkown storage account type");
 		}
 	}
-
+	
+	private String truncateTelemetryMessage(@NotNull String message) {
+		int len = message.length();
+		return len < 50 ? message : message.substring(0, 50);
+	}
+	
 	private int printoutJobLog(/* Project project, */ int id, int from_index, IClusterDetail clusterDetail)
 			throws IOException {
 		HttpResponse httpResponse = SparkBatchSubmission.getInstance()

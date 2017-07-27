@@ -127,7 +127,9 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
     @Override
     public void onRequestSucceed(Object payload) {
         setWidgetsEnabledStatus(true);
+        ((PublishWizardDialog) this.getContainer()).setButtonsEnabled(true);
         ((PublishWizardDialog) this.getContainer()).updateButtons();
+        setPageComplete(pageCompleteStatus());
         AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(((RequestPayload) payload).name(),
                 ((RequestPayload) payload).name(), ((RequestPayload) payload).url(), null, "Success");
     }
@@ -137,6 +139,7 @@ public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, Pub
         setWidgetsEnabledStatus(true);
         ((PublishWizardDialog) this.getContainer()).setButtonsEnabled(true);
         ((PublishWizardDialog) this.getContainer()).updateButtons();
+        setPageComplete(pageCompleteStatus());
         AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(payload.toString(),
                 payload.toString(), null, null, "Fail");
     }

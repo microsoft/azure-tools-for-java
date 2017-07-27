@@ -53,10 +53,11 @@ public class SparkBatchRemoteDebugJobScenario {
 
     @Before
     public void setUp() throws Throwable {
+        submissionParameterArgumentCaptor = ArgumentCaptor.forClass(SparkSubmissionParameter.class);
         submissionMock = mock(SparkBatchSubmission.class);
         when(submissionMock.getBatchSparkJobStatus(anyString(), anyInt())).thenCallRealMethod();
         when(submissionMock.getHttpResponseViaGet(anyString())).thenCallRealMethod();
-        when(submissionMock.createBatchSparkJob(anyString(), any())).thenCallRealMethod();
+        when(submissionMock.createBatchSparkJob(anyString(), submissionParameterArgumentCaptor.capture())).thenCallRealMethod();
 
         debugJobMock = mock(SparkBatchRemoteDebugJob.class, CALLS_REAL_METHODS);
         when(debugJobMock.getSubmission()).thenReturn(submissionMock);
@@ -66,7 +67,6 @@ public class SparkBatchRemoteDebugJobScenario {
 
         caught = null;
         responseMock = mock(HttpResponse.class);
-        submissionParameterArgumentCaptor = ArgumentCaptor.forClass(SparkSubmissionParameter.class);
 
         if (httpServerMock != null) {
             WireMock.reset();
@@ -94,19 +94,12 @@ public class SparkBatchRemoteDebugJobScenario {
                     if (!cleanedConf.isEmpty()) { put("conf", new SparkConfigures(cleanedConf)); }
                 }});
 
-        ArgumentCaptor<String> submittedUrlCaptured = ArgumentCaptor.forClass(String.class);
-        when(submissionMock.createBatchSparkJob(
-                        submittedUrlCaptured.capture(),
-                        submissionParameterArgumentCaptor.capture()))
-                .thenReturn(responseMock);
-
         caught = null;
 
         try {
             debugJobMock = SparkBatchRemoteDebugJob.factory(connectUrl, parameter, submissionMock);
 
             debugJobMock.createBatchSparkJobWithDriverDebugging();
-            assertEquals(submittedUrlCaptured.getValue(), connectUrl);
         } catch (Exception e) {
             caught = e;
         }

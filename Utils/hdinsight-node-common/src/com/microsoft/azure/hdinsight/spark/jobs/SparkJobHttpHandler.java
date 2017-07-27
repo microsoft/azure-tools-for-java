@@ -21,6 +21,7 @@
  */
 package com.microsoft.azure.hdinsight.spark.jobs;
 
+import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.Application;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.YarnAppWithJobs;
@@ -31,6 +32,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.spark.stage.Stage;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.task.Task;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.App;
 import com.microsoft.azure.hdinsight.spark.jobs.framework.JobRequestDetails;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -48,9 +50,13 @@ public class SparkJobHttpHandler implements HttpHandler {
         try {
             String path = requestDetail.getRequestPath();
             if (path.equalsIgnoreCase("/applications/") && requestDetail.getAppId().equalsIgnoreCase("0")) {
-                List<Application> applications = JobViewCacheManager.getSparkApplications(requestDetail.getCluster());
-                Optional<String> responseString = ObjectConvertUtils.convertObjectToJsonString(applications);
-                JobUtils.setResponse(httpExchange, responseString.orElseThrow(IOException::new));
+                try {
+                    List<Application> applications = SparkRestUtil.getSparkApplications(requestDetail.getCluster());
+                    Optional<String> responseString = ObjectConvertUtils.convertObjectToJsonString(applications);
+                    JobUtils.setResponse(httpExchange, responseString.orElseThrow(IOException::new));
+                } catch (HDIException e) {
+                    DefaultLoader.getUIHelper().logError("get applications list error", e);
+                }
             } else if (path.contains("application_graph")) {
                 ApplicationKey key = new ApplicationKey(requestDetail.getCluster(), requestDetail.getAppId());
                 List<Job> jobs = JobViewCacheManager.getJob(key);
