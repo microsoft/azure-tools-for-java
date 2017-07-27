@@ -54,6 +54,7 @@ import rx.Single;
 import rx.exceptions.CompositeException;
 import rx.exceptions.Exceptions;
 import rx.schedulers.Schedulers;
+import rx.subjects.PublishSubject;
 
 import java.io.IOException;
 import java.net.URI;
@@ -67,7 +68,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
+    enum DebugAction {
+        STOP
+    }
+
     private Optional<ProcessHandler> remoteDebuggerProcessHandler = Optional.empty();
+    private PublishSubject<DebugAction> actionSubject = PublishSubject.create();
 
     // More complex pattern, please use grok
     private Pattern simpleLogPattern = Pattern.compile("\\d{1,2}[/-]\\d{1,2}[/-]\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2} (INFO|WARN|ERROR) .*", Pattern.DOTALL);
@@ -119,6 +125,23 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                 })
                 .flatMap((remoteDebugJob) ->
                     startDebuggerObservable(environment, callback, submissionState, remoteDebugJob)
+                            .doOnEach(debugSession ->
+                                    // Handle STOP action with subscribing actionSubject for STOP event
+                                    actionSubject.filter((action) -> action.equals(DebugAction.STOP))
+                                                 .subscribe(action -> {
+                                                     try {
+                                                         HDInsightUtil.showInfoOnSubmissionMessageWindow(
+                                                                 submitModel.getProject(),
+                                                                 "Info: Spark batch debugging job stop, job is killed");
+
+                                                         remoteDebugJob.killBatchJob();
+                                                     } catch (IOException ex) {
+                                                         HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(
+                                                                 submitModel.getProject(),
+                                                                 "Error : Failed to kill Spark batch debugging job, " +
+                                                                 "got exception " + ex);
+                                                     }
+                                                 }))
                             .subscribeOn(Schedulers.computation())
                             .zipWith( // Block with getting the job log from cluster
                                     submitModel.jobLogObservable(
@@ -179,6 +202,13 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                                     null,
                                     postEventProperty);
                         });
+    }
+
+    /**
+     * Stop the runner by sending STOP event to all subscribers
+     */
+    public void performStopAction() {
+        actionSubject.onNext(DebugAction.STOP);
     }
 
     /**
