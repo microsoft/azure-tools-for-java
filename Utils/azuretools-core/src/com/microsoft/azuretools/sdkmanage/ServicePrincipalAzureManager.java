@@ -78,29 +78,12 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     }
 
     private Azure.Authenticated auth() throws IOException {
-        ApplicationTokenCredentials credentials = (atc == null) ? ApplicationTokenCredentials.fromFile(credFile) : atc;
-        if (!credentials.environment().managementEndpoint().contains(AzureEnvironment.AZURE.managementEndpoint()) &&
-            AuthMethodManager.getClientBuilder() != null) {
-            // Register attached resources certificates needed to work with China and Germany clouds
-                RestClient restClient = new RestClient.Builder(
-                    AuthMethodManager.getClientBuilder(),
-                    new Retrofit.Builder())
-                    .withBaseUrl(credentials.environment().resourceManagerEndpoint())
-                    .withCredentials(credentials)
-                    .withSerializerAdapter(new AzureJacksonAdapter())
-                    .withResponseBuilderFactory(new AzureResponseBuilder.Factory())
-                    .withUserAgent(CommonSettings.USER_AGENT)
-                    .build();
-
-                return Azure.authenticate(restClient, credentials.domain());
-        } else {
-            Azure.Configurable azureConfigurable = Azure.configure()
+        Azure.Configurable azureConfigurable = Azure.configure()
                     .withInterceptor(new TelemetryInterceptor())
                     .withUserAgent(CommonSettings.USER_AGENT);
-            return (atc == null)
+        return (atc == null)
                 ? azureConfigurable.authenticate(credFile)
                 : azureConfigurable.authenticate(atc);
-        }
     }
 
     @Override
