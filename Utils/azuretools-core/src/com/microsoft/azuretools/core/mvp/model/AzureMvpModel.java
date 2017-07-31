@@ -38,11 +38,11 @@ public class AzureMvpModel {
         }
     }
 
-    public synchronized Subscription getSubscriptionById(String sid){
+    public Subscription getSubscriptionById(String sid){
         return subscriptionIdToSubscriptionMap.get(sid);
     }
     
-    public synchronized List<Subscription> getSelectedSubscriptions(){
+    public List<Subscription> getSelectedSubscriptions(){
         List<Subscription> ret = new ArrayList<>();
         for(SubscriptionDetail subDetail : subscriptionIdToSubscriptionDetailMap.values()){
             if(subDetail.isSelected()){
@@ -52,7 +52,7 @@ public class AzureMvpModel {
         return ret;
     }
 
-    public synchronized List<ResourceGroup> getResouceGroupsBySubscriptionId(String sid, boolean force) {
+    public List<ResourceGroup> getResouceGroupsBySubscriptionId(String sid, boolean force) {
         if(force){
             try{
                 AzureManager azureManager  = AuthMethodManager.getInstance().getAzureManager();
