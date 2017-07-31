@@ -10,9 +10,9 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AzureMvpModel {
     private static final class SingletonHolder {
@@ -28,9 +28,9 @@ public class AzureMvpModel {
     Map<String, List<ResourceGroup>> subscriptionIdToResourceGroupMap;
 
     private AzureMvpModel(){
-        subscriptionIdToSubscriptionMap = new HashMap<>();
-        subscriptionIdToSubscriptionDetailMap = new HashMap<>();
-        subscriptionIdToResourceGroupMap = new HashMap<>();
+        subscriptionIdToSubscriptionMap = new ConcurrentHashMap<>();
+        subscriptionIdToSubscriptionDetailMap = new ConcurrentHashMap<>();
+        subscriptionIdToResourceGroupMap = new ConcurrentHashMap<>();
         try {
             updateSubscriptionMaps();
         } catch (Exception e) {

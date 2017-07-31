@@ -10,9 +10,9 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AzureWebAppMvpModel {
     private static final class SingletonHolder {
@@ -24,14 +24,14 @@ public class AzureWebAppMvpModel {
     }
 
     private AzureWebAppMvpModel() {
-        subscriptionIdToWebAppsOnLinuxMap = new HashMap<>();
-        subscriptionIdToWebAppsMap = new HashMap<>();
+        subscriptionIdToWebAppsOnLinuxMap = new ConcurrentHashMap<>();
+        subscriptionIdToWebAppsMap = new ConcurrentHashMap<>();
     }
 
     private Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
     private Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
 
-    public synchronized WebApp getWebAppById(String sid, String id) throws IOException {
+    public WebApp getWebAppById(String sid, String id) throws IOException {
         // TODO
         Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
         return azure.webApps().getById(id);
@@ -50,11 +50,11 @@ public class AzureWebAppMvpModel {
         // TODO
     }
 
-    public synchronized List<WebApp> listWebAppsBySubscriptionId(String sid, boolean force){
+    public List<WebApp> listWebAppsBySubscriptionId(String sid, boolean force){
         return null;
     }
 
-    public synchronized List<ResourceEx<SiteInner>> listWebAppsOnLinuxBySubscriptionId(String sid, boolean force) {
+    public List<ResourceEx<SiteInner>> listWebAppsOnLinuxBySubscriptionId(String sid, boolean force) {
         List<ResourceEx<SiteInner>> wal = new ArrayList<ResourceEx<SiteInner>>();
         if(!force && subscriptionIdToWebAppsOnLinuxMap.containsKey(sid)) {
             return subscriptionIdToWebAppsOnLinuxMap.get(sid);
