@@ -71,11 +71,10 @@
         canCloseContents="false"
         icon="/icons/SparkSubmissionToolWindow.png"/>
 
-    <configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>
+    <!--<configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>-->
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType"/>
-    <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>
+    <!--<programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>-->
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
-    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
     <configurationType implementation="com.microsoft.intellij.container.run.ContainerRunConfigurationType"/>
   </extensions>
 
@@ -112,9 +111,6 @@
             text="Publish as Azure Web App..." description="Azure website deployment for Java"
             icon="/icons/PublishWebApp_16.png">
     </action>
-    <!--<action id="Actions.DockerPublishAction" class="com.microsoft.intellij.actions.DockerPublishActiontion"-->
-            <!--text="Deploy to Azure" description="Deploy to Azure">-->
-    <!--</action>-->
     <action id="Actions.AzureDockerHostDeploy" class="com.microsoft.intellij.actions.AzureDockerHostDeployAction"
             text="Publish as Docker Container..." description="Azure website deployment for Java on Docker"
             icon="/icons/PublishDockerContainer_16.png">
