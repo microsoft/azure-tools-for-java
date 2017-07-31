@@ -45,13 +45,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DockerRunAction extends AzureAnAction {
-<<<<<<< HEAD
-=======
-    public DockerRunAction() {
-        System.out.println("hehe");
-    }
-
->>>>>>> add runConfiguration for deploying to WebAppOnLinux
     @Override
     public void onActionPerformed(AnActionEvent anActionEvent) {
         Project project = DataKeys.PROJECT.getData(anActionEvent.getDataContext());

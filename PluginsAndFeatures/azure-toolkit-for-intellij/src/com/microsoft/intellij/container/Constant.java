@@ -41,11 +41,7 @@ public class Constant {
             + "with exception:\n%s";
     public static final String ERROR_RUNNING_DOCKER = "Error occurred in Docker Run, with exception:\n%s";
     public static final String DOCKERFILE_CONTENT_TOMCAT = "FROM tomcat:8.5-jre8\r\n"
-<<<<<<< HEAD
             + "COPY %s.war /usr/local/tomcat/webapps/\r\n";
-=======
-            + "COPY %s.war /usr/local/tomcat/webapps/ROOT.war\r\n";
->>>>>>> add runConfiguration for deploying to WebAppOnLinux
     public static final String ERROR_NO_SELECTED_PROJECT = "Can't detect an active project";
     public static final String MESSAGE_EXPORTING_PROJECT = "Packaging project into WAR file: %s";
     public static final String MESSAGE_BUILDING_IMAGE = "Building Image ...";
