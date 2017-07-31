@@ -33,6 +33,7 @@ import com.microsoft.azuretools.utils.Pair;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by shch on 10/3/2016.
@@ -42,7 +43,8 @@ public class SubscriptionManager {
     protected AzureManager azureManager;
 
     // for user to select subscr to work with
-    private List<SubscriptionDetail> subscriptionDetails;
+    private List<SubscriptionDetail> subscriptionDetails; // NOTE: This one should be retired in future.
+    private Map<String, SubscriptionDetail> subscriptionIdToSubscriptionDetailMap;
 
     // to get tid for sid
     private Map<String, String> sidToTid = new HashMap<String, String>();
@@ -51,11 +53,21 @@ public class SubscriptionManager {
         this.azureManager = azureManager;
     }
 
+    public Map<String, SubscriptionDetail> getSubscriptionToSubscriptionDetailsMap() throws AuthException, IOException{
+        System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionToSubscriptionDetailsMap()");
+        if (subscriptionIdToSubscriptionDetailMap == null) {
+            // WORKAROUND: the map is updating during `doSetSubscriptionDetails` 
+            List<SubscriptionDetail> sdl = updateAccountSubscriptionList();
+            doSetSubscriptionDetails(sdl);
+        }
+        return subscriptionIdToSubscriptionDetailMap;
+    }
+    
     public synchronized List<SubscriptionDetail> getSubscriptionDetails() throws AuthException, IOException {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionDetails()");
         if (subscriptionDetails == null) {
             List<SubscriptionDetail> sdl = updateAccountSubscriptionList();
-            doSetSubscriptionDetails(sdl);;
+            doSetSubscriptionDetails(sdl);
         }
         return subscriptionDetails;
     }
@@ -88,7 +100,22 @@ public class SubscriptionManager {
         }
 
         this.subscriptionDetails = subscriptionDetails;
+        updateMapAccordingToList(); // WORKAROUND: Update SubscriptionId->SubscriptionDetail Map
         updateSidToTidMap();
+    }
+
+    // WORKAROUND: private helper to construct SubscriptionId->SubscriptionDetail map 
+    private void updateMapAccordingToList() {
+        Map<String, SubscriptionDetail> sid2sd =new ConcurrentHashMap<>();
+        for(SubscriptionDetail sd : this.subscriptionDetails) {
+            sid2sd.put(sd.getSubscriptionId(),
+                    new SubscriptionDetail(
+                            sd.getSubscriptionId(),
+                            sd.getSubscriptionName(),
+                            sd.getTenantId(),
+                            sd.isSelected()));
+        }
+        this.subscriptionIdToSubscriptionDetailMap = sid2sd;
     }
 
     public void setSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) throws AuthException, IOException {
