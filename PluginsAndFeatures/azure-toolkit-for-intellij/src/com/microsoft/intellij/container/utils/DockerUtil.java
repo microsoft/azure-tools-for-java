@@ -31,12 +31,16 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.ProgressHandler;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
+<<<<<<< HEAD
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.ProgressMessage;
+=======
+import com.spotify.docker.client.messages.*;
+>>>>>>> add runConfiguration for deploying to WebAppOnLinux
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -152,4 +156,16 @@ public class DockerUtil {
         long count = docker.listContainers().stream().filter(item -> item.id().equals(containerId)).count();
         return (count > 0);
     }
+<<<<<<< HEAD
+=======
+
+    public static void pushImage(DockerClient dockerClient, String registryUrl, String registryUsername,
+                     String registryPassword, String latestImageName, String targetImageName, ProgressHandler handler)
+            throws DockerException, InterruptedException {
+        final RegistryAuth registryAuth = RegistryAuth.builder().username(registryUsername).password(registryPassword)
+                .build();
+        dockerClient.tag(latestImageName, targetImageName);
+        dockerClient.push(targetImageName, handler, registryAuth);
+    }
+>>>>>>> add runConfiguration for deploying to WebAppOnLinux
 }

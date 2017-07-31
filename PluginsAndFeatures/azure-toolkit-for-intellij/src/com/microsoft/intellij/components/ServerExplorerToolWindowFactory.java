@@ -26,6 +26,9 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -33,7 +36,10 @@ import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
 import com.microsoft.intellij.AzurePlugin;
@@ -99,10 +105,6 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // setup toolbar icons
         addToolbarItems(toolWindow, azureModule);
 
-//        try {
-//            azureModule.registerSubscriptionsChanged();
-//        } catch (AzureCmdException ignored) {
-//        }
     }
 
     private DefaultMutableTreeNode initRoot(Project project, AzureModule azureModule) {

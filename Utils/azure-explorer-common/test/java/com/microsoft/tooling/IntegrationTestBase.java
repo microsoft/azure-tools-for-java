@@ -105,6 +105,7 @@ public abstract class IntegrationTestBase {
                 created = true;
                 break;
             } catch (Exception e) {
+                e.printStackTrace();
                 Thread.sleep(3000);
             }
         } 

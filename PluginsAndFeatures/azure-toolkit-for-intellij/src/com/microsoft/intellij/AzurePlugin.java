@@ -27,18 +27,24 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.util.PlatformUtils;
 import com.intellij.util.containers.HashSet;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.azurecommons.util.*;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.intellij.common.CommonConst;
@@ -48,6 +54,7 @@ import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FileUtils;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 
 import javax.swing.event.EventListenerList;
@@ -112,12 +119,25 @@ public class AzurePlugin extends AbstractProjectComponent {
                 initializeTelemetry();
                 clearTempDirectory();
                 loadWebappsSettings();
+                loadWebAppOnLinux();
             } catch (Exception e) {
             /* This is not a user initiated task
                So user should not get any exception prompt.*/
                 LOG.error(AzureBundle.message("expErlStrtUp"), e);
             }
         }
+    }
+
+    private void loadWebAppOnLinux() {
+        ProgressManager.getInstance().run(new Task.Backgroundable(this.myProject,"Load Web App on Linux", false) {
+            @Override
+            public void run(@NotNull ProgressIndicator progressIndicator) {
+                AzureMvpModel.getInstance();
+                for(Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()){
+                    AzureWebAppMvpModel.getInstance().listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), false);
+                }
+            }
+        });
     }
 
     private void initializeTelemetry() throws Exception {
