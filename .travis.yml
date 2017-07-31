@@ -3,6 +3,7 @@ sudo: false
 jdk:
 - oraclejdk8
 before_install:
+- ulimit -s 1082768
 - chmod +x ./gradlew
 - chmod +x ./BuildDevint
 script:
