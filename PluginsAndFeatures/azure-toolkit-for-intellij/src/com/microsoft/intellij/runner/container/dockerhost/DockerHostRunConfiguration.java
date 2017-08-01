@@ -1,14 +1,11 @@
-package com.microsoft.intellij.container.run.local;
+package com.microsoft.intellij.runner.container.dockerhost;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
-import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ProgramRunner;
-import com.intellij.execution.ui.ExecutionConsole;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
@@ -17,19 +14,17 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+public class DockerHostRunConfiguration extends RunConfigurationBase {
+    private static String CONFIGURATION_ELEMENT_NODE_NAME = "DockerHostRunConfiguration";
+    private DockerHostRunModel containerLocalRunModel;
 
-public class ContainerLocalRunConfiguration extends RunConfigurationBase {
-    private static String CONFIGURATION_ELEMENT_NODE_NAME = "ContainerLocalRun";
-    private ContainerLocalRunModel containerLocalRunModel;
-
-    public ContainerLocalRunModel getContainerLocalRunModel() {
+    public DockerHostRunModel getContainerLocalRunModel() {
         return containerLocalRunModel;
     }
 
-    protected ContainerLocalRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
+    protected DockerHostRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
-        containerLocalRunModel = new ContainerLocalRunModel();
+        containerLocalRunModel = new DockerHostRunModel();
     }
 
     @Override
@@ -49,7 +44,7 @@ public class ContainerLocalRunConfiguration extends RunConfigurationBase {
     @NotNull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new ContainerLocalSettingsEditor();
+        return new DockerHostRunSettingsEditor();
     }
 
     @Override
@@ -64,7 +59,6 @@ public class ContainerLocalRunConfiguration extends RunConfigurationBase {
             @Nullable
             @Override
             public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) throws ExecutionException {
-                System.out.println("ContainerLocalRunConfiguration execute");
                 return null;
             }
         };

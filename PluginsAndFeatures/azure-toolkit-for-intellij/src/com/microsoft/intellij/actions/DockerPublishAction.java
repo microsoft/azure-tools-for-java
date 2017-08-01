@@ -35,7 +35,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
-import com.microsoft.intellij.container.run.ContainerRunConfigurationType;
+import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType;
 
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
@@ -54,7 +54,7 @@ public class DockerPublishAction extends AzureAnAction {
     private final ConfigurationType configType;
 
     public DockerPublishAction() {
-        this.configType = ContainerRunConfigurationType.getInstance();
+        this.configType = AzureDockerSupportConfigurationType.getInstance();
     }
 
 

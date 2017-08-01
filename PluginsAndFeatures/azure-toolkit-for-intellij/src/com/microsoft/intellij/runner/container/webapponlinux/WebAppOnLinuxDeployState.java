@@ -1,4 +1,4 @@
-package com.microsoft.intellij.container.run.remote;
+package com.microsoft.intellij.runner.container.webapponlinux;
 
 import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
@@ -21,26 +21,24 @@ import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.ProgressHandler;
 import com.spotify.docker.client.exceptions.DockerException;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import rx.Observable;
-import rx.schedulers.Schedulers;
-
-public class ContainerRemoteRunState implements RunProfileState {
-    private final ContainerRemoteRunModel containerRemoteRunModel;
+public class WebAppOnLinuxDeployState implements RunProfileState {
+    private final WebAppOnLinuxDeployModel webAppOnLinuxDeployModel;
     private final Project project;
 
     private final RunProcessHandler processHandler = new RunProcessHandler();
 
-    public ContainerRemoteRunState(Project project, ContainerRemoteRunModel containerRemoteRunModel) {
-        this.containerRemoteRunModel = containerRemoteRunModel;
+    public WebAppOnLinuxDeployState(Project project, WebAppOnLinuxDeployModel webAppOnLinuxDeployModel) {
+        this.webAppOnLinuxDeployModel = webAppOnLinuxDeployModel;
         this.project = project;
     }
 
@@ -51,10 +49,12 @@ public class ContainerRemoteRunState implements RunProfileState {
         consoleView.attachToProcess(processHandler);
         processHandler.addProcessListener(new ProcessListener() {
             @Override
-            public void startNotified(ProcessEvent processEvent) {}
+            public void startNotified(ProcessEvent processEvent) {
+            }
 
             @Override
-            public void processTerminated(ProcessEvent processEvent) {}
+            public void processTerminated(ProcessEvent processEvent) {
+            }
 
             @Override
             public void processWillTerminate(ProcessEvent processEvent, boolean b) {
@@ -62,13 +62,14 @@ public class ContainerRemoteRunState implements RunProfileState {
             }
 
             @Override
-            public void onTextAvailable(ProcessEvent processEvent, Key key) {}
+            public void onTextAvailable(ProcessEvent processEvent, Key key) {
+            }
         });
 
         Observable.fromCallable(
                 () -> {
                     println("Starting job ...  ");
-                    ContainerRemoteRunModel.WebAppOnLinuxInfo webInfo = containerRemoteRunModel.getWebAppOnLinuxInfo();
+                    WebAppOnLinuxDeployModel.WebAppOnLinuxInfo webInfo = webAppOnLinuxDeployModel.getWebAppOnLinuxInfo();
 
                     // locate war file to specified location
                     println("Locate war file ...  ");
@@ -93,7 +94,7 @@ public class ContainerRemoteRunState implements RunProfileState {
                             throw new DockerException(message.toString());
                         }
                     };
-                    ContainerRemoteRunModel.AzureContainerRegistryInfo acrInfo = containerRemoteRunModel
+                    WebAppOnLinuxDeployModel.AzureContainerRegistryInfo acrInfo = webAppOnLinuxDeployModel
                             .getAzureContainerRegistryInfo();
                     DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
                             latestImageName, acrInfo.getImageNameWithTag(), progressHandler);

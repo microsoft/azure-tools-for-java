@@ -1,4 +1,4 @@
-package com.microsoft.intellij.container.run.local;
+package com.microsoft.intellij.runner.container.dockerhost;
 
 import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
@@ -13,16 +13,10 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.intellij.container.Constant;
-import com.microsoft.intellij.container.run.remote.ContainerRemoteRunModel;
-import com.microsoft.intellij.container.run.remote.RunProcessHandler;
+import com.microsoft.intellij.runner.container.webapponlinux.RunProcessHandler;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.ProgressHandler;
-import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.ProgressMessage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -31,19 +25,19 @@ import rx.Observable;
 import rx.schedulers.Schedulers;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
-import static com.microsoft.intellij.container.utils.DockerUtil.*;
+import static com.microsoft.intellij.container.utils.DockerUtil.buildImage;
+import static com.microsoft.intellij.container.utils.DockerUtil.createDockerFile;
 
-public class ContainerLocalRunState implements RunProfileState {
-    private final ContainerLocalRunModel containerLocalRunModel;
+public class DockerHostRunState implements RunProfileState {
+    private final DockerHostRunModel dockerHostRunModel;
     private final Project project;
 
     final RunProcessHandler processHandler = new RunProcessHandler();
 
-    public ContainerLocalRunState(Project project, ContainerLocalRunModel containerLocalRunModel) {
-        this.containerLocalRunModel = containerLocalRunModel;
+    public DockerHostRunState(Project project, DockerHostRunModel dockerHostRunModel) {
+        this.dockerHostRunModel = dockerHostRunModel;
         this.project = project;
     }
 
@@ -55,10 +49,12 @@ public class ContainerLocalRunState implements RunProfileState {
         consoleView.attachToProcess(processHandler);
         processHandler.addProcessListener(new ProcessListener() {
             @Override
-            public void startNotified(ProcessEvent processEvent) {}
+            public void startNotified(ProcessEvent processEvent) {
+            }
 
             @Override
-            public void processTerminated(ProcessEvent processEvent) {}
+            public void processTerminated(ProcessEvent processEvent) {
+            }
 
             @Override
             public void processWillTerminate(ProcessEvent processEvent, boolean b) {
@@ -66,7 +62,8 @@ public class ContainerLocalRunState implements RunProfileState {
             }
 
             @Override
-            public void onTextAvailable(ProcessEvent processEvent, Key key) {}
+            public void onTextAvailable(ProcessEvent processEvent, Key key) {
+            }
         });
 
         Observable.fromCallable(
@@ -104,12 +101,13 @@ public class ContainerLocalRunState implements RunProfileState {
     private void println(String message) {
         println(message, ProcessOutputTypes.SYSTEM);
     }
+
     private void errorln(String message) {
         println(message, ProcessOutputTypes.STDERR);
     }
 
 
-        private void println(String message, Key type) {
+    private void println(String message, Key type) {
         if (!processHandler.isProcessTerminating() && !processHandler.isProcessTerminated()) {
             processHandler.notifyTextAvailable(message + "\n", type);
         } else {

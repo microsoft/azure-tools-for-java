@@ -1,8 +1,8 @@
-package com.microsoft.intellij.container.run.remote;
+package com.microsoft.intellij.runner.container.webapponlinux;
 
 import org.jdom.Element;
 
-public class ContainerRemoteRunModel {
+public class WebAppOnLinuxDeployModel {
     private static final String ELEMENT_ACR = "AzureContainerRegistry";
     private static final String ATTRIBUTE_SERVER_URL = "ServerUrl";
     private static final String ATTRIBUTE_USERNAME = "Username";
@@ -18,7 +18,7 @@ public class ContainerRemoteRunModel {
     private final AzureContainerRegistryInfo azureContainerRegistryInfo;
     private final WebAppOnLinuxInfo webAppOnLinuxInfo;
 
-    public ContainerRemoteRunModel() {
+    public WebAppOnLinuxDeployModel() {
         azureContainerRegistryInfo = new AzureContainerRegistryInfo();
         webAppOnLinuxInfo = new WebAppOnLinuxInfo();
     }
@@ -33,6 +33,7 @@ public class ContainerRemoteRunModel {
 
     /**
      * Load conf from existing xml node.
+     *
      * @param element xml node
      */
     public void readExternal(Element element) {
@@ -54,6 +55,7 @@ public class ContainerRemoteRunModel {
 
     /**
      * Save conf to xml node.
+     *
      * @param element xml node
      */
     public void writeExternal(Element element) {

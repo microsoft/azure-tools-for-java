@@ -1,17 +1,16 @@
-package com.microsoft.intellij.container.run.remote;
+package com.microsoft.intellij.runner.container.webapponlinux;
 
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.runners.DefaultProgramRunner;
-
 import org.jetbrains.annotations.NotNull;
 
-public class ContainerRemoteRunRunner extends DefaultProgramRunner {
-    private static final String ID = "com.microsoft.intellij.container.run.remote.ContainerRemoteRunRunner";
+public class WebAppOnLinuxDeployRunner extends DefaultProgramRunner {
+    private static final String ID = "WebAppOnLinuxDeployRunner";
 
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-        return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) && profile instanceof ContainerRemoteRunConfiguration;
+        return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) && profile instanceof WebAppOnLinuxDeployConfiguration;
     }
 
     @NotNull
