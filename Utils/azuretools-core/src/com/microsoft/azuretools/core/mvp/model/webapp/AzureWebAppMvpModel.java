@@ -69,7 +69,7 @@ public class AzureWebAppMvpModel {
         }
         try {
             Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
-            List<ResourceGroup> rgl = AzureMvpModel.getInstance().getResouceGroupsBySubscriptionId(sid, true);
+            List<ResourceGroup> rgl = AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sid);
 
             for (ResourceGroup rg : rgl) {
                 for (SiteInner si : azure.webApps().inner().listByResourceGroup(rg.name())) {

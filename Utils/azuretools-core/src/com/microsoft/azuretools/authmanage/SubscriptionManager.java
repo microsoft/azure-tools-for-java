@@ -58,33 +58,29 @@ public class SubscriptionManager {
         this.azureManager = azureManager;
     }
 
-    public synchronized Map<String, SubscriptionDetail> getSubscriptionToSubscriptionDetailsMap() throws IOException {
-        System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionToSubscriptionDetailsMap()");
-        if (subscriptionIdToSubscriptionDetailMap == null) {
-            // WORKAROUND: the map is updating during `doSetSubscriptionDetails` 
-            List<SubscriptionDetail> sdl = updateAccountSubscriptionList();
-            doSetSubscriptionDetails(sdl);
-        }
+    public synchronized Map<String, SubscriptionDetail> getSubscriptionIdToSubscriptionDetailsMap() throws IOException {
+        System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionIdToSubscriptionDetailsMap()");
+        updateSubscriptionDetailsIfNull();
         return subscriptionIdToSubscriptionDetailMap;
     }
 
     public synchronized Map<String, Subscription> getSubscriptionIdToSubscriptionMap() throws IOException {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionIdToSubscriptionMap()");
-        if (subscriptionDetails == null) {
-            // WORKAROUND: the map is updating during `doSetSubscriptionDetails` 
-            List<SubscriptionDetail> sdl = updateAccountSubscriptionList();
-            doSetSubscriptionDetails(sdl);
-        }
+        updateSubscriptionDetailsIfNull();
         return subscriptionIdToSubscriptionMap;
     }
 
     public synchronized List<SubscriptionDetail> getSubscriptionDetails() throws IOException {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionDetails()");
+        updateSubscriptionDetailsIfNull();
+        return subscriptionDetails;
+    }
+
+    private void updateSubscriptionDetailsIfNull() throws IOException {
         if (subscriptionDetails == null) {
             List<SubscriptionDetail> sdl = updateAccountSubscriptionList();
             doSetSubscriptionDetails(sdl);
         }
-        return subscriptionDetails;
     }
 
     protected List<SubscriptionDetail> updateAccountSubscriptionList() throws IOException {

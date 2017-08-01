@@ -83,7 +83,7 @@ public class RemoteRunPanel {
                 Subscription sb = AzureMvpModel.getInstance().getSubscriptionById(sid);
                 comboSubscription.setSelectedItem(sb);
                 comboResourceGroup.removeAllItems();
-                for (ResourceGroup rg : AzureMvpModel.getInstance().getResouceGroupsBySubscriptionId(sid, false)) {
+                for (ResourceGroup rg : AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sid)) {
                     comboResourceGroup.addItem(rg);
                     if (rg.name().equals(si.resourceGroup())) {
                         comboResourceGroup.setSelectedItem(rg);
@@ -197,7 +197,7 @@ public class RemoteRunPanel {
                     comboSubscription.setSelectedItem(sb);
                     // update comboBox for RG
                     comboResourceGroup.removeAllItems();
-                    for (ResourceGroup rg : AzureMvpModel.getInstance().getResouceGroupsBySubscriptionId(sb.subscriptionId(), false)) {
+                    for (ResourceGroup rg : AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sb.subscriptionId())) {
                         comboResourceGroup.addItem(rg);
                         if (rg.name() == si.getResource().resourceGroup()) {
                             comboResourceGroup.setSelectedItem(rg);

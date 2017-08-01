@@ -37,9 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by vlashch on 11/15/16.
- */
 public class SubscriptionManagerPersist extends SubscriptionManager {
 
     public SubscriptionManagerPersist(AzureManager azureManager) {
@@ -58,7 +55,8 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
 
     @Override
     protected List<SubscriptionDetail> updateAccountSubscriptionList() throws IOException {
-        System.out.println(Thread.currentThread().getId() + " SubscriptionManagerPersist.updateAccountSubscriptionList()");
+        System.out.println(Thread.currentThread().getId()
+                + "SubscriptionManagerPersist.updateAccountSubscriptionList()");
         List<SubscriptionDetail> sdl = null;
         synchronized (this) {
             String subscriptionsDetailsFileName = azureManager.getSettings().getSubscriptionsDetailsFileName();
@@ -101,7 +99,6 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
 
     public static synchronized void deleteSubscriptions(String subscriptionsDetailsFileName) throws IOException {
         System.out.println("cleaning " + subscriptionsDetailsFileName + " file");
-        //String subscriptionsDetailsFileName = azureManager.getSettings().getSubscriptionsDetailsFileName();
         FileStorage fs = new FileStorage(subscriptionsDetailsFileName, CommonSettings.settingsBaseDir);
         fs.cleanFile();
     }
@@ -110,7 +107,8 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         System.out.println("SubscriptionManagerPersist.loadSubscriptions()");
 
         //subscriptionDetails.clear();
-        FileStorage subscriptionsDetailsFileStorage = new FileStorage(subscriptionsDetailsFileName, CommonSettings.settingsBaseDir);
+        FileStorage subscriptionsDetailsFileStorage = new FileStorage(subscriptionsDetailsFileName,
+                CommonSettings.settingsBaseDir);
         byte[] data = subscriptionsDetailsFileStorage.read();
         String json = new String(data, StandardCharsets.UTF_8);
         if (json.isEmpty()) {
@@ -125,11 +123,12 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         return sdl;
     }
 
-    private static void saveSubscriptions(List<SubscriptionDetail> sdl, String subscriptionsDetailsFileName) throws IOException {
+    private static void saveSubscriptions(List<SubscriptionDetail> sdl, String subscriptionsDetailsFileName)
+            throws IOException {
         System.out.println("SubscriptionManagerPersist.saveSubscriptions()");
         String sd = JsonHelper.serialize(sdl);
-        //String subscriptionsDetailsFileName = azureManager.getSettings().getSubscriptionsDetailsFileName();
-        FileStorage subscriptionsDetailsFileStorage = new FileStorage(subscriptionsDetailsFileName, CommonSettings.settingsBaseDir);
+        FileStorage subscriptionsDetailsFileStorage = new FileStorage(subscriptionsDetailsFileName,
+                CommonSettings.settingsBaseDir);
         subscriptionsDetailsFileStorage.write(sd.getBytes(StandardCharsets.UTF_8));
     }
 

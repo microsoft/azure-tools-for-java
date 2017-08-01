@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class AzureMvpModel {
     private static final class SingletonHolder {
@@ -22,16 +21,7 @@ public class AzureMvpModel {
         return SingletonHolder.INSTANCE;
     }
 
-    // TODO: retire later, DO NOT cache for sake of consistency
-    Map<String, List<ResourceGroup>> subscriptionIdToResourceGroupMap;
-
     private AzureMvpModel() {
-        subscriptionIdToResourceGroupMap = new ConcurrentHashMap<>();
-        try {
-            updateSubscriptionToResourceGroupMaps();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -46,7 +36,9 @@ public class AzureMvpModel {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
             Map<String, Subscription> subscriptionIdToSubscriptionMap = azureManager.getSubscriptionManager()
                     .getSubscriptionIdToSubscriptionMap();
-            ret = subscriptionIdToSubscriptionMap.get(sid);
+            if (subscriptionIdToSubscriptionMap != null) {
+                ret = subscriptionIdToSubscriptionMap.get(sid);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -63,12 +55,14 @@ public class AzureMvpModel {
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
             Map<String, SubscriptionDetail> sidToSubDetailMap = azureManager.getSubscriptionManager()
-                    .getSubscriptionToSubscriptionDetailsMap();
-            Map<String, Subscription> subscriptionIdToSubscriptionMap = azureManager.getSubscriptionManager()
+                    .getSubscriptionIdToSubscriptionDetailsMap();
+            Map<String, Subscription> sidToSubscriptionMap = azureManager.getSubscriptionManager()
                     .getSubscriptionIdToSubscriptionMap();
-            for (SubscriptionDetail subDetail : sidToSubDetailMap.values()) {
-                if (subDetail.isSelected()) {
-                    ret.add(subscriptionIdToSubscriptionMap.get(subDetail.getSubscriptionId()));
+            if (sidToSubDetailMap != null && sidToSubscriptionMap != null) {
+                for (SubscriptionDetail subDetail : sidToSubDetailMap.values()) {
+                    if (subDetail.isSelected()) {
+                        ret.add(sidToSubscriptionMap.get(subDetail.getSubscriptionId()));
+                    }
                 }
             }
         } catch (IOException e) {
@@ -80,16 +74,11 @@ public class AzureMvpModel {
     /**
      * List Resource Group by Subscription ID.
      *
-     * @param sid   subscription Id
-     * @param force flag indicating whether force to fetch most updated data from server
+     * @param sid subscription Id
      * @return List of ResourceGroup instances
      */
-    // TODO: Force to fetch most updated later, DO NOT cache for sake of consistency
-    public List<ResourceGroup> getResouceGroupsBySubscriptionId(String sid, boolean force) {
+    public List<ResourceGroup> getResourceGroupsBySubscriptionId(String sid) {
         List<ResourceGroup> ret = new ArrayList<>();
-        if (!force && subscriptionIdToResourceGroupMap.containsKey(sid)) {
-            return subscriptionIdToResourceGroupMap.get(sid);
-        }
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
             Azure azure = azureManager.getAzure(sid);
@@ -98,26 +87,5 @@ public class AzureMvpModel {
             e.printStackTrace();
         }
         return ret;
-    }
-
-    // it caches sid->RG map
-    // TODO: Remove later, DO NOT cache for sake of consistency
-    private synchronized void updateSubscriptionToResourceGroupMaps() throws IOException {
-        clearCache();
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        Map<String, Subscription> subscriptionIdToSubscriptionMap = azureManager.getSubscriptionManager()
-                .getSubscriptionIdToSubscriptionMap();
-        if (subscriptionIdToSubscriptionMap != null && subscriptionIdToSubscriptionMap.size() > 0) {
-            for (Subscription sub : subscriptionIdToSubscriptionMap.values()) {
-                String sid = sub.subscriptionId();
-                Azure azure = azureManager.getAzure(sid);
-                subscriptionIdToResourceGroupMap.put(sid, azure.resourceGroups().list());
-            }
-        }
-    }
-
-    // TODO: Remove later, DO NOT cache for sake of consistency
-    private void clearCache() {
-        subscriptionIdToResourceGroupMap.clear();
     }
 }

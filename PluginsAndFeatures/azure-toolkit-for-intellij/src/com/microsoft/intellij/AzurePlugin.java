@@ -129,10 +129,10 @@ public class AzurePlugin extends AbstractProjectComponent {
     }
 
     private void loadWebAppOnLinux() {
+        System.out.println("AzurePlugin@loadWebAppOnLinux");
         ProgressManager.getInstance().run(new Task.Backgroundable(this.myProject,"Load Web App on Linux", false) {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
-                AzureMvpModel.getInstance();
                 for(Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
                     AzureWebAppMvpModel.getInstance().listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), false);
                 }
