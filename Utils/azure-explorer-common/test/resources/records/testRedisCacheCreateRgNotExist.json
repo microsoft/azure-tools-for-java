@@ -1,0 +1,31 @@
+{
+  "networkCallRecords": [
+    {
+      "Method": "PUT",
+      "Uri": "http://localhost:3038/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/NotExistRg/providers/Microsoft.Cache/Redis/MonaP3Exist?api-version=2016-04-01",
+      "Headers": {
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USIsImtpZCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USJ9.eyJhdWQiOiJodHRwczovL21hbmFnZW1lbnQuYXp1cmUuY29tLyIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0Ny8iLCJpYXQiOjE1MDEwNDk4OTMsIm5iZiI6MTUwMTA0OTg5MywiZXhwIjoxNTAxMDUzNzkzLCJhaW8iOiJZMlpnWUdqcDNXeFlHRjhVS3JPTnJYS2R2eWNmQUE9PSIsImFwcGlkIjoiYzE3YWFkNDYtODlmZC00MDViLWEzOTEtMDFiMmJmYmEyMDEzIiwiYXBwaWRhY3IiOiIxIiwiZV9leHAiOjI2MjgwMCwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3LyIsIm9pZCI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInN1YiI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInZlciI6IjEuMCJ9.AdhNBJWyqcU6MR1jekf5avjUk_wgFbKwoqPzo-Pt0RimM4K4lhmppaK54wZIRnV416-q2qaV11gMxdu2_QBxY3uv230fID4JaA_8T1_aZ-bwsJpxwz1xWPLPMq1KRI6icYoPRRO1khdX0pOV6O1NQjRK0_vRLCBFYsIybrhHWnfnzXpUTS9VeYpzAOC9n7qIMs9bPMa6vDuB4TQ2wKxLdzr-RjjzZr46pkZyWs0ECpLyOk38FxUCAYrU3TwJbOZxRAGfH_TlIrIxBBdyC11GrrwWN7eTLzYZEt5ZhuvYlSc3rixIqaJ-67n7k0IeOinTPFvyJI8V9xc9R3IzWm4l0g",
+        "x-ms-logging-context": "com.microsoft.azure.management.redis.Redis create",
+        "accept-language": "en-US",
+        "User-Agent": "Azure-SDK-For-Java/1.1.2 OS:Windows 10/10.0 MacAddressHash:f82fa839f6b46fd84edc56e01cf7c8c6d4faaa2190534aff5c1d17095f0a3c13 (RedisManagementClient, 2016-04-01)",
+        "x-ms-client-request-id": "54608e57-f3c1-4de9-890d-06931cebbe43"
+      },
+      "Response": {
+        "Pragma": "no-cache",
+        "StatusCode": "404",
+        "Date": "Wed, 26 Jul 2017 06:23:13 GMT",
+        "x-ms-correlation-request-id": "bb36d3bf-1464-4385-89b5-5a2f6e4f3be0",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "Cache-Control": "no-cache",
+        "x-ms-failure-cause": "gateway",
+        "x-ms-routing-request-id": "WESTUS:20170726T062313Z:bb36d3bf-1464-4385-89b5-5a2f6e4f3be0",
+        "Expires": "-1",
+        "Content-Length": "102",
+        "Body": "{\"error\":{\"code\":\"ResourceGroupNotFound\",\"message\":\"Resource group 'NotExistRg' could not be found.\"}}",
+        "x-ms-request-id": "bb36d3bf-1464-4385-89b5-5a2f6e4f3be0",
+        "Content-Type": "application/json; charset=utf-8"
+      }
+    }
+  ],
+  "variables": []
+}

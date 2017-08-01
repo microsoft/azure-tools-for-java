@@ -29,19 +29,16 @@ import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 
 import com.google.common.collect.ImmutableList;
@@ -66,6 +63,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.microsoft.tooling.IntegrationTestBase;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
+import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import junit.framework.Assert;
@@ -99,7 +97,7 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
     private final LinkedHashMap<String, String> skus = RedisCacheUtil.initSkus();
     private final LinkedHashMap<String, String> priceTier = initPriceTier();
     private String redisCacheQueryString;
-    
+
     RedisCreateConfig BasicNewResGrpConfig = new RedisCreateConfig("MonaC1BasicNew", "East US", "MonaC1BasicNewRg",
             priceTier.get("BASIC1"), false, true);
     RedisCreateConfig BasicNewResGrpConfigNonSsl = new RedisCreateConfig("MonaC2BasicNewNonSsl", "East US",
@@ -127,10 +125,18 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
     RedisCreateConfig PremExistedResGrpConfigNonSsl = new RedisCreateConfig("MonaP4ExistNonSsl", "East US", "MonaExist",
             priceTier.get("PREMIUM4"), true, false);
 
+    RedisCreateConfig DupNameConfig = new RedisCreateConfig("MonaP1New", "East US", "MonaC3StdNewRg",
+            priceTier.get("STD3"), false, true);
+    RedisCreateConfig RgNotExistConfig = new RedisCreateConfig("MonaP3Exist", "East US", "NotExistRg",
+            priceTier.get("PREMIUM3"), false, false);
+
     @Before
     public void setUp() throws Exception {
         setUpStep();
     }
+
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
 
     // basic redisCache test case
     @Test
@@ -195,6 +201,22 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
         createRedisTest(redisModule, PremExistedResGrpConfigNonSsl);
     }
 
+    // failed case
+    @Test
+    public void testRedisCacheCreateDupName() throws Exception {
+        expectedEx.expect(com.microsoft.azure.CloudException.class);
+        expectedEx.expectMessage("An error occured when trying to reserve the DNS name for the cache instance.");
+        CreateRedisCache(azureManagerMock, currentsub, PremNewResGrpConfig);
+        CreateRedisCache(azureManagerMock, currentsub, DupNameConfig);
+    }
+
+    @Test
+    public void testRedisCacheCreateRgNotExist() throws Exception {
+        expectedEx.expect(com.microsoft.azure.CloudException.class);
+        expectedEx.expectMessage("Resource group 'NotExistRg' could not be found.");
+        CreateRedisCache(azureManagerMock, currentsub, RgNotExistConfig);
+    }
+
     @After
     public void tearDown() throws Exception {
         resetTest(name.getMethodName());
@@ -219,7 +241,15 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
         when(uiHelper.isDarkTheme()).thenReturn(false);
 
         currentsub = new SubscriptionDetail(defaultSubscription, defaultSubscription, defaultSubscription, true);
-        redisCacheQueryString = "/subscriptions/" + defaultSubscription + "/resourceGroups/";
+        redisCacheQueryString = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Cache/Redis/%s";
+
+        // create a resource group for nonmock case
+        if (!IS_MOCKED) {
+            if (!azure.resourceGroups().checkExistence("MonaExist")) {
+                azure.resourceGroups().define("MonaExist").withRegion("eastus");
+            }
+        }
+
         redisModule = new RedisCacheModule(null) {
             protected void loadActions() {
             }
@@ -238,15 +268,18 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
 
     public void createRedisTest(RedisCacheModule redisModule, RedisCreateConfig config) throws Exception {
         redisModule.refreshItems();
-        assertEquals(redisModule.getChildNodes().size(), 0);
+        int redisCount = redisModule.getChildNodes().size();
+        redisModule.removeAllChildNodes();
+        redisModule.refreshItems();
+        assertEquals(redisModule.getChildNodes().size(), redisCount);
         CreateRedisCache(azureManagerMock, currentsub, config);
         redisModule.removeAllChildNodes();
         redisModule.refreshItems();
-        assertEquals(redisModule.getChildNodes().size(), 1);
-        assertEquals(redisModule.getChildNodes().get(0).getName(), config.dnsNameValue);
-        
-        //verify redisCache properties
-        String redisCacheId = redisCacheQueryString + config.selectedResGrpValue;
+        assertEquals(redisModule.getChildNodes().size(), redisCount + 1);
+
+        // verify redisCache properties
+        String redisCacheId = String.format(redisCacheQueryString, defaultSubscription, config.selectedResGrpValue,
+                config.dnsNameValue);
         RedisCache redisCacheInstance = AzureMvpModelHelper.getInstance().getRedisCache(defaultSubscription,
                 redisCacheId);
         assertEquals(redisCacheInstance.name(), config.dnsNameValue);
@@ -257,10 +290,28 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
         Sku skuVal = redisCacheInstance.sku();
         String tier = skus.get(config.selectedPriceTierValue).replace("STD", "STANDARD");
         assertEquals(skuVal.name().toString().toUpperCase() + Integer.toString(skuVal.capacity()), tier);
-        
-        RedisAccessKeys accessKeys=redisCacheInstance.getKeys();
+
+        RedisAccessKeys accessKeys = redisCacheInstance.getKeys();
         assertNotNull(accessKeys.primaryKey());
         assertNotNull(accessKeys.secondaryKey());
+
+        // delete redis Cache
+        redisModule.refreshItems();
+        ObservableList<Node> nodes = redisModule.getChildNodes();
+        RedisCacheNode redisCacheNode = null;
+        for (Node node : nodes) {
+            if (node.getName().equals(config.dnsNameValue)) {
+                redisCacheNode = (RedisCacheNode) node;
+            }
+        }
+        if (redisCacheNode == null) {
+            throw new Exception("can't find Node" + config.dnsNameValue);
+        }
+
+        redisModule.removeNode(this.defaultSubscription, redisCacheNode.getResourceId(), redisCacheNode);
+        redisModule.removeAllChildNodes();
+        redisModule.refreshItems();
+        assertEquals(redisModule.getChildNodes().size(), redisCount);
         Thread.sleep(500);
     }
 
@@ -270,11 +321,7 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
         ProcessingStrategy processor = RedisCacheUtil.doGetProcessor(azure, skus, config.dnsNameValue,
                 config.selectedLocationValue, config.selectedResGrpValue, config.selectedPriceTierValue,
                 config.noSSLPort, config.newResGrp);
-        try {
-            processor.process();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        processor.process();
     }
 
     private class RedisCreateConfig {
