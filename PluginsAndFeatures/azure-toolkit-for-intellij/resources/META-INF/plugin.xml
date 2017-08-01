@@ -93,7 +93,7 @@
   <project-components>
     <component>
       <implementation-class>com.microsoft.intellij.AzurePlugin</implementation-class>
-      <!--<loadForDefaultProject/> TODO: verify what it does. -->
+      <loadForDefaultProject/>
     </component>
   </project-components>
 

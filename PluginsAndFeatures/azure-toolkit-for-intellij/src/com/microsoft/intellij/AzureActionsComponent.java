@@ -28,10 +28,16 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.util.PlatformUtils;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
@@ -103,6 +109,7 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
                 if (actionGroup != null)
                     actionGroup.addAll((ActionGroup) actionManager.getAction("AzureWebDeployGroup"));
             }
+            loadWebAppOnLinux();
         }
         try {
             PlatformDependent.isAndroid();
@@ -128,6 +135,18 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
         } catch (IOException ex) {
             LOG.error("initAuthManage()", ex);
         }
+    }
+
+    private void loadWebAppOnLinux() {
+        System.out.println("AzurePlugin@loadWebAppOnLinux");
+        ProgressManager.getInstance().run(new Task.Backgroundable(null,"Load Web App on Linux", false) {
+            @Override
+            public void run(@NotNull ProgressIndicator progressIndicator) {
+                for(Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
+                    AzureWebAppMvpModel.getInstance().listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), false);
+                }
+            }
+        });
     }
 
     private void initLoggerFileHandler() {

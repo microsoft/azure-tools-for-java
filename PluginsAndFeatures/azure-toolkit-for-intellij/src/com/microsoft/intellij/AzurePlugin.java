@@ -19,6 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.intellij;
 
 import com.intellij.ide.plugins.cl.PluginClassLoader;
@@ -27,24 +28,22 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.util.PlatformUtils;
 import com.intellij.util.containers.HashSet;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.*;
+import com.microsoft.azuretools.azurecommons.util.FileUtil;
+import com.microsoft.azuretools.azurecommons.util.GetHashMac;
+import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
+import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.intellij.common.CommonConst;
@@ -54,14 +53,19 @@ import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FileUtils;
-import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 
 import javax.swing.event.EventListenerList;
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -73,7 +77,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     public static final String PLUGIN_VERSION = CommonConst.PLUGIN_VERISON;
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
     public static final String JDBC_LIBRARIES_VERSION = "6.1.0.jre8";
-    public final static int REST_SERVICE_MAX_RETRY_COUNT = 7;
+    public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
 
     // User-agent header for Azure SDK calls
     public static final String USER_AGENT = "Azure Toolkit for IntelliJ, v%s, machineid:%s";
@@ -119,25 +123,12 @@ public class AzurePlugin extends AbstractProjectComponent {
                 initializeTelemetry();
                 clearTempDirectory();
                 loadWebappsSettings();
-                loadWebAppOnLinux();
             } catch (Exception e) {
             /* This is not a user initiated task
                So user should not get any exception prompt.*/
                 LOG.error(AzureBundle.message("expErlStrtUp"), e);
             }
         }
-    }
-
-    private void loadWebAppOnLinux() {
-        System.out.println("AzurePlugin@loadWebAppOnLinux");
-        ProgressManager.getInstance().run(new Task.Backgroundable(this.myProject,"Load Web App on Linux", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                for(Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-                    AzureWebAppMvpModel.getInstance().listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), false);
-                }
-            }
-        });
     }
 
     private void initializeTelemetry() throws Exception {
@@ -179,10 +170,12 @@ public class AzurePlugin extends AbstractProjectComponent {
             setValues(dataFile);
         }
         AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
-        if (install)
+        if (install) {
             AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
-        if (upgrade)
+        }
+        if (upgrade) {
             AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
+        }
     }
 
     private void initializeAIRegistry() {
