@@ -32,36 +32,44 @@ public class AzureWebAppMvpModel {
     private Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
 
     public WebApp getWebAppById(String sid, String id) throws IOException {
-        // TODO
         Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
         return azure.webApps().getById(id);
     }
 
-    public void createWebApp(){
-        // TODO
-    }
-    public void deployWebApp(){
-        // TODO
-    }
-    public void createWebAppOnLinux(){
-        // TODO
-    }
-    public void updateWebAppOnLinux(){
+    public void createWebApp() {
         // TODO
     }
 
-    public List<WebApp> listWebAppsBySubscriptionId(String sid, boolean force){
+    public void deployWebApp() {
+        // TODO
+    }
+
+    public void createWebAppOnLinux() {
+        // TODO
+    }
+
+    public void updateWebAppOnLinux() {
+        // TODO
+    }
+
+    public List<WebApp> listWebAppsBySubscriptionId(String sid, boolean force) {
         return null;
     }
 
+    /**
+     * List Web App on Linux by Subscription ID.
+     * @param sid subscription Id
+     * @param force flag indicating whether force to fetch most updated data from server
+     * @return list of Web App on Linux (SiteInner instances)
+     */
     public List<ResourceEx<SiteInner>> listWebAppsOnLinuxBySubscriptionId(String sid, boolean force) {
         List<ResourceEx<SiteInner>> wal = new ArrayList<ResourceEx<SiteInner>>();
-        if(!force && subscriptionIdToWebAppsOnLinuxMap.containsKey(sid)) {
+        if (!force && subscriptionIdToWebAppsOnLinuxMap.containsKey(sid)) {
             return subscriptionIdToWebAppsOnLinuxMap.get(sid);
         }
         try {
             Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
-            List<ResourceGroup> rgl = AzureMvpModel.getInstance().getResouceGroupsBySubscriptionId(sid, false);
+            List<ResourceGroup> rgl = AzureMvpModel.getInstance().getResouceGroupsBySubscriptionId(sid, true);
 
             for (ResourceGroup rg : rgl) {
                 for (SiteInner si : azure.webApps().inner().listByResourceGroup(rg.name())) {
@@ -70,11 +78,11 @@ public class AzureWebAppMvpModel {
                     }
                 }
             }
-            if (subscriptionIdToWebAppsOnLinuxMap.containsKey(sid)){
+            if (subscriptionIdToWebAppsOnLinuxMap.containsKey(sid)) {
                 subscriptionIdToWebAppsOnLinuxMap.remove(sid);
             }
             subscriptionIdToWebAppsOnLinuxMap.put(sid, wal);
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return wal;

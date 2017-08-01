@@ -22,16 +22,20 @@
 
 package com.microsoft.azuretools.authmanage;
 
+import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.utils.Pair;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by vlashch on 11/15/16.
@@ -64,7 +68,27 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         if (sdl == null) {
             return super.updateAccountSubscriptionList();
         }
-        return sdl;
+
+        // Filter available SubscriptionDetail
+        Map<String, SubscriptionDetail> sdmap = new HashMap<>();
+        for (SubscriptionDetail sd : sdl) {
+            sdmap.put(sd.getSubscriptionId(), sd);
+        }
+
+        List<SubscriptionDetail> ret = new ArrayList<>();
+        subscriptionIdToSubscriptionMap.clear();
+        List<Pair<Subscription, Tenant>> stpl = azureManager.getSubscriptionsWithTenant();
+        for (Pair<Subscription, Tenant> stp : stpl) {
+            String sid = stp.first().subscriptionId();
+            boolean isSelected = (sdmap.get(sid) != null && sdmap.get(sid).isSelected());
+            ret.add(new SubscriptionDetail(
+                    stp.first().subscriptionId(),
+                    stp.first().displayName(),
+                    stp.second().tenantId(),
+                    isSelected));
+            subscriptionIdToSubscriptionMap.put(stp.first().subscriptionId(), stp.first());
+        }
+        return ret;
     }
 
     @Override
@@ -75,7 +99,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         super.cleanSubscriptions();
     }
 
-    public synchronized static void deleteSubscriptions(String subscriptionsDetailsFileName) throws IOException {
+    public static synchronized void deleteSubscriptions(String subscriptionsDetailsFileName) throws IOException {
         System.out.println("cleaning " + subscriptionsDetailsFileName + " file");
         //String subscriptionsDetailsFileName = azureManager.getSettings().getSubscriptionsDetailsFileName();
         FileStorage fs = new FileStorage(subscriptionsDetailsFileName, CommonSettings.settingsBaseDir);

@@ -3,6 +3,7 @@ package com.microsoft.intellij.container.run.remote.ui;
 /**
  * Created by sechs on 7/24/17.
  */
+
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
@@ -41,11 +42,10 @@ public class RemoteRunPanel {
         comboResourceGroup.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
             public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
-                if(o != null){
-                    if(o instanceof ResourceGroup){
+                if (o != null) {
+                    if (o instanceof ResourceGroup) {
                         setText(((ResourceGroup) o).name());
-                    }
-                    else{
+                    } else {
                         setText(o.toString());
                     }
                 }
@@ -55,9 +55,9 @@ public class RemoteRunPanel {
         comboSubscription.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
             public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
-                if(o != null){
-                    if(o instanceof Subscription){
-                        setText(String.format("%s (%s)", ((Subscription)o).displayName(), ((Subscription)o).subscriptionId()));
+                if (o != null) {
+                    if (o instanceof Subscription) {
+                        setText(String.format("%s (%s)", ((Subscription) o).displayName(), ((Subscription) o).subscriptionId()));
                     }
                 }
             }
@@ -67,32 +67,30 @@ public class RemoteRunPanel {
         comboWebApps.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
             public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
-                if (o != null){
-                    if(o instanceof ResourceEx){
-                        setText(((ResourceEx<SiteInner>)o).getResource().name());
-                    }
-                    else{
+                if (o != null) {
+                    if (o instanceof ResourceEx) {
+                        setText(((ResourceEx<SiteInner>) o).getResource().name());
+                    } else {
                         setText(o.toString());
                     }
                 }
             }
         });
         comboWebApps.addItemListener((event) -> {
-            if(comboWebApps.getSelectedItem() instanceof ResourceEx){
+            if (comboWebApps.getSelectedItem() instanceof ResourceEx) {
                 SiteInner si = (SiteInner) ((ResourceEx) comboWebApps.getSelectedItem()).getResource();
                 String sid = ((ResourceEx) comboWebApps.getSelectedItem()).getSubscriptionId();
                 Subscription sb = AzureMvpModel.getInstance().getSubscriptionById(sid);
                 comboSubscription.setSelectedItem(sb);
                 comboResourceGroup.removeAllItems();
-                for(ResourceGroup rg : AzureMvpModel.getInstance().getResouceGroupsBySubscriptionId(sid,false)){
+                for (ResourceGroup rg : AzureMvpModel.getInstance().getResouceGroupsBySubscriptionId(sid, false)) {
                     comboResourceGroup.addItem(rg);
-                    if(rg.name().equals(si.resourceGroup())){
+                    if (rg.name().equals(si.resourceGroup())) {
                         comboResourceGroup.setSelectedItem(rg);
                     }
                 }
                 textAppName.setText(si.name());
-            }
-            else{
+            } else {
                 textAppName.setText("");
             }
 
@@ -110,7 +108,6 @@ public class RemoteRunPanel {
             textAppName.setForeground(new Color(255, 0, 0));
         }
     }
-
 
 
     private void onRefreshButtonSelection() {
@@ -153,22 +150,21 @@ public class RemoteRunPanel {
         Object selectedWebItem = comboWebApps.getSelectedItem();
 
         // AppId
-        if(selectedWebItem instanceof ResourceEx) {
-            webAppInfo.setWebAppId(((SiteInner)((ResourceEx) selectedWebItem).getResource()).id());
+        if (selectedWebItem instanceof ResourceEx) {
+            webAppInfo.setWebAppId(((SiteInner) ((ResourceEx) selectedWebItem).getResource()).id());
         }
 
         // Subs
         Subscription selectedSubscription = (Subscription) comboSubscription.getSelectedItem();
-        if(selectedSubscription!=null){
+        if (selectedSubscription != null) {
             webAppInfo.setSubscriptionId(selectedSubscription.subscriptionId());
         }
 
         // RG
         Object selectedResourceGroup = comboResourceGroup.getSelectedItem();
-        if(selectedResourceGroup instanceof ResourceGroup){
+        if (selectedResourceGroup instanceof ResourceGroup) {
             webAppInfo.setResourceGroupName(((ResourceGroup) selectedResourceGroup).name());
-        }
-        else if(selectedResourceGroup != null){
+        } else if (selectedResourceGroup != null) {
             webAppInfo.setResourceGroupName(selectedResourceGroup.toString());
         }
     }
@@ -203,7 +199,7 @@ public class RemoteRunPanel {
                     comboResourceGroup.removeAllItems();
                     for (ResourceGroup rg : AzureMvpModel.getInstance().getResouceGroupsBySubscriptionId(sb.subscriptionId(), false)) {
                         comboResourceGroup.addItem(rg);
-                        if(rg.name() == si.getResource().resourceGroup()) {
+                        if (rg.name() == si.getResource().resourceGroup()) {
                             comboResourceGroup.setSelectedItem(rg);
                         }
 

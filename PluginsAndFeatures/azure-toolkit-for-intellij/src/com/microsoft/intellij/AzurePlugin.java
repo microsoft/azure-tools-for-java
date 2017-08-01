@@ -133,7 +133,7 @@ public class AzurePlugin extends AbstractProjectComponent {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
                 AzureMvpModel.getInstance();
-                for(Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()){
+                for(Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
                     AzureWebAppMvpModel.getInstance().listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), false);
                 }
             }
