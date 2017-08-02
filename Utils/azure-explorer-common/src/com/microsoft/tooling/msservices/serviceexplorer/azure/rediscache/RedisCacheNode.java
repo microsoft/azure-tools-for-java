@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -59,9 +60,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     private static final String DELETE_CONFIRM_DIALOG_FORMAT = "This operation will delete redis cache: %s."
             + "\nAre you sure you want to continue?";
     private static final String DELETE_CONFIRM_TITLE = "Deleting Redis Cache";
-    private static final String AZURE_PORTAL_LINK_FORMAT = "https://ms.portal.azure.com/#resource/%s/overview";
-
-    
+    private static final String AZURE_PORTAL_LINK_FORMAT = "%s/#resource/%s/overview";
 
     /**
      * Node for each Redis Cache Resource.
@@ -115,7 +114,14 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     public class OpenInBrowserAction extends NodeActionListener {
         @Override
         protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, 
+            String portalUrl = "";
+            try {
+                portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
+            } catch (Exception exception) {
+                portalUrl = "";
+                System.out.println(exception.getMessage());
+            }
+            DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl,
                     RedisCacheNode.this.resourceId));
         }
     }

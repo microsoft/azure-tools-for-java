@@ -50,6 +50,7 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     private final SubscriptionManager subscriptionManager;
     private final File credFile;
     private ApplicationTokenCredentials atc;
+    private Environment env = null;
 
     static {
         settings = new Settings();
@@ -173,6 +174,12 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     }
 
     @Override
+    public Environment getEnvironment() {
+        initEnv();
+        return env;
+    }
+    
+    @Override
     public String getStorageEndpointSuffix() {
         try {
             String managementURI = getManagementURI();
@@ -197,6 +204,32 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     private void initATCIfNeeded() throws IOException {
         if (atc == null) {
             atc = ApplicationTokenCredentials.fromFile(credFile);
+        }  
+    }
+    
+    private void initEnv() {
+        if (env != null) {
+            return;
+        }
+        try {
+            String managementURI = getManagementURI().toLowerCase();
+            if (managementURI.endsWith("/")) {
+                managementURI = managementURI.substring(0, managementURI.length() - 1);
+            }
+
+            if (AzureEnvironment.AZURE.resourceManagerEndpoint().toLowerCase().startsWith(managementURI)) {
+                env = Environment.GLOBAL;
+            } else if (AzureEnvironment.AZURE_CHINA.resourceManagerEndpoint().toLowerCase().startsWith(managementURI)) {
+                env = Environment.CHINA;
+            } else if (AzureEnvironment.AZURE_GERMANY.resourceManagerEndpoint().toLowerCase().startsWith(managementURI)) {
+                env = Environment.GERMAN;
+            } else if (AzureEnvironment.AZURE_US_GOVERNMENT.resourceManagerEndpoint().toLowerCase().startsWith(managementURI)) {
+                env = Environment.US_GOVERNMENT;
+            } else {
+                env = Environment.GLOBAL;
+            }
+        } catch (Exception e) {
+            env = Environment.GLOBAL;
         }
     }
 }

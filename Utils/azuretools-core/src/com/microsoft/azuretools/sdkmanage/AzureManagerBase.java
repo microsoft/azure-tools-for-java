@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.management.Azure;
 
 import java.util.HashMap;
@@ -31,6 +32,24 @@ import java.util.Map;
  * Created by vlashch on 1/27/17.
  */
 public abstract class AzureManagerBase implements AzureManager {
+    private static final String CHINA_PORTAL = "https://portal.azure.cn";
+    private static final String GLOBAL_PORTAL = "https://ms.portal.azure.com";
+    
     protected Map<String, Azure> sidToAzureMap = new HashMap<>();
-
+    @Override
+    public String getPortalUrl() {
+        Environment env = getEnvironment();
+        switch (env) {
+            case GLOBAL:
+                return GLOBAL_PORTAL;
+            case CHINA:
+                return CHINA_PORTAL;
+            case GERMAN:
+                return AzureEnvironment.AZURE_GERMANY.portal();
+            case US_GOVERNMENT:
+                return AzureEnvironment.AZURE_US_GOVERNMENT.portal();
+            default:
+                return GLOBAL_PORTAL;
+        }
+    }
 }

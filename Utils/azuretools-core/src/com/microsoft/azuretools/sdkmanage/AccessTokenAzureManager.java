@@ -172,4 +172,10 @@ public class AccessTokenAzureManager extends AzureManagerBase {
     public String getStorageEndpointSuffix() {
         return AzureEnvironment.AZURE.storageEndpointSuffix();
     }
+    
+    @Override
+    public Environment getEnvironment() {
+        return Environment.GLOBAL;
+    }
+
 }

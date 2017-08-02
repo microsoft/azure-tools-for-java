@@ -33,6 +33,13 @@ import java.io.IOException;
 import java.util.List;
 
 public interface AzureManager {
+    public static enum Environment {
+        GLOBAL,
+        CHINA,
+        GERMAN,
+        US_GOVERNMENT
+    }
+    
     Azure getAzure(String sid) throws IOException;
     List<Subscription> getSubscriptions() throws IOException;
     List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() throws IOException;
@@ -45,4 +52,6 @@ public interface AzureManager {
     String getAccessToken(String tid) throws IOException;
     String getManagementURI() throws IOException;
     String getStorageEndpointSuffix();
+    Environment getEnvironment();
+    String getPortalUrl();
 }
