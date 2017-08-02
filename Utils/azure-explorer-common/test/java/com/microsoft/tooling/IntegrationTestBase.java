@@ -77,6 +77,8 @@ public abstract class IntegrationTestBase {
     protected TestRecord testRecord;
 
     public Interceptor interceptor;
+    
+    private RestClient restClient;
 
     @Rule
     public TestName name = new TestName();
@@ -139,7 +141,7 @@ public abstract class IntegrationTestBase {
 
             }
         };
-        RestClient restClient = createRestClient(credentials);
+        restClient = createRestClient(credentials);
         initialize(restClient, defaultSubscription, credentials.domain());
     }
 
@@ -151,7 +153,8 @@ public abstract class IntegrationTestBase {
         if (!currentTestName.equals(testName)) {
             return;
         }
-        wireMock.resetMappings();
+        wireMock=null;
+        restClient=null;
         testRecord = null;
         currentTestName = null;
     }

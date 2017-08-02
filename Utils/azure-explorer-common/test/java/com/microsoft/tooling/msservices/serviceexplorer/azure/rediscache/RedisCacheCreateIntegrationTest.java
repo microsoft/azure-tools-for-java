@@ -312,7 +312,7 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
         redisModule.removeAllChildNodes();
         redisModule.refreshItems();
         assertEquals(redisModule.getChildNodes().size(), redisCount);
-        Thread.sleep(500);
+        //Thread.sleep(500);
     }
 
     public void CreateRedisCache(AzureManager azureManager, SubscriptionDetail currentSub, RedisCreateConfig config)
