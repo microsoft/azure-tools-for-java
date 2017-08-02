@@ -1,4 +1,4 @@
-package com.microsoft.intellij.container.run.local;
+package com.microsoft.intellij.runner.container.dockerhost;
 
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -14,7 +14,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 
-public class ContainerLocalSettingsEditor extends SettingsEditor<ContainerLocalRunConfiguration> {
+public class DockerHostRunSettingsEditor extends SettingsEditor<DockerHostRunConfiguration> {
 
     private JPanel rootPanel;
     private JTextField textDockerHost;
@@ -24,8 +24,8 @@ public class ContainerLocalSettingsEditor extends SettingsEditor<ContainerLocalR
     private TextFieldWithBrowseButton dockerCertPathTextField;
 
     @Override
-    protected void resetEditorFrom(@NotNull ContainerLocalRunConfiguration containerLocalRunConfiguration) {
-        ContainerLocalRunModel model = containerLocalRunConfiguration.getContainerLocalRunModel();
+    protected void resetEditorFrom(@NotNull DockerHostRunConfiguration containerLocalRunConfiguration) {
+        DockerHostRunModel model = containerLocalRunConfiguration.getContainerLocalRunModel();
         textDockerHost.setText(model.getDockerHost());
         comboTlsEnabled.setSelected(model.isTlsEnabled());
         dockerCertPathTextField.setText(model.getDockerCertPath());
@@ -40,8 +40,8 @@ public class ContainerLocalSettingsEditor extends SettingsEditor<ContainerLocalR
     }
 
     @Override
-    protected void applyEditorTo(@NotNull ContainerLocalRunConfiguration containerLocalRunConfiguration) throws ConfigurationException {
-        ContainerLocalRunModel model = containerLocalRunConfiguration.getContainerLocalRunModel();
+    protected void applyEditorTo(@NotNull DockerHostRunConfiguration containerLocalRunConfiguration) throws ConfigurationException {
+        DockerHostRunModel model = containerLocalRunConfiguration.getContainerLocalRunModel();
         model.setDockerCertPath(textDockerHost.getText());
         model.setTlsEnabled(comboTlsEnabled.isSelected());
         model.setDockerCertPath(dockerCertPathTextField.getText());

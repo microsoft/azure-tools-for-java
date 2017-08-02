@@ -1,8 +1,4 @@
-package com.microsoft.intellij.container.run.remote.ui;
-
-/**
- * Created by sechs on 7/24/17.
- */
+package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
@@ -12,8 +8,8 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.intellij.container.run.remote.ContainerRemoteRunConfiguration;
-import com.microsoft.intellij.container.run.remote.ContainerRemoteRunModel;
+import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfiguration;
+import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -135,16 +131,16 @@ public class RemoteRunPanel {
         }
     }
 
-    public void apply(ContainerRemoteRunConfiguration containerRemoteRunConfiguration) {
-        ContainerRemoteRunModel model = containerRemoteRunConfiguration.getContainerRemoteRunModel();
-        ContainerRemoteRunModel.AzureContainerRegistryInfo acrInfo = model.getAzureContainerRegistryInfo();
+    public void apply(WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
+        WebAppOnLinuxDeployModel model = webAppOnLinuxDeployConfiguration.getWebAppOnLinuxDeployModel();
+        WebAppOnLinuxDeployModel.AzureContainerRegistryInfo acrInfo = model.getAzureContainerRegistryInfo();
         acrInfo.setServerUrl(textServerUrl.getText());
         acrInfo.setUsername(textUsername.getText());
         acrInfo.setPassword(String.valueOf(passwordField.getPassword()));
         acrInfo.setImageNameWithTag(textImageTag.getText());
         acrInfo.setStartupFile(textStartupFile.getText());
 
-        ContainerRemoteRunModel.WebAppOnLinuxInfo webAppInfo = model.getWebAppOnLinuxInfo();
+        WebAppOnLinuxDeployModel.WebAppOnLinuxInfo webAppInfo = model.getWebAppOnLinuxInfo();
         // AppName
         webAppInfo.setWebAppName(textAppName.getText());
         Object selectedWebItem = comboWebApps.getSelectedItem();
@@ -169,16 +165,16 @@ public class RemoteRunPanel {
         }
     }
 
-    public void reset(ContainerRemoteRunConfiguration containerRemoteRunConfiguration) {
-        ContainerRemoteRunModel model = containerRemoteRunConfiguration.getContainerRemoteRunModel();
-        ContainerRemoteRunModel.AzureContainerRegistryInfo acrInfo = model.getAzureContainerRegistryInfo();
+    public void reset(WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
+        WebAppOnLinuxDeployModel model = webAppOnLinuxDeployConfiguration.getWebAppOnLinuxDeployModel();
+        WebAppOnLinuxDeployModel.AzureContainerRegistryInfo acrInfo = model.getAzureContainerRegistryInfo();
         textServerUrl.setText(acrInfo.getServerUrl());
         textUsername.setText(acrInfo.getUsername());
         passwordField.setText(acrInfo.getPassword());
         textImageTag.setText(acrInfo.getImageNameWithTag());
         textStartupFile.setText(acrInfo.getStartupFile());
 
-        ContainerRemoteRunModel.WebAppOnLinuxInfo webAppInfo = model.getWebAppOnLinuxInfo();
+        WebAppOnLinuxDeployModel.WebAppOnLinuxInfo webAppInfo = model.getWebAppOnLinuxInfo();
         textAppName.setText(webAppInfo.getWebAppName());
 
         loadCombosInfo(webAppInfo.getWebAppId());

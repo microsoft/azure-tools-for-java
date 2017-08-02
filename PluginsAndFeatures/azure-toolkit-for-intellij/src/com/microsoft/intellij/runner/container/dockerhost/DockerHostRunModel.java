@@ -1,4 +1,4 @@
-package com.microsoft.intellij.container.run.local;
+package com.microsoft.intellij.runner.container.dockerhost;
 
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
@@ -8,7 +8,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ContainerLocalRunModel {
+public class DockerHostRunModel {
     private String dockerHost;
     private String dockerCertPath;
     private boolean tlsEnabled;
@@ -16,7 +16,7 @@ public class ContainerLocalRunModel {
     private String imageName;
     private String tagName;
 
-    public ContainerLocalRunModel() {
+    public DockerHostRunModel() {
         try {
             dockerHost = DefaultDockerClient.fromEnv().uri().toString();
         } catch (DockerCertificateException e) {
@@ -70,9 +70,9 @@ public class ContainerLocalRunModel {
         this.tagName = tagName;
     }
 
-    public void readExternal(Element element){
+    public void readExternal(Element element) {
     }
 
-    public void writeExternal(Element element){
+    public void writeExternal(Element element) {
     }
 }

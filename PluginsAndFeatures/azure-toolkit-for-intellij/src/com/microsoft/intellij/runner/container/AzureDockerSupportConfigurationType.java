@@ -1,19 +1,19 @@
-package com.microsoft.intellij.container.run;
+package com.microsoft.intellij.runner.container;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
 import com.intellij.icons.AllIcons;
-import com.microsoft.intellij.container.run.local.ContainerLocalRunConfigurationFactory;
-import com.microsoft.intellij.container.run.remote.ContainerRemoteRunConfigurationFactory;
+import com.microsoft.intellij.runner.container.dockerhost.DockerHostRunConfigurationFactory;
+import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfigurationFactory;
 
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
 
-public class ContainerRunConfigurationType implements ConfigurationType {
-    public static ContainerRunConfigurationType getInstance() {
-        return ConfigurationTypeUtil.findConfigurationType(ContainerRunConfigurationType.class);
+public class AzureDockerSupportConfigurationType implements ConfigurationType {
+    public static AzureDockerSupportConfigurationType getInstance() {
+        return ConfigurationTypeUtil.findConfigurationType(AzureDockerSupportConfigurationType.class);
     }
 
     @Override
@@ -23,7 +23,7 @@ public class ContainerRunConfigurationType implements ConfigurationType {
 
     @Override
     public String getConfigurationTypeDescription() {
-        return "Container Run Configuration Type";
+        return "Azure Docker Support Configuration Type";
     }
 
     @Override
@@ -34,14 +34,14 @@ public class ContainerRunConfigurationType implements ConfigurationType {
     @NotNull
     @Override
     public String getId() {
-        return "CONTAINER_LOCAL_RUN_CONFIGURATION";
+        return "AZURE_DOCKER_SUPPORT_CONFIGURATION";
     }
 
     @Override
     public ConfigurationFactory[] getConfigurationFactories() {
         return new ConfigurationFactory[]{
-                new ContainerLocalRunConfigurationFactory(this),
-                new ContainerRemoteRunConfigurationFactory(this),
+                new DockerHostRunConfigurationFactory(this),
+                new WebAppOnLinuxDeployConfigurationFactory(this),
         };
     }
 

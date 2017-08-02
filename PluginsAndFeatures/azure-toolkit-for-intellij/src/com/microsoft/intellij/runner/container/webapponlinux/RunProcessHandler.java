@@ -1,7 +1,6 @@
-package com.microsoft.intellij.container.run.remote;
+package com.microsoft.intellij.runner.container.webapponlinux;
 
 import com.intellij.execution.process.ProcessHandler;
-
 import org.jetbrains.annotations.Nullable;
 
 import java.io.OutputStream;
