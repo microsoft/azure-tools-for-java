@@ -67,12 +67,8 @@ public abstract class IntegrationTestBase {
     private Map<String, String> textReplacementRules = new HashMap<String, String>();
     private String currentTestName = null;
 
-    protected WireMock wireMock;
-
-    @ClassRule
-    public static WireMockRule wireMockRule = new WireMockRule(options().port(Integer.parseInt(MOCK_PORT)));
     @Rule
-    public WireMockRule instanceRule = wireMockRule;
+    public WireMockRule wireMock = new WireMockRule(options().bindAddress(MOCK_HOST).port(Integer.parseInt(MOCK_PORT)));
 
     protected TestRecord testRecord;
 
@@ -92,23 +88,6 @@ public abstract class IntegrationTestBase {
 
         addTextReplacementRule(GLOBAL_ENDPOINT, MOCK_URI + "/");
 
-        int retries = 10;
-        boolean created = false;
-        while (retries > 0) {
-            retries--;
-            try {
-                wireMock = new WireMock(MOCK_HOST, wireMockRule.port());
-                wireMock.resetMappings();
-                created = true;
-                break;
-            } catch (Exception e) {
-                e.printStackTrace();
-                Thread.sleep(3000);
-            }
-        }
-        if (!created) {
-            throw new Exception("Cannot create workMock instance");
-        }
         ApplicationTokenCredentials credentials = new TestCredentials();
         String defaultSubscription = "";
         if (IS_MOCKED) {
@@ -153,7 +132,7 @@ public abstract class IntegrationTestBase {
         if (!currentTestName.equals(testName)) {
             return;
         }
-        wireMock=null;
+        wireMock.resetMappings();
         restClient=null;
         testRecord = null;
         currentTestName = null;
@@ -267,7 +246,7 @@ public abstract class IntegrationTestBase {
         }
 
         mBuilder.willReturn(rBuilder);
-        wireMock.register(mBuilder);
+        wireMock.stubFor(mBuilder);
     }
 
     protected void addTextReplacementRule(String regex, String replacement) {
