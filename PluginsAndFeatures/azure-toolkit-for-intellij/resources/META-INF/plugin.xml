@@ -71,9 +71,9 @@
         canCloseContents="false"
         icon="/icons/SparkSubmissionToolWindow.png"/>
 
-    <!--<configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>-->
+    <configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType"/>
-    <!--<programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>-->
+    <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
     <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
   </extensions>
@@ -131,6 +131,9 @@
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
             description="ShowSubscriptionsAction" />
+    <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
+            text="Deploy to Azure" description="Deploy to Azure">
+    </action>
     <!--<action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.DockerizeAction"-->
             <!--text="Add Docker Support..." description="Azure website deployment for Java"-->
             <!--icon="/icons/AddDockerSupport_16.png">-->
@@ -157,8 +160,8 @@
       <reference ref="Actions.LibraryConfigurationAction"/>
       <separator/>
       <reference ref="AzureToolkit.AzureSignIn"/>
-      <!--<separator/>-->
-      <!--<reference ref="Actions.WebDeployAction"/>-->
+      <separator/>
+      <reference ref="Actions.WebDeployAction"/>
     </group>
 
     <group id="AzureToolbarGroup" text="Azure" description="Azure">
