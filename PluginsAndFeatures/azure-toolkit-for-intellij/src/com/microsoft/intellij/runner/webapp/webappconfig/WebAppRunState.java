@@ -22,27 +22,56 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
+import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.filters.TextConsoleBuilderFactory;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.runners.ProgramRunner;
+import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
+import com.microsoft.intellij.runner.AzureProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class WebAppRunState implements RunProfileState {
 
     private Project project;
+    private WebAppSettingModel webAppSettingModel;
 
-    public WebAppRunState(Project project) {
+    public WebAppRunState(Project project, WebAppSettingModel webAppSettingModel) {
         this.project = project;
+        this.webAppSettingModel = webAppSettingModel;
     }
 
     @Nullable
     @Override
     public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) throws ExecutionException {
-        // TODO: execution task
-        return null;
+        final AzureProcessHandler processHandler = new AzureProcessHandler();
+        ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
+        processHandler.startNotify();
+        consoleView.attachToProcess(processHandler);
+        processHandler.addProcessListener(new ProcessListener() {
+            @Override
+            public void startNotified(ProcessEvent processEvent) {}
+
+            @Override
+            public void processTerminated(ProcessEvent processEvent) {}
+
+            @Override
+            public void processWillTerminate(ProcessEvent processEvent, boolean b) {
+                processHandler.notifyProcessTerminated(0 /*exitCode*/);
+            }
+
+            @Override
+            public void onTextAvailable(ProcessEvent processEvent, Key key) {}
+        });
+
+        WebDeployUtil.deployWebApp(this.webAppSettingModel, processHandler);
+        return new DefaultExecutionResult(consoleView, processHandler);
     }
 }

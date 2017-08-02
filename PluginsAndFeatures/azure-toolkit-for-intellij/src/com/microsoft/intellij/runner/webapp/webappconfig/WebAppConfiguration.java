@@ -28,29 +28,54 @@ import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.InvalidDataException;
+import com.intellij.openapi.util.WriteExternalException;
+import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class WebAppConfiguration extends RunConfigurationBase {
 
+    private static String WEB_APP_CONFIGURATION_NODE = "AzureWebAppConfig";
+    private WebAppSettingModel webAppSettingModel;
+
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory) {
         super(project, factory, project.getName());
+        webAppSettingModel = new WebAppSettingModel();
     }
 
     @NotNull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new WebAppSettingEditor();
+        return new WebAppSettingEditor(getProject());
+    }
+
+    @Override
+    public void readExternal(Element element) throws InvalidDataException {
+        super.readExternal(element);
+        webAppSettingModel.readExternal(element.getChild(WEB_APP_CONFIGURATION_NODE));
+    }
+
+    @Override
+    public void writeExternal(Element element) throws WriteExternalException {
+        super.writeExternal(element);
+        Element newElement = new Element(WEB_APP_CONFIGURATION_NODE);
+        webAppSettingModel.writeExternal(newElement);
+        element.addContent(newElement);
     }
 
     @Override
     public void checkConfiguration() throws RuntimeConfigurationException {
-
     }
 
     @Nullable
     @Override
-    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) throws ExecutionException {
-        return new WebAppRunState(getProject());
+    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment)
+            throws ExecutionException {
+        return new WebAppRunState(getProject(), this.webAppSettingModel);
+    }
+
+    public WebAppSettingModel getWebAppSettingModel() {
+        return this.webAppSettingModel;
     }
 }

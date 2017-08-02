@@ -20,28 +20,16 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig;
+package com.microsoft.intellij.ui.webapp.deploysetting;
 
-import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.ConfigurationType;
-import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.openapi.project.Project;
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import org.jetbrains.annotations.NotNull;
 
-public class WebAppConfigurationFactory extends ConfigurationFactory {
+import java.util.List;
 
-    public WebAppConfigurationFactory(@NotNull ConfigurationType type) {
-        super(type);
-    }
+public interface WebAppDeployMvpView extends MvpView {
 
-    @NotNull
-    @Override
-    public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-        return new WebAppConfiguration(project, this);
-    }
-
-    @Override
-    public RunConfiguration createConfiguration(String name, RunConfiguration template) {
-        return new WebAppConfiguration(template.getProject(), this);
-    }
+    void renderWebAppsTable(@NotNull List<ResourceEx<WebApp>> webAppLists);
 }
