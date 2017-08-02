@@ -20,28 +20,38 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig;
+package com.microsoft.intellij.runner;
 
-import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.ConfigurationType;
-import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.openapi.project.Project;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.execution.process.ProcessHandler;
+import org.jetbrains.annotations.Nullable;
 
-public class WebAppConfigurationFactory extends ConfigurationFactory {
+import java.io.OutputStream;
 
-    public WebAppConfigurationFactory(@NotNull ConfigurationType type) {
-        super(type);
-    }
+public class AzureProcessHandler extends ProcessHandler {
 
-    @NotNull
     @Override
-    public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-        return new WebAppConfiguration(project, this);
+    protected void destroyProcessImpl() {
     }
 
     @Override
-    public RunConfiguration createConfiguration(String name, RunConfiguration template) {
-        return new WebAppConfiguration(template.getProject(), this);
+    protected void detachProcessImpl() {
+        notifyProcessDetached();
     }
+
+    @Override
+    public boolean detachIsDefault() {
+        return false;
+    }
+
+    @Nullable
+    @Override
+    public OutputStream getProcessInput() {
+        return null;
+    }
+
+    @Override
+    public void notifyProcessTerminated(int exitCode) {
+        super.notifyProcessTerminated(exitCode);
+    }
+
 }

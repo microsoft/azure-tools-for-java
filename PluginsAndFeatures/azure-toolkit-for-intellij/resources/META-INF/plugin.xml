@@ -35,20 +35,20 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <toolWindow
-          anchor="bottom"
-          factoryClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactory"
-          id="Azure Activity Log"
-          canCloseContents="true"
-          icon="/icons/RoleFolder.gif"
-          conditionClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactoryCondition"/>
+            anchor="bottom"
+            factoryClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactory"
+            id="Azure Activity Log"
+            canCloseContents="true"
+            icon="/icons/RoleFolder.gif"
+            conditionClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactoryCondition"/>
     <projectConfigurable groupId="root"
-                       id="com.microsoft.intellij.AzureConfigurable"
-                       provider="com.microsoft.intellij.AzureConfigurableProvider"
-                       dynamic="true"/>
+                         id="com.microsoft.intellij.AzureConfigurable"
+                         provider="com.microsoft.intellij.AzureConfigurableProvider"
+                         dynamic="true"/>
     <projectService serviceInterface="com.microsoft.intellij.AzureSettings"
-                  serviceImplementation="com.microsoft.intellij.AzureSettings"/>
+                    serviceImplementation="com.microsoft.intellij.AzureSettings"/>
     <applicationService serviceInterface="com.microsoft.intellij.ApplicationSettings"
-                      serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
+                        serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
     <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
 
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
@@ -57,23 +57,23 @@
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider"/>
     <toolWindow
-          anchor="left"
-          factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"
-          id="Azure Explorer"
-          canCloseContents="false"
-          icon="/icons/AzureExplorer_16.png"/>
+            anchor="left"
+            factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"
+            id="Azure Explorer"
+            canCloseContents="false"
+            icon="/icons/AzureExplorer_16.png"/>
 
     <moduleBuilder builderClass="com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder"/>
     <toolWindow
-        anchor="bottom"
-        factoryClass="com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionToolWindowFactory"
-        id="HDInsight Spark Submission"
-        canCloseContents="false"
-        icon="/icons/SparkSubmissionToolWindow.png"/>
+            anchor="bottom"
+            factoryClass="com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionToolWindowFactory"
+            id="HDInsight Spark Submission"
+            canCloseContents="false"
+            icon="/icons/SparkSubmissionToolWindow.png"/>
 
-    <!--<configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>-->
+    <configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType"/>
-    <!--<programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>-->
+    <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
     <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
   </extensions>
@@ -99,8 +99,8 @@
 
   <actions>
     <!--<action id="Actions.DockerPublishAction"-->
-            <!--class="com.microsoft.intellij.actions.DockerPublishActiontion" text="Deploy to WebAppOnLinux"-->
-            <!--description="Deploy to WebAppOnLinux"/>-->
+    <!--class="com.microsoft.intellij.actions.DockerPublishActiontion" text="Deploy to WebAppOnLinux"-->
+    <!--description="Deploy to WebAppOnLinux"/>-->
     <action id="Actions.LibraryConfigurationAction"
             class="com.microsoft.intellij.actions.LibraryConfigurationAction" text="Libraries Configuration"
             description="Libraries Configuration"/>
@@ -110,6 +110,9 @@
     <action id="Actions.AzureWebDeploy" class="com.microsoft.intellij.actions.AzureWebDeployAction"
             text="Publish as Azure Web App..." description="Azure website deployment for Java"
             icon="/icons/PublishWebApp_16.png">
+    </action>
+    <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
+            text="Deploy to Azure" description="Deploy to Azure">
     </action>
     <action id="Actions.AzureDockerHostDeploy" class="com.microsoft.intellij.actions.AzureDockerHostDeployAction"
             text="Publish as Docker Container..." description="Azure website deployment for Java on Docker"
@@ -132,16 +135,16 @@
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
             description="ShowSubscriptionsAction" />
     <!--<action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.DockerizeAction"-->
-            <!--text="Add Docker Support..." description="Azure website deployment for Java"-->
-            <!--icon="/icons/AddDockerSupport_16.png">-->
+    <!--text="Add Docker Support..." description="Azure website deployment for Java"-->
+    <!--icon="/icons/AddDockerSupport_16.png">-->
     <!--</action>-->
     <!--<action id="Actions.DockerRun" class="com.microsoft.intellij.actions.DockerRunAction"-->
-            <!--text="Docker Run..." description="Azure website deployment for Java"-->
-            <!--icon="/icons/DockerRun_16.png">-->
+    <!--text="Docker Run..." description="Azure website deployment for Java"-->
+    <!--icon="/icons/DockerRun_16.png">-->
     <!--</action>-->
     <!--<action id="Actions.DockerPublish" class="com.microsoft.intellij.actions.DockerPublishAction"-->
-            <!--text="Publish to Web App on Linux..." description="Azure website deployment for Java"-->
-            <!--icon="/icons/PublishWebAppOnLinux_16.png">-->
+    <!--text="Publish to Web App on Linux..." description="Azure website deployment for Java"-->
+    <!--icon="/icons/PublishWebAppOnLinux_16.png">-->
     <!--</action>-->
 
     <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/azure.png" popup="true"
@@ -157,8 +160,8 @@
       <reference ref="Actions.LibraryConfigurationAction"/>
       <separator/>
       <reference ref="AzureToolkit.AzureSignIn"/>
-      <!--<separator/>-->
-      <!--<reference ref="Actions.WebDeployAction"/>-->
+      <separator/>
+      <reference ref="Actions.WebDeployAction"/>
     </group>
 
     <group id="AzureToolbarGroup" text="Azure" description="Azure">
@@ -172,8 +175,8 @@
 
     <group id="AzureWebDeployGroup" text="Azure Web Deploy" description="Azure website deployment for Java"
            popup="false">
-        <separator/>
-        <reference ref="Actions.AzureWebDeploy"/>
+      <separator/>
+      <reference ref="Actions.AzureWebDeploy"/>
     </group>
 
     <group id="AzureToolkit.AzureActionGroup"
@@ -190,5 +193,5 @@
 
   </actions>
 
-    <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
+  <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
 </idea-plugin>

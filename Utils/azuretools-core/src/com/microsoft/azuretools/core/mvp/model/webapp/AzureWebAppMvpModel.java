@@ -4,6 +4,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
@@ -52,8 +53,31 @@ public class AzureWebAppMvpModel {
         // TODO
     }
 
-    public List<WebApp> listWebAppsBySubscriptionId(String sid, boolean force) {
-        return null;
+    public List<ResourceEx<WebApp>> listWebAppsBySubscriptionId(String sid, boolean force) {
+        if (!force && subscriptionIdToWebAppsMap.containsKey(sid)) {
+            return subscriptionIdToWebAppsMap.get(sid);
+        }
+        List<ResourceEx<WebApp>> webAppList = new ArrayList<>();
+        try {
+            Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
+            for (WebApp webApp : azure.webApps().list()) {
+                webAppList.add(new ResourceEx<>(webApp, sid));
+            }
+            subscriptionIdToWebAppsMap.put(sid, webAppList);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return webAppList;
+    }
+
+    public List<ResourceEx<WebApp>> listJavaWebApps(boolean force) throws IOException {
+        List<ResourceEx<WebApp>> webAppList = new ArrayList<>();
+        List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        for (Subscription sub : subscriptions) {
+            webAppList.addAll(this.listWebAppsBySubscriptionId(sub.subscriptionId(), force));
+        }
+        return webAppList;
     }
 
     /**
@@ -77,9 +101,6 @@ public class AzureWebAppMvpModel {
                         wal.add(new ResourceEx<SiteInner>(si, sid));
                     }
                 }
-            }
-            if (subscriptionIdToWebAppsOnLinuxMap.containsKey(sid)) {
-                subscriptionIdToWebAppsOnLinuxMap.remove(sid);
             }
             subscriptionIdToWebAppsOnLinuxMap.put(sid, wal);
         } catch (IOException e) {

@@ -36,6 +36,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.runner.webapp.WebAppConfigurationType;
+import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
 import org.jetbrains.idea.maven.tasks.MavenBeforeRunTasksProvider;
@@ -46,8 +47,6 @@ import java.util.List;
 
 public class WebDeployAction extends AnAction {
 
-    private static final String MAVEN_TASK_PACKAGE = "package";
-    private static final String POM_FILE_NAME = "pom.xml";
     private static final String DIALOG_TITLE = "Deploy to Azure";
 
     private ConfigurationType configType;
@@ -70,28 +69,14 @@ public class WebDeployAction extends AnAction {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         RunnerAndConfigurationSettings settings = manager.findConfigurationByName(
                 String.format("%s:%s", configType.getDisplayName(), project.getName()));
-        List<BeforeRunTask> tasks;
         if (settings == null) {
             final ConfigurationFactory factory =
                     configType != null ? configType.getConfigurationFactories()[0] : null;
             settings = manager.createConfiguration(String.format("%s:%s", configType.getDisplayName(),
                     project.getName()), factory);
-            RunConfiguration runConfiguration = settings.getConfiguration();
-            tasks = new ArrayList<>(manager.getBeforeRunTasks(runConfiguration));
-            if (manager.getBeforeRunTasks(runConfiguration, MavenBeforeRunTasksProvider.ID).isEmpty()) {
-                if (MavenProjectsManager.getInstance(project).isMavenizedProject()) {
-                    MavenBeforeRunTask task = new MavenBeforeRunTask();
-                    task.setEnabled(true);
-                    task.setProjectPath(project.getBasePath() + File.separator + POM_FILE_NAME);
-                    task.setGoal(MAVEN_TASK_PACKAGE);
-                    tasks.add(task);
-                    manager.setBeforeRunTasks(runConfiguration, tasks, false);
-                }
-            }
-
         }
         if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
-            tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
+            List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
             manager.addConfiguration(settings, false, tasks, false);
             manager.setSelectedConfiguration(settings);
             ProgramRunnerUtil.executeConfiguration(project, settings, DefaultRunExecutor.getRunExecutorInstance());
