@@ -22,7 +22,6 @@
 package com.microsoft.tooling.msservices.helpers.azure.sdk;
 
 import com.google.common.base.Strings;
-import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
@@ -33,7 +32,6 @@ import com.microsoft.azure.storage.queue.CloudQueueClient;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import com.microsoft.azure.storage.queue.QueueListingDetails;
 import com.microsoft.azure.storage.table.*;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.tooling.msservices.helpers.CallableSingleArg;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.model.storage.BlobDirectory;
@@ -49,6 +47,7 @@ import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.utils.StorageAccoutUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -729,25 +728,13 @@ public class StorageClientSDKManager {
 
     @NotNull
     public static String getConnectionString(StorageAccount storageAccount) {
-        return String.format(ClientStorageAccount.DEFAULT_CONN_STR_TEMPLATE,
-                        ClientStorageAccount.DEFAULT_PROTOCOL,
-                        storageAccount.name(),
-                        storageAccount.getKeys().get(0).value(),
-                        getEndpointSuffix());
+        String accountName = storageAccount.name();
+        String key = storageAccount.getKeys().get(0).value();
+        return StorageAccoutUtils.getConnectionString(accountName, key);
     }
 
     public static String getEndpointSuffix() {
-        String endpointSuffix;
-        try {
-            if (AuthMethodManager.getInstance().isSignedIn()) {
-                endpointSuffix = AuthMethodManager.getInstance().getAzureManager().getStorageEndpointSuffix();
-            } else {
-                endpointSuffix = AzureEnvironment.AZURE.storageEndpointSuffix();
-            }
-        } catch (Exception ex) {
-            endpointSuffix = AzureEnvironment.AZURE.storageEndpointSuffix();
-        }
-        return endpointSuffix.substring(1);
+        return StorageAccoutUtils.getEndpointSuffix();
     }
 
     @NotNull
