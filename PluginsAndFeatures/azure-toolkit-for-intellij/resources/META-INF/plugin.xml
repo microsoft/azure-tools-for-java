@@ -49,7 +49,7 @@
                         serviceImplementation="com.microsoft.intellij.AzureSettings"/>
         <applicationService serviceInterface="com.microsoft.intellij.ApplicationSettings"
                             serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
-        <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider"/>
+        <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
 
         <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
         <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider"/>
@@ -72,12 +72,10 @@
                 icon="/icons/SparkSubmissionToolWindow.png"/>
 
         <configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>
-        <configurationType
-                implementation="com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType"/>
+        <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType"/>
         <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>
-        <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner"/>
-        <configurationType
-                implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
+        <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
+        <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
     </extensions>
 
     <application-components>
@@ -88,8 +86,7 @@
             <implementation-class>com.microsoft.intellij.AzureActionsComponent</implementation-class>
         </component>
         <component>
-            <implementation-class>com.microsoft.azure.hdinsight.projects.HDInsightActionsComponent
-            </implementation-class>
+            <implementation-class>com.microsoft.azure.hdinsight.projects.HDInsightActionsComponent</implementation-class>
         </component>
     </application-components>
 
@@ -114,9 +111,6 @@
                 text="Publish as Azure Web App..." description="Azure website deployment for Java"
                 icon="/icons/PublishWebApp_16.png">
         </action>
-        <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
-                text="Deploy to Azure" description="Deploy to Azure">
-        </action>
         <action id="Actions.AzureDockerHostDeploy" class="com.microsoft.intellij.actions.AzureDockerHostDeployAction"
                 text="Publish as Docker Container..." description="Azure website deployment for Java on Docker"
                 icon="/icons/PublishDockerContainer_16.png">
@@ -131,15 +125,15 @@
         </action>
 
         <action id="Actions.SubmitSparkApplicationAction"
-                class="com.microsoft.azure.hdinsight.spark.actions.SubmitAction"
-                text="Submit Spark Application to HDInsight"
+                class="com.microsoft.azure.hdinsight.spark.actions.SubmitAction" text="Submit Spark Application to HDInsight"
                 description="Submit Spark Application to HDInsight" icon="/icons/Spark.png"/>
 
-        <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction"
-                text="Azure Sign In..."/>
-        <action id="AzureToolkit.SelectSubscriptions"
-                class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
-                description="ShowSubscriptionsAction"/>
+        <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
+        <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
+                description="ShowSubscriptionsAction" />
+        <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
+                text="Deploy to Azure" description="Deploy to Azure">
+        </action>
         <!--<action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.DockerizeAction"-->
         <!--text="Add Docker Support..." description="Azure website deployment for Java"-->
         <!--icon="/icons/AddDockerSupport_16.png">-->
@@ -171,8 +165,7 @@
         </group>
 
         <group id="AzureToolbarGroup" text="Azure" description="Azure">
-            <group id="PublishToAzureGroup" text="Publish Group" description="Publish Group" popup="true"
-                   icon="/icons/Publish_16.png">
+            <group id="PublishToAzureGroup" text="Publish Group" description="Publish Group" popup="true" icon="/icons/Publish_16.png">
                 <reference ref="Actions.AzureWebDeploy"/>
                 <reference ref="Actions.AzureDockerHostDeploy"/>
             </group>
