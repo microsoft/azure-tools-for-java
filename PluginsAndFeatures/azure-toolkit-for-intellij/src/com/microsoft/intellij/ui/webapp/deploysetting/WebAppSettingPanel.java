@@ -23,14 +23,23 @@
 package com.microsoft.intellij.ui.webapp.deploysetting;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.AnActionButton;
+import com.intellij.ui.HyperlinkLabel;
+import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
+import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.utils.AzulZuluModel;
+import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -54,18 +63,43 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private Project project;
     private List<ResourceEx<WebApp>> cachedWebAppList = null;
 
+    private String lastSelectedSid;
+    private String lastSelectedResGrp;
+
     // const
     private static final String URL_PREFIX = "https://";
-    private static final String GO_TO_PORTAL = "Go to Portal";
 
     //widgets
-    private JPanel rootPanel;
-    private JRadioButton rdoUseExist;
-    private JRadioButton rdoCreateNew;
+    private JPanel pnlRoot;
     private JPanel pnlExist;
     private JPanel pnlCreate;
-    private JCheckBox chkToRoot;
     private JPanel pnlWebAppTable;
+    private JCheckBox chkToRoot;
+    private JRadioButton rdoUseExist;
+    private JRadioButton rdoCreateNew;
+    private JRadioButton rdoCreateAppServicePlan;
+    private JRadioButton rdoUseExistAppServicePlan;
+    private JRadioButton rdoCreateResGrp;
+    private JRadioButton rdoUseExistResGrp;
+    private JRadioButton rdoDefaultJdk;
+    private JRadioButton rdoThirdPartyJdk;
+    private JRadioButton rdoDownloadOwnJdk;
+    private JTextField txtWebAppName;
+    private JTextField txtCreateAppServicePlan;
+    private JTextField txtNewResGrp;
+    private JTextField txtJdkUrl;
+    private JTextField txtAccountKey;
+    private JComboBox<Subscription> cbSubscription;
+    private JComboBox cbWebContainer;
+    private JComboBox cbLocation;
+    private JComboBox cbPricing;
+    private JComboBox<AppServicePlan> cbExistAppServicePlan;
+    private JComboBox<ResourceGroup> cbExistResGrp;
+    private JComboBox cbThirdPartyJdk;
+    private HyperlinkLabel lblJdkLicense;
+    private JLabel lblLocation;
+    private JLabel lblPricing;
+    private JLabel lblDefaultJdk;
     private JTable table;
 
     public WebAppSettingPanel(Project project) {
@@ -73,18 +107,101 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         this.webAppDeployViewPresenter = new WebAppDeployViewPresenter<>();
         this.webAppDeployViewPresenter.onAttachView(this);
 
-        final ButtonGroup btnGrp = new ButtonGroup();
-        btnGrp.add(rdoUseExist);
-        btnGrp.add(rdoCreateNew);
-        rdoUseExist.setSelected(true);
-        rdoUseExist.addActionListener(e -> togglePanel(true /*showUsingExisting*/));
-        rdoCreateNew.setSelected(false);
-        rdoCreateNew.addActionListener(e -> togglePanel(false /*showUsingExisting*/));
-        togglePanel(true /*showUsingExisting*/);
+        final ButtonGroup btnGrpForDeploy = new ButtonGroup();
+        btnGrpForDeploy.add(rdoUseExist);
+        btnGrpForDeploy.add(rdoCreateNew);
+        rdoUseExist.addActionListener(e -> toggleDeployPanel(true /*isUsingExisting*/));
+        rdoCreateNew.addActionListener(e -> toggleDeployPanel(false /*isUsingExisting*/));
+        toggleDeployPanel(true /*showUsingExisting*/);
+
+        final ButtonGroup btnGrpForResGrp = new ButtonGroup();
+        btnGrpForResGrp.add(rdoUseExistResGrp);
+        btnGrpForResGrp.add(rdoCreateResGrp);
+        rdoCreateResGrp.addActionListener(e -> toggleResGrpPanel(true /*isCreatingNew*/));
+        rdoUseExistResGrp.addActionListener(e -> toggleResGrpPanel(false /*isCreatingNew*/));
+
+        final ButtonGroup btnGrpForAppServicePlan = new ButtonGroup();
+        btnGrpForAppServicePlan.add(rdoUseExistAppServicePlan);
+        btnGrpForAppServicePlan.add(rdoCreateAppServicePlan);
+        rdoUseExistAppServicePlan.addActionListener(e -> toggleAppServicePlanPanel(false /*isCreatingNew*/));
+        rdoCreateAppServicePlan.addActionListener(e -> toggleAppServicePlanPanel(true /*isCreatingNew*/));
+
+        final ButtonGroup btnGrpForJdk = new ButtonGroup();
+        btnGrpForJdk.add(rdoDefaultJdk);
+        btnGrpForJdk.add(rdoThirdPartyJdk);
+        btnGrpForJdk.add(rdoDownloadOwnJdk);
+        rdoDefaultJdk.addActionListener(e -> toggleJdkPanel(JdkChoice.DEFAULT));
+        rdoThirdPartyJdk.addActionListener(e -> toggleJdkPanel(JdkChoice.THIRD_PARTY));
+        rdoDownloadOwnJdk.addActionListener(e -> toggleJdkPanel(JdkChoice.URL));
+
+        cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
+            @Override
+            public void customize(JList jList, ResourceGroup resourceGroup, int
+                    index, boolean isSelected, boolean cellHasFocus) {
+                if (resourceGroup != null) {
+                    setText(resourceGroup.name());
+                }
+            }
+        });
+
+        cbExistResGrp.addActionListener(e -> {
+            String selectedGrp = ((ResourceGroup) cbExistResGrp.getSelectedItem()).name();
+            if (!Comparing.equal(lastSelectedResGrp, selectedGrp)) {
+                cbExistAppServicePlan.removeAllItems();
+                lblLocation.setText("");
+                lblPricing.setText("");
+                webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, selectedGrp);
+                lastSelectedResGrp = selectedGrp;
+            }
+        });
+
+        cbSubscription.setRenderer(new ListCellRendererWrapper<Subscription>() {
+            @Override
+            public void customize(JList jList, Subscription subscription, int
+                    index, boolean isSelected, boolean cellHasFocus) {
+                if (subscription != null) {
+                    setText(subscription.displayName());
+                }
+            }
+        });
+
+        cbSubscription.addActionListener(e -> {
+            String selectedSid = ((Subscription) cbSubscription.getSelectedItem()).subscriptionId();
+            if (!Comparing.equal(lastSelectedSid, selectedSid)) {
+                cbExistResGrp.removeAllItems();
+                webAppDeployViewPresenter.onLoadResourceGroups(selectedSid);
+                lastSelectedSid = selectedSid;
+            }
+        });
+
+        cbExistAppServicePlan.setRenderer(new ListCellRendererWrapper<AppServicePlan>() {
+            @Override
+            public void customize(JList jList, AppServicePlan appServicePlan, int
+                    index, boolean isSelected, boolean cellHasFocus) {
+                if (appServicePlan != null) {
+                    setText(appServicePlan.name());
+                }
+            }
+        });
+
+        cbExistAppServicePlan.addActionListener(e -> {
+            AppServicePlan plan = (AppServicePlan) cbExistAppServicePlan.getSelectedItem();
+            if (plan != null) {
+                lblLocation.setText(plan.regionName());
+                lblPricing.setText(plan.pricingTier().toString());
+            }
+
+        });
+
+        fillWebContainers();
+
+        lblJdkLicense.setHyperlinkText("License");
+        lblJdkLicense.setHyperlinkTarget(AzulZuluModel.getLicenseUrl());
+        this.webAppDeployViewPresenter.onLoadSubscription();
     }
 
     public JPanel getMainPanel() {
-        return rootPanel;
+        return pnlRoot;
     }
 
     public void resetEditorForm(WebAppSettingModel model) {
@@ -146,9 +263,46 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         return rdoCreateNew.isSelected();
     }
 
-    private void togglePanel(boolean showUsingExisting) {
-        pnlExist.setVisible(showUsingExisting);
-        pnlCreate.setVisible(!showUsingExisting);
+    private void toggleDeployPanel(boolean isUsingExisting) {
+        pnlExist.setVisible(isUsingExisting);
+        pnlCreate.setVisible(!isUsingExisting);
+    }
+
+    private void toggleResGrpPanel(boolean isCreatingNew) {
+        txtNewResGrp.setEnabled(isCreatingNew);
+        cbExistResGrp.setEnabled(!isCreatingNew);
+    }
+
+    private void toggleAppServicePlanPanel(boolean isCreatingNew) {
+        txtCreateAppServicePlan.setEnabled(isCreatingNew);
+        cbLocation.setEnabled(isCreatingNew);
+        cbPricing.setEnabled(isCreatingNew);
+        cbExistAppServicePlan.setEnabled(!isCreatingNew);
+    }
+
+    private void toggleJdkPanel(JdkChoice choice) {
+        switch (choice) {
+            case DEFAULT:
+                lblDefaultJdk.setEnabled(true);
+                cbThirdPartyJdk.setEnabled(false);
+                txtJdkUrl.setEnabled(false);
+                txtAccountKey.setEnabled(false);
+                break;
+            case THIRD_PARTY:
+                lblDefaultJdk.setEnabled(false);
+                cbThirdPartyJdk.setEnabled(true);
+                txtJdkUrl.setEnabled(false);
+                txtAccountKey.setEnabled(false);
+                break;
+            case URL:
+                lblDefaultJdk.setEnabled(false);
+                cbThirdPartyJdk.setEnabled(false);
+                txtJdkUrl.setEnabled(true);
+                txtAccountKey.setEnabled(true);
+                break;
+            default:
+                break;
+        }
     }
 
     private void resetWidget() {
@@ -191,8 +345,35 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         };
 
         ToolbarDecorator tableToolbarDecorator = ToolbarDecorator.createDecorator(table)
-                .addExtraActions(refreshAction);
+                .addExtraActions(refreshAction).setToolbarPosition(ActionToolbarPosition.TOP);
 
         pnlWebAppTable = tableToolbarDecorator.createPanel();
+    }
+
+    private void fillWebContainers() {
+        DefaultComboBoxModel<WebAppUtils.WebContainerMod> cbModel = new DefaultComboBoxModel<>();
+        for (WebAppUtils.WebContainerMod wc : WebAppUtils.WebContainerMod.values()) {
+            cbModel.addElement(wc);
+        }
+        cbWebContainer.setModel(cbModel);
+    }
+
+    @Override
+    public void fillSubscription(List<Subscription> subscriptions) {
+        subscriptions.forEach(cbSubscription::addItem);
+    }
+
+    @Override
+    public void fillResourceGroup(List<ResourceGroup> resourceGroups) {
+        resourceGroups.forEach(cbExistResGrp::addItem);
+    }
+
+    @Override
+    public void fillAppServicePlan(List<AppServicePlan> appServicePlans) {
+        appServicePlans.forEach(cbExistAppServicePlan::addItem);
+    }
+
+    private enum JdkChoice {
+        DEFAULT, THIRD_PARTY, URL
     }
 }

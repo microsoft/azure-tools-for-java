@@ -1,6 +1,7 @@
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -51,6 +52,11 @@ public class AzureWebAppMvpModel {
 
     public void updateWebAppOnLinux() {
         // TODO
+    }
+
+    public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResrouceGroupName(String sid, String group) throws Exception {
+        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
+        return azure.appServices().appServicePlans().listByResourceGroup(group);
     }
 
     public List<ResourceEx<WebApp>> listWebAppsBySubscriptionId(String sid, boolean force) {
