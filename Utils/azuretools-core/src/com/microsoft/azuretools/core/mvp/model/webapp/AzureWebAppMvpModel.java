@@ -65,7 +65,6 @@ public class AzureWebAppMvpModel {
             }
             subscriptionIdToWebAppsMap.put(sid, webAppList);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return webAppList;
