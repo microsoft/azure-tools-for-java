@@ -26,8 +26,9 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.utils.WebAppUtils;
-import com.microsoft.intellij.runner.AzureProcessHandler;
+import com.microsoft.intellij.runner.RunProcessHandler;
 import org.apache.commons.net.ftp.FTPClient;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import rx.Observable;
@@ -38,7 +39,6 @@ import java.io.IOException;
 
 public class WebDeployUtil {
 
-    private static final String PROCESS_TERMINATED = "The process has been terminated";
     private static final String GETTING_DEPLOYMENT_CREDENTIAL = "Getting Deployment Credential...";
     private static final String CONNECTING_FTP = "Connecting to FTP server...";
     private static final String UPLOADING_WAR = "Uploading war file...";
@@ -50,18 +50,18 @@ public class WebDeployUtil {
     private static final String ROOT_PATH = BASE_PATH + "ROOT";
     private static final String ROOT_FILE_PATH = ROOT_PATH + "." + MavenConstants.TYPE_WAR;
 
-    public static void deployWebApp(WebAppSettingModel webAppSettingModel, AzureProcessHandler handler) {
+    public static void deployWebApp(WebAppSettingModel webAppSettingModel, RunProcessHandler handler) {
         Observable.fromCallable(() -> {
             if (webAppSettingModel.isCreatingNew()) {
                 //todo: creating
             }
-            println(handler,GETTING_DEPLOYMENT_CREDENTIAL, ProcessOutputTypes.STDOUT);
+            handler.println(GETTING_DEPLOYMENT_CREDENTIAL, ProcessOutputTypes.STDOUT);
             WebApp webApp = AzureWebAppMvpModel.getInstance().getWebAppById(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppId());
             FTPClient ftp;
             FileInputStream input;
-            println(handler,CONNECTING_FTP, ProcessOutputTypes.STDOUT);
+            handler.println(CONNECTING_FTP, ProcessOutputTypes.STDOUT);
             ftp = WebAppUtils.getFtpConnection(webApp.getPublishingProfile());
-            println(handler,UPLOADING_WAR, ProcessOutputTypes.STDOUT);
+            handler.println(UPLOADING_WAR, ProcessOutputTypes.STDOUT);
             input = new FileInputStream(webAppSettingModel.getTargetPath());
             boolean isSuccess;
             if (webAppSettingModel.isDeployToRoot()) {
@@ -77,8 +77,8 @@ public class WebDeployUtil {
                 int rc = ftp.getReplyCode();
                 throw new IOException("FTP client can't store the artifact, reply code: " + rc);
             }
-            println(handler,UPLOADING_SUCCESSFUL, ProcessOutputTypes.STDOUT);
-            println(handler,LOGGING_OUT, ProcessOutputTypes.STDOUT);
+            handler.println(UPLOADING_SUCCESSFUL, ProcessOutputTypes.STDOUT);
+            handler.println(LOGGING_OUT, ProcessOutputTypes.STDOUT);
             ftp.logout();
             input.close();
             if (ftp.isConnected()) {
@@ -86,36 +86,20 @@ public class WebDeployUtil {
             }
             return null;
         })
-        .subscribeOn(Schedulers.io())
+        .subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io())
         .subscribe(number -> {
-            println(handler, DEPLOY_SUCCESSFUL, ProcessOutputTypes.STDOUT);
-            print(handler, "URL: ", ProcessOutputTypes.STDOUT);
+            handler.println(DEPLOY_SUCCESSFUL, ProcessOutputTypes.STDOUT);
+            handler.print("URL: ", ProcessOutputTypes.STDOUT);
             String url = webAppSettingModel.getWebAppUrl();
             if (!webAppSettingModel.isDeployToRoot()) {
                 url += "/" + webAppSettingModel.getTargetName()
                         .substring(0, webAppSettingModel.getTargetName().indexOf("." + MavenConstants.TYPE_WAR));
             }
-            println(handler, url, ProcessOutputTypes.STDOUT);
+            handler.println(url, ProcessOutputTypes.STDOUT);
             handler.notifyProcessTerminated(0 /*exitCode*/);
         }, err -> {
             handler.notifyTextAvailable(err.getMessage(), ProcessOutputTypes.STDERR);
             handler.notifyProcessTerminated(0 /*exitCode*/);
         });
-    }
-
-    static private void print(AzureProcessHandler processHandler, String message, Key type) {
-        if (!processHandler.isProcessTerminating() && !processHandler.isProcessTerminated()) {
-            processHandler.notifyTextAvailable(message, type);
-        } else {
-            throw new Error(PROCESS_TERMINATED);
-        }
-    }
-
-    static private void println(AzureProcessHandler processHandler, String message, Key type) {
-        if (!processHandler.isProcessTerminating() && !processHandler.isProcessTerminated()) {
-            processHandler.notifyTextAvailable(message + "\n", type);
-        } else {
-            throw new Error(PROCESS_TERMINATED);
-        }
     }
 }

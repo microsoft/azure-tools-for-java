@@ -34,7 +34,7 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.microsoft.intellij.runner.AzureProcessHandler;
+import com.microsoft.intellij.runner.RunProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,7 +51,7 @@ public class WebAppRunState implements RunProfileState {
     @Nullable
     @Override
     public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) throws ExecutionException {
-        final AzureProcessHandler processHandler = new AzureProcessHandler();
+        final RunProcessHandler processHandler = new RunProcessHandler();
         ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         processHandler.startNotify();
         consoleView.attachToProcess(processHandler);

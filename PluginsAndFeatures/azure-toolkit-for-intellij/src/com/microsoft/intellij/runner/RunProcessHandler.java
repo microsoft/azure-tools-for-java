@@ -23,11 +23,14 @@
 package com.microsoft.intellij.runner;
 
 import com.intellij.execution.process.ProcessHandler;
+import com.intellij.openapi.util.Key;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.OutputStream;
 
-public class AzureProcessHandler extends ProcessHandler {
+public class RunProcessHandler extends ProcessHandler {
+
+    private static final String PROCESS_TERMINATED = "The process has been terminated";
 
     @Override
     protected void destroyProcessImpl() {
@@ -52,6 +55,22 @@ public class AzureProcessHandler extends ProcessHandler {
     @Override
     public void notifyProcessTerminated(int exitCode) {
         super.notifyProcessTerminated(exitCode);
+    }
+
+    public void print(String message, Key type) {
+        if (!this.isProcessTerminating() && !this.isProcessTerminated()) {
+            this.notifyTextAvailable(message, type);
+        } else {
+            throw new Error(PROCESS_TERMINATED);
+        }
+    }
+
+    public void println(String message, Key type) {
+        if (!this.isProcessTerminating() && !this.isProcessTerminated()) {
+            this.notifyTextAvailable(message + "\n", type);
+        } else {
+            throw new Error(PROCESS_TERMINATED);
+        }
     }
 
 }

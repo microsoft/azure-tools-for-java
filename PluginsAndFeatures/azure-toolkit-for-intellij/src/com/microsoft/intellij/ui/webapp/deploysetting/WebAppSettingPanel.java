@@ -26,7 +26,6 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnActionButton;
-import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.JavaVersion;

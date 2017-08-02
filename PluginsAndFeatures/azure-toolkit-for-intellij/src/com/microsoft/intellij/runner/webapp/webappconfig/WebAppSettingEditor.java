@@ -28,6 +28,7 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.ui.webapp.deploysetting.WebAppSettingPanel;
+import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -54,9 +55,9 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
     @Override
     protected void resetEditorFrom(@NotNull WebAppConfiguration webAppConfiguration) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
-        if (isMavenProject(project)) {
+        if (MavenRunTaskUtil.isMavenProject(project)) {
             List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(webAppConfiguration));
-            if (shouldAddMavenPackageTask(tasks, project)) {
+            if (MavenRunTaskUtil.shouldAddMavenPackageTask(tasks, project)) {
                 MavenBeforeRunTask task = new MavenBeforeRunTask();
                 task.setEnabled(true);
                 task.setProjectPath(project.getBasePath() + File.separator + MavenConstants.POM_XML);
@@ -92,28 +93,8 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
         if (webAppId == null || webAppId.length() == 0) {
             throw new ConfigurationException("Choose a web app to deploy.");
         }
-        if (!isMavenProject(project)) {
+        if (!MavenRunTaskUtil.isMavenProject(project)) {
             throw new ConfigurationException("Current project is not a Maven project.");
         }
-    }
-
-    private boolean shouldAddMavenPackageTask(List<BeforeRunTask> tasks, Project project) {
-        boolean shouldAdd = true;
-        for (BeforeRunTask task: tasks) {
-            if (task.getProviderId().equals(MavenBeforeRunTasksProvider.ID)) {
-                MavenBeforeRunTask mavenTask = (MavenBeforeRunTask) task;
-                if (mavenTask.getGoal().equals(MAVEN_TASK_PACKAGE) &&
-                        mavenTask.getProjectPath().equals(project.getBasePath() + File.separator + MavenConstants.POM_XML)) {
-                    mavenTask.setEnabled(true);
-                    shouldAdd = false;
-                    break;
-                }
-            }
-        }
-        return shouldAdd;
-    }
-
-    private boolean isMavenProject(Project project) {
-        return MavenProjectsManager.getInstance(project).isMavenizedProject();
     }
 }

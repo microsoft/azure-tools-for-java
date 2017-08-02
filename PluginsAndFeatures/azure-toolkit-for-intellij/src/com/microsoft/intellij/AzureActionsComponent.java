@@ -109,7 +109,6 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
                 if (actionGroup != null)
                     actionGroup.addAll((ActionGroup) actionManager.getAction("AzureWebDeployGroup"));
             }
-            loadWebAppOnLinux();
             loadWebApps();
         }
         try {
@@ -138,24 +137,13 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
         }
     }
 
-    private void loadWebAppOnLinux() {
-        System.out.println("AzurePlugin@loadWebAppOnLinux");
-        ProgressManager.getInstance().run(new Task.Backgroundable(null,"Load Web App on Linux", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                for(Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-                    AzureWebAppMvpModel.getInstance().listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), false);
-                }
-            }
-        });
-    }
-
     private void loadWebApps() {
         System.out.println("AzurePlugin@loadWebApps");
         ProgressManager.getInstance().run(new Task.Backgroundable(null, "Load Web Apps" /*title*/, false /*canBeCancel*/) {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
                 for(Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
+                    AzureWebAppMvpModel.getInstance().listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), false);
                     AzureWebAppMvpModel.getInstance().listWebAppsBySubscriptionId(sb.subscriptionId(), false);
                 }
             }
