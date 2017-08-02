@@ -25,18 +25,12 @@ import com.intellij.debugger.engine.RemoteDebugProcessHandler;
 import com.intellij.openapi.project.Project;
 
 public class SparkBatchJobDebugProcessHandler extends RemoteDebugProcessHandler {
-    private SparkBatchJobDebuggerRunner debugRunner;
-
-    public SparkBatchJobDebugProcessHandler(Project project, SparkBatchJobDebuggerRunner runner) {
+    public SparkBatchJobDebugProcessHandler(Project project) {
         super(project);
-        debugRunner = runner;
     }
 
     @Override
-    protected void detachProcessImpl() {
-        debugRunner.performStopAction();
-
-        super.detachProcessImpl();
+    public boolean detachIsDefault() {
+        return false;
     }
-
 }

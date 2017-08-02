@@ -222,8 +222,7 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
                                                          }
                                                      }
                         );
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    } catch (InterruptedException ignore) {
                     } catch (InvocationTargetException e) {
                         e.printStackTrace();
                     }
