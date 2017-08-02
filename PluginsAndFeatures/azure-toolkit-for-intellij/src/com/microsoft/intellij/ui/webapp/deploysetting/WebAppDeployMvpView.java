@@ -22,7 +22,10 @@
 
 package com.microsoft.intellij.ui.webapp.deploysetting;
 
+import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import org.jetbrains.annotations.NotNull;
@@ -32,4 +35,10 @@ import java.util.List;
 public interface WebAppDeployMvpView extends MvpView {
 
     void renderWebAppsTable(@NotNull List<ResourceEx<WebApp>> webAppLists);
+
+    void fillSubscription(List<Subscription> subscriptions);
+
+    void fillResourceGroup(List<ResourceGroup> resourceGroups);
+
+    void fillAppServicePlan(List<AppServicePlan> appServicePlans);
 }

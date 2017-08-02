@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.ui.webapp.deploysetting;
 
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -31,6 +32,9 @@ import rx.Observable;
 public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends MvpPresenter<V> {
 
     private static final String CANNOT_LIST_WEB_APP = "Failed to list web apps.";
+    private static final String CANNOT_LIST_RES_GRP = "Failed to list resource groups.";
+    private static final String CANNOT_LIST_APP_SERVICE_PLAN = "Failed to lsit app service plan.";
+    private static final String CANNOT_LIST_SUBSCRIPTION = "Failed to list subscriptions.";
 
     public void onRefresh(boolean forceRefresh) {
         Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listJavaWebApps(forceRefresh))
@@ -41,6 +45,39 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
             }
             getMvpView().renderWebAppsTable(webAppList);
         }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
+    }
+
+    public void onLoadSubscription() {
+        Observable.fromCallable(() -> AzureMvpModel.getInstance().getSelectedSubscriptions())
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(subscriptions -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().fillSubscription(subscriptions);
+        }), e -> errorHandler(CANNOT_LIST_SUBSCRIPTION, (Exception) e));
+    }
+
+    public void onLoadResourceGroups(String sid) {
+        Observable.fromCallable(() -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sid))
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(resourceGroups -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().fillResourceGroup(resourceGroups);
+                }), e -> errorHandler(CANNOT_LIST_RES_GRP, (Exception) e));
+    }
+
+    public void onLoadAppServicePlan(String sid, String group) {
+        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionIdAndResrouceGroupName(sid, group))
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().fillAppServicePlan(appServicePlans);
+                }), e -> errorHandler(CANNOT_LIST_APP_SERVICE_PLAN, (Exception) e));
     }
 
     private void errorHandler(String msg, Exception e) {
