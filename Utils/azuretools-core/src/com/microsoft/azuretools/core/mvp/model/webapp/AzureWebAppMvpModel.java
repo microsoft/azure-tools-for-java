@@ -136,11 +136,6 @@ public class AzureWebAppMvpModel {
         return azure.appServices().appServicePlans().listByResourceGroup(group);
     }
 
-    public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResrouceGroupName(String sid, String group) throws Exception {
-        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
-        return azure.appServices().appServicePlans().listByResourceGroup(group);
-    }
-
     public List<ResourceEx<WebApp>> listWebAppsBySubscriptionId(String sid, boolean force) {
         if (!force && subscriptionIdToWebAppsMap.containsKey(sid)) {
             return subscriptionIdToWebAppsMap.get(sid);
