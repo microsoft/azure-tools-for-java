@@ -22,7 +22,9 @@
 
 package com.microsoft.intellij.runner;
 
+import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.openapi.util.Key;
 import org.jetbrains.annotations.Nullable;
 
@@ -73,4 +75,24 @@ public class RunProcessHandler extends ProcessHandler {
         }
     }
 
+    public RunProcessHandler() {
+        this.addProcessListener(new ProcessListener() {
+            @Override
+            public void startNotified(ProcessEvent processEvent) {
+            }
+
+            @Override
+            public void processTerminated(ProcessEvent processEvent) {
+            }
+
+            @Override
+            public void processWillTerminate(ProcessEvent processEvent, boolean b) {
+                notifyProcessTerminated(0);
+            }
+
+            @Override
+            public void onTextAvailable(ProcessEvent processEvent, Key key) {
+            }
+        });
+    }
 }

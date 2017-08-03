@@ -1,47 +1,53 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.microsoft.intellij.ui.webapp.deploysetting;
+package com.microsoft.azuretools.core.mvp.model.webapp;
 
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
-import org.jetbrains.annotations.NotNull;
+public abstract class ImageSetting {
+    private String imageNameWithTag;
+    private String startupFile;
 
-import java.util.List;
+    public ImageSetting() {
+    }
 
-public interface WebAppDeployMvpView extends MvpView {
+    public ImageSetting(String imageNameWithTag, String startupFile) {
+        this.imageNameWithTag = imageNameWithTag;
+        this.startupFile = startupFile;
+    }
 
-    void renderWebAppsTable(@NotNull List<ResourceEx<WebApp>> webAppLists);
+    public String getImageNameWithTag() {
+        return imageNameWithTag;
+    }
 
-    void fillSubscription(List<Subscription> subscriptions);
+    public void setImageNameWithTag(String imageNameWithTag) {
+        this.imageNameWithTag = imageNameWithTag;
+    }
 
-    void fillResourceGroup(List<ResourceGroup> resourceGroups);
+    public String getStartupFile() {
+        return startupFile;
+    }
 
-    void fillAppServicePlan(List<AppServicePlan> appServicePlans);
-
-    void fillLocation(List<Location> locations);
+    public void setStartupFile(String startupFile) {
+        this.startupFile = startupFile;
+    }
 }

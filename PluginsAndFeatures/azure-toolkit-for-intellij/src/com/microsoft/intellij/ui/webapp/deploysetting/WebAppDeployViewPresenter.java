@@ -26,6 +26,7 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+
 import rx.Observable;
 
 
@@ -33,18 +34,16 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
 
     private static final String CANNOT_LIST_WEB_APP = "Failed to list web apps.";
     private static final String CANNOT_LIST_RES_GRP = "Failed to list resource groups.";
-    private static final String CANNOT_LIST_APP_SERVICE_PLAN = "Failed to lsit app service plan.";
+    private static final String CANNOT_LIST_APP_SERVICE_PLAN = "Failed to list app service plan.";
     private static final String CANNOT_LIST_SUBSCRIPTION = "Failed to list subscriptions.";
+    private static final String CANNOT_LIST_LOCATION = "Failed to list locations.";
 
-    public void onRefresh(boolean forceRefresh) {
-        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listJavaWebApps(forceRefresh))
-        .subscribeOn(getSchedulerProvider().io())
-        .subscribe(webAppList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-            if (isViewDetached()) {
-                return;
-            }
-            getMvpView().renderWebAppsTable(webAppList);
-        }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
+    public void onRefresh() {
+        loadWebApps(true /*forceRefresh*/);
+    }
+
+    public void onLoadWebApps() {
+        loadWebApps(false /*forceRefresh*/);
     }
 
     public void onLoadSubscription() {
@@ -78,6 +77,28 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
                     }
                     getMvpView().fillAppServicePlan(appServicePlans);
                 }), e -> errorHandler(CANNOT_LIST_APP_SERVICE_PLAN, (Exception) e));
+    }
+
+    public void onLoadLocation(String sid) {
+        Observable.fromCallable(() -> AzureMvpModel.getInstance().listLocationsBySubscriptionId(sid))
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(locations -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().fillLocation(locations);
+                }), e -> errorHandler(CANNOT_LIST_LOCATION, (Exception) e));
+    }
+
+    private void loadWebApps(boolean forceRefresh) {
+        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listJavaWebApps(forceRefresh))
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(webAppList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().renderWebAppsTable(webAppList);
+                }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
     }
 
     private void errorHandler(String msg, Exception e) {
