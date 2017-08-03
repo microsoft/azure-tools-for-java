@@ -25,6 +25,7 @@ package com.microsoft.intellij.runner.container.webapponlinux.ui;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
@@ -121,7 +122,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 comboResourceGroup.removeAllItems();
                 for (ResourceGroup rg : AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sid)) {
                     comboResourceGroup.addItem(rg);
-                    if (rg.name().equals(si.resourceGroup())) {
+                    if (Comparing.equal(rg.name(), si.resourceGroup())) {
                         comboResourceGroup.setSelectedItem(rg);
                     }
                 }
@@ -218,7 +219,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
 
         loadCombosInfo(webAppInfo.getWebAppId());
 
-        webAppOnLinuxDeployPresenter.onRefresh(false);
+        webAppOnLinuxDeployPresenter.onLoadList();
 
     }
 
@@ -230,7 +231,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             for (ResourceEx<SiteInner> si : AzureWebAppMvpModel.getInstance().listWebAppsOnLinuxBySubscriptionId(sb
                     .subscriptionId(), false)) {
                 comboWebApps.addItem(si);
-                if (activeWebAppId != null && si.getResource().id().equals(activeWebAppId)) {
+                if (activeWebAppId != null && Comparing.equal(si.getResource().id(), activeWebAppId)) {
                     comboWebApps.setSelectedItem(si);
                     comboSubscription.setSelectedItem(sb);
                     // update comboBox for RG
@@ -238,7 +239,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                     for (ResourceGroup rg : AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sb
                             .subscriptionId())) {
                         comboResourceGroup.addItem(rg);
-                        if (rg.name().equals(si.getResource().resourceGroup())) {
+                        if (Comparing.equal(rg.name(), si.getResource().resourceGroup())) {
                             comboResourceGroup.setSelectedItem(rg);
                         }
 
@@ -274,7 +275,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         AnActionButton refreshAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-                webAppOnLinuxDeployPresenter.onRefresh(true);
+                webAppOnLinuxDeployPresenter.onRefreshList();
             }
         };
 

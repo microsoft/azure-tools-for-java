@@ -37,16 +37,30 @@ import java.util.List;
 public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> extends MvpPresenter<V> {
     private static final String CANNOT_LIST_WEB_APP = "Failed to list web apps.";
 
-    public void onRefresh(boolean force) {
-        Observable.fromCallable(() -> {
-            List<ResourceEx<SiteInner>> ret = new ArrayList<>();
-            for (Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-                List<ResourceEx<SiteInner>> wal = AzureWebAppMvpModel.getInstance()
-                        .listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), force);
-                ret.addAll(wal);
-            }
-            return ret;
-        })
+    private List<ResourceEx<SiteInner>> retrieveListOfWebAppOnLinux(boolean force) {
+        List<ResourceEx<SiteInner>> ret = new ArrayList<>();
+        for (Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
+            List<ResourceEx<SiteInner>> wal = AzureWebAppMvpModel.getInstance()
+                    .listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), force);
+            ret.addAll(wal);
+        }
+        return ret;
+    }
+
+    public void onLoadList() {
+        Observable.fromCallable(() -> retrieveListOfWebAppOnLinux(false))
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(webAppList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().renderWebAppOnLinuxList(webAppList);
+                }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
+
+    }
+
+    public void onRefreshList() {
+        Observable.fromCallable(() -> retrieveListOfWebAppOnLinux(true))
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(webAppList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {
