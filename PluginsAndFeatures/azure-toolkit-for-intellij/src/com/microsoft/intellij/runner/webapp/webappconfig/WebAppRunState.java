@@ -55,22 +55,6 @@ public class WebAppRunState implements RunProfileState {
         ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         processHandler.startNotify();
         consoleView.attachToProcess(processHandler);
-        processHandler.addProcessListener(new ProcessListener() {
-            @Override
-            public void startNotified(ProcessEvent processEvent) {}
-
-            @Override
-            public void processTerminated(ProcessEvent processEvent) {}
-
-            @Override
-            public void processWillTerminate(ProcessEvent processEvent, boolean b) {
-                processHandler.notifyProcessTerminated(0 /*exitCode*/);
-            }
-
-            @Override
-            public void onTextAvailable(ProcessEvent processEvent, Key key) {}
-        });
-
         WebDeployUtil.deployWebApp(this.webAppSettingModel, processHandler);
         return new DefaultExecutionResult(consoleView, processHandler);
     }
