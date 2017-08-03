@@ -24,6 +24,7 @@ package com.microsoft.intellij.ui.webapp.deploysetting;
 
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
@@ -41,4 +42,6 @@ public interface WebAppDeployMvpView extends MvpView {
     void fillResourceGroup(List<ResourceGroup> resourceGroups);
 
     void fillAppServicePlan(List<AppServicePlan> appServicePlans);
+
+    void fillLocation(List<Location> locations);
 }

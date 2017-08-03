@@ -34,6 +34,8 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.runner.webapp.WebAppConfigurationType;
 
 import java.util.ArrayList;
@@ -43,7 +45,7 @@ public class WebDeployAction extends AnAction {
 
     private static final String DIALOG_TITLE = "Deploy to Azure";
 
-    private ConfigurationType configType;
+    private final ConfigurationType configType;
 
     public WebDeployAction() {
         this.configType = WebAppConfigurationType.getInstance();
@@ -55,17 +57,23 @@ public class WebDeployAction extends AnAction {
         if (project == null) {
             return;
         }
-
-        ApplicationManager.getApplication().invokeLater(() -> runConfiguration(project));
+        try {
+            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+                return;
+            }
+            ApplicationManager.getApplication().invokeLater(() -> runConfiguration(project));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
+    @SuppressWarnings("deprecation")
     private void runConfiguration(Project project) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         RunnerAndConfigurationSettings settings = manager.findConfigurationByName(
                 String.format("%s:%s", configType.getDisplayName(), project.getName()));
         if (settings == null) {
-            final ConfigurationFactory factory =
-                    configType != null ? configType.getConfigurationFactories()[0] : null;
+            final ConfigurationFactory factory = configType.getConfigurationFactories()[0];
             settings = manager.createConfiguration(String.format("%s:%s", configType.getDisplayName(),
                     project.getName()), factory);
         }

@@ -24,6 +24,7 @@
 package com.microsoft.azuretools.core.mvp.model;
 
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -110,5 +111,10 @@ public class AzureMvpModel {
             e.printStackTrace();
         }
         return ret;
+    }
+
+    public List<Location> listLocationsBySubscriptionId(String sid) {
+        Subscription subscription = getSubscriptionById(sid);
+        return subscription.listLocations();
     }
 }

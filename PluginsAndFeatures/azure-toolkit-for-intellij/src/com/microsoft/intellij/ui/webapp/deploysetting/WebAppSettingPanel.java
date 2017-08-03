@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  * <p/>
  * All rights reserved.
@@ -34,21 +34,35 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.utils.AzulZuluModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingModel;
+
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
-import javax.swing.*;
+import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,7 +74,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
 
     // cache variable
     private ResourceEx<WebApp> selectedWebApp = null;
-    private Project project;
+    private final Project project;
     private List<ResourceEx<WebApp>> cachedWebAppList = null;
 
     private String lastSelectedSid;
@@ -68,6 +82,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
 
     // const
     private static final String URL_PREFIX = "https://";
+    private static final String NOT_APPLICABLE = "N/A";
 
     //widgets
     private JPanel pnlRoot;
@@ -90,18 +105,22 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JTextField txtJdkUrl;
     private JTextField txtAccountKey;
     private JComboBox<Subscription> cbSubscription;
-    private JComboBox cbWebContainer;
-    private JComboBox cbLocation;
-    private JComboBox cbPricing;
+    private JComboBox<WebAppUtils.WebContainerMod> cbWebContainer;
+    private JComboBox<Location> cbLocation;
+    private JComboBox<PricingTier> cbPricing;
     private JComboBox<AppServicePlan> cbExistAppServicePlan;
     private JComboBox<ResourceGroup> cbExistResGrp;
-    private JComboBox cbThirdPartyJdk;
+    private JComboBox<AzulZuluModel> cbThirdPartyJdk;
     private HyperlinkLabel lblJdkLicense;
     private JLabel lblLocation;
     private JLabel lblPricing;
     private JLabel lblDefaultJdk;
+    private JLabel lblKeyExplanation;
     private JTable table;
 
+    /**
+     * The setting panel for web app deployment run configuration
+     */
     public WebAppSettingPanel(Project project) {
         this.project = project;
         this.webAppDeployViewPresenter = new WebAppDeployViewPresenter<>();
@@ -136,7 +155,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
 
         cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
             @Override
-            public void customize(JList jList, ResourceGroup resourceGroup, int
+            public void customize(JList list, ResourceGroup resourceGroup, int
                     index, boolean isSelected, boolean cellHasFocus) {
                 if (resourceGroup != null) {
                     setText(resourceGroup.name());
@@ -145,11 +164,15 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         });
 
         cbExistResGrp.addActionListener(e -> {
-            String selectedGrp = ((ResourceGroup) cbExistResGrp.getSelectedItem()).name();
+            ResourceGroup resGrp = (ResourceGroup) cbExistResGrp.getSelectedItem();
+            if (resGrp == null) {
+                return;
+            }
+            String selectedGrp = resGrp.name();
             if (!Comparing.equal(lastSelectedResGrp, selectedGrp)) {
                 cbExistAppServicePlan.removeAllItems();
-                lblLocation.setText("");
-                lblPricing.setText("");
+                lblLocation.setText(NOT_APPLICABLE);
+                lblPricing.setText(NOT_APPLICABLE);
                 webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, selectedGrp);
                 lastSelectedResGrp = selectedGrp;
             }
@@ -157,7 +180,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
 
         cbSubscription.setRenderer(new ListCellRendererWrapper<Subscription>() {
             @Override
-            public void customize(JList jList, Subscription subscription, int
+            public void customize(JList list, Subscription subscription, int
                     index, boolean isSelected, boolean cellHasFocus) {
                 if (subscription != null) {
                     setText(subscription.displayName());
@@ -166,17 +189,33 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         });
 
         cbSubscription.addActionListener(e -> {
-            String selectedSid = ((Subscription) cbSubscription.getSelectedItem()).subscriptionId();
+            Subscription subscription = (Subscription) cbSubscription.getSelectedItem();
+            if (subscription == null) {
+                return;
+            }
+            String selectedSid = subscription.subscriptionId();
             if (!Comparing.equal(lastSelectedSid, selectedSid)) {
                 cbExistResGrp.removeAllItems();
+                cbLocation.removeAllItems();
                 webAppDeployViewPresenter.onLoadResourceGroups(selectedSid);
+                webAppDeployViewPresenter.onLoadLocation(selectedSid);
                 lastSelectedSid = selectedSid;
+            }
+        });
+
+        cbLocation.setRenderer(new ListCellRendererWrapper<Location>() {
+            @Override
+            public void customize(JList list, Location location, int
+                    index, boolean isSelected, boolean cellHasFocus) {
+                if (location != null) {
+                    setText(location.displayName());
+                }
             }
         });
 
         cbExistAppServicePlan.setRenderer(new ListCellRendererWrapper<AppServicePlan>() {
             @Override
-            public void customize(JList jList, AppServicePlan appServicePlan, int
+            public void customize(JList list, AppServicePlan appServicePlan, int
                     index, boolean isSelected, boolean cellHasFocus) {
                 if (appServicePlan != null) {
                     setText(appServicePlan.name());
@@ -190,10 +229,21 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 lblLocation.setText(plan.regionName());
                 lblPricing.setText(plan.pricingTier().toString());
             }
+        });
 
+        cbThirdPartyJdk.setRenderer(new ListCellRendererWrapper<AzulZuluModel>() {
+            @Override
+            public void customize(JList list, AzulZuluModel azulZuluModel, int
+                    index, boolean isSelected, boolean cellHasFocus) {
+                if (azulZuluModel != null) {
+                    setText(azulZuluModel.getName());
+                }
+            }
         });
 
         fillWebContainers();
+        fillThirdParty();
+        fillPricingTier();
 
         lblJdkLicense.setHyperlinkText("License");
         lblJdkLicense.setHyperlinkTarget(AzulZuluModel.getLicenseUrl());
@@ -206,14 +256,14 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
 
     public void resetEditorForm(WebAppSettingModel model) {
         chkToRoot.setSelected(model.isDeployToRoot());
-        this.webAppDeployViewPresenter.onRefresh(false /*forceRefresh*/);
+        this.webAppDeployViewPresenter.onLoadWebApps();
     }
 
     @Override
     public void renderWebAppsTable(@NotNull List<ResourceEx<WebApp>> webAppLists) {
         List<ResourceEx<WebApp>> sortedList = webAppLists.stream()
                 .filter(resource -> resource.getResource().javaVersion() != JavaVersion.OFF)
-                .sorted(byWebAppName)
+                .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
                 .collect(Collectors.toList());
         cachedWebAppList = sortedList;
         if (sortedList.size() > 0) {
@@ -233,14 +283,14 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     }
 
     public String getTargetPath() {
-        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getRootProjects();
-        return new File(mavenProjects.get(0).getBuildDirectory()).getPath()
-                + File.separator + mavenProjects.get(0).getFinalName() + "." + MavenConstants.TYPE_WAR;
+        MavenProject mavenProject = MavenProjectsManager.getInstance(project).getRootProjects().get(0);
+        return new File(mavenProject.getBuildDirectory()).getPath()
+                + File.separator + mavenProject.getFinalName() + "." + mavenProject.getPackaging();
     }
 
     public String getTargetName() {
-        return MavenProjectsManager.getInstance(project).getRootProjects()
-                .get(0).getFinalName() + "." + MavenConstants.TYPE_WAR;
+        MavenProject mavenProject = MavenProjectsManager.getInstance(project).getRootProjects().get(0);
+        return mavenProject.getFinalName() + "." + mavenProject.getPackaging();
     }
 
     public String getSelectedWebAppId() {
@@ -278,6 +328,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         cbLocation.setEnabled(isCreatingNew);
         cbPricing.setEnabled(isCreatingNew);
         cbExistAppServicePlan.setEnabled(!isCreatingNew);
+        lblLocation.setEnabled(!isCreatingNew);
+        lblPricing.setEnabled(!isCreatingNew);
     }
 
     private void toggleJdkPanel(JdkChoice choice) {
@@ -287,18 +339,21 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 cbThirdPartyJdk.setEnabled(false);
                 txtJdkUrl.setEnabled(false);
                 txtAccountKey.setEnabled(false);
+                lblKeyExplanation.setEnabled(false);
                 break;
             case THIRD_PARTY:
                 lblDefaultJdk.setEnabled(false);
                 cbThirdPartyJdk.setEnabled(true);
                 txtJdkUrl.setEnabled(false);
                 txtAccountKey.setEnabled(false);
+                lblKeyExplanation.setEnabled(false);
                 break;
             case URL:
                 lblDefaultJdk.setEnabled(false);
                 cbThirdPartyJdk.setEnabled(false);
                 txtJdkUrl.setEnabled(true);
                 txtAccountKey.setEnabled(true);
+                lblKeyExplanation.setEnabled(true);
                 break;
             default:
                 break;
@@ -310,8 +365,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         model.getDataVector().clear();
         model.fireTableDataChanged();
     }
-
-    private Comparator<ResourceEx<WebApp>> byWebAppName = Comparator.comparing(webAppInfo -> webAppInfo.getResource().name());
 
     private void createUIComponents() {
         DefaultTableModel tableModel = new DefaultTableModel() {
@@ -340,7 +393,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 resetWidget();
-                webAppDeployViewPresenter.onRefresh(true /*forceRefresh*/);
+                webAppDeployViewPresenter.onRefresh();
             }
         };
 
@@ -358,6 +411,31 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         cbWebContainer.setModel(cbModel);
     }
 
+    private void fillThirdParty() {
+        DefaultComboBoxModel<AzulZuluModel> cbModel = new DefaultComboBoxModel<>();
+        for (AzulZuluModel jdk : AzulZuluModel.values()) {
+            if (jdk.isDeprecated()) {
+                continue;
+            }
+            cbModel.addElement(jdk);
+        }
+        cbThirdPartyJdk.setModel(cbModel);
+    }
+
+    private void fillPricingTier() {
+        for (Field field: PricingTier.class.getDeclaredFields()) {
+            int modifier = field.getModifiers();
+            if (Modifier.isPublic(modifier) && Modifier.isStatic(modifier) && Modifier.isFinal(modifier)) {
+                try {
+                    PricingTier pt = (PricingTier) field.get(null);
+                    cbPricing.addItem(pt);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     @Override
     public void fillSubscription(List<Subscription> subscriptions) {
         subscriptions.forEach(cbSubscription::addItem);
@@ -371,6 +449,11 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     @Override
     public void fillAppServicePlan(List<AppServicePlan> appServicePlans) {
         appServicePlans.forEach(cbExistAppServicePlan::addItem);
+    }
+
+    @Override
+    public void fillLocation(List<Location> locations) {
+        locations.stream().sorted(Comparator.comparing(Location::displayName)).forEach(cbLocation::addItem);
     }
 
     private enum JdkChoice {
