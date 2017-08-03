@@ -1,23 +1,62 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ListCellRendererWrapper;
+import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfiguration;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployModel;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class RemoteRunPanel {
-    private Project project;
+public class SettingPanel implements WebAppOnLinuxDeployView {
     private static final String REGEX_VALID_RG_NAME = "^[\\w-]*\\w+$";
     private static final String REGEX_VALID_APP_NAME = "^[\\w-]*\\w+$";
+    private Project project;
     private JTextField textServerUrl;
     private JTextField textUsername;
     private JPasswordField passwordField;
@@ -31,44 +70,45 @@ public class RemoteRunPanel {
     private JPanel panelUpdate;
     private JPanel panelCreate;
     private JPanel rootPanel;
+    private JPanel pnlWebAppOnLinuxTable;
+    private JBTable webAppTable;
+    private List<ResourceEx<SiteInner>> cachedList;
+    private ResourceEx<SiteInner> selectedWebApp;
 
-    public RemoteRunPanel() {
-        AzureMvpModel.getInstance();
+    private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
+
+    public SettingPanel() {
+        webAppOnLinuxDeployPresenter = new WebAppOnLinuxDeployPresenter<>();
+        webAppOnLinuxDeployPresenter.onAttachView(this);
+
         btnRefreshList.addActionListener(event -> onRefreshButtonSelection());
-        comboResourceGroup.setRenderer(new ListCellRendererWrapper<Object>() {
+        comboResourceGroup.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
-                if (o != null) {
-                    if (o instanceof ResourceGroup) {
-                        setText(((ResourceGroup) o).name());
-                    } else {
-                        setText(o.toString());
-                    }
+            public void customize(JList jList, ResourceGroup resourceGroup, int index, boolean isSelected, boolean
+                    cellHasFocus) {
+                if (resourceGroup != null) {
+                    setText(resourceGroup.name());
                 }
-
             }
+
         });
-        comboSubscription.setRenderer(new ListCellRendererWrapper<Object>() {
+        comboSubscription.setRenderer(new ListCellRendererWrapper<Subscription>() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
-                if (o != null) {
-                    if (o instanceof Subscription) {
-                        setText(String.format("%s (%s)", ((Subscription) o).displayName(), ((Subscription) o).subscriptionId()));
-                    }
+            public void customize(JList jList, Subscription subscription, int index, boolean isSelected, boolean
+                    cellHasFocus) {
+                if (subscription != null) {
+                    setText(String.format("%s (%s)", subscription.displayName(), subscription.subscriptionId()));
                 }
             }
         });
         comboSubscription.addActionListener(event -> onComboSubscriptionSelection());
 
-        comboWebApps.setRenderer(new ListCellRendererWrapper<Object>() {
+        comboWebApps.setRenderer(new ListCellRendererWrapper<ResourceEx<SiteInner>>() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
-                if (o != null) {
-                    if (o instanceof ResourceEx) {
-                        setText(((ResourceEx<SiteInner>) o).getResource().name());
-                    } else {
-                        setText(o.toString());
-                    }
+            public void customize(JList jList, ResourceEx<SiteInner> siteInnerResourceEx, int index, boolean
+                    isSelected, boolean cellHasFocus) {
+                if (siteInnerResourceEx != null) {
+                    setText(siteInnerResourceEx.getResource().name());
                 }
             }
         });
@@ -117,7 +157,6 @@ public class RemoteRunPanel {
         }
     }
 
-
     private void onComboSubscriptionSelection() {
         // TODO
     }
@@ -133,7 +172,7 @@ public class RemoteRunPanel {
 
     public void apply(WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
         WebAppOnLinuxDeployModel model = webAppOnLinuxDeployConfiguration.getWebAppOnLinuxDeployModel();
-        WebAppOnLinuxDeployModel.AzureContainerRegistryInfo acrInfo = model.getAzureContainerRegistryInfo();
+        PrivateRegistryImageSetting acrInfo = model.getAzureContainerRegistryInfo();
         acrInfo.setServerUrl(textServerUrl.getText());
         acrInfo.setUsername(textUsername.getText());
         acrInfo.setPassword(String.valueOf(passwordField.getPassword()));
@@ -167,7 +206,7 @@ public class RemoteRunPanel {
 
     public void reset(WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
         WebAppOnLinuxDeployModel model = webAppOnLinuxDeployConfiguration.getWebAppOnLinuxDeployModel();
-        WebAppOnLinuxDeployModel.AzureContainerRegistryInfo acrInfo = model.getAzureContainerRegistryInfo();
+        PrivateRegistryImageSetting acrInfo = model.getAzureContainerRegistryInfo();
         textServerUrl.setText(acrInfo.getServerUrl());
         textUsername.setText(acrInfo.getUsername());
         passwordField.setText(acrInfo.getPassword());
@@ -179,6 +218,8 @@ public class RemoteRunPanel {
 
         loadCombosInfo(webAppInfo.getWebAppId());
 
+        webAppOnLinuxDeployPresenter.onRefresh(false);
+
     }
 
     private void loadCombosInfo(String activeWebAppId) {
@@ -186,16 +227,18 @@ public class RemoteRunPanel {
         comboWebApps.removeAllItems();
         for (Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
             comboSubscription.addItem(sb);
-            for (ResourceEx<SiteInner> si : AzureWebAppMvpModel.getInstance().listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), false)) {
+            for (ResourceEx<SiteInner> si : AzureWebAppMvpModel.getInstance().listWebAppsOnLinuxBySubscriptionId(sb
+                    .subscriptionId(), false)) {
                 comboWebApps.addItem(si);
-                if (activeWebAppId != null && si.getResource().id() == activeWebAppId) {
+                if (activeWebAppId != null && si.getResource().id().equals(activeWebAppId)) {
                     comboWebApps.setSelectedItem(si);
                     comboSubscription.setSelectedItem(sb);
                     // update comboBox for RG
                     comboResourceGroup.removeAllItems();
-                    for (ResourceGroup rg : AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sb.subscriptionId())) {
+                    for (ResourceGroup rg : AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sb
+                            .subscriptionId())) {
                         comboResourceGroup.addItem(rg);
-                        if (rg.name() == si.getResource().resourceGroup()) {
+                        if (rg.name().equals(si.getResource().resourceGroup())) {
                             comboResourceGroup.setSelectedItem(rg);
                         }
 
@@ -204,5 +247,61 @@ public class RemoteRunPanel {
             }
         }
         // comboWebApps.addItem("Create New");
+    }
+
+    private void createUIComponents() {
+        DefaultTableModel tableModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tableModel.addColumn("WebAppName");
+        tableModel.addColumn("ResourceGroup");
+
+        webAppTable = new JBTable(tableModel);
+
+        webAppTable.setRowSelectionAllowed(true);
+        webAppTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        webAppTable.getSelectionModel().addListSelectionListener(event -> {
+            System.out.println("table selected");
+            if (cachedList != null) {
+                selectedWebApp = cachedList.get(webAppTable.getSelectedRow());
+            }
+        });
+
+        AnActionButton refreshAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
+            @Override
+            public void actionPerformed(AnActionEvent anActionEvent) {
+                webAppOnLinuxDeployPresenter.onRefresh(true);
+            }
+        };
+
+        ToolbarDecorator tableToolbarDecorator = ToolbarDecorator.createDecorator(webAppTable)
+                .addExtraActions(refreshAction);
+
+        pnlWebAppOnLinuxTable = tableToolbarDecorator.createPanel();
+    }
+
+    @Override
+    public void renderWebAppOnLinuxList(List<ResourceEx<SiteInner>> webAppOnLinuxList) {
+        List<ResourceEx<SiteInner>> sortedList = webAppOnLinuxList.stream()
+                .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
+                .collect(Collectors.toList());
+        cachedList = sortedList;
+        if (cachedList.size() > 0) {
+            DefaultTableModel model = (DefaultTableModel) webAppTable.getModel();
+            model.getDataVector().clear();
+            for (ResourceEx<SiteInner> resource : sortedList) {
+                SiteInner app = resource.getResource();
+                model.addRow(new String[]{
+                        app.name(),
+                        app.resourceGroup()
+                });
+            }
+            model.fireTableDataChanged();
+        }
+
     }
 }

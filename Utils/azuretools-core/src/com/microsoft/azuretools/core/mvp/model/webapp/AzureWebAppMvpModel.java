@@ -1,11 +1,36 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
@@ -17,21 +42,17 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AzureWebAppMvpModel {
-    private static final class SingletonHolder {
-        private static final AzureWebAppMvpModel INSTANCE = new AzureWebAppMvpModel();
-    }
-
-    public static AzureWebAppMvpModel getInstance() {
-        return SingletonHolder.INSTANCE;
-    }
+    private Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
+    private Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
 
     private AzureWebAppMvpModel() {
         subscriptionIdToWebAppsOnLinuxMap = new ConcurrentHashMap<>();
         subscriptionIdToWebAppsMap = new ConcurrentHashMap<>();
     }
 
-    private Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
-    private Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
+    public static AzureWebAppMvpModel getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
 
     public WebApp getWebAppById(String sid, String id) throws IOException {
         Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
@@ -46,12 +67,73 @@ public class AzureWebAppMvpModel {
         // TODO
     }
 
-    public void createWebAppOnLinux() {
-        // TODO
+    /**
+     * @param sid
+     * @param profile
+     * @param imageSetting
+     * @return
+     * @throws IOException
+     */
+    public WebApp createWebAppOnLinux(String sid, WebAppOnLinuxCreationProfile profile, ImageSetting imageSetting)
+            throws IOException {
+        WebApp app = null;
+        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
+
+        // handle AppServicePlan/ResourceGroup setting
+        WebApp.DefinitionStages.WithDockerContainerImage withDockerContainerImage;
+        if (profile.isResourceGroupExisting()) {
+            withDockerContainerImage = azure.webApps().define(profile.getWebAppName())
+                    .withRegion(Region.findByLabelOrName(profile.getRegionName()))
+                    .withExistingResourceGroup(profile.getResourceGroupName()) // existing RG
+                    .withNewLinuxPlan(new PricingTier(profile.getPricingTierSkuTier(),
+                            profile.getPricingTierSkuSize()));
+        } else {
+            withDockerContainerImage = azure.webApps().define(profile.getWebAppName())
+                    .withRegion(Region.findByLabelOrName(profile.getRegionName()))
+                    .withNewResourceGroup(profile.getResourceGroupName())  // new RG
+                    .withNewLinuxPlan(new PricingTier(profile.getPricingTierSkuTier(),
+                            profile.getPricingTierSkuSize()));
+        }
+
+        // handle DockerContainerImage setting
+        if (imageSetting instanceof PrivateRegistryImageSetting) {
+            PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
+
+            app = withDockerContainerImage.withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
+                    .withCredentials(pr.getUsername(), pr.getPassword())
+                    .withStartUpCommand(pr.getStartupFile())
+                    .create();
+        } else {
+            // TODO: other types of ImageSetting, e.g. Docker Hub
+        }
+        return app;
     }
 
-    public void updateWebAppOnLinux() {
-        // TODO
+    public WebApp updateWebAppOnLinux(String sid, String webAppId, ImageSetting imageSetting) {
+        WebApp app = null;
+        try {
+            app = AzureWebAppMvpModel.getInstance().getWebAppById(sid, webAppId);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (app == null) {
+            return null;
+        }
+        if (imageSetting instanceof PrivateRegistryImageSetting) {
+            PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
+            app.update().withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
+                    .withCredentials(pr.getUsername(), pr.getPassword())
+                    .withStartUpCommand(pr.getStartupFile()).apply();
+        } else {
+            // TODO: other types of ImageSetting, e.g. Docker Hub
+        }
+        return app;
+    }
+
+    public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResrouceGroupName(String sid, String group)
+            throws Exception {
+        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
+        return azure.appServices().appServicePlans().listByResourceGroup(group);
     }
 
     public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResrouceGroupName(String sid, String group) throws Exception {
@@ -87,7 +169,8 @@ public class AzureWebAppMvpModel {
 
     /**
      * List Web App on Linux by Subscription ID.
-     * @param sid subscription Id
+     *
+     * @param sid   subscription Id
      * @param force flag indicating whether force to fetch most updated data from server
      * @return list of Web App on Linux (SiteInner instances)
      */
@@ -112,5 +195,9 @@ public class AzureWebAppMvpModel {
             e.printStackTrace();
         }
         return wal;
+    }
+
+    private static final class SingletonHolder {
+        private static final AzureWebAppMvpModel INSTANCE = new AzureWebAppMvpModel();
     }
 }

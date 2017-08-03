@@ -18,28 +18,16 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
-package com.microsoft.azuretools.core.mvp.model;
+package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
-public class ResourceEx<T> {
-    private T resource;
-    private String subscriptionId;
-    public ResourceEx(T resource, String subscriptionId) {
-        this.resource = resource;
-        this.subscriptionId = subscriptionId;
-    }
-    public T getResource() {
-        return resource;
-    }
-    public void setResource(T resource) {
-        this.resource = resource;
-    }
-    public String getSubscriptionId() {
-        return subscriptionId;
-    }
-    public void setSubscriptionId(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
-    }
+import com.microsoft.azure.management.appservice.implementation.SiteInner;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+
+import java.util.List;
+
+public interface WebAppOnLinuxDeployView extends MvpView {
+    void renderWebAppOnLinuxList(List<ResourceEx<SiteInner>> webAppOnLinuxList);
 }

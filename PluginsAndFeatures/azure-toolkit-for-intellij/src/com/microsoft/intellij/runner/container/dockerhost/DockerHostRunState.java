@@ -14,7 +14,7 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.intellij.container.Constant;
-import com.microsoft.intellij.runner.container.webapponlinux.RunProcessHandler;
+import com.microsoft.intellij.runner.RunProcessHandler;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 import org.jetbrains.annotations.NotNull;

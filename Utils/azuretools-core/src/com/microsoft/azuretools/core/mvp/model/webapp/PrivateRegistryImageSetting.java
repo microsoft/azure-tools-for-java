@@ -21,25 +21,45 @@
  *
  */
 
-package com.microsoft.azuretools.core.mvp.model;
+package com.microsoft.azuretools.core.mvp.model.webapp;
 
-public class ResourceEx<T> {
-    private T resource;
-    private String subscriptionId;
-    public ResourceEx(T resource, String subscriptionId) {
-        this.resource = resource;
-        this.subscriptionId = subscriptionId;
+public class PrivateRegistryImageSetting extends ImageSetting {
+    private String serverUrl;
+    private String username;
+    private String password;
+
+    public PrivateRegistryImageSetting() {
     }
-    public T getResource() {
-        return resource;
+
+    public PrivateRegistryImageSetting(String serverUrl, String username, String password, String imageNameWithTag,
+                                       String startupFile) {
+        super(imageNameWithTag, startupFile);
+        this.serverUrl = serverUrl;
+        this.username = username;
+        this.password = password;
     }
-    public void setResource(T resource) {
-        this.resource = resource;
+
+    public String getServerUrl() {
+        return serverUrl;
     }
-    public String getSubscriptionId() {
-        return subscriptionId;
+
+    public void setServerUrl(String serverUrl) {
+        this.serverUrl = serverUrl;
     }
-    public void setSubscriptionId(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

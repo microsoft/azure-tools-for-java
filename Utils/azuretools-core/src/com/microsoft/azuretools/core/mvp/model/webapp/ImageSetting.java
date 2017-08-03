@@ -21,25 +21,33 @@
  *
  */
 
-package com.microsoft.azuretools.core.mvp.model;
+package com.microsoft.azuretools.core.mvp.model.webapp;
 
-public class ResourceEx<T> {
-    private T resource;
-    private String subscriptionId;
-    public ResourceEx(T resource, String subscriptionId) {
-        this.resource = resource;
-        this.subscriptionId = subscriptionId;
+public abstract class ImageSetting {
+    private String imageNameWithTag;
+    private String startupFile;
+
+    public ImageSetting() {
     }
-    public T getResource() {
-        return resource;
+
+    public ImageSetting(String imageNameWithTag, String startupFile) {
+        this.imageNameWithTag = imageNameWithTag;
+        this.startupFile = startupFile;
     }
-    public void setResource(T resource) {
-        this.resource = resource;
+
+    public String getImageNameWithTag() {
+        return imageNameWithTag;
     }
-    public String getSubscriptionId() {
-        return subscriptionId;
+
+    public void setImageNameWithTag(String imageNameWithTag) {
+        this.imageNameWithTag = imageNameWithTag;
     }
-    public void setSubscriptionId(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
+
+    public String getStartupFile() {
+        return startupFile;
+    }
+
+    public void setStartupFile(String startupFile) {
+        this.startupFile = startupFile;
     }
 }

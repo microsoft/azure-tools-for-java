@@ -1,5 +1,28 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.intellij.runner.container.webapponlinux;
 
+import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import org.jdom.Element;
 
 public class WebAppOnLinuxDeployModel {
@@ -15,15 +38,15 @@ public class WebAppOnLinuxDeployModel {
     private static final String ATTRIBUTE_RESOURCE_GROUP_NAME = "ResourceGroupName";
     private static final String ATTRIBUTE_SUBSCRIPTION_ID = "SubscriptionId";
 
-    private final AzureContainerRegistryInfo azureContainerRegistryInfo;
+    private final PrivateRegistryImageSetting azureContainerRegistryInfo;
     private final WebAppOnLinuxInfo webAppOnLinuxInfo;
 
     public WebAppOnLinuxDeployModel() {
-        azureContainerRegistryInfo = new AzureContainerRegistryInfo();
+        azureContainerRegistryInfo = new PrivateRegistryImageSetting();
         webAppOnLinuxInfo = new WebAppOnLinuxInfo();
     }
 
-    public AzureContainerRegistryInfo getAzureContainerRegistryInfo() {
+    public PrivateRegistryImageSetting getAzureContainerRegistryInfo() {
         return azureContainerRegistryInfo;
     }
 
@@ -37,7 +60,7 @@ public class WebAppOnLinuxDeployModel {
      * @param element xml node
      */
     public void readExternal(Element element) {
-        AzureContainerRegistryInfo acrInfo = getAzureContainerRegistryInfo();
+        PrivateRegistryImageSetting acrInfo = getAzureContainerRegistryInfo();
         Element acrElement = element.getChild(ELEMENT_ACR);
         acrInfo.setServerUrl(acrElement.getAttributeValue(ATTRIBUTE_SERVER_URL));
         acrInfo.setUsername(acrElement.getAttributeValue(ATTRIBUTE_USERNAME));
@@ -59,7 +82,7 @@ public class WebAppOnLinuxDeployModel {
      * @param element xml node
      */
     public void writeExternal(Element element) {
-        AzureContainerRegistryInfo acrInfo = getAzureContainerRegistryInfo();
+        PrivateRegistryImageSetting acrInfo = getAzureContainerRegistryInfo();
         Element acrElement = new Element(ELEMENT_ACR);
         if (acrInfo.getServerUrl() != null) {
             acrElement.setAttribute(ATTRIBUTE_SERVER_URL, acrInfo.getServerUrl());
@@ -93,54 +116,6 @@ public class WebAppOnLinuxDeployModel {
             webElement.setAttribute(ATTRIBUTE_SUBSCRIPTION_ID, webInfo.getSubscriptionId());
         }
         element.addContent(webElement);
-    }
-
-    public class AzureContainerRegistryInfo {
-        private String serverUrl;
-        private String username;
-        private String password;
-        private String imageNameWithTag;
-        private String startupFile;
-
-        public String getServerUrl() {
-            return serverUrl;
-        }
-
-        public void setServerUrl(String serverUrl) {
-            this.serverUrl = serverUrl;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public String getImageNameWithTag() {
-            return imageNameWithTag;
-        }
-
-        public void setImageNameWithTag(String imageNameWithTag) {
-            this.imageNameWithTag = imageNameWithTag;
-        }
-
-        public String getStartupFile() {
-            return startupFile;
-        }
-
-        public void setStartupFile(String startupFile) {
-            this.startupFile = startupFile;
-        }
     }
 
     public class WebAppOnLinuxInfo {
