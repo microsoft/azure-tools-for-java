@@ -103,12 +103,6 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
             toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
             DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
             popupGroup.add(am.getAction("AzurePopupGroup"));
-            if (PlatformUtils.isIdeaUltimate()) {
-                ActionManager actionManager = ActionManager.getInstance();
-                DefaultActionGroup actionGroup = (DefaultActionGroup) actionManager.getAction("PublishGroup");
-                if (actionGroup != null)
-                    actionGroup.addAll((ActionGroup) actionManager.getAction("AzureWebDeployGroup"));
-            }
             loadWebApps();
         }
         try {
