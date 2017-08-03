@@ -24,12 +24,18 @@ package com.microsoft.intellij.runner.webapp.webappconfig;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.*;
+import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.RunConfigurationBase;
+import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,10 +44,19 @@ public class WebAppConfiguration extends RunConfigurationBase {
 
     private static String WEB_APP_CONFIGURATION_NODE = "AzureWebAppConfig";
     private WebAppSettingModel webAppSettingModel;
+    private boolean firstTimeCreated = true;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory) {
         super(project, factory, project.getName());
         webAppSettingModel = new WebAppSettingModel();
+    }
+
+    public boolean isFirstTimeCreated() {
+        return firstTimeCreated;
+    }
+
+    public void setFirstTimeCreated(boolean firstTimeCreated) {
+        this.firstTimeCreated = firstTimeCreated;
     }
 
     @NotNull
@@ -53,6 +68,7 @@ public class WebAppConfiguration extends RunConfigurationBase {
     @Override
     public void readExternal(Element element) throws InvalidDataException {
         super.readExternal(element);
+        firstTimeCreated = Comparing.equal(element.getAttributeValue("default"), "true");
         webAppSettingModel.readExternal(element.getChild(WEB_APP_CONFIGURATION_NODE));
     }
 

@@ -22,30 +22,20 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
-import com.intellij.execution.BeforeRunTask;
-import com.intellij.execution.RunManagerEx;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.ui.webapp.deploysetting.WebAppSettingPanel;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.model.MavenConstants;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
-import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
-import org.jetbrains.idea.maven.tasks.MavenBeforeRunTasksProvider;
 
-import javax.swing.*;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
+
+import javax.swing.JComponent;
 
 public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
 
-    private static final String MAVEN_TASK_PACKAGE = "package";
-
-    private WebAppSettingPanel mainPanel;
-    private Project project;
+    private final WebAppSettingPanel mainPanel;
+    private final Project project;
 
     public WebAppSettingEditor(Project project) {
         this.project = project;
@@ -54,18 +44,10 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
 
     @Override
     protected void resetEditorFrom(@NotNull WebAppConfiguration webAppConfiguration) {
-        final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
-        if (MavenRunTaskUtil.isMavenProject(project)) {
-            List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(webAppConfiguration));
-            if (MavenRunTaskUtil.shouldAddMavenPackageTask(tasks, project)) {
-                MavenBeforeRunTask task = new MavenBeforeRunTask();
-                task.setEnabled(true);
-                task.setProjectPath(project.getBasePath() + File.separator + MavenConstants.POM_XML);
-                task.setGoal(MAVEN_TASK_PACKAGE);
-                tasks.add(task);
-                manager.setBeforeRunTasks(webAppConfiguration, tasks, false);
-            }
+        if (webAppConfiguration.isFirstTimeCreated()) {
+            MavenRunTaskUtil.addMavenPackageBeforeRunTask(webAppConfiguration);
         }
+        webAppConfiguration.setFirstTimeCreated(false);
         mainPanel.resetEditorForm(webAppConfiguration.getWebAppSettingModel());
     }
 

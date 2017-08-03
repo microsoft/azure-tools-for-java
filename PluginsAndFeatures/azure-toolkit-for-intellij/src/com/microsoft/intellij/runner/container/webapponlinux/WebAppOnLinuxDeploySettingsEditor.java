@@ -26,13 +26,15 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.runner.container.webapponlinux.ui.SettingPanel;
+import com.microsoft.intellij.util.MavenRunTaskUtil;
+
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JComponent;
 
 public class WebAppOnLinuxDeploySettingsEditor extends SettingsEditor<WebAppOnLinuxDeployConfiguration> {
-    private Project project;
-    private SettingPanel settingPanel;
+    private final Project project;
+    private final SettingPanel settingPanel;
 
     public WebAppOnLinuxDeploySettingsEditor(Project project) {
         this.project = project;
@@ -41,6 +43,10 @@ public class WebAppOnLinuxDeploySettingsEditor extends SettingsEditor<WebAppOnLi
 
     @Override
     protected void resetEditorFrom(@NotNull WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
+        if (webAppOnLinuxDeployConfiguration.isFirstTimeCreated()) {
+            MavenRunTaskUtil.addMavenPackageBeforeRunTask(webAppOnLinuxDeployConfiguration);
+        }
+        webAppOnLinuxDeployConfiguration.setFirstTimeCreated(false);
         settingPanel.reset(webAppOnLinuxDeployConfiguration);
     }
 
@@ -49,7 +55,6 @@ public class WebAppOnLinuxDeploySettingsEditor extends SettingsEditor<WebAppOnLi
             ConfigurationException {
         settingPanel.apply(webAppOnLinuxDeployConfiguration);
     }
-
 
     @NotNull
     @Override
