@@ -22,27 +22,21 @@
 package com.microsoft.tooling.msservices.model.storage;
 
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.utils.StorageAccoutUtils;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.ServiceTreeItem;
 
 public class ClientStorageAccount implements ServiceTreeItem {
-    public static final String DEFAULT_PROTOCOL = "https";
-    public static final String DEFAULT_ENDPOINTS_PROTOCOL_KEY = "DefaultEndpointsProtocol";
-    public static final String ACCOUNT_NAME_KEY = "AccountName";
-    public static final String ACCOUNT_KEY_KEY = "AccountKey";
-    public static final String ENDPOINT_SUFFIX_KEY = "EndpointSuffix";
-    public static final String BLOB_ENDPOINT_KEY = "BlobEndpoint";
-    public static final String QUEUE_ENDPOINT_KEY = "QueueEndpoint";
-    public static final String TABLE_ENDPOINT_KEY = "TableEndpoint";
-    public static final String DEFAULT_CONN_STR_TEMPLATE = DEFAULT_ENDPOINTS_PROTOCOL_KEY + "=%s;" +
-            ACCOUNT_NAME_KEY + "=%s;" +
-            ACCOUNT_KEY_KEY + "=%s;" +
-            ENDPOINT_SUFFIX_KEY + "=%s";
-    public static final String CUSTOM_CONN_STR_TEMPLATE = BLOB_ENDPOINT_KEY + "=%s;" +
-            QUEUE_ENDPOINT_KEY + "=%s;" +
-            TABLE_ENDPOINT_KEY + "=%s;" +
-            ACCOUNT_NAME_KEY + "=%s;" +
-            ACCOUNT_KEY_KEY + "=%s";
+    public static final String DEFAULT_PROTOCOL = StorageAccoutUtils.DEFAULT_PROTOCOL;
+    public static final String DEFAULT_ENDPOINTS_PROTOCOL_KEY = StorageAccoutUtils.DEFAULT_ENDPOINTS_PROTOCOL_KEY;
+    public static final String ACCOUNT_NAME_KEY = StorageAccoutUtils.ACCOUNT_NAME_KEY;
+    public static final String ACCOUNT_KEY_KEY = StorageAccoutUtils.ACCOUNT_KEY_KEY;
+    public static final String ENDPOINT_SUFFIX_KEY = StorageAccoutUtils.ENDPOINT_SUFFIX_KEY;
+    public static final String BLOB_ENDPOINT_KEY = StorageAccoutUtils.BLOB_ENDPOINT_KEY;
+    public static final String QUEUE_ENDPOINT_KEY = StorageAccoutUtils.QUEUE_ENDPOINT_KEY;
+    public static final String TABLE_ENDPOINT_KEY = StorageAccoutUtils.TABLE_ENDPOINT_KEY;
+    public static final String DEFAULT_CONN_STR_TEMPLATE = StorageAccoutUtils.DEFAULT_CONN_STR_TEMPLATE;
+    public static final String CUSTOM_CONN_STR_TEMPLATE = StorageAccoutUtils.CUSTOM_CONN_STR_TEMPLATE;
     protected String subscriptionId;
 
     private String name;

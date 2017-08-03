@@ -37,6 +37,7 @@ import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.ProgressMessage;
+import com.spotify.docker.client.messages.RegistryAuth;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -151,5 +152,14 @@ public class DockerUtil {
             throws DockerException, InterruptedException {
         long count = docker.listContainers().stream().filter(item -> item.id().equals(containerId)).count();
         return (count > 0);
+    }
+
+    public static void pushImage(DockerClient dockerClient, String registryUrl, String registryUsername,
+                     String registryPassword, String latestImageName, String targetImageName, ProgressHandler handler)
+            throws DockerException, InterruptedException {
+        final RegistryAuth registryAuth = RegistryAuth.builder().username(registryUsername).password(registryPassword)
+                .build();
+        dockerClient.tag(latestImageName, targetImageName);
+        dockerClient.push(targetImageName, handler, registryAuth);
     }
 }

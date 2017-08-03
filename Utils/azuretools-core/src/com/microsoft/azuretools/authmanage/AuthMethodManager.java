@@ -33,21 +33,15 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.sdkmanage.ServicePrincipalAzureManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import okhttp3.OkHttpClient;
 
-import javax.net.ssl.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.*;
-import java.security.cert.CertificateException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -62,44 +56,6 @@ public class AuthMethodManager {
     
     private Set<Runnable> signInEventListeners = new HashSet<>();
     private Set<Runnable> signOutEventListeners = new HashSet<>();
-
-    private static OkHttpClient.Builder clientBuilder =  null;
-
-    public static OkHttpClient.Builder getClientBuilder() {
-        if (clientBuilder == null) {
-            try {
-                KeyStore keyStore = KeyStore.getInstance("jks");
-                keyStore.load(
-                    AuthMethodManager.class.getResourceAsStream("/resources/azurecerts.jks"),
-                    "password".toCharArray());
-                SSLContext sslContext = SSLContext.getInstance("SSL");
-                TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                trustManagerFactory.init(keyStore);
-                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                keyManagerFactory.init(keyStore, "password".toCharArray());
-                sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), new SecureRandom());
-                TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-                if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
-                    throw new IllegalStateException("Unexpected default trust managers:"
-                        + Arrays.toString(trustManagers));
-                }
-                X509TrustManager trustManager = (X509TrustManager) trustManagers[0];
-
-                clientBuilder = new OkHttpClient.Builder()
-                    .sslSocketFactory(sslContext.getSocketFactory(), trustManager);
-            } catch (IOException
-                | CertificateException
-                | UnrecoverableKeyException
-                | NoSuchAlgorithmException
-                | KeyStoreException
-                | KeyManagementException e) {
-                e.printStackTrace();
-                LOGGER.log(Level.SEVERE, "static@AuthMethodManager", e);
-            }
-        }
-
-        return clientBuilder;
-    }
 
     public void addSignInEventListener(Runnable l) {
         if (!signInEventListeners.contains(l)) {

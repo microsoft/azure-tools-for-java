@@ -1,0 +1,90 @@
+{
+  "networkCallRecords": [
+    {
+      "Method": "HEAD",
+      "Uri": "http://localhost:3060/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/BlockNetworkRg?api-version=2016-09-01",
+      "Headers": {
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USIsImtpZCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USJ9.eyJhdWQiOiJodHRwczovL21hbmFnZW1lbnQuYXp1cmUuY29tLyIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0Ny8iLCJpYXQiOjE1MDExMTc0MjgsIm5iZiI6MTUwMTExNzQyOCwiZXhwIjoxNTAxMTIxMzI4LCJhaW8iOiJZMlpnWUdqVi82dTlqTitLNFFQNzNZa2JiK3plRGdBPSIsImFwcGlkIjoiYzE3YWFkNDYtODlmZC00MDViLWEzOTEtMDFiMmJmYmEyMDEzIiwiYXBwaWRhY3IiOiIxIiwiZV9leHAiOjI2MjgwMCwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3LyIsIm9pZCI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInN1YiI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInZlciI6IjEuMCJ9.cRMFGzfpnFpozJGXscmS3RELXEnYTmHF6AYzmg3P0Ms-zWdozCA6gsch3iUtmlkJLSqPqcdJFN96dS7Zb4wSyQm0wE0aVG6dML5lWRT-UaQGera-7zk8L4iCnq2gjjuoGvLwMtkdFMBYjia29AtLnroyYFNEE8vFdJbF9--nn4YPXgwHmVVrqR86_TfbV0AdrotzxzJAsTKnUaTV1LDrivUfzJFQLxwaMZDYR5s6LLxbJzuaUqKlhrrAIBHVV-bOv_LPHFsBCd2fVGI622FXce4YLNM2YImYG1nSM5CkyGnlzSnlyqsywHN6ezTVLwIWmPUXlUUbFa8r2xh-UEfioQ",
+        "x-ms-logging-context": "com.microsoft.azure.management.resources.ResourceGroups checkExistence",
+        "accept-language": "en-US",
+        "User-Agent": "Azure-SDK-For-Java/1.1.2 OS:Windows 10/10.0 MacAddressHash:f82fa839f6b46fd84edc56e01cf7c8c6d4faaa2190534aff5c1d17095f0a3c13 (ResourceManagementClient, 2016-09-01)",
+        "x-ms-client-request-id": "f6b12549-b7eb-4725-9e3a-b09c8aed75c8",
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "Response": {
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "Cache-Control": "no-cache",
+        "x-ms-routing-request-id": "WESTUS2:20170727T010849Z:b1fe9139-e49f-4e8b-8df5-c38415e47633",
+        "Expires": "-1",
+        "Pragma": "no-cache",
+        "Content-Length": "0",
+        "x-ms-ratelimit-remaining-subscription-reads": "14989",
+        "Body": "",
+        "StatusCode": "204",
+        "x-ms-request-id": "b1fe9139-e49f-4e8b-8df5-c38415e47633",
+        "Date": "Thu, 27 Jul 2017 01:08:48 GMT",
+        "x-ms-correlation-request-id": "b1fe9139-e49f-4e8b-8df5-c38415e47633"
+      }
+    },
+    {
+      "Method": "PUT",
+      "Uri": "http://localhost:3060/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/BlockNetworkRg/providers/Microsoft.Cache/Redis/BeforeNetwork?api-version=2016-04-01",
+      "Headers": {
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USIsImtpZCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USJ9.eyJhdWQiOiJodHRwczovL21hbmFnZW1lbnQuYXp1cmUuY29tLyIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0Ny8iLCJpYXQiOjE1MDExMTc0MjgsIm5iZiI6MTUwMTExNzQyOCwiZXhwIjoxNTAxMTIxMzI4LCJhaW8iOiJZMlpnWUdqVi82dTlqTitLNFFQNzNZa2JiK3plRGdBPSIsImFwcGlkIjoiYzE3YWFkNDYtODlmZC00MDViLWEzOTEtMDFiMmJmYmEyMDEzIiwiYXBwaWRhY3IiOiIxIiwiZV9leHAiOjI2MjgwMCwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3LyIsIm9pZCI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInN1YiI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInZlciI6IjEuMCJ9.cRMFGzfpnFpozJGXscmS3RELXEnYTmHF6AYzmg3P0Ms-zWdozCA6gsch3iUtmlkJLSqPqcdJFN96dS7Zb4wSyQm0wE0aVG6dML5lWRT-UaQGera-7zk8L4iCnq2gjjuoGvLwMtkdFMBYjia29AtLnroyYFNEE8vFdJbF9--nn4YPXgwHmVVrqR86_TfbV0AdrotzxzJAsTKnUaTV1LDrivUfzJFQLxwaMZDYR5s6LLxbJzuaUqKlhrrAIBHVV-bOv_LPHFsBCd2fVGI622FXce4YLNM2YImYG1nSM5CkyGnlzSnlyqsywHN6ezTVLwIWmPUXlUUbFa8r2xh-UEfioQ",
+        "x-ms-logging-context": "com.microsoft.azure.management.redis.Redis create",
+        "accept-language": "en-US",
+        "User-Agent": "Azure-SDK-For-Java/1.1.2 OS:Windows 10/10.0 MacAddressHash:f82fa839f6b46fd84edc56e01cf7c8c6d4faaa2190534aff5c1d17095f0a3c13 (RedisManagementClient, 2016-04-01)",
+        "x-ms-client-request-id": "1887729c-3799-43a0-898d-3b5e06e08366"
+      },
+      "Response": {
+        "Server": "Microsoft-HTTPAPI/2.0",
+        "x-ms-ratelimit-remaining-subscription-writes": "1199",
+        "Pragma": "no-cache",
+        "StatusCode": "201",
+        "Date": "Thu, 27 Jul 2017 01:08:51 GMT",
+        "x-ms-correlation-request-id": "dae867a6-3921-4547-9d6d-3377b71591ca",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "x-rp-server-mvid": "591bd6c7-22e4-4539-8fd3-9f5a21a5e75f",
+        "Cache-Control": "no-cache",
+        "x-content-type-options": "nosniff",
+        "x-ms-routing-request-id": "WESTUS2:20170727T010852Z:dae867a6-3921-4547-9d6d-3377b71591ca",
+        "Expires": "-1",
+        "Content-Length": "718",
+        "Body": "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/BlockNetworkRg/providers/Microsoft.Cache/Redis/BeforeNetwork\",\"location\":\"East US\",\"name\":\"BeforeNetwork\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Creating\",\"redisVersion\":\"3.2.7\",\"sku\":{\"name\":\"Premium\",\"family\":\"P\",\"capacity\":1},\"enableNonSslPort\":false,\"redisConfiguration\":{\"maxclients\":\"7500\",\"maxmemory-reserved\":\"200\",\"maxfragmentationmemory-reserved\":\"300\",\"maxmemory-delta\":\"200\"},\"accessKeys\":{\"primaryKey\":\"6Oy1+toJi8MRNsxC5c9TPOWOw/ggEvTVlzViSBF34D8=\",\"secondaryKey\":\"B/D4VtCLIKPmHf9kopOUioEkBo9Nlwr5fvJMGtfEd0I=\"},\"hostName\":\"BeforeNetwork.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380}}",
+        "x-ms-request-id": "980a8113-feb5-4f5c-93d3-3826bfdcfca4",
+        "Content-Type": "application/json; charset=utf-8",
+        "Location": "http://localhost:3060/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/BlockNetworkRg/providers/Microsoft.Cache/redis/BeforeNetwork?api-version=2016-04-01"
+      }
+    },
+    {
+      "Method": "GET",
+      "Uri": "http://localhost:3060/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/BlockNetworkRg/providers/Microsoft.Cache/redis/BeforeNetwork?api-version=2016-04-01",
+      "Headers": {
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USIsImtpZCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USJ9.eyJhdWQiOiJodHRwczovL21hbmFnZW1lbnQuYXp1cmUuY29tLyIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0Ny8iLCJpYXQiOjE1MDExMTc0MjgsIm5iZiI6MTUwMTExNzQyOCwiZXhwIjoxNTAxMTIxMzI4LCJhaW8iOiJZMlpnWUdqVi82dTlqTitLNFFQNzNZa2JiK3plRGdBPSIsImFwcGlkIjoiYzE3YWFkNDYtODlmZC00MDViLWEzOTEtMDFiMmJmYmEyMDEzIiwiYXBwaWRhY3IiOiIxIiwiZV9leHAiOjI2MjgwMCwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3LyIsIm9pZCI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInN1YiI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInZlciI6IjEuMCJ9.cRMFGzfpnFpozJGXscmS3RELXEnYTmHF6AYzmg3P0Ms-zWdozCA6gsch3iUtmlkJLSqPqcdJFN96dS7Zb4wSyQm0wE0aVG6dML5lWRT-UaQGera-7zk8L4iCnq2gjjuoGvLwMtkdFMBYjia29AtLnroyYFNEE8vFdJbF9--nn4YPXgwHmVVrqR86_TfbV0AdrotzxzJAsTKnUaTV1LDrivUfzJFQLxwaMZDYR5s6LLxbJzuaUqKlhrrAIBHVV-bOv_LPHFsBCd2fVGI622FXce4YLNM2YImYG1nSM5CkyGnlzSnlyqsywHN6ezTVLwIWmPUXlUUbFa8r2xh-UEfioQ",
+        "x-ms-logging-context": "com.microsoft.azure.management.redis.Redis create (poll)",
+        "User-Agent": "Azure-SDK-For-Java/1.1.2 OS:Windows 10/10.0 MacAddressHash:f82fa839f6b46fd84edc56e01cf7c8c6d4faaa2190534aff5c1d17095f0a3c13 (RedisManagementClient, 2016-04-01)",
+        "x-ms-client-request-id": "ef0bf7b9-69f4-4299-ae6e-d81ddd207e9f"
+      },
+      "Response": {
+        "Transfer-Encoding": "chunked",
+        "Server": "Microsoft-HTTPAPI/2.0",
+        "Pragma": "no-cache",
+        "x-ms-ratelimit-remaining-subscription-reads": "14972",
+        "StatusCode": "200",
+        "Date": "Thu, 27 Jul 2017 01:17:24 GMT",
+        "x-ms-correlation-request-id": "9e606f65-a7bb-4c70-a089-5e367fc02166",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "x-rp-server-mvid": "591bd6c7-22e4-4539-8fd3-9f5a21a5e75f",
+        "Cache-Control": "no-cache",
+        "x-content-type-options": "nosniff",
+        "x-ms-routing-request-id": "WESTUS2:20170727T011724Z:9e606f65-a7bb-4c70-a089-5e367fc02166",
+        "Vary": "Accept-Encoding",
+        "Expires": "-1",
+        "Body": "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/BlockNetworkRg/providers/Microsoft.Cache/Redis/BeforeNetwork\",\"location\":\"East US\",\"name\":\"BeforeNetwork\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Creating\",\"redisVersion\":\"3.2.7\",\"sku\":{\"name\":\"Premium\",\"family\":\"P\",\"capacity\":1},\"enableNonSslPort\":false,\"redisConfiguration\":{\"maxclients\":\"7500\",\"maxmemory-reserved\":\"200\",\"maxfragmentationmemory-reserved\":\"300\",\"maxmemory-delta\":\"200\"},\"accessKeys\":null,\"hostName\":\"BeforeNetwork.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380}}",
+        "x-ms-request-id": "42667711-074d-451a-9949-433544470094",
+        "Content-Type": "application/json; charset=utf-8"
+      }
+    }
+  ],
+  "variables": []
+}

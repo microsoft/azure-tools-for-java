@@ -23,25 +23,20 @@
 package com.microsoft.azuretools.sdkmanage;
 
 import com.microsoft.azure.AzureEnvironment;
-import com.microsoft.azure.AzureResponseBuilder;
 import com.microsoft.azure.credentials.ApplicationTokenCredentials;
 import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
-import com.microsoft.azure.serializer.AzureJacksonAdapter;
 import com.microsoft.azuretools.Constants;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManagerPersist;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
-import com.microsoft.rest.RestClient;
 import com.microsoft.rest.credentials.ServiceClientCredentials;
-import retrofit2.Retrofit;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +50,7 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     private final SubscriptionManager subscriptionManager;
     private final File credFile;
     private ApplicationTokenCredentials atc;
+    private Environment env = null;
 
     static {
         settings = new Settings();
@@ -78,29 +74,12 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     }
 
     private Azure.Authenticated auth() throws IOException {
-        ApplicationTokenCredentials credentials = (atc == null) ? ApplicationTokenCredentials.fromFile(credFile) : atc;
-        if (!credentials.environment().managementEndpoint().contains(AzureEnvironment.AZURE.managementEndpoint()) &&
-            AuthMethodManager.getClientBuilder() != null) {
-            // Register attached resources certificates needed to work with China and Germany clouds
-                RestClient restClient = new RestClient.Builder(
-                    AuthMethodManager.getClientBuilder(),
-                    new Retrofit.Builder())
-                    .withBaseUrl(credentials.environment().resourceManagerEndpoint())
-                    .withCredentials(credentials)
-                    .withSerializerAdapter(new AzureJacksonAdapter())
-                    .withResponseBuilderFactory(new AzureResponseBuilder.Factory())
-                    .withUserAgent(CommonSettings.USER_AGENT)
-                    .build();
-
-                return Azure.authenticate(restClient, credentials.domain());
-        } else {
-            Azure.Configurable azureConfigurable = Azure.configure()
+        Azure.Configurable azureConfigurable = Azure.configure()
                     .withInterceptor(new TelemetryInterceptor())
                     .withUserAgent(CommonSettings.USER_AGENT);
-            return (atc == null)
+        return (atc == null)
                 ? azureConfigurable.authenticate(credFile)
                 : azureConfigurable.authenticate(atc);
-        }
     }
 
     @Override
@@ -195,6 +174,12 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     }
 
     @Override
+    public Environment getEnvironment() {
+        initEnv();
+        return env;
+    }
+    
+    @Override
     public String getStorageEndpointSuffix() {
         try {
             String managementURI = getManagementURI();
@@ -219,6 +204,32 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     private void initATCIfNeeded() throws IOException {
         if (atc == null) {
             atc = ApplicationTokenCredentials.fromFile(credFile);
+        }  
+    }
+    
+    private void initEnv() {
+        if (env != null) {
+            return;
+        }
+        try {
+            String managementURI = getManagementURI().toLowerCase();
+            if (managementURI.endsWith("/")) {
+                managementURI = managementURI.substring(0, managementURI.length() - 1);
+            }
+
+            if (AzureEnvironment.AZURE.resourceManagerEndpoint().toLowerCase().startsWith(managementURI)) {
+                env = Environment.GLOBAL;
+            } else if (AzureEnvironment.AZURE_CHINA.resourceManagerEndpoint().toLowerCase().startsWith(managementURI)) {
+                env = Environment.CHINA;
+            } else if (AzureEnvironment.AZURE_GERMANY.resourceManagerEndpoint().toLowerCase().startsWith(managementURI)) {
+                env = Environment.GERMAN;
+            } else if (AzureEnvironment.AZURE_US_GOVERNMENT.resourceManagerEndpoint().toLowerCase().startsWith(managementURI)) {
+                env = Environment.US_GOVERNMENT;
+            } else {
+                env = Environment.GLOBAL;
+            }
+        } catch (Exception e) {
+            env = Environment.GLOBAL;
         }
     }
 }

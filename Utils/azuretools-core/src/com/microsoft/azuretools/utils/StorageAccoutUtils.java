@@ -22,9 +22,12 @@
 
 package com.microsoft.azuretools.utils;
 
+import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -37,6 +40,24 @@ import java.util.*;
  * Created by vlashch on 1/19/17.
  */
 public class StorageAccoutUtils {
+    public static final String DEFAULT_PROTOCOL = "https";
+    public static final String DEFAULT_ENDPOINTS_PROTOCOL_KEY = "DefaultEndpointsProtocol";
+    public static final String ACCOUNT_NAME_KEY = "AccountName";
+    public static final String ACCOUNT_KEY_KEY = "AccountKey";
+    public static final String ENDPOINT_SUFFIX_KEY = "EndpointSuffix";
+    public static final String BLOB_ENDPOINT_KEY = "BlobEndpoint";
+    public static final String QUEUE_ENDPOINT_KEY = "QueueEndpoint";
+    public static final String TABLE_ENDPOINT_KEY = "TableEndpoint";
+    public static final String DEFAULT_CONN_STR_TEMPLATE = DEFAULT_ENDPOINTS_PROTOCOL_KEY + "=%s;" +
+            ACCOUNT_NAME_KEY + "=%s;" +
+            ACCOUNT_KEY_KEY + "=%s;" +
+            ENDPOINT_SUFFIX_KEY + "=%s";
+    public static final String CUSTOM_CONN_STR_TEMPLATE = BLOB_ENDPOINT_KEY + "=%s;" +
+            QUEUE_ENDPOINT_KEY + "=%s;" +
+            TABLE_ENDPOINT_KEY + "=%s;" +
+            ACCOUNT_NAME_KEY + "=%s;" +
+            ACCOUNT_KEY_KEY + "=%s";
+    
     private static CloudStorageAccount getCloudStorageAccount(String blobLink, String saKey) throws MalformedURLException, URISyntaxException, InvalidKeyException {
         if (blobLink == null || blobLink.isEmpty()) {
             throw new IllegalArgumentException("Invalid blob link, it's null or empty: " + blobLink);
@@ -51,7 +72,7 @@ public class StorageAccoutUtils {
             throw new IllegalArgumentException("Invalid blobLink, can't find host: " + blobLink);
         }
         String storageAccountName = host.substring(0, host.indexOf("."));
-        String storageConnectionString = String.format("DefaultEndpointsProtocol=https;AccountName=%s;AccountKey=%s", storageAccountName, saKey);
+        String storageConnectionString = getConnectionString(storageAccountName, saKey);
         CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
         return cloudStorageAccount;
     }
@@ -90,5 +111,30 @@ public class StorageAccoutUtils {
         String signature = container.generateSharedAccessSignature(sharedAccessBlobPolicy, null);
         return blobLink + "?" + signature;
     }
+    
+    
+    public static String getEndpointSuffix() {
+        String endpointSuffix;
+        try {
+            if (AuthMethodManager.getInstance().isSignedIn()) {
+                endpointSuffix = AuthMethodManager.getInstance().getAzureManager().getStorageEndpointSuffix();
+            } else {
+                endpointSuffix = AzureEnvironment.AZURE.storageEndpointSuffix();
+            }
+        } catch (Exception ex) {
+            endpointSuffix = AzureEnvironment.AZURE.storageEndpointSuffix();
+        }
+        return endpointSuffix.substring(1);
+    }
+        
+    @NotNull
+    public static String getConnectionString(String accountName, String key) {
+        return String.format(DEFAULT_CONN_STR_TEMPLATE,
+                        DEFAULT_PROTOCOL,
+                        accountName,
+                        key,
+                        getEndpointSuffix());
+    }
+
 
 }

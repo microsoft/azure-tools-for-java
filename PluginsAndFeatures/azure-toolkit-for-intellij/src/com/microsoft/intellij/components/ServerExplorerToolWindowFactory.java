@@ -58,7 +58,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -99,10 +98,6 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // setup toolbar icons
         addToolbarItems(toolWindow, azureModule);
 
-//        try {
-//            azureModule.registerSubscriptionsChanged();
-//        } catch (AzureCmdException ignored) {
-//        }
     }
 
     private DefaultMutableTreeNode initRoot(Project project, AzureModule azureModule) {

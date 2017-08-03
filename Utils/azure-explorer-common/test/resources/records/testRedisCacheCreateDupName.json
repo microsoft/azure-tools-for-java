@@ -1,0 +1,145 @@
+{
+  "networkCallRecords": [
+    {
+      "Method": "HEAD",
+      "Uri": "http://localhost:3021/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/MonaP1NewRg?api-version=2016-09-01",
+      "Headers": {
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USIsImtpZCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USJ9.eyJhdWQiOiJodHRwczovL21hbmFnZW1lbnQuYXp1cmUuY29tLyIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0Ny8iLCJpYXQiOjE1MDEwNDg3NTYsIm5iZiI6MTUwMTA0ODc1NiwiZXhwIjoxNTAxMDUyNjU2LCJhaW8iOiJZMlpnWUZoUmZjaDIva1VYbTJkNWpDa2lVV203QUE9PSIsImFwcGlkIjoiYzE3YWFkNDYtODlmZC00MDViLWEzOTEtMDFiMmJmYmEyMDEzIiwiYXBwaWRhY3IiOiIxIiwiZV9leHAiOjI2MjgwMCwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3LyIsIm9pZCI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInN1YiI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInZlciI6IjEuMCJ9.W2n99GSy0s0ni9uevRJ_wznDTcpcOYMMafYgqH9nNe5vm-fEkGbCphkKzcAX2oowVa_fC-eBWTCZXlftKemdIfLymQJT-WkQHCFmyae6DK1_7fh00lzvgO9xslBURgIsNG-tnS1n9BoKqAxI2RwAFf84kKQlpKeSHQxYRuULXl9TjcfRIaGi4h7gZg1gb40-Cv_ljIo1K7ANk3mTmfM5Gp8Pb9wzvAi13m1lvbSKHwlNOnHpiRDiGJ7oD8OWJYBA9_RVjD5h36-QLCuaPldRF7DNCS8F3D9-5AoOoHB2jjSDTi4HXYdPsLE8DzubIGRCqV4frgwNtUlvsZio4vM_4w",
+        "x-ms-logging-context": "com.microsoft.azure.management.resources.ResourceGroups checkExistence",
+        "accept-language": "en-US",
+        "User-Agent": "Azure-SDK-For-Java/1.1.2 OS:Windows 10/10.0 MacAddressHash:f82fa839f6b46fd84edc56e01cf7c8c6d4faaa2190534aff5c1d17095f0a3c13 (ResourceManagementClient, 2016-09-01)",
+        "x-ms-client-request-id": "71e72d1b-56da-40b9-8213-b4503ac06e28",
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "Response": {
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "Cache-Control": "no-cache",
+        "x-ms-routing-request-id": "WESTUS2:20170726T060416Z:fad51370-ef1c-445e-b27c-2332c0d30014",
+        "Expires": "-1",
+        "Pragma": "no-cache",
+        "Content-Length": "0",
+        "x-ms-ratelimit-remaining-subscription-reads": "14990",
+        "Body": "",
+        "StatusCode": "204",
+        "x-ms-request-id": "fad51370-ef1c-445e-b27c-2332c0d30014",
+        "Date": "Wed, 26 Jul 2017 06:04:15 GMT",
+        "x-ms-correlation-request-id": "fad51370-ef1c-445e-b27c-2332c0d30014"
+      }
+    },
+    {
+      "Method": "PUT",
+      "Uri": "http://localhost:3021/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaP1NewRg/providers/Microsoft.Cache/Redis/MonaP1New?api-version=2016-04-01",
+      "Headers": {
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USIsImtpZCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USJ9.eyJhdWQiOiJodHRwczovL21hbmFnZW1lbnQuYXp1cmUuY29tLyIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0Ny8iLCJpYXQiOjE1MDEwNDg3NTYsIm5iZiI6MTUwMTA0ODc1NiwiZXhwIjoxNTAxMDUyNjU2LCJhaW8iOiJZMlpnWUZoUmZjaDIva1VYbTJkNWpDa2lVV203QUE9PSIsImFwcGlkIjoiYzE3YWFkNDYtODlmZC00MDViLWEzOTEtMDFiMmJmYmEyMDEzIiwiYXBwaWRhY3IiOiIxIiwiZV9leHAiOjI2MjgwMCwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3LyIsIm9pZCI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInN1YiI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInZlciI6IjEuMCJ9.W2n99GSy0s0ni9uevRJ_wznDTcpcOYMMafYgqH9nNe5vm-fEkGbCphkKzcAX2oowVa_fC-eBWTCZXlftKemdIfLymQJT-WkQHCFmyae6DK1_7fh00lzvgO9xslBURgIsNG-tnS1n9BoKqAxI2RwAFf84kKQlpKeSHQxYRuULXl9TjcfRIaGi4h7gZg1gb40-Cv_ljIo1K7ANk3mTmfM5Gp8Pb9wzvAi13m1lvbSKHwlNOnHpiRDiGJ7oD8OWJYBA9_RVjD5h36-QLCuaPldRF7DNCS8F3D9-5AoOoHB2jjSDTi4HXYdPsLE8DzubIGRCqV4frgwNtUlvsZio4vM_4w",
+        "x-ms-logging-context": "com.microsoft.azure.management.redis.Redis create",
+        "accept-language": "en-US",
+        "User-Agent": "Azure-SDK-For-Java/1.1.2 OS:Windows 10/10.0 MacAddressHash:f82fa839f6b46fd84edc56e01cf7c8c6d4faaa2190534aff5c1d17095f0a3c13 (RedisManagementClient, 2016-04-01)",
+        "x-ms-client-request-id": "0bdaf31f-8230-4fea-8b9f-0fa35074200c"
+      },
+      "Response": {
+        "Server": "Microsoft-HTTPAPI/2.0",
+        "x-ms-ratelimit-remaining-subscription-writes": "1199",
+        "Pragma": "no-cache",
+        "StatusCode": "201",
+        "Date": "Wed, 26 Jul 2017 06:04:17 GMT",
+        "x-ms-correlation-request-id": "f972faba-210c-4fa9-a691-6b3f176873c3",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "x-rp-server-mvid": "591bd6c7-22e4-4539-8fd3-9f5a21a5e75f",
+        "Cache-Control": "no-cache",
+        "x-content-type-options": "nosniff",
+        "x-ms-routing-request-id": "WESTUS2:20170726T060418Z:f972faba-210c-4fa9-a691-6b3f176873c3",
+        "Expires": "-1",
+        "Content-Length": "700",
+        "Body": "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaP1NewRg/providers/Microsoft.Cache/Redis/MonaP1New\",\"location\":\"East US\",\"name\":\"MonaP1New\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Creating\",\"redisVersion\":\"3.2.7\",\"sku\":{\"name\":\"Premium\",\"family\":\"P\",\"capacity\":1},\"enableNonSslPort\":false,\"redisConfiguration\":{\"maxclients\":\"7500\",\"maxmemory-reserved\":\"200\",\"maxfragmentationmemory-reserved\":\"300\",\"maxmemory-delta\":\"200\"},\"accessKeys\":{\"primaryKey\":\"plswD0d9kF0lCs1nT5Mcm3OrrkKFxrNi2D4GkOzPtAU=\",\"secondaryKey\":\"AWdsDID9GXk/L5df4L1wE4skpuFB+A91acDDRTKsJUE=\"},\"hostName\":\"MonaP1New.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380}}",
+        "x-ms-request-id": "87cd8b4a-b9a3-4760-8607-d0c852cee152",
+        "Content-Type": "application/json; charset=utf-8",
+        "Location": "http://localhost:3021/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaP1NewRg/providers/Microsoft.Cache/redis/MonaP1New?api-version=2016-04-01"
+      }
+    },
+    {
+      "Method": "GET",
+      "Uri": "http://localhost:3021/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaP1NewRg/providers/Microsoft.Cache/redis/MonaP1New?api-version=2016-04-01",
+      "Headers": {
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USIsImtpZCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USJ9.eyJhdWQiOiJodHRwczovL21hbmFnZW1lbnQuYXp1cmUuY29tLyIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0Ny8iLCJpYXQiOjE1MDEwNDg3NTYsIm5iZiI6MTUwMTA0ODc1NiwiZXhwIjoxNTAxMDUyNjU2LCJhaW8iOiJZMlpnWUZoUmZjaDIva1VYbTJkNWpDa2lVV203QUE9PSIsImFwcGlkIjoiYzE3YWFkNDYtODlmZC00MDViLWEzOTEtMDFiMmJmYmEyMDEzIiwiYXBwaWRhY3IiOiIxIiwiZV9leHAiOjI2MjgwMCwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3LyIsIm9pZCI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInN1YiI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInZlciI6IjEuMCJ9.W2n99GSy0s0ni9uevRJ_wznDTcpcOYMMafYgqH9nNe5vm-fEkGbCphkKzcAX2oowVa_fC-eBWTCZXlftKemdIfLymQJT-WkQHCFmyae6DK1_7fh00lzvgO9xslBURgIsNG-tnS1n9BoKqAxI2RwAFf84kKQlpKeSHQxYRuULXl9TjcfRIaGi4h7gZg1gb40-Cv_ljIo1K7ANk3mTmfM5Gp8Pb9wzvAi13m1lvbSKHwlNOnHpiRDiGJ7oD8OWJYBA9_RVjD5h36-QLCuaPldRF7DNCS8F3D9-5AoOoHB2jjSDTi4HXYdPsLE8DzubIGRCqV4frgwNtUlvsZio4vM_4w",
+        "x-ms-logging-context": "com.microsoft.azure.management.redis.Redis create (poll)",
+        "User-Agent": "Azure-SDK-For-Java/1.1.2 OS:Windows 10/10.0 MacAddressHash:f82fa839f6b46fd84edc56e01cf7c8c6d4faaa2190534aff5c1d17095f0a3c13 (RedisManagementClient, 2016-04-01)",
+        "x-ms-client-request-id": "6a63b804-ed81-4d5c-94e6-4aeb0b264941"
+      },
+      "Response": {
+        "Transfer-Encoding": "chunked",
+        "Server": "Microsoft-HTTPAPI/2.0",
+        "Pragma": "no-cache",
+        "x-ms-ratelimit-remaining-subscription-reads": "14971",
+        "StatusCode": "200",
+        "Date": "Wed, 26 Jul 2017 06:13:20 GMT",
+        "x-ms-correlation-request-id": "833615b1-703d-4430-b59a-a31fcb7156e2",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "x-rp-server-mvid": "591bd6c7-22e4-4539-8fd3-9f5a21a5e75f",
+        "Cache-Control": "no-cache",
+        "x-content-type-options": "nosniff",
+        "x-ms-routing-request-id": "WESTUS2:20170726T061320Z:833615b1-703d-4430-b59a-a31fcb7156e2",
+        "Vary": "Accept-Encoding",
+        "Expires": "-1",
+        "Body": "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaP1NewRg/providers/Microsoft.Cache/Redis/MonaP1New\",\"location\":\"East US\",\"name\":\"MonaP1New\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Succeeded\",\"redisVersion\":\"3.2.7\",\"sku\":{\"name\":\"Premium\",\"family\":\"P\",\"capacity\":1},\"enableNonSslPort\":false,\"redisConfiguration\":{\"maxclients\":\"7500\",\"maxmemory-reserved\":\"200\",\"maxfragmentationmemory-reserved\":\"300\",\"maxmemory-delta\":\"200\"},\"accessKeys\":null,\"hostName\":\"MonaP1New.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380}}",
+        "x-ms-request-id": "2bdf9534-cf17-4a8c-8374-00cd230178a6",
+        "Content-Type": "application/json; charset=utf-8"
+      }
+    },
+    {
+      "Method": "HEAD",
+      "Uri": "http://localhost:3021/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/MonaC3StdNewRg?api-version=2016-09-01",
+      "Headers": {
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USIsImtpZCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USJ9.eyJhdWQiOiJodHRwczovL21hbmFnZW1lbnQuYXp1cmUuY29tLyIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0Ny8iLCJpYXQiOjE1MDEwNDg3NTYsIm5iZiI6MTUwMTA0ODc1NiwiZXhwIjoxNTAxMDUyNjU2LCJhaW8iOiJZMlpnWUZoUmZjaDIva1VYbTJkNWpDa2lVV203QUE9PSIsImFwcGlkIjoiYzE3YWFkNDYtODlmZC00MDViLWEzOTEtMDFiMmJmYmEyMDEzIiwiYXBwaWRhY3IiOiIxIiwiZV9leHAiOjI2MjgwMCwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3LyIsIm9pZCI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInN1YiI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInZlciI6IjEuMCJ9.W2n99GSy0s0ni9uevRJ_wznDTcpcOYMMafYgqH9nNe5vm-fEkGbCphkKzcAX2oowVa_fC-eBWTCZXlftKemdIfLymQJT-WkQHCFmyae6DK1_7fh00lzvgO9xslBURgIsNG-tnS1n9BoKqAxI2RwAFf84kKQlpKeSHQxYRuULXl9TjcfRIaGi4h7gZg1gb40-Cv_ljIo1K7ANk3mTmfM5Gp8Pb9wzvAi13m1lvbSKHwlNOnHpiRDiGJ7oD8OWJYBA9_RVjD5h36-QLCuaPldRF7DNCS8F3D9-5AoOoHB2jjSDTi4HXYdPsLE8DzubIGRCqV4frgwNtUlvsZio4vM_4w",
+        "x-ms-logging-context": "com.microsoft.azure.management.resources.ResourceGroups checkExistence",
+        "accept-language": "en-US",
+        "User-Agent": "Azure-SDK-For-Java/1.1.2 OS:Windows 10/10.0 MacAddressHash:f82fa839f6b46fd84edc56e01cf7c8c6d4faaa2190534aff5c1d17095f0a3c13 (ResourceManagementClient, 2016-09-01)",
+        "x-ms-client-request-id": "4458e42b-5262-4c13-9621-ae851962a132",
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "Response": {
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "Cache-Control": "no-cache",
+        "x-ms-routing-request-id": "WESTUS2:20170726T061320Z:ff9d518a-353f-469f-a21c-62a5ccd068d2",
+        "Expires": "-1",
+        "Pragma": "no-cache",
+        "Content-Length": "0",
+        "x-ms-ratelimit-remaining-subscription-reads": "14970",
+        "Body": "",
+        "StatusCode": "204",
+        "x-ms-request-id": "ff9d518a-353f-469f-a21c-62a5ccd068d2",
+        "Date": "Wed, 26 Jul 2017 06:13:20 GMT",
+        "x-ms-correlation-request-id": "ff9d518a-353f-469f-a21c-62a5ccd068d2"
+      }
+    },
+    {
+      "Method": "PUT",
+      "Uri": "http://localhost:3021/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaC3StdNewRg/providers/Microsoft.Cache/Redis/MonaP1New?api-version=2016-04-01",
+      "Headers": {
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USIsImtpZCI6IlZXVkljMVdEMVRrc2JiMzAxc2FzTTVrT3E1USJ9.eyJhdWQiOiJodHRwczovL21hbmFnZW1lbnQuYXp1cmUuY29tLyIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0Ny8iLCJpYXQiOjE1MDEwNDg3NTYsIm5iZiI6MTUwMTA0ODc1NiwiZXhwIjoxNTAxMDUyNjU2LCJhaW8iOiJZMlpnWUZoUmZjaDIva1VYbTJkNWpDa2lVV203QUE9PSIsImFwcGlkIjoiYzE3YWFkNDYtODlmZC00MDViLWEzOTEtMDFiMmJmYmEyMDEzIiwiYXBwaWRhY3IiOiIxIiwiZV9leHAiOjI2MjgwMCwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3LyIsIm9pZCI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInN1YiI6ImQwNjgwODBhLTAyMmYtNDRjMS1iZjM5LWRiYmUzNWNiNzA5NSIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInZlciI6IjEuMCJ9.W2n99GSy0s0ni9uevRJ_wznDTcpcOYMMafYgqH9nNe5vm-fEkGbCphkKzcAX2oowVa_fC-eBWTCZXlftKemdIfLymQJT-WkQHCFmyae6DK1_7fh00lzvgO9xslBURgIsNG-tnS1n9BoKqAxI2RwAFf84kKQlpKeSHQxYRuULXl9TjcfRIaGi4h7gZg1gb40-Cv_ljIo1K7ANk3mTmfM5Gp8Pb9wzvAi13m1lvbSKHwlNOnHpiRDiGJ7oD8OWJYBA9_RVjD5h36-QLCuaPldRF7DNCS8F3D9-5AoOoHB2jjSDTi4HXYdPsLE8DzubIGRCqV4frgwNtUlvsZio4vM_4w",
+        "x-ms-logging-context": "com.microsoft.azure.management.redis.Redis create",
+        "accept-language": "en-US",
+        "User-Agent": "Azure-SDK-For-Java/1.1.2 OS:Windows 10/10.0 MacAddressHash:f82fa839f6b46fd84edc56e01cf7c8c6d4faaa2190534aff5c1d17095f0a3c13 (RedisManagementClient, 2016-04-01)",
+        "x-ms-client-request-id": "1db12c9f-7026-4edd-90ee-22cf989f85e6"
+      },
+      "Response": {
+        "Server": "Microsoft-HTTPAPI/2.0",
+        "x-ms-ratelimit-remaining-subscription-writes": "1198",
+        "Pragma": "no-cache",
+        "StatusCode": "409",
+        "Date": "Wed, 26 Jul 2017 06:13:21 GMT",
+        "x-ms-correlation-request-id": "79bc2683-cd4a-492b-9bfd-6db49e0a9e32",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "x-rp-server-mvid": "591bd6c7-22e4-4539-8fd3-9f5a21a5e75f",
+        "Cache-Control": "no-cache",
+        "x-content-type-options": "nosniff",
+        "x-ms-routing-request-id": "WESTUS2:20170726T061321Z:79bc2683-cd4a-492b-9bfd-6db49e0a9e32",
+        "Expires": "-1",
+        "Content-Length": "326",
+        "Body": "{\"error\":{\"code\":\"NameNotAvailable\",\"message\":\"An error occured when trying to reserve the DNS name for the cache instance. This may be a temporary issue if a cache instance of this name was recently deleted. Please choose a different name or try again later.\\r\\nRequestID=b3796427-11e3-4d74-8999-0848af2bc85f\",\"target\":null}}",
+        "x-ms-request-id": "b3796427-11e3-4d74-8999-0848af2bc85f",
+        "Content-Type": "application/json; charset=utf-8"
+      }
+    }
+  ],
+  "variables": []
+}

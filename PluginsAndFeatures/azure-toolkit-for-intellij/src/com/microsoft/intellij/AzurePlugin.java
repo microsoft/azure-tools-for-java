@@ -19,6 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.intellij;
 
 import com.intellij.ide.plugins.cl.PluginClassLoader;
@@ -37,7 +38,11 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.*;
+import com.microsoft.azuretools.azurecommons.util.FileUtil;
+import com.microsoft.azuretools.azurecommons.util.GetHashMac;
+import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
+import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -51,10 +56,16 @@ import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 
 import javax.swing.event.EventListenerList;
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -66,7 +77,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     public static final String PLUGIN_VERSION = CommonConst.PLUGIN_VERISON;
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
     public static final String JDBC_LIBRARIES_VERSION = "6.1.0.jre8";
-    public final static int REST_SERVICE_MAX_RETRY_COUNT = 7;
+    public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
 
     // User-agent header for Azure SDK calls
     public static final String USER_AGENT = "Azure Toolkit for IntelliJ, v%s, machineid:%s";
@@ -159,10 +170,12 @@ public class AzurePlugin extends AbstractProjectComponent {
             setValues(dataFile);
         }
         AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
-        if (install)
+        if (install) {
             AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
-        if (upgrade)
+        }
+        if (upgrade) {
             AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
+        }
     }
 
     private void initializeAIRegistry() {

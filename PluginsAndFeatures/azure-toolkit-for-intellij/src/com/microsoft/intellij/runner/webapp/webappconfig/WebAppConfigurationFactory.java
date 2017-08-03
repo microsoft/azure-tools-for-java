@@ -39,4 +39,9 @@ public class WebAppConfigurationFactory extends ConfigurationFactory {
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
         return new WebAppConfiguration(project, this);
     }
+
+    @Override
+    public RunConfiguration createConfiguration(String name, RunConfiguration template) {
+        return new WebAppConfiguration(template.getProject(), this);
+    }
 }
