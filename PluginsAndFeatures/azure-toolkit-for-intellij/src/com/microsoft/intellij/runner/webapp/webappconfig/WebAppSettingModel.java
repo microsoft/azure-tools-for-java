@@ -34,13 +34,30 @@ public class WebAppSettingModel {
     private static final String TARGET_PATH = "targetPath";
     private static final String TARGET_NAME = "targetName";
 
-    private String webAppId = "";
+    // common settings
+    private boolean creatingNew = false;
     private String subscriptionId = "";
+    // deploy related
+    private String webAppId = "";
     private String webAppUrl = "";
     private String targetPath = "";
     private String targetName = "";
     private boolean deployToRoot = true;
-    private boolean creatingNew = false;
+    // create related
+    private String webAppName = "";
+    private String webContainer = "";
+
+    private boolean creatingResGrp = false;
+    private String resourceGroup = "";
+
+    private boolean creatingAppServicePlan = false;
+    private String appServicePlan = "";
+    private String region = "";
+    private String pricing = "";
+
+    private String jdkChoice = "";
+    private String jdkUrl = "";
+    private String storageKey = "";
 
     public String getWebAppId() {
         return webAppId;
@@ -119,5 +136,93 @@ public class WebAppSettingModel {
         element.setAttribute(DEPLOY_TO_ROOT, String.valueOf(this.deployToRoot));
         element.setAttribute(TARGET_PATH, this.targetPath);
         element.setAttribute(TARGET_NAME, this.targetName);
+    }
+
+    public String getWebAppName() {
+        return webAppName;
+    }
+
+    public void setWebAppName(String webAppName) {
+        this.webAppName = webAppName;
+    }
+
+    public String getWebContainer() {
+        return webContainer;
+    }
+
+    public void setWebContainer(String webContainer) {
+        this.webContainer = webContainer;
+    }
+
+    public String getResourceGroup() {
+        return resourceGroup;
+    }
+
+    public void setResourceGroup(String resourceGroup) {
+        this.resourceGroup = resourceGroup;
+    }
+
+    public boolean isCreatingResGrp() {
+        return creatingResGrp;
+    }
+
+    public void setCreatingResGrp(boolean creatingResGrp) {
+        this.creatingResGrp = creatingResGrp;
+    }
+
+    public boolean isCreatingAppServicePlan() {
+        return creatingAppServicePlan;
+    }
+
+    public void setCreatingAppServicePlan(boolean creatingAppServicePlan) {
+        this.creatingAppServicePlan = creatingAppServicePlan;
+    }
+
+    public String getAppServicePlan() {
+        return appServicePlan;
+    }
+
+    public void setAppServicePlan(String appServicePlan) {
+        this.appServicePlan = appServicePlan;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    public String getPricing() {
+        return pricing;
+    }
+
+    public void setPricing(String pricing) {
+        this.pricing = pricing;
+    }
+
+    public String getJdkChoice() {
+        return jdkChoice;
+    }
+
+    public void setJdkChoice(String jdkChoice) {
+        this.jdkChoice = jdkChoice;
+    }
+
+    public String getJdkUrl() {
+        return jdkUrl;
+    }
+
+    public void setJdkUrl(String jdkUrl) {
+        this.jdkUrl = jdkUrl;
+    }
+
+    public String getStorageKey() {
+        return storageKey;
+    }
+
+    public void setStorageKey(String storageKey) {
+        this.storageKey = storageKey;
     }
 }

@@ -25,6 +25,7 @@ package com.microsoft.intellij.runner.webapp.webappconfig;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.ui.webapp.deploysetting.WebAppSettingPanel;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
@@ -48,20 +49,13 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
             MavenRunTaskUtil.addMavenPackageBeforeRunTask(webAppConfiguration);
         }
         webAppConfiguration.setFirstTimeCreated(false);
-        mainPanel.resetEditorForm(webAppConfiguration.getWebAppSettingModel());
+        mainPanel.resetEditorForm(webAppConfiguration);
     }
 
     @Override
     protected void applyEditorTo(@NotNull WebAppConfiguration webAppConfiguration) throws ConfigurationException {
-        validateConfiguration();
-        WebAppSettingModel model = webAppConfiguration.getWebAppSettingModel();
-        model.setWebAppId(mainPanel.getSelectedWebAppId());
-        model.setSubscriptionId(mainPanel.getSubscriptionIdOfSelectedWebApp());
-        model.setWebAppUrl(mainPanel.getWebAppUrl());
-        model.setDeployToRoot(mainPanel.isDeployToRoot());
-        model.setCreatingNew(mainPanel.isCreatingNew());
-        model.setTargetPath(mainPanel.getTargetPath());
-        model.setTargetName(mainPanel.getTargetName());
+        mainPanel.applyEditorTo(webAppConfiguration);
+        validateConfiguration(webAppConfiguration);
     }
 
     @NotNull
@@ -70,13 +64,25 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
         return mainPanel.getMainPanel();
     }
 
-    private void validateConfiguration() throws ConfigurationException {
-        String webAppId = mainPanel.getSelectedWebAppId();
-        if (webAppId == null || webAppId.length() == 0) {
-            throw new ConfigurationException("Choose a web app to deploy.");
-        }
-        if (!MavenRunTaskUtil.isMavenProject(project)) {
-            throw new ConfigurationException("Current project is not a Maven project.");
+    private void validateConfiguration(@NotNull WebAppConfiguration webAppConfiguration) throws ConfigurationException {
+        WebAppSettingModel model = webAppConfiguration.getWebAppSettingModel();
+        if (model.isCreatingNew()) {
+            if (Utils.isEmptyString(model.getWebAppName())) {
+                throw new ConfigurationException("Web App name not provided.");
+            }
+            if (Utils.isEmptyString(model.getSubscriptionId())) {
+                throw new ConfigurationException("Subscription not provided.");
+            }
+            if (Utils.isEmptyString(model.getWebContainer())) {
+                throw new ConfigurationException("Web Container not provided.");
+            }
+        } else {
+            if (Utils.isEmptyString(model.getWebAppId())) {
+                throw new ConfigurationException("Choose a web app to deploy.");
+            }
+            if (!MavenRunTaskUtil.isMavenProject(project)) {
+                throw new ConfigurationException("Current project is not a Maven project.");
+            }
         }
     }
 }
