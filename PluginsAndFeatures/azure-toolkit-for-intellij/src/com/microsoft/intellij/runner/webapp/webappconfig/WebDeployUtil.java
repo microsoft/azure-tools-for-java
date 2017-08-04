@@ -22,20 +22,25 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
+import com.microsoft.azure.management.Azure;
+
 import com.intellij.execution.process.ProcessOutputTypes;
-import com.intellij.openapi.util.Key;
-import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.*;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.RunProcessHandler;
+
 import org.apache.commons.net.ftp.FTPClient;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
-import rx.Observable;
-import rx.schedulers.Schedulers;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+
+import rx.Observable;
 
 public class WebDeployUtil {
 
@@ -45,24 +50,128 @@ public class WebDeployUtil {
     private static final String UPLOADING_SUCCESSFUL = "Uploading successfully...";
     private static final String LOGGING_OUT = "Logging out of FTP server...";
     private static final String DEPLOY_SUCCESSFUL = "Deploy successfully...";
+    private static final String CREATE_WEBAPP = "Creating new WebApp...";
+    private static final String CREATE_SUCCESSFUL = "WebApp created...";
+    private static final String DEPLOY_JDK = "Deploying custom JDK...";
+    private static final String JDK_SUCCESSFUL = "Custom JDK deployed successfully...";
 
     private static final String BASE_PATH = "/site/wwwroot/webapps/";
     private static final String ROOT_PATH = BASE_PATH + "ROOT";
     private static final String ROOT_FILE_PATH = ROOT_PATH + "." + MavenConstants.TYPE_WAR;
 
+    private static WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null) {
+            throw new Exception("There is no azure manager");
+        }
+        Azure azure = azureManager.getAzure(model.getSubscriptionId());
+        if (azure == null) {
+            throw new Exception(
+                    String.format("Cannot get azure instance for subID  %s", model.getSubscriptionId())
+            );
+        }
+
+        WebApp.DefinitionStages.WithCreate withCreate =  null;
+        if (model.isCreatingAppServicePlan()) {
+            withCreate =  withCreateNewSPlan(azure, model);
+        } else {
+            withCreate =  withCreateExistingSPlan(azure, model);
+        }
+
+        WebApp webApp = null;
+        if (WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(model.getJdkChoice())) {
+            webApp =  withCreate
+                    .withJavaVersion(JavaVersion.JAVA_8_NEWEST)
+                    .withWebContainer(WebContainer.fromString(model.getWebContainer()))
+                    .create();
+        } else {
+            webApp = withCreate.create();
+        }
+        return webApp;
+    }
+
+    private static WebApp.DefinitionStages.WithCreate withCreateNewSPlan(
+            @NotNull Azure azure,
+            @NotNull WebAppSettingModel model) throws Exception {
+        WebApp.DefinitionStages.WithCreate withCreate = null;
+        String[] tierSize = model.getPricing().split("_");
+        if (tierSize == null || tierSize.length != 2) {
+            throw new Exception("Cannot get valid price tier");
+        }
+        PricingTier pricing = new PricingTier(tierSize[0], tierSize[1]);
+        if (model.isCreatingResGrp()) {
+            withCreate = azure.webApps().define(model.getWebAppName())
+                    .withRegion(model.getRegion())
+                    .withNewResourceGroup(model.getResourceGroup())
+                    .withNewWindowsPlan(pricing);
+        } else {
+            withCreate = azure.webApps().define(model.getWebAppName())
+                    .withRegion(model.getRegion())
+                    .withExistingResourceGroup(model.getResourceGroup())
+                    .withNewWindowsPlan(pricing);
+        }
+        return withCreate;
+    }
+
+    private static WebApp.DefinitionStages.WithCreate withCreateExistingSPlan(
+            @NotNull Azure azure,
+            @NotNull WebAppSettingModel model
+    ) throws Exception {
+        AppServicePlan servicePlan =  azure.appServices().appServicePlans().getById(model.getAppServicePlan());
+        WebApp.DefinitionStages.WithCreate withCreate = null;
+        if (model.isCreatingResGrp()) {
+            withCreate = azure.webApps().define(model.getWebAppName())
+                    .withExistingWindowsPlan(servicePlan)
+                    .withNewResourceGroup(model.getResourceGroup());
+        } else {
+            withCreate = azure.webApps().define(model.getWebAppName())
+                    .withExistingWindowsPlan(servicePlan)
+                    .withExistingResourceGroup(model.getResourceGroup());
+        }
+
+        return withCreate;
+    }
+
+    private static WebApp createWebAppWithMsg(
+            WebAppSettingModel webAppSettingModel, RunProcessHandler handler) throws Exception {
+        handler.println(CREATE_WEBAPP, ProcessOutputTypes.STDOUT);
+        WebApp webApp = createWebApp(webAppSettingModel);
+        if (null == webApp) {
+            return null;
+        }
+        if (!WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(webAppSettingModel.getJdkChoice())) {
+            handler.println(DEPLOY_JDK, ProcessOutputTypes.STDOUT);
+            //TODO: wrap a new message to replace deployCustomJdk
+            WebAppUtils.deployCustomJdk(webApp, webAppSettingModel.getJdkUrl(),
+                    WebContainer.fromString(webAppSettingModel.getWebContainer()),
+                    null);
+            handler.println(JDK_SUCCESSFUL, ProcessOutputTypes.STDOUT);
+        }
+        handler.println(CREATE_SUCCESSFUL, ProcessOutputTypes.STDOUT);
+
+        return webApp;
+    }
+
     public static void deployWebApp(WebAppSettingModel webAppSettingModel, RunProcessHandler handler) {
         Observable.fromCallable(() -> {
+            WebApp webApp = null;
             if (webAppSettingModel.isCreatingNew()) {
-                //todo: creating
+                webApp = createWebAppWithMsg(webAppSettingModel, handler);
+            } else {
+                webApp = AzureWebAppMvpModel.getInstance()
+                        .getWebAppById(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppId());
             }
+
+            if (webApp == null) {
+                throw new Exception("Cannot get webapp for deploy");
+            }
+
             handler.println(GETTING_DEPLOYMENT_CREDENTIAL, ProcessOutputTypes.STDOUT);
-            WebApp webApp = AzureWebAppMvpModel.getInstance().getWebAppById(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppId());
             FTPClient ftp;
-            FileInputStream input;
             handler.println(CONNECTING_FTP, ProcessOutputTypes.STDOUT);
             ftp = WebAppUtils.getFtpConnection(webApp.getPublishingProfile());
             handler.println(UPLOADING_WAR, ProcessOutputTypes.STDOUT);
-            input = new FileInputStream(webAppSettingModel.getTargetPath());
+            FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath());
             boolean isSuccess;
             if (webAppSettingModel.isDeployToRoot()) {
                 // Deploy to Root
@@ -84,10 +193,10 @@ public class WebDeployUtil {
             if (ftp.isConnected()) {
                 ftp.disconnect();
             }
-            return null;
+            return true;
         })
         .subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io())
-        .subscribe(number -> {
+        .subscribe(isSucceeded -> {
             handler.println(DEPLOY_SUCCESSFUL, ProcessOutputTypes.STDOUT);
             handler.print("URL: ", ProcessOutputTypes.STDOUT);
             String url = webAppSettingModel.getWebAppUrl();
