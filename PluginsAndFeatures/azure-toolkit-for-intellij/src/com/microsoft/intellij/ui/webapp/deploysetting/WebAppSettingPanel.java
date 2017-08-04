@@ -160,10 +160,12 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         rdoThirdPartyJdk.addActionListener(e -> {
             toggleJdkPanel(WebAppSettingModel.JdkChoice.THIRD_PARTY);
             lastJdkChoice = WebAppSettingModel.JdkChoice.THIRD_PARTY;
+            cbThirdPartyJdk.requestFocus();
         });
         rdoDownloadOwnJdk.addActionListener(e -> {
             toggleJdkPanel(WebAppSettingModel.JdkChoice.CUSTOM);
             lastJdkChoice = WebAppSettingModel.JdkChoice.CUSTOM;
+            txtJdkUrl.requestFocus();
         });
 
         cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
@@ -287,59 +289,58 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     }
 
     public void applyEditorTo(@NotNull WebAppConfiguration webAppConfiguration) {
-        WebAppSettingModel model = webAppConfiguration.getWebAppSettingModel();
         if (rdoUseExist.isSelected()) {
-            model.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
-            model.setSubscriptionId(selectedWebApp == null ? "" : selectedWebApp.getSubscriptionId());
-            model.setWebAppUrl(selectedWebApp == null ? "" : URL_PREFIX + selectedWebApp.getResource().defaultHostName());
-            model.setDeployToRoot(chkToRoot.isSelected());
-            model.setCreatingNew(false);
+            webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
+            webAppConfiguration.setSubscriptionId(selectedWebApp == null ? "" : selectedWebApp.getSubscriptionId());
+            webAppConfiguration.setWebAppUrl(selectedWebApp == null ? "" : URL_PREFIX + selectedWebApp.getResource().defaultHostName());
+            webAppConfiguration.setDeployToRoot(chkToRoot.isSelected());
+            webAppConfiguration.setCreatingNew(false);
         } else if (rdoCreateNew.isSelected()) {
-            model.setWebAppName(txtWebAppName.getText());
-            model.setSubscriptionId(lastSelectedSid);
+            webAppConfiguration.setWebAppName(txtWebAppName.getText());
+            webAppConfiguration.setSubscriptionId(lastSelectedSid);
             WebAppUtils.WebContainerMod container = (WebAppUtils.WebContainerMod) cbWebContainer.getSelectedItem();
-            model.setWebContainer(container == null ? "" : container.getValue());
+            webAppConfiguration.setWebContainer(container == null ? "" : container.getValue());
             // resource group
             if (rdoCreateResGrp.isSelected()) {
-                model.setCreatingResGrp(true);
-                model.setResourceGroup(txtNewResGrp.getText());
+                webAppConfiguration.setCreatingResGrp(true);
+                webAppConfiguration.setResourceGroup(txtNewResGrp.getText());
             } else {
-                model.setCreatingResGrp(false);
-                model.setResourceGroup(lastSelectedResGrp);
+                webAppConfiguration.setCreatingResGrp(false);
+                webAppConfiguration.setResourceGroup(lastSelectedResGrp);
             }
             // app service plan
             if (rdoCreateAppServicePlan.isSelected()) {
-                model.setCreatingAppServicePlan(true);
-                model.setAppServicePlan(txtCreateAppServicePlan.getText());
+                webAppConfiguration.setCreatingAppServicePlan(true);
+                webAppConfiguration.setAppServicePlan(txtCreateAppServicePlan.getText());
 
-                model.setRegion(lastSelectedLocation == null ? "" : lastSelectedLocation);
-                model.setPricing(lastSelectedPriceTier == null ? "" : lastSelectedPriceTier);
+                webAppConfiguration.setRegion(lastSelectedLocation == null ? "" : lastSelectedLocation);
+                webAppConfiguration.setPricing(lastSelectedPriceTier == null ? "" : lastSelectedPriceTier);
             } else {
-                model.setCreatingAppServicePlan(false);
+                webAppConfiguration.setCreatingAppServicePlan(false);
                 AppServicePlan appServicePlan = (AppServicePlan) cbExistAppServicePlan.getSelectedItem();
                 if (appServicePlan != null) {
-                    model.setAppServicePlan(appServicePlan.id());
+                    webAppConfiguration.setAppServicePlan(appServicePlan.id());
                 }
             }
             // JDK
             switch (lastJdkChoice) {
                 case DEFAULT:
-                    model.setJdkChoice(lastJdkChoice.toString());
+                    webAppConfiguration.setJdkChoice(lastJdkChoice.toString());
                     break;
                 case THIRD_PARTY:
-                    model.setJdkChoice(lastJdkChoice.toString());
+                    webAppConfiguration.setJdkChoice(lastJdkChoice.toString());
                     AzulZuluModel azulZuluModel = (AzulZuluModel) cbThirdPartyJdk.getSelectedItem();
-                    model.setJdkUrl(azulZuluModel == null ? "" : azulZuluModel.getDownloadUrl());
+                    webAppConfiguration.setJdkUrl(azulZuluModel == null ? "" : azulZuluModel.getDownloadUrl());
                     break;
                 case CUSTOM:
-                    model.setJdkChoice(lastJdkChoice.toString());
-                    model.setJdkUrl(txtJdkUrl.getText());
-                    model.setStorageKey(txtAccountKey.getText());
+                    webAppConfiguration.setJdkChoice(lastJdkChoice.toString());
+                    webAppConfiguration.setJdkUrl(txtJdkUrl.getText());
+                    webAppConfiguration.setStorageKey(txtAccountKey.getText());
                     break;
                 default:
                     break;
             }
-            model.setCreatingNew(true);
+            webAppConfiguration.setCreatingNew(true);
         }
 
         // Get maven project output full path and file name
@@ -347,8 +348,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         String targetPath = new File(mavenProject.getBuildDirectory()).getPath()
                 + File.separator + mavenProject.getFinalName() + "." + mavenProject.getPackaging();
         String targetName = mavenProject.getFinalName() + "." + mavenProject.getPackaging();
-        model.setTargetPath(targetPath);
-        model.setTargetName(targetName);
+        webAppConfiguration.setTargetPath(targetPath);
+        webAppConfiguration.setTargetName(targetName);
     }
 
     @Override
@@ -445,6 +446,13 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         table.getSelectionModel().addListSelectionListener(event -> {
+            if (event.getValueIsAdjusting()) {
+                return;
+            }
+            if (table.getSelectedRow() < 0) {
+                selectedWebApp = null;
+                return;
+            }
             if (cachedWebAppList != null) {
                 selectedWebApp = cachedWebAppList.get(table.getSelectedRow());
             }
