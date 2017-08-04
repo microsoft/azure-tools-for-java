@@ -30,11 +30,13 @@ import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -72,22 +74,19 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
 
     @Override
     public void checkConfiguration() throws RuntimeConfigurationException {
-
     }
 
     @Override
     public void readExternal(Element element) throws InvalidDataException {
         super.readExternal(element);
         firstTimeCreated = Comparing.equal(element.getAttributeValue("default"), "true");
-        webAppOnLinuxDeployModel.readExternal(element.getChild(CONFIGURATION_ELEMENT_NODE_NAME));
+        webAppOnLinuxDeployModel.readExternal(element);
     }
 
     @Override
     public void writeExternal(Element element) throws WriteExternalException {
         super.writeExternal(element);
-        Element thisElement = new Element(CONFIGURATION_ELEMENT_NODE_NAME);
-        webAppOnLinuxDeployModel.writeExternal(thisElement);
-        element.addContent(thisElement);
+        webAppOnLinuxDeployModel.writeExternal(element);
     }
 
     @Nullable
@@ -95,5 +94,90 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment)
             throws ExecutionException {
         return new WebAppOnLinuxDeployState(getProject(), webAppOnLinuxDeployModel);
+    }
+
+    public void validate() throws ConfigurationException {
+        // TODO: Add validation
+    }
+
+    public String getAppName() {
+        return webAppOnLinuxDeployModel.getWebAppName();
+    }
+
+    public void setAppName(String appName) {
+        webAppOnLinuxDeployModel.setWebAppName(appName);
+    }
+
+    public String getSubscriptionId() {
+        return webAppOnLinuxDeployModel.getSubscriptionId();
+    }
+
+    public void setSubscriptionId(String subscriptionId) {
+        webAppOnLinuxDeployModel.setSubscriptionId(subscriptionId);
+    }
+
+    public boolean isCreatingNewResourceGroup() {
+        return webAppOnLinuxDeployModel.isCreatingNewResourceGroup();
+    }
+
+    public void setCreatingNewResourceGroup(boolean creatingNewResourceGroup) {
+        webAppOnLinuxDeployModel.setCreatingNewResourceGroup
+                (creatingNewResourceGroup);
+    }
+
+    public String getResourceGroupName() {
+        return webAppOnLinuxDeployModel.getResourceGroupName();
+    }
+
+    public void setResourceGroupName(String resourceGroupName) {
+        webAppOnLinuxDeployModel.setResourceGroupName(resourceGroupName);
+    }
+
+    public String getLocationName() {
+        return webAppOnLinuxDeployModel.getLocationName();
+    }
+
+    public void setLocationName(String locationName) {
+        webAppOnLinuxDeployModel.setLocationName(locationName);
+    }
+
+    public String getPricingSkuTier() {
+        return webAppOnLinuxDeployModel.getPricingSkuTier();
+    }
+
+    public void setPricingSkuTier(String pricingSkuTier) {
+        webAppOnLinuxDeployModel.setPricingSkuTier(pricingSkuTier);
+    }
+
+    public String getPricingSkuSize() {
+        return webAppOnLinuxDeployModel.getPricingSkuSize();
+    }
+
+    public void setPricingSkuSize(String pricingSkuSize) {
+        webAppOnLinuxDeployModel.setPricingSkuSize(pricingSkuSize);
+    }
+
+    public PrivateRegistryImageSetting getPrivateRegistryImageSetting() {
+        return webAppOnLinuxDeployModel.getPrivateRegistryImageSetting();
+    }
+
+    public void setPrivateRegistryImageSetting(PrivateRegistryImageSetting privateRegistryImageSetting) {
+        webAppOnLinuxDeployModel.setPrivateRegistryImageSetting(privateRegistryImageSetting);
+    }
+
+    public String getWebAppId() {
+        return webAppOnLinuxDeployModel.getWebAppId();
+    }
+
+    public void setWebAppId(String webAppId) {
+        webAppOnLinuxDeployModel.setWebAppId(webAppId);
+    }
+
+    public boolean isCreatingNewWebAppOnLinux() {
+        return webAppOnLinuxDeployModel.isCreatingNewWebAppOnLinux();
+    }
+
+    public void setCreatingNewWebAppOnLinux(boolean creatingNewWebAppOnLinux) {
+        webAppOnLinuxDeployModel.setCreatingNewWebAppOnLinux(creatingNewWebAppOnLinux);
     }
 }

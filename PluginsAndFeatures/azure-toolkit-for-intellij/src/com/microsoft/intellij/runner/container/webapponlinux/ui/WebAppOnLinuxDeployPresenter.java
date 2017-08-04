@@ -22,6 +22,8 @@
 
 package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
+import rx.Observable;
+
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -29,13 +31,16 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import rx.Observable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> extends MvpPresenter<V> {
     private static final String CANNOT_LIST_WEB_APP = "Failed to list web apps.";
+    private static final String CANNOT_LIST_SUBSCRIPTION = "Failed to list subscriptions.";
+    private static final String CANNOT_LIST_RESOURCE_GROUP = "Failed to list resource group.";
+    private static final String CANNOT_LIST_PRICING_TIER = "Failed to list pricing tier.";
+    private static final String CANNOT_LIST_LOCATION = "Failed to list location.";
 
     private List<ResourceEx<SiteInner>> retrieveListOfWebAppOnLinux(boolean force) {
         List<ResourceEx<SiteInner>> ret = new ArrayList<>();
@@ -47,7 +52,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
         return ret;
     }
 
-    public void onLoadList() {
+    public void onLoadAppList() {
         Observable.fromCallable(() -> retrieveListOfWebAppOnLinux(false))
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(webAppList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
@@ -56,7 +61,6 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                     }
                     getMvpView().renderWebAppOnLinuxList(webAppList);
                 }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
-
     }
 
     public void onRefreshList() {
@@ -68,7 +72,17 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                     }
                     getMvpView().renderWebAppOnLinuxList(webAppList);
                 }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
+    }
 
+    public void onLoadSubscriptionList() {
+        Observable.fromCallable(() -> AzureMvpModel.getInstance().getSelectedSubscriptions())
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(subscriptions -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().renderSubscriptionList(subscriptions);
+                }), e -> errorHandler(CANNOT_LIST_SUBSCRIPTION, (Exception) e));
     }
 
     private void errorHandler(String msg, Exception e) {
@@ -80,4 +94,38 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
         });
     }
 
+    public void onLoadResourceGroup(String sid) {
+        Observable.fromCallable(() -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sid))
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(resourceGroupList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().renderResourceGroupList(resourceGroupList);
+                }), e -> errorHandler(CANNOT_LIST_RESOURCE_GROUP, (Exception) e));
+    }
+
+    public void onLoadLocationList(String sid) {
+        Observable.fromCallable(() -> AzureMvpModel.getInstance().listLocationsBySubscriptionId(sid))
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(locationList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().renderLocationList(locationList);
+                }), e -> errorHandler(CANNOT_LIST_LOCATION, (Exception) e));
+
+    }
+
+    public void onLoadPricingTierList() {
+        Observable.fromCallable(() -> AzureMvpModel.getInstance().listPricingTier())
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(pricingTierList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().renderPricingTierList(pricingTierList);
+                }), e -> errorHandler(CANNOT_LIST_PRICING_TIER, (Exception) e));
+
+    }
 }

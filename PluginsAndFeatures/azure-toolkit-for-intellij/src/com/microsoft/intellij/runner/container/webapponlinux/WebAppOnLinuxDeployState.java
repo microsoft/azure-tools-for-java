@@ -22,14 +22,15 @@
 
 package com.microsoft.intellij.runner.container.webapponlinux;
 
+import rx.Observable;
+import rx.schedulers.Schedulers;
+
 import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
@@ -45,14 +46,12 @@ import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.ProgressHandler;
 import com.spotify.docker.client.exceptions.DockerException;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
-import rx.Observable;
-import rx.schedulers.Schedulers;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 public class WebAppOnLinuxDeployState implements RunProfileState {
@@ -75,9 +74,6 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
         Observable.fromCallable(
                 () -> {
                     println("Starting job ...  ");
-                    WebAppOnLinuxDeployModel.WebAppOnLinuxInfo webInfo = webAppOnLinuxDeployModel
-                            .getWebAppOnLinuxInfo();
-
                     // locate war file to specified location
                     println("Locate war file ...  ");
                     List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getRootProjects();
@@ -101,14 +97,15 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                             throw new DockerException(message.toString());
                         }
                     };
-                    PrivateRegistryImageSetting acrInfo = webAppOnLinuxDeployModel.getAzureContainerRegistryInfo();
+                    PrivateRegistryImageSetting acrInfo = webAppOnLinuxDeployModel.getPrivateRegistryImageSetting();
                     DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
                             latestImageName, acrInfo.getImageNameWithTag(), progressHandler);
 
                     // update WebApp
                     println("Update WebApp ...  ");
-                    WebApp app = AzureWebAppMvpModel.getInstance().updateWebAppOnLinux(webInfo.getSubscriptionId(),
-                            webInfo.getWebAppId(), acrInfo);
+                    WebApp app = AzureWebAppMvpModel.getInstance().updateWebAppOnLinux(webAppOnLinuxDeployModel
+                                    .getSubscriptionId(),
+                            webAppOnLinuxDeployModel.getWebAppId(), acrInfo);
                     if (app != null && app.name() != null) {
                         println(String.format("URL:  http://%s.azurewebsites.net/%s", app.name(), project.getName()));
                     }

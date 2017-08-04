@@ -24,65 +24,71 @@ package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
+import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
+import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfiguration;
-import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployModel;
 
-import javax.swing.JButton;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class SettingPanel implements WebAppOnLinuxDeployView {
-    private static final String REGEX_VALID_RG_NAME = "^[\\w-]*\\w+$";
-    private static final String REGEX_VALID_APP_NAME = "^[\\w-]*\\w+$";
-    private Project project;
+    private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
     private JTextField textServerUrl;
     private JTextField textUsername;
     private JPasswordField passwordField;
     private JTextField textAppName;
     private JComboBox comboSubscription;
     private JComboBox comboResourceGroup;
-    private JButton btnRefreshList;
     private JTextField textImageTag;
     private JTextField textStartupFile;
-    private JComboBox comboWebApps;
-    private JPanel panelUpdate;
-    private JPanel panelCreate;
+    private JPanel pnlUpdate;
     private JPanel rootPanel;
     private JPanel pnlWebAppOnLinuxTable;
+    private JRadioButton rdoUseExist;
+    private JRadioButton rdoCreateNew;
+    private JPanel pnlCreate;
+    private JComboBox cbLocation;
+    private JComboBox cbPricing;
+    private JRadioButton rdoCreateResGrp;
+    private JTextField txtNewResGrp;
+    private JRadioButton rdoUseExistResGrp;
     private JBTable webAppTable;
     private List<ResourceEx<SiteInner>> cachedList;
-    private ResourceEx<SiteInner> selectedWebApp;
-
-    private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
+    private String defaultWebAppId;
+    private String defaultLocationName;
+    private String defaultPricingTier;
+    private String defaultResourceGroup;
+    private String defaultSubscriptionId;
 
     public SettingPanel() {
         webAppOnLinuxDeployPresenter = new WebAppOnLinuxDeployPresenter<>();
         webAppOnLinuxDeployPresenter.onAttachView(this);
 
-        btnRefreshList.addActionListener(event -> onRefreshButtonSelection());
+        // set create/update panel visible
+        updatePanelVisibility();
+        rdoCreateNew.addActionListener(e -> updatePanelVisibility());
+        rdoUseExist.addActionListener(e -> updatePanelVisibility());
+
+        // resource group
         comboResourceGroup.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
             @Override
             public void customize(JList jList, ResourceGroup resourceGroup, int index, boolean isSelected, boolean
@@ -91,8 +97,12 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                     setText(resourceGroup.name());
                 }
             }
-
         });
+        updateResourceGroupEnabled();
+        rdoCreateResGrp.addActionListener(e -> updateResourceGroupEnabled());
+        rdoUseExistResGrp.addActionListener(e -> updateResourceGroupEnabled());
+
+        // subscription combo
         comboSubscription.setRenderer(new ListCellRendererWrapper<Subscription>() {
             @Override
             public void customize(JList jList, Subscription subscription, int index, boolean isSelected, boolean
@@ -102,155 +112,163 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 }
             }
         });
+        // TODO: should specify selection change action.
         comboSubscription.addActionListener(event -> onComboSubscriptionSelection());
 
-        comboWebApps.setRenderer(new ListCellRendererWrapper<ResourceEx<SiteInner>>() {
+        // location combo
+        cbLocation.setRenderer(new ListCellRendererWrapper<Location>() {
             @Override
-            public void customize(JList jList, ResourceEx<SiteInner> siteInnerResourceEx, int index, boolean
-                    isSelected, boolean cellHasFocus) {
-                if (siteInnerResourceEx != null) {
-                    setText(siteInnerResourceEx.getResource().name());
+            public void customize(JList jList, Location location, int index, boolean isSelected, boolean cellHasFocus) {
+                if (location != null) {
+                    setText(location.displayName());
                 }
             }
         });
-        comboWebApps.addItemListener((event) -> {
-            if (comboWebApps.getSelectedItem() instanceof ResourceEx) {
-                SiteInner si = (SiteInner) ((ResourceEx) comboWebApps.getSelectedItem()).getResource();
-                String sid = ((ResourceEx) comboWebApps.getSelectedItem()).getSubscriptionId();
-                Subscription sb = AzureMvpModel.getInstance().getSubscriptionById(sid);
-                comboSubscription.setSelectedItem(sb);
-                comboResourceGroup.removeAllItems();
-                for (ResourceGroup rg : AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sid)) {
-                    comboResourceGroup.addItem(rg);
-                    if (Comparing.equal(rg.name(), si.resourceGroup())) {
-                        comboResourceGroup.setSelectedItem(rg);
-                    }
-                }
-                textAppName.setText(si.name());
-            } else {
-                textAppName.setText("");
-            }
 
+        // pricing tier combo
+        cbPricing.setRenderer(new ListCellRendererWrapper<PricingTier>() {
+            @Override
+            public void customize(JList jList, PricingTier pricingTier, int index, boolean isSelected, boolean
+                    cellHasFocus) {
+                if (pricingTier != null) {
+                    setText(pricingTier.toString());
+                }
+            }
         });
+
     }
 
     public JPanel getRootPanel() {
         return rootPanel;
     }
 
-    private void onTextAppNameModify() {
-        if (textAppName.getText().matches(REGEX_VALID_APP_NAME)) {
-            textAppName.setForeground(new Color(0, 0, 0));
-        } else {
-            textAppName.setForeground(new Color(255, 0, 0));
-        }
-    }
-
-
-    private void onRefreshButtonSelection() {
-        loadCombosInfo(null);
-    }
-
-    private void setWidgetsEnabledStatus(boolean enabledStatus) {
-        setEnabledRecursively(btnRefreshList, enabledStatus);
-        if (enabledStatus == true) {
-            //radioResourceGroupLogic();
-        }
-    }
-
     private void onComboSubscriptionSelection() {
-        // TODO
+        comboResourceGroup.removeAllItems();
+        cbLocation.removeAllItems();
+        Subscription sb = (Subscription) comboSubscription.getSelectedItem();
+        if (sb != null) {
+            updateResourceGroupList(sb.subscriptionId());
+            updateLocationList(sb.subscriptionId());
+        }
     }
 
-    private void setEnabledRecursively(Component component, boolean enabled) {
-        component.setEnabled(enabled);
-        if (component instanceof Container) {
-            for (Component child : ((Container) component).getComponents()) {
-                setEnabledRecursively(child, enabled);
+    /**
+     * Function triggered by any content change events.
+     *
+     * @param webAppOnLinuxDeployConfiguration configuration instance
+     */
+    public void apply(WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
+        // set ACR info
+        webAppOnLinuxDeployConfiguration.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(
+                textServerUrl.getText(),
+                textUsername.getText(),
+                String.valueOf(passwordField.getPassword()),
+                textImageTag.getText(),
+                textStartupFile.getText()
+        ));
+
+        // set web app info
+        if (rdoUseExist.isSelected()) {
+            // existing web app
+            webAppOnLinuxDeployConfiguration.setCreatingNewWebAppOnLinux(false);
+            ResourceEx<SiteInner> selectedWebApp = null;
+            int index = webAppTable.getSelectedRow();
+            if (cachedList != null && index > 0 && index < cachedList.size()) {
+                selectedWebApp = cachedList.get(webAppTable.getSelectedRow());
+            }
+            if (selectedWebApp != null) {
+                webAppOnLinuxDeployConfiguration.setWebAppId(selectedWebApp.getResource().id());
+                webAppOnLinuxDeployConfiguration.setAppName(selectedWebApp.getResource().name());
+                webAppOnLinuxDeployConfiguration.setSubscriptionId(selectedWebApp.getSubscriptionId());
+                webAppOnLinuxDeployConfiguration.setResourceGroupName(selectedWebApp.getResource().resourceGroup());
+            }
+        } else if (rdoCreateNew.isSelected()) {
+            // create new web app
+            webAppOnLinuxDeployConfiguration.setCreatingNewWebAppOnLinux(true);
+            webAppOnLinuxDeployConfiguration.setWebAppId("");
+            webAppOnLinuxDeployConfiguration.setAppName(textAppName.getText());
+            Subscription selectedSubscription = (Subscription) comboSubscription.getSelectedItem();
+            if (selectedSubscription != null) {
+                webAppOnLinuxDeployConfiguration.setSubscriptionId(selectedSubscription.subscriptionId());
+            }
+
+            // resource group
+            if (rdoUseExistResGrp.isSelected()) {
+                // existing RG
+                webAppOnLinuxDeployConfiguration.setCreatingNewResourceGroup(false);
+                ResourceGroup selectedRg = (ResourceGroup) comboResourceGroup.getSelectedItem();
+                if (selectedRg != null) {
+                    webAppOnLinuxDeployConfiguration.setResourceGroupName(selectedRg.name());
+                }
+            } else if (rdoCreateResGrp.isSelected()) {
+                // new RG
+                webAppOnLinuxDeployConfiguration.setCreatingNewResourceGroup(true);
+                webAppOnLinuxDeployConfiguration.setResourceGroupName(txtNewResGrp.getText());
+            }
+
+            // app service plan
+            // TODO: use existing ASP
+            Location selectedLocation = (Location) cbLocation.getSelectedItem();
+            if (selectedLocation != null) {
+                webAppOnLinuxDeployConfiguration.setLocationName(selectedLocation.region().name());
+            }
+
+            PricingTier selectedPricingTier = (PricingTier) cbPricing.getSelectedItem();
+            if (selectedPricingTier != null) {
+                webAppOnLinuxDeployConfiguration.setPricingSkuTier(selectedPricingTier.toSkuDescription().tier());
+                webAppOnLinuxDeployConfiguration.setPricingSkuSize(selectedPricingTier.toSkuDescription().size());
             }
         }
     }
 
-    public void apply(WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
-        WebAppOnLinuxDeployModel model = webAppOnLinuxDeployConfiguration.getWebAppOnLinuxDeployModel();
-        PrivateRegistryImageSetting acrInfo = model.getAzureContainerRegistryInfo();
-        acrInfo.setServerUrl(textServerUrl.getText());
-        acrInfo.setUsername(textUsername.getText());
-        acrInfo.setPassword(String.valueOf(passwordField.getPassword()));
-        acrInfo.setImageNameWithTag(textImageTag.getText());
-        acrInfo.setStartupFile(textStartupFile.getText());
-
-        WebAppOnLinuxDeployModel.WebAppOnLinuxInfo webAppInfo = model.getWebAppOnLinuxInfo();
-        // AppName
-        webAppInfo.setWebAppName(textAppName.getText());
-        Object selectedWebItem = comboWebApps.getSelectedItem();
-
-        // AppId
-        if (selectedWebItem instanceof ResourceEx) {
-            webAppInfo.setWebAppId(((SiteInner) ((ResourceEx) selectedWebItem).getResource()).id());
-        }
-
-        // Subs
-        Subscription selectedSubscription = (Subscription) comboSubscription.getSelectedItem();
-        if (selectedSubscription != null) {
-            webAppInfo.setSubscriptionId(selectedSubscription.subscriptionId());
-        }
-
-        // RG
-        Object selectedResourceGroup = comboResourceGroup.getSelectedItem();
-        if (selectedResourceGroup instanceof ResourceGroup) {
-            webAppInfo.setResourceGroupName(((ResourceGroup) selectedResourceGroup).name());
-        } else if (selectedResourceGroup != null) {
-            webAppInfo.setResourceGroupName(selectedResourceGroup.toString());
-        }
-    }
-
-    public void reset(WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
-        WebAppOnLinuxDeployModel model = webAppOnLinuxDeployConfiguration.getWebAppOnLinuxDeployModel();
-        PrivateRegistryImageSetting acrInfo = model.getAzureContainerRegistryInfo();
+    /**
+     * Function triggered in constructing the panel.
+     *
+     * @param conf configuration instance
+     */
+    public void reset(WebAppOnLinuxDeployConfiguration conf) {
+        PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
         textServerUrl.setText(acrInfo.getServerUrl());
         textUsername.setText(acrInfo.getUsername());
         passwordField.setText(acrInfo.getPassword());
         textImageTag.setText(acrInfo.getImageNameWithTag());
         textStartupFile.setText(acrInfo.getStartupFile());
 
-        WebAppOnLinuxDeployModel.WebAppOnLinuxInfo webAppInfo = model.getWebAppOnLinuxInfo();
-        textAppName.setText(webAppInfo.getWebAppName());
+        // cache for table/combo selection
+        defaultSubscriptionId = conf.getSubscriptionId();
+        defaultWebAppId = conf.getWebAppId();
+        defaultLocationName = conf.getLocationName();
+        defaultPricingTier = new PricingTier(conf.getPricingSkuTier(), conf.getPricingSkuSize()).toString();
+        defaultResourceGroup = conf.getResourceGroupName();
 
-        loadCombosInfo(webAppInfo.getWebAppId());
+        // pnlUseExisting
+        webAppOnLinuxDeployPresenter.onLoadAppList();
 
-        webAppOnLinuxDeployPresenter.onLoadList();
+        // pnlCreateNew
+        webAppOnLinuxDeployPresenter.onLoadSubscriptionList(); // including related RG & Location
+        webAppOnLinuxDeployPresenter.onLoadPricingTierList();
 
-    }
+        textAppName.setText(conf.getAppName());
 
-    private void loadCombosInfo(String activeWebAppId) {
-        comboSubscription.removeAllItems();
-        comboWebApps.removeAllItems();
-        for (Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-            comboSubscription.addItem(sb);
-            for (ResourceEx<SiteInner> si : AzureWebAppMvpModel.getInstance().listWebAppsOnLinuxBySubscriptionId(sb
-                    .subscriptionId(), false)) {
-                comboWebApps.addItem(si);
-                if (activeWebAppId != null && Comparing.equal(si.getResource().id(), activeWebAppId)) {
-                    comboWebApps.setSelectedItem(si);
-                    comboSubscription.setSelectedItem(sb);
-                    // update comboBox for RG
-                    comboResourceGroup.removeAllItems();
-                    for (ResourceGroup rg : AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sb
-                            .subscriptionId())) {
-                        comboResourceGroup.addItem(rg);
-                        if (Comparing.equal(rg.name(), si.getResource().resourceGroup())) {
-                            comboResourceGroup.setSelectedItem(rg);
-                        }
-
-                    }
-                }
-            }
+        boolean creatingRg = conf.isCreatingNewResourceGroup();
+        rdoCreateResGrp.setSelected(creatingRg);
+        rdoUseExistResGrp.setSelected(!creatingRg);
+        updateResourceGroupEnabled();
+        if (creatingRg) {
+            txtNewResGrp.setText(conf.getResourceGroupName());
         }
-        // comboWebApps.addItem("Create New");
+
+        // active panel
+        boolean creatingApp = conf.isCreatingNewWebAppOnLinux();
+        rdoCreateNew.setSelected(creatingApp);
+        rdoUseExist.setSelected(!creatingApp);
+        updatePanelVisibility();
+
+
     }
 
     private void createUIComponents() {
+        // create table of Web App on Linux
         DefaultTableModel tableModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -259,30 +277,32 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         };
         tableModel.addColumn("WebAppName");
         tableModel.addColumn("ResourceGroup");
-
         webAppTable = new JBTable(tableModel);
-
         webAppTable.setRowSelectionAllowed(true);
         webAppTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
         webAppTable.getSelectionModel().addListSelectionListener(event -> {
             System.out.println("table selected");
-            if (cachedList != null) {
-                selectedWebApp = cachedList.get(webAppTable.getSelectedRow());
-            }
         });
-
-        AnActionButton refreshAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
+        AnActionButton btnRefresh = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
+                webAppTable.removeAll();
                 webAppOnLinuxDeployPresenter.onRefreshList();
             }
         };
-
         ToolbarDecorator tableToolbarDecorator = ToolbarDecorator.createDecorator(webAppTable)
-                .addExtraActions(refreshAction);
-
+                .addExtraActions(btnRefresh);
         pnlWebAppOnLinuxTable = tableToolbarDecorator.createPanel();
+    }
+
+    private void updatePanelVisibility() {
+        pnlCreate.setVisible(rdoCreateNew.isSelected());
+        pnlUpdate.setVisible(rdoUseExist.isSelected());
+    }
+
+    private void updateResourceGroupEnabled() {
+        txtNewResGrp.setEnabled(rdoCreateResGrp.isSelected());
+        comboResourceGroup.setEnabled(rdoUseExistResGrp.isSelected());
     }
 
     @Override
@@ -304,5 +324,78 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             model.fireTableDataChanged();
         }
 
+        // select active web app
+        for (int index = 0; index < cachedList.size(); index++) {
+            if (Comparing.equal(cachedList.get(index).getResource().id(), defaultWebAppId)) {
+                webAppTable.setRowSelectionInterval(index, index);
+                defaultWebAppId = null; // clear to select nothing in future refreshing
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void renderSubscriptionList(List<Subscription> subscriptions) {
+        if (subscriptions != null && subscriptions.size() > 0) {
+            comboSubscription.removeAllItems();
+            subscriptions.forEach((item) -> {
+                comboSubscription.addItem(item);
+                if (Comparing.equal(item.subscriptionId(), defaultSubscriptionId)) {
+                    comboSubscription.setSelectedItem(item);
+                    defaultSubscriptionId = null;
+                }
+            });
+        }
+    }
+
+    @Override
+    public void renderResourceGroupList(List<ResourceGroup> resourceGroupList) {
+        if (resourceGroupList != null && resourceGroupList.size() > 0) {
+            comboResourceGroup.removeAllItems();
+            resourceGroupList.forEach((item) -> {
+                comboResourceGroup.addItem(item);
+                if (Comparing.equal(item.name(), defaultResourceGroup)) {
+                    comboResourceGroup.setSelectedItem(item);
+//                    defaultResourceGroup = null;
+                }
+            });
+        }
+    }
+
+    @Override
+    public void renderLocationList(List<Location> locationList) {
+        if (locationList != null && locationList.size() > 0) {
+            cbLocation.removeAllItems();
+            locationList.forEach((item) -> {
+                cbLocation.addItem(item);
+                if (Comparing.equal(item.region().name(), defaultLocationName)) {
+                    cbLocation.setSelectedItem(item);
+//                    defaultLocationName = null;
+                }
+            });
+        }
+    }
+
+    @Override
+    public void renderPricingTierList(List<PricingTier> pricingTierList) {
+        if (pricingTierList != null && pricingTierList.size() > 0) {
+            cbPricing.removeAllItems();
+            pricingTierList.forEach((item) -> {
+                cbPricing.addItem(item);
+                if (Comparing.equal(item.toString(), defaultPricingTier)) {
+                    cbPricing.setSelectedItem(item);
+                    defaultPricingTier = null;
+                }
+            });
+        }
+
+    }
+
+    private void updateResourceGroupList(String sid) {
+        webAppOnLinuxDeployPresenter.onLoadResourceGroup(sid);
+    }
+
+    private void updateLocationList(String sid) {
+        webAppOnLinuxDeployPresenter.onLoadLocationList(sid);
     }
 }
