@@ -82,7 +82,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private String lastSelectedResGrp;
     private String lastSelectedLocation;
     private String lastSelectedPriceTier;
-    private JdkChoice lastJdkChoice = JdkChoice.DEFAULT;
+    private WebAppSettingModel.JdkChoice lastJdkChoice = WebAppSettingModel.JdkChoice.DEFAULT;
 
     // const
     private static final String URL_PREFIX = "https://";
@@ -154,16 +154,16 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         btnGrpForJdk.add(rdoThirdPartyJdk);
         btnGrpForJdk.add(rdoDownloadOwnJdk);
         rdoDefaultJdk.addActionListener(e -> {
-            toggleJdkPanel(JdkChoice.DEFAULT);
-            lastJdkChoice = JdkChoice.DEFAULT;
+            toggleJdkPanel(WebAppSettingModel.JdkChoice.DEFAULT);
+            lastJdkChoice = WebAppSettingModel.JdkChoice.DEFAULT;
         });
         rdoThirdPartyJdk.addActionListener(e -> {
-            toggleJdkPanel(JdkChoice.THIRD_PARTY);
-            lastJdkChoice = JdkChoice.THIRD_PARTY;
+            toggleJdkPanel(WebAppSettingModel.JdkChoice.THIRD_PARTY);
+            lastJdkChoice = WebAppSettingModel.JdkChoice.THIRD_PARTY;
         });
         rdoDownloadOwnJdk.addActionListener(e -> {
-            toggleJdkPanel(JdkChoice.CUSTOM);
-            lastJdkChoice = JdkChoice.CUSTOM;
+            toggleJdkPanel(WebAppSettingModel.JdkChoice.CUSTOM);
+            lastJdkChoice = WebAppSettingModel.JdkChoice.CUSTOM;
         });
 
         cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
@@ -393,7 +393,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         lblPricing.setEnabled(!isCreatingNew);
     }
 
-    private void toggleJdkPanel(JdkChoice choice) {
+    private void toggleJdkPanel(WebAppSettingModel.JdkChoice choice) {
         switch (choice) {
             case DEFAULT:
                 lblDefaultJdk.setEnabled(true);
@@ -515,9 +515,5 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     @Override
     public void fillLocation(List<Location> locations) {
         locations.stream().sorted(Comparator.comparing(Location::displayName)).forEach(cbLocation::addItem);
-    }
-
-    private enum JdkChoice {
-        DEFAULT, THIRD_PARTY, CUSTOM
     }
 }

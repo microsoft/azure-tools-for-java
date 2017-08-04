@@ -225,4 +225,8 @@ public class WebAppSettingModel {
     public void setStorageKey(String storageKey) {
         this.storageKey = storageKey;
     }
+
+    public static enum JdkChoice {
+        DEFAULT, THIRD_PARTY, CUSTOM
+    }
 }

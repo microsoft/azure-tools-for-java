@@ -35,6 +35,21 @@ import javax.swing.JComponent;
 
 public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
 
+    // const string
+    private static final String INVALID_PROJECT_TYPE = "Current project is not a Maven project.";
+    private static final String NEED_CHOOSE_WEB_APP = "Choose a web app to deploy.";
+    private static final String MISSING_WEB_APP_NAME = "Web App name not provided.";
+    private static final String MISSING_SUBSCRIPTION = "Subscription not provided.";
+    private static final String MISSING_WEB_CONTAINER = "Web Container not provided.";
+    private static final String MISSING_RESOURCE_GROUP = "Resource Group not provided.";
+    private static final String MISSING_APP_SERVICE_PLAN = "App Service Plan not provided.";
+    private static final String MISSING_LOCATION = "Location not provided.";
+    private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
+    private static final String MISSING_JDK = "JDK not provided.";
+    private static final String MISSING_KEY = "Storage key not provided.";
+
+
+
     private final WebAppSettingPanel mainPanel;
     private final Project project;
 
@@ -65,23 +80,55 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
     }
 
     private void validateConfiguration(@NotNull WebAppConfiguration webAppConfiguration) throws ConfigurationException {
+        if (!MavenRunTaskUtil.isMavenProject(project)) {
+            throw new ConfigurationException(INVALID_PROJECT_TYPE);
+        }
+
         WebAppSettingModel model = webAppConfiguration.getWebAppSettingModel();
         if (model.isCreatingNew()) {
             if (Utils.isEmptyString(model.getWebAppName())) {
-                throw new ConfigurationException("Web App name not provided.");
+                throw new ConfigurationException(MISSING_WEB_APP_NAME);
             }
             if (Utils.isEmptyString(model.getSubscriptionId())) {
-                throw new ConfigurationException("Subscription not provided.");
+                throw new ConfigurationException(MISSING_SUBSCRIPTION);
             }
             if (Utils.isEmptyString(model.getWebContainer())) {
-                throw new ConfigurationException("Web Container not provided.");
+                throw new ConfigurationException(MISSING_WEB_CONTAINER);
+            }
+            if (Utils.isEmptyString(model.getResourceGroup())) {
+                throw new ConfigurationException(MISSING_RESOURCE_GROUP);
+            }
+            if (Utils.isEmptyString(model.getAppServicePlan())) {
+                throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
+            }
+            if (model.isCreatingAppServicePlan()) {
+                if (Utils.isEmptyString(model.getRegion())) {
+                    throw new ConfigurationException(MISSING_LOCATION);
+                }
+                if (Utils.isEmptyString(model.getPricing())) {
+                    throw new ConfigurationException(MISSING_PRICING_TIER);
+                }
+            }
+            switch (WebAppSettingModel.JdkChoice.valueOf(model.getJdkChoice())) {
+                case THIRD_PARTY:
+                    if (Utils.isEmptyString(model.getJdkUrl())) {
+                        throw new ConfigurationException(MISSING_JDK);
+                    }
+                    break;
+                case CUSTOM:
+                    if (Utils.isEmptyString(model.getJdkUrl())) {
+                        throw new ConfigurationException(MISSING_JDK);
+                    }
+                    if (Utils.isEmptyString(model.getStorageKey())) {
+                        throw new ConfigurationException(MISSING_KEY);
+                    }
+                    break;
+                default:
+                    break;
             }
         } else {
             if (Utils.isEmptyString(model.getWebAppId())) {
-                throw new ConfigurationException("Choose a web app to deploy.");
-            }
-            if (!MavenRunTaskUtil.isMavenProject(project)) {
-                throw new ConfigurationException("Current project is not a Maven project.");
+                throw new ConfigurationException(NEED_CHOOSE_WEB_APP);
             }
         }
     }
