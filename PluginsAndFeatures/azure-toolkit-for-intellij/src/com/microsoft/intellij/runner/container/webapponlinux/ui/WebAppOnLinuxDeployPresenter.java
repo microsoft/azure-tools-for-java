@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
+import com.microsoft.azure.management.appservice.PricingTier;
 import rx.Observable;
 
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
@@ -34,6 +35,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> extends MvpPresenter<V> {
     private static final String CANNOT_LIST_WEB_APP = "Failed to list web apps.";
@@ -124,8 +126,9 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                     if (isViewDetached()) {
                         return;
                     }
-                    getMvpView().renderPricingTierList(pricingTierList);
+                    getMvpView().renderPricingTierList(pricingTierList.stream()
+                            .filter(item -> !item.equals(PricingTier.FREE_F1) && !item.equals(PricingTier.SHARED_D1))
+                            .collect(Collectors.toList()));
                 }), e -> errorHandler(CANNOT_LIST_PRICING_TIER, (Exception) e));
-
     }
 }

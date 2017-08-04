@@ -64,19 +64,6 @@ public class WebAppOnLinuxDeployModel {
      */
     public void readExternal(Element element) {
         XmlSerializer.deserializeInto(this, element);
-//        PrivateRegistryImageSetting acrInfo = getPrivateRegistryImageSetting();
-//        Element acrElement = element.getChild(ELEMENT_ACR);
-//        acrInfo.setServerUrl(acrElement.getAttributeValue(ATTRIBUTE_SERVER_URL));
-//        acrInfo.setUsername(acrElement.getAttributeValue(ATTRIBUTE_USERNAME));
-//        acrInfo.setPassword(acrElement.getAttributeValue(ATTRIBUTE_PASSWORD));
-//        acrInfo.setImageNameWithTag(acrElement.getAttributeValue(ATTRIBUTE_IMAGENAME_WITH_TAG));
-//        acrInfo.setStartupFile(acrElement.getAttributeValue(ATTRIBUTE_STARTUP_FILE));
-//
-//        Element webElement = element.getChild(ELEMENT_WEBAPP);
-//        setWebAppId(webElement.getAttributeValue(ATTRIBUTE_WEBAPP_ID));
-//        setWebAppName(webElement.getAttributeValue(ATTRIBUTE_WEBAPP_NAME));
-//        setResourceGroupName(webElement.getAttributeValue(ATTRIBUTE_RESOURCE_GROUP_NAME));
-//        setSubscriptionId(webElement.getAttributeValue(ATTRIBUTE_SUBSCRIPTION_ID));
     }
 
     /**

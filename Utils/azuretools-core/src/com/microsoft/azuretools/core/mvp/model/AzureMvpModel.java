@@ -128,17 +128,13 @@ public class AzureMvpModel {
      *
      * @return List of PricingTier instances.
      */
-    public List<PricingTier> listPricingTier() {
+    public List<PricingTier> listPricingTier() throws IllegalAccessException {
         List<PricingTier> ret = new ArrayList<>();
         for (Field field : PricingTier.class.getDeclaredFields()) {
             int modifier = field.getModifiers();
             if (Modifier.isPublic(modifier) && Modifier.isStatic(modifier) && Modifier.isFinal(modifier)) {
-                try {
-                    PricingTier pt = (PricingTier) field.get(null);
-                    ret.add(pt);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
+                PricingTier pt = (PricingTier) field.get(null);
+                ret.add(pt);
             }
         }
         return ret;

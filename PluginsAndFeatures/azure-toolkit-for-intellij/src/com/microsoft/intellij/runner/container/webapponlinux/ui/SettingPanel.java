@@ -38,6 +38,7 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfiguration;
 
+import java.awt.event.ItemEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,7 +73,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private JTextField txtNewResGrp;
     private JRadioButton rdoUseExistResGrp;
     private JBTable webAppTable;
-    private List<ResourceEx<SiteInner>> cachedList;
+    private List<ResourceEx<SiteInner>> cachedWebAppList;
     private String defaultWebAppId;
     private String defaultLocationName;
     private String defaultPricingTier;
@@ -112,8 +113,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 }
             }
         });
-        // TODO: should specify selection change action.
-        comboSubscription.addActionListener(event -> onComboSubscriptionSelection());
+
+        comboSubscription.addItemListener(this::onComboSubscriptionSelection);
 
         // location combo
         cbLocation.setRenderer(new ListCellRendererWrapper<Location>() {
@@ -142,7 +143,10 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         return rootPanel;
     }
 
-    private void onComboSubscriptionSelection() {
+    private void onComboSubscriptionSelection(ItemEvent event) {
+        if (event.getStateChange() != ItemEvent.SELECTED) {
+            return;
+        }
         comboResourceGroup.removeAllItems();
         cbLocation.removeAllItems();
         Subscription sb = (Subscription) comboSubscription.getSelectedItem();
@@ -173,8 +177,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             webAppOnLinuxDeployConfiguration.setCreatingNewWebAppOnLinux(false);
             ResourceEx<SiteInner> selectedWebApp = null;
             int index = webAppTable.getSelectedRow();
-            if (cachedList != null && index > 0 && index < cachedList.size()) {
-                selectedWebApp = cachedList.get(webAppTable.getSelectedRow());
+            if (cachedWebAppList != null && index > 0 && index < cachedWebAppList.size()) {
+                selectedWebApp = cachedWebAppList.get(webAppTable.getSelectedRow());
             }
             if (selectedWebApp != null) {
                 webAppOnLinuxDeployConfiguration.setWebAppId(selectedWebApp.getResource().id());
@@ -310,8 +314,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         List<ResourceEx<SiteInner>> sortedList = webAppOnLinuxList.stream()
                 .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
                 .collect(Collectors.toList());
-        cachedList = sortedList;
-        if (cachedList.size() > 0) {
+        cachedWebAppList = sortedList;
+        if (cachedWebAppList.size() > 0) {
             DefaultTableModel model = (DefaultTableModel) webAppTable.getModel();
             model.getDataVector().clear();
             for (ResourceEx<SiteInner> resource : sortedList) {
@@ -325,8 +329,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         }
 
         // select active web app
-        for (int index = 0; index < cachedList.size(); index++) {
-            if (Comparing.equal(cachedList.get(index).getResource().id(), defaultWebAppId)) {
+        for (int index = 0; index < cachedWebAppList.size(); index++) {
+            if (Comparing.equal(cachedWebAppList.get(index).getResource().id(), defaultWebAppId)) {
                 webAppTable.setRowSelectionInterval(index, index);
                 defaultWebAppId = null; // clear to select nothing in future refreshing
                 break;
