@@ -38,6 +38,7 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.intellij.runner.webapp.WebAppConfigurationType;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -63,7 +64,8 @@ public class WebAppConfiguration extends RunConfigurationBase {
     private boolean firstTimeCreated = true;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory) {
-        super(project, factory, project.getName());
+        super(project, factory, String.format("%s:%s", WebAppConfigurationType.getInstance().getDisplayName(),
+                project.getName()));
         webAppSettingModel = new WebAppSettingModel();
     }
 

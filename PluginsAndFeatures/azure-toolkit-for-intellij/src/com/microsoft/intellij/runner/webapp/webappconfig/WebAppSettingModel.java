@@ -22,17 +22,10 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
+import com.intellij.util.xmlb.XmlSerializer;
 import org.jdom.Element;
 
 public class WebAppSettingModel {
-
-    private static final String WEB_APP_ID = "WebAppId";
-    private static final String SUBSCRIPTION_ID = "SubscriptionId";
-    private static final String WEB_APP_URL = "webAppUrl";
-    private static final String USING_EXISTING = "usingExisting";
-    private static final String DEPLOY_TO_ROOT = "deployToRoot";
-    private static final String TARGET_PATH = "targetPath";
-    private static final String TARGET_NAME = "targetName";
 
     // common settings
     private boolean creatingNew = false;
@@ -118,24 +111,12 @@ public class WebAppSettingModel {
 
     public void readExternal(Element element) {
         if (element != null) {
-            this.webAppId = element.getAttributeValue(WEB_APP_ID);
-            this.subscriptionId = element.getAttributeValue(SUBSCRIPTION_ID);
-            this.webAppUrl = element.getAttributeValue(WEB_APP_URL);
-            this.creatingNew = Boolean.valueOf(element.getAttributeValue(USING_EXISTING));
-            this.deployToRoot = Boolean.valueOf(element.getAttributeValue(DEPLOY_TO_ROOT));
-            this.targetPath = element.getAttributeValue(TARGET_PATH);
-            this.targetName = element.getAttributeValue(TARGET_NAME);
+            XmlSerializer.deserializeInto(this, element);
         }
     }
 
     public void writeExternal(Element element) {
-        element.setAttribute(WEB_APP_ID, this.webAppId);
-        element.setAttribute(SUBSCRIPTION_ID, this.subscriptionId);
-        element.setAttribute(WEB_APP_URL, this.webAppUrl);
-        element.setAttribute(USING_EXISTING, String.valueOf(this.creatingNew));
-        element.setAttribute(DEPLOY_TO_ROOT, String.valueOf(this.deployToRoot));
-        element.setAttribute(TARGET_PATH, this.targetPath);
-        element.setAttribute(TARGET_NAME, this.targetName);
+        XmlSerializer.serializeInto(this, element);
     }
 
     public String getWebAppName() {
