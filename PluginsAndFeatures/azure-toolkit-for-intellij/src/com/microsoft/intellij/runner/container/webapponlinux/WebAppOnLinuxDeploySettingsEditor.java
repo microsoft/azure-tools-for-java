@@ -53,6 +53,7 @@ public class WebAppOnLinuxDeploySettingsEditor extends SettingsEditor<WebAppOnLi
     @Override
     protected void applyEditorTo(@NotNull WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) throws
             ConfigurationException {
+        webAppOnLinuxDeployConfiguration.validate();
         settingPanel.apply(webAppOnLinuxDeployConfiguration);
     }
 
