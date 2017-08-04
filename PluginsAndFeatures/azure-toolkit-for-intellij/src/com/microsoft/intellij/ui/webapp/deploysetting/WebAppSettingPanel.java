@@ -293,7 +293,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             model.setSubscriptionId(selectedWebApp == null ? "" : selectedWebApp.getSubscriptionId());
             model.setWebAppUrl(selectedWebApp == null ? "" : URL_PREFIX + selectedWebApp.getResource().defaultHostName());
             model.setDeployToRoot(chkToRoot.isSelected());
-            model.setCreatingNew(true);
+            model.setCreatingNew(false);
         } else if (rdoCreateNew.isSelected()) {
             model.setWebAppName(txtWebAppName.getText());
             model.setSubscriptionId(lastSelectedSid);
@@ -339,7 +339,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 default:
                     break;
             }
-            model.setCreatingNew(false);
+            model.setCreatingNew(true);
         }
 
         // Get maven project output full path and file name
