@@ -30,6 +30,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.utils.IProgressIndicator;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.RunProcessHandler;
 
@@ -73,14 +74,14 @@ public class WebDeployUtil {
 
         WebApp.DefinitionStages.WithCreate withCreate =  null;
         if (model.isCreatingAppServicePlan()) {
-            withCreate =  withCreateNewSPlan(azure, model);
+            withCreate = withCreateNewSPlan(azure, model);
         } else {
-            withCreate =  withCreateExistingSPlan(azure, model);
+            withCreate = withCreateExistingSPlan(azure, model);
         }
 
         WebApp webApp = null;
         if (WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(model.getJdkChoice())) {
-            webApp =  withCreate
+            webApp = withCreate
                     .withJavaVersion(JavaVersion.JAVA_8_NEWEST)
                     .withWebContainer(WebContainer.fromString(model.getWebContainer()))
                     .create();
@@ -133,26 +134,26 @@ public class WebDeployUtil {
     }
 
     private static WebApp createWebAppWithMsg(
-            WebAppSettingModel webAppSettingModel, RunProcessHandler handler) throws Exception {
-        handler.println(CREATE_WEBAPP, ProcessOutputTypes.STDOUT);
+            WebAppSettingModel webAppSettingModel, IProgressIndicator handler) throws Exception {
+        handler.setText(CREATE_WEBAPP);
         WebApp webApp = createWebApp(webAppSettingModel);
         if (null == webApp) {
             return null;
         }
         if (!WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(webAppSettingModel.getJdkChoice())) {
-            handler.println(DEPLOY_JDK, ProcessOutputTypes.STDOUT);
+            handler.setText(DEPLOY_JDK);
             //TODO: wrap a new message to replace deployCustomJdk
             WebAppUtils.deployCustomJdk(webApp, webAppSettingModel.getJdkUrl(),
                     WebContainer.fromString(webAppSettingModel.getWebContainer()),
-                    null);
-            handler.println(JDK_SUCCESSFUL, ProcessOutputTypes.STDOUT);
+                    handler);
+            handler.setText(JDK_SUCCESSFUL);
         }
-        handler.println(CREATE_SUCCESSFUL, ProcessOutputTypes.STDOUT);
+        handler.setText(CREATE_SUCCESSFUL);
 
         return webApp;
     }
 
-    public static void deployWebApp(WebAppSettingModel webAppSettingModel, RunProcessHandler handler) {
+    public static void deployWebApp(WebAppSettingModel webAppSettingModel, IProgressIndicator handler) {
         Observable.fromCallable(() -> {
             WebApp webApp = null;
             if (webAppSettingModel.isCreatingNew()) {
@@ -166,11 +167,11 @@ public class WebDeployUtil {
                 throw new Exception("Cannot get webapp for deploy");
             }
 
-            handler.println(GETTING_DEPLOYMENT_CREDENTIAL, ProcessOutputTypes.STDOUT);
+            handler.setText(GETTING_DEPLOYMENT_CREDENTIAL);
             FTPClient ftp;
-            handler.println(CONNECTING_FTP, ProcessOutputTypes.STDOUT);
+            handler.setText(CONNECTING_FTP);
             ftp = WebAppUtils.getFtpConnection(webApp.getPublishingProfile());
-            handler.println(UPLOADING_WAR, ProcessOutputTypes.STDOUT);
+            handler.setText(UPLOADING_WAR);
             FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath());
             boolean isSuccess;
             if (webAppSettingModel.isDeployToRoot()) {
@@ -179,15 +180,15 @@ public class WebDeployUtil {
                 isSuccess = ftp.storeFile(ROOT_FILE_PATH, input);
             } else {
                 //Deploy according to war file name
-                WebAppUtils.removeFtpDirectory(ftp, BASE_PATH + webAppSettingModel.getTargetName(), null);
+                WebAppUtils.removeFtpDirectory(ftp, BASE_PATH + webAppSettingModel.getTargetName(), handler);
                 isSuccess = ftp.storeFile(BASE_PATH + webAppSettingModel.getTargetName(), input);
             }
             if (!isSuccess) {
                 int rc = ftp.getReplyCode();
                 throw new IOException("FTP client can't store the artifact, reply code: " + rc);
             }
-            handler.println(UPLOADING_SUCCESSFUL, ProcessOutputTypes.STDOUT);
-            handler.println(LOGGING_OUT, ProcessOutputTypes.STDOUT);
+            handler.setText(UPLOADING_SUCCESSFUL);
+            handler.setText(LOGGING_OUT);
             ftp.logout();
             input.close();
             if (ftp.isConnected()) {
@@ -197,18 +198,18 @@ public class WebDeployUtil {
         })
         .subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io())
         .subscribe(isSucceeded -> {
-            handler.println(DEPLOY_SUCCESSFUL, ProcessOutputTypes.STDOUT);
-            handler.print("URL: ", ProcessOutputTypes.STDOUT);
+            handler.setText(DEPLOY_SUCCESSFUL);
+            handler.setText("URL: ");
             String url = webAppSettingModel.getWebAppUrl();
             if (!webAppSettingModel.isDeployToRoot()) {
                 url += "/" + webAppSettingModel.getTargetName()
                         .substring(0, webAppSettingModel.getTargetName().indexOf("." + MavenConstants.TYPE_WAR));
             }
-            handler.println(url, ProcessOutputTypes.STDOUT);
-            handler.notifyProcessTerminated(0 /*exitCode*/);
+            handler.setText(url);
+            handler.notifyComplete();
         }, err -> {
-            handler.notifyTextAvailable(err.getMessage(), ProcessOutputTypes.STDERR);
-            handler.notifyProcessTerminated(0 /*exitCode*/);
+            handler.setText(err.getMessage());
+            handler.notifyComplete();
         });
     }
 }

@@ -25,12 +25,15 @@ package com.microsoft.intellij.runner;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessListener;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.util.Key;
+import com.microsoft.azuretools.utils.IProgressIndicator;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.io.OutputStream;
 
-public class RunProcessHandler extends ProcessHandler {
+public class RunProcessHandler extends ProcessHandler implements IProgressIndicator {
 
     private static final String PROCESS_TERMINATED = "The process has been terminated";
 
@@ -59,6 +62,11 @@ public class RunProcessHandler extends ProcessHandler {
         super.notifyProcessTerminated(exitCode);
     }
 
+    /**
+     *
+     * @param message String value.
+     * @param type Key value.
+     */
     public void print(String message, Key type) {
         if (!this.isProcessTerminating() && !this.isProcessTerminated()) {
             this.notifyTextAvailable(message, type);
@@ -67,6 +75,11 @@ public class RunProcessHandler extends ProcessHandler {
         }
     }
 
+    /**
+     *
+     * @param message String value.
+     * @param type Key value.
+     */
     public void println(String message, Key type) {
         if (!this.isProcessTerminating() && !this.isProcessTerminated()) {
             this.notifyTextAvailable(message + "\n", type);
@@ -75,6 +88,9 @@ public class RunProcessHandler extends ProcessHandler {
         }
     }
 
+    /**
+     * Process handler to show the progress message.
+     */
     public RunProcessHandler() {
         this.addProcessListener(new ProcessListener() {
             @Override
@@ -94,5 +110,28 @@ public class RunProcessHandler extends ProcessHandler {
             public void onTextAvailable(ProcessEvent processEvent, Key key) {
             }
         });
+    }
+
+    @Override
+    public void setText(String text) {
+        println(text, ProcessOutputTypes.STDOUT);
+    }
+
+    @Override
+    public void setText2(String text2) {
+        setText(text2);
+    }
+
+    @Override
+    public void notifyComplete() {
+        notifyProcessTerminated(0);
+    }
+
+    @Override
+    public void setFraction(double fraction) {}
+
+    @Override
+    public boolean isCanceled() {
+        return false;
     }
 }

@@ -30,4 +30,5 @@ public interface IProgressIndicator {
     void setText2(String text2);
     void setFraction(double fraction);
     boolean isCanceled();
+    void notifyComplete();
 }
