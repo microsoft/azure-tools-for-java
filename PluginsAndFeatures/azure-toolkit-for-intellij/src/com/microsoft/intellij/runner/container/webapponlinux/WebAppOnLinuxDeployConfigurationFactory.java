@@ -29,7 +29,7 @@ import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationTy
 import org.jetbrains.annotations.NotNull;
 
 public class WebAppOnLinuxDeployConfigurationFactory extends ConfigurationFactory {
-    private static final String FACTORY_NAME = "Web App on Linux";
+    private static final String FACTORY_NAME = "Web App (Container)";
 
     @NotNull
     @Override
