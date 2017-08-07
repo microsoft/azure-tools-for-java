@@ -59,7 +59,9 @@ public class PublishHandler extends AzureAbstractHandler {
         try {
             buildImage(project);
         } catch (Exception e) {
-            MessageDialog.openError(window.getShell(), "Error on building image", e.getMessage());
+            MessageDialog.openError(window.getShell(), "Error on building image",
+                    String.format("%s\nDetails:\n%s", Constant.ERROR_BUILDING_IMAGE, e.getMessage()));
+            return null;
         }
         PublishWizard pw = new PublishWizard();
         WizardDialog pwd = new PublishWizardDialog(window.getShell(), pw);
