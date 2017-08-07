@@ -39,9 +39,9 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
     private final WebAppSettingPanel mainPanel;
     private final Project project;
 
-    public WebAppSettingEditor(Project project) {
+    public WebAppSettingEditor(Project project, @NotNull WebAppConfiguration webAppConfiguration) {
         this.project = project;
-        mainPanel = new WebAppSettingPanel(project);
+        mainPanel = new WebAppSettingPanel(project, webAppConfiguration);
     }
 
     @Override

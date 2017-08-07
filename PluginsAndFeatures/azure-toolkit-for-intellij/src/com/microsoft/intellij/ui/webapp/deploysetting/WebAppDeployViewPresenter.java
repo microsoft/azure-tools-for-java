@@ -37,8 +37,6 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
     private static final String CANNOT_LIST_SUBSCRIPTION = "Failed to list subscriptions.";
     private static final String CANNOT_LIST_LOCATION = "Failed to list locations.";
     private static final String CANNOT_LIST_PRICING_TIER = "Failed to list pricing tier.";
-    private static final String CANNOT_LIST_WEB_CONTAINERS = "Failed to list web containers.";
-    private static final String CANNOT_LIST_THIRD_PARTY_JDK = "Failed to list third party JDKs.";
 
     public void onRefresh() {
         loadWebApps(true /*forceRefresh*/);
@@ -93,36 +91,19 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
     }
 
     public void onLoadPricingTier() {
-        Observable.fromCallable(() -> AzureMvpModel.getInstance().listPricingTier())
-                .subscribeOn(getSchedulerProvider().io())
-                .subscribe(prices -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    if (isViewDetached()) {
-                        return;
-                    }
-                    getMvpView().fillPricingTier(prices);
-                }), e -> errorHandler(CANNOT_LIST_PRICING_TIER, (Exception) e));
+        try {
+            getMvpView().fillPricingTier(AzureMvpModel.getInstance().listPricingTier());
+        } catch (IllegalAccessException e) {
+            errorHandler(CANNOT_LIST_PRICING_TIER, e);
+        }
     }
 
     public void onLoadWebContainer() {
-        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listWebContainers())
-                .subscribeOn(getSchedulerProvider().io())
-                .subscribe(containers -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    if (isViewDetached()) {
-                        return;
-                    }
-                    getMvpView().fillWebContainer(containers);
-                }), e -> errorHandler(CANNOT_LIST_WEB_CONTAINERS, (Exception) e));
+        getMvpView().fillWebContainer(AzureWebAppMvpModel.getInstance().listWebContainers());
     }
 
     public void onLoadThirdPartyJdk() {
-        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listThirdPartyJdk())
-                .subscribeOn(getSchedulerProvider().io())
-                .subscribe(jdks -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    if (isViewDetached()) {
-                        return;
-                    }
-                    getMvpView().fillThirdPartyJdk(jdks);
-                }), e -> errorHandler(CANNOT_LIST_THIRD_PARTY_JDK, (Exception) e));
+        getMvpView().fillThirdPartyJdk(AzureWebAppMvpModel.getInstance().listThirdPartyJdk());
     }
 
     private void loadWebApps(boolean forceRefresh) {

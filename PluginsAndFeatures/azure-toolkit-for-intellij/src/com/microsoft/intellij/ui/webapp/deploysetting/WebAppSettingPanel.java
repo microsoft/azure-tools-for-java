@@ -50,7 +50,6 @@ import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import javax.swing.ButtonGroup;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -62,9 +61,6 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,16 +72,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     // cache variable
     private ResourceEx<WebApp> selectedWebApp = null;
     private final Project project;
+    private final WebAppConfiguration webAppConfiguration;
     private List<ResourceEx<WebApp>> cachedWebAppList = null;
-
-    private String defaultWebAppId;
-    private String defaultSubscription;
-    private String defaultWebContainer;
-    private String defaultResGrp;
-    private String defaultLocation;
-    private String defaultPrice;
-    private String defaultServicePlan;
-    private String defaultJdkUrl;
 
     private String lastSelectedSid;
     private String lastSelectedResGrp;
@@ -130,8 +118,9 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     /**
      * The setting panel for web app deployment run configuration.
      */
-    public WebAppSettingPanel(Project project) {
+    public WebAppSettingPanel(Project project, @NotNull WebAppConfiguration webAppConfiguration) {
         this.project = project;
+        this.webAppConfiguration = webAppConfiguration;
         this.webAppDeployViewPresenter = new WebAppDeployViewPresenter<>();
         this.webAppDeployViewPresenter.onAttachView(this);
 
@@ -285,33 +274,25 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         if (webAppConfiguration.isCreatingNew()) {
             rdoCreateNew.doClick();
             txtWebAppName.setText(webAppConfiguration.getWebAppName());
-            defaultSubscription = webAppConfiguration.getSubscriptionId();
-            defaultWebContainer = webAppConfiguration.getWebContainer();
             if (webAppConfiguration.isCreatingResGrp()) {
                 rdoCreateResGrp.doClick();
                 txtNewResGrp.setText(webAppConfiguration.getResourceGroup());
             } else {
                 rdoUseExistResGrp.doClick();
-                defaultResGrp = webAppConfiguration.getResourceGroup();
             }
             if (webAppConfiguration.isCreatingAppServicePlan()) {
                 rdoCreateAppServicePlan.doClick();
                 txtCreateAppServicePlan.setText(webAppConfiguration.getAppServicePlan());
-                defaultLocation = webAppConfiguration.getRegion();
-                defaultPrice = webAppConfiguration.getPricing();
             } else {
                 rdoUseExistAppServicePlan.doClick();
-                defaultServicePlan = webAppConfiguration.getAppServicePlan();
             }
             if (Comparing.equal(webAppConfiguration.getJdkChoice(), WebAppSettingModel.JdkChoice.DEFAULT.toString())) {
                 rdoDefaultJdk.doClick();
             } else {
                 rdoThirdPartyJdk.doClick();
-                defaultJdkUrl = webAppConfiguration.getJdkUrl();
             }
         } else {
             rdoUseExist.doClick();
-            defaultWebAppId = webAppConfiguration.getWebAppId();
             chkToRoot.setSelected(webAppConfiguration.isDeployToRoot());
         }
 
@@ -395,12 +376,11 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                         app.javaContainer() + " " + app.javaContainerVersion(),
                         app.resourceGroupName(),
                 });
-                if (Comparing.equal(app.id(), defaultWebAppId)) {
+                if (Comparing.equal(app.id(), webAppConfiguration.getWebAppId())) {
                     table.setRowSelectionInterval(i, i);
                 }
             }
         }
-        defaultWebAppId = null;
     }
 
     private void toggleDeployPanel(boolean isUsingExisting) {
@@ -491,29 +471,27 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     public void fillSubscription(List<Subscription> subscriptions) {
         for (Subscription subscription: subscriptions) {
             cbSubscription.addItem(subscription);
-            if (Comparing.equal(subscription.subscriptionId(), defaultSubscription)) {
+            if (Comparing.equal(subscription.subscriptionId(), webAppConfiguration.getSubscriptionId())) {
                 cbSubscription.setSelectedItem(subscription);
             }
         }
-        defaultSubscription = null;
     }
 
     @Override
     public void fillResourceGroup(List<ResourceGroup> resourceGroups) {
         for (ResourceGroup group: resourceGroups) {
             cbExistResGrp.addItem(group);
-            if (Comparing.equal(group.name(), defaultResGrp)) {
+            if (Comparing.equal(group.name(), webAppConfiguration.getResourceGroup())) {
                 cbExistResGrp.setSelectedItem(group);
             }
         }
-        defaultResGrp = null;
     }
 
     @Override
     public void fillAppServicePlan(List<AppServicePlan> appServicePlans) {
         for (AppServicePlan plan: appServicePlans) {
             cbExistAppServicePlan.addItem(plan);
-            if (Comparing.equal(plan.id(), defaultServicePlan)) {
+            if (Comparing.equal(plan.id(), webAppConfiguration.getAppServicePlan())) {
                 cbExistAppServicePlan.setSelectedItem(plan);
             }
         }
@@ -523,43 +501,39 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     public void fillLocation(List<Location> locations) {
         for (Location location: locations) {
             cbLocation.addItem(location);
-            if (Comparing.equal(location.name(), defaultLocation)) {
+            if (Comparing.equal(location.name(), webAppConfiguration.getRegion())) {
                 cbLocation.setSelectedItem(location);
             }
         }
-        defaultLocation = null;
     }
 
     @Override
     public void fillPricingTier(List<PricingTier> prices) {
         for (PricingTier price: prices) {
             cbPricing.addItem(price);
-            if (Comparing.equal(price.toString(), defaultPrice)) {
+            if (Comparing.equal(price.toString(), webAppConfiguration.getPricing())) {
                 cbPricing.setSelectedItem(price);
             }
         }
-        defaultPrice = null;
     }
 
     @Override
     public void fillWebContainer(List<WebAppUtils.WebContainerMod> webContainers) {
         for (WebAppUtils.WebContainerMod container: webContainers) {
             cbWebContainer.addItem(container);
-            if (Comparing.equal(container.toString(), defaultWebContainer)) {
+            if (Comparing.equal(container.toString(), webAppConfiguration.getWebContainer())) {
                 cbWebContainer.setSelectedItem(container);
             }
         }
-        defaultWebContainer = null;
     }
 
     @Override
     public void fillThirdPartyJdk(List<AzulZuluModel> jdks) {
         for (AzulZuluModel jdk: jdks) {
             cbThirdPartyJdk.addItem(jdk);
-            if (Comparing.equal(jdk.getDownloadUrl(), defaultJdkUrl)) {
+            if (Comparing.equal(jdk.getDownloadUrl(), webAppConfiguration.getJdkUrl())) {
                 cbThirdPartyJdk.setSelectedItem(jdk);
             }
         }
-        defaultJdkUrl = null;
     }
 }

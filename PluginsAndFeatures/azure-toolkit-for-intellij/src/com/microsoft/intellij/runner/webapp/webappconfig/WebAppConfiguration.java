@@ -80,7 +80,7 @@ public class WebAppConfiguration extends RunConfigurationBase {
     @NotNull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new WebAppSettingEditor(getProject());
+        return new WebAppSettingEditor(getProject(), this);
     }
 
     @Override
