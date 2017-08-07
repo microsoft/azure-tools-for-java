@@ -255,8 +255,7 @@ public class AzureWebAppMvpModel {
     public List<ResourceEx<SiteInner>> listAllWebAppsOnLinux(boolean force) {
         List<ResourceEx<SiteInner>> ret = new ArrayList<>();
         for (Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-            List<ResourceEx<SiteInner>> wal = AzureWebAppMvpModel.getInstance()
-                    .listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), force);
+            List<ResourceEx<SiteInner>> wal = listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), force);
             ret.addAll(wal);
         }
         return ret;

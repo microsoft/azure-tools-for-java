@@ -89,6 +89,10 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                     // locate war file to specified location
                     println("Locate war file ...  ");
                     List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getRootProjects();
+                    if (mavenProjects.size() <= 0) {
+                        errorln("No available maven projects.");
+                        throw new FileNotFoundException("No available maven projects.");
+                    }
                     String targetBuildPath = new File(mavenProjects.get(0).getBuildDirectory()).getPath();
                     String fileName = mavenProjects.get(0).getFinalName() + ".war";
                     FileUtils.copyFile(
@@ -146,6 +150,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                     return null;
                 }
         ).subscribeOn(Schedulers.io()).subscribe(
+                // TODO: use getSchedulerProvider, but currently defined in MvpPresenter
                 (res) -> {
                     println("Update cache ... ");
                     AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
