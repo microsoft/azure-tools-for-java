@@ -400,6 +400,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 }
             }
         }
+        defaultWebAppId = null;
     }
 
     private void toggleDeployPanel(boolean isUsingExisting) {
@@ -494,6 +495,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 cbSubscription.setSelectedItem(subscription);
             }
         }
+        defaultSubscription = null;
     }
 
     @Override
@@ -504,6 +506,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 cbExistResGrp.setSelectedItem(group);
             }
         }
+        defaultResGrp = null;
     }
 
     @Override
@@ -524,6 +527,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 cbLocation.setSelectedItem(location);
             }
         }
+        defaultLocation = null;
     }
 
     @Override
@@ -534,6 +538,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 cbPricing.setSelectedItem(price);
             }
         }
+        defaultPrice = null;
     }
 
     @Override
@@ -544,6 +549,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 cbWebContainer.setSelectedItem(container);
             }
         }
+        defaultWebContainer = null;
     }
 
     @Override
@@ -554,5 +560,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 cbThirdPartyJdk.setSelectedItem(jdk);
             }
         }
+        defaultJdkUrl = null;
     }
 }
