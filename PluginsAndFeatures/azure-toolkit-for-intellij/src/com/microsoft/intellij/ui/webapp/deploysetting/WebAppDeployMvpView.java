@@ -23,12 +23,15 @@
 package com.microsoft.intellij.ui.webapp.deploysetting;
 
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+import com.microsoft.azuretools.utils.AzulZuluModel;
+import com.microsoft.azuretools.utils.WebAppUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -44,4 +47,10 @@ public interface WebAppDeployMvpView extends MvpView {
     void fillAppServicePlan(List<AppServicePlan> appServicePlans);
 
     void fillLocation(List<Location> locations);
+
+    void fillPricingTier(List<PricingTier> prices);
+
+    void fillWebContainer(List<WebAppUtils.WebContainerMod> webContainers);
+
+    void fillThirdPartyJdk(List<AzulZuluModel> jdks);
 }

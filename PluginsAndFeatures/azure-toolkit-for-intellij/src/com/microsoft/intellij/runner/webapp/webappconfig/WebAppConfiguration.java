@@ -58,10 +58,6 @@ public class WebAppConfiguration extends RunConfigurationBase {
     private static final String MISSING_APP_SERVICE_PLAN = "App Service Plan not provided.";
     private static final String MISSING_LOCATION = "Location not provided.";
     private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
-    private static final String INVALID_URL = "JDK is not valid";
-    private static final String NOT_STORAGE_URL = "The URL is not a valid Azure Blob storage URL.";
-    private static final String BLOB_URL_SUFFIX = "blob.core.windows.net";
-//    private static final String MISSING_KEY = "Storage key not provided.";
 
     private static final String WEB_APP_CONFIGURATION_NODE = "AzureWebAppConfig";
     private final WebAppSettingModel webAppSettingModel;
@@ -113,10 +109,6 @@ public class WebAppConfiguration extends RunConfigurationBase {
         return new WebAppRunState(getProject(), this.webAppSettingModel);
     }
 
-    public WebAppSettingModel getWebAppSettingModel() {
-        return this.webAppSettingModel;
-    }
-
     public void validate() throws ConfigurationException {
         if (webAppSettingModel.isCreatingNew()) {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppName())) {
@@ -153,64 +145,120 @@ public class WebAppConfiguration extends RunConfigurationBase {
         webAppSettingModel.setWebAppId(id);
     }
 
+    public String getWebAppId() {
+        return webAppSettingModel.getWebAppId();
+    }
+
     public void setSubscriptionId(String sid) {
         webAppSettingModel.setSubscriptionId(sid);
+    }
+
+    public String getSubscriptionId() {
+        return webAppSettingModel.getSubscriptionId();
     }
 
     public void setWebAppUrl(String url) {
         webAppSettingModel.setWebAppUrl(url);
     }
 
+    public String getWebAppUrl() {
+        return webAppSettingModel.getWebAppUrl();
+    }
+
     public void setDeployToRoot(boolean toRoot) {
         webAppSettingModel.setDeployToRoot(toRoot);
+    }
+
+    public boolean isDeployToRoot() {
+        return webAppSettingModel.isDeployToRoot();
     }
 
     public void setCreatingNew(boolean isCreating) {
         webAppSettingModel.setCreatingNew(isCreating);
     }
 
+    public boolean isCreatingNew() {
+        return webAppSettingModel.isCreatingNew();
+    }
+
     public void setWebAppName(String name) {
         webAppSettingModel.setWebAppName(name);
+    }
+
+    public String getWebAppName() {
+        return webAppSettingModel.getWebAppName();
     }
 
     public void setWebContainer(String container) {
         webAppSettingModel.setWebContainer(container);
     }
 
+    public String getWebContainer() {
+        return webAppSettingModel.getWebContainer();
+    }
+
     public void setCreatingResGrp(boolean isCreating) {
         webAppSettingModel.setCreatingResGrp(isCreating);
+    }
+
+    public boolean isCreatingResGrp() {
+        return webAppSettingModel.isCreatingResGrp();
     }
 
     public void setResourceGroup(String name) {
         webAppSettingModel.setResourceGroup(name);
     }
 
+    public String getResourceGroup() {
+        return webAppSettingModel.getResourceGroup();
+    }
+
     public void setCreatingAppServicePlan(boolean isCreating) {
         webAppSettingModel.setCreatingAppServicePlan(isCreating);
+    }
+
+    public boolean isCreatingAppServicePlan() {
+        return webAppSettingModel.isCreatingAppServicePlan();
     }
 
     public void setAppServicePlan(String nameOrId) {
         webAppSettingModel.setAppServicePlan(nameOrId);
     }
 
+    public String getAppServicePlan() {
+        return webAppSettingModel.getAppServicePlan();
+    }
+
     public void setRegion(String region) {
         webAppSettingModel.setRegion(region);
+    }
+
+    public String getRegion() {
+        return webAppSettingModel.getRegion();
     }
 
     public void setPricing(String price) {
         webAppSettingModel.setPricing(price);
     }
 
+    public String getPricing() {
+        return webAppSettingModel.getPricing();
+    }
+
     public void setJdkChoice(String jdk) {
         webAppSettingModel.setJdkChoice(jdk);
+    }
+
+    public String getJdkChoice() {
+        return webAppSettingModel.getJdkChoice();
     }
 
     public void setJdkUrl(String url) {
         webAppSettingModel.setJdkUrl(url);
     }
 
-    public void setStorageKey(String key) {
-        webAppSettingModel.setStorageKey(key);
+    public String getJdkUrl() {
+        return webAppSettingModel.getJdkUrl();
     }
 
     public void setTargetPath(String path) {

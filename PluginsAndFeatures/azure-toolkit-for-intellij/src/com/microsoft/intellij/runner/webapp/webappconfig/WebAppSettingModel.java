@@ -50,7 +50,6 @@ public class WebAppSettingModel {
 
     private String jdkChoice = "";
     private String jdkUrl = "";
-    private String storageKey = "";
 
     public String getWebAppId() {
         return webAppId;
@@ -197,14 +196,6 @@ public class WebAppSettingModel {
 
     public void setJdkUrl(String jdkUrl) {
         this.jdkUrl = jdkUrl;
-    }
-
-    public String getStorageKey() {
-        return storageKey;
-    }
-
-    public void setStorageKey(String storageKey) {
-        this.storageKey = storageKey;
     }
 
     public static enum JdkChoice {

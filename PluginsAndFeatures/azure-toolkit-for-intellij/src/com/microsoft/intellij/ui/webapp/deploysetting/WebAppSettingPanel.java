@@ -78,6 +78,15 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private final Project project;
     private List<ResourceEx<WebApp>> cachedWebAppList = null;
 
+    private String defaultWebAppId;
+    private String defaultSubscription;
+    private String defaultWebContainer;
+    private String defaultResGrp;
+    private String defaultLocation;
+    private String defaultPrice;
+    private String defaultServicePlan;
+    private String defaultJdkUrl;
+
     private String lastSelectedSid;
     private String lastSelectedResGrp;
     private String lastSelectedLocation;
@@ -260,21 +269,52 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
         });
 
-        fillWebContainers();
-        fillThirdParty();
-        fillPricingTier();
-
         lblJdkLicense.setHyperlinkText("License");
         lblJdkLicense.setHyperlinkTarget(AzulZuluModel.getLicenseUrl());
+        this.webAppDeployViewPresenter.onLoadWebContainer();
         this.webAppDeployViewPresenter.onLoadSubscription();
+        this.webAppDeployViewPresenter.onLoadPricingTier();
+        this.webAppDeployViewPresenter.onLoadThirdPartyJdk();
     }
 
     public JPanel getMainPanel() {
         return pnlRoot;
     }
 
-    public void resetEditorForm(@NotNull WebAppConfiguration webAppConfiguration) {
-        chkToRoot.setSelected(webAppConfiguration.getWebAppSettingModel().isDeployToRoot());
+    public void resetEditorFrom(@NotNull WebAppConfiguration webAppConfiguration) {
+        if (webAppConfiguration.isCreatingNew()) {
+            rdoCreateNew.doClick();
+            txtWebAppName.setText(webAppConfiguration.getWebAppName());
+            defaultSubscription = webAppConfiguration.getSubscriptionId();
+            defaultWebContainer = webAppConfiguration.getWebContainer();
+            if (webAppConfiguration.isCreatingResGrp()) {
+                rdoCreateResGrp.doClick();
+                txtNewResGrp.setText(webAppConfiguration.getResourceGroup());
+            } else {
+                rdoUseExistResGrp.doClick();
+                defaultResGrp = webAppConfiguration.getResourceGroup();
+            }
+            if (webAppConfiguration.isCreatingAppServicePlan()) {
+                rdoCreateAppServicePlan.doClick();
+                txtCreateAppServicePlan.setText(webAppConfiguration.getAppServicePlan());
+                defaultLocation = webAppConfiguration.getRegion();
+                defaultPrice = webAppConfiguration.getPricing();
+            } else {
+                rdoUseExistAppServicePlan.doClick();
+                defaultServicePlan = webAppConfiguration.getAppServicePlan();
+            }
+            if (Comparing.equal(webAppConfiguration.getJdkChoice(), WebAppSettingModel.JdkChoice.DEFAULT.toString())) {
+                rdoDefaultJdk.doClick();
+            } else {
+                rdoThirdPartyJdk.doClick();
+                defaultJdkUrl = webAppConfiguration.getJdkUrl();
+            }
+        } else {
+            rdoUseExist.doClick();
+            defaultWebAppId = webAppConfiguration.getWebAppId();
+            chkToRoot.setSelected(webAppConfiguration.isDeployToRoot());
+        }
+
         this.webAppDeployViewPresenter.onLoadWebApps();
     }
 
@@ -347,16 +387,18 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         if (sortedList.size() > 0) {
             DefaultTableModel model = (DefaultTableModel) table.getModel();
             model.getDataVector().clear();
-            for (ResourceEx<WebApp> resource: sortedList) {
-                WebApp app = resource.getResource();
+            for (int i = 0; i < sortedList.size(); i++) {
+                WebApp app = sortedList.get(0).getResource();
                 model.addRow(new String[]{
                         app.name(),
                         app.javaVersion().toString(),
                         app.javaContainer() + " " + app.javaContainerVersion(),
                         app.resourceGroupName(),
                 });
+                if (Comparing.equal(app.id(), defaultWebAppId)) {
+                    table.setRowSelectionInterval(i, i);
+                }
             }
-            model.fireTableDataChanged();
         }
     }
 
@@ -444,56 +486,73 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         pnlWebAppTable = tableToolbarDecorator.createPanel();
     }
 
-    private void fillWebContainers() {
-        DefaultComboBoxModel<WebAppUtils.WebContainerMod> cbModel = new DefaultComboBoxModel<>();
-        for (WebAppUtils.WebContainerMod wc : WebAppUtils.WebContainerMod.values()) {
-            cbModel.addElement(wc);
-        }
-        cbWebContainer.setModel(cbModel);
-    }
-
-    private void fillThirdParty() {
-        DefaultComboBoxModel<AzulZuluModel> cbModel = new DefaultComboBoxModel<>();
-        for (AzulZuluModel jdk : AzulZuluModel.values()) {
-            if (jdk.isDeprecated()) {
-                continue;
-            }
-            cbModel.addElement(jdk);
-        }
-        cbThirdPartyJdk.setModel(cbModel);
-    }
-
-    private void fillPricingTier() {
-        for (Field field: PricingTier.class.getDeclaredFields()) {
-            int modifier = field.getModifiers();
-            if (Modifier.isPublic(modifier) && Modifier.isStatic(modifier) && Modifier.isFinal(modifier)) {
-                try {
-                    PricingTier pt = (PricingTier) field.get(null);
-                    cbPricing.addItem(pt);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
     @Override
     public void fillSubscription(List<Subscription> subscriptions) {
-        subscriptions.forEach(cbSubscription::addItem);
+        for (Subscription subscription: subscriptions) {
+            cbSubscription.addItem(subscription);
+            if (Comparing.equal(subscription.subscriptionId(), defaultSubscription)) {
+                cbSubscription.setSelectedItem(subscription);
+            }
+        }
     }
 
     @Override
     public void fillResourceGroup(List<ResourceGroup> resourceGroups) {
-        resourceGroups.forEach(cbExistResGrp::addItem);
+        for (ResourceGroup group: resourceGroups) {
+            cbExistResGrp.addItem(group);
+            if (Comparing.equal(group.name(), defaultResGrp)) {
+                cbExistResGrp.setSelectedItem(group);
+            }
+        }
     }
 
     @Override
     public void fillAppServicePlan(List<AppServicePlan> appServicePlans) {
-        appServicePlans.forEach(cbExistAppServicePlan::addItem);
+        for (AppServicePlan plan: appServicePlans) {
+            cbExistAppServicePlan.addItem(plan);
+            if (Comparing.equal(plan.id(), defaultServicePlan)) {
+                cbExistAppServicePlan.setSelectedItem(plan);
+            }
+        }
     }
 
     @Override
     public void fillLocation(List<Location> locations) {
-        locations.stream().sorted(Comparator.comparing(Location::displayName)).forEach(cbLocation::addItem);
+        for (Location location: locations) {
+            cbLocation.addItem(location);
+            if (Comparing.equal(location.name(), defaultLocation)) {
+                cbLocation.setSelectedItem(location);
+            }
+        }
+    }
+
+    @Override
+    public void fillPricingTier(List<PricingTier> prices) {
+        for (PricingTier price: prices) {
+            cbPricing.addItem(price);
+            if (Comparing.equal(price.toString(), defaultPrice)) {
+                cbPricing.setSelectedItem(price);
+            }
+        }
+    }
+
+    @Override
+    public void fillWebContainer(List<WebAppUtils.WebContainerMod> webContainers) {
+        for (WebAppUtils.WebContainerMod container: webContainers) {
+            cbWebContainer.addItem(container);
+            if (Comparing.equal(container.toString(), defaultWebContainer)) {
+                cbWebContainer.setSelectedItem(container);
+            }
+        }
+    }
+
+    @Override
+    public void fillThirdPartyJdk(List<AzulZuluModel> jdks) {
+        for (AzulZuluModel jdk: jdks) {
+            cbThirdPartyJdk.addItem(jdk);
+            if (Comparing.equal(jdk.getDownloadUrl(), defaultJdkUrl)) {
+                cbThirdPartyJdk.setSelectedItem(jdk);
+            }
+        }
     }
 }

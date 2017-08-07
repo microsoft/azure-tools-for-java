@@ -34,6 +34,8 @@ import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.utils.AzulZuluModel;
+import com.microsoft.azuretools.utils.WebAppUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -136,6 +138,9 @@ public class AzureWebAppMvpModel {
         return azure.appServices().appServicePlans().listByResourceGroup(group);
     }
 
+    /**
+     * List Web Apps by Subscription ID.
+     */
     public List<ResourceEx<WebApp>> listWebAppsBySubscriptionId(String sid, boolean force) {
         if (!force && subscriptionIdToWebAppsMap.containsKey(sid)) {
             return subscriptionIdToWebAppsMap.get(sid);
@@ -153,7 +158,10 @@ public class AzureWebAppMvpModel {
         return webAppList;
     }
 
-    public List<ResourceEx<WebApp>> listJavaWebApps(boolean force) throws IOException {
+    /**
+     * List all the Web Apps in selected subscriptions.
+     */
+    public List<ResourceEx<WebApp>> listWebApps(boolean force) throws IOException {
         List<ResourceEx<WebApp>> webAppList = new ArrayList<>();
         List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
         for (Subscription sub : subscriptions) {
@@ -190,6 +198,31 @@ public class AzureWebAppMvpModel {
             e.printStackTrace();
         }
         return wal;
+    }
+
+    /**
+     * List available Web Containers.
+     */
+    public List<WebAppUtils.WebContainerMod> listWebContainers() {
+        List<WebAppUtils.WebContainerMod> webContainers = new ArrayList<>();
+        for (WebAppUtils.WebContainerMod wc : WebAppUtils.WebContainerMod.values()) {
+            webContainers.add(wc);
+        }
+        return webContainers;
+    }
+
+    /**
+     * List available Third Party JDKs.
+     */
+    public List<AzulZuluModel> listThirdPartyJdk() {
+        List<AzulZuluModel> jdks = new ArrayList<>();
+        for (AzulZuluModel jdk : AzulZuluModel.values()) {
+            if (jdk.isDeprecated()) {
+                continue;
+            }
+            jdks.add(jdk);
+        }
+        return jdks;
     }
 
     private static final class SingletonHolder {

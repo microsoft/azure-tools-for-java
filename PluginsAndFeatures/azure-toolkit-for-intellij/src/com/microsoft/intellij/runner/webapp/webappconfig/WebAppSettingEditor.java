@@ -50,7 +50,7 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
             MavenRunTaskUtil.addMavenPackageBeforeRunTask(webAppConfiguration);
         }
         webAppConfiguration.setFirstTimeCreated(false);
-        mainPanel.resetEditorForm(webAppConfiguration);
+        mainPanel.resetEditorFrom(webAppConfiguration);
     }
 
     @Override
