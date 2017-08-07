@@ -38,6 +38,7 @@ import java.util.Properties;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -55,17 +56,11 @@ public class PublishHandler extends AzureAbstractHandler {
 
         Properties props = ConfigFileUtil.loadConfig(project);
         DockerRuntime.getInstance().loadFromProps(props);
-        DockerClient dockerClient = DockerRuntime.getInstance().getDockerBuilder().build();
         try {
-            String destinationPath = project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER + project.getName()
-                    + ".war";
-            WarUtil.export(project, destinationPath);
-            DockerUtil.buildImage(dockerClient, project, project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER);
+            buildImage(project);
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            MessageDialog.openError(window.getShell(), "Error on building image", e.getMessage());
         }
-        DockerRuntime.getInstance().setLatestArtifactName(project.getName());
         PublishWizard pw = new PublishWizard();
         WizardDialog pwd = new PublishWizardDialog(window.getShell(), pw);
         if (pwd.open() == Window.OK) {
@@ -77,4 +72,11 @@ public class PublishHandler extends AzureAbstractHandler {
         return null;
     }
 
+    private void buildImage(IProject project) throws Exception {
+        DockerClient dockerClient = DockerRuntime.getInstance().getDockerBuilder().build();
+        String destinationPath = project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER + project.getName() + ".war";
+        WarUtil.export(project, destinationPath);
+        DockerUtil.buildImage(dockerClient, project, project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER);
+        DockerRuntime.getInstance().setLatestArtifactName(project.getName());
+    }
 }
