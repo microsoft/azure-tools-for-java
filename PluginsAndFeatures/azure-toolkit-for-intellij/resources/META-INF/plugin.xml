@@ -132,7 +132,7 @@
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
             description="ShowSubscriptionsAction" />
     <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
-            text="Deploy to Azure" description="Deploy to Azure">
+            text="Run on Web App" description="Run on Web App">
     </action>
     <!--<action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.DockerizeAction"-->
             <!--text="Add Docker Support..." description="Azure website deployment for Java"-->

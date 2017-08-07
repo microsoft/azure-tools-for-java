@@ -34,7 +34,7 @@ import javax.swing.*;
 public class WebAppConfigurationType implements ConfigurationType {
 
     private static final String ID = "com.microsoft.intellij.run.configuration.WebAppConfigurationType";
-    private static final String DISPLAY_NAME = "Deploy to Azure";
+    private static final String DISPLAY_NAME = "Run on Web App";
     private static final String ICON_PATH = "/icons/PublishWebApp_16.png";
 
     public static WebAppConfigurationType getInstance() {

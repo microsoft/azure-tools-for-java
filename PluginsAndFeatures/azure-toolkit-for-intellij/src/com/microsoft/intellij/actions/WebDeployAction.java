@@ -43,7 +43,7 @@ import java.util.List;
 
 public class WebDeployAction extends AnAction {
 
-    private static final String DIALOG_TITLE = "Deploy to Azure";
+    private static final String DIALOG_TITLE = "Run on Web App";
 
     private final ConfigurationType configType;
 

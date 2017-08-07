@@ -154,24 +154,24 @@
             <properties/>
             <border type="none" title="App Service Plan"/>
             <children>
-              <component id="b3d20" class="javax.swing.JRadioButton" binding="rdoCreateAppServicePlan">
+              <component id="7734a" class="javax.swing.JRadioButton" binding="rdoUseExistAppServicePlan">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <selected value="true"/>
-                  <text value="Create New"/>
+                  <text value="Use Existing"/>
                 </properties>
               </component>
-              <component id="de97a" class="javax.swing.JTextField" binding="txtCreateAppServicePlan">
+              <component id="a13d6" class="javax.swing.JComboBox" binding="cbExistAppServicePlan">
                 <constraints>
-                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
-                  </grid>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
-                <properties/>
+                <properties>
+                  <enabled value="true"/>
+                </properties>
               </component>
-              <component id="df31d" class="javax.swing.JLabel">
+              <component id="753" class="javax.swing.JLabel">
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="3" use-parent-layout="false"/>
                 </constraints>
@@ -179,13 +179,7 @@
                   <text value="Location"/>
                 </properties>
               </component>
-              <component id="c21b8" class="javax.swing.JComboBox" binding="cbLocation">
-                <constraints>
-                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties/>
-              </component>
-              <component id="8781b" class="javax.swing.JLabel">
+              <component id="c8793" class="javax.swing.JLabel">
                 <constraints>
                   <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="3" use-parent-layout="false"/>
                 </constraints>
@@ -193,29 +187,45 @@
                   <text value="Pricing Tier"/>
                 </properties>
               </component>
-              <component id="7af3" class="javax.swing.JComboBox" binding="cbPricing">
+              <component id="d2f90" class="javax.swing.JLabel" binding="lblLocation">
                 <constraints>
-                  <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
-                <properties/>
+                <properties>
+                  <enabled value="true"/>
+                  <text value=""/>
+                  <verifyInputWhenFocusTarget value="false"/>
+                </properties>
               </component>
-              <component id="7734a" class="javax.swing.JRadioButton" binding="rdoUseExistAppServicePlan">
+              <component id="bf5e5" class="javax.swing.JLabel" binding="lblPricing">
+                <constraints>
+                  <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <enabled value="true"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="b3d20" class="javax.swing.JRadioButton" binding="rdoCreateAppServicePlan">
                 <constraints>
                   <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text value="Use Existing"/>
+                  <selected value="false"/>
+                  <text value="Create New"/>
                 </properties>
               </component>
-              <component id="a13d6" class="javax.swing.JComboBox" binding="cbExistAppServicePlan">
+              <component id="de97a" class="javax.swing.JTextField" binding="txtCreateAppServicePlan">
                 <constraints>
-                  <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
                 </constraints>
                 <properties>
                   <enabled value="false"/>
                 </properties>
               </component>
-              <component id="753" class="javax.swing.JLabel">
+              <component id="df31d" class="javax.swing.JLabel">
                 <constraints>
                   <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="3" use-parent-layout="false"/>
                 </constraints>
@@ -223,7 +233,15 @@
                   <text value="Location"/>
                 </properties>
               </component>
-              <component id="c8793" class="javax.swing.JLabel">
+              <component id="c21b8" class="javax.swing.JComboBox" binding="cbLocation">
+                <constraints>
+                  <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <enabled value="false"/>
+                </properties>
+              </component>
+              <component id="8781b" class="javax.swing.JLabel">
                 <constraints>
                   <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="3" use-parent-layout="false"/>
                 </constraints>
@@ -231,23 +249,12 @@
                   <text value="Pricing Tier"/>
                 </properties>
               </component>
-              <component id="d2f90" class="javax.swing.JLabel" binding="lblLocation">
+              <component id="7af3" class="javax.swing.JComboBox" binding="cbPricing">
                 <constraints>
-                  <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <enabled value="false"/>
-                  <text value=""/>
-                  <verifyInputWhenFocusTarget value="false"/>
-                </properties>
-              </component>
-              <component id="bf5e5" class="javax.swing.JLabel" binding="lblPricing">
-                <constraints>
-                  <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <enabled value="false"/>
-                  <text value=""/>
                 </properties>
               </component>
             </children>
@@ -310,34 +317,37 @@
             <properties/>
             <border type="none" title="Resource Group"/>
             <children>
-              <component id="1ffa9" class="javax.swing.JRadioButton" binding="rdoCreateResGrp">
+              <component id="90f03" class="javax.swing.JRadioButton" binding="rdoUseExistResGrp">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <selected value="true"/>
-                  <text value="Create New"/>
-                </properties>
-              </component>
-              <component id="541a5" class="javax.swing.JTextField" binding="txtNewResGrp">
-                <constraints>
-                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
-                  </grid>
-                </constraints>
-                <properties/>
-              </component>
-              <component id="90f03" class="javax.swing.JRadioButton" binding="rdoUseExistResGrp">
-                <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
                   <text value="Use Existing"/>
                 </properties>
               </component>
               <component id="73318" class="javax.swing.JComboBox" binding="cbExistResGrp">
                 <constraints>
-                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <enabled value="true"/>
+                </properties>
+              </component>
+              <component id="1ffa9" class="javax.swing.JRadioButton" binding="rdoCreateResGrp">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <selected value="false"/>
+                  <text value="Create New"/>
+                </properties>
+              </component>
+              <component id="541a5" class="javax.swing.JTextField" binding="txtNewResGrp">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
                 </constraints>
                 <properties>
                   <enabled value="false"/>
