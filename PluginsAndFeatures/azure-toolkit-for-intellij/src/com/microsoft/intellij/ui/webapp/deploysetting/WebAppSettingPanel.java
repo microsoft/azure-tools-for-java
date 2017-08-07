@@ -388,7 +388,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             DefaultTableModel model = (DefaultTableModel) table.getModel();
             model.getDataVector().clear();
             for (int i = 0; i < sortedList.size(); i++) {
-                WebApp app = sortedList.get(0).getResource();
+                WebApp app = sortedList.get(i).getResource();
                 model.addRow(new String[]{
                         app.name(),
                         app.javaVersion().toString(),
