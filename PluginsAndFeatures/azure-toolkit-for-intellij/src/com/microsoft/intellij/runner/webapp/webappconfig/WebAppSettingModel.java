@@ -208,6 +208,6 @@ public class WebAppSettingModel {
     }
 
     public static enum JdkChoice {
-        DEFAULT, THIRD_PARTY, CUSTOM
+        DEFAULT, THIRD_PARTY
     }
 }

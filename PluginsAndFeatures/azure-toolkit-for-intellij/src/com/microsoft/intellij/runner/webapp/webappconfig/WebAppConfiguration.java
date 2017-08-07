@@ -38,6 +38,8 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.utils.StorageAccoutUtils;
+import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.WebAppConfigurationType;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -56,11 +58,13 @@ public class WebAppConfiguration extends RunConfigurationBase {
     private static final String MISSING_APP_SERVICE_PLAN = "App Service Plan not provided.";
     private static final String MISSING_LOCATION = "Location not provided.";
     private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
-    private static final String MISSING_JDK = "JDK not provided.";
-    private static final String MISSING_KEY = "Storage key not provided.";
+    private static final String INVALID_URL = "JDK is not valid";
+    private static final String NOT_STORAGE_URL = "The URL is not a valid Azure Blob storage URL.";
+    private static final String BLOB_URL_SUFFIX = "blob.core.windows.net";
+//    private static final String MISSING_KEY = "Storage key not provided.";
 
-    private static String WEB_APP_CONFIGURATION_NODE = "AzureWebAppConfig";
-    private WebAppSettingModel webAppSettingModel;
+    private static final String WEB_APP_CONFIGURATION_NODE = "AzureWebAppConfig";
+    private final WebAppSettingModel webAppSettingModel;
     private boolean firstTimeCreated = true;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory) {
@@ -137,23 +141,6 @@ public class WebAppConfiguration extends RunConfigurationBase {
                 if (Utils.isEmptyString(webAppSettingModel.getPricing())) {
                     throw new ConfigurationException(MISSING_PRICING_TIER);
                 }
-            }
-            switch (WebAppSettingModel.JdkChoice.valueOf(webAppSettingModel.getJdkChoice())) {
-                case THIRD_PARTY:
-                    if (Utils.isEmptyString(webAppSettingModel.getJdkUrl())) {
-                        throw new ConfigurationException(MISSING_JDK);
-                    }
-                    break;
-                case CUSTOM:
-                    if (Utils.isEmptyString(webAppSettingModel.getJdkUrl())) {
-                        throw new ConfigurationException(MISSING_JDK);
-                    }
-                    if (Utils.isEmptyString(webAppSettingModel.getStorageKey())) {
-                        throw new ConfigurationException(MISSING_KEY);
-                    }
-                    break;
-                default:
-                    break;
             }
         } else {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppId())) {

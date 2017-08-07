@@ -102,12 +102,9 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JRadioButton rdoUseExistResGrp;
     private JRadioButton rdoDefaultJdk;
     private JRadioButton rdoThirdPartyJdk;
-    private JRadioButton rdoDownloadOwnJdk;
     private JTextField txtWebAppName;
     private JTextField txtCreateAppServicePlan;
     private JTextField txtNewResGrp;
-    private JTextField txtJdkUrl;
-    private JTextField txtAccountKey;
     private JComboBox<Subscription> cbSubscription;
     private JComboBox<WebAppUtils.WebContainerMod> cbWebContainer;
     private JComboBox<Location> cbLocation;
@@ -119,7 +116,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JLabel lblLocation;
     private JLabel lblPricing;
     private JLabel lblDefaultJdk;
-    private JLabel lblKeyExplanation;
     private JTable table;
 
     /**
@@ -152,7 +148,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         final ButtonGroup btnGrpForJdk = new ButtonGroup();
         btnGrpForJdk.add(rdoDefaultJdk);
         btnGrpForJdk.add(rdoThirdPartyJdk);
-        btnGrpForJdk.add(rdoDownloadOwnJdk);
         rdoDefaultJdk.addActionListener(e -> {
             toggleJdkPanel(WebAppSettingModel.JdkChoice.DEFAULT);
             lastJdkChoice = WebAppSettingModel.JdkChoice.DEFAULT;
@@ -161,11 +156,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             toggleJdkPanel(WebAppSettingModel.JdkChoice.THIRD_PARTY);
             lastJdkChoice = WebAppSettingModel.JdkChoice.THIRD_PARTY;
             cbThirdPartyJdk.requestFocus();
-        });
-        rdoDownloadOwnJdk.addActionListener(e -> {
-            toggleJdkPanel(WebAppSettingModel.JdkChoice.CUSTOM);
-            lastJdkChoice = WebAppSettingModel.JdkChoice.CUSTOM;
-            txtJdkUrl.requestFocus();
         });
 
         cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
@@ -332,11 +322,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                     AzulZuluModel azulZuluModel = (AzulZuluModel) cbThirdPartyJdk.getSelectedItem();
                     webAppConfiguration.setJdkUrl(azulZuluModel == null ? "" : azulZuluModel.getDownloadUrl());
                     break;
-                case CUSTOM:
-                    webAppConfiguration.setJdkChoice(lastJdkChoice.toString());
-                    webAppConfiguration.setJdkUrl(txtJdkUrl.getText());
-                    webAppConfiguration.setStorageKey(txtAccountKey.getText());
-                    break;
                 default:
                     break;
             }
@@ -399,23 +384,10 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             case DEFAULT:
                 lblDefaultJdk.setEnabled(true);
                 cbThirdPartyJdk.setEnabled(false);
-                txtJdkUrl.setEnabled(false);
-                txtAccountKey.setEnabled(false);
-                lblKeyExplanation.setEnabled(false);
                 break;
             case THIRD_PARTY:
                 lblDefaultJdk.setEnabled(false);
                 cbThirdPartyJdk.setEnabled(true);
-                txtJdkUrl.setEnabled(false);
-                txtAccountKey.setEnabled(false);
-                lblKeyExplanation.setEnabled(false);
-                break;
-            case CUSTOM:
-                lblDefaultJdk.setEnabled(false);
-                cbThirdPartyJdk.setEnabled(false);
-                txtJdkUrl.setEnabled(true);
-                txtAccountKey.setEnabled(true);
-                lblKeyExplanation.setEnabled(true);
                 break;
             default:
                 break;

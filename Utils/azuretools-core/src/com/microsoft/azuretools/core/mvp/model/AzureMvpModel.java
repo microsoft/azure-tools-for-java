@@ -77,6 +77,9 @@ public class AzureMvpModel {
         List<Subscription> ret = new ArrayList<>();
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+            if (azureManager == null) {
+                return ret;
+            }
             Map<String, SubscriptionDetail> sidToSubDetailMap = azureManager.getSubscriptionManager()
                     .getSubscriptionIdToSubscriptionDetailsMap();
             Map<String, Subscription> sidToSubscriptionMap = azureManager.getSubscriptionManager()
