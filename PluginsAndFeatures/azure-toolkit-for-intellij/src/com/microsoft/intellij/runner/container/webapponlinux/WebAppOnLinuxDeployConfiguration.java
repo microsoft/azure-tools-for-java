@@ -36,7 +36,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
 
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -44,14 +46,13 @@ import org.jetbrains.annotations.Nullable;
 
 public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
 
-    private static final String CONFIGURATION_ELEMENT_NODE_NAME = "WebAppOnLinuxDeployConfiguration";
-    private final WebAppOnLinuxDeployModel webAppOnLinuxDeployModel;
+    private final WebAppOnLinuxDeployModel deployModel;
     private boolean firstTimeCreated = true;
 
     protected WebAppOnLinuxDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory,
                                                String name) {
         super(project, factory, name);
-        webAppOnLinuxDeployModel = new WebAppOnLinuxDeployModel();
+        deployModel = new WebAppOnLinuxDeployModel();
     }
 
     public boolean isFirstTimeCreated() {
@@ -62,8 +63,8 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
         this.firstTimeCreated = firstTimeCreated;
     }
 
-    public WebAppOnLinuxDeployModel getWebAppOnLinuxDeployModel() {
-        return webAppOnLinuxDeployModel;
+    public WebAppOnLinuxDeployModel getDeployModel() {
+        return deployModel;
     }
 
     @NotNull
@@ -80,20 +81,20 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     public void readExternal(Element element) throws InvalidDataException {
         super.readExternal(element);
         firstTimeCreated = Comparing.equal(element.getAttributeValue("default"), "true");
-        webAppOnLinuxDeployModel.readExternal(element);
+        XmlSerializer.deserializeInto(deployModel, element);
     }
 
     @Override
     public void writeExternal(Element element) throws WriteExternalException {
         super.writeExternal(element);
-        webAppOnLinuxDeployModel.writeExternal(element);
+        XmlSerializer.serializeInto(deployModel, element);
     }
 
     @Nullable
     @Override
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment)
             throws ExecutionException {
-        return new WebAppOnLinuxDeployState(getProject(), webAppOnLinuxDeployModel);
+        return new WebAppOnLinuxDeployState(getProject(), deployModel);
     }
 
     public void validate() throws ConfigurationException {
@@ -101,83 +102,106 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     }
 
     public String getAppName() {
-        return webAppOnLinuxDeployModel.getWebAppName();
+        return deployModel.getWebAppName();
     }
 
     public void setAppName(String appName) {
-        webAppOnLinuxDeployModel.setWebAppName(appName);
+        deployModel.setWebAppName(appName);
     }
 
     public String getSubscriptionId() {
-        return webAppOnLinuxDeployModel.getSubscriptionId();
+        return deployModel.getSubscriptionId();
     }
 
     public void setSubscriptionId(String subscriptionId) {
-        webAppOnLinuxDeployModel.setSubscriptionId(subscriptionId);
+        deployModel.setSubscriptionId(subscriptionId);
     }
 
     public boolean isCreatingNewResourceGroup() {
-        return webAppOnLinuxDeployModel.isCreatingNewResourceGroup();
+        return deployModel.isCreatingNewResourceGroup();
     }
 
     public void setCreatingNewResourceGroup(boolean creatingNewResourceGroup) {
-        webAppOnLinuxDeployModel.setCreatingNewResourceGroup
-                (creatingNewResourceGroup);
+        deployModel.setCreatingNewResourceGroup(creatingNewResourceGroup);
     }
 
     public String getResourceGroupName() {
-        return webAppOnLinuxDeployModel.getResourceGroupName();
+        return deployModel.getResourceGroupName();
     }
 
     public void setResourceGroupName(String resourceGroupName) {
-        webAppOnLinuxDeployModel.setResourceGroupName(resourceGroupName);
+        deployModel.setResourceGroupName(resourceGroupName);
     }
 
     public String getLocationName() {
-        return webAppOnLinuxDeployModel.getLocationName();
+        return deployModel.getLocationName();
     }
 
     public void setLocationName(String locationName) {
-        webAppOnLinuxDeployModel.setLocationName(locationName);
+        deployModel.setLocationName(locationName);
     }
 
     public String getPricingSkuTier() {
-        return webAppOnLinuxDeployModel.getPricingSkuTier();
+        return deployModel.getPricingSkuTier();
     }
 
     public void setPricingSkuTier(String pricingSkuTier) {
-        webAppOnLinuxDeployModel.setPricingSkuTier(pricingSkuTier);
+        deployModel.setPricingSkuTier(pricingSkuTier);
     }
 
     public String getPricingSkuSize() {
-        return webAppOnLinuxDeployModel.getPricingSkuSize();
+        return deployModel.getPricingSkuSize();
     }
 
     public void setPricingSkuSize(String pricingSkuSize) {
-        webAppOnLinuxDeployModel.setPricingSkuSize(pricingSkuSize);
+        deployModel.setPricingSkuSize(pricingSkuSize);
     }
 
     public PrivateRegistryImageSetting getPrivateRegistryImageSetting() {
-        return webAppOnLinuxDeployModel.getPrivateRegistryImageSetting();
+        return deployModel.getPrivateRegistryImageSetting();
     }
 
     public void setPrivateRegistryImageSetting(PrivateRegistryImageSetting privateRegistryImageSetting) {
-        webAppOnLinuxDeployModel.setPrivateRegistryImageSetting(privateRegistryImageSetting);
+        deployModel.setPrivateRegistryImageSetting(privateRegistryImageSetting);
     }
 
     public String getWebAppId() {
-        return webAppOnLinuxDeployModel.getWebAppId();
+        return deployModel.getWebAppId();
     }
 
     public void setWebAppId(String webAppId) {
-        webAppOnLinuxDeployModel.setWebAppId(webAppId);
+        deployModel.setWebAppId(webAppId);
     }
 
     public boolean isCreatingNewWebAppOnLinux() {
-        return webAppOnLinuxDeployModel.isCreatingNewWebAppOnLinux();
+        return deployModel.isCreatingNewWebAppOnLinux();
     }
 
     public void setCreatingNewWebAppOnLinux(boolean creatingNewWebAppOnLinux) {
-        webAppOnLinuxDeployModel.setCreatingNewWebAppOnLinux(creatingNewWebAppOnLinux);
+        deployModel.setCreatingNewWebAppOnLinux(creatingNewWebAppOnLinux);
+    }
+
+    public boolean isCreatingNewAppServicePlan() {
+        return deployModel.isCreatingNewAppServicePlan();
+    }
+
+    public void setCreatingNewAppServicePlan(boolean creatingNewAppServicePlan) {
+        deployModel.setCreatingNewAppServicePlan(creatingNewAppServicePlan);
+    }
+
+    public String getAppServicePlanId() {
+        return deployModel.getAppServicePlanId();
+    }
+
+    public void setAppServicePlanId(String appServicePlanId) {
+        deployModel.setAppServicePlanId(appServicePlanId);
+    }
+
+    public String getAppServicePlanName() {
+        return deployModel.getAppServicePlanName();
+    }
+
+    public void setAppServicePlanName(String appServicePlanName) {
+        deployModel.setAppServicePlanName(appServicePlanName);
     }
 }

@@ -23,19 +23,17 @@
 package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
 import com.microsoft.azure.management.appservice.PricingTier;
-import rx.Observable;
-
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import rx.Observable;
 
 public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> extends MvpPresenter<V> {
     private static final String CANNOT_LIST_WEB_APP = "Failed to list web apps.";
@@ -43,17 +41,15 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
     private static final String CANNOT_LIST_RESOURCE_GROUP = "Failed to list resource group.";
     private static final String CANNOT_LIST_PRICING_TIER = "Failed to list pricing tier.";
     private static final String CANNOT_LIST_LOCATION = "Failed to list location.";
+    private static final String CANNOT_LIST_APP_SERVICE_PLAN = "Failed to list app service plan.";
 
     private List<ResourceEx<SiteInner>> retrieveListOfWebAppOnLinux(boolean force) {
-        List<ResourceEx<SiteInner>> ret = new ArrayList<>();
-        for (Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-            List<ResourceEx<SiteInner>> wal = AzureWebAppMvpModel.getInstance()
-                    .listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), force);
-            ret.addAll(wal);
-        }
-        return ret;
+        return AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(force);
     }
 
+    /**
+     * Load list of Web App on Linux from cache (if exists).
+     */
     public void onLoadAppList() {
         Observable.fromCallable(() -> retrieveListOfWebAppOnLinux(false))
                 .subscribeOn(getSchedulerProvider().io())
@@ -65,6 +61,9 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                 }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
     }
 
+    /**
+     * Force to refresh list of Web App on Linux.
+     */
     public void onRefreshList() {
         Observable.fromCallable(() -> retrieveListOfWebAppOnLinux(true))
                 .subscribeOn(getSchedulerProvider().io())
@@ -76,6 +75,9 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                 }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
     }
 
+    /**
+     * Load list of Subscriptions.
+     */
     public void onLoadSubscriptionList() {
         Observable.fromCallable(() -> AzureMvpModel.getInstance().getSelectedSubscriptions())
                 .subscribeOn(getSchedulerProvider().io())
@@ -96,6 +98,10 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
         });
     }
 
+    /**
+     * Load List of Resource Group by subscription id.
+     * @param sid Subscription Id.
+     */
     public void onLoadResourceGroup(String sid) {
         Observable.fromCallable(() -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sid))
                 .subscribeOn(getSchedulerProvider().io())
@@ -107,6 +113,10 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                 }), e -> errorHandler(CANNOT_LIST_RESOURCE_GROUP, (Exception) e));
     }
 
+    /**
+     * Load List of Location by subscription id.
+     * @param sid Subscription Id.
+     */
     public void onLoadLocationList(String sid) {
         Observable.fromCallable(() -> AzureMvpModel.getInstance().listLocationsBySubscriptionId(sid))
                 .subscribeOn(getSchedulerProvider().io())
@@ -119,6 +129,9 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
 
     }
 
+    /**
+     * Load List of Pricing Tier.
+     */
     public void onLoadPricingTierList() {
         Observable.fromCallable(() -> AzureMvpModel.getInstance().listPricingTier())
                 .subscribeOn(getSchedulerProvider().io())
@@ -130,5 +143,22 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                             .filter(item -> !item.equals(PricingTier.FREE_F1) && !item.equals(PricingTier.SHARED_D1))
                             .collect(Collectors.toList()));
                 }), e -> errorHandler(CANNOT_LIST_PRICING_TIER, (Exception) e));
+    }
+
+    /**
+     * Load list of App Service Plan by Subscription and Resource Group.
+     * @param sid Subscription Id.
+     * @param rg Resource group name.
+     */
+    public void onLoadAppServicePlan(String sid, String rg) {
+        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance()
+                .listAppServicePlanBySubscriptionIdAndResrouceGroupName(sid, rg))
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().renderAppServicePlanList(appServicePlans);
+                }), e -> errorHandler(CANNOT_LIST_APP_SERVICE_PLAN, (Exception) e));
     }
 }

@@ -18,14 +18,10 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.microsoft.intellij.runner.container.webapponlinux;
-
-import com.intellij.util.xmlb.XmlSerializer;
-import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
-
-import org.jdom.Element;
+package com.microsoft.azuretools.core.mvp.model.webapp;
 
 public class WebAppOnLinuxDeployModel {
     private static final String ELEMENT_ACR = "AzureContainerRegistry";
@@ -50,29 +46,13 @@ public class WebAppOnLinuxDeployModel {
     private String locationName;
     private String pricingSkuTier;
     private String pricingSkuSize;
+    private boolean creatingNewAppServicePlan;
+    private String appServicePlanId;
+    private String appServicePlanName;
 
 
     public WebAppOnLinuxDeployModel() {
         privateRegistryImageSetting = new PrivateRegistryImageSetting();
-    }
-
-
-    /**
-     * Load conf from existing xml node.
-     *
-     * @param element xml node
-     */
-    public void readExternal(Element element) {
-        XmlSerializer.deserializeInto(this, element);
-    }
-
-    /**
-     * Save conf to xml node.
-     *
-     * @param element xml node
-     */
-    public void writeExternal(Element element) {
-        XmlSerializer.serializeInto(this, element);
     }
 
     public String getWebAppId() {
@@ -155,4 +135,27 @@ public class WebAppOnLinuxDeployModel {
         this.privateRegistryImageSetting = privateRegistryImageSetting;
     }
 
+    public boolean isCreatingNewAppServicePlan() {
+        return creatingNewAppServicePlan;
+    }
+
+    public void setCreatingNewAppServicePlan(boolean creatingNewAppServicePlan) {
+        this.creatingNewAppServicePlan = creatingNewAppServicePlan;
+    }
+
+    public String getAppServicePlanId() {
+        return appServicePlanId;
+    }
+
+    public void setAppServicePlanId(String appServicePlanId) {
+        this.appServicePlanId = appServicePlanId;
+    }
+
+    public String getAppServicePlanName() {
+        return appServicePlanName;
+    }
+
+    public void setAppServicePlanName(String appServicePlanName) {
+        this.appServicePlanName = appServicePlanName;
+    }
 }

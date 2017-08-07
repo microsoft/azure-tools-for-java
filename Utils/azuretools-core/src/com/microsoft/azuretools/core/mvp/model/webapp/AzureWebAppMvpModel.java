@@ -44,8 +44,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AzureWebAppMvpModel {
-    private Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
-    private Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
+    private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
+    private final Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
 
     private AzureWebAppMvpModel() {
         subscriptionIdToWebAppsOnLinuxMap = new ConcurrentHashMap<>();
@@ -76,37 +76,58 @@ public class AzureWebAppMvpModel {
      * @return
      * @throws IOException
      */
-    public WebApp createWebAppOnLinux(String sid, WebAppOnLinuxCreationProfile profile, ImageSetting imageSetting)
+    public WebApp createWebAppOnLinux(String sid, WebAppOnLinuxDeployModel profile, ImageSetting imageSetting)
             throws IOException {
-        WebApp app = null;
+        if (!(imageSetting instanceof PrivateRegistryImageSetting)) {
+            // TODO: other types of ImageSetting, e.g. Docker Hub
+            return null;
+        }
+        PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
+        WebApp app;
         Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
 
-        // handle AppServicePlan/ResourceGroup setting
-        WebApp.DefinitionStages.WithDockerContainerImage withDockerContainerImage;
-        if (profile.isResourceGroupExisting()) {
-            withDockerContainerImage = azure.webApps().define(profile.getWebAppName())
-                    .withRegion(Region.findByLabelOrName(profile.getRegionName()))
-                    .withExistingResourceGroup(profile.getResourceGroupName()) // existing RG
-                    .withNewLinuxPlan(new PricingTier(profile.getPricingTierSkuTier(),
-                            profile.getPricingTierSkuSize()));
+        WebApp.DefinitionStages.Blank webAppDefinition = azure.webApps().define(profile.getWebAppName());
+        if (profile.isCreatingNewAppServicePlan()) {
+            // new asp
+            if (profile.isCreatingNewResourceGroup()) {
+                // new rg
+                app = webAppDefinition
+                        .withRegion(Region.findByLabelOrName(profile.getLocationName()))
+                        .withNewResourceGroup(profile.getResourceGroupName())
+                        .withNewLinuxPlan(new PricingTier(profile.getPricingSkuTier(), profile.getPricingSkuSize()))
+                        .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
+                        .withCredentials(pr.getUsername(), pr.getPassword())
+                        .withStartUpCommand(pr.getStartupFile()).create();
+            } else {
+                // old rg
+                app = webAppDefinition
+                        .withRegion(Region.findByLabelOrName(profile.getLocationName()))
+                        .withExistingResourceGroup(profile.getResourceGroupName())
+                        .withNewLinuxPlan(new PricingTier(profile.getPricingSkuTier(), profile.getPricingSkuSize()))
+                        .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
+                        .withCredentials(pr.getUsername(), pr.getPassword())
+                        .withStartUpCommand(pr.getStartupFile()).create();
+            }
         } else {
-            withDockerContainerImage = azure.webApps().define(profile.getWebAppName())
-                    .withRegion(Region.findByLabelOrName(profile.getRegionName()))
-                    .withNewResourceGroup(profile.getResourceGroupName())  // new RG
-                    .withNewLinuxPlan(new PricingTier(profile.getPricingTierSkuTier(),
-                            profile.getPricingTierSkuSize()));
-        }
-
-        // handle DockerContainerImage setting
-        if (imageSetting instanceof PrivateRegistryImageSetting) {
-            PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
-
-            app = withDockerContainerImage.withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
-                    .withCredentials(pr.getUsername(), pr.getPassword())
-                    .withStartUpCommand(pr.getStartupFile())
-                    .create();
-        } else {
-            // TODO: other types of ImageSetting, e.g. Docker Hub
+            // old asp
+            AppServicePlan asp = azure.appServices().appServicePlans().getById(profile.getAppServicePlanId());
+            if (profile.isCreatingNewResourceGroup()) {
+                // new rg
+                app = webAppDefinition
+                        .withExistingLinuxPlan(asp)
+                        .withNewResourceGroup(profile.getResourceGroupName())
+                        .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
+                        .withCredentials(pr.getUsername(), pr.getPassword())
+                        .withStartUpCommand(pr.getStartupFile()).create();
+            } else {
+                // old rg
+                app = webAppDefinition
+                        .withExistingLinuxPlan(asp)
+                        .withExistingResourceGroup(profile.getResourceGroupName())
+                        .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
+                        .withCredentials(pr.getUsername(), pr.getPassword())
+                        .withStartUpCommand(pr.getStartupFile()).create();
+            }
         }
         return app;
     }
@@ -178,7 +199,7 @@ public class AzureWebAppMvpModel {
      * @return list of Web App on Linux (SiteInner instances)
      */
     public List<ResourceEx<SiteInner>> listWebAppsOnLinuxBySubscriptionId(String sid, boolean force) {
-        List<ResourceEx<SiteInner>> wal = new ArrayList<ResourceEx<SiteInner>>();
+        List<ResourceEx<SiteInner>> wal = new ArrayList<>();
         if (!force && subscriptionIdToWebAppsOnLinuxMap.containsKey(sid)) {
             return subscriptionIdToWebAppsOnLinuxMap.get(sid);
         }
@@ -189,7 +210,7 @@ public class AzureWebAppMvpModel {
             for (ResourceGroup rg : rgl) {
                 for (SiteInner si : azure.webApps().inner().listByResourceGroup(rg.name())) {
                     if (si.kind().equals("app,linux")) {
-                        wal.add(new ResourceEx<SiteInner>(si, sid));
+                        wal.add(new ResourceEx<>(si, sid));
                     }
                 }
             }
@@ -223,6 +244,22 @@ public class AzureWebAppMvpModel {
             jdks.add(jdk);
         }
         return jdks;
+    }
+
+    /**
+     * List Web App on Linux in all selected subscriptions.
+     *
+     * @param force flag indicating whether force to fetch most updated data from server
+     * @return list of Web App on Linux (SiteInner instances)
+     */
+    public List<ResourceEx<SiteInner>> listAllWebAppsOnLinux(boolean force) {
+        List<ResourceEx<SiteInner>> ret = new ArrayList<>();
+        for (Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
+            List<ResourceEx<SiteInner>> wal = AzureWebAppMvpModel.getInstance()
+                    .listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), force);
+            ret.addAll(wal);
+        }
+        return ret;
     }
 
     private static final class SingletonHolder {

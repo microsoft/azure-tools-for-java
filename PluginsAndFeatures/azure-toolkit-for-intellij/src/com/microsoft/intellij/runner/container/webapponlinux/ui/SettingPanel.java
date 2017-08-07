@@ -29,6 +29,7 @@ import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
+import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.Location;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -52,6 +54,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
 public class SettingPanel implements WebAppOnLinuxDeployView {
+    private static final String NOT_APPLICABLE = "N/A";
+
     private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
     private JTextField textServerUrl;
     private JTextField textUsername;
@@ -72,6 +76,12 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private JRadioButton rdoCreateResGrp;
     private JTextField txtNewResGrp;
     private JRadioButton rdoUseExistResGrp;
+    private JRadioButton rdoCreateAppServicePlan;
+    private JTextField txtCreateAppServicePlan;
+    private JRadioButton rdoUseExistAppServicePlan;
+    private JComboBox cbExistAppServicePlan;
+    private JLabel lblLocation;
+    private JLabel lblPricing;
     private JBTable webAppTable;
     private List<ResourceEx<SiteInner>> cachedWebAppList;
     private String defaultWebAppId;
@@ -79,7 +89,11 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private String defaultPricingTier;
     private String defaultResourceGroup;
     private String defaultSubscriptionId;
+    private String defaultAppServicePlanId;
 
+    /**
+     * Constructor.
+     */
     public SettingPanel() {
         webAppOnLinuxDeployPresenter = new WebAppOnLinuxDeployPresenter<>();
         webAppOnLinuxDeployPresenter.onAttachView(this);
@@ -92,13 +106,14 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         // resource group
         comboResourceGroup.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
             @Override
-            public void customize(JList jList, ResourceGroup resourceGroup, int index, boolean isSelected, boolean
+            public void customize(JList jlist, ResourceGroup resourceGroup, int index, boolean isSelected, boolean
                     cellHasFocus) {
                 if (resourceGroup != null) {
                     setText(resourceGroup.name());
                 }
             }
         });
+        comboResourceGroup.addItemListener(this::onComboResourceGroupSelection);
         updateResourceGroupEnabled();
         rdoCreateResGrp.addActionListener(e -> updateResourceGroupEnabled());
         rdoUseExistResGrp.addActionListener(e -> updateResourceGroupEnabled());
@@ -106,7 +121,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         // subscription combo
         comboSubscription.setRenderer(new ListCellRendererWrapper<Subscription>() {
             @Override
-            public void customize(JList jList, Subscription subscription, int index, boolean isSelected, boolean
+            public void customize(JList jlist, Subscription subscription, int index, boolean isSelected, boolean
                     cellHasFocus) {
                 if (subscription != null) {
                     setText(String.format("%s (%s)", subscription.displayName(), subscription.subscriptionId()));
@@ -116,10 +131,25 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
 
         comboSubscription.addItemListener(this::onComboSubscriptionSelection);
 
+        // app service plan
+        cbExistAppServicePlan.setRenderer(new ListCellRendererWrapper<AppServicePlan>() {
+            @Override
+            public void customize(JList jlist, AppServicePlan asp, int index, boolean isSelected, boolean
+                    cellHasFocus) {
+                if (asp != null) {
+                    setText(asp.name());
+                }
+            }
+        });
+        cbExistAppServicePlan.addItemListener(this::onComboExistingAspSelection);
+        updateAppServicePlanEnabled();
+        rdoCreateAppServicePlan.addActionListener(e -> updateAppServicePlanEnabled());
+        rdoUseExistAppServicePlan.addActionListener(e -> updateAppServicePlanEnabled());
+
         // location combo
         cbLocation.setRenderer(new ListCellRendererWrapper<Location>() {
             @Override
-            public void customize(JList jList, Location location, int index, boolean isSelected, boolean cellHasFocus) {
+            public void customize(JList jlist, Location location, int index, boolean isSelected, boolean cellHasFocus) {
                 if (location != null) {
                     setText(location.displayName());
                 }
@@ -129,7 +159,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         // pricing tier combo
         cbPricing.setRenderer(new ListCellRendererWrapper<PricingTier>() {
             @Override
-            public void customize(JList jList, PricingTier pricingTier, int index, boolean isSelected, boolean
+            public void customize(JList jlist, PricingTier pricingTier, int index, boolean isSelected, boolean
                     cellHasFocus) {
                 if (pricingTier != null) {
                     setText(pricingTier.toString());
@@ -137,6 +167,36 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             }
         });
 
+    }
+
+    private void onComboResourceGroupSelection(ItemEvent event) {
+        if (event.getStateChange() == ItemEvent.SELECTED) {
+            cbExistAppServicePlan.removeAllItems();
+            lblLocation.setText("");
+            lblPricing.setText("");
+            Subscription sub = (Subscription) comboSubscription.getSelectedItem();
+            ResourceGroup rg = (ResourceGroup) comboResourceGroup.getSelectedItem();
+            if (sub != null && rg != null) {
+                updateAppServicePlanList(sub.subscriptionId(), rg.name());
+            }
+        }
+    }
+
+    private void onComboExistingAspSelection(ItemEvent event) {
+        if (event.getStateChange() == ItemEvent.SELECTED) {
+            AppServicePlan asp = (AppServicePlan) cbExistAppServicePlan.getSelectedItem();
+            if (asp != null) {
+                lblLocation.setText(asp.regionName());
+                lblPricing.setText(asp.pricingTier().toString());
+            }
+        }
+    }
+
+    private void updateAppServicePlanEnabled() {
+        cbExistAppServicePlan.setEnabled(rdoUseExistAppServicePlan.isSelected());
+        txtCreateAppServicePlan.setEnabled(rdoCreateAppServicePlan.isSelected());
+        cbLocation.setEnabled(rdoCreateAppServicePlan.isSelected());
+        cbPricing.setEnabled(rdoCreateAppServicePlan.isSelected());
     }
 
     public JPanel getRootPanel() {
@@ -211,16 +271,23 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             }
 
             // app service plan
-            // TODO: use existing ASP
-            Location selectedLocation = (Location) cbLocation.getSelectedItem();
-            if (selectedLocation != null) {
-                webAppOnLinuxDeployConfiguration.setLocationName(selectedLocation.region().name());
-            }
+            if (rdoCreateAppServicePlan.isSelected()) {
+                webAppOnLinuxDeployConfiguration.setAppServicePlanName(txtCreateAppServicePlan.getText());
+                Location selectedLocation = (Location) cbLocation.getSelectedItem();
+                if (selectedLocation != null) {
+                    webAppOnLinuxDeployConfiguration.setLocationName(selectedLocation.region().name());
+                }
 
-            PricingTier selectedPricingTier = (PricingTier) cbPricing.getSelectedItem();
-            if (selectedPricingTier != null) {
-                webAppOnLinuxDeployConfiguration.setPricingSkuTier(selectedPricingTier.toSkuDescription().tier());
-                webAppOnLinuxDeployConfiguration.setPricingSkuSize(selectedPricingTier.toSkuDescription().size());
+                PricingTier selectedPricingTier = (PricingTier) cbPricing.getSelectedItem();
+                if (selectedPricingTier != null) {
+                    webAppOnLinuxDeployConfiguration.setPricingSkuTier(selectedPricingTier.toSkuDescription().tier());
+                    webAppOnLinuxDeployConfiguration.setPricingSkuSize(selectedPricingTier.toSkuDescription().size());
+                }
+            } else if (rdoUseExistAppServicePlan.isSelected()) {
+                AppServicePlan selectedAsp = (AppServicePlan) cbExistAppServicePlan.getSelectedItem();
+                if (selectedAsp != null) {
+                    webAppOnLinuxDeployConfiguration.setAppServicePlanId(selectedAsp.id());
+                }
             }
         }
     }
@@ -244,6 +311,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         defaultLocationName = conf.getLocationName();
         defaultPricingTier = new PricingTier(conf.getPricingSkuTier(), conf.getPricingSkuSize()).toString();
         defaultResourceGroup = conf.getResourceGroupName();
+        defaultAppServicePlanId = conf.getAppServicePlanId();
 
         // pnlUseExisting
         webAppOnLinuxDeployPresenter.onLoadAppList();
@@ -251,8 +319,6 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         // pnlCreateNew
         webAppOnLinuxDeployPresenter.onLoadSubscriptionList(); // including related RG & Location
         webAppOnLinuxDeployPresenter.onLoadPricingTierList();
-
-        textAppName.setText(conf.getAppName());
 
         boolean creatingRg = conf.isCreatingNewResourceGroup();
         rdoCreateResGrp.setSelected(creatingRg);
@@ -262,8 +328,18 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             txtNewResGrp.setText(conf.getResourceGroupName());
         }
 
+        boolean creatingAsp = conf.isCreatingNewAppServicePlan();
+        rdoCreateAppServicePlan.setSelected(creatingAsp);
+        rdoUseExistAppServicePlan.setSelected(!creatingAsp);
+        if (creatingAsp) {
+            txtCreateAppServicePlan.setText(conf.getAppServicePlanName());
+        }
+
         // active panel
         boolean creatingApp = conf.isCreatingNewWebAppOnLinux();
+        if (creatingApp) {
+            textAppName.setText(conf.getAppName());
+        }
         rdoCreateNew.setSelected(creatingApp);
         rdoUseExist.setSelected(!creatingApp);
         updatePanelVisibility();
@@ -285,6 +361,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         webAppTable.setRowSelectionAllowed(true);
         webAppTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         webAppTable.getSelectionModel().addListSelectionListener(event -> {
+            // TODO
             System.out.println("table selected");
         });
         AnActionButton btnRefresh = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
@@ -340,8 +417,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
 
     @Override
     public void renderSubscriptionList(List<Subscription> subscriptions) {
+        comboSubscription.removeAllItems();
         if (subscriptions != null && subscriptions.size() > 0) {
-            comboSubscription.removeAllItems();
             subscriptions.forEach((item) -> {
                 comboSubscription.addItem(item);
                 if (Comparing.equal(item.subscriptionId(), defaultSubscriptionId)) {
@@ -354,13 +431,13 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
 
     @Override
     public void renderResourceGroupList(List<ResourceGroup> resourceGroupList) {
+        comboResourceGroup.removeAllItems();
         if (resourceGroupList != null && resourceGroupList.size() > 0) {
-            comboResourceGroup.removeAllItems();
             resourceGroupList.forEach((item) -> {
                 comboResourceGroup.addItem(item);
                 if (Comparing.equal(item.name(), defaultResourceGroup)) {
                     comboResourceGroup.setSelectedItem(item);
-//                    defaultResourceGroup = null;
+                    // defaultResourceGroup = null;
                 }
             });
         }
@@ -368,22 +445,39 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
 
     @Override
     public void renderLocationList(List<Location> locationList) {
+        cbLocation.removeAllItems();
         if (locationList != null && locationList.size() > 0) {
-            cbLocation.removeAllItems();
             locationList.forEach((item) -> {
                 cbLocation.addItem(item);
                 if (Comparing.equal(item.region().name(), defaultLocationName)) {
                     cbLocation.setSelectedItem(item);
-//                    defaultLocationName = null;
+                    // defaultLocationName = null;
                 }
             });
         }
     }
 
     @Override
+    public void renderAppServicePlanList(List<AppServicePlan> appServicePlans) {
+        cbExistAppServicePlan.removeAllItems();
+        lblLocation.setText(NOT_APPLICABLE);
+        lblPricing.setText(NOT_APPLICABLE);
+        if (appServicePlans != null && appServicePlans.size() > 0) {
+            appServicePlans.forEach((item) -> {
+                cbExistAppServicePlan.addItem(item);
+                if (Comparing.equal(item.id(), defaultAppServicePlanId)) {
+                    cbExistAppServicePlan.setSelectedItem(item);
+                    // defaultAppServicePlanId = null;
+                }
+            });
+
+        }
+    }
+
+    @Override
     public void renderPricingTierList(List<PricingTier> pricingTierList) {
+        cbPricing.removeAllItems();
         if (pricingTierList != null && pricingTierList.size() > 0) {
-            cbPricing.removeAllItems();
             pricingTierList.forEach((item) -> {
                 cbPricing.addItem(item);
                 if (Comparing.equal(item.toString(), defaultPricingTier)) {
@@ -395,11 +489,16 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
 
     }
 
+
     private void updateResourceGroupList(String sid) {
         webAppOnLinuxDeployPresenter.onLoadResourceGroup(sid);
     }
 
     private void updateLocationList(String sid) {
         webAppOnLinuxDeployPresenter.onLoadLocationList(sid);
+    }
+
+    private void updateAppServicePlanList(String sid, String rg) {
+        webAppOnLinuxDeployPresenter.onLoadAppServicePlan(sid, rg);
     }
 }

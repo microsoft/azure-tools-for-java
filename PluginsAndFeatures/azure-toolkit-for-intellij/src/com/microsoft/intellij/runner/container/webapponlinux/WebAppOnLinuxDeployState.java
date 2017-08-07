@@ -22,9 +22,6 @@
 
 package com.microsoft.intellij.runner.container.webapponlinux;
 
-import rx.Observable;
-import rx.schedulers.Schedulers;
-
 import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
@@ -39,6 +36,7 @@ import com.intellij.openapi.util.Key;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
 import com.microsoft.intellij.container.Constant;
 import com.microsoft.intellij.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.RunProcessHandler;
@@ -47,21 +45,30 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.ProgressHandler;
 import com.spotify.docker.client.exceptions.DockerException;
 
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.nio.file.Paths;
 import java.util.List;
 
+import rx.Observable;
+import rx.schedulers.Schedulers;
+
 public class WebAppOnLinuxDeployState implements RunProfileState {
-    private final WebAppOnLinuxDeployModel webAppOnLinuxDeployModel;
+    private static final String DOCKER_CONTEXT_FOLDER_NAME = "dockerContext";
+    private static final String DOCKER_FILE_NAME = "Dockerfile";
+
+    private final WebAppOnLinuxDeployModel deployModel;
     private final Project project;
 
     private final RunProcessHandler processHandler = new RunProcessHandler();
 
     public WebAppOnLinuxDeployState(Project project, WebAppOnLinuxDeployModel webAppOnLinuxDeployModel) {
-        this.webAppOnLinuxDeployModel = webAppOnLinuxDeployModel;
+        this.deployModel = webAppOnLinuxDeployModel;
         this.project = project;
     }
 
@@ -74,20 +81,31 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
         Observable.fromCallable(
                 () -> {
                     println("Starting job ...  ");
+                    String basePath = project.getBasePath();
+                    if (basePath == null) {
+                        errorln("Project base path is null.");
+                        throw new FileNotFoundException("Project base path is null.");
+                    }
                     // locate war file to specified location
                     println("Locate war file ...  ");
                     List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getRootProjects();
-                    String targetBuildPath = new File(mavenProjects.get(0).getBuildDirectory()).getPath()
-                            + File.separator + mavenProjects.get(0).getFinalName() + ".war";
+                    String targetBuildPath = new File(mavenProjects.get(0).getBuildDirectory()).getPath();
                     String fileName = mavenProjects.get(0).getFinalName() + ".war";
-
+                    FileUtils.copyFile(
+                            Paths.get(targetBuildPath, fileName).toFile(),
+                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME, fileName).toFile()
+                    );
                     // build image
                     println("Build image ...  ");
                     String dockerContent = String.format(Constant.DOCKERFILE_CONTENT_TOMCAT, project.getName());
-                    DockerUtil.createDockerFile(project, "target", "Dockerfile", dockerContent);
+                    DockerUtil.createDockerFile(project, DOCKER_CONTEXT_FOLDER_NAME, DOCKER_FILE_NAME, dockerContent);
+                    FileUtils.copyDirectory(
+                            Paths.get(basePath, DOCKER_CONTEXT_FOLDER_NAME).toFile(),
+                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME).toFile()
+                    );
                     DockerClient docker = DefaultDockerClient.fromEnv().build();
-                    String latestImageName = DockerUtil.buildImage(docker, project,
-                            new File(mavenProjects.get(0).getBuildDirectory()).toPath());
+                    String latestImageName = DockerUtil.buildImage(docker, project, Paths.get(targetBuildPath,
+                            DOCKER_CONTEXT_FOLDER_NAME));
 
                     // push to ACR
                     println("Push to ACR ...  ");
@@ -97,22 +115,40 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                             throw new DockerException(message.toString());
                         }
                     };
-                    PrivateRegistryImageSetting acrInfo = webAppOnLinuxDeployModel.getPrivateRegistryImageSetting();
+                    PrivateRegistryImageSetting acrInfo = deployModel.getPrivateRegistryImageSetting();
                     DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
                             latestImageName, acrInfo.getImageNameWithTag(), progressHandler);
 
-                    // update WebApp
-                    println("Update WebApp ...  ");
-                    WebApp app = AzureWebAppMvpModel.getInstance().updateWebAppOnLinux(webAppOnLinuxDeployModel
-                                    .getSubscriptionId(),
-                            webAppOnLinuxDeployModel.getWebAppId(), acrInfo);
-                    if (app != null && app.name() != null) {
-                        println(String.format("URL:  http://%s.azurewebsites.net/%s", app.name(), project.getName()));
+                    // deploy
+                    if (deployModel.isCreatingNewWebAppOnLinux()) {
+                        // create new WebApp
+                        println("Create new WebApp ...  ");
+                        WebApp app = AzureWebAppMvpModel.getInstance()
+                                .createWebAppOnLinux(deployModel.getSubscriptionId(), deployModel,
+                                        deployModel.getPrivateRegistryImageSetting());
+
+                        if (app != null && app.name() != null) {
+                            println(String.format("URL:  http://%s.azurewebsites.net/%s", app.name(),
+                                    project.getName()));
+                            updateConfigurationDataModel(app);
+                        }
+                    } else {
+                        // update WebApp
+                        println("Update WebApp ...  ");
+                        WebApp app = AzureWebAppMvpModel.getInstance()
+                                .updateWebAppOnLinux(deployModel.getSubscriptionId(), deployModel.getWebAppId(),
+                                        acrInfo);
+                        if (app != null && app.name() != null) {
+                            println(String.format("URL:  http://%s.azurewebsites.net/%s", app.name(),
+                                    project.getName()));
+                        }
                     }
                     return null;
                 }
         ).subscribeOn(Schedulers.io()).subscribe(
                 (res) -> {
+                    println("Update cache ... ");
+                    AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
                     println("Job done");
                     processHandler.notifyProcessTerminated(0);
                 },
@@ -123,6 +159,11 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                 }
         );
         return new DefaultExecutionResult(consoleView, processHandler);
+    }
+
+    private void updateConfigurationDataModel(WebApp app) {
+        deployModel.setCreatingNewWebAppOnLinux(false);
+        deployModel.setWebAppId(app.id());
     }
 
     private void println(String message, Key type) {

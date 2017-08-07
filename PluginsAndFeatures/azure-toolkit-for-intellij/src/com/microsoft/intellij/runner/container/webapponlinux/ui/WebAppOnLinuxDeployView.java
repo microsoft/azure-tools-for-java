@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
+import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.Location;
@@ -42,4 +43,6 @@ public interface WebAppOnLinuxDeployView extends MvpView {
     void renderLocationList(List<Location> locationList);
 
     void renderPricingTierList(List<PricingTier> pricingTierList);
+
+    void renderAppServicePlanList(List<AppServicePlan> appServicePlans);
 }
