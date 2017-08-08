@@ -24,16 +24,13 @@ package com.microsoft.intellij.runner.webapp.webappconfig;
 
 import com.microsoft.azure.management.Azure;
 
-import com.intellij.execution.process.ProcessOutputTypes;
 import com.microsoft.azure.management.appservice.*;
-import com.microsoft.azure.management.resources.fluentcore.model.Creatable;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.IProgressIndicator;
 import com.microsoft.azuretools.utils.WebAppUtils;
-import com.microsoft.intellij.runner.RunProcessHandler;
 
 import org.apache.commons.net.ftp.FTPClient;
 import org.jetbrains.annotations.NotNull;
@@ -75,14 +72,14 @@ public class WebDeployUtil {
             );
         }
 
-        WebApp.DefinitionStages.WithCreate withCreate =  null;
+        WebApp.DefinitionStages.WithCreate withCreate;
         if (model.isCreatingAppServicePlan()) {
             withCreate = withCreateNewSPlan(azure, model);
         } else {
             withCreate = withCreateExistingSPlan(azure, model);
         }
 
-        WebApp webApp = null;
+        WebApp webApp;
         if (WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(model.getJdkChoice())) {
             webApp = withCreate
                     .withJavaVersion(JavaVersion.JAVA_8_NEWEST)
@@ -97,9 +94,9 @@ public class WebDeployUtil {
     private static WebApp.DefinitionStages.WithCreate withCreateNewSPlan(
             @NotNull Azure azure,
             @NotNull WebAppSettingModel model) throws Exception {
-        WebApp.DefinitionStages.WithCreate withCreate = null;
+        WebApp.DefinitionStages.WithCreate withCreate;
         String[] tierSize = model.getPricing().split("_");
-        if (tierSize == null || tierSize.length != 2) {
+        if (tierSize.length != 2) {
             throw new Exception("Cannot get valid price tier");
         }
         PricingTier pricing = new PricingTier(tierSize[0], tierSize[1]);
@@ -119,10 +116,9 @@ public class WebDeployUtil {
 
     private static WebApp.DefinitionStages.WithCreate withCreateExistingSPlan(
             @NotNull Azure azure,
-            @NotNull WebAppSettingModel model
-    ) throws Exception {
+            @NotNull WebAppSettingModel model) {
         AppServicePlan servicePlan =  azure.appServices().appServicePlans().getById(model.getAppServicePlan());
-        WebApp.DefinitionStages.WithCreate withCreate = null;
+        WebApp.DefinitionStages.WithCreate withCreate;
         if (model.isCreatingResGrp()) {
             withCreate = azure.webApps().define(model.getWebAppName())
                     .withExistingWindowsPlan(servicePlan)
@@ -157,10 +153,9 @@ public class WebDeployUtil {
 
     public static void deployWebApp(WebAppSettingModel webAppSettingModel, IProgressIndicator handler) {
         Observable.fromCallable(() -> {
-            WebApp webApp = null;
+            WebApp webApp;
             if (webAppSettingModel.isCreatingNew()) {
                 webApp = createWebAppWithMsg(webAppSettingModel, handler);
-
             } else {
                 webApp = AzureWebAppMvpModel.getInstance()
                         .getWebAppById(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppId());
