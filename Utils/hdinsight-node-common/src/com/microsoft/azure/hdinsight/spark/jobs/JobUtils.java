@@ -285,8 +285,12 @@ public class JobUtils {
                 }
             } catch (InterruptedException ignore) {
             } finally {
-                // Get the rest logs
-                logs = JobUtils.getInformationFromYarnLogDom(credentialsProvider, driverLogUrl, type, nextStart, 0);
+                // Get the rest logs from history server
+                String historyServerLogUrl = driverLogUrl.replaceAll(
+                    "(https?://.*/yarnui)/([^/]*)/node/containerlogs/(container_[^/]+)/livy",
+                    "$1/jobhistory/logs/$2/port/30050/$3/$3/livy");
+
+                logs = JobUtils.getInformationFromYarnLogDom(credentialsProvider, historyServerLogUrl, type, nextStart, 0);
 
                 new BufferedReader(new StringReader(remainedLine + logs)).lines().forEach(ob::onNext);
             }
