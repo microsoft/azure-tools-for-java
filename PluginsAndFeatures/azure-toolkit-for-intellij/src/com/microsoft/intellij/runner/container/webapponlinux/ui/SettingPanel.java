@@ -58,6 +58,10 @@ import javax.swing.table.DefaultTableModel;
 
 public class SettingPanel implements WebAppOnLinuxDeployView {
     private static final String NOT_APPLICABLE = "N/A";
+    private static final String TABLE_HEAD_WEB_APP_NAME = "Name";
+    private static final String TABLE_HEAD_RESOURCE_GROUP = "Resource Group";
+    private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
+    private static final String TABLE_EMPTY_MESSAGE = "No available Web App on Linux.";
 
     private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
     private JTextField textServerUrl;
@@ -386,10 +390,10 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 return false;
             }
         };
-        tableModel.addColumn("Name");
-        tableModel.addColumn("Resource Group");
+        tableModel.addColumn(TABLE_HEAD_WEB_APP_NAME);
+        tableModel.addColumn(TABLE_HEAD_RESOURCE_GROUP);
         webAppTable = new JBTable(tableModel);
-        webAppTable.getEmptyText().setText("Loading ... ");
+        webAppTable.getEmptyText().setText(TABLE_LOADING_MESSAGE);
         webAppTable.setRowSelectionAllowed(true);
         webAppTable.setDragEnabled(false);
         webAppTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -403,11 +407,11 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         btnRefresh = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-                webAppTable.getEmptyText().setText("Loading ... ");
+                btnRefresh.setEnabled(false);
+                webAppTable.getEmptyText().setText(TABLE_LOADING_MESSAGE);
                 DefaultTableModel model = (DefaultTableModel) webAppTable.getModel();
                 model.getDataVector().clear();
                 model.fireTableDataChanged();
-                btnRefresh.setEnabled(false);
                 webAppOnLinuxDeployPresenter.onRefreshList();
             }
         };
@@ -430,7 +434,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     @Override
     public void renderWebAppOnLinuxList(List<ResourceEx<SiteInner>> webAppOnLinuxList) {
         btnRefresh.setEnabled(true);
-        webAppTable.getEmptyText().setText("No available Web App on Linux.");
+        webAppTable.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
         List<ResourceEx<SiteInner>> sortedList = webAppOnLinuxList.stream()
                 .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
                 .collect(Collectors.toList());
