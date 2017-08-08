@@ -152,7 +152,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
      */
     public void onLoadAppServicePlan(String sid, String rg) {
         Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance()
-                .listAppServicePlanBySubscriptionIdAndResrouceGroupName(sid, rg))
+                .listAppServicePlanBySubscriptionIdAndResourceGroupName(sid, rg))
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {
