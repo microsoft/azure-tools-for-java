@@ -23,9 +23,11 @@
 package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.AnActionButton;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
@@ -43,6 +45,7 @@ import java.awt.event.ItemEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -82,7 +85,10 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private JComboBox cbExistAppServicePlan;
     private JLabel lblLocation;
     private JLabel lblPricing;
+    private JPanel pnlAcr;
+    private JPanel pnlWebAppInfo;
     private JBTable webAppTable;
+    private AnActionButton btnRefresh;
     private List<ResourceEx<SiteInner>> cachedWebAppList;
     private String defaultWebAppId;
     private String defaultLocationName;
@@ -90,6 +96,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private String defaultResourceGroup;
     private String defaultSubscriptionId;
     private String defaultAppServicePlanId;
+    private JTextField textSelectedAppName; // invisible, used to trigger validation on tableRowSelection
 
     /**
      * Constructor.
@@ -97,6 +104,13 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     public SettingPanel() {
         webAppOnLinuxDeployPresenter = new WebAppOnLinuxDeployPresenter<>();
         webAppOnLinuxDeployPresenter.onAttachView(this);
+
+        pnlAcr.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, JBColor.GRAY),
+                "Azure Container Registry"));
+        pnlWebAppInfo.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, JBColor.GRAY),
+                "Web App on Linux"));
 
         // set create/update panel visible
         updatePanelVisibility();
@@ -245,6 +259,11 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 webAppOnLinuxDeployConfiguration.setAppName(selectedWebApp.getResource().name());
                 webAppOnLinuxDeployConfiguration.setSubscriptionId(selectedWebApp.getSubscriptionId());
                 webAppOnLinuxDeployConfiguration.setResourceGroupName(selectedWebApp.getResource().resourceGroup());
+            } else {
+                webAppOnLinuxDeployConfiguration.setWebAppId(null);
+                webAppOnLinuxDeployConfiguration.setAppName(null);
+                webAppOnLinuxDeployConfiguration.setSubscriptionId(null);
+                webAppOnLinuxDeployConfiguration.setResourceGroupName(null);
             }
         } else if (rdoCreateNew.isSelected()) {
             // create new web app
@@ -263,6 +282,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 ResourceGroup selectedRg = (ResourceGroup) comboResourceGroup.getSelectedItem();
                 if (selectedRg != null) {
                     webAppOnLinuxDeployConfiguration.setResourceGroupName(selectedRg.name());
+                } else {
+                    webAppOnLinuxDeployConfiguration.setResourceGroupName(null);
                 }
             } else if (rdoCreateResGrp.isSelected()) {
                 // new RG
@@ -272,21 +293,30 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
 
             // app service plan
             if (rdoCreateAppServicePlan.isSelected()) {
+                webAppOnLinuxDeployConfiguration.setCreatingNewAppServicePlan(true);
                 webAppOnLinuxDeployConfiguration.setAppServicePlanName(txtCreateAppServicePlan.getText());
                 Location selectedLocation = (Location) cbLocation.getSelectedItem();
                 if (selectedLocation != null) {
                     webAppOnLinuxDeployConfiguration.setLocationName(selectedLocation.region().name());
+                } else {
+                    webAppOnLinuxDeployConfiguration.setLocationName(null);
                 }
 
                 PricingTier selectedPricingTier = (PricingTier) cbPricing.getSelectedItem();
                 if (selectedPricingTier != null) {
                     webAppOnLinuxDeployConfiguration.setPricingSkuTier(selectedPricingTier.toSkuDescription().tier());
                     webAppOnLinuxDeployConfiguration.setPricingSkuSize(selectedPricingTier.toSkuDescription().size());
+                } else {
+                    webAppOnLinuxDeployConfiguration.setPricingSkuTier(null);
+                    webAppOnLinuxDeployConfiguration.setPricingSkuSize(null);
                 }
             } else if (rdoUseExistAppServicePlan.isSelected()) {
+                webAppOnLinuxDeployConfiguration.setCreatingNewAppServicePlan(false);
                 AppServicePlan selectedAsp = (AppServicePlan) cbExistAppServicePlan.getSelectedItem();
                 if (selectedAsp != null) {
                     webAppOnLinuxDeployConfiguration.setAppServicePlanId(selectedAsp.id());
+                } else {
+                    webAppOnLinuxDeployConfiguration.setAppServicePlanId(null);
                 }
             }
         }
@@ -348,6 +378,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     }
 
     private void createUIComponents() {
+        System.out.println(" createUIComponents");
         // create table of Web App on Linux
         DefaultTableModel tableModel = new DefaultTableModel() {
             @Override
@@ -355,25 +386,35 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 return false;
             }
         };
-        tableModel.addColumn("WebAppName");
-        tableModel.addColumn("ResourceGroup");
+        tableModel.addColumn("Name");
+        tableModel.addColumn("Resource Group");
         webAppTable = new JBTable(tableModel);
+        webAppTable.getEmptyText().setText("Loading ... ");
         webAppTable.setRowSelectionAllowed(true);
+        webAppTable.setDragEnabled(false);
         webAppTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         webAppTable.getSelectionModel().addListSelectionListener(event -> {
-            // TODO
+            int index = webAppTable.getSelectedRow();
+            if (cachedWebAppList != null && index > 0 && index < cachedWebAppList.size()) {
+                textSelectedAppName.setText(cachedWebAppList.get(webAppTable.getSelectedRow()).getResource().name());
+            }
             System.out.println("table selected");
         });
-        AnActionButton btnRefresh = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
+        btnRefresh = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-                webAppTable.removeAll();
+                webAppTable.getEmptyText().setText("Loading ... ");
+                DefaultTableModel model = (DefaultTableModel) webAppTable.getModel();
+                model.getDataVector().clear();
+                model.fireTableDataChanged();
+                btnRefresh.setEnabled(false);
                 webAppOnLinuxDeployPresenter.onRefreshList();
             }
         };
         ToolbarDecorator tableToolbarDecorator = ToolbarDecorator.createDecorator(webAppTable)
-                .addExtraActions(btnRefresh);
+                .addExtraActions(btnRefresh).setToolbarPosition(ActionToolbarPosition.TOP);
         pnlWebAppOnLinuxTable = tableToolbarDecorator.createPanel();
+
     }
 
     private void updatePanelVisibility() {
@@ -388,6 +429,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
 
     @Override
     public void renderWebAppOnLinuxList(List<ResourceEx<SiteInner>> webAppOnLinuxList) {
+        btnRefresh.setEnabled(true);
+        webAppTable.getEmptyText().setText("No available Web App on Linux.");
         List<ResourceEx<SiteInner>> sortedList = webAppOnLinuxList.stream()
                 .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
                 .collect(Collectors.toList());
@@ -402,7 +445,6 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                         app.resourceGroup()
                 });
             }
-            model.fireTableDataChanged();
         }
 
         // select active web app
