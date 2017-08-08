@@ -261,6 +261,14 @@ public class AzureWebAppMvpModel {
         return ret;
     }
 
+    public void cleanWebApps() {
+        subscriptionIdToWebAppsMap.clear();
+    }
+
+    public void cleanWebAppsOnLinux() {
+        subscriptionIdToWebAppsOnLinuxMap.clear();
+    }
+
     private static final class SingletonHolder {
         private static final AzureWebAppMvpModel INSTANCE = new AzureWebAppMvpModel();
     }
