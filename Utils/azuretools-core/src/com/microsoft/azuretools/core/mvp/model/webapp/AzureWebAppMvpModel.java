@@ -153,7 +153,7 @@ public class AzureWebAppMvpModel {
         return app;
     }
 
-    public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResrouceGroupName(String sid, String group)
+    public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group)
             throws Exception {
         Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
         return azure.appServices().appServicePlans().listByResourceGroup(group);
