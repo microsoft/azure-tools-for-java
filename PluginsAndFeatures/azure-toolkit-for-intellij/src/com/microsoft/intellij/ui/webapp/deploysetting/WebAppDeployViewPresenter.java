@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -46,6 +46,9 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
         loadWebApps(false /*forceRefresh*/);
     }
 
+    /**
+     * Load subscriptions from model.
+     */
     public void onLoadSubscription() {
         Observable.fromCallable(() -> AzureMvpModel.getInstance().getSelectedSubscriptions())
                 .subscribeOn(getSchedulerProvider().io())
@@ -57,6 +60,9 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
         }), e -> errorHandler(CANNOT_LIST_SUBSCRIPTION, (Exception) e));
     }
 
+    /**
+     * Load resource groups from model.
+     */
     public void onLoadResourceGroups(String sid) {
         Observable.fromCallable(() -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sid))
                 .subscribeOn(getSchedulerProvider().io())
@@ -68,8 +74,11 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
                 }), e -> errorHandler(CANNOT_LIST_RES_GRP, (Exception) e));
     }
 
+    /**
+     * Load app service plan from model.
+     */
     public void onLoadAppServicePlan(String sid, String group) {
-        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionIdAndResrouceGroupName(sid, group))
+        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionIdAndResourceGroupName(sid, group))
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {
@@ -79,6 +88,9 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
                 }), e -> errorHandler(CANNOT_LIST_APP_SERVICE_PLAN, (Exception) e));
     }
 
+    /**
+     * Load locations from model.
+     */
     public void onLoadLocation(String sid) {
         Observable.fromCallable(() -> AzureMvpModel.getInstance().listLocationsBySubscriptionId(sid))
                 .subscribeOn(getSchedulerProvider().io())
@@ -90,6 +102,9 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
                 }), e -> errorHandler(CANNOT_LIST_LOCATION, (Exception) e));
     }
 
+    /**
+     * Load pricing tier from model.
+     */
     public void onLoadPricingTier() {
         try {
             getMvpView().fillPricingTier(AzureMvpModel.getInstance().listPricingTier());
@@ -98,10 +113,16 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
         }
     }
 
+    /**
+     * Load web containers from model.
+     */
     public void onLoadWebContainer() {
         getMvpView().fillWebContainer(AzureWebAppMvpModel.getInstance().listWebContainers());
     }
 
+    /**
+     * Load third party JDKs from model.
+     */
     public void onLoadThirdPartyJdk() {
         getMvpView().fillThirdPartyJdk(AzureWebAppMvpModel.getInstance().listThirdPartyJdk());
     }

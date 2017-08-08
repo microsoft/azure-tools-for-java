@@ -5,7 +5,9 @@ import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
+
 import org.jetbrains.idea.maven.model.MavenConstants;
+import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
 import org.jetbrains.idea.maven.tasks.MavenBeforeRunTasksProvider;
@@ -18,27 +20,13 @@ public class MavenRunTaskUtil {
 
     private static final String MAVEN_TASK_PACKAGE = "package";
 
-    public static boolean shouldAddMavenPackageTask(List<BeforeRunTask> tasks, Project project) {
-        boolean shouldAdd = true;
-        for (BeforeRunTask task : tasks) {
-            if (task.getProviderId().equals(MavenBeforeRunTasksProvider.ID)) {
-                MavenBeforeRunTask mavenTask = (MavenBeforeRunTask) task;
-                if (mavenTask.getGoal().contains(MAVEN_TASK_PACKAGE) && Comparing.equal(mavenTask.getProjectPath(),
-                        project.getBasePath() + File.separator + MavenConstants.POM_XML)) {
-                    mavenTask.setEnabled(true);
-                    shouldAdd = false;
-                    break;
-                }
-            }
-        }
-        return shouldAdd;
-    }
-
     public static boolean isMavenProject(Project project) {
         return MavenProjectsManager.getInstance(project).isMavenizedProject();
     }
 
-
+    /**
+     * Add Maven package goal into the run configuration's before run task.
+     */
     public static void addMavenPackageBeforeRunTask(RunConfiguration runConfiguration) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(runConfiguration.getProject());
         if (isMavenProject(runConfiguration.getProject())) {
@@ -53,5 +41,32 @@ public class MavenRunTaskUtil {
                 manager.setBeforeRunTasks(runConfiguration, tasks, false);
             }
         }
+    }
+
+    /**
+     * Get the MavenProject object if the given project is a maven typed project.
+     */
+    public static MavenProject getMavenProject(Project project) {
+        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getRootProjects();
+        if (mavenProjects.size() > 0) {
+            return mavenProjects.get(0);
+        }
+        return null;
+    }
+
+    private static boolean shouldAddMavenPackageTask(List<BeforeRunTask> tasks, Project project) {
+        boolean shouldAdd = true;
+        for (BeforeRunTask task : tasks) {
+            if (task.getProviderId().equals(MavenBeforeRunTasksProvider.ID)) {
+                MavenBeforeRunTask mavenTask = (MavenBeforeRunTask) task;
+                if (mavenTask.getGoal().contains(MAVEN_TASK_PACKAGE) && Comparing.equal(mavenTask.getProjectPath(),
+                        project.getBasePath() + File.separator + MavenConstants.POM_XML)) {
+                    mavenTask.setEnabled(true);
+                    shouldAdd = false;
+                    break;
+                }
+            }
+        }
+        return shouldAdd;
     }
 }

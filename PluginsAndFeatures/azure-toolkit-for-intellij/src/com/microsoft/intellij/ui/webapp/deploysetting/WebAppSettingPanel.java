@@ -45,6 +45,7 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingModel;
 
+import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -260,16 +261,16 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
 
         lblJdkLicense.setHyperlinkText("License");
         lblJdkLicense.setHyperlinkTarget(AzulZuluModel.getLicenseUrl());
-        this.webAppDeployViewPresenter.onLoadWebContainer();
-        this.webAppDeployViewPresenter.onLoadSubscription();
-        this.webAppDeployViewPresenter.onLoadPricingTier();
-        this.webAppDeployViewPresenter.onLoadThirdPartyJdk();
     }
 
     public JPanel getMainPanel() {
         return pnlRoot;
     }
 
+    /**
+     * Shared implementation of
+     * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#resetEditorFrom(Object)}.
+     */
     public void resetEditorFrom(@NotNull WebAppConfiguration webAppConfiguration) {
         if (webAppConfiguration.isCreatingNew()) {
             rdoCreateNew.doClick();
@@ -295,15 +296,23 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             rdoUseExist.doClick();
             chkToRoot.setSelected(webAppConfiguration.isDeployToRoot());
         }
-
         this.webAppDeployViewPresenter.onLoadWebApps();
+        this.webAppDeployViewPresenter.onLoadWebContainer();
+        this.webAppDeployViewPresenter.onLoadSubscription();
+        this.webAppDeployViewPresenter.onLoadPricingTier();
+        this.webAppDeployViewPresenter.onLoadThirdPartyJdk();
     }
 
+    /**
+     * Shared implementation of
+     * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#applyEditorTo(Object)}.
+     */
     public void applyEditorTo(@NotNull WebAppConfiguration webAppConfiguration) {
         if (rdoUseExist.isSelected()) {
             webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
             webAppConfiguration.setSubscriptionId(selectedWebApp == null ? "" : selectedWebApp.getSubscriptionId());
-            webAppConfiguration.setWebAppUrl(selectedWebApp == null ? "" : URL_PREFIX + selectedWebApp.getResource().defaultHostName());
+            webAppConfiguration.setWebAppUrl(selectedWebApp == null ? "" :
+                    URL_PREFIX + selectedWebApp.getResource().defaultHostName());
             webAppConfiguration.setDeployToRoot(chkToRoot.isSelected());
             webAppConfiguration.setCreatingNew(false);
         } else if (rdoCreateNew.isSelected()) {
@@ -350,12 +359,14 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         }
 
         // Get maven project output full path and file name
-        MavenProject mavenProject = MavenProjectsManager.getInstance(project).getRootProjects().get(0);
-        String targetPath = new File(mavenProject.getBuildDirectory()).getPath()
-                + File.separator + mavenProject.getFinalName() + "." + mavenProject.getPackaging();
-        String targetName = mavenProject.getFinalName() + "." + mavenProject.getPackaging();
-        webAppConfiguration.setTargetPath(targetPath);
-        webAppConfiguration.setTargetName(targetName);
+        MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
+        if (mavenProject != null) {
+            String targetPath = new File(mavenProject.getBuildDirectory()).getPath()
+                    + File.separator + mavenProject.getFinalName() + "." + mavenProject.getPackaging();
+            String targetName = mavenProject.getFinalName() + "." + mavenProject.getPackaging();
+            webAppConfiguration.setTargetPath(targetPath);
+            webAppConfiguration.setTargetName(targetName);
+        }
     }
 
     @Override
