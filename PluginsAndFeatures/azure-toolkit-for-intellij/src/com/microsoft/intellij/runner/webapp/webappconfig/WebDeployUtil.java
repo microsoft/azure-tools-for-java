@@ -26,6 +26,7 @@ import com.microsoft.azure.management.Azure;
 
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.microsoft.azure.management.appservice.*;
+import com.microsoft.azure.management.resources.fluentcore.model.Creatable;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
@@ -38,7 +39,9 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import rx.Observable;
@@ -142,7 +145,6 @@ public class WebDeployUtil {
         }
         if (!WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(webAppSettingModel.getJdkChoice())) {
             handler.setText(DEPLOY_JDK);
-            //TODO: wrap a new message to replace deployCustomJdk
             WebAppUtils.deployCustomJdk(webApp, webAppSettingModel.getJdkUrl(),
                     WebContainer.fromString(webAppSettingModel.getWebContainer()),
                     handler);
@@ -158,6 +160,7 @@ public class WebDeployUtil {
             WebApp webApp = null;
             if (webAppSettingModel.isCreatingNew()) {
                 webApp = createWebAppWithMsg(webAppSettingModel, handler);
+
             } else {
                 webApp = AzureWebAppMvpModel.getInstance()
                         .getWebAppById(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppId());
@@ -172,11 +175,17 @@ public class WebDeployUtil {
             handler.setText(CONNECTING_FTP);
             ftp = WebAppUtils.getFtpConnection(webApp.getPublishingProfile());
             handler.setText(UPLOADING_WAR);
-            FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath());
+            File file = new File(webAppSettingModel.getTargetPath());
+            FileInputStream input;
+            if (file.exists()) {
+                input = new FileInputStream(webAppSettingModel.getTargetPath());
+            } else {
+                throw new FileNotFoundException("Cannot find target file: " + webAppSettingModel.getTargetPath());
+            }
             boolean isSuccess;
             if (webAppSettingModel.isDeployToRoot()) {
                 // Deploy to Root
-                WebAppUtils.removeFtpDirectory(ftp, ROOT_PATH, null);
+                WebAppUtils.removeFtpDirectory(ftp, ROOT_PATH, handler);
                 isSuccess = ftp.storeFile(ROOT_FILE_PATH, input);
             } else {
                 //Deploy according to war file name

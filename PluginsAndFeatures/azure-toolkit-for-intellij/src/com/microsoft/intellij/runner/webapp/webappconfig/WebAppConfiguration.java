@@ -36,16 +36,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
-
 import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.utils.StorageAccoutUtils;
-import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.WebAppConfigurationType;
+
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import javax.security.auth.login.Configuration;
 
 public class WebAppConfiguration extends RunConfigurationBase {
 
@@ -59,6 +55,7 @@ public class WebAppConfiguration extends RunConfigurationBase {
     private static final String MISSING_LOCATION = "Location not provided.";
     private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
 
+    private static final String WAR_NAME_REGEX = "^[A-Za-z0-9]+\\.war$";
     private static final String WEB_APP_CONFIGURATION_NODE = "AzureWebAppConfig";
     private final WebAppSettingModel webAppSettingModel;
     private boolean firstTimeCreated = true;
@@ -138,6 +135,11 @@ public class WebAppConfiguration extends RunConfigurationBase {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppId())) {
                 throw new ConfigurationException(NEED_CHOOSE_WEB_APP);
             }
+        }
+        if (!webAppSettingModel.isDeployToRoot() && !webAppSettingModel.getTargetName().matches(WAR_NAME_REGEX)) {
+            throw new ConfigurationException("The artifact name " + webAppSettingModel.getTargetName() + " is invalid. "
+                    + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive),"
+                    + "and the digits '0' through '9'.");
         }
     }
 
@@ -263,6 +265,10 @@ public class WebAppConfiguration extends RunConfigurationBase {
 
     public void setTargetPath(String path) {
         webAppSettingModel.setTargetPath(path);
+    }
+
+    public String getTargetPath() {
+        return webAppSettingModel.getTargetPath();
     }
 
     public void setTargetName(String name) {

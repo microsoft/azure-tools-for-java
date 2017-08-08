@@ -27,6 +27,9 @@ import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.packaging.artifacts.Artifact;
+import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
@@ -44,11 +47,11 @@ import com.microsoft.azuretools.utils.AzulZuluModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingModel;
-
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
@@ -80,6 +83,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private String lastSelectedResGrp;
     private String lastSelectedLocation;
     private String lastSelectedPriceTier;
+    private Artifact lastSelectedArtifact;
+    private boolean isArtifact;
     private WebAppSettingModel.JdkChoice lastJdkChoice = WebAppSettingModel.JdkChoice.DEFAULT;
 
     // const
@@ -110,10 +115,12 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JComboBox<AppServicePlan> cbExistAppServicePlan;
     private JComboBox<ResourceGroup> cbExistResGrp;
     private JComboBox<AzulZuluModel> cbThirdPartyJdk;
+    private JComboBox<Artifact> cbArtifact;
     private HyperlinkLabel lblJdkLicense;
     private JLabel lblLocation;
     private JLabel lblPricing;
     private JLabel lblDefaultJdk;
+    private JLabel lblArtifact;
     private JTable table;
 
     /**
@@ -259,8 +266,53 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
         });
 
+        cbArtifact.addActionListener(e -> {
+            final Artifact selectArtifact = (Artifact) cbArtifact.getSelectedItem();
+            if (!Comparing.equal(lastSelectedArtifact, selectArtifact)) {
+                if (lastSelectedArtifact != null) {
+                    BuildArtifactsBeforeRunTaskProvider
+                            .setBuildArtifactBeforeRunOption(pnlRoot, project, lastSelectedArtifact, false);
+                }
+                if (selectArtifact != null) {
+                    BuildArtifactsBeforeRunTaskProvider
+                            .setBuildArtifactBeforeRunOption(pnlRoot, project, selectArtifact, true);
+                }
+                lastSelectedArtifact = selectArtifact;
+            }
+        });
+
+        cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
+            @Override
+            public void customize(JList list, Artifact artifact, int index, boolean isSelected, boolean cellHasFocus) {
+                if (artifact != null) {
+                    setIcon(artifact.getArtifactType().getIcon());
+                    setText(artifact.getName());
+                }
+            }
+        });
+
         lblJdkLicense.setHyperlinkText("License");
         lblJdkLicense.setHyperlinkTarget(AzulZuluModel.getLicenseUrl());
+    }
+
+    /**
+     * Set the artifacts into the combo box.
+     */
+    public void setupArtifactCombo(List<Artifact> artifacts, @NotNull WebAppConfiguration webAppConfiguration) {
+        cbArtifact.removeAllItems();
+        artifacts.forEach(cbArtifact::addItem);
+        cbArtifact.setVisible(true);
+        lblArtifact.setVisible(true);
+        isArtifact = true;
+        for (Artifact artifact: artifacts) {
+            VirtualFile outputFile = artifact.getOutputFile();
+            if (outputFile != null
+                    && Comparing.equal(artifact.getOutputFile().getPath(), webAppConfiguration.getTargetPath())) {
+                BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, webAppConfiguration, artifact);
+                return;
+            }
+        }
+        BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, webAppConfiguration, artifacts.get(0));
     }
 
     public JPanel getMainPanel() {
@@ -358,14 +410,22 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             webAppConfiguration.setCreatingNew(true);
         }
 
-        // Get maven project output full path and file name
-        MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
-        if (mavenProject != null) {
-            String targetPath = new File(mavenProject.getBuildDirectory()).getPath()
-                    + File.separator + mavenProject.getFinalName() + "." + mavenProject.getPackaging();
-            String targetName = mavenProject.getFinalName() + "." + mavenProject.getPackaging();
-            webAppConfiguration.setTargetPath(targetPath);
-            webAppConfiguration.setTargetName(targetName);
+        // Get war output full path and file name
+        if (isArtifact) {
+            VirtualFile outputFile = lastSelectedArtifact.getOutputFile();
+            if (outputFile != null) {
+                webAppConfiguration.setTargetPath(lastSelectedArtifact.getOutputFile().getPath());
+            }
+            webAppConfiguration.setTargetName(lastSelectedArtifact.getName() + "." + MavenConstants.TYPE_WAR);
+        } else {
+            MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
+            if (mavenProject != null) {
+                String targetPath = new File(mavenProject.getBuildDirectory()).getPath()
+                        + File.separator + mavenProject.getFinalName() + "." + mavenProject.getPackaging();
+                String targetName = mavenProject.getFinalName() + "." + mavenProject.getPackaging();
+                webAppConfiguration.setTargetPath(targetPath);
+                webAppConfiguration.setTargetName(targetName);
+            }
         }
     }
 
@@ -460,7 +520,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 return;
             }
             if (cachedWebAppList != null) {
-                selectedWebApp = cachedWebAppList.get(table.getSelectedRow());
+                selectedWebApp = cachedWebAppList.get(event.getFirstIndex());
             }
         });
 
