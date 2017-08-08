@@ -59,8 +59,11 @@ public class PublishHandler extends AzureAbstractHandler {
         try {
             buildImage(project);
         } catch (Exception e) {
-            MessageDialog.openError(window.getShell(), "Error on building image",
-                    String.format("%s\nDetails:\n%s", Constant.ERROR_BUILDING_IMAGE, e.getMessage()));
+            String dockerHost = DockerRuntime.getInstance().getDockerBuilder().uri().toString();
+            String dockerFilePath = project.getFolder(Constant.DOCKER_CONTEXT_FOLDER).getFile(Constant.DOCKERFILE_NAME).getFullPath().toString();
+
+            MessageDialog.openError(window.getShell(), "Error on building image", String.format(
+                    Constant.ERROR_BUILDING_IMAGE, dockerHost, dockerFilePath.replaceFirst("^/", ""), e.getMessage()));
             return null;
         }
         PublishWizard pw = new PublishWizard();
