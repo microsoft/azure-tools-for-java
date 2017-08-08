@@ -298,21 +298,18 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     /**
      * Set the artifacts into the combo box.
      */
-    public void setupArtifactCombo(List<Artifact> artifacts, @NotNull WebAppConfiguration webAppConfiguration) {
+    public void setupArtifactCombo(List<Artifact> artifacts) {
         cbArtifact.removeAllItems();
-        artifacts.forEach(cbArtifact::addItem);
+        for (Artifact artifact: artifacts) {
+            cbArtifact.addItem(artifact);
+            if (Comparing.equal(artifact.getOutputFilePath(), webAppConfiguration.getTargetPath())) {
+                cbArtifact.setSelectedItem(artifact);
+            }
+        }
+//        artifacts.forEach(cbArtifact::addItem);
         cbArtifact.setVisible(true);
         lblArtifact.setVisible(true);
         isArtifact = true;
-        for (Artifact artifact: artifacts) {
-            VirtualFile outputFile = artifact.getOutputFile();
-            if (outputFile != null
-                    && Comparing.equal(artifact.getOutputFile().getPath(), webAppConfiguration.getTargetPath())) {
-                BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, webAppConfiguration, artifact);
-                return;
-            }
-        }
-        BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, webAppConfiguration, artifacts.get(0));
     }
 
     public JPanel getMainPanel() {

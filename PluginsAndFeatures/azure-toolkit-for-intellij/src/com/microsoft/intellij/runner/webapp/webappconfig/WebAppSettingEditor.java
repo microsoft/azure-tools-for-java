@@ -28,6 +28,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.artifacts.ArtifactManager;
 import com.intellij.packaging.artifacts.ArtifactType;
+import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.microsoft.intellij.ui.webapp.deploysetting.WebAppSettingPanel;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
@@ -49,13 +50,17 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
 
     @Override
     protected void resetEditorFrom(@NotNull WebAppConfiguration webAppConfiguration) {
-        if (webAppConfiguration.isFirstTimeCreated()) {
-            MavenRunTaskUtil.addMavenPackageBeforeRunTask(webAppConfiguration);
-        }
         if (!MavenRunTaskUtil.isMavenProject(webAppConfiguration.getProject())) {
             List<Artifact> artifacts = collectProjectArtifact(project);
             if (artifacts.size() > 0) {
-                mainPanel.setupArtifactCombo(artifacts, webAppConfiguration);
+                mainPanel.setupArtifactCombo(artifacts);
+                if (webAppConfiguration.isFirstTimeCreated()) {
+                    BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, webAppConfiguration, artifacts.get(0));
+                }
+            }
+        } else {
+            if (webAppConfiguration.isFirstTimeCreated()) {
+                MavenRunTaskUtil.addMavenPackageBeforeRunTask(webAppConfiguration);
             }
         }
         webAppConfiguration.setFirstTimeCreated(false);
