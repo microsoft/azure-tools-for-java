@@ -65,6 +65,11 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -122,6 +127,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JLabel lblDefaultJdk;
     private JLabel lblArtifact;
     private JTable table;
+
+    private boolean isCbArtifactInited;
 
     /**
      * The setting panel for web app deployment run configuration.
@@ -269,17 +276,19 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         cbArtifact.addActionListener(e -> {
             final Artifact selectArtifact = (Artifact) cbArtifact.getSelectedItem();
             if (!Comparing.equal(lastSelectedArtifact, selectArtifact)) {
-                if (lastSelectedArtifact != null) {
+                if (lastSelectedArtifact != null && isCbArtifactInited) {
                     BuildArtifactsBeforeRunTaskProvider
                             .setBuildArtifactBeforeRunOption(pnlRoot, project, lastSelectedArtifact, false);
                 }
-                if (selectArtifact != null) {
+                if (selectArtifact != null && isCbArtifactInited) {
                     BuildArtifactsBeforeRunTaskProvider
                             .setBuildArtifactBeforeRunOption(pnlRoot, project, selectArtifact, true);
                 }
                 lastSelectedArtifact = selectArtifact;
             }
         });
+
+        isCbArtifactInited = false;
 
         cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
             @Override
@@ -298,7 +307,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     /**
      * Set the artifacts into the combo box.
      */
-    public void setupArtifactCombo(List<Artifact> artifacts) {
+    private void setupArtifactCombo(List<Artifact> artifacts) {
+        isCbArtifactInited = false;
         cbArtifact.removeAllItems();
         for (Artifact artifact: artifacts) {
             cbArtifact.addItem(artifact);
@@ -306,10 +316,10 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 cbArtifact.setSelectedItem(artifact);
             }
         }
-//        artifacts.forEach(cbArtifact::addItem);
         cbArtifact.setVisible(true);
         lblArtifact.setVisible(true);
         isArtifact = true;
+        isCbArtifactInited = true;
     }
 
     public JPanel getMainPanel() {
@@ -321,9 +331,21 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
      * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#resetEditorFrom(Object)}.
      */
     public void resetEditorFrom(@NotNull WebAppConfiguration webAppConfiguration) {
+        if (!MavenRunTaskUtil.isMavenProject(webAppConfiguration.getProject())) {
+            List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
+            setupArtifactCombo(artifacts);
+        }
+        // Default values
+        if (webAppConfiguration.getWebAppName().isEmpty()) {
+            DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
+            String date = df.format(new Date());
+            txtWebAppName.setText("webapp-" + date);
+        } else {
+            txtWebAppName.setText(webAppConfiguration.getWebAppName());
+        }
+
         if (webAppConfiguration.isCreatingNew()) {
             rdoCreateNew.doClick();
-            txtWebAppName.setText(webAppConfiguration.getWebAppName());
             if (webAppConfiguration.isCreatingResGrp()) {
                 rdoCreateResGrp.doClick();
                 txtNewResGrp.setText(webAppConfiguration.getResourceGroup());
@@ -408,12 +430,19 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         }
 
         // Get war output full path and file name
-        if (isArtifact) {
+        if (isArtifact && lastSelectedArtifact != null) {
             VirtualFile outputFile = lastSelectedArtifact.getOutputFile();
             if (outputFile != null) {
                 webAppConfiguration.setTargetPath(lastSelectedArtifact.getOutputFile().getPath());
+            } else {
+                webAppConfiguration.setTargetPath(lastSelectedArtifact.getOutputFilePath());
             }
-            webAppConfiguration.setTargetName(lastSelectedArtifact.getName() + "." + MavenConstants.TYPE_WAR);
+            Path p = Paths.get(webAppConfiguration.getTargetPath());
+            if (p != null) {
+                webAppConfiguration.setTargetName(p.getFileName().toString());
+            } else {
+                webAppConfiguration.setTargetName(lastSelectedArtifact.getName() + "." + MavenConstants.TYPE_WAR);
+            }
         } else {
             MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
             if (mavenProject != null) {

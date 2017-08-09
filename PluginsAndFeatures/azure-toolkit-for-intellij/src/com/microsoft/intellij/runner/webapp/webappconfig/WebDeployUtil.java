@@ -53,8 +53,14 @@ public class WebDeployUtil {
     private static final String DEPLOY_SUCCESSFUL = "Deploy successfully...";
     private static final String CREATE_WEBAPP = "Creating new WebApp...";
     private static final String CREATE_SUCCESSFUL = "WebApp created...";
+    private static final String CREATE_FALIED = "Failed to create WebApp. Error: %s ...";
     private static final String DEPLOY_JDK = "Deploying custom JDK...";
     private static final String JDK_SUCCESSFUL = "Custom JDK deployed successfully...";
+    private static final String JDK_FAILED = "Failed to deploy custom JDK";
+    private static final String STOP_DEPLOY = "Deploy Failed.";
+    private static final String NO_WEBAPP = "Cannot get webapp for deploy";
+    private static final String NO_TARGETFILE = "Cannot find target file: %s";
+    private static final String FAIL_FTPSTORE = "FTP client can't store the artifact, reply code: %s";
 
     private static final String BASE_PATH = "/site/wwwroot/webapps/";
     private static final String ROOT_PATH = BASE_PATH + "ROOT";
@@ -135,16 +141,25 @@ public class WebDeployUtil {
     private static WebApp createWebAppWithMsg(
             WebAppSettingModel webAppSettingModel, IProgressIndicator handler) throws Exception {
         handler.setText(CREATE_WEBAPP);
-        WebApp webApp = createWebApp(webAppSettingModel);
-        if (null == webApp) {
-            return null;
+        WebApp webApp = null;
+        try {
+            webApp = createWebApp(webAppSettingModel);
+        } catch (Exception e) {
+            handler.setText(String.format(CREATE_FALIED, e.getMessage()));
+            throw new Exception(e);
         }
+
         if (!WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(webAppSettingModel.getJdkChoice())) {
             handler.setText(DEPLOY_JDK);
-            WebAppUtils.deployCustomJdk(webApp, webAppSettingModel.getJdkUrl(),
-                    WebContainer.fromString(webAppSettingModel.getWebContainer()),
-                    handler);
-            handler.setText(JDK_SUCCESSFUL);
+            try {
+                WebAppUtils.deployCustomJdk(webApp, webAppSettingModel.getJdkUrl(),
+                        WebContainer.fromString(webAppSettingModel.getWebContainer()),
+                        handler);
+                handler.setText(JDK_SUCCESSFUL);
+            } catch (Exception e) {
+                handler.setText(JDK_FAILED);
+                throw new Exception(e);
+            }
         }
         handler.setText(CREATE_SUCCESSFUL);
 
@@ -155,14 +170,21 @@ public class WebDeployUtil {
         Observable.fromCallable(() -> {
             WebApp webApp;
             if (webAppSettingModel.isCreatingNew()) {
-                webApp = createWebAppWithMsg(webAppSettingModel, handler);
+                try {
+                    webApp = createWebAppWithMsg(webAppSettingModel, handler);
+                } catch (Exception e) {
+                    handler.setText(STOP_DEPLOY);
+                    throw new Exception("Cannot create webapp for deploy");
+                }
             } else {
                 webApp = AzureWebAppMvpModel.getInstance()
                         .getWebAppById(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppId());
             }
 
             if (webApp == null) {
-                throw new Exception("Cannot get webapp for deploy");
+                handler.setText(NO_WEBAPP);
+                handler.setText(STOP_DEPLOY);
+                throw new Exception(NO_WEBAPP);
             }
 
             handler.setText(GETTING_DEPLOYMENT_CREDENTIAL);
@@ -175,6 +197,7 @@ public class WebDeployUtil {
             if (file.exists()) {
                 input = new FileInputStream(webAppSettingModel.getTargetPath());
             } else {
+                handler.setText(String.format(NO_TARGETFILE, webAppSettingModel.getTargetPath()));
                 throw new FileNotFoundException("Cannot find target file: " + webAppSettingModel.getTargetPath());
             }
             boolean isSuccess;
@@ -189,7 +212,8 @@ public class WebDeployUtil {
             }
             if (!isSuccess) {
                 int rc = ftp.getReplyCode();
-                throw new IOException("FTP client can't store the artifact, reply code: " + rc);
+                handler.setText(String.format(FAIL_FTPSTORE, rc));
+                throw new IOException(String.format(FAIL_FTPSTORE, rc));
             }
             handler.setText(UPLOADING_SUCCESSFUL);
             handler.setText(LOGGING_OUT);
