@@ -33,11 +33,9 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.JComponent;
 
 public class WebAppOnLinuxDeploySettingsEditor extends SettingsEditor<WebAppOnLinuxDeployConfiguration> {
-    private final Project project;
     private final SettingPanel settingPanel;
 
     public WebAppOnLinuxDeploySettingsEditor(Project project) {
-        this.project = project;
         settingPanel = new SettingPanel();
     }
 
@@ -53,8 +51,8 @@ public class WebAppOnLinuxDeploySettingsEditor extends SettingsEditor<WebAppOnLi
     @Override
     protected void applyEditorTo(@NotNull WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) throws
             ConfigurationException {
-        webAppOnLinuxDeployConfiguration.validate();
         settingPanel.apply(webAppOnLinuxDeployConfiguration);
+        webAppOnLinuxDeployConfiguration.validate();
     }
 
     @NotNull
