@@ -43,8 +43,13 @@ public class FxClassLoader {
 	private static Class jobViewFxUtilslCLass = null;
 	private static Method method = null;
 	
+	private static String efxclipsePluginSymbolicName = "org.eclipse.fx.ide.css.jfx8";
+	private static String efxclipseMarketplaceURL = "http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=335225";
+	
 	public static void loadJavaFxForJobView(Composite composite, String url) {
 		if(!isJavaFxLoaded) {
+			PluginUtil.forceInstallPluginUsingMarketPlaceAsync(efxclipsePluginSymbolicName, efxclipseMarketplaceURL);
+			
 			tryLoadJavaFx();
 		}
 		
