@@ -41,6 +41,7 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.hdinsight.common.JobStatusManager;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
@@ -53,10 +54,8 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import rx.*;
 import rx.Observable;
-import rx.Single;
-import rx.Subscriber;
-import rx.Subscription;
 import rx.exceptions.CompositeException;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
@@ -245,22 +244,37 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
     private Single<SimpleEntry<SparkBatchRemoteDebugJob, IClusterDetail>> createDebugJobSession(
                                                                             @NotNull SparkSubmitModel submitModel) {
         SparkSubmissionParameter submissionParameter = submitModel.getSubmissionParameter();
+        Project project = submitModel.getProject();
+        String selectedClusterName = submissionParameter.getClusterName();
 
         return submitModel
                 .buildArtifactObservable(submissionParameter.getArtifactName())
-                .flatMap(artifact -> {
-                    IClusterDetail clusterDetail = Optional.ofNullable(submitModel.getSelectedClusterDetail())
-                            .orElseGet(() -> ClusterManagerEx.getInstance()
-                                    .getClusterDetailsWithoutAsync(true, submitModel.getProject())
-                                    .stream()
-                                    .filter(cluster -> cluster.getName().equals(submissionParameter.getClusterName()))
-                                    .findFirst()
-                                    .orElse(null));
+                .flatMap(artifact -> Single.create((SingleSubscriber<? super IClusterDetail> ob) -> {
+                    try {
+                        IClusterDetail clusterDetail = ClusterManagerEx.getInstance()
+                                .getClusterDetailsWithoutAsync(true, project)
+                                .stream()
+                                .filter(cluster -> cluster.getName().equalsIgnoreCase(selectedClusterName))
+                                .findFirst()
+                                .map(cluster -> {
+                                    try {
+                                        cluster.getConfigurationInfo(project);
+                                    } catch (Exception e) {
+                                        ob.onError(e);
+                                    }
 
-                    return Single.just(new SimpleEntry<>(artifact, clusterDetail));
-                })
-                .flatMap(pair -> submitModel.deployArtifactObservable(pair.getKey(), pair.getValue())
-                                            .subscribeOn(Schedulers.io()))
+                                    return cluster;
+                                })
+                                .orElseThrow(() -> new HDIException(
+                                        "No cluster name matched selection: " + selectedClusterName));
+
+                        submitModel.uploadFileToCluster(clusterDetail, artifact.getName());
+
+                        ob.onSuccess(clusterDetail);
+                    } catch (Exception e) {
+                        ob.onError(e);
+                    }
+                }).subscribeOn(Schedulers.io()))
                 .map((selectedClusterDetail) -> {
                     // Create Batch Spark Debug Job
                     try {
