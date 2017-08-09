@@ -64,7 +64,7 @@ public class DockerUtil {
         Paths.get(basePath, folderName).toFile().mkdirs();
         Path dockerFilePath = Paths.get(basePath, folderName, filename);
         if (!dockerFilePath.toFile().exists()) {
-            byte[] bytes = String.format(content, project.getName()).getBytes();
+            byte[] bytes = content.getBytes();
             Files.write(dockerFilePath, bytes);
         }
     }
@@ -72,12 +72,10 @@ public class DockerUtil {
     /**
      * createContainer.
      *
-     * @param docker
-     * @param project
-     * @param imageName
-     * @return
-     * @throws DockerException
-     * @throws InterruptedException
+     * @param docker    docker client
+     * @param project   active project
+     * @param imageName image to run from
+     * @return web app local url
      */
     public static String createContainer(DockerClient docker, Project project, String imageName)
             throws DockerException, InterruptedException {
@@ -156,6 +154,7 @@ public class DockerUtil {
         long count = docker.listContainers().stream().filter(item -> item.id().equals(containerId)).count();
         return (count > 0);
     }
+
 
     public static void pushImage(DockerClient dockerClient, String registryUrl, String registryUsername,
                                  String registryPassword, String latestImageName, String targetImageName,
