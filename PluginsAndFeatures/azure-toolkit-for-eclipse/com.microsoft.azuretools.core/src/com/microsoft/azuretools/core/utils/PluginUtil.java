@@ -27,6 +27,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -454,15 +456,9 @@ public class PluginUtil {
 	}
 	
 	public static void forceInstallPluginUsingMarketPlaceAsync(String pluginSymbolicName, String marketplaceURL) {
-		Display.getDefault().asyncExec(new Runnable() {
-
-			@Override
-			public void run() {
-				forceInstallPluginUsingMarketplace(pluginSymbolicName, marketplaceURL);
-			}
-			
-		});;
+		Display.getDefault().asyncExec(() -> forceInstallPluginUsingMarketplace(pluginSymbolicName, marketplaceURL));
 	}
+	
 	/**
 	 * This function checks whether an Eclipse plug-in is installed or not. 
 	 * If not, it will firstly check whether Eclipse Marketplace Client plug-in is installed and install it
@@ -474,12 +470,12 @@ public class PluginUtil {
 	 */
 	public static boolean forceInstallPluginUsingMarketplace(String pluginSymbolicName, String marketplaceURL) {
 		boolean isTargetInstalled = checkPlugInInstallation(pluginSymbolicName);
-		if (isTargetInstalled == true) {
+		if (isTargetInstalled) {
 			return true;
 		}
 			
 		boolean isMarketplacePluginInstalled = checkPlugInInstallation(marketplacePluginSymbolicName);
-		if (isMarketplacePluginInstalled != true) {
+		if (!isMarketplacePluginInstalled) {
 			PluginUtil.displayErrorDialog(getParentShell(), "Install missing plugin", "Start to install Eclipse Marketplace Client plugin which is required to install other missing plugin (" + pluginSymbolicName + ")!");
 			forceInstallPluginUsingP2(marketplacePluginID);		
 		}
@@ -497,9 +493,9 @@ public class PluginUtil {
 			} catch (Exception e1) {
 				errorMsg = "Error installing " + pluginSymbolicName + " using Marketplace Client! Please manually install using Eclipse P2 repository from: Help -> Install New Software....";
 				PluginUtil.displayErrorDialogAndLog(getParentShell(), "Fail to install", errorMsg, e1);
+				
+				return false;
 			}
-			
-			return false;
 		} catch (NoClassDefFoundError e) {
 			String errorMsg = "Error installing " + pluginSymbolicName + " using Marketplace Client! Please manually install using Eclipse P2 repository from: Help -> Install New Software....";
 			PluginUtil.displayErrorDialogAndLog(getParentShell(), "Fail to install", errorMsg, e);
@@ -512,8 +508,7 @@ public class PluginUtil {
 	
 	private static boolean checkPlugInInstallation(String pluginSymbolicName) {
 		Bundle[] bundles = Platform.getBundles(pluginSymbolicName, null);
-		if (bundles != null && bundles.length >= 0) return true;
-		else return false;
+		return bundles != null && bundles.length >= 0;
 	}
 	
 	private static void forceInstallPluginUsingP2(String pluginGroupID) {
@@ -531,12 +526,7 @@ public class PluginUtil {
 						if (repository != null) {
 							IQueryResult<IInstallableUnit> iqr = repository.query(QueryUtil.createIUQuery(pluginGroupID), null);
 							if (iqr != null) {
-								Iterator<IInstallableUnit> ius = iqr.iterator();
-								Collection<IInstallableUnit> iuList = new ArrayList<IInstallableUnit>();
-								while(ius.hasNext()) {
-									IInstallableUnit iu = ius.next();
-									iuList.add(iu);
-								}
+								Collection<IInstallableUnit> iuList = StreamSupport.stream(iqr.spliterator(), false).collect(Collectors.toList());
 								
 								if (iuList.size() > 0) {
 									InstallOperation io = new InstallOperation(provisioningSession, iuList);
@@ -568,7 +558,9 @@ public class PluginUtil {
 			if (tracker != null) {
 				URI[] sites = tracker.getKnownRepositories(provisioningUI.getSession());
 				for (URI site : sites) {
-					if (site.toString().contains(repoPrefix)) return site;
+					if (site.toString().contains(repoPrefix)) {
+						return site;
+					}
 				}
 			}
 		}
