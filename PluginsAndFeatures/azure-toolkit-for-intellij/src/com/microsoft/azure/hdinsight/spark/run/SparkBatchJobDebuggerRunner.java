@@ -422,7 +422,22 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                                 try {
                                     String executorLogUrl = new URI(logUrl).resolve(String.format(
                                             "/yarnui/%s/node/containerlogs/%s/livy", host, containerId)).toString();
-                                    int executorJdbPort = getDebugJob().getYarnContainerJDBListenPort(executorLogUrl);
+
+                                    int executorJdbPort = 0;
+                                    int retries = 0;
+
+                                    // Retry in case the Executor JVM not bring up
+                                    while (executorJdbPort == 0) {
+                                        try {
+                                            executorJdbPort = getDebugJob().getYarnContainerJDBListenPort(executorLogUrl);
+                                        } catch (UnknownServiceException ex) {
+                                            if (retries++ > 3) {
+                                                throw ex;
+                                            }
+
+                                            Thread.sleep(5000);
+                                        }
+                                    }
 
                                     // Create a new state for Executor debugging process
                                     SparkBatchJobSubmissionState newExecutorState =
@@ -443,7 +458,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                                                         executorJdbPort,
                                                         executorLogUrl,
                                                         credentialsProvider);
-                                } catch (URISyntaxException ignore) {
+                                } catch (URISyntaxException | InterruptedException ignore) {
                                 } catch (ExecutionException | UnknownServiceException ex) {
                                     ob.onError(ex);
                                 }
