@@ -25,16 +25,20 @@ package com.microsoft.intellij.runner.webapp.webappconfig;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.packaging.artifacts.Artifact;
+import com.intellij.packaging.artifacts.ArtifactManager;
+import com.intellij.packaging.artifacts.ArtifactType;
+import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.microsoft.intellij.ui.webapp.deploysetting.WebAppSettingPanel;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.idea.maven.model.MavenConstants;
 
 import javax.swing.JComponent;
+import java.util.List;
 
 public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
-
-    private static final String INVALID_PROJECT_TYPE = "Current project is not a Maven project.";
 
     private final WebAppSettingPanel mainPanel;
     private final Project project;
@@ -46,8 +50,18 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
 
     @Override
     protected void resetEditorFrom(@NotNull WebAppConfiguration webAppConfiguration) {
-        if (webAppConfiguration.isFirstTimeCreated()) {
-            MavenRunTaskUtil.addMavenPackageBeforeRunTask(webAppConfiguration);
+        if (!MavenRunTaskUtil.isMavenProject(webAppConfiguration.getProject())) {
+            List<Artifact> artifacts = collectProjectArtifact(project);
+            if (artifacts.size() > 0) {
+                mainPanel.setupArtifactCombo(artifacts);
+                if (webAppConfiguration.isFirstTimeCreated()) {
+                    BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, webAppConfiguration, artifacts.get(0));
+                }
+            }
+        } else {
+            if (webAppConfiguration.isFirstTimeCreated()) {
+                MavenRunTaskUtil.addMavenPackageBeforeRunTask(webAppConfiguration);
+            }
         }
         webAppConfiguration.setFirstTimeCreated(false);
         mainPanel.resetEditorFrom(webAppConfiguration);
@@ -56,7 +70,7 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
     @Override
     protected void applyEditorTo(@NotNull WebAppConfiguration webAppConfiguration) throws ConfigurationException {
         mainPanel.applyEditorTo(webAppConfiguration);
-        validateConfiguration(webAppConfiguration);
+        webAppConfiguration.validate();
     }
 
     @NotNull
@@ -65,10 +79,9 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
         return mainPanel.getMainPanel();
     }
 
-    private void validateConfiguration(@NotNull WebAppConfiguration webAppConfiguration) throws ConfigurationException {
-        if (!MavenRunTaskUtil.isMavenProject(project)) {
-            throw new ConfigurationException(INVALID_PROJECT_TYPE);
-        }
-        webAppConfiguration.validate();
+    @NotNull
+    private List<Artifact> collectProjectArtifact(@NotNull Project project) {
+        ArtifactType warArtifactType = ArtifactType.findById(MavenConstants.TYPE_WAR);
+        return (List<Artifact>) ArtifactManager.getInstance(project).getArtifactsByType(warArtifactType);
     }
 }
