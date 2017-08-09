@@ -26,14 +26,11 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.packaging.artifacts.ArtifactManager;
-import com.intellij.packaging.artifacts.ArtifactType;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.microsoft.intellij.ui.webapp.deploysetting.WebAppSettingPanel;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.model.MavenConstants;
 
 import javax.swing.JComponent;
 import java.util.List;
@@ -50,17 +47,14 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
 
     @Override
     protected void resetEditorFrom(@NotNull WebAppConfiguration webAppConfiguration) {
-        if (!MavenRunTaskUtil.isMavenProject(webAppConfiguration.getProject())) {
-            List<Artifact> artifacts = collectProjectArtifact(project);
-            if (artifacts.size() > 0) {
-                mainPanel.setupArtifactCombo(artifacts);
-                if (webAppConfiguration.isFirstTimeCreated()) {
+        if (webAppConfiguration.isFirstTimeCreated()) {
+            if (MavenRunTaskUtil.isMavenProject(webAppConfiguration.getProject())) {
+                MavenRunTaskUtil.addMavenPackageBeforeRunTask(webAppConfiguration);
+            } else {
+                List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
+                if (artifacts.size() > 0 ) {
                     BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, webAppConfiguration, artifacts.get(0));
                 }
-            }
-        } else {
-            if (webAppConfiguration.isFirstTimeCreated()) {
-                MavenRunTaskUtil.addMavenPackageBeforeRunTask(webAppConfiguration);
             }
         }
         webAppConfiguration.setFirstTimeCreated(false);
@@ -77,11 +71,5 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
     @Override
     protected JComponent createEditor() {
         return mainPanel.getMainPanel();
-    }
-
-    @NotNull
-    private List<Artifact> collectProjectArtifact(@NotNull Project project) {
-        ArtifactType warArtifactType = ArtifactType.findById(MavenConstants.TYPE_WAR);
-        return (List<Artifact>) ArtifactManager.getInstance(project).getArtifactsByType(warArtifactType);
     }
 }

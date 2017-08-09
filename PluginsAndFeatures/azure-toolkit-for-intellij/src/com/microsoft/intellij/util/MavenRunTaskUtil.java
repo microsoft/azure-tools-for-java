@@ -6,6 +6,10 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 
+import com.intellij.packaging.artifacts.Artifact;
+import com.intellij.packaging.artifacts.ArtifactManager;
+import com.intellij.packaging.artifacts.ArtifactType;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -52,6 +56,11 @@ public class MavenRunTaskUtil {
             return mavenProjects.get(0);
         }
         return null;
+    }
+
+    public static List<Artifact> collectProjectArtifact(@NotNull Project project) {
+        ArtifactType warArtifactType = ArtifactType.findById(MavenConstants.TYPE_WAR);
+        return (List<Artifact>) ArtifactManager.getInstance(project).getArtifactsByType(warArtifactType);
     }
 
     private static boolean shouldAddMavenPackageTask(List<BeforeRunTask> tasks, Project project) {
