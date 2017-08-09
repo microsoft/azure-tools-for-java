@@ -37,6 +37,7 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.XmlSerializer;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
 
@@ -46,6 +47,14 @@ import org.jetbrains.annotations.Nullable;
 
 public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
 
+    private static final String MISSING_SERVER_URL = "Please specify Server URL.";
+    private static final String MISSING_USERNAME = "Please specify Username.";
+    private static final String MISSING_PASSWORD = "Please specify Password.";
+    private static final String MISSING_IMAGE_WITH_TAG = "Please specify Image and Tag.";
+    private static final String MISSING_WEB_APP = "Please specify Web App on Linux.";
+    private static final String MISSING_SUBSCRIPTION = "Please specify Subscription.";
+    private static final String MISSING_RESOURCE_GROUP = "Please specify Resource Group.";
+    private static final String MISSING_APP_SERVICE_PLAN = "Please specify App Service Plan.";
     private final WebAppOnLinuxDeployModel deployModel;
     private boolean firstTimeCreated = true;
 
@@ -98,7 +107,46 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     }
 
     public void validate() throws ConfigurationException {
-        // TODO: Add validation
+        // acr
+        if (Utils.isEmptyString(deployModel.getPrivateRegistryImageSetting().getServerUrl())) {
+            throw new ConfigurationException(MISSING_SERVER_URL);
+        }
+        if (Utils.isEmptyString(deployModel.getPrivateRegistryImageSetting().getUsername())) {
+            throw new ConfigurationException(MISSING_USERNAME);
+        }
+        if (Utils.isEmptyString(deployModel.getPrivateRegistryImageSetting().getPassword())) {
+            throw new ConfigurationException(MISSING_PASSWORD);
+        }
+        if (Utils.isEmptyString(deployModel.getPrivateRegistryImageSetting().getImageNameWithTag())) {
+            throw new ConfigurationException(MISSING_IMAGE_WITH_TAG);
+        }
+        // web app
+        if (deployModel.isCreatingNewWebAppOnLinux()) {
+            if (Utils.isEmptyString(deployModel.getWebAppName())) {
+                throw new ConfigurationException(MISSING_WEB_APP);
+            }
+            if (Utils.isEmptyString(deployModel.getSubscriptionId())) {
+                throw new ConfigurationException(MISSING_SUBSCRIPTION);
+            }
+            if (Utils.isEmptyString(deployModel.getResourceGroupName())) {
+                throw new ConfigurationException(MISSING_RESOURCE_GROUP);
+            }
+
+            if (deployModel.isCreatingNewAppServicePlan()) {
+                if (Utils.isEmptyString(deployModel.getAppServicePlanName())) {
+                    throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
+                }
+            } else {
+                if (Utils.isEmptyString(deployModel.getAppServicePlanId())) {
+                    throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
+                }
+            }
+
+        } else {
+            if (Utils.isEmptyString(deployModel.getWebAppId())) {
+                throw new ConfigurationException(MISSING_WEB_APP);
+            }
+        }
     }
 
     public String getAppName() {
