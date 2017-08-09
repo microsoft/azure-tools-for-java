@@ -348,7 +348,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         defaultAppServicePlanId = conf.getAppServicePlanId();
 
         // pnlUseExisting
-        webAppOnLinuxDeployPresenter.onLoadAppList();
+        loadWebAppList();
 
         // pnlCreateNew
         webAppOnLinuxDeployPresenter.onLoadSubscriptionList(); // including related RG & Location
@@ -379,6 +379,12 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         updatePanelVisibility();
 
 
+    }
+
+    private void loadWebAppList() {
+        btnRefresh.setEnabled(false);
+        webAppTable.getEmptyText().setText(TABLE_LOADING_MESSAGE);
+        webAppOnLinuxDeployPresenter.onLoadAppList();
     }
 
     private void createUIComponents() {
@@ -412,6 +418,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 DefaultTableModel model = (DefaultTableModel) webAppTable.getModel();
                 model.getDataVector().clear();
                 model.fireTableDataChanged();
+                textSelectedAppName.setText("");
                 webAppOnLinuxDeployPresenter.onRefreshList();
             }
         };

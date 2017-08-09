@@ -30,10 +30,8 @@ import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
@@ -135,20 +133,12 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
 
     private void loadWebApps() {
         System.out.println("AzurePlugin@loadWebApps");
-        Runnable forceRefreshWebAppsAction = () -> {
-            for (Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-                AzureWebAppMvpModel.getInstance().listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), true);
-                AzureWebAppMvpModel.getInstance().listWebAppsBySubscriptionId(sb.subscriptionId(), true);
-            }
-        };
         Runnable forceCleanWebAppsAction = () -> {
             AzureWebAppMvpModel.getInstance().cleanWebAppsOnLinux();
             AzureWebAppMvpModel.getInstance().cleanWebApps();
         };
         try {
-            AuthMethodManager.getInstance().addSignInEventListener(forceRefreshWebAppsAction);
             AuthMethodManager.getInstance().addSignOutEventListener(forceCleanWebAppsAction);
-            forceRefreshWebAppsAction.run();
         } catch (IOException e) {
             e.printStackTrace();
             LOG.error("loadWebApps()", e);
