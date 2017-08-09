@@ -67,6 +67,9 @@ import javax.swing.table.DefaultTableModel;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -332,9 +335,17 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
             setupArtifactCombo(artifacts);
         }
+        // Default values
+        if (webAppConfiguration.getWebAppName().isEmpty()) {
+            DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
+            String date = df.format(new Date());
+            txtWebAppName.setText("webapp-" + date);
+        } else {
+            txtWebAppName.setText(webAppConfiguration.getWebAppName());
+        }
+
         if (webAppConfiguration.isCreatingNew()) {
             rdoCreateNew.doClick();
-            txtWebAppName.setText(webAppConfiguration.getWebAppName());
             if (webAppConfiguration.isCreatingResGrp()) {
                 rdoCreateResGrp.doClick();
                 txtNewResGrp.setText(webAppConfiguration.getResourceGroup());
