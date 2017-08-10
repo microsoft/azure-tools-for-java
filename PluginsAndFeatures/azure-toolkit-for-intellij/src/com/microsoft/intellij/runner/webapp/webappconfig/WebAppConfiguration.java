@@ -140,7 +140,7 @@ public class WebAppConfiguration extends RunConfigurationBase {
                 throw new ConfigurationException(NEED_CHOOSE_WEB_APP);
             }
         }
-        if (webAppSettingModel.getTargetName().isEmpty()) {
+        if (Utils.isEmptyString(webAppSettingModel.getTargetName())) {
             throw new ConfigurationException(MISSING_ARTIFACT);
         }
         if (!webAppSettingModel.isDeployToRoot() && !webAppSettingModel.getTargetName().matches(WAR_NAME_REGEX)) {

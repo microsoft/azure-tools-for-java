@@ -34,7 +34,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class WebDeployUtil {
 
-
     private static final String CREATE_WEBAPP = "Creating new WebApp...";
     private static final String CREATE_SUCCESSFUL = "WebApp created...";
     private static final String CREATE_FALIED = "Failed to create WebApp. Error: %s ...";

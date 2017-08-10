@@ -32,10 +32,12 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.RunProcessHandler;
+import jnr.x86asm.Util;
 import org.apache.commons.net.ftp.FTPClient;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -162,7 +164,11 @@ public class WebAppRunState implements RunProfileState {
 
     private void updateConfigurationDataModel(WebApp app) {
         webAppSettingModel.setCreatingNew(false);
-        webAppSettingModel.setWebAppId(app.id());
-        webAppSettingModel.setWebAppUrl("https://" + app.defaultHostName());
+        if (Utils.isEmptyString(webAppSettingModel.getWebAppId())) {
+            webAppSettingModel.setWebAppId(app.id());
+        }
+        if (Utils.isEmptyString(webAppSettingModel.getWebAppUrl())) {
+            webAppSettingModel.setWebAppUrl("https://" + app.defaultHostName());
+        }
     }
 }
