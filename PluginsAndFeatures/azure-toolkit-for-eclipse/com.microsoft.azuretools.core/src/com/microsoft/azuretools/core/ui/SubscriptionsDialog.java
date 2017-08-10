@@ -102,7 +102,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         
         TableColumn tblclmnNewColumn = new TableColumn(table, SWT.NONE);
         tblclmnNewColumn.setWidth(300);
-        tblclmnNewColumn.setText("Subsription Name");
+        tblclmnNewColumn.setText("Subscription Name");
         
         TableColumn tblclmnNewColumn_1 = new TableColumn(table, SWT.NONE);
         tblclmnNewColumn_1.setWidth(270);
