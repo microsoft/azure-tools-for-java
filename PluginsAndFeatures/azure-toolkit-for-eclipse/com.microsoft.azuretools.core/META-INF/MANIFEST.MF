@@ -14,7 +14,13 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jst.j2ee;bundle-version="1.1.802";resolution:=optional,
  org.eclipse.jst.j2ee.web;bundle-version="1.1.810";resolution:=optional,
  com.microsoft.azuretools.sdk;bundle-version="3.0.6",
- com.jcraft.jsch;visibility:=reexport
+ com.jcraft.jsch;visibility:=reexport,
+ org.eclipse.equinox.p2.ui,
+ org.eclipse.equinox.p2.operations,
+ org.eclipse.equinox.p2.core,
+ org.eclipse.equinox.p2.repository,
+ org.eclipse.equinox.p2.metadata,
+ org.eclipse.epp.mpc.ui 
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: Microsoft Corp.

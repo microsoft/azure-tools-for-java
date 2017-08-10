@@ -115,6 +115,9 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                     println("Push to ACR ...  ");
                     ProgressHandler progressHandler = message -> {
                         // TODO: progress output
+                        println(String.format("%s%s",
+                                message.id() != null ? message.id() + "\t" : "",
+                                message.status() != null ? message.status() : ""));
                         if (message.error() != null) {
                             throw new DockerException(message.toString());
                         }
@@ -169,6 +172,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
     private void updateConfigurationDataModel(WebApp app) {
         deployModel.setCreatingNewWebAppOnLinux(false);
         deployModel.setWebAppId(app.id());
+        deployModel.setResourceGroupName(app.resourceGroupName());
     }
 
     private void println(String message, Key type) {

@@ -22,7 +22,13 @@ package com.microsoft.azuretools.core.utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -35,6 +41,19 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.epp.mpc.ui.MarketplaceClient;
+import org.eclipse.epp.mpc.ui.MarketplaceUrlHandler;
+import org.eclipse.epp.mpc.ui.MarketplaceUrlHandler.SolutionInstallationInfo;
+import org.eclipse.equinox.p2.core.IProvisioningAgent;
+import org.eclipse.equinox.p2.metadata.IInstallableUnit;
+import org.eclipse.equinox.p2.operations.InstallOperation;
+import org.eclipse.equinox.p2.operations.ProvisioningSession;
+import org.eclipse.equinox.p2.operations.RepositoryTracker;
+import org.eclipse.equinox.p2.query.IQueryResult;
+import org.eclipse.equinox.p2.query.QueryUtil;
+import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
+import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
+import org.eclipse.equinox.p2.ui.ProvisioningUI;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -56,6 +75,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.ProductProperties;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 import org.osgi.service.prefs.Preferences;
@@ -66,6 +86,10 @@ import com.microsoft.azuretools.core.Activator;
 public class PluginUtil {
 
 	public static final String pluginFolder = getPluginFolderPathUsingBundle();
+	
+	private static final String marketplacePluginSymbolicName = "org.eclipse.epp.mpc.ui";
+	private static final String marketplacePluginID = "org.eclipse.epp.mpc.feature.group";
+	
 	//private static final String COMPONENTSETS_TYPE = "COMPONENTSETS";
 
 	/**
@@ -429,5 +453,137 @@ public class PluginUtil {
 			Activator.getDefault().log("Error loading image", e);
 			return null;
 		}
+	}
+	
+	public static void forceInstallPluginUsingMarketPlaceAsync(String pluginSymbolicName, String marketplaceURL) {
+		Display.getDefault().asyncExec(() -> forceInstallPluginUsingMarketplace(pluginSymbolicName, marketplaceURL));
+	}
+	
+	/**
+	 * This function checks whether an Eclipse plug-in is installed or not. 
+	 * If not, it will firstly check whether Eclipse Marketplace Client plug-in is installed and install it
+	 * Then it will use Marketplace Client to install the plug-in
+	 * 
+	 * @param pluginSymbolicName: Symbolic name for the plug-in, for example, org.eclipse.fx.ide.feature for e(fx)clipse, org.scala-ide.sdt.core for Scala
+	 * @param marketplaceURL: Marketplace installation URL, for example, http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=421 for Scala
+	 * @return
+	 */
+	public static boolean forceInstallPluginUsingMarketplace(String pluginSymbolicName, String marketplaceURL) {
+		boolean isTargetInstalled = checkPlugInInstallation(pluginSymbolicName);
+		if (isTargetInstalled) {
+			return true;
+		}
+			
+		boolean isMarketplacePluginInstalled = checkPlugInInstallation(marketplacePluginSymbolicName);
+		if (!isMarketplacePluginInstalled) {
+			PluginUtil.displayErrorDialog(getParentShell(), "Install missing plugin", "Start to install Eclipse Marketplace Client plugin which is required to install other missing plugin (" + pluginSymbolicName + ")!");
+			forceInstallPluginUsingP2(marketplacePluginID);		
+		}
+	
+		try {
+			PluginUtil.displayErrorDialog(getParentShell(), "Install missing plugin", "Start to install missing plugin (" + pluginSymbolicName + ")!");
+			SolutionInstallationInfo info = MarketplaceUrlHandler.createSolutionInstallInfo(marketplaceURL);
+			MarketplaceUrlHandler.triggerInstall(info);
+		} catch (Exception e) {
+			String errorMsg = "Error installing " + pluginSymbolicName + "! Please manually install using Eclipse marketplace from: Help -> Eclipse Marketplace....";
+			PluginUtil.displayErrorDialogAndLog(getParentShell(), "Fail to install", errorMsg, e);
+			
+			try {
+				MarketplaceClient.openMarketplaceWizard(null);
+			} catch (Exception e1) {
+				errorMsg = "Error installing " + pluginSymbolicName + " using Marketplace Client! Please manually install using Eclipse P2 repository from: Help -> Install New Software....";
+				PluginUtil.displayErrorDialogAndLog(getParentShell(), "Fail to install", errorMsg, e1);
+				
+				return false;
+			}
+		} catch (NoClassDefFoundError e) {
+			String errorMsg = "Error installing " + pluginSymbolicName + " using Marketplace Client! Please manually install using Eclipse P2 repository from: Help -> Install New Software....";
+			PluginUtil.displayErrorDialogAndLog(getParentShell(), "Fail to install", errorMsg, e);
+			
+			return false;
+		}
+		
+		return true;
+	}
+	
+	private static boolean checkPlugInInstallation(String pluginSymbolicName) {
+		Bundle[] bundles = Platform.getBundles(pluginSymbolicName, null);
+		return bundles != null && bundles.length >= 0;
+	}
+	
+	private static void forceInstallPluginUsingP2(String pluginGroupID) {
+		URI repoURI = getEclipseP2Repository();
+		ProvisioningUI provisioningUI = ProvisioningUI.getDefaultUI();
+		
+		if (provisioningUI != null && repoURI != null) {
+			ProvisioningSession provisioningSession = provisioningUI.getSession();
+			IProvisioningAgent provisioningAgent = null;
+			if (provisioningSession != null && (provisioningAgent = provisioningSession.getProvisioningAgent()) != null) {
+			    IMetadataRepositoryManager manager = (IMetadataRepositoryManager)provisioningAgent.getService(IMetadataRepositoryManager.SERVICE_NAME);
+			    if (manager != null) {
+				    try {
+						IMetadataRepository repository = manager.loadRepository(repoURI, null);
+						if (repository != null) {
+							IQueryResult<IInstallableUnit> iqr = repository.query(QueryUtil.createIUQuery(pluginGroupID), null);
+							if (iqr != null) {
+								Collection<IInstallableUnit> iuList = StreamSupport.stream(iqr.spliterator(), false).collect(Collectors.toList());
+								
+								if (iuList.size() > 0) {
+									InstallOperation io = new InstallOperation(provisioningSession, iuList);
+									provisioningUI.openInstallWizard(iuList, io, null);
+									
+									return;
+								}
+							}
+						}
+					} catch (Exception e) {
+						String errorMsg = "Error installing " + pluginGroupID + "! Please manually install using Eclipse P2 repository from: Help -> Install New Software....";
+						PluginUtil.displayErrorDialogAndLog(getParentShell(), "Fail to install", errorMsg, e);
+					}
+			    }
+			}
+		}
+		
+		String errorMsg = "Error installing " + pluginGroupID + "! In the following installation wizard, please select the right repository and then filter by " + pluginGroupID + "!";
+		PluginUtil.displayErrorDialogAndLog(getParentShell(), "Fail to install", errorMsg, null);
+		provisioningUI.openInstallWizard(null, null, null);
+	}
+	
+	private static URI getEclipseP2Repository() {
+		String repoPrefix = "download.eclipse.org/releases/";
+		
+		ProvisioningUI provisioningUI = ProvisioningUI.getDefaultUI();
+		if (provisioningUI != null) {
+			RepositoryTracker tracker = provisioningUI.getRepositoryTracker();
+			if (tracker != null) {
+				URI[] sites = tracker.getKnownRepositories(provisioningUI.getSession());
+				for (URI site : sites) {
+					if (site.toString().contains(repoPrefix)) {
+						return site;
+					}
+				}
+			}
+		}
+		
+		String start = "Version: ";
+		String end = " (";
+		URI repoSite = null;
+		ProductProperties productProperties = new ProductProperties(Platform.getProduct());
+		if (productProperties != null) {
+			String aboutText = productProperties.getAboutText();
+			int startIndex = aboutText.indexOf(start);
+			int endIndex = aboutText.indexOf(end);
+			String eclipseSimutaneousReleaseVersion = "";
+			if (startIndex >= 0 && endIndex >= 0 && endIndex > startIndex) {
+				eclipseSimutaneousReleaseVersion = aboutText.substring(startIndex + start.length(), endIndex);
+				try {
+					repoSite = new URI("http://" + repoPrefix + eclipseSimutaneousReleaseVersion.toLowerCase());
+				} catch (Exception e) {
+					repoSite = null;
+				}
+			}
+		}
+		
+		return repoSite;
 	}
 }
