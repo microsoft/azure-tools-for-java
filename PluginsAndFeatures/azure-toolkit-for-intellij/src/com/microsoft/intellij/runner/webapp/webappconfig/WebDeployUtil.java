@@ -100,24 +100,38 @@ public class WebDeployUtil {
     private static WebApp.DefinitionStages.WithCreate withCreateNewSPlan(
             @NotNull Azure azure,
             @NotNull WebAppSettingModel model) throws Exception {
-        WebApp.DefinitionStages.WithCreate withCreate;
         String[] tierSize = model.getPricing().split("_");
         if (tierSize.length != 2) {
             throw new Exception("Cannot get valid price tier");
         }
         PricingTier pricing = new PricingTier(tierSize[0], tierSize[1]);
+        AppServicePlan.DefinitionStages.WithCreate withCreatePlan;
+
+        WebApp.DefinitionStages.WithCreate withCreateWebApp;
         if (model.isCreatingResGrp()) {
-            withCreate = azure.webApps().define(model.getWebAppName())
+            withCreatePlan = azure.appServices().appServicePlans()
+                    .define(model.getAppServicePlan())
                     .withRegion(model.getRegion())
                     .withNewResourceGroup(model.getResourceGroup())
-                    .withNewWindowsPlan(pricing);
+                    .withPricingTier(pricing)
+                    .withOperatingSystem(OperatingSystem.WINDOWS);
+            withCreateWebApp = azure.webApps().define(model.getWebAppName())
+                    .withRegion(model.getRegion())
+                    .withNewResourceGroup(model.getResourceGroup())
+                    .withNewWindowsPlan(withCreatePlan);
         } else {
-            withCreate = azure.webApps().define(model.getWebAppName())
+            withCreatePlan = azure.appServices().appServicePlans()
+                    .define(model.getAppServicePlan())
                     .withRegion(model.getRegion())
                     .withExistingResourceGroup(model.getResourceGroup())
-                    .withNewWindowsPlan(pricing);
+                    .withPricingTier(pricing)
+                    .withOperatingSystem(OperatingSystem.WINDOWS);
+            withCreateWebApp = azure.webApps().define(model.getWebAppName())
+                    .withRegion(model.getRegion())
+                    .withExistingResourceGroup(model.getResourceGroup())
+                    .withNewWindowsPlan(withCreatePlan);
         }
-        return withCreate;
+        return withCreateWebApp;
     }
 
     private static WebApp.DefinitionStages.WithCreate withCreateExistingSPlan(
