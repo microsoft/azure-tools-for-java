@@ -54,12 +54,12 @@ public class WebAppConfiguration extends RunConfigurationBase {
     private static final String MISSING_APP_SERVICE_PLAN = "App Service Plan not provided.";
     private static final String MISSING_LOCATION = "Location not provided.";
     private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
-    private static final String MISSING_ARTIFACT = "A web archive (WAR) artifact has not been configured.";
+    private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
     private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
         + "An artifact name maycontain only the ASCII letters 'a' through 'z' (case-insensitive), "
-        + "and the digits '0' through '9'.";
+        + "the digits '0' through '9', '-' and '_'.";
 
-    private static final String WAR_NAME_REGEX = "^[A-Za-z0-9_]+\\.war$";
+    private static final String WAR_NAME_REGEX = "^[A-Za-z0-9_\\-]+\\.war$";
     private static final String WEB_APP_CONFIGURATION_NODE = "AzureWebAppConfig";
     private final WebAppSettingModel webAppSettingModel;
     private boolean firstTimeCreated = true;

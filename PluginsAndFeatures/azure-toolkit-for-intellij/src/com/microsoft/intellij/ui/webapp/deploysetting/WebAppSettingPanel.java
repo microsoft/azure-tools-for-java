@@ -37,6 +37,7 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
@@ -95,6 +96,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     // const
     private static final String URL_PREFIX = "https://";
     private static final String NOT_APPLICABLE = "N/A";
+    private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
+    private static final String TABLE_EMPTY_MESSAGE = "No available Web App.";
 
     //widgets
     private JPanel pnlRoot;
@@ -113,6 +116,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JTextField txtWebAppName;
     private JTextField txtCreateAppServicePlan;
     private JTextField txtNewResGrp;
+    private JTextField txtSelectedWebApp;
     private JComboBox<Subscription> cbSubscription;
     private JComboBox<WebAppUtils.WebContainerMod> cbWebContainer;
     private JComboBox<Location> cbLocation;
@@ -126,7 +130,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JLabel lblPricing;
     private JLabel lblDefaultJdk;
     private JLabel lblArtifact;
-    private JTable table;
+    private JBTable table;
+    private AnActionButton btnRefresh;
 
     private boolean isCbArtifactInited;
 
@@ -367,6 +372,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             rdoUseExist.doClick();
             chkToRoot.setSelected(webAppConfiguration.isDeployToRoot());
         }
+        btnRefresh.setEnabled(false);
         this.webAppDeployViewPresenter.onLoadWebApps();
         this.webAppDeployViewPresenter.onLoadWebContainer();
         this.webAppDeployViewPresenter.onLoadSubscription();
@@ -457,6 +463,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
 
     @Override
     public void renderWebAppsTable(@NotNull List<ResourceEx<WebApp>> webAppLists) {
+        btnRefresh.setEnabled(true);
+        table.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
         List<ResourceEx<WebApp>> sortedList = webAppLists.stream()
                 .filter(resource -> resource.getResource().javaVersion() != JavaVersion.OFF)
                 .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
@@ -515,9 +523,12 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     }
 
     private void resetWidget() {
+        btnRefresh.setEnabled(false);
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.getDataVector().clear();
         model.fireTableDataChanged();
+        table.getEmptyText().setText(TABLE_LOADING_MESSAGE);
+        txtSelectedWebApp.setText("");
     }
 
     private void createUIComponents() {
@@ -533,7 +544,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         tableModel.addColumn("Resource group");
 
         table = new JBTable(tableModel);
-
+        table.getEmptyText().setText(TABLE_LOADING_MESSAGE);
         table.setRowSelectionAllowed(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -547,10 +558,11 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
             if (cachedWebAppList != null) {
                 selectedWebApp = cachedWebAppList.get(event.getFirstIndex());
+                txtSelectedWebApp.setText(selectedWebApp.toString());
             }
         });
 
-        AnActionButton refreshAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
+        btnRefresh = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 resetWidget();
@@ -559,7 +571,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         };
 
         ToolbarDecorator tableToolbarDecorator = ToolbarDecorator.createDecorator(table)
-                .addExtraActions(refreshAction).setToolbarPosition(ActionToolbarPosition.TOP);
+                .addExtraActions(btnRefresh).setToolbarPosition(ActionToolbarPosition.TOP);
 
         pnlWebAppTable = tableToolbarDecorator.createPanel();
     }
@@ -587,9 +599,11 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     @Override
     public void fillAppServicePlan(List<AppServicePlan> appServicePlans) {
         for (AppServicePlan plan: appServicePlans) {
-            cbExistAppServicePlan.addItem(plan);
-            if (Comparing.equal(plan.id(), webAppConfiguration.getAppServicePlan())) {
-                cbExistAppServicePlan.setSelectedItem(plan);
+            if (plan.operatingSystem() == OperatingSystem.WINDOWS) {
+                cbExistAppServicePlan.addItem(plan);
+                if (Comparing.equal(plan.id(), webAppConfiguration.getAppServicePlan())) {
+                    cbExistAppServicePlan.setSelectedItem(plan);
+                }
             }
         }
     }
