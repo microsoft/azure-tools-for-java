@@ -34,6 +34,7 @@ import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzulZuluModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
 
@@ -46,6 +47,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AzureWebAppMvpModel {
     private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
     private final Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
+
+    private static final String NOT_SIGNED_ERROR = "Plugin not signed in error.";
 
     private AzureWebAppMvpModel() {
         subscriptionIdToWebAppsOnLinuxMap = new ConcurrentHashMap<>();
@@ -153,15 +156,28 @@ public class AzureWebAppMvpModel {
         return app;
     }
 
+    /**
+     * List app service plan by subscription id and resource group name.
+     */
     public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group)
             throws Exception {
-        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
-        return azure.appServices().appServicePlans().listByResourceGroup(group);
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null) {
+            throw new Exception(NOT_SIGNED_ERROR);
+        }
+        return azureManager.getAzure(sid).appServices().appServicePlans().listByResourceGroup(group);
     }
 
+
+    /**
+     * List app service plan by subscription id.
+     */
     public List<AppServicePlan> listAppServicePlanBySubscriptionId(String sid) throws Exception {
-        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
-        return azure.appServices().appServicePlans().list();
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null) {
+            throw new Exception(NOT_SIGNED_ERROR);
+        }
+        return azureManager.getAzure(sid).appServices().appServicePlans().list();
     }
 
     /**
@@ -187,7 +203,7 @@ public class AzureWebAppMvpModel {
     /**
      * List all the Web Apps in selected subscriptions.
      */
-    public List<ResourceEx<WebApp>> listWebApps(boolean force) throws IOException {
+    public List<ResourceEx<WebApp>> listWebApps(boolean force) {
         List<ResourceEx<WebApp>> webAppList = new ArrayList<>();
         List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
         for (Subscription sub : subscriptions) {

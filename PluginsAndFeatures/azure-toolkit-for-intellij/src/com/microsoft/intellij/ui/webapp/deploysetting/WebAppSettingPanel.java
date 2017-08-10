@@ -85,7 +85,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private List<ResourceEx<WebApp>> cachedWebAppList = null;
 
     private String lastSelectedSid;
-    private String lastSelectedResGrp;
     private String lastSelectedLocation;
     private String lastSelectedPriceTier;
     private Artifact lastSelectedArtifact;
@@ -93,14 +92,12 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private WebAppSettingModel.JdkChoice lastJdkChoice = WebAppSettingModel.JdkChoice.DEFAULT;
 
     // const
-    private static final String URL_PREFIX = "https://";
     private static final String NOT_APPLICABLE = "N/A";
     private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
     private static final String TABLE_EMPTY_MESSAGE = "No available Web App.";
     private static final String DEFAULT_APP_NAME = "webapp-" ;
     private static final String DEFAULT_PLAN_NAME = "appsp-";
     private static final String DEFAULT_RGP_NAME = "rg-webapp-";
-
 
     //widgets
     private JPanel pnlRoot;
@@ -189,21 +186,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
         });
 
-        cbExistResGrp.addActionListener(e -> {
-            ResourceGroup resGrp = (ResourceGroup) cbExistResGrp.getSelectedItem();
-            if (resGrp == null) {
-                return;
-            }
-            String selectedGrp = resGrp.name();
-            if (!Comparing.equal(lastSelectedResGrp, selectedGrp)) {
-                cbExistAppServicePlan.removeAllItems();
-                lblLocation.setText(NOT_APPLICABLE);
-                lblPricing.setText(NOT_APPLICABLE);
-                webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, selectedGrp);
-                lastSelectedResGrp = selectedGrp;
-            }
-        });
-
         cbSubscription.setRenderer(new ListCellRendererWrapper<Subscription>() {
             @Override
             public void customize(JList list, Subscription subscription, int
@@ -221,9 +203,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
             String selectedSid = subscription.subscriptionId();
             if (!Comparing.equal(lastSelectedSid, selectedSid)) {
-                cbExistResGrp.removeAllItems();
-                cbLocation.removeAllItems();
                 webAppDeployViewPresenter.onLoadResourceGroups(selectedSid);
+                webAppDeployViewPresenter.onLoadAppServicePlan(selectedSid);
                 webAppDeployViewPresenter.onLoadLocation(selectedSid);
                 lastSelectedSid = selectedSid;
             }
@@ -432,7 +413,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 webAppConfiguration.setResourceGroup(txtNewResGrp.getText());
             } else {
                 webAppConfiguration.setCreatingResGrp(false);
-                webAppConfiguration.setResourceGroup(lastSelectedResGrp);
+                ResourceGroup resourceGroup = (ResourceGroup) cbExistResGrp.getSelectedItem();
+                webAppConfiguration.setResourceGroup(resourceGroup == null ? "" : resourceGroup.name());
             }
             // app service plan
             if (rdoCreateAppServicePlan.isSelected()) {
