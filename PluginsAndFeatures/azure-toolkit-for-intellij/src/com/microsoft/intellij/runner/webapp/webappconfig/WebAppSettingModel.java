@@ -32,7 +32,6 @@ public class WebAppSettingModel {
     private String subscriptionId = "";
     // deploy related
     private String webAppId = "";
-    private String webAppUrl = "";
     private String targetPath = "";
     private String targetName = "";
     private boolean deployToRoot = true;
@@ -65,14 +64,6 @@ public class WebAppSettingModel {
 
     public void setSubscriptionId(String subId) {
         this.subscriptionId = subId;
-    }
-
-    public String getWebAppUrl() {
-        return webAppUrl;
-    }
-
-    public void setWebAppUrl(String webAppUrl) {
-        this.webAppUrl = webAppUrl;
     }
 
     public boolean isDeployToRoot() {

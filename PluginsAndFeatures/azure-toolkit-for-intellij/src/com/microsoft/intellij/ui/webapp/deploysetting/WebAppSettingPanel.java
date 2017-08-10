@@ -407,15 +407,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         if (rdoUseExist.isSelected()) {
             webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
             webAppConfiguration.setSubscriptionId(selectedWebApp == null ? "" : selectedWebApp.getSubscriptionId());
-            boolean isDeployToRoot = chkToRoot.isSelected();
-            webAppConfiguration.setDeployToRoot(isDeployToRoot);
-            String url = selectedWebApp == null ? "" :
-                    URL_PREFIX + selectedWebApp.getResource().defaultHostName();
-            if (!isDeployToRoot) {
-                url += "/" + webAppConfiguration.getTargetName().substring(0,
-                        webAppConfiguration.getTargetName().lastIndexOf("."));
-            }
-            webAppConfiguration.setWebAppUrl(url);
+            webAppConfiguration.setDeployToRoot(chkToRoot.isSelected());
             webAppConfiguration.setCreatingNew(false);
         } else if (rdoCreateNew.isSelected()) {
             webAppConfiguration.setWebAppName(txtWebAppName.getText());

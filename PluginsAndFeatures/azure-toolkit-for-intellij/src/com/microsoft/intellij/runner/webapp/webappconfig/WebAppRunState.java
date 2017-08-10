@@ -136,12 +136,17 @@ public class WebAppRunState implements RunProfileState {
             if (ftp.isConnected()) {
                 ftp.disconnect();
             }
+            String url = "https://" + webApp.defaultHostName();
+            if (!webAppSettingModel.isDeployToRoot()) {
+                url += "/" + webAppSettingModel.getTargetName().substring(0,
+                        webAppSettingModel.getTargetName().lastIndexOf("."));
+            }
+            processHandler.setText(DEPLOY_SUCCESSFUL);
+            processHandler.setText("URL: " + url);
             return true;
         })
                 .subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io())
                 .subscribe(isSucceeded -> {
-                    processHandler.setText(DEPLOY_SUCCESSFUL);
-                    processHandler.setText("URL: " + webAppSettingModel.getWebAppUrl());
                     processHandler.notifyComplete();
                     try {
                         AzureWebAppMvpModel.getInstance().listWebApps(true);
@@ -158,11 +163,5 @@ public class WebAppRunState implements RunProfileState {
     private void updateConfigurationDataModel(@NotNull WebApp app) {
         webAppSettingModel.setCreatingNew(false);
         webAppSettingModel.setWebAppId(app.id());
-        String url = "https://" + app.defaultHostName();
-        if (!webAppSettingModel.isDeployToRoot()) {
-            url += "/" + webAppSettingModel.getTargetName().substring(0,
-                    webAppSettingModel.getTargetName().lastIndexOf("."));
-        }
-        webAppSettingModel.setWebAppUrl(url);
     }
 }

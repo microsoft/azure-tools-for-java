@@ -164,14 +164,6 @@ public class WebAppConfiguration extends RunConfigurationBase {
         return webAppSettingModel.getSubscriptionId();
     }
 
-    public void setWebAppUrl(String url) {
-        webAppSettingModel.setWebAppUrl(url);
-    }
-
-    public String getWebAppUrl() {
-        return webAppSettingModel.getWebAppUrl();
-    }
-
     public void setDeployToRoot(boolean toRoot) {
         webAppSettingModel.setDeployToRoot(toRoot);
     }
