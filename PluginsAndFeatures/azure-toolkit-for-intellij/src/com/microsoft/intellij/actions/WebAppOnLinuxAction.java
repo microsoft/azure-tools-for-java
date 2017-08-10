@@ -31,13 +31,16 @@ import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.intellij.container.Constant;
 import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,6 +68,18 @@ public class WebAppOnLinuxAction extends AzureAnAction {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void update(AnActionEvent event) {
+        Project project = DataKeys.PROJECT.getData(event.getDataContext());
+        boolean dockerFileExists = false;
+        if (project != null) {
+            String basePath = project.getBasePath();
+            dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKER_CONTEXT_FOLDER,
+                    Constant.DOCKERFILE_NAME).toFile().exists();
+        }
+        event.getPresentation().setEnabledAndVisible(dockerFileExists);
     }
 
     @SuppressWarnings({"deprecation", "Duplicates"})
