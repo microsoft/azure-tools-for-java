@@ -539,12 +539,12 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             if (event.getValueIsAdjusting()) {
                 return;
             }
-            if (cachedWebAppList == null || table.getSelectedRow() < 0
-                    || table.getSelectedRow() >= cachedWebAppList.size()) {
+            int selectedRow = table.getSelectedRow();
+            if (cachedWebAppList == null || selectedRow < 0 || selectedRow >= cachedWebAppList.size()) {
                 selectedWebApp = null;
                 return;
             }
-            selectedWebApp = cachedWebAppList.get(event.getFirstIndex());
+            selectedWebApp = cachedWebAppList.get(selectedRow);
             txtSelectedWebApp.setText(selectedWebApp.toString());
         });
 
