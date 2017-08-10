@@ -19,24 +19,19 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.intellij;
 
 import com.google.gson.Gson;
-import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
-import com.intellij.util.PlatformUtils;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
-import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
@@ -47,12 +42,13 @@ import com.microsoft.intellij.helpers.IDEHelperImpl;
 import com.microsoft.intellij.helpers.MvpUIHelperImpl;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
+import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import rx.internal.util.PlatformDependent;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -65,7 +61,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import rx.internal.util.PlatformDependent;
 
 public class AzureActionsComponent implements ApplicationComponent, PluginComponent {
     public static final String PLUGIN_ID = CommonConst.PLUGIN_ID;
@@ -86,7 +82,8 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
         try {
             loadPluginSettings();
         } catch (IOException e) {
-            PluginUtil.displayErrorDialogAndLog(message("errTtl"), "An error occurred while attempting to load settings", e);
+            PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"),
+                    "An error occurred while attempting to load settings", e);
         }
     }
 
@@ -103,20 +100,17 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
             toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
             DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
             popupGroup.add(am.getAction("AzurePopupGroup"));
-            if (PlatformUtils.isIdeaUltimate()) {
-                ActionManager actionManager = ActionManager.getInstance();
-                DefaultActionGroup actionGroup = (DefaultActionGroup) actionManager.getAction("PublishGroup");
-                if (actionGroup != null)
-                    actionGroup.addAll((ActionGroup) actionManager.getAction("AzureWebDeployGroup"));
-            }
             loadWebApps();
         }
         try {
             PlatformDependent.isAndroid();
-        } catch (Throwable ignored ) {
-            DefaultLoader.getUIHelper().showError("A problem with your Android Support plugin setup is preventing the Azure Toolkit from functioning correctly (Retrofit2 and RxJava failed to initialize).\n" +
-                "To fix this issue, try disabling the Android Support plugin or installing the Android SDK", "Azure Toolkit for IntelliJ");
-//            DefaultLoader.getUIHelper().showException("Android Support Error: isAndroid() throws " + ignored.getMessage(), ignored, "Error Android", true, false);
+        } catch (Throwable ignored) {
+            DefaultLoader.getUIHelper().showError("A problem with your Android Support plugin setup is preventing the"
+                    + " Azure Toolkit from functioning correctly (Retrofit2 and RxJava failed to initialize)"
+                    + ".\nTo fix this issue, try disabling the Android Support plugin or installing the "
+                    + "Android SDK", "Azure Toolkit for IntelliJ");
+            // DefaultLoader.getUIHelper().showException("Android Support Error: isAndroid() throws " + ignored
+            //         .getMessage(), ignored, "Error Android", true, false);
         }
     }
 
@@ -139,15 +133,16 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
 
     private void loadWebApps() {
         System.out.println("AzurePlugin@loadWebApps");
-        ProgressManager.getInstance().run(new Task.Backgroundable(null, "Load Web Apps" /*title*/, false /*canBeCancel*/) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                for(Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-                    AzureWebAppMvpModel.getInstance().listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), false);
-                    AzureWebAppMvpModel.getInstance().listWebAppsBySubscriptionId(sb.subscriptionId(), false);
-                }
-            }
-        });
+        Runnable forceCleanWebAppsAction = () -> {
+            AzureWebAppMvpModel.getInstance().cleanWebAppsOnLinux();
+            AzureWebAppMvpModel.getInstance().cleanWebApps();
+        };
+        try {
+            AuthMethodManager.getInstance().addSignOutEventListener(forceCleanWebAppsAction);
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOG.error("loadWebApps()", e);
+        }
     }
 
     private void initLoggerFileHandler() {
@@ -184,7 +179,8 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
     private void loadPluginSettings() throws IOException {
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new InputStreamReader(AzureActionsComponent.class.getResourceAsStream("/settings.json")));
+            reader = new BufferedReader(new InputStreamReader(
+                    AzureActionsComponent.class.getResourceAsStream("/settings.json")));
             StringBuilder sb = new StringBuilder();
             String line;
 

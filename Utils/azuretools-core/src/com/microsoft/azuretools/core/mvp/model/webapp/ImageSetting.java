@@ -1,36 +1,53 @@
 /*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
  */
 
-package com.microsoft.azure.hdinsight.spark.run;
+package com.microsoft.azuretools.core.mvp.model.webapp;
 
-import com.intellij.debugger.engine.RemoteDebugProcessHandler;
-import com.intellij.openapi.project.Project;
+public abstract class ImageSetting {
+    private String imageNameWithTag;
+    private String startupFile;
 
-public class SparkBatchJobDebugProcessHandler extends RemoteDebugProcessHandler {
-    public SparkBatchJobDebugProcessHandler(Project project) {
-        super(project);
+    public ImageSetting() {
     }
 
-    @Override
-    public boolean detachIsDefault() {
-        return false;
+    public ImageSetting(String imageNameWithTag, String startupFile) {
+        this.imageNameWithTag = imageNameWithTag;
+        this.startupFile = startupFile;
+    }
+
+    public String getImageNameWithTag() {
+        return imageNameWithTag;
+    }
+
+    public void setImageNameWithTag(String imageNameWithTag) {
+        this.imageNameWithTag = imageNameWithTag;
+    }
+
+    public String getStartupFile() {
+        return startupFile;
+    }
+
+    public void setStartupFile(String startupFile) {
+        this.startupFile = startupFile;
     }
 }

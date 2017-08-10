@@ -22,84 +22,136 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
-import com.intellij.execution.process.ProcessOutputTypes;
-import com.intellij.openapi.util.Key;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
-import com.microsoft.azuretools.utils.WebAppUtils;
-import com.microsoft.intellij.runner.RunProcessHandler;
-import org.apache.commons.net.ftp.FTPClient;
-import org.jetbrains.idea.maven.model.MavenConstants;
-import rx.Observable;
-import rx.schedulers.Schedulers;
+import com.microsoft.azure.management.Azure;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import com.microsoft.azure.management.appservice.*;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.utils.IProgressIndicator;
+import com.microsoft.azuretools.utils.WebAppUtils;
+
+import org.jetbrains.annotations.NotNull;
 
 public class WebDeployUtil {
 
-    private static final String GETTING_DEPLOYMENT_CREDENTIAL = "Getting Deployment Credential...";
-    private static final String CONNECTING_FTP = "Connecting to FTP server...";
-    private static final String UPLOADING_WAR = "Uploading war file...";
-    private static final String UPLOADING_SUCCESSFUL = "Uploading successfully...";
-    private static final String LOGGING_OUT = "Logging out of FTP server...";
-    private static final String DEPLOY_SUCCESSFUL = "Deploy successfully...";
+    private static final String CREATE_WEBAPP = "Creating new WebApp...";
+    private static final String CREATE_SUCCESSFUL = "WebApp created...";
+    private static final String CREATE_FALIED = "Failed to create WebApp. Error: %s ...";
+    private static final String DEPLOY_JDK = "Deploying custom JDK...";
+    private static final String JDK_SUCCESSFUL = "Custom JDK deployed successfully...";
+    private static final String JDK_FAILED = "Failed to deploy custom JDK";
 
-    private static final String BASE_PATH = "/site/wwwroot/webapps/";
-    private static final String ROOT_PATH = BASE_PATH + "ROOT";
-    private static final String ROOT_FILE_PATH = ROOT_PATH + "." + MavenConstants.TYPE_WAR;
+    private static WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null) {
+            throw new Exception("There is no azure manager");
+        }
+        Azure azure = azureManager.getAzure(model.getSubscriptionId());
+        if (azure == null) {
+            throw new Exception(
+                    String.format("Cannot get azure instance for subID  %s", model.getSubscriptionId())
+            );
+        }
 
-    public static void deployWebApp(WebAppSettingModel webAppSettingModel, RunProcessHandler handler) {
-        Observable.fromCallable(() -> {
-            if (webAppSettingModel.isCreatingNew()) {
-                //todo: creating
+        WebApp.DefinitionStages.WithCreate withCreate;
+        if (model.isCreatingAppServicePlan()) {
+            withCreate = withCreateNewSPlan(azure, model);
+        } else {
+            withCreate = withCreateExistingSPlan(azure, model);
+        }
+
+        WebApp webApp;
+        if (WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(model.getJdkChoice())) {
+            webApp = withCreate
+                    .withJavaVersion(JavaVersion.JAVA_8_NEWEST)
+                    .withWebContainer(WebContainer.fromString(model.getWebContainer()))
+                    .create();
+        } else {
+            webApp = withCreate.create();
+        }
+        return webApp;
+    }
+
+    private static WebApp.DefinitionStages.WithCreate withCreateNewSPlan(
+            @NotNull Azure azure,
+            @NotNull WebAppSettingModel model) throws Exception {
+        String[] tierSize = model.getPricing().split("_");
+        if (tierSize.length != 2) {
+            throw new Exception("Cannot get valid price tier");
+        }
+        PricingTier pricing = new PricingTier(tierSize[0], tierSize[1]);
+        AppServicePlan.DefinitionStages.WithCreate withCreatePlan;
+
+        WebApp.DefinitionStages.WithCreate withCreateWebApp;
+        if (model.isCreatingResGrp()) {
+            withCreatePlan = azure.appServices().appServicePlans()
+                    .define(model.getAppServicePlan())
+                    .withRegion(model.getRegion())
+                    .withNewResourceGroup(model.getResourceGroup())
+                    .withPricingTier(pricing)
+                    .withOperatingSystem(OperatingSystem.WINDOWS);
+            withCreateWebApp = azure.webApps().define(model.getWebAppName())
+                    .withRegion(model.getRegion())
+                    .withNewResourceGroup(model.getResourceGroup())
+                    .withNewWindowsPlan(withCreatePlan);
+        } else {
+            withCreatePlan = azure.appServices().appServicePlans()
+                    .define(model.getAppServicePlan())
+                    .withRegion(model.getRegion())
+                    .withExistingResourceGroup(model.getResourceGroup())
+                    .withPricingTier(pricing)
+                    .withOperatingSystem(OperatingSystem.WINDOWS);
+            withCreateWebApp = azure.webApps().define(model.getWebAppName())
+                    .withRegion(model.getRegion())
+                    .withExistingResourceGroup(model.getResourceGroup())
+                    .withNewWindowsPlan(withCreatePlan);
+        }
+        return withCreateWebApp;
+    }
+
+    private static WebApp.DefinitionStages.WithCreate withCreateExistingSPlan(
+            @NotNull Azure azure,
+            @NotNull WebAppSettingModel model) {
+        AppServicePlan servicePlan =  azure.appServices().appServicePlans().getById(model.getAppServicePlan());
+        WebApp.DefinitionStages.WithCreate withCreate;
+        if (model.isCreatingResGrp()) {
+            withCreate = azure.webApps().define(model.getWebAppName())
+                    .withExistingWindowsPlan(servicePlan)
+                    .withNewResourceGroup(model.getResourceGroup());
+        } else {
+            withCreate = azure.webApps().define(model.getWebAppName())
+                    .withExistingWindowsPlan(servicePlan)
+                    .withExistingResourceGroup(model.getResourceGroup());
+        }
+
+        return withCreate;
+    }
+
+    public static WebApp createWebAppWithMsg(
+            WebAppSettingModel webAppSettingModel, IProgressIndicator handler) throws Exception {
+        handler.setText(CREATE_WEBAPP);
+        WebApp webApp = null;
+        try {
+            webApp = createWebApp(webAppSettingModel);
+        } catch (Exception e) {
+            handler.setText(String.format(CREATE_FALIED, e.getMessage()));
+            throw new Exception(e);
+        }
+
+        if (!WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(webAppSettingModel.getJdkChoice())) {
+            handler.setText(DEPLOY_JDK);
+            try {
+                WebAppUtils.deployCustomJdk(webApp, webAppSettingModel.getJdkUrl(),
+                        WebContainer.fromString(webAppSettingModel.getWebContainer()),
+                        handler);
+                handler.setText(JDK_SUCCESSFUL);
+            } catch (Exception e) {
+                handler.setText(JDK_FAILED);
+                throw new Exception(e);
             }
-            handler.println(GETTING_DEPLOYMENT_CREDENTIAL, ProcessOutputTypes.STDOUT);
-            WebApp webApp = AzureWebAppMvpModel.getInstance().getWebAppById(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppId());
-            FTPClient ftp;
-            FileInputStream input;
-            handler.println(CONNECTING_FTP, ProcessOutputTypes.STDOUT);
-            ftp = WebAppUtils.getFtpConnection(webApp.getPublishingProfile());
-            handler.println(UPLOADING_WAR, ProcessOutputTypes.STDOUT);
-            input = new FileInputStream(webAppSettingModel.getTargetPath());
-            boolean isSuccess;
-            if (webAppSettingModel.isDeployToRoot()) {
-                // Deploy to Root
-                WebAppUtils.removeFtpDirectory(ftp, ROOT_PATH, null);
-                isSuccess = ftp.storeFile(ROOT_FILE_PATH, input);
-            } else {
-                //Deploy according to war file name
-                WebAppUtils.removeFtpDirectory(ftp, BASE_PATH + webAppSettingModel.getTargetName(), null);
-                isSuccess = ftp.storeFile(BASE_PATH + webAppSettingModel.getTargetName(), input);
-            }
-            if (!isSuccess) {
-                int rc = ftp.getReplyCode();
-                throw new IOException("FTP client can't store the artifact, reply code: " + rc);
-            }
-            handler.println(UPLOADING_SUCCESSFUL, ProcessOutputTypes.STDOUT);
-            handler.println(LOGGING_OUT, ProcessOutputTypes.STDOUT);
-            ftp.logout();
-            input.close();
-            if (ftp.isConnected()) {
-                ftp.disconnect();
-            }
-            return null;
-        })
-        .subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io())
-        .subscribe(number -> {
-            handler.println(DEPLOY_SUCCESSFUL, ProcessOutputTypes.STDOUT);
-            handler.print("URL: ", ProcessOutputTypes.STDOUT);
-            String url = webAppSettingModel.getWebAppUrl();
-            if (!webAppSettingModel.isDeployToRoot()) {
-                url += "/" + webAppSettingModel.getTargetName()
-                        .substring(0, webAppSettingModel.getTargetName().indexOf("." + MavenConstants.TYPE_WAR));
-            }
-            handler.println(url, ProcessOutputTypes.STDOUT);
-            handler.notifyProcessTerminated(0 /*exitCode*/);
-        }, err -> {
-            handler.notifyTextAvailable(err.getMessage(), ProcessOutputTypes.STDERR);
-            handler.notifyProcessTerminated(0 /*exitCode*/);
-        });
+        }
+        handler.setText(CREATE_SUCCESSFUL);
+
+        return webApp;
     }
 }

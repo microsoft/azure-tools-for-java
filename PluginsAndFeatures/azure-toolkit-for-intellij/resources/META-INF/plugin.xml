@@ -1,4 +1,4 @@
-<idea-plugin version="2">
+<idea-plugin>
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
   <version>3.0.6</version>
@@ -99,9 +99,6 @@
   </project-components>
 
   <actions>
-    <!--<action id="Actions.DockerPublishAction"-->
-            <!--class="com.microsoft.intellij.actions.DockerPublishActiontion" text="Deploy to WebAppOnLinux"-->
-            <!--description="Deploy to WebAppOnLinux"/>-->
     <action id="Actions.LibraryConfigurationAction"
             class="com.microsoft.intellij.actions.LibraryConfigurationAction" text="Libraries Configuration"
             description="Libraries Configuration"/>
@@ -133,36 +130,34 @@
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
             description="ShowSubscriptionsAction" />
     <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
-            text="Deploy to Azure" description="Deploy to Azure">
+            text="Run on Web App" description="Run on Web App"
+            icon="/icons/PublishWebApp_16.png">
     </action>
-    <!--<action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.DockerizeAction"-->
-            <!--text="Add Docker Support..." description="Azure website deployment for Java"-->
-            <!--icon="/icons/AddDockerSupport_16.png">-->
-    <!--</action>-->
+    <action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.AddDockerSupportAction"
+            text="Add Docker Support..." description="Add Docker Support"
+            icon="/icons/AddDockerSupport_16.png">
+    </action>
     <!--<action id="Actions.DockerRun" class="com.microsoft.intellij.actions.DockerRunAction"-->
             <!--text="Docker Run..." description="Azure website deployment for Java"-->
             <!--icon="/icons/DockerRun_16.png">-->
     <!--</action>-->
-    <!--<action id="Actions.DockerPublish" class="com.microsoft.intellij.actions.DockerPublishAction"-->
-            <!--text="Publish to Web App on Linux..." description="Azure website deployment for Java"-->
-            <!--icon="/icons/PublishWebAppOnLinux_16.png">-->
-    <!--</action>-->
+    <action id="Actions.WebAppOnLinux" class="com.microsoft.intellij.actions.WebAppOnLinuxAction"
+            text="Run on Web App (Linux) ..." description="Run on Web App (Linux)"
+            icon="/icons/PublishWebAppOnLinux_16.png">
+    </action>
 
     <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/azure.png" popup="true"
            class="com.microsoft.intellij.actions.AzurePopupGroup">
-      <!-- <reference ref="Actions.AddDockerSupport"/>
-      <reference ref="Actions.DockerRun"/>
-      <reference ref="Actions.DockerPublish"/> -->
-      <reference ref="Actions.AzureWebDeploy"/>
+      <reference ref="Actions.WebDeployAction"/>
+      <separator/>
+      <reference ref="Actions.AddDockerSupport"/>
+      <!--<reference ref="Actions.DockerRun"/>-->
+      <reference ref="Actions.WebAppOnLinux"/>
+      <separator/>
       <reference ref="Actions.AzureDockerHostDeploy"/>
       <separator/>
       <reference ref="Actions.ApplicationInsightsAction"/>
-      <separator/>
       <reference ref="Actions.LibraryConfigurationAction"/>
-      <separator/>
-      <reference ref="AzureToolkit.AzureSignIn"/>
-      <separator/>
-      <reference ref="Actions.WebDeployAction"/>
     </group>
 
     <group id="AzureToolbarGroup" text="Azure" description="Azure">

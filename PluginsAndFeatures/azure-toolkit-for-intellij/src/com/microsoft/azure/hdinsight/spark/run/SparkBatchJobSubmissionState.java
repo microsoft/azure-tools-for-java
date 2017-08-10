@@ -69,8 +69,7 @@ public class SparkBatchJobSubmissionState implements RunProfileState, RemoteStat
     public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) throws ExecutionException {
         if (programRunner instanceof SparkBatchJobDebuggerRunner) {
             ConsoleViewImpl consoleView = new ConsoleViewImpl(myProject, false);
-            SparkBatchJobDebugProcessHandler process =
-                    new SparkBatchJobDebugProcessHandler(myProject, (SparkBatchJobDebuggerRunner) programRunner);
+            SparkBatchJobDebugProcessHandler process = new SparkBatchJobDebugProcessHandler(myProject);
 
             consoleView.attachToProcess(process);
 

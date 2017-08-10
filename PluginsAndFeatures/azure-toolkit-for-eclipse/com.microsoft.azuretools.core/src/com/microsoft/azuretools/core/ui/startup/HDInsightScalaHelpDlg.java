@@ -20,16 +20,20 @@ import org.eclipse.ui.PlatformUI;
 
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.utils.Messages;
+import com.microsoft.azuretools.core.utils.PluginUtil;
 
 
-public class HDInsightHelpDlg extends Dialog {
+public class HDInsightScalaHelpDlg extends Dialog {
 	private boolean isShowTips = true;
+	
+	private static String scalaPluginMarketplaceURL = "http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=421";
+	private static String scalaPluginSymbolicName = "org.scala-ide.sdt.core";
 	
 	public boolean isShowTipsStatus() {
 		return isShowTips;
 	}
 	
-	protected HDInsightHelpDlg(Shell parentShell) {
+	protected HDInsightScalaHelpDlg(Shell parentShell) {
 		super(parentShell);
 	}
 	@Override
@@ -45,6 +49,12 @@ public class HDInsightHelpDlg extends Dialog {
 		getButton(IDialogConstants.OK_ID).setEnabled(false);
 		getButton(IDialogConstants.CANCEL_ID).setText("Ok");
 		return ctrl;
+	}
+	
+	protected void cancelPressed() {
+		PluginUtil.forceInstallPluginUsingMarketPlaceAsync(scalaPluginSymbolicName, scalaPluginMarketplaceURL);
+		
+		super.cancelPressed();
 	}
 
 	protected Control createContents(Composite parent) {

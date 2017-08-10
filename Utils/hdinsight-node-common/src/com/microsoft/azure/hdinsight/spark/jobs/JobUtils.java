@@ -21,6 +21,8 @@
  */
 package com.microsoft.azure.hdinsight.spark.jobs;
 
+import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.Cache;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
@@ -158,7 +160,7 @@ public class JobUtils {
         }
     }
 
-    private static final WebClient HTTP_WEB_CLIENT = new WebClient();
+    private static final Cache globalCache = new Cache();
 
     private static final String DRIVER_LOG_INFO_URL = "%s/yarnui/jobhistory/logs/%s/port/%s/%s/%s/livy";
 
@@ -206,6 +208,9 @@ public class JobUtils {
                                                       @NotNull String type,
                                                       long start,
                                                       int size) {
+        final WebClient HTTP_WEB_CLIENT = new WebClient(BrowserVersion.CHROME);
+        HTTP_WEB_CLIENT.setCache(globalCache);
+
         if (credentialsProvider != null) {
             HTTP_WEB_CLIENT.setCredentialsProvider(credentialsProvider);
         }
@@ -221,10 +226,10 @@ public class JobUtils {
             if (preTagElements.size() != 0) {
                 return preTagElements.get(preTagElements.size() - 1).asText();
             }
-        } catch (IOException e) {
-            LOGGER.error("get Driver Log Error", e);
         } catch (URISyntaxException e) {
             LOGGER.error("baseUrl has syntax error: " + baseUrl);
+        } catch (Exception e) {
+            LOGGER.error("get Driver Log Error", e);
         }
         return "";
     }
@@ -280,8 +285,12 @@ public class JobUtils {
                 }
             } catch (InterruptedException ignore) {
             } finally {
-                // Get the rest logs
-                logs = JobUtils.getInformationFromYarnLogDom(credentialsProvider, driverLogUrl, type, nextStart, 0);
+                // Get the rest logs from history server
+                String historyServerLogUrl = driverLogUrl.replaceAll(
+                    "(https?://.*/yarnui)/([^/]*)/node/containerlogs/(container_[^/]+)/livy",
+                    "$1/jobhistory/logs/$2/port/30050/$3/$3/livy");
+
+                logs = JobUtils.getInformationFromYarnLogDom(credentialsProvider, historyServerLogUrl, type, nextStart, 0);
 
                 new BufferedReader(new StringReader(remainedLine + logs)).lines().forEach(ob::onNext);
             }

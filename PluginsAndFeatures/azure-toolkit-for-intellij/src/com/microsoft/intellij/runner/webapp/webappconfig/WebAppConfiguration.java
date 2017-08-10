@@ -24,35 +24,70 @@ package com.microsoft.intellij.runner.webapp.webappconfig;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.*;
+import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.RunConfigurationBase;
+import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.intellij.runner.webapp.WebAppConfigurationType;
+
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class WebAppConfiguration extends RunConfigurationBase {
 
-    private static String WEB_APP_CONFIGURATION_NODE = "AzureWebAppConfig";
-    private WebAppSettingModel webAppSettingModel;
+    // const string
+    private static final String NEED_CHOOSE_WEB_APP = "Choose a web app to deploy.";
+    private static final String MISSING_WEB_APP_NAME = "Web App name not provided.";
+    private static final String MISSING_SUBSCRIPTION = "Subscription not provided.";
+    private static final String MISSING_WEB_CONTAINER = "Web Container not provided.";
+    private static final String MISSING_RESOURCE_GROUP = "Resource Group not provided.";
+    private static final String MISSING_APP_SERVICE_PLAN = "App Service Plan not provided.";
+    private static final String MISSING_LOCATION = "Location not provided.";
+    private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
+    private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
+    private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
+        + "An artifact name maycontain only the ASCII letters 'a' through 'z' (case-insensitive), "
+        + "the digits '0' through '9', '-' and '_'.";
+
+    private static final String WAR_NAME_REGEX = "^[A-Za-z0-9_-]+\\.war$";
+    private static final String WEB_APP_CONFIGURATION_NODE = "AzureWebAppConfig";
+    private final WebAppSettingModel webAppSettingModel;
+    private boolean firstTimeCreated = true;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory) {
-        super(project, factory, project.getName());
+        super(project, factory, String.format("%s:%s", WebAppConfigurationType.getInstance().getDisplayName(),
+                project.getName()));
         webAppSettingModel = new WebAppSettingModel();
+    }
+
+    public boolean isFirstTimeCreated() {
+        return firstTimeCreated;
+    }
+
+    public void setFirstTimeCreated(boolean firstTimeCreated) {
+        this.firstTimeCreated = firstTimeCreated;
     }
 
     @NotNull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new WebAppSettingEditor(getProject());
+        return new WebAppSettingEditor(getProject(), this);
     }
 
     @Override
     public void readExternal(Element element) throws InvalidDataException {
         super.readExternal(element);
+        firstTimeCreated = Comparing.equal(element.getAttributeValue("default"), "true");
         webAppSettingModel.readExternal(element.getChild(WEB_APP_CONFIGURATION_NODE));
     }
 
@@ -75,7 +110,169 @@ public class WebAppConfiguration extends RunConfigurationBase {
         return new WebAppRunState(getProject(), this.webAppSettingModel);
     }
 
-    public WebAppSettingModel getWebAppSettingModel() {
-        return this.webAppSettingModel;
+    public void validate() throws ConfigurationException {
+        if (webAppSettingModel.isCreatingNew()) {
+            if (Utils.isEmptyString(webAppSettingModel.getWebAppName())) {
+                throw new ConfigurationException(MISSING_WEB_APP_NAME);
+            }
+            if (Utils.isEmptyString(webAppSettingModel.getSubscriptionId())) {
+                throw new ConfigurationException(MISSING_SUBSCRIPTION);
+            }
+            if (Utils.isEmptyString(webAppSettingModel.getWebContainer())) {
+                throw new ConfigurationException(MISSING_WEB_CONTAINER);
+            }
+            if (Utils.isEmptyString(webAppSettingModel.getResourceGroup())) {
+                throw new ConfigurationException(MISSING_RESOURCE_GROUP);
+            }
+            if (Utils.isEmptyString(webAppSettingModel.getAppServicePlan())) {
+                throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
+            }
+            if (webAppSettingModel.isCreatingAppServicePlan()) {
+                if (Utils.isEmptyString(webAppSettingModel.getRegion())) {
+                    throw new ConfigurationException(MISSING_LOCATION);
+                }
+                if (Utils.isEmptyString(webAppSettingModel.getPricing())) {
+                    throw new ConfigurationException(MISSING_PRICING_TIER);
+                }
+            }
+        } else {
+            if (Utils.isEmptyString(webAppSettingModel.getWebAppId())) {
+                throw new ConfigurationException(NEED_CHOOSE_WEB_APP);
+            }
+        }
+        if (Utils.isEmptyString(webAppSettingModel.getTargetName())) {
+            throw new ConfigurationException(MISSING_ARTIFACT);
+        }
+        if (!webAppSettingModel.isDeployToRoot() && !webAppSettingModel.getTargetName().matches(WAR_NAME_REGEX)) {
+            throw new ConfigurationException(String.format(INVALID_WAR_FILE, webAppSettingModel.getTargetName()));
+        }
+    }
+
+    public void setWebAppId(String id) {
+        webAppSettingModel.setWebAppId(id);
+    }
+
+    public String getWebAppId() {
+        return webAppSettingModel.getWebAppId();
+    }
+
+    public void setSubscriptionId(String sid) {
+        webAppSettingModel.setSubscriptionId(sid);
+    }
+
+    public String getSubscriptionId() {
+        return webAppSettingModel.getSubscriptionId();
+    }
+
+    public void setDeployToRoot(boolean toRoot) {
+        webAppSettingModel.setDeployToRoot(toRoot);
+    }
+
+    public boolean isDeployToRoot() {
+        return webAppSettingModel.isDeployToRoot();
+    }
+
+    public void setCreatingNew(boolean isCreating) {
+        webAppSettingModel.setCreatingNew(isCreating);
+    }
+
+    public boolean isCreatingNew() {
+        return webAppSettingModel.isCreatingNew();
+    }
+
+    public void setWebAppName(String name) {
+        webAppSettingModel.setWebAppName(name);
+    }
+
+    public String getWebAppName() {
+        return webAppSettingModel.getWebAppName();
+    }
+
+    public void setWebContainer(String container) {
+        webAppSettingModel.setWebContainer(container);
+    }
+
+    public String getWebContainer() {
+        return webAppSettingModel.getWebContainer();
+    }
+
+    public void setCreatingResGrp(boolean isCreating) {
+        webAppSettingModel.setCreatingResGrp(isCreating);
+    }
+
+    public boolean isCreatingResGrp() {
+        return webAppSettingModel.isCreatingResGrp();
+    }
+
+    public void setResourceGroup(String name) {
+        webAppSettingModel.setResourceGroup(name);
+    }
+
+    public String getResourceGroup() {
+        return webAppSettingModel.getResourceGroup();
+    }
+
+    public void setCreatingAppServicePlan(boolean isCreating) {
+        webAppSettingModel.setCreatingAppServicePlan(isCreating);
+    }
+
+    public boolean isCreatingAppServicePlan() {
+        return webAppSettingModel.isCreatingAppServicePlan();
+    }
+
+    public void setAppServicePlan(String nameOrId) {
+        webAppSettingModel.setAppServicePlan(nameOrId);
+    }
+
+    public String getAppServicePlan() {
+        return webAppSettingModel.getAppServicePlan();
+    }
+
+    public void setRegion(String region) {
+        webAppSettingModel.setRegion(region);
+    }
+
+    public String getRegion() {
+        return webAppSettingModel.getRegion();
+    }
+
+    public void setPricing(String price) {
+        webAppSettingModel.setPricing(price);
+    }
+
+    public String getPricing() {
+        return webAppSettingModel.getPricing();
+    }
+
+    public void setJdkChoice(String jdk) {
+        webAppSettingModel.setJdkChoice(jdk);
+    }
+
+    public String getJdkChoice() {
+        return webAppSettingModel.getJdkChoice();
+    }
+
+    public void setJdkUrl(String url) {
+        webAppSettingModel.setJdkUrl(url);
+    }
+
+    public String getJdkUrl() {
+        return webAppSettingModel.getJdkUrl();
+    }
+
+    public void setTargetPath(String path) {
+        webAppSettingModel.setTargetPath(path);
+    }
+
+    public String getTargetPath() {
+        return webAppSettingModel.getTargetPath();
+    }
+
+    public void setTargetName(String name) {
+        webAppSettingModel.setTargetName(name);
+    }
+
+    public String getTargetName() {
+        return webAppSettingModel.getTargetName();
     }
 }

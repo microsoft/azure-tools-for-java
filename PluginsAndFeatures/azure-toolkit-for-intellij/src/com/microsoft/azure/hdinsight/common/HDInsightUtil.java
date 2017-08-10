@@ -165,8 +165,10 @@ public class HDInsightUtil {
     private static void showInfoOnSubmissionMessageWindow(@NotNull final Project project, @NotNull final MessageInfoType type, @NotNull final String message, @NotNull final boolean isNeedClear) {
 
         synchronized (LOCK) {
-            final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(CommonConst.SPARK_SUBMISSION_WINDOW_ID);
-            showSubmissionMessage(toolWindow, project, message, type, isNeedClear);
+            try {
+                final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(CommonConst.SPARK_SUBMISSION_WINDOW_ID);
+                showSubmissionMessage(toolWindow, project, message, type, isNeedClear);
+            } catch (Exception ignore) { /* IDE disposed */ }
         }
     }
 

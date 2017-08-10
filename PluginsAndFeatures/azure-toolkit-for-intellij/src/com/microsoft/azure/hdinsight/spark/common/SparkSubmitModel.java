@@ -333,7 +333,7 @@ public class SparkSubmitModel {
         return "unknown";
     }
 
-    private void uploadFileToCluster(@NotNull final IClusterDetail selectedClusterDetail, @NotNull final String selectedArtifactName) throws Exception{
+    public void uploadFileToCluster(@NotNull final IClusterDetail selectedClusterDetail, @NotNull final String selectedArtifactName) throws Exception{
         String buildJarPath = submissionParameter.isLocalArtifact() ?
                 submissionParameter.getLocalArtifactPath() : ((artifactHashMap.get(selectedArtifactName).getOutputFilePath()));
 
@@ -500,29 +500,6 @@ public class SparkSubmitModel {
 
                     HDInsightUtil.getJobStatusManager(project).setJobRunningState(false);
                 }
-            }
-        });
-    }
-
-    public Single<IClusterDetail> deployArtifactObservable(Artifact artifact, IClusterDetail clusterDetail) {
-        return Single.create(em -> {
-            //may get a new clusterDetail reference if cluster credentials expired
-            IClusterDetail selectedClusterDetail = getClusterConfiguration(clusterDetail, true);
-
-            if (selectedClusterDetail == null) {
-                String errorMessage = "Selected Cluster can not found. Please login in first in HDInsight Explorer and try submit job again";
-
-                HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, errorMessage);
-                em.onError(new HDIException(errorMessage));
-                return;
-            }
-
-            try {
-                uploadFileToCluster(selectedClusterDetail, artifact.getName());
-                em.onSuccess(selectedClusterDetail);
-            } catch (Exception exception) {
-                showFailedSubmitErrorMessage(exception);
-                em.onError(exception);
             }
         });
     }

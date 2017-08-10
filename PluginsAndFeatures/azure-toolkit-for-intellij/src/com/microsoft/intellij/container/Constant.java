@@ -25,7 +25,7 @@ package com.microsoft.intellij.container;
 public class Constant {
     public static final int TIMEOUT_STOP_CONTAINER = 5;
     public static final String CONSOLE_NAME = "AzureToolsConsole";
-    public static final String DOCKER_CONTEXT_FOLDER = "/dockerContext/";
+    public static final String DOCKER_CONTEXT_FOLDER = "dockerContext";
     public static final String DOCKERFILE_NAME = "Dockerfile";
     public static final String TOMCAT_SERVICE_PORT = "8080";
     public static final String IMAGE_PREFIX = "local/tomcat";

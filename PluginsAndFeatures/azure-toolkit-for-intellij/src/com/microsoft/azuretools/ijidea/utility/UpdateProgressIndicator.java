@@ -54,4 +54,7 @@ public class UpdateProgressIndicator implements IProgressIndicator {
     public boolean isCanceled() {
         return progressIndicator.isCanceled();
     }
+
+    @Override
+    public void notifyComplete() {}
 }

@@ -28,6 +28,7 @@ import com.intellij.openapi.module.ModuleTypeId;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.intellij.ui.components.DefaultDialogWrapper;
 import com.microsoft.intellij.ui.libraries.ApplicationInsightsPanel;
+import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 public class ApplicatioInsightsAction extends AzureAnAction {
     @Override
@@ -40,6 +41,7 @@ public class ApplicatioInsightsAction extends AzureAnAction {
     @Override
     public void update(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
-        event.getPresentation().setEnabledAndVisible(module != null && ModuleTypeId.JAVA_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)));
+        boolean isMavenOrNull = (module == null || MavenRunTaskUtil.isMavenProject(module.getProject()));
+        event.getPresentation().setEnabledAndVisible(!isMavenOrNull && ModuleTypeId.JAVA_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)));
     }
 }
