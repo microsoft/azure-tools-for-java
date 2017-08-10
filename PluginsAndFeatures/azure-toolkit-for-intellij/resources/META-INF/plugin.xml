@@ -146,19 +146,16 @@
 
     <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/azure.png" popup="true"
            class="com.microsoft.intellij.actions.AzurePopupGroup">
+      <reference ref="Actions.WebDeployAction"/>
+      <separator/>
       <reference ref="Actions.AddDockerSupport"/>
       <!--<reference ref="Actions.DockerRun"/>-->
       <reference ref="Actions.WebAppOnLinux"/>
-      <reference ref="Actions.AzureWebDeploy"/>
+      <separator/>
       <reference ref="Actions.AzureDockerHostDeploy"/>
       <separator/>
       <reference ref="Actions.ApplicationInsightsAction"/>
-      <separator/>
       <reference ref="Actions.LibraryConfigurationAction"/>
-      <separator/>
-      <reference ref="AzureToolkit.AzureSignIn"/>
-      <separator/>
-      <reference ref="Actions.WebDeployAction"/>
     </group>
 
     <group id="AzureToolbarGroup" text="Azure" description="Azure">
