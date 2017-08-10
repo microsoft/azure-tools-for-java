@@ -32,6 +32,7 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.Location;
@@ -365,6 +366,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         boolean creatingAsp = conf.isCreatingNewAppServicePlan();
         rdoCreateAppServicePlan.setSelected(creatingAsp);
         rdoUseExistAppServicePlan.setSelected(!creatingAsp);
+        updateAppServicePlanEnabled();
         if (creatingAsp) {
             txtCreateAppServicePlan.setText(conf.getAppServicePlanName());
         }
@@ -516,7 +518,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         lblLocation.setText(NOT_APPLICABLE);
         lblPricing.setText(NOT_APPLICABLE);
         if (appServicePlans != null && appServicePlans.size() > 0) {
-            appServicePlans.forEach((item) -> {
+            appServicePlans.stream().filter(item -> item.operatingSystem() == OperatingSystem.LINUX).forEach((item) -> {
                 cbExistAppServicePlan.addItem(item);
                 if (Comparing.equal(item.id(), defaultAppServicePlanId)) {
                     cbExistAppServicePlan.setSelectedItem(item);
