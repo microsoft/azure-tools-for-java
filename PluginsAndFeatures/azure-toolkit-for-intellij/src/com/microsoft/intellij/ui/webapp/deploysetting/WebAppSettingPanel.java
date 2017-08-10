@@ -97,6 +97,10 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private static final String NOT_APPLICABLE = "N/A";
     private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
     private static final String TABLE_EMPTY_MESSAGE = "No available Web App.";
+    private static final String DEFAULT_APP_NAME = "webapp-" ;
+    private static final String DEFAULT_PLAN_NAME = "appsp-";
+    private static final String DEFAULT_RGP_NAME = "rg-webapp-";
+
 
     //widgets
     private JPanel pnlRoot;
@@ -340,25 +344,33 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             setupArtifactCombo(artifacts);
         }
         // Default values
+        DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
+        String date = df.format(new Date());
         if (webAppConfiguration.getWebAppName().isEmpty()) {
-            DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
-            String date = df.format(new Date());
-            txtWebAppName.setText("webapp-" + date);
+            txtWebAppName.setText(DEFAULT_APP_NAME + date);
         } else {
             txtWebAppName.setText(webAppConfiguration.getWebAppName());
+        }
+        if (webAppConfiguration.getAppServicePlan().isEmpty()) {
+            txtCreateAppServicePlan.setText(DEFAULT_PLAN_NAME + date);
+        } else {
+            txtCreateAppServicePlan.setText(webAppConfiguration.getAppServicePlan());
+        }
+        if (webAppConfiguration.getResourceGroup().isEmpty()) {
+            txtNewResGrp.setText(DEFAULT_RGP_NAME + date);
+        } else {
+            txtNewResGrp.setText(webAppConfiguration.getResourceGroup());
         }
 
         if (webAppConfiguration.isCreatingNew()) {
             rdoCreateNew.doClick();
             if (webAppConfiguration.isCreatingResGrp()) {
                 rdoCreateResGrp.doClick();
-                txtNewResGrp.setText(webAppConfiguration.getResourceGroup());
             } else {
                 rdoUseExistResGrp.doClick();
             }
             if (webAppConfiguration.isCreatingAppServicePlan()) {
                 rdoCreateAppServicePlan.doClick();
-                txtCreateAppServicePlan.setText(webAppConfiguration.getAppServicePlan());
             } else {
                 rdoUseExistAppServicePlan.doClick();
             }
