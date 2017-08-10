@@ -69,6 +69,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -538,14 +539,13 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             if (event.getValueIsAdjusting()) {
                 return;
             }
-            if (table.getSelectedRow() < 0) {
+            if (cachedWebAppList == null || table.getSelectedRow() < 0
+                    || table.getSelectedRow() >= cachedWebAppList.size()) {
                 selectedWebApp = null;
                 return;
             }
-            if (cachedWebAppList != null && event.getFirstIndex() < cachedWebAppList.size()) {
-                selectedWebApp = cachedWebAppList.get(event.getFirstIndex());
-                txtSelectedWebApp.setText(selectedWebApp.toString());
-            }
+            selectedWebApp = cachedWebAppList.get(event.getFirstIndex());
+            txtSelectedWebApp.setText(selectedWebApp.toString());
         });
 
         btnRefresh = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
@@ -576,36 +576,40 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     @Override
     public void fillResourceGroup(List<ResourceGroup> resourceGroups) {
         cbExistResGrp.removeAllItems();
-        for (ResourceGroup group: resourceGroups) {
-            cbExistResGrp.addItem(group);
-            if (Comparing.equal(group.name(), webAppConfiguration.getResourceGroup())) {
-                cbExistResGrp.setSelectedItem(group);
-            }
-        }
+        resourceGroups.stream()
+                .sorted(Comparator.comparing(ResourceGroup::name))
+                .forEach((group) -> {
+                    cbExistResGrp.addItem(group);
+                    if (Comparing.equal(group.name(), webAppConfiguration.getResourceGroup())) {
+                        cbExistResGrp.setSelectedItem(group);
+                    }
+                });
     }
 
     @Override
     public void fillAppServicePlan(List<AppServicePlan> appServicePlans) {
         cbExistAppServicePlan.removeAllItems();
-        for (AppServicePlan plan: appServicePlans) {
-            if (Comparing.equal(plan.operatingSystem(), OperatingSystem.WINDOWS)) {
-                cbExistAppServicePlan.addItem(plan);
-                if (Comparing.equal(plan.id(), webAppConfiguration.getAppServicePlan())) {
-                    cbExistAppServicePlan.setSelectedItem(plan);
-                }
-            }
-        }
+        appServicePlans.stream()
+                .sorted(Comparator.comparing(AppServicePlan::name))
+                .forEach((plan) -> {
+                    cbExistAppServicePlan.addItem(plan);
+                    if (Comparing.equal(plan.id(), webAppConfiguration.getAppServicePlan())) {
+                        cbExistAppServicePlan.setSelectedItem(plan);
+                    }
+                });
     }
 
     @Override
     public void fillLocation(List<Location> locations) {
         cbLocation.removeAllItems();
-        for (Location location: locations) {
-            cbLocation.addItem(location);
-            if (Comparing.equal(location.name(), webAppConfiguration.getRegion())) {
-                cbLocation.setSelectedItem(location);
-            }
-        }
+        locations.stream()
+                .sorted(Comparator.comparing(Location::displayName))
+                .forEach((location) -> {
+                    cbLocation.addItem(location);
+                    if (Comparing.equal(location.name(), webAppConfiguration.getRegion())) {
+                        cbLocation.setSelectedItem(location);
+                    }
+                });
     }
 
     @Override
