@@ -28,7 +28,6 @@ import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
-import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -42,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class AzureWebAppMvpModel {
     private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
@@ -210,15 +210,12 @@ public class AzureWebAppMvpModel {
         }
         try {
             Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
-            List<ResourceGroup> rgl = AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sid);
-
-            for (ResourceGroup rg : rgl) {
-                for (SiteInner si : azure.webApps().inner().listByResourceGroup(rg.name())) {
-                    if (si.kind().equals("app,linux")) {
-                        wal.add(new ResourceEx<>(si, sid));
-                    }
-                }
-            }
+            wal.addAll(azure.webApps().inner().list()
+                    .stream()
+                    .filter(app -> app.kind().equals("app,linux"))
+                    .map(app -> new ResourceEx<>(app, sid))
+                    .collect(Collectors.toList())
+            );
             subscriptionIdToWebAppsOnLinuxMap.put(sid, wal);
         } catch (IOException e) {
             e.printStackTrace();
