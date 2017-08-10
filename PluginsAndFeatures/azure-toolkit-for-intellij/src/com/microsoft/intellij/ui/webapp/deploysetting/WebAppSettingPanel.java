@@ -61,7 +61,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
@@ -599,7 +598,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     @Override
     public void fillAppServicePlan(List<AppServicePlan> appServicePlans) {
         for (AppServicePlan plan: appServicePlans) {
-            if (plan.operatingSystem() == OperatingSystem.WINDOWS) {
+            if (Comparing.equal(plan.operatingSystem(), OperatingSystem.WINDOWS)) {
                 cbExistAppServicePlan.addItem(plan);
                 if (Comparing.equal(plan.id(), webAppConfiguration.getAppServicePlan())) {
                     cbExistAppServicePlan.setSelectedItem(plan);
