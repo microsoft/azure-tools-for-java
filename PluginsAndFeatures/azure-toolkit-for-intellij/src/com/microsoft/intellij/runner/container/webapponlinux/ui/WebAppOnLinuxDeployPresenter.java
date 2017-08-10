@@ -161,4 +161,21 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                     getMvpView().renderAppServicePlanList(appServicePlans);
                 }), e -> errorHandler(CANNOT_LIST_APP_SERVICE_PLAN, (Exception) e));
     }
+
+    /**
+     * Load list of App Service Plan by Subscription.
+     * TODO: Blocked by SDK, it can only list Windows ASP now.
+     * @param sid Subscription Id.
+     */
+    public void onLoadAppServicePlan(String sid) {
+        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance()
+                .listAppServicePlanBySubscriptionId(sid))
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().renderAppServicePlanList(appServicePlans);
+                }), e -> errorHandler(CANNOT_LIST_APP_SERVICE_PLAN, (Exception) e));
+    }
 }

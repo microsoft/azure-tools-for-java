@@ -159,6 +159,11 @@ public class AzureWebAppMvpModel {
         return azure.appServices().appServicePlans().listByResourceGroup(group);
     }
 
+    public List<AppServicePlan> listAppServicePlanBySubscriptionId(String sid) throws Exception {
+        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
+        return azure.appServices().appServicePlans().list();
+    }
+
     /**
      * List Web Apps by Subscription ID.
      */

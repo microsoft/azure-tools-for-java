@@ -518,13 +518,14 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         lblLocation.setText(NOT_APPLICABLE);
         lblPricing.setText(NOT_APPLICABLE);
         if (appServicePlans != null && appServicePlans.size() > 0) {
-            appServicePlans.stream().filter(item -> item.operatingSystem() == OperatingSystem.LINUX).forEach((item) -> {
-                cbExistAppServicePlan.addItem(item);
-                if (Comparing.equal(item.id(), defaultAppServicePlanId)) {
-                    cbExistAppServicePlan.setSelectedItem(item);
-                    // defaultAppServicePlanId = null;
-                }
-            });
+            appServicePlans.stream().filter(item -> Comparing.equal(item.operatingSystem(), OperatingSystem.LINUX))
+                    .forEach((item) -> {
+                        cbExistAppServicePlan.addItem(item);
+                        if (Comparing.equal(item.id(), defaultAppServicePlanId)) {
+                            cbExistAppServicePlan.setSelectedItem(item);
+                            // defaultAppServicePlanId = null;
+                        }
+                    });
 
         }
     }
@@ -555,5 +556,10 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
 
     private void updateAppServicePlanList(String sid, String rg) {
         webAppOnLinuxDeployPresenter.onLoadAppServicePlan(sid, rg);
+    }
+
+    private void updateAppServicePlanList(String sid) {
+        // TODO: blocked by SDK, API cannot list Linux ASP now.
+        webAppOnLinuxDeployPresenter.onLoadAppServicePlan(sid);
     }
 }
