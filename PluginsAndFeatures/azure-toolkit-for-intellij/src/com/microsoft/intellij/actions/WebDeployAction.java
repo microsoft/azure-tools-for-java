@@ -36,12 +36,13 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
+import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.intellij.runner.webapp.WebAppConfigurationType;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WebDeployAction extends AnAction {
+public class WebDeployAction extends AzureAnAction {
 
     private static final String DIALOG_TITLE = "Run on Web App";
 
@@ -52,7 +53,7 @@ public class WebDeployAction extends AnAction {
     }
 
     @Override
-    public void actionPerformed(AnActionEvent event) {
+    public void onActionPerformed(AnActionEvent event) {
         Project project = event.getProject();
         if (project == null) {
             return;
