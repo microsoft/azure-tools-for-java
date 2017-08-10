@@ -320,7 +320,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
      * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#resetEditorFrom(Object)}.
      */
     public void resetEditorFrom(@NotNull WebAppConfiguration webAppConfiguration) {
-        if (!MavenRunTaskUtil.isMavenProject(webAppConfiguration.getProject())) {
+        if (!MavenRunTaskUtil.isMavenProject(project)) {
             List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
             setupArtifactCombo(artifacts);
         }

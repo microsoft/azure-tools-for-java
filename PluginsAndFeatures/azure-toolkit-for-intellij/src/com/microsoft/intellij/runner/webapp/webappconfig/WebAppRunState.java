@@ -148,11 +148,7 @@ public class WebAppRunState implements RunProfileState {
                 .subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io())
                 .subscribe(isSucceeded -> {
                     processHandler.notifyComplete();
-                    try {
-                        AzureWebAppMvpModel.getInstance().listWebApps(true);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    AzureWebAppMvpModel.getInstance().listWebApps(true);
                 }, err -> {
                     processHandler.setText(err.getMessage());
                     processHandler.notifyComplete();

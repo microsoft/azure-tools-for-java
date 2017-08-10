@@ -25,6 +25,7 @@ package com.microsoft.azuretools.core.mvp.model.webapp;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
@@ -49,6 +50,7 @@ public class AzureWebAppMvpModel {
     private final Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
 
     private static final String NOT_SIGNED_ERROR = "Plugin not signed in error.";
+    private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure by subscription ID.";
 
     private AzureWebAppMvpModel() {
         subscriptionIdToWebAppsOnLinuxMap = new ConcurrentHashMap<>();
@@ -161,11 +163,21 @@ public class AzureWebAppMvpModel {
      */
     public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group)
             throws Exception {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) {
-            throw new Exception(NOT_SIGNED_ERROR);
+        List<AppServicePlan> list;
+        try {
+            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+            if (azureManager == null) {
+                throw new Exception(NOT_SIGNED_ERROR);
+            }
+            Azure azure = azureManager.getAzure(sid);
+            if (azure == null) {
+                throw new Exception(CANNOT_GET_AZURE_BY_SID);
+            }
+            list = azure.appServices().appServicePlans().listByResourceGroup(group);
+        } catch (Exception e) {
+            throw new Exception(CANNOT_GET_AZURE_BY_SID);
         }
-        return azureManager.getAzure(sid).appServices().appServicePlans().listByResourceGroup(group);
+        return list;
     }
 
 
@@ -173,11 +185,21 @@ public class AzureWebAppMvpModel {
      * List app service plan by subscription id.
      */
     public List<AppServicePlan> listAppServicePlanBySubscriptionId(String sid) throws Exception {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) {
-            throw new Exception(NOT_SIGNED_ERROR);
+        List<AppServicePlan> list;
+        try {
+            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+            if (azureManager == null) {
+                throw new Exception(NOT_SIGNED_ERROR);
+            }
+            Azure azure = azureManager.getAzure(sid);
+            if (azure == null) {
+                throw new Exception(CANNOT_GET_AZURE_BY_SID);
+            }
+            list = azure.appServices().appServicePlans().list();
+        } catch (Exception e) {
+            throw new Exception(CANNOT_GET_AZURE_BY_SID);
         }
-        return azureManager.getAzure(sid).appServices().appServicePlans().list();
+        return list;
     }
 
     /**
@@ -191,7 +213,9 @@ public class AzureWebAppMvpModel {
         try {
             Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
             for (WebApp webApp : azure.webApps().list()) {
-                webAppList.add(new ResourceEx<>(webApp, sid));
+                if (webApp.operatingSystem().equals(OperatingSystem.WINDOWS)) {
+                    webAppList.add(new ResourceEx<>(webApp, sid));
+                }
             }
             subscriptionIdToWebAppsMap.put(sid, webAppList);
         } catch (IOException e) {
