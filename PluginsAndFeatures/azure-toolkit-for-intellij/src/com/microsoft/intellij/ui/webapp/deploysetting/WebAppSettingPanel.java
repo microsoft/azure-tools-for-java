@@ -542,7 +542,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 selectedWebApp = null;
                 return;
             }
-            if (cachedWebAppList != null) {
+            if (cachedWebAppList != null && event.getFirstIndex() < cachedWebAppList.size()) {
                 selectedWebApp = cachedWebAppList.get(event.getFirstIndex());
                 txtSelectedWebApp.setText(selectedWebApp.toString());
             }
