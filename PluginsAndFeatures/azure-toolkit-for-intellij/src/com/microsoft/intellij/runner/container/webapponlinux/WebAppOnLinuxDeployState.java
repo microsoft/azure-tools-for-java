@@ -88,16 +88,13 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                     }
                     // locate war file to specified location
                     println("Locate war file ...  ");
-                    List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getRootProjects();
-                    if (mavenProjects.size() <= 0) {
-                        errorln("No available maven projects.");
-                        throw new FileNotFoundException("No available maven projects.");
-                    }
-                    String targetBuildPath = new File(mavenProjects.get(0).getBuildDirectory()).getPath();
-                    String fileName = mavenProjects.get(0).getFinalName() + ".war";
+                    String targetFilePath = deployModel.getTargetPath();
+                    String targetBuildPath = Paths.get(targetFilePath).getParent().toString();
+                    String targetFileName = deployModel.getTargetName();
+
                     FileUtils.copyFile(
-                            Paths.get(targetBuildPath, fileName).toFile(),
-                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME, fileName).toFile()
+                            Paths.get(targetBuildPath, targetFileName).toFile(),
+                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME, targetFileName).toFile()
                     );
                     // build image
                     println("Build image ...  ");

@@ -49,6 +49,8 @@ public class WebAppOnLinuxDeployModel {
     private boolean creatingNewAppServicePlan;
     private String appServicePlanId;
     private String appServicePlanName;
+    private String targetPath;
+    private String targetName;
 
 
     public WebAppOnLinuxDeployModel() {
@@ -157,5 +159,21 @@ public class WebAppOnLinuxDeployModel {
 
     public void setAppServicePlanName(String appServicePlanName) {
         this.appServicePlanName = appServicePlanName;
+    }
+    
+    public void setTargetPath(String targetPath) {
+        this.targetPath = targetPath;
+    }
+    
+    public String getTargetPath() {
+        return this.targetPath;
+    }
+    
+    public void setTargetName(String targetName) {
+        this.targetName = targetName;
+    }
+    
+    public String getTargetName() {
+        return this.targetName;
     }
 }
