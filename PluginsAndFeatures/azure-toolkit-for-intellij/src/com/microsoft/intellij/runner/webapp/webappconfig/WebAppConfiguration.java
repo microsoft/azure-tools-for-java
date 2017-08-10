@@ -279,4 +279,8 @@ public class WebAppConfiguration extends RunConfigurationBase {
     public void setTargetName(String name) {
         webAppSettingModel.setTargetName(name);
     }
+
+    public String getTargetName() {
+        return webAppSettingModel.getTargetName();
+    }
 }

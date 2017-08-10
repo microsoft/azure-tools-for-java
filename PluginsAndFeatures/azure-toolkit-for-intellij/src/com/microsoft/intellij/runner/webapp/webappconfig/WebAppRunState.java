@@ -32,12 +32,10 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.RunProcessHandler;
-import jnr.x86asm.Util;
 import org.apache.commons.net.ftp.FTPClient;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -143,12 +141,7 @@ public class WebAppRunState implements RunProfileState {
                 .subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io())
                 .subscribe(isSucceeded -> {
                     processHandler.setText(DEPLOY_SUCCESSFUL);
-                    String url = webAppSettingModel.getWebAppUrl();
-                    if (!webAppSettingModel.isDeployToRoot()) {
-                        url += "/" + webAppSettingModel.getTargetName().substring(0,
-                                webAppSettingModel.getTargetName().indexOf("." + MavenConstants.TYPE_WAR));
-                    }
-                    processHandler.setText("URL: " + url);
+                    processHandler.setText("URL: " + webAppSettingModel.getWebAppUrl());
                     processHandler.notifyComplete();
                     try {
                         AzureWebAppMvpModel.getInstance().listWebApps(true);
@@ -162,13 +155,14 @@ public class WebAppRunState implements RunProfileState {
         return new DefaultExecutionResult(consoleView, processHandler);
     }
 
-    private void updateConfigurationDataModel(WebApp app) {
+    private void updateConfigurationDataModel(@NotNull WebApp app) {
         webAppSettingModel.setCreatingNew(false);
-        if (Utils.isEmptyString(webAppSettingModel.getWebAppId())) {
-            webAppSettingModel.setWebAppId(app.id());
+        webAppSettingModel.setWebAppId(app.id());
+        String url = "https://" + app.defaultHostName();
+        if (!webAppSettingModel.isDeployToRoot()) {
+            url += "/" + webAppSettingModel.getTargetName().substring(0,
+                    webAppSettingModel.getTargetName().lastIndexOf("."));
         }
-        if (Utils.isEmptyString(webAppSettingModel.getWebAppUrl())) {
-            webAppSettingModel.setWebAppUrl("https://" + app.defaultHostName());
-        }
+        webAppSettingModel.setWebAppUrl(url);
     }
 }

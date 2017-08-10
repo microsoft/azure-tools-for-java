@@ -384,12 +384,38 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
      * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#applyEditorTo(Object)}.
      */
     public void applyEditorTo(@NotNull WebAppConfiguration webAppConfiguration) {
+        // Get war output full path and file name
+        if (isArtifact && lastSelectedArtifact != null) {
+            webAppConfiguration.setTargetPath(lastSelectedArtifact.getOutputFilePath());
+            Path p = Paths.get(webAppConfiguration.getTargetPath());
+            if (p != null) {
+                webAppConfiguration.setTargetName(p.getFileName().toString());
+            } else {
+                webAppConfiguration.setTargetName(lastSelectedArtifact.getName() + "." + MavenConstants.TYPE_WAR);
+            }
+        } else {
+            MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
+            if (mavenProject != null) {
+                String targetPath = new File(mavenProject.getBuildDirectory()).getPath()
+                        + File.separator + mavenProject.getFinalName() + "." + mavenProject.getPackaging();
+                String targetName = mavenProject.getFinalName() + "." + mavenProject.getPackaging();
+                webAppConfiguration.setTargetPath(targetPath);
+                webAppConfiguration.setTargetName(targetName);
+            }
+        }
+
         if (rdoUseExist.isSelected()) {
             webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
             webAppConfiguration.setSubscriptionId(selectedWebApp == null ? "" : selectedWebApp.getSubscriptionId());
-            webAppConfiguration.setWebAppUrl(selectedWebApp == null ? "" :
-                    URL_PREFIX + selectedWebApp.getResource().defaultHostName());
-            webAppConfiguration.setDeployToRoot(chkToRoot.isSelected());
+            boolean isDeployToRoot = chkToRoot.isSelected();
+            webAppConfiguration.setDeployToRoot(isDeployToRoot);
+            String url = selectedWebApp == null ? "" :
+                    URL_PREFIX + selectedWebApp.getResource().defaultHostName();
+            if (!isDeployToRoot) {
+                url += "/" + webAppConfiguration.getTargetName().substring(0,
+                        webAppConfiguration.getTargetName().lastIndexOf("."));
+            }
+            webAppConfiguration.setWebAppUrl(url);
             webAppConfiguration.setCreatingNew(false);
         } else if (rdoCreateNew.isSelected()) {
             webAppConfiguration.setWebAppName(txtWebAppName.getText());
@@ -432,31 +458,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                     break;
             }
             webAppConfiguration.setCreatingNew(true);
-        }
-
-        // Get war output full path and file name
-        if (isArtifact && lastSelectedArtifact != null) {
-            VirtualFile outputFile = lastSelectedArtifact.getOutputFile();
-            if (outputFile != null) {
-                webAppConfiguration.setTargetPath(lastSelectedArtifact.getOutputFile().getPath());
-            } else {
-                webAppConfiguration.setTargetPath(lastSelectedArtifact.getOutputFilePath());
-            }
-            Path p = Paths.get(webAppConfiguration.getTargetPath());
-            if (p != null) {
-                webAppConfiguration.setTargetName(p.getFileName().toString());
-            } else {
-                webAppConfiguration.setTargetName(lastSelectedArtifact.getName() + "." + MavenConstants.TYPE_WAR);
-            }
-        } else {
-            MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
-            if (mavenProject != null) {
-                String targetPath = new File(mavenProject.getBuildDirectory()).getPath()
-                        + File.separator + mavenProject.getFinalName() + "." + mavenProject.getPackaging();
-                String targetName = mavenProject.getFinalName() + "." + mavenProject.getPackaging();
-                webAppConfiguration.setTargetPath(targetPath);
-                webAppConfiguration.setTargetName(targetName);
-            }
         }
     }
 
