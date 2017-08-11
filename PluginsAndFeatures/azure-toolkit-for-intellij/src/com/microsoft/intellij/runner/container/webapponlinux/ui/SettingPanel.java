@@ -41,6 +41,7 @@ import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfiguration;
@@ -48,11 +49,13 @@ import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
 
-import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -73,6 +76,9 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private static final String TABLE_HEAD_RESOURCE_GROUP = "Resource Group";
     private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
     private static final String TABLE_EMPTY_MESSAGE = "No available Web App on Linux.";
+    private static final String APP_NAME_PREFIX = "webapp-linux";
+    private static final String RESOURCE_GROUP_NAME_PREFIX = "rg-web-linux";
+    private static final String APP_SERVICE_PLAN_NAME_PREFIX = "appsp-linux-";
 
     private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
     private final Project project;
@@ -468,6 +474,18 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         rdoUseExist.setSelected(!creatingApp);
         updatePanelVisibility();
 
+        // default value for new resources
+        DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
+        String date = df.format(new Date());
+        if(Utils.isEmptyString(textAppName.getText())) {
+            textAppName.setText(String.format("%s-%s", APP_NAME_PREFIX, date));
+        }
+        if(Utils.isEmptyString(txtNewResGrp.getText())) {
+            txtNewResGrp.setText(String.format("%s-%s", RESOURCE_GROUP_NAME_PREFIX, date));
+        }
+        if(Utils.isEmptyString(txtCreateAppServicePlan.getText())) {
+            txtCreateAppServicePlan.setText(String.format("%s-%s", APP_SERVICE_PLAN_NAME_PREFIX, date));
+        }
 
     }
 
