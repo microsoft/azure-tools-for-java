@@ -181,10 +181,13 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                     ob.onCompleted();
 
                     livyLogSubscription.unsubscribe();
-                }))
+                }, ob::onError))
                 .subscribe(
                         info -> HDInsightUtil.showInfoOnSubmissionMessageWindow(project, info),
                         throwable -> {
+                            jobStatusMgmt.setJobKilled();
+                            stopDebugJob();
+
                             String errorMessage;
 
                             // The throwable may be composed by several exceptions
@@ -212,6 +215,8 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                             // Spark Job is done
                             HDInsightUtil.showInfoOnSubmissionMessageWindow(
                                     submitModel.getProject(), "Info : Debugging Spark batch job in cluster is done.");
+
+                            postAppInsightDebugSuccessEvent();
                             HDInsightUtil.setJobRunningStatus(project, false);
                         }
                 );
@@ -280,11 +285,12 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                     try {
                         SparkBatchRemoteDebugJob remoteDebugJob =
                                 submitModel.tryToCreateBatchSparkDebugJob(selectedClusterDetail);
+                        setDebugJob(remoteDebugJob);
+
                         SparkBatchDebugSession session = createSparkBatchDebugSession(
                                 selectedClusterDetail.getConnectionUrl(), submitModel.getAdvancedConfigModel()).open();
-
                         setDebugSession(session);
-                        setDebugJob(remoteDebugJob);
+
                         return new SimpleEntry<>(remoteDebugJob, selectedClusterDetail);
                     } catch (Exception e) {
                         HDInsightUtil.setJobRunningStatus(submitModel.getProject(), false);
@@ -322,8 +328,6 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
     private void stopDebugJob() {
         if (getDebugSession() != null) {
             getDebugSession().close();
-
-            postAppInsightDebugSuccessEvent();
         }
 
         if (getDebugJob() != null) {
