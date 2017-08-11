@@ -54,6 +54,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jetbrains.annotations.Nullable;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -155,28 +156,31 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                     AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
                     println("Job done");
                     processHandler.notifyProcessTerminated(0);
-                    sendTelemetry(true);
+                    sendTelemetry(true, null);
                 },
                 (err) -> {
                     err.printStackTrace();
                     errorln(err.getMessage());
                     processHandler.notifyProcessTerminated(0);
-                    sendTelemetry(false);
+                    sendTelemetry(false, err.getMessage());
                 }
         );
         return new DefaultExecutionResult(consoleView, processHandler);
     }
 
     // TODO: refactor later
-    private void sendTelemetry(boolean success) {
-        Map<String, String> map = new HashMap<String, String>();
+    private void sendTelemetry(boolean success, @Nullable String ErrorMsg) {
+        Map<String, String> map = new HashMap<>();
         map.put("SubscriptionId", deployModel.getSubscriptionId());
         map.put("CreateNewApp", String.valueOf(deployModel.isCreatingNewWebAppOnLinux()));
         map.put("CreateNewSP", String.valueOf(deployModel.isCreatingNewAppServicePlan()));
         map.put("CreateNewRGP", String.valueOf(deployModel.isCreatingNewResourceGroup()));
         map.put("Success", String.valueOf(success));
+        if (!success) {
+            map.put("ErrorMsg", ErrorMsg);
+        }
 
-        AppInsightsClient.createByType(AppInsightsClient.EventType.WebApp, "Webapp (Linux)", "Deploy", map);
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "Webapp (Linux)", "Deploy", map);
     }
 
     private void updateConfigurationDataModel(WebApp app) {

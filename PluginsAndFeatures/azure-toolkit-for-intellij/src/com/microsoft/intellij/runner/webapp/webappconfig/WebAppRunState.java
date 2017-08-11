@@ -168,11 +168,11 @@ public class WebAppRunState implements RunProfileState {
                     }
                     updateConfigurationDataModel(webApp);
                     AzureWebAppMvpModel.getInstance().listWebApps(true /*force*/);
-                    sendTelemetry(true);
+                    sendTelemetry(true, null);
                 }, err -> {
                     processHandler.setText(err.getMessage());
                     processHandler.notifyComplete();
-                    sendTelemetry(false);
+                    sendTelemetry(false, err.getMessage());
                 });
         return new DefaultExecutionResult(consoleView, processHandler);
     }
@@ -186,14 +186,17 @@ public class WebAppRunState implements RunProfileState {
     }
 
     // TODO: refactor later
-    private void sendTelemetry(boolean success) {
+    private void sendTelemetry(boolean success, @Nullable String ErrorMsg) {
         Map<String, String> map = new HashMap<>();
         map.put("SubscriptionId", webAppSettingModel.getSubscriptionId());
         map.put("CreateNewApp", String.valueOf(webAppSettingModel.isCreatingNew()));
         map.put("CreateNewSP", String.valueOf(webAppSettingModel.isCreatingAppServicePlan()));
         map.put("CreateNewRGP", String.valueOf(webAppSettingModel.isCreatingResGrp()));
         map.put("Success", String.valueOf(success));
+        if (!success) {
+            map.put("ErrorMsg", ErrorMsg);
+        }
 
-        AppInsightsClient.createByType(AppInsightsClient.EventType.WebApp, "Webapp", "Deploy", map);
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "Webapp", "Deploy", map);
     }
 }
