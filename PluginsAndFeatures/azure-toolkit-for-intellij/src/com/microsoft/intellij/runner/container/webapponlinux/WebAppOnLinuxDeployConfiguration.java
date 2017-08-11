@@ -60,7 +60,7 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
     private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
             + "An artifact name maycontain only the ASCII letters 'a' through 'z' (case-insensitive), "
-            + "and the digits '0' through '9'.";
+            + "and the digits '0' through '9',  '-' and '_'.";
     private static final String WAR_NAME_REGEX = "^[A-Za-z0-9_-]+\\.war$";
 
     private final WebAppOnLinuxDeployModel deployModel;
@@ -157,7 +157,7 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
         }
 
         // target package
-        if (Utils.isEmptyString(deployModel.getTargetName())) {
+        if (deployModel == null || Utils.isEmptyString(deployModel.getTargetName())) {
             throw new ConfigurationException(MISSING_ARTIFACT);
         }
         if (!deployModel.getTargetName().matches(WAR_NAME_REGEX)) {
