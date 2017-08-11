@@ -44,10 +44,13 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import java.awt.event.ItemEvent;
 import java.io.File;
@@ -56,7 +59,9 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
@@ -123,6 +128,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private JLabel lblArtifact;
     private Artifact lastSelectedArtifact;
     private boolean isCbArtifactInited;
+
+    private boolean telemetrySent;
 
     /**
      * Constructor.
@@ -238,6 +245,30 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             }
         });
 
+        telemetrySent = false;
+    }
+
+    // TODO: refactor later
+    private void sendTelemetry(String subId) {
+        if (telemetrySent) {
+            return;
+        }
+        Observable.fromCallable(() ->{
+            Map<String, String> map = new HashMap<String, String>();
+            map.put("SubscriptionId", subId);
+            AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog
+                    ,"Run On Web App (Linux)"
+                    ,"Open"
+                    ,map);
+            return true;
+        }).subscribeOn(Schedulers.io()).subscribe(
+               (res) -> {
+                   telemetrySent = true;
+               },
+               (err) -> {
+                   telemetrySent = true;
+               }
+        );
     }
 
     private void onComboResourceGroupSelection(ItemEvent event) {
@@ -486,6 +517,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         if(Utils.isEmptyString(txtCreateAppServicePlan.getText())) {
             txtCreateAppServicePlan.setText(String.format("%s-%s", APP_SERVICE_PLAN_NAME_PREFIX, date));
         }
+
+        sendTelemetry(conf.getSubscriptionId());
 
     }
 

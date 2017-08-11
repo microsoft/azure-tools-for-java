@@ -37,6 +37,7 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.container.Constant;
 import com.microsoft.intellij.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.RunProcessHandler;
@@ -47,13 +48,11 @@ import com.spotify.docker.client.exceptions.DockerException;
 
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -156,14 +155,28 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                     AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
                     println("Job done");
                     processHandler.notifyProcessTerminated(0);
+                    sendTelemetry(true);
                 },
                 (err) -> {
                     err.printStackTrace();
                     errorln(err.getMessage());
                     processHandler.notifyProcessTerminated(0);
+                    sendTelemetry(false);
                 }
         );
         return new DefaultExecutionResult(consoleView, processHandler);
+    }
+
+    // TODO: refactor later
+    private void sendTelemetry(boolean success) {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("SubscriptionId", deployModel.getSubscriptionId());
+        map.put("CreateNewApp", String.valueOf(deployModel.isCreatingNewWebAppOnLinux()));
+        map.put("CreateNewSP", String.valueOf(deployModel.isCreatingNewAppServicePlan()));
+        map.put("CreateNewRGP", String.valueOf(deployModel.isCreatingNewResourceGroup()));
+        map.put("Success", String.valueOf(success));
+
+        AppInsightsClient.createByType(AppInsightsClient.EventType.WebApp, "Webapp (Linux)", "Deploy", map);
     }
 
     private void updateConfigurationDataModel(WebApp app) {
