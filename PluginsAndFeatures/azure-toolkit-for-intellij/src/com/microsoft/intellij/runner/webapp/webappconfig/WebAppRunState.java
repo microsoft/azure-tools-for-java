@@ -56,7 +56,6 @@ public class WebAppRunState implements RunProfileState {
     private final Project project;
     private final WebAppSettingModel webAppSettingModel;
 
-    private static final String UPDATING_EXPLORER = "Updating Azure Explorer...";
     private static final String GETTING_DEPLOYMENT_CREDENTIAL = "Getting Deployment Credential...";
     private static final String CONNECTING_FTP = "Connecting to FTP server...";
     private static final String UPLOADING_WAR = "Uploading war file...";
@@ -102,20 +101,6 @@ public class WebAppRunState implements RunProfileState {
                 processHandler.setText(NO_WEBAPP);
                 processHandler.setText(STOP_DEPLOY);
                 throw new Exception(NO_WEBAPP);
-            } else {
-                if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
-                    processHandler.setText(UPDATING_EXPLORER);
-                    ResourceGroup resourceGroup = AzureMvpModel.getInstance()
-                            .getResourceGroupBySubscriptionIdAndName(webAppSettingModel.getSubscriptionId(),
-                                    webAppSettingModel.getResourceGroup());
-                    AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
-                            new WebAppUtils.WebAppDetails(resourceGroup, webApp,
-                                    null /*appServicePlan*/,
-                                    null /*appServicePlanResourceGroup*/,
-                                    null /*subscriptionDetail*/
-                            )));
-                }
-                updateConfigurationDataModel(webApp);
             }
 
             processHandler.setText(GETTING_DEPLOYMENT_CREDENTIAL);
@@ -160,12 +145,29 @@ public class WebAppRunState implements RunProfileState {
             }
             processHandler.setText(DEPLOY_SUCCESSFUL);
             processHandler.setText("URL: " + url);
-            return true;
+            return webApp;
         })
                 .subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io())
-                .subscribe(isSucceeded -> {
+                .subscribe(webApp -> {
                     processHandler.notifyComplete();
-                    AzureWebAppMvpModel.getInstance().listWebApps(true);
+                    if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
+                        try {
+                            ResourceGroup resourceGroup = AzureMvpModel.getInstance()
+                                    .getResourceGroupBySubscriptionIdAndName(webAppSettingModel.getSubscriptionId(),
+                                            webAppSettingModel.getResourceGroup());
+                            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
+                                    new WebAppUtils.WebAppDetails(resourceGroup, webApp,
+                                            null /*appServicePlan*/,
+                                            null /*appServicePlanResourceGroup*/,
+                                            null /*subscriptionDetail*/
+                                    )));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                    updateConfigurationDataModel(webApp);
+                    AzureWebAppMvpModel.getInstance().listWebApps(true /*force*/);
                 }, err -> {
                     processHandler.setText(err.getMessage());
                     processHandler.notifyComplete();
