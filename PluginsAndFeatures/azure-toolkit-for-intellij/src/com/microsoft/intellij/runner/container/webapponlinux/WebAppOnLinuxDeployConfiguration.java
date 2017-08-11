@@ -55,6 +55,14 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     private static final String MISSING_SUBSCRIPTION = "Please specify Subscription.";
     private static final String MISSING_RESOURCE_GROUP = "Please specify Resource Group.";
     private static final String MISSING_APP_SERVICE_PLAN = "Please specify App Service Plan.";
+
+    // TODO: move to util
+    private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
+    private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
+            + "An artifact name maycontain only the ASCII letters 'a' through 'z' (case-insensitive), "
+            + "and the digits '0' through '9',  '-' and '_'.";
+    private static final String WAR_NAME_REGEX = "^[A-Za-z0-9_-]+\\.war$";
+
     private final WebAppOnLinuxDeployModel deployModel;
     private boolean firstTimeCreated = true;
 
@@ -146,6 +154,14 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
             if (Utils.isEmptyString(deployModel.getWebAppId())) {
                 throw new ConfigurationException(MISSING_WEB_APP);
             }
+        }
+
+        // target package
+        if (deployModel == null || Utils.isEmptyString(deployModel.getTargetName())) {
+            throw new ConfigurationException(MISSING_ARTIFACT);
+        }
+        if (!deployModel.getTargetName().matches(WAR_NAME_REGEX)) {
+            throw new ConfigurationException(String.format(INVALID_WAR_FILE, deployModel.getTargetName()));
         }
     }
 
@@ -251,5 +267,21 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
 
     public void setAppServicePlanName(String appServicePlanName) {
         deployModel.setAppServicePlanName(appServicePlanName);
+    }
+
+    public void setTargetPath(String targetPath) {
+        deployModel.setTargetPath(targetPath);
+    }
+
+    public String getTargetPath() {
+        return deployModel.getTargetPath();
+    }
+
+    public void setTargetName(String targetName) {
+        deployModel.setTargetName(targetName);
+    }
+
+    public String getTargetName() {
+        return deployModel.getTargetName();
     }
 }

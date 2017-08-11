@@ -25,7 +25,10 @@ package com.microsoft.intellij.runner.container.webapponlinux.ui;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
+import com.intellij.packaging.artifacts.Artifact;
+import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.ListCellRendererWrapper;
@@ -38,11 +41,21 @@ import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfiguration;
+import com.microsoft.intellij.util.MavenRunTaskUtil;
+import org.jetbrains.idea.maven.model.MavenConstants;
+import org.jetbrains.idea.maven.project.MavenProject;
 
 import java.awt.event.ItemEvent;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,8 +76,12 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private static final String TABLE_HEAD_RESOURCE_GROUP = "Resource Group";
     private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
     private static final String TABLE_EMPTY_MESSAGE = "No available Web App on Linux.";
+    private static final String APP_NAME_PREFIX = "webapp-linux";
+    private static final String RESOURCE_GROUP_NAME_PREFIX = "rg-web-linux";
+    private static final String APP_SERVICE_PLAN_NAME_PREFIX = "appsp-linux-";
 
     private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
+    private final Project project;
     private JTextField textServerUrl;
     private JTextField textUsername;
     private JPasswordField passwordField;
@@ -102,13 +119,18 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private String defaultSubscriptionId;
     private String defaultAppServicePlanId;
     private JTextField textSelectedAppName; // invisible, used to trigger validation on tableRowSelection
+    private JComboBox<Artifact> cbArtifact;
+    private JLabel lblArtifact;
+    private Artifact lastSelectedArtifact;
+    private boolean isCbArtifactInited;
 
     /**
      * Constructor.
      */
-    public SettingPanel() {
+    public SettingPanel(Project project) {
         webAppOnLinuxDeployPresenter = new WebAppOnLinuxDeployPresenter<>();
         webAppOnLinuxDeployPresenter.onAttachView(this);
+        this.project = project;
 
         pnlAcr.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createMatteBorder(1, 0, 0, 0, JBColor.GRAY),
@@ -186,6 +208,36 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             }
         });
 
+        // Artifact to build
+        isCbArtifactInited = false;
+        cbArtifact.addActionListener(e -> {
+            final Artifact selectedArtifact = (Artifact) cbArtifact.getSelectedItem();
+            if (!Comparing.equal(lastSelectedArtifact, selectedArtifact)) {
+                if (isCbArtifactInited) {
+                    if (lastSelectedArtifact != null) {
+                        BuildArtifactsBeforeRunTaskProvider
+                                .setBuildArtifactBeforeRunOption(rootPanel, project, lastSelectedArtifact, false);
+                    }
+                    if (selectedArtifact != null) {
+                        BuildArtifactsBeforeRunTaskProvider
+                                .setBuildArtifactBeforeRunOption(rootPanel, project, selectedArtifact, true);
+                    }
+                }
+                lastSelectedArtifact = selectedArtifact;
+
+            }
+        });
+
+        cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
+            @Override
+            public void customize(JList jList, Artifact artifact, int i, boolean b, boolean b1) {
+                if (artifact != null) {
+                    setIcon(artifact.getArtifactType().getIcon());
+                    setText(artifact.getName());
+                }
+            }
+        });
+
     }
 
     private void onComboResourceGroupSelection(ItemEvent event) {
@@ -249,6 +301,27 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 textImageTag.getText(),
                 textStartupFile.getText()
         ));
+
+        // set target
+        if (lastSelectedArtifact != null) {
+            webAppOnLinuxDeployConfiguration.setTargetPath(lastSelectedArtifact.getOutputFilePath());
+            Path p = Paths.get(webAppOnLinuxDeployConfiguration.getTargetPath());
+            if (null != p) {
+                webAppOnLinuxDeployConfiguration.setTargetName(p.getFileName().toString());
+            } else {
+                webAppOnLinuxDeployConfiguration.setTargetName(lastSelectedArtifact.getName() + "." + MavenConstants.TYPE_WAR);
+            }
+        } else {
+            MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
+            if (mavenProject != null) {
+                // TODO: move to a util
+                String targetPath = new File(mavenProject.getBuildDirectory()).getPath()
+                        + File.separator + mavenProject.getFinalName() + "." + mavenProject.getPackaging();
+                String targetName = mavenProject.getFinalName() + "." + mavenProject.getPackaging();
+                webAppOnLinuxDeployConfiguration.setTargetPath(targetPath);
+                webAppOnLinuxDeployConfiguration.setTargetName(targetName);
+            }
+        }
 
         // set web app info
         if (rdoUseExist.isSelected()) {
@@ -327,12 +400,33 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         }
     }
 
+    private void setupArtifactCombo(List<Artifact> artifacts, String targetPath) {
+        isCbArtifactInited = false;
+        cbArtifact.removeAllItems();
+        if (null != artifacts) {
+            for (Artifact artifact : artifacts) {
+                cbArtifact.addItem(artifact);
+                if (null != targetPath && Comparing.equal(artifact.getOutputFilePath(), targetPath)) {
+                    cbArtifact.setSelectedItem(artifact);
+                }
+            }
+        }
+        cbArtifact.setVisible(true);
+        lblArtifact.setVisible(true);
+        isCbArtifactInited = true;
+    }
+
     /**
      * Function triggered in constructing the panel.
      *
      * @param conf configuration instance
      */
     public void reset(WebAppOnLinuxDeployConfiguration conf) {
+        if (!MavenRunTaskUtil.isMavenProject(project)) {
+            List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
+            setupArtifactCombo(artifacts, conf.getTargetPath());
+        }
+
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
         textServerUrl.setText(acrInfo.getServerUrl());
         textUsername.setText(acrInfo.getUsername());
@@ -380,6 +474,18 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         rdoUseExist.setSelected(!creatingApp);
         updatePanelVisibility();
 
+        // default value for new resources
+        DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
+        String date = df.format(new Date());
+        if(Utils.isEmptyString(textAppName.getText())) {
+            textAppName.setText(String.format("%s-%s", APP_NAME_PREFIX, date));
+        }
+        if(Utils.isEmptyString(txtNewResGrp.getText())) {
+            txtNewResGrp.setText(String.format("%s-%s", RESOURCE_GROUP_NAME_PREFIX, date));
+        }
+        if(Utils.isEmptyString(txtCreateAppServicePlan.getText())) {
+            txtCreateAppServicePlan.setText(String.format("%s-%s", APP_SERVICE_PLAN_NAME_PREFIX, date));
+        }
 
     }
 

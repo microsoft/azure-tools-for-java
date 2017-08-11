@@ -25,24 +25,36 @@ package com.microsoft.intellij.runner.container.webapponlinux;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.packaging.artifacts.Artifact;
+import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.microsoft.intellij.runner.container.webapponlinux.ui.SettingPanel;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JComponent;
+import java.util.List;
 
 public class WebAppOnLinuxDeploySettingsEditor extends SettingsEditor<WebAppOnLinuxDeployConfiguration> {
     private final SettingPanel settingPanel;
+    private final Project project;
 
     public WebAppOnLinuxDeploySettingsEditor(Project project) {
-        settingPanel = new SettingPanel();
+        this.project = project;
+        settingPanel = new SettingPanel(project);
     }
 
     @Override
     protected void resetEditorFrom(@NotNull WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
         if (webAppOnLinuxDeployConfiguration.isFirstTimeCreated()) {
-            MavenRunTaskUtil.addMavenPackageBeforeRunTask(webAppOnLinuxDeployConfiguration);
+            if (MavenRunTaskUtil.isMavenProject(project)) {
+                MavenRunTaskUtil.addMavenPackageBeforeRunTask(webAppOnLinuxDeployConfiguration);
+            } else {
+                List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
+                if(null != artifacts && artifacts.size() > 0) {
+                    BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, webAppOnLinuxDeployConfiguration, artifacts.get(0));
+                }
+            }
         }
         webAppOnLinuxDeployConfiguration.setFirstTimeCreated(false);
         settingPanel.reset(webAppOnLinuxDeployConfiguration);
