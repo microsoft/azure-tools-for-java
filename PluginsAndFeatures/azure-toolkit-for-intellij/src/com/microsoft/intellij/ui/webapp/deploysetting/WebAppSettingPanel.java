@@ -628,7 +628,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         cbWebContainer.removeAllItems();
         for (WebAppUtils.WebContainerMod container: webContainers) {
             cbWebContainer.addItem(container);
-            if (Comparing.equal(container.toString(), webAppConfiguration.getWebContainer())) {
+            if (Comparing.equal(container.getValue(), webAppConfiguration.getWebContainer())) {
                 cbWebContainer.setSelectedItem(container);
             }
         }

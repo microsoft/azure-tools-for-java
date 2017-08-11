@@ -24,16 +24,19 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapps;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.utils.*;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.utils.AzureModel;
+import com.microsoft.azuretools.utils.AzureModelController;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import com.microsoft.azuretools.utils.AzureUIRefreshListener;
+import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 import java.util.List;
 import java.util.Map;
-
-import static com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
 
 public class WebappsModule extends AzureRefreshableNode {
 	private static final String WEBAPPS_MODULE_ID = WebappsModule.class.getName();
@@ -122,6 +125,9 @@ public class WebappsModule extends AzureRefreshableNode {
 							break;
 						case REMOVE:
 							break;
+						case REFRESH:
+						    load(true);
+						    break;
 						default:
 							break;
 					}

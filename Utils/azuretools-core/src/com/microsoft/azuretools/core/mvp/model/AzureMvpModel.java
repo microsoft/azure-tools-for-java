@@ -40,6 +40,9 @@ import java.util.List;
 import java.util.Map;
 
 public class AzureMvpModel {
+
+    private static final String CANNOT_GET_RESOURCE_GROUP = "Cannot get Resource Group.";
+
     private AzureMvpModel() {
     }
 
@@ -107,12 +110,33 @@ public class AzureMvpModel {
         List<ResourceGroup> ret = new ArrayList<>();
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+            if (azureManager == null) {
+                return ret;
+            }
             Azure azure = azureManager.getAzure(sid);
             ret.addAll(azure.resourceGroups().list());
         } catch (IOException e) {
             e.printStackTrace();
         }
         return ret;
+    }
+
+    /**
+     * Get Resource Group by Subscription ID and Resource Group name.
+     */
+    public ResourceGroup getResourceGroupBySubscriptionIdAndName(String sid, String name) throws Exception {
+        ResourceGroup resourceGroup;
+        try {
+            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+            Azure azure = azureManager.getAzure(sid);
+            resourceGroup = azure.resourceGroups().getByName(name);
+            if (resourceGroup == null) {
+                throw new Exception(CANNOT_GET_RESOURCE_GROUP);
+            }
+        } catch (Exception e) {
+            throw new Exception(CANNOT_GET_RESOURCE_GROUP);
+        }
+        return resourceGroup;
     }
 
     /**

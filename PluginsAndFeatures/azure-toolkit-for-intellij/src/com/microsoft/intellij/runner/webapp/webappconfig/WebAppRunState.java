@@ -32,8 +32,12 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import org.apache.commons.net.ftp.FTPClient;
@@ -52,6 +56,7 @@ public class WebAppRunState implements RunProfileState {
     private final Project project;
     private final WebAppSettingModel webAppSettingModel;
 
+    private static final String UPDATING_EXPLORER = "Updating Azure Explorer...";
     private static final String GETTING_DEPLOYMENT_CREDENTIAL = "Getting Deployment Credential...";
     private static final String CONNECTING_FTP = "Connecting to FTP server...";
     private static final String UPLOADING_WAR = "Uploading war file...";
@@ -98,6 +103,18 @@ public class WebAppRunState implements RunProfileState {
                 processHandler.setText(STOP_DEPLOY);
                 throw new Exception(NO_WEBAPP);
             } else {
+                if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
+                    processHandler.setText(UPDATING_EXPLORER);
+                    ResourceGroup resourceGroup = AzureMvpModel.getInstance()
+                            .getResourceGroupBySubscriptionIdAndName(webAppSettingModel.getSubscriptionId(),
+                                    webAppSettingModel.getResourceGroup());
+                    AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
+                            new WebAppUtils.WebAppDetails(resourceGroup, webApp,
+                                    null /*appServicePlan*/,
+                                    null /*appServicePlanResourceGroup*/,
+                                    null /*subscriptionDetail*/
+                            )));
+                }
                 updateConfigurationDataModel(webApp);
             }
 
