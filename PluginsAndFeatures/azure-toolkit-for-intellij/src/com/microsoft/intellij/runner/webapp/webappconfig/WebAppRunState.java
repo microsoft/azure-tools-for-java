@@ -177,7 +177,6 @@ public class WebAppRunState implements RunProfileState {
         webAppSettingModel.setCreatingNew(false);
         webAppSettingModel.setWebAppId(app.id());
         webAppSettingModel.setWebAppName("");
-        webAppSettingModel.setWebContainer("");
         webAppSettingModel.setResourceGroup("");
         webAppSettingModel.setAppServicePlanName("");
     }
