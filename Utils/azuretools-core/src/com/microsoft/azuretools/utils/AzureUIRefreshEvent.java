@@ -26,6 +26,7 @@ public class AzureUIRefreshEvent {
     ADD,
     REMOVE,
     UPDATE,
+    REFRESH,
     SIGNIN,
     SIGNOUT
   }

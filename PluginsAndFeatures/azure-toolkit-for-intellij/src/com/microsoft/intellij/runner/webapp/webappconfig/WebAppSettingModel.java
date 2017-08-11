@@ -43,7 +43,8 @@ public class WebAppSettingModel {
     private String resourceGroup = "";
 
     private boolean creatingAppServicePlan = false;
-    private String appServicePlan = "";
+    private String appServicePlanName = "";
+    private String appServicePlanId = "";
     private String region = "";
     private String pricing = "";
 
@@ -149,12 +150,20 @@ public class WebAppSettingModel {
         this.creatingAppServicePlan = creatingAppServicePlan;
     }
 
-    public String getAppServicePlan() {
-        return appServicePlan;
+    public String getAppServicePlanName() {
+        return appServicePlanName;
     }
 
-    public void setAppServicePlan(String appServicePlan) {
-        this.appServicePlan = appServicePlan;
+    public void setAppServicePlanName(String appServicePlan) {
+        this.appServicePlanName = appServicePlan;
+    }
+
+    public String getAppServicePlanId() {
+        return appServicePlanId;
+    }
+
+    public void setAppServicePlanId(String appServicePlanId) {
+        this.appServicePlanId = appServicePlanId;
     }
 
     public String getRegion() {
