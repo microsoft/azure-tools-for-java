@@ -84,6 +84,13 @@ public class WebAppRunState implements RunProfileState {
         processHandler.startNotify();
         consoleView.attachToProcess(processHandler);
         Observable.fromCallable(() -> {
+            File file = new File(webAppSettingModel.getTargetPath());
+            FileInputStream input;
+            if (file.exists()) {
+                input = new FileInputStream(webAppSettingModel.getTargetPath());
+            } else {
+                throw new FileNotFoundException(String.format(NO_TARGETFILE, webAppSettingModel.getTargetPath()));
+            }
             WebApp webApp;
             if (webAppSettingModel.isCreatingNew()) {
                 try {
@@ -102,20 +109,11 @@ public class WebAppRunState implements RunProfileState {
                 processHandler.setText(STOP_DEPLOY);
                 throw new Exception(NO_WEBAPP);
             }
-
             processHandler.setText(GETTING_DEPLOYMENT_CREDENTIAL);
             FTPClient ftp;
             processHandler.setText(CONNECTING_FTP);
             ftp = WebAppUtils.getFtpConnection(webApp.getPublishingProfile());
             processHandler.setText(UPLOADING_WAR);
-            File file = new File(webAppSettingModel.getTargetPath());
-            FileInputStream input;
-            if (file.exists()) {
-                input = new FileInputStream(webAppSettingModel.getTargetPath());
-            } else {
-                processHandler.setText(String.format(NO_TARGETFILE, webAppSettingModel.getTargetPath()));
-                throw new FileNotFoundException("Cannot find target file: " + webAppSettingModel.getTargetPath());
-            }
             boolean isSuccess;
             if (webAppSettingModel.isDeployToRoot()) {
                 // Deploy to Root
@@ -178,5 +176,9 @@ public class WebAppRunState implements RunProfileState {
     private void updateConfigurationDataModel(@NotNull WebApp app) {
         webAppSettingModel.setCreatingNew(false);
         webAppSettingModel.setWebAppId(app.id());
+        webAppSettingModel.setWebAppName("");
+        webAppSettingModel.setWebContainer("");
+        webAppSettingModel.setResourceGroup("");
+        webAppSettingModel.setAppServicePlanName("");
     }
 }

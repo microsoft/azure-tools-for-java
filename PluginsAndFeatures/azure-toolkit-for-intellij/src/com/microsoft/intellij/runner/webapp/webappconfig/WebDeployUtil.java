@@ -85,7 +85,7 @@ public class WebDeployUtil {
         WebApp.DefinitionStages.WithCreate withCreateWebApp;
         if (model.isCreatingResGrp()) {
             withCreatePlan = azure.appServices().appServicePlans()
-                    .define(model.getAppServicePlan())
+                    .define(model.getAppServicePlanName())
                     .withRegion(model.getRegion())
                     .withNewResourceGroup(model.getResourceGroup())
                     .withPricingTier(pricing)
@@ -96,7 +96,7 @@ public class WebDeployUtil {
                     .withNewWindowsPlan(withCreatePlan);
         } else {
             withCreatePlan = azure.appServices().appServicePlans()
-                    .define(model.getAppServicePlan())
+                    .define(model.getAppServicePlanName())
                     .withRegion(model.getRegion())
                     .withExistingResourceGroup(model.getResourceGroup())
                     .withPricingTier(pricing)
@@ -112,7 +112,7 @@ public class WebDeployUtil {
     private static WebApp.DefinitionStages.WithCreate withCreateExistingSPlan(
             @NotNull Azure azure,
             @NotNull WebAppSettingModel model) {
-        AppServicePlan servicePlan =  azure.appServices().appServicePlans().getById(model.getAppServicePlan());
+        AppServicePlan servicePlan =  azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
         WebApp.DefinitionStages.WithCreate withCreate;
         if (model.isCreatingResGrp()) {
             withCreate = azure.webApps().define(model.getWebAppName())

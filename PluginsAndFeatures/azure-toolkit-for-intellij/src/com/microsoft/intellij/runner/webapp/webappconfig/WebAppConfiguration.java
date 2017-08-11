@@ -124,15 +124,19 @@ public class WebAppConfiguration extends RunConfigurationBase {
             if (Utils.isEmptyString(webAppSettingModel.getResourceGroup())) {
                 throw new ConfigurationException(MISSING_RESOURCE_GROUP);
             }
-            if (Utils.isEmptyString(webAppSettingModel.getAppServicePlan())) {
-                throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
-            }
             if (webAppSettingModel.isCreatingAppServicePlan()) {
                 if (Utils.isEmptyString(webAppSettingModel.getRegion())) {
                     throw new ConfigurationException(MISSING_LOCATION);
                 }
                 if (Utils.isEmptyString(webAppSettingModel.getPricing())) {
                     throw new ConfigurationException(MISSING_PRICING_TIER);
+                }
+                if (Utils.isEmptyString(webAppSettingModel.getAppServicePlanName())) {
+                    throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
+                }
+            } else {
+                if (Utils.isEmptyString(webAppSettingModel.getAppServicePlanId())) {
+                    throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
                 }
             }
         } else {
@@ -220,12 +224,20 @@ public class WebAppConfiguration extends RunConfigurationBase {
         return webAppSettingModel.isCreatingAppServicePlan();
     }
 
-    public void setAppServicePlan(String nameOrId) {
-        webAppSettingModel.setAppServicePlan(nameOrId);
+    public void setAppServicePlanName(String name) {
+        webAppSettingModel.setAppServicePlanName(name);
     }
 
-    public String getAppServicePlan() {
-        return webAppSettingModel.getAppServicePlan();
+    public String getAppServicePlanName() {
+        return webAppSettingModel.getAppServicePlanName();
+    }
+
+    public void setAppServicePlanId(String id) {
+        webAppSettingModel.setAppServicePlanId(id);
+    }
+
+    public String getAppServicePlanId() {
+        return webAppSettingModel.getAppServicePlanId();
     }
 
     public void setRegion(String region) {

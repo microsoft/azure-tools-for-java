@@ -333,10 +333,10 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         } else {
             txtWebAppName.setText(webAppConfiguration.getWebAppName());
         }
-        if (webAppConfiguration.getAppServicePlan().isEmpty()) {
+        if (webAppConfiguration.getAppServicePlanName().isEmpty()) {
             txtCreateAppServicePlan.setText(DEFAULT_PLAN_NAME + date);
         } else {
-            txtCreateAppServicePlan.setText(webAppConfiguration.getAppServicePlan());
+            txtCreateAppServicePlan.setText(webAppConfiguration.getAppServicePlanName());
         }
         if (webAppConfiguration.getResourceGroup().isEmpty()) {
             txtNewResGrp.setText(DEFAULT_RGP_NAME + date);
@@ -420,7 +420,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             // app service plan
             if (rdoCreateAppServicePlan.isSelected()) {
                 webAppConfiguration.setCreatingAppServicePlan(true);
-                webAppConfiguration.setAppServicePlan(txtCreateAppServicePlan.getText());
+                webAppConfiguration.setAppServicePlanName(txtCreateAppServicePlan.getText());
 
                 webAppConfiguration.setRegion(lastSelectedLocation == null ? "" : lastSelectedLocation);
                 webAppConfiguration.setPricing(lastSelectedPriceTier == null ? "" : lastSelectedPriceTier);
@@ -428,7 +428,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 webAppConfiguration.setCreatingAppServicePlan(false);
                 AppServicePlan appServicePlan = (AppServicePlan) cbExistAppServicePlan.getSelectedItem();
                 if (appServicePlan != null) {
-                    webAppConfiguration.setAppServicePlan(appServicePlan.id());
+                    webAppConfiguration.setAppServicePlanId(appServicePlan.id());
                 }
             }
             // JDK
@@ -593,7 +593,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 .sorted(Comparator.comparing(AppServicePlan::name))
                 .forEach((plan) -> {
                     cbExistAppServicePlan.addItem(plan);
-                    if (Comparing.equal(plan.id(), webAppConfiguration.getAppServicePlan())) {
+                    if (Comparing.equal(plan.id(), webAppConfiguration.getAppServicePlanId())) {
                         cbExistAppServicePlan.setSelectedItem(plan);
                     }
                 });
