@@ -36,6 +36,7 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
@@ -50,6 +51,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class WebAppRunState implements RunProfileState {
 
@@ -162,13 +165,14 @@ public class WebAppRunState implements RunProfileState {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-
                     }
                     updateConfigurationDataModel(webApp);
                     AzureWebAppMvpModel.getInstance().listWebApps(true /*force*/);
+                    sendTelemetry(true);
                 }, err -> {
                     processHandler.setText(err.getMessage());
                     processHandler.notifyComplete();
+                    sendTelemetry(false);
                 });
         return new DefaultExecutionResult(consoleView, processHandler);
     }
@@ -179,5 +183,17 @@ public class WebAppRunState implements RunProfileState {
         webAppSettingModel.setWebAppName("");
         webAppSettingModel.setResourceGroup("");
         webAppSettingModel.setAppServicePlanName("");
+    }
+
+    // TODO: refactor later
+    private void sendTelemetry(boolean success) {
+        Map<String, String> map = new HashMap<>();
+        map.put("SubscriptionId", webAppSettingModel.getSubscriptionId());
+        map.put("CreateNewApp", String.valueOf(webAppSettingModel.isCreatingNew()));
+        map.put("CreateNewSP", String.valueOf(webAppSettingModel.isCreatingAppServicePlan()));
+        map.put("CreateNewRGP", String.valueOf(webAppSettingModel.isCreatingResGrp()));
+        map.put("Success", String.valueOf(success));
+
+        AppInsightsClient.createByType(AppInsightsClient.EventType.WebApp, "Webapp", "Deploy", map);
     }
 }

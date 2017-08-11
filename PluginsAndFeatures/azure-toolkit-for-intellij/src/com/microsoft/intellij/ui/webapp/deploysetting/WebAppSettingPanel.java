@@ -27,7 +27,6 @@ import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.AnActionButton;
@@ -37,13 +36,13 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.JavaVersion;
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.utils.AzulZuluModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
@@ -53,6 +52,8 @@ import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
@@ -71,7 +72,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class WebAppSettingPanel implements WebAppDeployMvpView {
@@ -91,9 +94,9 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private Artifact lastSelectedArtifact;
     private boolean isArtifact;
     private WebAppSettingModel.JdkChoice lastJdkChoice = WebAppSettingModel.JdkChoice.DEFAULT;
+    private boolean telemetrySent;
 
     // const
-    private static final String NOT_APPLICABLE = "N/A";
     private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
     private static final String TABLE_EMPTY_MESSAGE = "No available Web App.";
     private static final String DEFAULT_APP_NAME = "webapp-" ;
@@ -371,6 +374,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         this.webAppDeployViewPresenter.onLoadSubscription();
         this.webAppDeployViewPresenter.onLoadPricingTier();
         this.webAppDeployViewPresenter.onLoadThirdPartyJdk();
+        sendTelemetry(webAppConfiguration.getSubscriptionId());
     }
 
     /**
@@ -643,5 +647,25 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 cbThirdPartyJdk.setSelectedItem(jdk);
             }
         }
+    }
+
+    // TODO: refactor later
+    private void sendTelemetry(String subId) {
+        if (telemetrySent) {
+            return;
+        }
+        Observable.fromCallable(() -> {
+            Map<String, String> map = new HashMap<>();
+            map.put("SubscriptionId", subId);
+            AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog,
+                    "Run On Web App" /*objectName*/,
+                    "Open" /*action*/,
+                    map
+            );
+            return true;
+        }).subscribeOn(Schedulers.io()).subscribe(
+                (res) -> telemetrySent = true,
+                (err) -> telemetrySent = true
+        );
     }
 }
