@@ -546,10 +546,9 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         webAppTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         webAppTable.getSelectionModel().addListSelectionListener(event -> {
             int index = webAppTable.getSelectedRow();
-            if (cachedWebAppList != null && index > 0 && index < cachedWebAppList.size()) {
+            if (cachedWebAppList != null && index >= 0 && index < cachedWebAppList.size()) {
                 textSelectedAppName.setText(cachedWebAppList.get(webAppTable.getSelectedRow()).getResource().name());
             }
-            System.out.println("table selected");
         });
         btnRefresh = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override
