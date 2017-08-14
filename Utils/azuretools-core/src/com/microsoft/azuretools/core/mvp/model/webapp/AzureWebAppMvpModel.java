@@ -40,17 +40,17 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class AzureWebAppMvpModel {
-    private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
-    private final Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
-
     private static final String NOT_SIGNED_ERROR = "Plugin not signed in error.";
     private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure by subscription ID.";
+    private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
+    private final Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
 
     private AzureWebAppMvpModel() {
         subscriptionIdToWebAppsOnLinuxMap = new ConcurrentHashMap<>();
@@ -75,11 +75,13 @@ public class AzureWebAppMvpModel {
     }
 
     /**
-     * @param sid
-     * @param profile
-     * @param imageSetting
-     * @return
-     * @throws IOException
+     * API to create Web App on Linux.
+     *
+     * @param sid          subscription id
+     * @param profile      parameters
+     * @param imageSetting container related settings
+     * @return instance of created WebApp
+     * @throws IOException IOExceptions
      */
     public WebApp createWebAppOnLinux(String sid, WebAppOnLinuxDeployModel profile, ImageSetting imageSetting)
             throws IOException {
@@ -90,25 +92,40 @@ public class AzureWebAppMvpModel {
         PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
         WebApp app;
         Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
+        PricingTier pricingTier = new PricingTier(profile.getPricingSkuTier(), profile.getPricingSkuSize());
+
 
         WebApp.DefinitionStages.Blank webAppDefinition = azure.webApps().define(profile.getWebAppName());
         if (profile.isCreatingNewAppServicePlan()) {
             // new asp
+            AppServicePlan.DefinitionStages.WithCreate asp;
             if (profile.isCreatingNewResourceGroup()) {
                 // new rg
+                asp = azure.appServices().appServicePlans()
+                        .define(profile.getAppServicePlanName())
+                        .withRegion(Region.findByLabelOrName(profile.getLocationName()))
+                        .withNewResourceGroup(profile.getResourceGroupName())
+                        .withPricingTier(pricingTier)
+                        .withOperatingSystem(OperatingSystem.LINUX);
                 app = webAppDefinition
                         .withRegion(Region.findByLabelOrName(profile.getLocationName()))
                         .withNewResourceGroup(profile.getResourceGroupName())
-                        .withNewLinuxPlan(new PricingTier(profile.getPricingSkuTier(), profile.getPricingSkuSize()))
+                        .withNewLinuxPlan(asp)
                         .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
                         .withStartUpCommand(pr.getStartupFile()).create();
             } else {
                 // old rg
+                asp = azure.appServices().appServicePlans()
+                        .define(profile.getAppServicePlanName())
+                        .withRegion(Region.findByLabelOrName(profile.getLocationName()))
+                        .withExistingResourceGroup(profile.getResourceGroupName())
+                        .withPricingTier(pricingTier)
+                        .withOperatingSystem(OperatingSystem.LINUX);
                 app = webAppDefinition
                         .withRegion(Region.findByLabelOrName(profile.getLocationName()))
                         .withExistingResourceGroup(profile.getResourceGroupName())
-                        .withNewLinuxPlan(new PricingTier(profile.getPricingSkuTier(), profile.getPricingSkuSize()))
+                        .withNewLinuxPlan(asp)
                         .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
                         .withStartUpCommand(pr.getStartupFile()).create();
@@ -137,6 +154,14 @@ public class AzureWebAppMvpModel {
         return app;
     }
 
+    /**
+     * Update container settings for existing Web App on Linux.
+     *
+     * @param sid Subscription id
+     * @param webAppId id of Web App on Linux instance
+     * @param imageSetting new container settings
+     * @return instance of the updated Web App on Linux
+     */
     public WebApp updateWebAppOnLinux(String sid, String webAppId, ImageSetting imageSetting) {
         WebApp app = null;
         try {
@@ -268,9 +293,7 @@ public class AzureWebAppMvpModel {
      */
     public List<WebAppUtils.WebContainerMod> listWebContainers() {
         List<WebAppUtils.WebContainerMod> webContainers = new ArrayList<>();
-        for (WebAppUtils.WebContainerMod wc : WebAppUtils.WebContainerMod.values()) {
-            webContainers.add(wc);
-        }
+        Collections.addAll(webContainers, WebAppUtils.WebContainerMod.values());
         return webContainers;
     }
 
