@@ -20,43 +20,36 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 
-public class RedisCacheModule extends AzureRefreshableNode {
-    private static final String REDIS_SERVICE_MODULE_ID = RedisCacheModule.class.getName();
+public class ContainerRegistryModule extends AzureRefreshableNode {
+
+    private static final String ACR_MODULE_ID = ContainerRegistryModule.class.getName();
+    //TODO: need icon here
     private static final String ICON_PATH = "RedisCache.png";
-    private static final String BASE_MODULE_NAME = "Redis Caches";
-    private final RedisCacheModulePresenter<RedisCacheModule> redisCachePresenter;
+    private static final String BASE_MODULE_NAME = "Azure Container Registry";
+    private final ContainerRegistryModulePresenter<ContainerRegistryModule> containerRegistryPresenter;
 
-    /**
-     * Create the node containing all the Redis Cache resources.
-     * 
-     * @param parent
-     *            The parent node of this node
-     */
-    public RedisCacheModule(Node parent) {
-        super(REDIS_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
-        redisCachePresenter = new RedisCacheModulePresenter<>();
-        redisCachePresenter.onAttachView(RedisCacheModule.this);
+    public ContainerRegistryModule(Node parent) {
+        super(ACR_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
+        containerRegistryPresenter = new ContainerRegistryModulePresenter<>();
+        containerRegistryPresenter.onAttachView(ContainerRegistryModule.this);
+    }
+
+    @Override
+    public ContainerRegistryNode createNode(Node parent, String sid, NodeContent content) {
+        return new ContainerRegistryNode(this, sid, content);
     }
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        redisCachePresenter.onModuleRefresh();
+        containerRegistryPresenter.onModuleRefresh();
     }
 
-    @Override
-    public RedisCacheNode createNode(Node parent, String sid, NodeContent content) {
-        return new RedisCacheNode(this, sid, content);
-    }
-    
-    @Override
-    public void removeNode(String sid, String id, Node node) {
-        redisCachePresenter.onNodeDelete(sid, id, node);
-    }
 }

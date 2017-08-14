@@ -26,19 +26,18 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.ISubscriptionSelectionListener;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.azuretools.utils.AzureUIRefreshCore;
-import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapps.WebappsModule;
 
 import java.util.List;
@@ -56,6 +55,7 @@ public class AzureModule extends AzureRefreshableNode {
     private WebappsModule webappsModule;
     private HDInsightRootModule hdInsightModule;
     private DockerHostModule dockerHostModule;
+    private ContainerRegistryModule containerRegistryModule;
 
     public AzureModule(Object project) {
         this(null, ICON_PATH, null);
@@ -66,6 +66,7 @@ public class AzureModule extends AzureRefreshableNode {
         vmArmServiceModule = new VMArmModule(this);
         redisCacheModule = new RedisCacheModule(this);
         dockerHostModule = new DockerHostModule(this);
+        containerRegistryModule = new ContainerRegistryModule(this);
         try {
             SignInOutListener signInOutListener = new SignInOutListener();
             AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
@@ -132,6 +133,9 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(dockerHostModule)) {
             addChildNode(dockerHostModule);
         }
+        if (!isDirectChild(containerRegistryModule)) {
+            addChildNode(containerRegistryModule);
+        }
     }
 
     @Override
@@ -148,6 +152,7 @@ public class AzureModule extends AzureRefreshableNode {
                 webappsModule.load(true);
                 hdInsightModule.load(true);
                 dockerHostModule.load(true);
+                containerRegistryModule.load(true);
             }
         } catch (Exception e) {
             throw new AzureCmdException("Error loading Azure Explorer modules", e);
