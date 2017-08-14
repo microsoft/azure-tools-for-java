@@ -117,6 +117,7 @@ public class WebAppRunState implements RunProfileState {
             processHandler.setText(CONNECTING_FTP);
             ftp = WebAppUtils.getFtpConnection(webApp.getPublishingProfile());
             processHandler.setText(UPLOADING_WAR);
+            String url = "https://" + webApp.defaultHostName();
             boolean isSuccess;
             if (webAppSettingModel.isDeployToRoot()) {
                 // Deploy to Root
@@ -124,7 +125,10 @@ public class WebAppRunState implements RunProfileState {
                 isSuccess = ftp.storeFile(ROOT_FILE_PATH, input);
             } else {
                 //Deploy according to war file name
-                WebAppUtils.removeFtpDirectory(ftp, BASE_PATH + webAppSettingModel.getTargetName(), processHandler);
+                String subDirectoryName = webAppSettingModel.getTargetName().substring(0,
+                        webAppSettingModel.getTargetName().lastIndexOf("."));
+                url += "/" + subDirectoryName;
+                WebAppUtils.removeFtpDirectory(ftp, BASE_PATH + subDirectoryName, processHandler);
                 isSuccess = ftp.storeFile(BASE_PATH + webAppSettingModel.getTargetName(), input);
             }
             if (!isSuccess) {
@@ -138,11 +142,6 @@ public class WebAppRunState implements RunProfileState {
             input.close();
             if (ftp.isConnected()) {
                 ftp.disconnect();
-            }
-            String url = "https://" + webApp.defaultHostName();
-            if (!webAppSettingModel.isDeployToRoot()) {
-                url += "/" + webAppSettingModel.getTargetName().substring(0,
-                        webAppSettingModel.getTargetName().lastIndexOf("."));
             }
             processHandler.setText(DEPLOY_SUCCESSFUL);
             processHandler.setText("URL: " + url);

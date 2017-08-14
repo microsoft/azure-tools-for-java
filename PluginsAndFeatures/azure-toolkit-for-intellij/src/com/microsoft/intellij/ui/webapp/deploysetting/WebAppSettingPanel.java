@@ -405,7 +405,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         if (rdoUseExist.isSelected()) {
             webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
             webAppConfiguration.setSubscriptionId(selectedWebApp == null ? "" : selectedWebApp.getSubscriptionId());
-            webAppConfiguration.setDeployToRoot(chkToRoot.isSelected());
             webAppConfiguration.setCreatingNew(false);
         } else if (rdoCreateNew.isSelected()) {
             webAppConfiguration.setWebAppName(txtWebAppName.getText());
@@ -450,6 +449,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
             webAppConfiguration.setCreatingNew(true);
         }
+        webAppConfiguration.setDeployToRoot(chkToRoot.isSelected());
     }
 
     @Override
