@@ -63,7 +63,7 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     // TODO: move to util
     private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
     private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
-            + "An artifact name maycontain only the ASCII letters 'a' through 'z' (case-insensitive), "
+            + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
             + "and the digits '0' through '9',  '-' and '_'.";
     private static final String WAR_NAME_REGEX = "^[A-Za-z0-9_-]+\\.war$";
 
