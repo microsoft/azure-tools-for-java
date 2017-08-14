@@ -493,29 +493,29 @@ public class PluginUtil {
 			
 		boolean isMarketplacePluginInstalled = checkPlugInInstallation(marketplacePluginSymbolicName);
 		if (!isMarketplacePluginInstalled) {
-			PluginUtil.displayInfoDialog(getParentShell(), "Install missing plugin", "Start to install Eclipse Marketplace Client plugin which is required to install other missing plugin (" + pluginSymbolicName + ")!");
+			PluginUtil.displayInfoDialog(getParentShell(), "Install missing plugin", "Start to install Eclipse Marketplace Client plugin which is required to install other missing plugin (" + pluginSymbolicName + ")! Click OK to start.");
 			forceInstallPluginUsingP2(marketplacePluginID);		
 		}
 	
 		try {
-			PluginUtil.displayInfoDialog(getParentShell(), "Install missing plugin", "Start to install missing plugin (" + pluginSymbolicName + ")!");
+			PluginUtil.displayInfoDialog(getParentShell(), "Install missing plugin", "Start to install missing plugin (" + pluginSymbolicName + ")! Click OK to start.");
 			SolutionInstallationInfo info = MarketplaceUrlHandler.createSolutionInstallInfo(marketplaceURL);
 			
 			MarketplaceUrlHandler.triggerInstall(info);
 		} catch (Exception e) {
-			String errorMsg = "Error installing " + pluginSymbolicName + "! Please manually install using Eclipse marketplace from: Help -> Eclipse Marketplace....";
+			String errorMsg = "Error installing " + pluginSymbolicName + "! Please manually install using Eclipse marketplace from: Help -> Eclipse Marketplace.... Click OK to continue.";
 			PluginUtil.displayErrorDialogAndLog(getParentShell(), "Fail to install", errorMsg, e);
 			
 			try {
 				MarketplaceClient.openMarketplaceWizard(null);
 			} catch (Exception e1) {
-				errorMsg = "Error installing " + pluginSymbolicName + " using Marketplace Client! Please manually install using Eclipse P2 repository from: Help -> Install New Software....";
+				errorMsg = "Error installing " + pluginSymbolicName + " using Marketplace Client! Please manually install using Eclipse P2 repository from: Help -> Install New Software.... Click OK to continue.";
 				PluginUtil.displayErrorDialogAndLog(getParentShell(), "Fail to install", errorMsg, e1);
 				
 				return false;
 			}
 		} catch (NoClassDefFoundError e) {
-			String errorMsg = "Error installing " + pluginSymbolicName + " using Marketplace Client! Please manually install using Eclipse P2 repository from: Help -> Install New Software....";
+			String errorMsg = "Error installing " + pluginSymbolicName + " using Marketplace Client! Please manually install using Eclipse P2 repository from: Help -> Install New Software.... Click OK to continue.";
 			PluginUtil.displayErrorDialogAndLog(getParentShell(), "Fail to install", errorMsg, e);
 			
 			return false;
@@ -555,14 +555,14 @@ public class PluginUtil {
 							}
 						}
 					} catch (Exception e) {
-						String errorMsg = "Error installing " + pluginGroupID + "! Please manually install using Eclipse P2 repository from: Help -> Install New Software....";
+						String errorMsg = "Error installing " + pluginGroupID + "! Please manually install using Eclipse P2 repository from: Help -> Install New Software.... Click OK to continue.";
 						PluginUtil.displayErrorDialogAndLog(getParentShell(), "Fail to install", errorMsg, e);
 					}
 			    }
 			}
 		}
 		
-		String errorMsg = "Error installing " + pluginGroupID + "! In the following installation wizard, please select the right repository and then filter by " + pluginGroupID + "!";
+		String errorMsg = "Error installing " + pluginGroupID + "! In the following installation wizard, please select the right repository and then filter by " + pluginGroupID + "! Click OK to continue.";
 		PluginUtil.displayErrorDialogAndLog(getParentShell(), "Fail to install", errorMsg, null);
 		provisioningUI.openInstallWizard(null, null, null);
 	}
