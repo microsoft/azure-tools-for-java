@@ -38,7 +38,7 @@ public class JobUtilsScenario {
         Object lock = new Object();
         Iterator logIterExpect = logs.iterator();
 
-        Subscription sub = JobUtils.createYarnLogObservable(null, logUrl, "stderr", 10)
+        Subscription sub = JobUtils.createYarnLogObservable(null, null, logUrl, "stderr", 10)
                 .subscribe((line) -> {
                     String logExpect = logIterExpect.next().toString();
                     assertEquals(logExpect, line);

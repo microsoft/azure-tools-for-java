@@ -38,6 +38,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.ApplicationMasterLogs;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivyBatchesInformation;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivySession;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.sun.net.httpserver.HttpExchange;
@@ -54,6 +55,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
+import rx.Subscription;
 import rx.schedulers.Schedulers;
 
 import java.awt.*;
@@ -61,6 +63,7 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class JobUtils {
@@ -234,8 +237,19 @@ public class JobUtils {
         return "";
     }
 
+    /**
+     * To create an Observable for specified Yarn container log type
+     *
+     * @param credentialsProvider credential provider for HDInsight
+     * @param stop the stop observable to cancel the log fetch, refer to Observable.window() operation
+     * @param containerLogUrl the contaniner log url
+     * @param type the log type
+     * @param blockSize the block size for one fetch, the value 0 for as many as possible
+     * @return the log Observable
+     */
     public static Observable<String> createYarnLogObservable(@NotNull final CredentialsProvider credentialsProvider,
-                                                             @NotNull final String driverLogUrl,
+                                                             @Nullable final Observable<Object> stop,
+                                                             @NotNull final String containerLogUrl,
                                                              @NotNull final String type,
                                                              final int blockSize) {
         int retryIntervalMs = 1000;
@@ -247,11 +261,18 @@ public class JobUtils {
             long nextStart = 0;
             String remainedLine = "";
             String logs;
+            Thread currentThread = Thread.currentThread();
+
+            // Refer to the Observable.window() operation:
+            //    http://reactivex.io/documentation/operators/window.html
+            // The event from `stop` observable will stop the log fetch
+            Optional<Subscription> stopSubscriptionOptional = Optional.ofNullable(stop).map(stopOb ->
+                    stopOb.subscribe(any -> currentThread.interrupt()));
 
             try {
                 while (!ob.isUnsubscribed()) {
                     logs = JobUtils.getInformationFromYarnLogDom(
-                            credentialsProvider, driverLogUrl, type, nextStart, blockSize);
+                            credentialsProvider, containerLogUrl, type, nextStart, blockSize);
                     int lastLineBreak = logs.lastIndexOf('\n');
 
                     if (lastLineBreak < 0) {
@@ -286,16 +307,14 @@ public class JobUtils {
             } catch (InterruptedException ignore) {
             } finally {
                 // Get the rest logs from history server
-                String historyServerLogUrl = driverLogUrl.replaceAll(
-                    "(https?://.*/yarnui)/([^/]*)/node/containerlogs/(container_[^/]+)/livy",
-                    "$1/jobhistory/logs/$2/port/30050/$3/$3/livy");
-
-                logs = JobUtils.getInformationFromYarnLogDom(credentialsProvider, historyServerLogUrl, type, nextStart, 0);
+                // Don't worry about the log is moved to history server, the YarnUI can do URL redirect by itself
+                logs = JobUtils.getInformationFromYarnLogDom(credentialsProvider, containerLogUrl, type, nextStart, 0);
 
                 new BufferedReader(new StringReader(remainedLine + logs)).lines().forEach(ob::onNext);
             }
 
             ob.onCompleted();
+            stopSubscriptionOptional.ifPresent(Subscription::unsubscribe);
         }).subscribeOn(Schedulers.io());
     }
 

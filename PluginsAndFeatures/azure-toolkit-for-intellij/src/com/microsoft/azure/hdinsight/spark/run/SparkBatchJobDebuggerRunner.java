@@ -93,12 +93,12 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
         this.debugJob = debugJob;
     }
 
-    public SparkBatchRemoteDebugJob getDebugJob() {
-        return debugJob;
+    public Optional<SparkBatchRemoteDebugJob> getDebugJob() {
+        return Optional.ofNullable(debugJob);
     }
 
-    public SparkBatchDebugSession getDebugSession() {
-        return debugSession;
+    public Optional<SparkBatchDebugSession> getDebugSession() {
+        return Optional.ofNullable(debugSession);
     }
 
     public void setDebugSession(SparkBatchDebugSession debugSession) {
@@ -134,7 +134,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
         debugProcessPhaser = new Phaser(1);
 
         Observable.create((Observable.OnSubscribe<String>) ob ->
-                createDebugJobSession(submitModel).subscribe(debugJobClusterPair-> {
+                createDebugJobSession(submitModel).subscribe(debugJobClusterPair -> {
                     final SparkBatchRemoteDebugJob remoteDebugJob = debugJobClusterPair.getKey();
                     final IClusterDetail clusterDetail = debugJobClusterPair.getValue();
                     final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
@@ -326,15 +326,12 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
      * Stop the debug job
      */
     private void stopDebugJob() {
-        if (getDebugSession() != null) {
-            getDebugSession().close();
-        }
-
-        if (getDebugJob() != null) {
+        getDebugSession().ifPresent(SparkBatchDebugSession::close);
+        getDebugJob().ifPresent(sparkBatchRemoteDebugJob -> {
             try {
-                getDebugJob().killBatchJob();
+                sparkBatchRemoteDebugJob.killBatchJob();
             } catch (IOException ignore) { }
-        }
+        });
     }
 
     /**
@@ -398,27 +395,26 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                                     int remotePort,
                                     String logUrl,
                                     final CredentialsProvider credentialsProvider ) {
-        SparkBatchDebugSession session = getDebugSession();
-        ReplaySubject<SimpleEntry<String, Key>> debugProcessConsole = ReplaySubject.create();
-
+        SparkBatchDebugSession session = getDebugSession().orElse(null);
         if (session == null) {
             return;
         }
 
+        ReplaySubject<SimpleEntry<String, Key>> debugProcessConsole = ReplaySubject.create();
         // new debug process start
         debugPhaser.register();
 
         Observable.create((Observable.OnSubscribe<SimpleEntry<String, Key>>) ob -> {
             try {
-                // Store all debug process subscription to clean up after finished
-                List<Subscription> debugProcessSubscriptions = new ArrayList<>();
+                // Stop subject to send stop event to debug process
+                PublishSubject<Object> stopConsoleLogSubject = PublishSubject.create();
                 Observable<SimpleEntry<String, Key>> debugProcessOb =
-                        createDebugProcessObservable(logUrl, credentialsProvider);
+                        createDebugProcessObservable(logUrl, credentialsProvider, stopConsoleLogSubject);
 
                 if (isDriver) {
                     debugProcessOb = debugProcessOb.share();
 
-                    Subscription executorFindingSubscription = matchedExecutorFromDebugProcessObservable(debugProcessOb)
+                    matchExecutorFromDebugProcessObservable(debugProcessOb)
                             .subscribe(hostContainerPair -> {
                                 String host = hostContainerPair.getKey();
                                 String containerId = hostContainerPair.getValue();
@@ -429,11 +425,13 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
 
                                     int executorJdbPort = 0;
                                     int retries = 0;
+                                    SparkBatchRemoteDebugJob debugJob = getDebugJob().orElseThrow(() ->
+                                            new ExecutionException("No debug job created"));
 
                                     // Retry in case the Executor JVM not bring up
                                     while (executorJdbPort == 0) {
                                         try {
-                                            executorJdbPort = getDebugJob().getYarnContainerJDBListenPort(executorLogUrl);
+                                            executorJdbPort = debugJob.getYarnContainerJDBListenPort(executorLogUrl);
                                         } catch (UnknownServiceException ex) {
                                             if (retries++ > 3) {
                                                 throw ex;
@@ -467,12 +465,15 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                                     ob.onError(ex);
                                 }
                             });
-
-                    debugProcessSubscriptions.add(executorFindingSubscription);
                 }
 
-                Subscription processLogSubscription = debugProcessOb.subscribe(ob::onNext, ob::onError);
-                debugProcessSubscriptions.add(processLogSubscription);
+                debugProcessOb.subscribe(ob::onNext, ob::onError, () -> {
+                    ob.onCompleted();
+
+                    // force all debug process to stop
+                    debugPhaser.forceTermination();
+                    stopConsoleLogSubject.onCompleted();
+                });
 
                 // Forward port
                 int localPort = session.forwardToRemotePort(remoteHost, remotePort)
@@ -491,16 +492,13 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                                 // Debugger is setup rightly
                                 debugProcessConsole.subscribe(lineKeyPair ->
                                         handler.notifyTextAvailable( lineKeyPair.getKey() + "\n", lineKeyPair.getValue()));
+                                debugProcessConsole.unsubscribeOn(Schedulers.immediate());
 
                                 handler.addProcessListener(new ProcessAdapter() {
                                     @Override
                                     public void processTerminated(ProcessEvent processEvent) {
-                                        // Debug is stopped, do clean up
-                                        debugProcessSubscriptions.forEach(Subscription::unsubscribe);
-                                        ob.onCompleted();
-
-                                        // force all debug process to stop
-                                        debugPhaser.forceTermination();
+                                        // JDB Debugger is stopped, tell the debug process
+                                        stopConsoleLogSubject.onNext("stop");
                                     }
                                 });
                             } else {
@@ -524,10 +522,12 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
      * with its type key.
      */
     private Observable<SimpleEntry<String, Key>> createDebugProcessObservable(
-                                                    String logUrl,
-                                                    final CredentialsProvider credentialsProvider) {
+                                                                String logUrl,
+                                                                final CredentialsProvider credentialsProvider,
+                                                                Observable<Object> stopSubject) {
         return JobUtils.createYarnLogObservable(
                 credentialsProvider,
+                stopSubject,
                 logUrl,
                 "stderr",
                 SparkBatchJobDebuggerRunner.this.getLogReadBlockSize())
@@ -555,7 +555,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
      * @param debugProcessOb the debug process Observable to match
      * @return matched Executor Observable, the event is SimpleEntry with host, containerId pair
      */
-    private Observable<SimpleEntry<String, String>> matchedExecutorFromDebugProcessObservable(
+    private Observable<SimpleEntry<String, String>> matchExecutorFromDebugProcessObservable(
                                                         Observable<SimpleEntry<String, Key>> debugProcessOb) {
         PublishSubject<String> closeSubject = PublishSubject.create();
         PublishSubject<String> openSubject = PublishSubject.create();
