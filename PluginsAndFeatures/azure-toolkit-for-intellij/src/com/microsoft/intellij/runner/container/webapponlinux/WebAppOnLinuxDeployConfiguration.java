@@ -130,7 +130,7 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
         }
         // acr
         PrivateRegistryImageSetting setting = deployModel.getPrivateRegistryImageSetting();
-        if (Utils.isEmptyString(setting.getServerUrl()) || setting.getServerUrl().matches(DOMAIN_NAME_REGEX)) {
+        if (Utils.isEmptyString(setting.getServerUrl()) || !setting.getServerUrl().matches(DOMAIN_NAME_REGEX)) {
             throw new ConfigurationException(MISSING_SERVER_URL);
         }
         if (Utils.isEmptyString(setting.getUsername())) {
