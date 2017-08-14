@@ -92,7 +92,7 @@ public class DockerRunAction extends AzureAnAction {
                 ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
             });
             String imageName = DockerUtil.buildImage(docker, project,
-                    Paths.get(project.getBasePath(), Constant.DOCKER_CONTEXT_FOLDER));
+                    Paths.get(project.getBasePath(), Constant.DOCKER_CONTEXT_FOLDER), null);
             DefaultLoader.getIdeHelper().invokeAndWait(() -> {
                 ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageName));
             });

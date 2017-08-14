@@ -57,7 +57,8 @@ public class AddDockerSupportAction extends AzureAnAction {
         String artifactName = "<artifact>";
         List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getRootProjects();
         if (mavenProjects.size() > 0) {
-            artifactName = mavenProjects.get(0).getFinalName();
+            artifactName = String.format("%s.%s",
+                    mavenProjects.get(0).getFinalName(), mavenProjects.get(0).getPackaging());
         }
         // create docker file
         try {

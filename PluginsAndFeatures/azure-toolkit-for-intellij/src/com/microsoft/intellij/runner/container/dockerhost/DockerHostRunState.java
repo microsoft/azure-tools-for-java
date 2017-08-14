@@ -76,10 +76,10 @@ public class DockerHostRunState implements RunProfileState {
                     String fileName = mavenProjects.get(0).getFinalName() + ".war";
                     // TODO: build image
                     println("Build image ...  ");
-                    String dockerContent = String.format(Constant.DOCKERFILE_CONTENT_TOMCAT, project.getName());
+                    String dockerContent = String.format(Constant.DOCKERFILE_CONTENT_TOMCAT, project.getName() + ".war");
                     createDockerFile(project, "target", "Dockerfile", dockerContent);
                     DockerClient docker = DefaultDockerClient.fromEnv().build();
-                    String latestImageName = buildImage(docker, project, new File(mavenProjects.get(0).getBuildDirectory()).toPath());
+                    String latestImageName = buildImage(docker, project, new File(mavenProjects.get(0).getBuildDirectory()).toPath(), null);
                     // TODO: docker run
 
                     return null;

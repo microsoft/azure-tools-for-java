@@ -131,20 +131,11 @@ public class DockerUtil {
      * @throws InterruptedException
      * @throws IOException
      */
-    public static String buildImage(DockerClient docker, Project project, Path dockerDirectory)
+    public static String buildImage(DockerClient docker, Project project, Path dockerDirectory, ProgressHandler progressHandler)
             throws DockerCertificateException, DockerException, InterruptedException, IOException {
-        final AtomicReference<String> imageIdFromMessage = new AtomicReference<>();
         final String imageName = String.format("%s-%s:%tY%<tm%<td%<tH%<tM%<tS", Constant.IMAGE_PREFIX,
                 project.getName().toLowerCase(), new java.util.Date());
-        docker.build(dockerDirectory, imageName, new ProgressHandler() {
-            @Override
-            public void progress(ProgressMessage message) throws DockerException {
-                final String imageId = message.buildImageId();
-                if (imageId != null) {
-                    imageIdFromMessage.set(imageId);
-                }
-            }
-        });
+        docker.build(dockerDirectory, imageName, progressHandler);
         DockerRuntime.getInstance().setLatestImageName(imageName);
         return imageName;
     }

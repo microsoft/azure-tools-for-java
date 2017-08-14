@@ -37,24 +37,26 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
+import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.intellij.container.Constant;
 import com.microsoft.intellij.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.ProgressHandler;
 import com.spotify.docker.client.exceptions.DockerException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jetbrains.annotations.Nullable;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -96,32 +98,46 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                             Paths.get(targetBuildPath, targetFileName).toFile(),
                             Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME, targetFileName).toFile()
                     );
-                    // build image
-                    println("Build image ...  ");
-                    String dockerContent = String.format(Constant.DOCKERFILE_CONTENT_TOMCAT, project.getName());
-                    DockerUtil.createDockerFile(project, DOCKER_CONTEXT_FOLDER_NAME, DOCKER_FILE_NAME, dockerContent);
+                    // validate dockerfile
                     FileUtils.copyDirectory(
                             Paths.get(basePath, DOCKER_CONTEXT_FOLDER_NAME).toFile(),
                             Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME).toFile()
                     );
+                    // replace placeholder if exists
+                    Path targetDockerfile = Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME, DOCKER_FILE_NAME);
+                    String content = new String(Files.readAllBytes(targetDockerfile));
+                    content = content.replaceAll("<artifact>", targetFileName);
+                    Files.write(targetDockerfile, content.getBytes());
+
+                    // build image
+                    println("Build image ...  ");
                     DockerClient docker = DefaultDockerClient.fromEnv().build();
-                    String latestImageName = DockerUtil.buildImage(docker, project, Paths.get(targetBuildPath,
-                            DOCKER_CONTEXT_FOLDER_NAME));
+                    String latestImageName = DockerUtil.buildImage(docker, project,
+                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME),
+                            (message) -> {
+                                if (message.error() != null) {
+                                    throw new DockerException(message.error());
+                                } else {
+                                    println(message.stream());
+                                }
+                            }
+                    );
 
                     // push to ACR
                     println("Push to ACR ...  ");
-                    ProgressHandler progressHandler = message -> {
-                        // TODO: progress output
-                        println(String.format("%s%s",
-                                message.id() != null ? message.id() + "\t" : "",
-                                message.status() != null ? message.status() : ""));
-                        if (message.error() != null) {
-                            throw new DockerException(message.toString());
-                        }
-                    };
                     PrivateRegistryImageSetting acrInfo = deployModel.getPrivateRegistryImageSetting();
                     DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
-                            latestImageName, acrInfo.getImageNameWithTag(), progressHandler);
+                            latestImageName, acrInfo.getImageNameWithTag(),
+                            (message) -> {
+                                if (message.error() != null) {
+                                    throw new DockerException(message.error());
+                                } else {
+                                    println(String.format("%s%s",
+                                            message.id() != null ? message.id() + "\t" : "",
+                                            message.status() != null ? message.status() : ""));
+                                }
+                            }
+                    );
 
                     // deploy
                     if (deployModel.isCreatingNewWebAppOnLinux()) {
@@ -133,7 +149,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
 
                         if (app != null && app.name() != null) {
                             println(String.format("URL:  http://%s.azurewebsites.net/%s", app.name(),
-                                    project.getName()));
+                                    FilenameUtils.removeExtension(targetFileName)));
                             updateConfigurationDataModel(app);
                         }
                     } else {
@@ -144,13 +160,12 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                                         acrInfo);
                         if (app != null && app.name() != null) {
                             println(String.format("URL:  http://%s.azurewebsites.net/%s", app.name(),
-                                    project.getName()));
+                                    FilenameUtils.removeExtension(targetFileName)));
                         }
                     }
                     return null;
                 }
-        ).subscribeOn(Schedulers.io()).subscribe(
-                // TODO: use getSchedulerProvider, but currently defined in MvpPresenter
+        ).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
                 (res) -> {
                     println("Update cache ... ");
                     AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
