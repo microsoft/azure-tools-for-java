@@ -32,6 +32,7 @@ import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.container.DockerRuntime;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
@@ -84,7 +85,7 @@ public class WebAppOnLinuxUtil {
         AzureManager azureManager;
         azureManager = AuthMethodManager.getInstance().getAzureManager();
         WebApp webapp = null;
-        for (Subscription sb : azureManager.getSubscriptions()) {
+        for (Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
             Azure azure = azureManager.getAzure(sb.subscriptionId());
             try {
                 webapp = azure.webApps().getByResourceGroup(app.resourceGroup(), app.name());
