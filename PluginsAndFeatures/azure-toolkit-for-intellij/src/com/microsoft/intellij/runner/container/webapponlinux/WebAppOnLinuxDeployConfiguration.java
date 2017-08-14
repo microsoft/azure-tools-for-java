@@ -51,7 +51,7 @@ import java.io.IOException;
 public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
 
     private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
-    private static final String MISSING_SERVER_URL = "Please specify Server URL.";
+    private static final String MISSING_SERVER_URL = "Please specify a valid Server URL.";
     private static final String MISSING_USERNAME = "Please specify Username.";
     private static final String MISSING_PASSWORD = "Please specify Password.";
     private static final String MISSING_IMAGE_WITH_TAG = "Please specify Image and Tag.";
@@ -67,6 +67,7 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
             + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
             + "and the digits '0' through '9',  '-' and '_'.";
     private static final String WAR_NAME_REGEX = "^[A-Za-z0-9_-]+\\.war$";
+    private static final String DOMAIN_NAME_REGEX = "^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$";
 
     private final WebAppOnLinuxDeployModel deployModel;
     private boolean firstTimeCreated = true;
@@ -129,7 +130,7 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
         }
         // acr
         PrivateRegistryImageSetting setting = deployModel.getPrivateRegistryImageSetting();
-        if (Utils.isEmptyString(setting.getServerUrl())) {
+        if (Utils.isEmptyString(setting.getServerUrl()) || setting.getServerUrl().matches(DOMAIN_NAME_REGEX)) {
             throw new ConfigurationException(MISSING_SERVER_URL);
         }
         if (Utils.isEmptyString(setting.getUsername())) {
