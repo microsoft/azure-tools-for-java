@@ -360,7 +360,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             webAppOnLinuxDeployConfiguration.setCreatingNewWebAppOnLinux(false);
             ResourceEx<SiteInner> selectedWebApp = null;
             int index = webAppTable.getSelectedRow();
-            if (cachedWebAppList != null && index > 0 && index < cachedWebAppList.size()) {
+            if (cachedWebAppList != null && index >= 0 && index < cachedWebAppList.size()) {
                 selectedWebApp = cachedWebAppList.get(webAppTable.getSelectedRow());
             }
             if (selectedWebApp != null) {
