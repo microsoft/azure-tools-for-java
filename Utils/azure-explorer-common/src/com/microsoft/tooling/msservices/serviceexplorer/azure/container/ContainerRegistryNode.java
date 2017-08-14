@@ -26,6 +26,7 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -35,10 +36,10 @@ import java.util.Map;
 
 public class ContainerRegistryNode extends Node implements TelemetryProperties {
 
-    //TODO：change icon
-    private static final String ICON_PATH = "RedisCache.png";
+    public static final String ICON_PATH = "acr.png";
 
     private final String subscriptionId;
+    private final String resourceId;
 
     // action name
     private static final String SHOW_PROPERTY_ACTION = "Show properties";
@@ -47,6 +48,7 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
         super(subscriptionId + content.getName(), content.getName(),
                 parent, ICON_PATH, true /*delayActionLoading*/);
         this.subscriptionId = subscriptionId;
+        this.resourceId = content.getId();
         loadActions();
     }
 
@@ -61,7 +63,7 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-
+            DefaultLoader.getUIHelper().openContainerRegistryPropertyView(ContainerRegistryNode.this);
         }
     }
 
@@ -70,5 +72,13 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
         return properties;
+    }
+
+    public String getSubscriptionId() {
+        return this.subscriptionId;
+    }
+
+    public String getResourceId() {
+        return this.resourceId;
     }
 }

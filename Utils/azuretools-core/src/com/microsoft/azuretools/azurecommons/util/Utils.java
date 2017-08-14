@@ -20,6 +20,9 @@
 
 package com.microsoft.azuretools.azurecommons.util;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -208,4 +211,14 @@ public class Utils {
     public static boolean isEmptyString(String str) {
         return str == null || str.trim().isEmpty();
     }
+
+    public static void copyToSystemClipboard(String key) throws Exception {
+		StringSelection stringSelection = new StringSelection(key);
+		Toolkit toolKit = Toolkit.getDefaultToolkit();
+		if (toolKit == null) {
+			throw new Exception("Cannot copy to system clipboard.");
+		}
+		Clipboard clipboard = toolKit.getSystemClipboard();
+		clipboard.setContents(stringSelection, null);
+	}
 }

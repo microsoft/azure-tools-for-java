@@ -22,32 +22,13 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
 
-public class ContainerRegistryModule extends AzureRefreshableNode {
+public interface ContainerRegistryPropertyMvpView extends MvpView {
 
-    private static final String ACR_MODULE_ID = ContainerRegistryModule.class.getName();
-    private static final String ICON_PATH = "acr.png";
-    private static final String BASE_MODULE_NAME = "Azure Container Registry";
-    private final ContainerRegistryModulePresenter<ContainerRegistryModule> containerRegistryPresenter;
+    void readProperty(String sid, String id);
 
-    public ContainerRegistryModule(Node parent) {
-        super(ACR_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
-        containerRegistryPresenter = new ContainerRegistryModulePresenter<>();
-        containerRegistryPresenter.onAttachView(ContainerRegistryModule.this);
-    }
-
-    @Override
-    public ContainerRegistryNode createNode(Node parent, String sid, NodeContent content) {
-        return new ContainerRegistryNode(this, sid, content);
-    }
-
-    @Override
-    protected void refreshItems() throws AzureCmdException {
-        containerRegistryPresenter.onModuleRefresh();
-    }
+    void showProperty(ContainerRegistryProperty property);
 
 }

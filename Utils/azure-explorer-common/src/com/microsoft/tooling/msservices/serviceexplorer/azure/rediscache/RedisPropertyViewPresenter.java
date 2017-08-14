@@ -32,7 +32,7 @@ import rx.Observable;
 
 public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends MvpPresenter<V> {
 
-    private static final String CANNOT_GET_SUBCROPTION_ID = "Cannot get Subscription ID.";
+    private static final String CANNOT_GET_SUBSCRIPTION_ID = "Cannot get Subscription ID.";
     private static final String CANNOT_GET_REDIS_ID = "Cannot get Redis Cache's ID.";
     private static final String CANNOT_GET_REDIS_PROPERTY = "Cannot get Redis Cache's property.";
 
@@ -46,7 +46,7 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
      */
     public void onGetRedisProperty(String sid, String id) {
         if (Utils.isEmptyString(sid)) {
-            getMvpView().onError(CANNOT_GET_SUBCROPTION_ID);
+            getMvpView().onError(CANNOT_GET_SUBSCRIPTION_ID);
             return;
         }
         if (Utils.isEmptyString(id)) {

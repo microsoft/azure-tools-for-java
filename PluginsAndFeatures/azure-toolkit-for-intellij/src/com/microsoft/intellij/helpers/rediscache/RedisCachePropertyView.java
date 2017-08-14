@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.helpers.rediscache;
 
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisCacheProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisPropertyMvpView;
@@ -65,9 +66,21 @@ public class RedisCachePropertyView extends BaseEditor implements RedisPropertyM
         disableTxtBoard();
         makeTxtOpaque();
 
-        btnPrimaryKey.addActionListener(event -> copyToSystemClipboard(primaryKey));
+        btnPrimaryKey.addActionListener(event -> {
+            try {
+                Utils.copyToSystemClipboard(primaryKey);
+            } catch (Exception e) {
+                onError(e.getMessage());
+            }
+        });
 
-        btnSecondaryKey.addActionListener(event -> copyToSystemClipboard(secondaryKey));
+        btnSecondaryKey.addActionListener(event -> {
+            try {
+                Utils.copyToSystemClipboard(secondaryKey);
+            } catch (Exception e) {
+                onError(e.getMessage());
+            }
+        });
     }
 
     @NotNull
@@ -108,17 +121,6 @@ public class RedisCachePropertyView extends BaseEditor implements RedisPropertyM
         txtVersionValue.setText(property.getVersion());
         btnPrimaryKey.setEnabled(true);
         btnSecondaryKey.setEnabled(true);
-    }
-
-    private void copyToSystemClipboard(String key) {
-        StringSelection stringSelection = new StringSelection(key);
-        Toolkit toolKit = Toolkit.getDefaultToolkit();
-        if (toolKit == null) {
-            onError(COPY_FAIL);
-            return;
-        }
-        Clipboard clipboard = toolKit.getSystemClipboard();
-        clipboard.setContents(stringSelection, null);
     }
 
     private void disableTxtBoard() {

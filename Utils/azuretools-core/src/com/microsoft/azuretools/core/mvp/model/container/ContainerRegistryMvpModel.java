@@ -24,6 +24,9 @@ package com.microsoft.azuretools.core.mvp.model.container;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.containerregistry.Registries;
+import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.management.redis.RedisCache;
+import com.microsoft.azure.management.redis.RedisCaches;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -61,5 +64,25 @@ public class ContainerRegistryMvpModel {
             registries.put(sub.subscriptionId(), azure.containerRegistries());
         }
         return registries;
+    }
+
+    /**
+     * Get ACR by Id.
+     */
+    public Registry getContainerRegistry(String sid, String id) throws IOException {
+        Registry registry = null;
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null) {
+            return registry;
+        }
+        Azure azure = azureManager.getAzure(sid);
+        if (azure == null) {
+            return registry;
+        }
+        Registries registries = azure.containerRegistries();
+        if (registries == null) {
+            return registry;
+        }
+        return registries.getById(id);
     }
 }

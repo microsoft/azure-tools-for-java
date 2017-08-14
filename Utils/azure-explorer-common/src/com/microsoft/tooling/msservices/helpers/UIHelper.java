@@ -30,6 +30,7 @@ import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 
 import java.io.File;
@@ -68,6 +69,8 @@ public interface UIHelper {
     void openRedisExplorer(@NotNull RedisCacheNode node);
     
     void openInBrowser(String link);
+
+    void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node);
 
     @Nullable
     <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,
