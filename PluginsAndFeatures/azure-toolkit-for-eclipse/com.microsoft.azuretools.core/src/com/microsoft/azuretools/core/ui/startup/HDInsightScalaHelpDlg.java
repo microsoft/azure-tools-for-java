@@ -26,9 +26,6 @@ import com.microsoft.azuretools.core.utils.PluginUtil;
 public class HDInsightScalaHelpDlg extends Dialog {
 	private boolean isShowTips = true;
 	
-	private static String scalaPluginMarketplaceURL = "http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=421";
-	private static String scalaPluginSymbolicName = "org.scala-ide.sdt.core";
-	
 	public boolean isShowTipsStatus() {
 		return isShowTips;
 	}
@@ -52,7 +49,7 @@ public class HDInsightScalaHelpDlg extends Dialog {
 	}
 	
 	protected void cancelPressed() {
-		PluginUtil.forceInstallPluginUsingMarketPlaceAsync(scalaPluginSymbolicName, scalaPluginMarketplaceURL);
+		PluginUtil.forceInstallPluginUsingMarketPlaceAsync(PluginUtil.scalaPluginSymbolicName, PluginUtil.scalaPluginMarketplaceURL);
 		
 		super.cancelPressed();
 	}

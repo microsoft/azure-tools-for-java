@@ -86,6 +86,9 @@ import com.microsoft.azuretools.core.Activator;
 public class PluginUtil {
 
 	public static final String pluginFolder = getPluginFolderPathUsingBundle();
+
+	public static final String scalaPluginMarketplaceURL = "http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=421";
+	public static final String scalaPluginSymbolicName = "org.scala-ide.sdt.core";
 	
 	private static final String marketplacePluginSymbolicName = "org.eclipse.epp.mpc.ui";
 	private static final String marketplacePluginID = "org.eclipse.epp.mpc.feature.group";
@@ -139,15 +142,26 @@ public class PluginUtil {
 		}
 		return selProject;
 	}
-
+	
 	/**
-	 * This method will display the error message box when any error occurs.It takes two parameters
+	 * This method will display the information message box. It takes three parameters
 	 *
 	 * @param shell       parent shell
 	 * @param title       the text or title of the window.
 	 * @param message     the message which is to be displayed
 	 */
-	public static void displayErrorDialog (Shell shell , String title , String message ){
+	public static void displayInfoDialog(Shell shell , String title , String message ){
+		MessageDialog.openInformation(shell, title, message);
+	}
+	
+	/**
+	 * This method will display the error message box when any error occurs. It takes two parameters
+	 *
+	 * @param shell       parent shell
+	 * @param title       the text or title of the window.
+	 * @param message     the message which is to be displayed
+	 */
+	public static void displayErrorDialog(Shell shell , String title , String message ){
 		MessageDialog.openError(shell, title, message);
 	}
 
@@ -455,8 +469,11 @@ public class PluginUtil {
 		}
 	}
 	
-	public static void forceInstallPluginUsingMarketPlaceAsync(String pluginSymbolicName, String marketplaceURL) {
-		Display.getDefault().asyncExec(() -> forceInstallPluginUsingMarketplace(pluginSymbolicName, marketplaceURL));
+	public static boolean forceInstallPluginUsingMarketPlaceAsync(String pluginSymbolicName, String marketplaceURL) {
+		getParentShell().getDisplay().getDefault().asyncExec(() -> {
+			forceInstallPluginUsingMarketplace(pluginSymbolicName, marketplaceURL);
+		});
+		return true;
 	}
 	
 	/**
@@ -476,13 +493,14 @@ public class PluginUtil {
 			
 		boolean isMarketplacePluginInstalled = checkPlugInInstallation(marketplacePluginSymbolicName);
 		if (!isMarketplacePluginInstalled) {
-			PluginUtil.displayErrorDialog(getParentShell(), "Install missing plugin", "Start to install Eclipse Marketplace Client plugin which is required to install other missing plugin (" + pluginSymbolicName + ")!");
+			PluginUtil.displayInfoDialog(getParentShell(), "Install missing plugin", "Start to install Eclipse Marketplace Client plugin which is required to install other missing plugin (" + pluginSymbolicName + ")!");
 			forceInstallPluginUsingP2(marketplacePluginID);		
 		}
 	
 		try {
-			PluginUtil.displayErrorDialog(getParentShell(), "Install missing plugin", "Start to install missing plugin (" + pluginSymbolicName + ")!");
+			PluginUtil.displayInfoDialog(getParentShell(), "Install missing plugin", "Start to install missing plugin (" + pluginSymbolicName + ")!");
 			SolutionInstallationInfo info = MarketplaceUrlHandler.createSolutionInstallInfo(marketplaceURL);
+			
 			MarketplaceUrlHandler.triggerInstall(info);
 		} catch (Exception e) {
 			String errorMsg = "Error installing " + pluginSymbolicName + "! Please manually install using Eclipse marketplace from: Help -> Eclipse Marketplace....";
@@ -506,7 +524,7 @@ public class PluginUtil {
 		return true;
 	}
 	
-	private static boolean checkPlugInInstallation(String pluginSymbolicName) {
+	public static boolean checkPlugInInstallation(String pluginSymbolicName) {
 		Bundle[] bundles = Platform.getBundles(pluginSymbolicName, null);
 		return bundles != null && bundles.length >= 0;
 	}
