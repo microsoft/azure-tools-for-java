@@ -87,8 +87,8 @@ public class PluginUtil {
 
 	public static final String pluginFolder = getPluginFolderPathUsingBundle();
 
-	public static String scalaPluginMarketplaceURL = "http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=421";
-	public static String scalaPluginSymbolicName = "org.scala-ide.sdt.core";
+	public static final String scalaPluginMarketplaceURL = "http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=421";
+	public static final String scalaPluginSymbolicName = "org.scala-ide.sdt.core";
 	
 	private static final String marketplacePluginSymbolicName = "org.eclipse.epp.mpc.ui";
 	private static final String marketplacePluginID = "org.eclipse.epp.mpc.feature.group";
