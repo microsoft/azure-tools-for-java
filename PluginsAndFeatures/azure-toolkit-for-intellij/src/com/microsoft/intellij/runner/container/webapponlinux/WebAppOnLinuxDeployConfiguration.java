@@ -59,6 +59,7 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     private static final String MISSING_SUBSCRIPTION = "Please specify Subscription.";
     private static final String MISSING_RESOURCE_GROUP = "Please specify Resource Group.";
     private static final String MISSING_APP_SERVICE_PLAN = "Please specify App Service Plan.";
+    private static final String INVALID_IMAGE_WITH_TAG = "Image and Tag should start with '%s/'";
 
     // TODO: move to util
     private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
@@ -127,17 +128,21 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
             throw new ConfigurationException(NEED_SIGN_IN);
         }
         // acr
-        if (Utils.isEmptyString(deployModel.getPrivateRegistryImageSetting().getServerUrl())) {
+        PrivateRegistryImageSetting setting = deployModel.getPrivateRegistryImageSetting();
+        if (Utils.isEmptyString(setting.getServerUrl())) {
             throw new ConfigurationException(MISSING_SERVER_URL);
         }
-        if (Utils.isEmptyString(deployModel.getPrivateRegistryImageSetting().getUsername())) {
+        if (Utils.isEmptyString(setting.getUsername())) {
             throw new ConfigurationException(MISSING_USERNAME);
         }
-        if (Utils.isEmptyString(deployModel.getPrivateRegistryImageSetting().getPassword())) {
+        if (Utils.isEmptyString(setting.getPassword())) {
             throw new ConfigurationException(MISSING_PASSWORD);
         }
-        if (Utils.isEmptyString(deployModel.getPrivateRegistryImageSetting().getImageNameWithTag())) {
+        if (Utils.isEmptyString(setting.getImageNameWithTag())) {
             throw new ConfigurationException(MISSING_IMAGE_WITH_TAG);
+        }
+        if (!setting.getImageNameWithTag().startsWith(setting.getServerUrl() + "/")) {
+            throw new ConfigurationException(String.format(INVALID_IMAGE_WITH_TAG, setting.getServerUrl()));
         }
         // web app
         if (deployModel.isCreatingNewWebAppOnLinux()) {
