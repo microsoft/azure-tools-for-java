@@ -37,6 +37,7 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.XmlSerializer;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
@@ -45,8 +46,11 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+
 public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
 
+    private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
     private static final String MISSING_SERVER_URL = "Please specify Server URL.";
     private static final String MISSING_USERNAME = "Please specify Username.";
     private static final String MISSING_PASSWORD = "Please specify Password.";
@@ -115,6 +119,13 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     }
 
     public void validate() throws ConfigurationException {
+        try {
+            if (!AuthMethodManager.getInstance().isSignedIn()) {
+                throw new ConfigurationException(NEED_SIGN_IN);
+            }
+        } catch (IOException e) {
+            throw new ConfigurationException(NEED_SIGN_IN);
+        }
         // acr
         if (Utils.isEmptyString(deployModel.getPrivateRegistryImageSetting().getServerUrl())) {
             throw new ConfigurationException(MISSING_SERVER_URL);

@@ -36,6 +36,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.runner.webapp.WebAppConfigurationType;
 
@@ -43,9 +44,12 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+
 public class WebAppConfiguration extends RunConfigurationBase {
 
     // const string
+    private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
     private static final String NEED_CHOOSE_WEB_APP = "Choose a web app to deploy.";
     private static final String MISSING_WEB_APP_NAME = "Web App name not provided.";
     private static final String MISSING_SUBSCRIPTION = "Subscription not provided.";
@@ -111,6 +115,13 @@ public class WebAppConfiguration extends RunConfigurationBase {
     }
 
     public void validate() throws ConfigurationException {
+        try {
+            if (!AuthMethodManager.getInstance().isSignedIn()) {
+                throw new ConfigurationException(NEED_SIGN_IN);
+            }
+        } catch (IOException e) {
+            throw new ConfigurationException(NEED_SIGN_IN);
+        }
         if (webAppSettingModel.isCreatingNew()) {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppName())) {
                 throw new ConfigurationException(MISSING_WEB_APP_NAME);
