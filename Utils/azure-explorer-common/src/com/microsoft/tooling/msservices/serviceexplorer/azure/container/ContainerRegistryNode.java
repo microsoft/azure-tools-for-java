@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -43,6 +44,10 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
 
     // action name
     private static final String SHOW_PROPERTY_ACTION = "Show properties";
+    private static final String OPEN_IN_BROWSER_ACTION = "Open in browser";
+
+    // string formatter
+    private static final String AZURE_PORTAL_LINK_FORMAT = "%s/#resource/%s/overview";
 
     public ContainerRegistryNode(Node parent, String subscriptionId, NodeContent content) {
         super(subscriptionId + content.getName(), content.getName(),
@@ -54,17 +59,36 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
 
     @Override
     protected void loadActions() {
-        addAction(SHOW_PROPERTY_ACTION, null, new ContainerRegistryNode.ShowContainerRegistryPropertyAction());
+        addAction(SHOW_PROPERTY_ACTION, null, new ShowContainerRegistryPropertyAction());
+        addAction(OPEN_IN_BROWSER_ACTION, null, new OpenInBrowserAction());
         super.loadActions();
     }
 
     // Show Container Registry property
-    public class ShowContainerRegistryPropertyAction extends NodeActionListener {
+    private class ShowContainerRegistryPropertyAction extends NodeActionListener {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
             DefaultLoader.getUIHelper().openContainerRegistryPropertyView(ContainerRegistryNode.this);
         }
+    }
+
+    // Open in browser action
+    private class OpenInBrowserAction extends NodeActionListener {
+
+        @Override
+        protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+            String portalUrl = "";
+            try {
+                portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
+            } catch (Exception exception) {
+                portalUrl = "";
+                System.out.println(exception.getMessage());
+            }
+            DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl,
+                    ContainerRegistryNode.this.resourceId));
+        }
+
     }
 
     @Override
