@@ -36,6 +36,7 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
@@ -89,6 +90,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private List<ResourceEx<WebApp>> cachedWebAppList = null;
 
     private String lastSelectedSid;
+    private String lastSelectedResGrp;
     private String lastSelectedLocation;
     private String lastSelectedPriceTier;
     private Artifact lastSelectedArtifact;
@@ -97,6 +99,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private boolean telemetrySent;
 
     // const
+    private static final String NOT_APPLICABLE = "N/A";
     private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
     private static final String TABLE_EMPTY_MESSAGE = "No available Web App.";
     private static final String DEFAULT_APP_NAME = "webapp-" ;
@@ -190,6 +193,21 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
         });
 
+        cbExistResGrp.addActionListener(e-> {
+            ResourceGroup resGrp = (ResourceGroup) cbExistResGrp.getSelectedItem();
+            if (resGrp == null) {
+                return;
+            }
+            String selectedGrp = resGrp.name();
+            if (!Comparing.equal(lastSelectedResGrp, selectedGrp)) {
+                cbExistAppServicePlan.removeAllItems();
+                lblLocation.setText(NOT_APPLICABLE);
+                lblPricing.setText(NOT_APPLICABLE);
+                webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, selectedGrp);
+                lastSelectedResGrp = selectedGrp;
+            }
+        });
+
         cbSubscription.setRenderer(new ListCellRendererWrapper<Subscription>() {
             @Override
             public void customize(JList list, Subscription subscription, int
@@ -208,7 +226,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             String selectedSid = subscription.subscriptionId();
             if (!Comparing.equal(lastSelectedSid, selectedSid)) {
                 webAppDeployViewPresenter.onLoadResourceGroups(selectedSid);
-                webAppDeployViewPresenter.onLoadAppServicePlan(selectedSid);
                 webAppDeployViewPresenter.onLoadLocation(selectedSid);
                 lastSelectedSid = selectedSid;
             }
@@ -417,8 +434,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 webAppConfiguration.setResourceGroup(txtNewResGrp.getText());
             } else {
                 webAppConfiguration.setCreatingResGrp(false);
-                ResourceGroup resourceGroup = (ResourceGroup) cbExistResGrp.getSelectedItem();
-                webAppConfiguration.setResourceGroup(resourceGroup == null ? "" : resourceGroup.name());
+                webAppConfiguration.setResourceGroup(lastSelectedResGrp == null ? "" : lastSelectedResGrp);
             }
             // app service plan
             if (rdoCreateAppServicePlan.isSelected()) {
@@ -594,6 +610,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     public void fillAppServicePlan(List<AppServicePlan> appServicePlans) {
         cbExistAppServicePlan.removeAllItems();
         appServicePlans.stream()
+                .filter(item -> Comparing.equal(item.operatingSystem(), OperatingSystem.WINDOWS))
                 .sorted(Comparator.comparing(AppServicePlan::name))
                 .forEach((plan) -> {
                     cbExistAppServicePlan.addItem(plan);
