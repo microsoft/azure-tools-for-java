@@ -72,9 +72,8 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     private final WebAppOnLinuxDeployModel deployModel;
     private boolean firstTimeCreated = true;
 
-    protected WebAppOnLinuxDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory,
-                                               String name) {
-        super(project, factory, name);
+    protected WebAppOnLinuxDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory) {
+        super(project, factory, project.getName());
         deployModel = new WebAppOnLinuxDeployModel();
     }
 
