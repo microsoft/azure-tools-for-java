@@ -1,28 +1,45 @@
 /**
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
+ * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
  * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package com.microsoft.azuretools.azureexplorer.helpers;
 
-import java.io.File;
-import java.net.URL;
-import java.text.DecimalFormat;
-import java.util.Map;
+import com.google.common.collect.ImmutableMap;
+import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.azureexplorer.editors.StorageEditorInput;
+import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor;
+import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditorInput;
+import com.microsoft.azuretools.azureexplorer.forms.OpenSSLFinderForm;
+import com.microsoft.azuretools.azureexplorer.views.ContainerRegistryPropertyView;
+import com.microsoft.azuretools.azureexplorer.views.RedisPropertyView;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.helpers.UIHelper;
+import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
+import com.microsoft.tooling.msservices.model.storage.BlobContainer;
+import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
+import com.microsoft.tooling.msservices.model.storage.Queue;
+import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
+import com.microsoft.tooling.msservices.model.storage.Table;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -38,33 +55,18 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import com.google.common.collect.ImmutableMap;
-import com.microsoft.azure.management.storage.StorageAccount;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azureexplorer.Activator;
-import com.microsoft.azuretools.azureexplorer.editors.StorageEditorInput;
-import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor;
-import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditorInput;
-import com.microsoft.azuretools.azureexplorer.forms.OpenSSLFinderForm;
-import com.microsoft.azuretools.azureexplorer.views.RedisPropertyView;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.UIHelper;
-import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
-import com.microsoft.tooling.msservices.model.storage.BlobContainer;
-import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
-import com.microsoft.tooling.msservices.model.storage.Queue;
-import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
-import com.microsoft.tooling.msservices.model.storage.Table;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
+import java.io.File;
+import java.net.URL;
+import java.text.DecimalFormat;
+import java.util.Map;
 
 public class UIHelperImpl implements UIHelper {
     private Map<Class<? extends StorageServiceTreeItem>, String> type2Editor = ImmutableMap.of(BlobContainer.class, "com.microsoft.azuretools.azureexplorer.editors.BlobExplorerFileEditor",
             Queue.class, "com.microsoft.azuretools.azureexplorer.editors.QueueFileEditor",
             Table.class, "com.microsoft.azuretools.azureexplorer.editors.TableFileEditor");
-    
+
     private static final String UNABLE_TO_OPEN_BROWSER = "Unable to open external web browser";
-    private static final String UNABLE_TO_GET_REDIS_PROPERTY = "Error opening RedisPropertyView";
+    private static final String UNABLE_TO_GET_PROPERTY = "Error opening view page";
     private static final String UNABLE_TO_OPEN_EXPLORER = "Unable to open the Redis Cache Explorer";
 
     @Override
@@ -151,7 +153,7 @@ public class UIHelperImpl implements UIHelper {
             Activator.getDefault().log("Error opening " + item.getName(), e);
         }
     }
-    
+
     @Override
     public <T extends StorageServiceTreeItem> void openItem(Object projectObject, final StorageAccount storageAccount, final T item, String itemType, String itemName, String iconName) {
 //        Display.getDefault().syncExec(new Runnable() {
@@ -187,6 +189,7 @@ public class UIHelperImpl implements UIHelper {
         final IEditorDescriptor editorDescriptor=workbench.getEditorRegistry()
                 .findEditor("com.microsoft.azuretools.azureexplorer.editors.QueueFileEditor");
         DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+            @Override
             public void run() {
             	// TODO
 //                try {
@@ -206,6 +209,7 @@ public class UIHelperImpl implements UIHelper {
         final IEditorDescriptor editorDescriptor=workbench.getEditorRegistry()
                 .findEditor("com.microsoft.azuretools.azureexplorer.editors.BlobExplorerFileEditor");
         DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+            @Override
             public void run() {
             	//TODO
 //                try {
@@ -225,6 +229,7 @@ public class UIHelperImpl implements UIHelper {
         final IEditorDescriptor editorDescriptor=workbench.getEditorRegistry()
                 .findEditor("com.microsoft.azuretools.azureexplorer.editors.TableFileEditor");
         DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+            @Override
             public void run() {
             	// TODO
                 /*try {
@@ -255,7 +260,7 @@ public class UIHelperImpl implements UIHelper {
     public boolean isDarkTheme() {
         return false;
     }
-    
+
     @Override
     public void openRedisPropertyView(RedisCacheNode node) {
         String sid = node.getSubscriptionId();
@@ -263,35 +268,28 @@ public class UIHelperImpl implements UIHelper {
         if (sid == null || resId == null) {
             return;
         }
-        try {
-            IWorkbenchWindow activeWorkbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-            if (activeWorkbenchWindow == null) {
-                return;
-            }
-            IWorkbenchPage page = activeWorkbenchWindow.getActivePage();
-            if (page == null) {
-                return;
-            }
-            if (node.getResourceId() == null) {
-                showError(UNABLE_TO_GET_REDIS_PROPERTY, UNABLE_TO_GET_REDIS_PROPERTY);
-                return;
-            }
-            final RedisPropertyView view = (RedisPropertyView) page.showView(RedisPropertyView.ID, node.getResourceId(),
-                    IWorkbenchPage.VIEW_ACTIVATE);
-            view.readProperty(sid, resId);
-        } catch (PartInitException e) {
-            showException(UNABLE_TO_GET_REDIS_PROPERTY, e, UNABLE_TO_GET_REDIS_PROPERTY, false, false);
-        }
+        openView(RedisPropertyView.ID, sid, resId);
     }
-    
+
     @Override
     public void openRedisExplorer(@NotNull RedisCacheNode node) {
         IWorkbench workbench = PlatformUI.getWorkbench();
-        RedisExplorerEditorInput input = new RedisExplorerEditorInput(node.getSubscriptionId(), node.getResourceId(), node.getName());
+        RedisExplorerEditorInput input = new RedisExplorerEditorInput(node.getSubscriptionId(),
+                node.getResourceId(), node.getName());
         IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(RedisExplorerEditor.ID);
         openEditor(EditorType.REDIS_EXPLORER, input, descriptor);
     }
-    
+
+    @Override
+    public void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node) {
+        String sid = node.getSubscriptionId();
+        String resId = node.getResourceId();
+        if (sid == null || resId == null) {
+            return;
+        }
+        openView(ContainerRegistryPropertyView.ID, sid, resId);
+    }
+
     @Override
     public void openInBrowser(String link) {
         try {
@@ -300,14 +298,14 @@ public class UIHelperImpl implements UIHelper {
             showException(UNABLE_TO_OPEN_BROWSER, e, UNABLE_TO_OPEN_BROWSER, false, false);
         }
     }
-    
+
     public static String readableFileSize(long size) {
         if (size <= 0) return "0";
         final String[] units = new String[]{"B", "kB", "MB", "GB", "TB"};
         int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
         return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
     }
-    
+
     private void openEditor(EditorType type, IEditorInput input, IEditorDescriptor descriptor) {
         try {
             IWorkbench workbench = PlatformUI.getWorkbench();
@@ -323,9 +321,40 @@ public class UIHelperImpl implements UIHelper {
                 case REDIS_EXPLORER:
                     page.openEditor(input, descriptor.getId());
                     break;
+                default:
+                    break;
             }
         } catch (Exception e) {
             showException(UNABLE_TO_OPEN_EXPLORER, e, UNABLE_TO_OPEN_EXPLORER, false, false);
+        }
+    }
+
+    private void openView(String viewId, String sid, String resId) {
+        try {
+            IWorkbenchWindow activeWorkbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+            if (activeWorkbenchWindow == null) {
+                return;
+            }
+            IWorkbenchPage page = activeWorkbenchWindow.getActivePage();
+            if (page == null) {
+                return;
+            }
+            switch (viewId) {
+                case RedisPropertyView.ID:
+                    final RedisPropertyView redisPropertyView = (RedisPropertyView) page.showView(RedisPropertyView.ID,
+                            resId, IWorkbenchPage.VIEW_ACTIVATE);
+                    redisPropertyView.onReadProperty(sid, resId);
+                    break;
+                case ContainerRegistryPropertyView.ID:
+                    final ContainerRegistryPropertyView registryPropertyView = (ContainerRegistryPropertyView)
+                            page.showView(ContainerRegistryPropertyView.ID, resId, IWorkbenchPage.VIEW_ACTIVATE);
+                    registryPropertyView.onReadProperty(sid, resId);
+                    break;
+                default:
+                    break;
+            }
+        } catch (PartInitException e) {
+            showException(UNABLE_TO_GET_PROPERTY, e, UNABLE_TO_GET_PROPERTY, false, false);
         }
     }
 }

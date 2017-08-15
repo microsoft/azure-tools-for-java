@@ -307,7 +307,7 @@ public class UIHelperImpl implements UIHelper {
         for (FileEditor editor: editors) {
             if (editor.getName().equals(RedisCachePropertyView.ID) &&
                     editor instanceof RedisCachePropertyView) {
-                ((RedisCachePropertyView) editor).readProperty(sid, resId);
+                ((RedisCachePropertyView) editor).onReadProperty(sid, resId);
             }
         }
     }

@@ -33,6 +33,12 @@
              icon="icons/RedisCache.png"
              name="Redis Cache Property">
        </view>
+       <view
+             class="com.microsoft.azuretools.azureexplorer.views.ContainerRegistryPropertyView"
+             id="com.microsoft.azuretools.azureexplorer.views.ContainerRegistryPropertyView"
+             icon="icons/acr.png"
+             name="Container Registry Property">
+       </view>
    </extension>
    <extension
             point="org.eclipse.ui.editors">

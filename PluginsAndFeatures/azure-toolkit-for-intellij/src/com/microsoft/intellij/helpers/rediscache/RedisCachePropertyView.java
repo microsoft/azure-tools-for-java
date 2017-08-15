@@ -101,7 +101,7 @@ public class RedisCachePropertyView extends BaseEditor implements RedisPropertyM
     }
 
     @Override
-    public void readProperty(String sid, String id) {
+    public void onReadProperty(String sid, String id) {
         redisPropertyViewPresenter.onGetRedisProperty(sid, id);
     }
 

@@ -28,14 +28,11 @@ import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpMod
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ContainerRegistryModulePresenter<V extends ContainerRegistryModule> extends MvpPresenter<V> {
-
-    private static final String CANNOT_GET_REGISTRIES_ID = "Cannot get Azure Container Registry ID.";
 
     private final ContainerRegistryMvpModel containerRegistryMvpModel = ContainerRegistryMvpModel.getInstance();
 
@@ -55,7 +52,7 @@ public class ContainerRegistryModulePresenter<V extends ContainerRegistryModule>
                 nodeMap.put(sid, nodeContentList);
             }
         } catch (Exception e) {
-            getMvpView().onErrorWithException(CANNOT_GET_REGISTRIES_ID, e);
+            getMvpView().onErrorWithException(e.getMessage(), e);
             return;
         }
         getMvpView().showNode(nodeMap);
