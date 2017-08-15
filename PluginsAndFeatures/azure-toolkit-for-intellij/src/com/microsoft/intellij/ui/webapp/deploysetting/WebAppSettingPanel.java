@@ -43,29 +43,17 @@ import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.utils.AzulZuluModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
-import com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingModel;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
-import rx.Observable;
-import rx.schedulers.Schedulers;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -78,17 +66,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
+
+import rx.Observable;
+import rx.schedulers.Schedulers;
+
 public class WebAppSettingPanel implements WebAppDeployMvpView {
 
+    // const
+    private static final String NOT_APPLICABLE = "N/A";
+    private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
+    private static final String TABLE_EMPTY_MESSAGE = "No available Web App.";
+    private static final String DEFAULT_APP_NAME = "webapp-";
+    private static final String DEFAULT_PLAN_NAME = "appsp-";
+    private static final String DEFAULT_RGP_NAME = "rg-webapp-";
     // presenter
     private final WebAppDeployViewPresenter<WebAppSettingPanel> webAppDeployViewPresenter;
-
-    // cache variable
-    private ResourceEx<WebApp> selectedWebApp = null;
     private final Project project;
     private final WebAppConfiguration webAppConfiguration;
+    // cache variable
+    private ResourceEx<WebApp> selectedWebApp = null;
     private List<ResourceEx<WebApp>> cachedWebAppList = null;
-
     private String lastSelectedSid;
     private String lastSelectedResGrp;
     private String lastSelectedLocation;
@@ -97,14 +104,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private boolean isArtifact;
     private WebAppSettingModel.JdkChoice lastJdkChoice = WebAppSettingModel.JdkChoice.DEFAULT;
     private boolean telemetrySent;
-
-    // const
-    private static final String NOT_APPLICABLE = "N/A";
-    private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
-    private static final String TABLE_EMPTY_MESSAGE = "No available Web App.";
-    private static final String DEFAULT_APP_NAME = "webapp-" ;
-    private static final String DEFAULT_PLAN_NAME = "appsp-";
-    private static final String DEFAULT_RGP_NAME = "rg-webapp-";
 
     //widgets
     private JPanel pnlRoot;
@@ -596,7 +595,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             lastSelectedSid = null;
             return;
         }
-        for (Subscription subscription: subscriptions) {
+        for (Subscription subscription : subscriptions) {
             cbSubscription.addItem(subscription);
             if (Comparing.equal(subscription.subscriptionId(), webAppConfiguration.getSubscriptionId())) {
                 cbSubscription.setSelectedItem(subscription);
@@ -660,7 +659,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     @Override
     public void fillPricingTier(List<PricingTier> prices) {
         cbPricing.removeAllItems();
-        for (PricingTier price: prices) {
+        for (PricingTier price : prices) {
             cbPricing.addItem(price);
             if (Comparing.equal(price.toString(), webAppConfiguration.getPricing())) {
                 cbPricing.setSelectedItem(price);
@@ -671,7 +670,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     @Override
     public void fillWebContainer(List<WebAppUtils.WebContainerMod> webContainers) {
         cbWebContainer.removeAllItems();
-        for (WebAppUtils.WebContainerMod container: webContainers) {
+        for (WebAppUtils.WebContainerMod container : webContainers) {
             cbWebContainer.addItem(container);
             if (Comparing.equal(container.getValue(), webAppConfiguration.getWebContainer())) {
                 cbWebContainer.setSelectedItem(container);
@@ -682,7 +681,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     @Override
     public void fillThirdPartyJdk(List<AzulZuluModel> jdks) {
         cbThirdPartyJdk.removeAllItems();
-        for (AzulZuluModel jdk: jdks) {
+        for (AzulZuluModel jdk : jdks) {
             cbThirdPartyJdk.addItem(jdk);
             if (Comparing.equal(jdk.getDownloadUrl(), webAppConfiguration.getJdkUrl())) {
                 cbThirdPartyJdk.setSelectedItem(jdk);
