@@ -36,6 +36,7 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
@@ -594,6 +595,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     public void fillAppServicePlan(List<AppServicePlan> appServicePlans) {
         cbExistAppServicePlan.removeAllItems();
         appServicePlans.stream()
+                .filter(item -> Comparing.equal(item.operatingSystem(), OperatingSystem.WINDOWS))
                 .sorted(Comparator.comparing(AppServicePlan::name))
                 .forEach((plan) -> {
                     cbExistAppServicePlan.addItem(plan);
