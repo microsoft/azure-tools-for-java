@@ -20,6 +20,7 @@
 package com.microsoft.azuretools.hdinsight.projects;
 
 import java.awt.Dialog;
+import java.lang.reflect.Constructor;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -37,8 +38,8 @@ import com.microsoft.azuretools.hdinsight.Activator;
 public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements IExecutableExtension {
 	private String id;
 	private Composite sparkLibraryOptionsPanel;
-	private HDInsightScalaPageOne pageOne;
-	private HDInsightScalaPageTwo pageTwo;
+	private static NewJavaProjectWizardPageOne hdInsightScalaPageOne;
+	private NewJavaProjectWizardPageTwo hdInsightScalaPageTwo;
 	public static boolean canFinish = false;
 	
 	public HDInsightsScalaProjectWizard() {
@@ -47,19 +48,20 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 						PluginUtil.scalaPluginSymbolicName, 
 						PluginUtil.scalaPluginMarketplaceURL),
 				setFocusToInstallationWindow(),
-				new HDInsightScalaPageOne()
+				hdInsightScalaPageOne = createHDInsightScalaPageOne(),
+				createHDInsightScalaPageTwo(hdInsightScalaPageOne)
 				);
 	}
 
-	public HDInsightsScalaProjectWizard(boolean checkScalaPlugin, boolean setFocusToInstallationWindow, HDInsightScalaPageOne hdInsightScalaPageOne) {
-		this(hdInsightScalaPageOne, new HDInsightScalaPageTwo(hdInsightScalaPageOne));
+	public HDInsightsScalaProjectWizard(boolean checkScalaPlugin, boolean setFocusToInstallationWindow, NewJavaProjectWizardPageOne hdInsightScalaPageOne, NewJavaProjectWizardPageTwo hdInsightScalaPageTwo) {
+		this(hdInsightScalaPageOne, hdInsightScalaPageTwo);
 	}
 
-	public HDInsightsScalaProjectWizard(HDInsightScalaPageOne page1, HDInsightScalaPageTwo page2) {
-		super((NewJavaProjectWizardPageOne)page1, (NewJavaProjectWizardPageTwo)page2);
+	public HDInsightsScalaProjectWizard(NewJavaProjectWizardPageOne page1, NewJavaProjectWizardPageTwo page2) {
+		super(page1, page2);
 		canFinish = false;
-		pageOne = page1;
-		pageTwo = page2;
+		hdInsightScalaPageOne = page1;
+		hdInsightScalaPageTwo = page2;
 		setWindowTitle("New HDInsight Scala Project");
 
 		page2.setTitle("HDInsight Spark Project Library Settings");
@@ -80,6 +82,43 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 		return true;
 	}
 
+	private static NewJavaProjectWizardPageOne createHDInsightScalaPageOne() {
+		Class<?> classHDInsightScalaPageOne;
+		Constructor<?> ctorHDInsightScalaPageOne;
+		NewJavaProjectWizardPageOne result = null;
+		
+		try {
+			classHDInsightScalaPageOne = Class.forName("com.microsoft.azuretools.hdinsight.projects.HDInsightScalaPageOne");
+			Constructor<?>[] temp = classHDInsightScalaPageOne.getConstructors();
+			ctorHDInsightScalaPageOne =  classHDInsightScalaPageOne.getConstructor();
+			
+			result = (NewJavaProjectWizardPageOne)ctorHDInsightScalaPageOne.newInstance();
+		} catch (Exception ignore) {
+			
+		}
+		
+		return result;
+	}
+	
+	private static NewJavaProjectWizardPageTwo createHDInsightScalaPageTwo(Object objHDInsightScalaPageOne) {
+		Class<?> classHDInsightScalaPageTwo;
+		Class<?> classHDInsightScalaPageOne;
+		Constructor<?> ctorHDInsightScalaPageTwo;
+		NewJavaProjectWizardPageTwo result = null;
+		
+		try {
+			classHDInsightScalaPageOne = Class.forName("com.microsoft.azuretools.hdinsight.projects.HDInsightScalaPageOne");
+			classHDInsightScalaPageTwo = Class.forName("com.microsoft.azuretools.hdinsight.projects.HDInsightScalaPageTwo");
+			ctorHDInsightScalaPageTwo = classHDInsightScalaPageTwo.getConstructor(classHDInsightScalaPageOne);
+			
+			result = (NewJavaProjectWizardPageTwo) ctorHDInsightScalaPageTwo.newInstance(objHDInsightScalaPageOne);
+		} catch (Exception ignore) {
+			
+		}
+		
+		return result;
+	}
+	
 	@Override
 	public void setInitializationData(IConfigurationElement parameter, String arg1, Object arg2) {
 		super.setInitializationData(parameter, arg1, arg2);
@@ -95,7 +134,7 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 	@Override
 	public boolean performFinish() {
 		try {
-			CreateProjectUtil.createSampleFile(this.id, this.pageOne.getProjectName());
+			CreateProjectUtil.createSampleFile(this.id, this.hdInsightScalaPageOne.getProjectName());
 		} catch (CoreException e) {
 			Activator.getDefault().log("Create HDInsight project error", e);
 		}

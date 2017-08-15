@@ -22,6 +22,10 @@ class HDInsightScalaPageOne extends NewScalaProjectWizardPageOne {
 	
 	private SparkLibraryOptionsPanel sparkLibraryOptionsPanel;
 	
+	public HDInsightScalaPageOne() {
+		super();
+	}
+	
 	@Override
 	public boolean canFlipToNextPage() {
 		final String jarPathString = sparkLibraryOptionsPanel.getSparkLibraryPath();
