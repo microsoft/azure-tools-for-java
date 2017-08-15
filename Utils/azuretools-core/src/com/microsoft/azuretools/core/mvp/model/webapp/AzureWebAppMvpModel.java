@@ -157,21 +157,13 @@ public class AzureWebAppMvpModel {
     /**
      * Update container settings for existing Web App on Linux.
      *
-     * @param sid Subscription id
-     * @param webAppId id of Web App on Linux instance
+     * @param sid          Subscription id
+     * @param webAppId     id of Web App on Linux instance
      * @param imageSetting new container settings
      * @return instance of the updated Web App on Linux
      */
-    public WebApp updateWebAppOnLinux(String sid, String webAppId, ImageSetting imageSetting) {
-        WebApp app = null;
-        try {
-            app = AzureWebAppMvpModel.getInstance().getWebAppById(sid, webAppId);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (app == null) {
-            return null;
-        }
+    public WebApp updateWebAppOnLinux(String sid, String webAppId, ImageSetting imageSetting) throws IOException {
+        WebApp app = AzureWebAppMvpModel.getInstance().getWebAppById(sid, webAppId);
         if (imageSetting instanceof PrivateRegistryImageSetting) {
             PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
             app.update().withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
