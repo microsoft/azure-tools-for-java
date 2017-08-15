@@ -47,10 +47,9 @@ import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSettin
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
-import rx.Observable;
-import rx.schedulers.Schedulers;
 
 import java.awt.event.ItemEvent;
 import java.io.File;
@@ -74,6 +73,9 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
+
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 public class SettingPanel implements WebAppOnLinuxDeployView {
     private static final String NOT_APPLICABLE = "N/A";
@@ -237,7 +239,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
 
         cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
             @Override
-            public void customize(JList jList, Artifact artifact, int i, boolean b, boolean b1) {
+            public void customize(JList jlist, Artifact artifact, int i, boolean b, boolean b1) {
                 if (artifact != null) {
                     setIcon(artifact.getArtifactType().getIcon());
                     setText(artifact.getName());
@@ -253,21 +255,19 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         if (telemetrySent) {
             return;
         }
-        Observable.fromCallable(() ->{
-            Map<String, String> map = new HashMap<String, String>();
+        Observable.fromCallable(() -> {
+            Map<String, String> map = new HashMap<>();
             map.put("SubscriptionId", subId);
-            AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog
-                    ,"Run On Web App (Linux)"
-                    ,"Open"
-                    ,map);
+            AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, "Run On Web App (Linux)",
+                    "Open", map);
             return true;
         }).subscribeOn(Schedulers.io()).subscribe(
-               (res) -> {
-                   telemetrySent = true;
-               },
-               (err) -> {
-                   telemetrySent = true;
-               }
+                (res) -> {
+                    telemetrySent = true;
+                },
+                (err) -> {
+                    telemetrySent = true;
+                }
         );
     }
 
@@ -326,7 +326,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     public void apply(WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
         // set ACR info
         webAppOnLinuxDeployConfiguration.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(
-                textServerUrl.getText(),
+                textServerUrl.getText().replaceFirst("^https?://", "").replaceFirst("/$", ""),
                 textUsername.getText(),
                 String.valueOf(passwordField.getPassword()),
                 textImageTag.getText(),
@@ -340,7 +340,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             if (null != p) {
                 webAppOnLinuxDeployConfiguration.setTargetName(p.getFileName().toString());
             } else {
-                webAppOnLinuxDeployConfiguration.setTargetName(lastSelectedArtifact.getName() + "." + MavenConstants.TYPE_WAR);
+                webAppOnLinuxDeployConfiguration.setTargetName(lastSelectedArtifact.getName() + "."
+                        + MavenConstants.TYPE_WAR);
             }
         } else {
             MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
@@ -508,13 +509,13 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         // default value for new resources
         DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
         String date = df.format(new Date());
-        if(Utils.isEmptyString(textAppName.getText())) {
+        if (Utils.isEmptyString(textAppName.getText())) {
             textAppName.setText(String.format("%s-%s", APP_NAME_PREFIX, date));
         }
-        if(Utils.isEmptyString(txtNewResGrp.getText())) {
+        if (Utils.isEmptyString(txtNewResGrp.getText())) {
             txtNewResGrp.setText(String.format("%s-%s", RESOURCE_GROUP_NAME_PREFIX, date));
         }
-        if(Utils.isEmptyString(txtCreateAppServicePlan.getText())) {
+        if (Utils.isEmptyString(txtCreateAppServicePlan.getText())) {
             txtCreateAppServicePlan.setText(String.format("%s-%s", APP_SERVICE_PLAN_NAME_PREFIX, date));
         }
 
