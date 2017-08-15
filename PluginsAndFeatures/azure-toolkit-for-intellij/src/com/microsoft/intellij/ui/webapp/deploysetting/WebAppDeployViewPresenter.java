@@ -77,8 +77,9 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
     /**
      * Load app service plan from model.
      */
-    public void onLoadAppServicePlan(String sid) {
-        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionId(sid))
+    public void onLoadAppServicePlan(String sid, String group) {
+        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance()
+                .listAppServicePlanBySubscriptionIdAndResourceGroupName(sid, group))
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {
