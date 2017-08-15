@@ -102,7 +102,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     }
 
     @Override
-    public void readProperty(String sid, String id) {
+    public void onReadProperty(String sid, String id) {
         containerPropertyPresenter.onGetRegistryProperty(sid, id);
     }
 

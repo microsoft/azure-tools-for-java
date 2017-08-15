@@ -213,12 +213,12 @@ public class Utils {
     }
 
     public static void copyToSystemClipboard(String key) throws Exception {
-		StringSelection stringSelection = new StringSelection(key);
-		Toolkit toolKit = Toolkit.getDefaultToolkit();
-		if (toolKit == null) {
-			throw new Exception("Cannot copy to system clipboard.");
-		}
-		Clipboard clipboard = toolKit.getSystemClipboard();
-		clipboard.setContents(stringSelection, null);
+        StringSelection stringSelection = new StringSelection(key);
+        Toolkit toolKit = Toolkit.getDefaultToolkit();
+        if (toolKit == null) {
+            throw new Exception("Cannot copy to system clipboard.");
+        }
+        Clipboard clipboard = toolKit.getSystemClipboard();
+        clipboard.setContents(stringSelection, null);
 	}
 }

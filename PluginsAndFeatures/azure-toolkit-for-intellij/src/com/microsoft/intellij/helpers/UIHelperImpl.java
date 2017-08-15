@@ -300,11 +300,10 @@ public class UIHelperImpl implements UIHelper {
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, RedisCachePropertyViewProvider.TYPE, resId);
         if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(redisName, RedisCachePropertyViewProvider.TYPE, RedisCacheNode.REDISCACHE_ICON_PATH );
-            itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
-            itemVirtualFile.putUserData(RESOURCE_ID, resId);
+            itemVirtualFile = createVirtualFile(redisName, RedisCachePropertyViewProvider.TYPE,
+                    RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
         }
-        FileEditor[] editors = fileEditorManager.openFile( itemVirtualFile, true, true);
+        FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
         for (FileEditor editor: editors) {
             if (editor.getName().equals(RedisCachePropertyView.ID) &&
                     editor instanceof RedisCachePropertyView) {
@@ -328,9 +327,8 @@ public class UIHelperImpl implements UIHelper {
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, RedisCacheExplorerProvider.TYPE, resId);
         if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(redisName, RedisCacheExplorerProvider.TYPE, RedisCacheNode.REDISCACHE_ICON_PATH);
-            itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
-            itemVirtualFile.putUserData(RESOURCE_ID, resId);
+            itemVirtualFile = createVirtualFile(redisName, RedisCacheExplorerProvider.TYPE,
+                    RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
         }
         fileEditorManager.openFile( itemVirtualFile, true, true);
     }
@@ -345,7 +343,7 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
-    public void openContainerRegistryPropertyView(ContainerRegistryNode node) {
+    public void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node) {
         String registryName = node.getName() != null ? node.getName() : RedisCacheNode.TYPE;
         String sid = node.getSubscriptionId();
         String resId = node.getResourceId();
@@ -361,15 +359,13 @@ public class UIHelperImpl implements UIHelper {
                 ContainerRegistryPropertyViewProvider.TYPE, resId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(registryName, ContainerRegistryPropertyViewProvider.TYPE,
-                    ContainerRegistryNode.ICON_PATH);
-            itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
-            itemVirtualFile.putUserData(RESOURCE_ID, resId);
+                    ContainerRegistryNode.ICON_PATH, sid, resId);
         }
         FileEditor[] editors = fileEditorManager.openFile( itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
         for (FileEditor editor: editors) {
             if (editor.getName().equals(ContainerRegistryPropertyView.ID) &&
                     editor instanceof ContainerRegistryPropertyView) {
-                ((ContainerRegistryPropertyView) editor).readProperty(sid, resId);
+                ((ContainerRegistryPropertyView) editor).onReadProperty(sid, resId);
             }
         }
     }
@@ -459,9 +455,11 @@ public class UIHelperImpl implements UIHelper {
         return virtualFile;
     }
 
-    private LightVirtualFile createVirtualFile(String name, String type, String icon) {
+    private LightVirtualFile createVirtualFile(String name, String type, String icon, String sid, String resId) {
         LightVirtualFile itemVirtualFile = new LightVirtualFile(name);
         itemVirtualFile.setFileType(getFileType(type, icon));
+        itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
+        itemVirtualFile.putUserData(RESOURCE_ID, resId);
         return itemVirtualFile;
     }
 

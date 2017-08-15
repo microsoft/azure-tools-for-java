@@ -39,6 +39,9 @@ import java.util.Map;
 
 public class ContainerRegistryMvpModel {
 
+    private static final String NOT_SIGNED_ERROR = "Azure account is not signed in.";
+    private static final String FAILED_LOAD_AZURE = "Failed to load Azure resources.";
+
     private ContainerRegistryMvpModel() {}
 
     private static final class SingletonHolder {
@@ -49,11 +52,11 @@ public class ContainerRegistryMvpModel {
         return SingletonHolder.INSTANCE;
     }
 
-    public Map<String, Registries> getContainerRegistries() throws IOException {
+    public Map<String, Registries> getContainerRegistries() throws Exception {
         Map<String, Registries> registries = new HashMap<>();
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         if (azureManager == null) {
-            return registries;
+            throw new Exception(NOT_SIGNED_ERROR);
         }
         List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
         for (Subscription sub: subscriptions) {
@@ -69,19 +72,18 @@ public class ContainerRegistryMvpModel {
     /**
      * Get ACR by Id.
      */
-    public Registry getContainerRegistry(String sid, String id) throws IOException {
-        Registry registry = null;
+    public Registry getContainerRegistry(String sid, String id) throws Exception {
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         if (azureManager == null) {
-            return registry;
+            throw new Exception(NOT_SIGNED_ERROR);
         }
         Azure azure = azureManager.getAzure(sid);
         if (azure == null) {
-            return registry;
+            throw new Exception(FAILED_LOAD_AZURE);
         }
         Registries registries = azure.containerRegistries();
         if (registries == null) {
-            return registry;
+            return null;
         }
         return registries.getById(id);
     }

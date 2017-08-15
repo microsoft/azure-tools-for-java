@@ -54,7 +54,7 @@ public class ContainerRegistryModulePresenter<V extends ContainerRegistryModule>
                 }
                 nodeMap.put(sid, nodeContentList);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             getMvpView().onErrorWithException(CANNOT_GET_REGISTRIES_ID, e);
             return;
         }

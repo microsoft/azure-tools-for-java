@@ -27,7 +27,7 @@ import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryP
 
 public interface ContainerRegistryPropertyMvpView extends MvpView {
 
-    void readProperty(String sid, String id);
+    void onReadProperty(String sid, String id);
 
     void showProperty(ContainerRegistryProperty property);
 
