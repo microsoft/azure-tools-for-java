@@ -602,7 +602,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         for (int index = 0; index < cachedWebAppList.size(); index++) {
             if (Comparing.equal(cachedWebAppList.get(index).getResource().id(), defaultWebAppId)) {
                 webAppTable.setRowSelectionInterval(index, index);
-                defaultWebAppId = null; // clear to select nothing in future refreshing
+                // defaultWebAppId = null; // clear to select nothing in future refreshing
                 break;
             }
         }
