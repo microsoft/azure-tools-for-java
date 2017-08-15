@@ -42,16 +42,13 @@ public class HDInsightScalaHelpDlg extends Dialog {
 	@Override
 	protected Control createButtonBar(Composite parent) {
 		Control ctrl = super.createButtonBar(parent);
-		getButton(IDialogConstants.OK_ID).setVisible(false);
-		getButton(IDialogConstants.OK_ID).setEnabled(false);
-		getButton(IDialogConstants.CANCEL_ID).setText("Ok");
 		return ctrl;
 	}
 	
-	protected void cancelPressed() {
+	protected void okPressed() {
 		PluginUtil.forceInstallPluginUsingMarketPlaceAsync(PluginUtil.scalaPluginSymbolicName, PluginUtil.scalaPluginMarketplaceURL);
 		
-		super.cancelPressed();
+		super.okPressed();
 	}
 
 	protected Control createContents(Composite parent) {
