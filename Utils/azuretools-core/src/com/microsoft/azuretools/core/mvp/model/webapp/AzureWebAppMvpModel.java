@@ -25,13 +25,16 @@ package com.microsoft.azuretools.core.mvp.model.webapp;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -61,13 +64,96 @@ public class AzureWebAppMvpModel {
         return SingletonHolder.INSTANCE;
     }
 
+    private static WebApp.DefinitionStages.WithCreate withCreateNewSPlan(
+            @NotNull Azure azure,
+            @NotNull WebAppSettingModel model) throws Exception {
+        String[] tierSize = model.getPricing().split("_");
+        if (tierSize.length != 2) {
+            throw new Exception("Cannot get valid price tier");
+        }
+        PricingTier pricing = new PricingTier(tierSize[0], tierSize[1]);
+        AppServicePlan.DefinitionStages.WithCreate withCreatePlan;
+
+        WebApp.DefinitionStages.WithCreate withCreateWebApp;
+        if (model.isCreatingResGrp()) {
+            withCreatePlan = azure.appServices().appServicePlans()
+                    .define(model.getAppServicePlanName())
+                    .withRegion(model.getRegion())
+                    .withNewResourceGroup(model.getResourceGroup())
+                    .withPricingTier(pricing)
+                    .withOperatingSystem(OperatingSystem.WINDOWS);
+            withCreateWebApp = azure.webApps().define(model.getWebAppName())
+                    .withRegion(model.getRegion())
+                    .withNewResourceGroup(model.getResourceGroup())
+                    .withNewWindowsPlan(withCreatePlan);
+        } else {
+            withCreatePlan = azure.appServices().appServicePlans()
+                    .define(model.getAppServicePlanName())
+                    .withRegion(model.getRegion())
+                    .withExistingResourceGroup(model.getResourceGroup())
+                    .withPricingTier(pricing)
+                    .withOperatingSystem(OperatingSystem.WINDOWS);
+            withCreateWebApp = azure.webApps().define(model.getWebAppName())
+                    .withRegion(model.getRegion())
+                    .withExistingResourceGroup(model.getResourceGroup())
+                    .withNewWindowsPlan(withCreatePlan);
+        }
+        return withCreateWebApp;
+    }
+
+    private static WebApp.DefinitionStages.WithCreate withCreateExistingSPlan(
+            @NotNull Azure azure,
+            @NotNull WebAppSettingModel model) {
+        AppServicePlan servicePlan = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
+        WebApp.DefinitionStages.WithCreate withCreate;
+        if (model.isCreatingResGrp()) {
+            withCreate = azure.webApps().define(model.getWebAppName())
+                    .withExistingWindowsPlan(servicePlan)
+                    .withNewResourceGroup(model.getResourceGroup());
+        } else {
+            withCreate = azure.webApps().define(model.getWebAppName())
+                    .withExistingWindowsPlan(servicePlan)
+                    .withExistingResourceGroup(model.getResourceGroup());
+        }
+
+        return withCreate;
+    }
+
     public WebApp getWebAppById(String sid, String id) throws IOException {
         Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
         return azure.webApps().getById(id);
     }
 
-    public void createWebApp() {
-        // TODO
+    // TODO
+    public WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null) {
+            throw new Exception("There is no azure manager");
+        }
+        Azure azure = azureManager.getAzure(model.getSubscriptionId());
+        if (azure == null) {
+            throw new Exception(
+                    String.format("Cannot get azure instance for subID  %s", model.getSubscriptionId())
+            );
+        }
+
+        WebApp.DefinitionStages.WithCreate withCreate;
+        if (model.isCreatingAppServicePlan()) {
+            withCreate = withCreateNewSPlan(azure, model);
+        } else {
+            withCreate = withCreateExistingSPlan(azure, model);
+        }
+
+        WebApp webApp;
+        if (WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(model.getJdkChoice())) {
+            webApp = withCreate
+                    .withJavaVersion(JavaVersion.JAVA_8_NEWEST)
+                    .withWebContainer(WebContainer.fromString(model.getWebContainer()))
+                    .create();
+        } else {
+            webApp = withCreate.create();
+        }
+        return webApp;
     }
 
     public void deployWebApp() {

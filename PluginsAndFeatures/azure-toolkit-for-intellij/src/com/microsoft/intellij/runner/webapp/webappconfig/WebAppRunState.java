@@ -35,17 +35,18 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.RunProcessHandler;
+
 import org.apache.commons.net.ftp.FTPClient;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
-import rx.Observable;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,10 +55,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class WebAppRunState implements RunProfileState {
+import rx.Observable;
 
-    private final Project project;
-    private final WebAppSettingModel webAppSettingModel;
+public class WebAppRunState implements RunProfileState {
 
     private static final String GETTING_DEPLOYMENT_CREDENTIAL = "Getting Deployment Credential...";
     private static final String CONNECTING_FTP = "Connecting to FTP server...";
@@ -69,10 +69,11 @@ public class WebAppRunState implements RunProfileState {
     private static final String NO_WEBAPP = "Cannot get webapp for deploy";
     private static final String NO_TARGETFILE = "Cannot find target file: %s";
     private static final String FAIL_FTPSTORE = "FTP client can't store the artifact, reply code: %s";
-
     private static final String BASE_PATH = "/site/wwwroot/webapps/";
     private static final String ROOT_PATH = BASE_PATH + "ROOT";
     private static final String ROOT_FILE_PATH = ROOT_PATH + "." + MavenConstants.TYPE_WAR;
+    private final Project project;
+    private final WebAppSettingModel webAppSettingModel;
 
     public WebAppRunState(Project project, WebAppSettingModel webAppSettingModel) {
         this.project = project;

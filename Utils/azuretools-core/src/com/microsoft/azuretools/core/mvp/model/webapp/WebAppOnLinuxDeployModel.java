@@ -24,18 +24,6 @@
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
 public class WebAppOnLinuxDeployModel {
-    private static final String ELEMENT_ACR = "AzureContainerRegistry";
-    private static final String ATTRIBUTE_SERVER_URL = "ServerUrl";
-    private static final String ATTRIBUTE_USERNAME = "Username";
-    private static final String ATTRIBUTE_PASSWORD = "Password";
-    private static final String ATTRIBUTE_IMAGENAME_WITH_TAG = "ImageNameWithTag";
-    private static final String ATTRIBUTE_STARTUP_FILE = "StartUpFile";
-    private static final String ELEMENT_WEBAPP = "WebAppOnLinux";
-    private static final String ATTRIBUTE_WEBAPP_ID = "WebAppId";
-    private static final String ATTRIBUTE_WEBAPP_NAME = "WebAppName";
-    private static final String ATTRIBUTE_RESOURCE_GROUP_NAME = "ResourceGroupName";
-    private static final String ATTRIBUTE_SUBSCRIPTION_ID = "SubscriptionId";
-
     private PrivateRegistryImageSetting privateRegistryImageSetting;
     private boolean creatingNewWebAppOnLinux;
     private String webAppId;
