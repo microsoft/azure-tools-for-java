@@ -44,7 +44,7 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 	
 	public HDInsightsScalaProjectWizard() {
 		this(
-				PluginUtil.forceInstallPluginUsingMarketplace(
+				PluginUtil.forceInstallPluginUsingMarketPlaceAsync(
 						PluginUtil.scalaPluginSymbolicName, 
 						PluginUtil.scalaPluginMarketplaceURL),
 				setFocusToInstallationWindow(),
