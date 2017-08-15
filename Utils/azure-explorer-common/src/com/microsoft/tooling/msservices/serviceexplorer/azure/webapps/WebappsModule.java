@@ -43,7 +43,7 @@ public class WebappsModule extends AzureRefreshableNode {
 	private static final String WEB_RUN_ICON = "WebAppRunning_16.png";
 	private static final String WEB_STOP_ICON = "WebAppStopped_16.png";
 	private static final String WEB_APP_ICON = "WebApp_16.png";
-	private static final String BASE_MODULE_NAME = "Web Apps";
+	private static final String BASE_MODULE_NAME = "Web Apps (Deprecated)";
 	private static final String RUN_STATUS = "Running";
 
 	public WebappsModule(Node parent) {

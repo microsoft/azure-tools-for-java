@@ -51,6 +51,7 @@ import java.util.stream.Collectors;
 
 public class AzureWebAppMvpModel {
     private static final String NOT_SIGNED_ERROR = "Plugin not signed in error.";
+    private static final String CANNOT_GET_AZURE_MANAGER = "Cannot get Azure Manager.";
     private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure by subscription ID.";
     private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
     private final Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
@@ -160,6 +161,11 @@ public class AzureWebAppMvpModel {
         // TODO
     }
 
+    public void deleteWebApp(String sid, String appid) throws IOException {
+        getAzureBySid(sid).webApps().deleteById(appid);
+        // TODO: update cache
+    }
+
     /**
      * API to create Web App on Linux.
      *
@@ -177,7 +183,11 @@ public class AzureWebAppMvpModel {
         }
         PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
         WebApp app;
-        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null ) {
+            throw new IOException("AzureManager not found.");
+        }
+        Azure azure = azureManager.getAzure(sid);
         PricingTier pricingTier = new PricingTier(profile.getPricingSkuTier(), profile.getPricingSkuSize());
 
 
@@ -238,6 +248,7 @@ public class AzureWebAppMvpModel {
             }
         }
         return app;
+        // TODO: update cache
     }
 
     /**
@@ -259,6 +270,22 @@ public class AzureWebAppMvpModel {
             // TODO: other types of ImageSetting, e.g. Docker Hub
         }
         return app;
+    }
+
+    public void deleteWebAppOnLinux(String sid, String appid) throws IOException {
+        deleteWebApp(sid, appid);
+    }
+
+    public void restartWebApp(String sid, String appid) throws IOException {
+        getAzureBySid(sid).webApps().getById(appid).restart();
+    }
+
+    public void startWebApp(String sid, String appid) throws IOException {
+        getAzureBySid(sid).webApps().getById(appid).start();
+    }
+
+    public void stopWebApp(String sid, String appid) throws IOException {
+        getAzureBySid(sid).webApps().getById(appid).stop();
     }
 
     /**
@@ -412,6 +439,17 @@ public class AzureWebAppMvpModel {
         subscriptionIdToWebAppsOnLinuxMap.clear();
     }
 
+    private Azure getAzureBySid(String sid) throws IOException {
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null ) {
+            throw new IOException(CANNOT_GET_AZURE_MANAGER);
+        }
+        Azure azure = azureManager.getAzure(sid);
+        if (azure == null ) {
+            throw new IOException(CANNOT_GET_AZURE_BY_SID);
+        }
+        return azure;
+    }
     private static final class SingletonHolder {
         private static final AzureWebAppMvpModel INSTANCE = new AzureWebAppMvpModel();
     }
