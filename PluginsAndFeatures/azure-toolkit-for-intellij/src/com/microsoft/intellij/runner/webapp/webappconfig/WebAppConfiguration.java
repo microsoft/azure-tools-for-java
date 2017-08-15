@@ -36,8 +36,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.intellij.runner.webapp.WebAppConfigurationType;
 
 import org.jdom.Element;
@@ -60,11 +62,10 @@ public class WebAppConfiguration extends RunConfigurationBase {
     private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
     private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
     private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
-        + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
-        + "the digits '0' through '9', '-' and '_'.";
+            + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
+            + "the digits '0' through '9', '-' and '_'.";
 
     private static final String WAR_NAME_REGEX = "^[A-Za-z0-9_-]+\\.war$";
-    private static final String WEB_APP_CONFIGURATION_NODE = "AzureWebAppConfig";
     private final WebAppSettingModel webAppSettingModel;
     private boolean firstTimeCreated = true;
 
@@ -92,15 +93,15 @@ public class WebAppConfiguration extends RunConfigurationBase {
     public void readExternal(Element element) throws InvalidDataException {
         super.readExternal(element);
         firstTimeCreated = Comparing.equal(element.getAttributeValue("default"), "true");
-        webAppSettingModel.readExternal(element.getChild(WEB_APP_CONFIGURATION_NODE));
+        if (element != null) {
+            XmlSerializer.deserializeInto(webAppSettingModel, element);
+        }
     }
 
     @Override
     public void writeExternal(Element element) throws WriteExternalException {
         super.writeExternal(element);
-        Element newElement = new Element(WEB_APP_CONFIGURATION_NODE);
-        webAppSettingModel.writeExternal(newElement);
-        element.addContent(newElement);
+        XmlSerializer.serializeInto(webAppSettingModel, element);
     }
 
     @Override
@@ -163,139 +164,139 @@ public class WebAppConfiguration extends RunConfigurationBase {
         }
     }
 
-    public void setWebAppId(String id) {
-        webAppSettingModel.setWebAppId(id);
-    }
-
     public String getWebAppId() {
         return webAppSettingModel.getWebAppId();
     }
 
-    public void setSubscriptionId(String sid) {
-        webAppSettingModel.setSubscriptionId(sid);
+    public void setWebAppId(String id) {
+        webAppSettingModel.setWebAppId(id);
     }
 
     public String getSubscriptionId() {
         return webAppSettingModel.getSubscriptionId();
     }
 
-    public void setDeployToRoot(boolean toRoot) {
-        webAppSettingModel.setDeployToRoot(toRoot);
+    public void setSubscriptionId(String sid) {
+        webAppSettingModel.setSubscriptionId(sid);
     }
 
     public boolean isDeployToRoot() {
         return webAppSettingModel.isDeployToRoot();
     }
 
-    public void setCreatingNew(boolean isCreating) {
-        webAppSettingModel.setCreatingNew(isCreating);
+    public void setDeployToRoot(boolean toRoot) {
+        webAppSettingModel.setDeployToRoot(toRoot);
     }
 
     public boolean isCreatingNew() {
         return webAppSettingModel.isCreatingNew();
     }
 
-    public void setWebAppName(String name) {
-        webAppSettingModel.setWebAppName(name);
+    public void setCreatingNew(boolean isCreating) {
+        webAppSettingModel.setCreatingNew(isCreating);
     }
 
     public String getWebAppName() {
         return webAppSettingModel.getWebAppName();
     }
 
-    public void setWebContainer(String container) {
-        webAppSettingModel.setWebContainer(container);
+    public void setWebAppName(String name) {
+        webAppSettingModel.setWebAppName(name);
     }
 
     public String getWebContainer() {
         return webAppSettingModel.getWebContainer();
     }
 
-    public void setCreatingResGrp(boolean isCreating) {
-        webAppSettingModel.setCreatingResGrp(isCreating);
+    public void setWebContainer(String container) {
+        webAppSettingModel.setWebContainer(container);
     }
 
     public boolean isCreatingResGrp() {
         return webAppSettingModel.isCreatingResGrp();
     }
 
-    public void setResourceGroup(String name) {
-        webAppSettingModel.setResourceGroup(name);
+    public void setCreatingResGrp(boolean isCreating) {
+        webAppSettingModel.setCreatingResGrp(isCreating);
     }
 
     public String getResourceGroup() {
         return webAppSettingModel.getResourceGroup();
     }
 
-    public void setCreatingAppServicePlan(boolean isCreating) {
-        webAppSettingModel.setCreatingAppServicePlan(isCreating);
+    public void setResourceGroup(String name) {
+        webAppSettingModel.setResourceGroup(name);
     }
 
     public boolean isCreatingAppServicePlan() {
         return webAppSettingModel.isCreatingAppServicePlan();
     }
 
-    public void setAppServicePlanName(String name) {
-        webAppSettingModel.setAppServicePlanName(name);
+    public void setCreatingAppServicePlan(boolean isCreating) {
+        webAppSettingModel.setCreatingAppServicePlan(isCreating);
     }
 
     public String getAppServicePlanName() {
         return webAppSettingModel.getAppServicePlanName();
     }
 
-    public void setAppServicePlanId(String id) {
-        webAppSettingModel.setAppServicePlanId(id);
+    public void setAppServicePlanName(String name) {
+        webAppSettingModel.setAppServicePlanName(name);
     }
 
     public String getAppServicePlanId() {
         return webAppSettingModel.getAppServicePlanId();
     }
 
-    public void setRegion(String region) {
-        webAppSettingModel.setRegion(region);
+    public void setAppServicePlanId(String id) {
+        webAppSettingModel.setAppServicePlanId(id);
     }
 
     public String getRegion() {
         return webAppSettingModel.getRegion();
     }
 
-    public void setPricing(String price) {
-        webAppSettingModel.setPricing(price);
+    public void setRegion(String region) {
+        webAppSettingModel.setRegion(region);
     }
 
     public String getPricing() {
         return webAppSettingModel.getPricing();
     }
 
-    public void setJdkChoice(String jdk) {
-        webAppSettingModel.setJdkChoice(jdk);
+    public void setPricing(String price) {
+        webAppSettingModel.setPricing(price);
     }
 
     public String getJdkChoice() {
         return webAppSettingModel.getJdkChoice();
     }
 
-    public void setJdkUrl(String url) {
-        webAppSettingModel.setJdkUrl(url);
+    public void setJdkChoice(String jdk) {
+        webAppSettingModel.setJdkChoice(jdk);
     }
 
     public String getJdkUrl() {
         return webAppSettingModel.getJdkUrl();
     }
 
-    public void setTargetPath(String path) {
-        webAppSettingModel.setTargetPath(path);
+    public void setJdkUrl(String url) {
+        webAppSettingModel.setJdkUrl(url);
     }
 
     public String getTargetPath() {
         return webAppSettingModel.getTargetPath();
     }
 
-    public void setTargetName(String name) {
-        webAppSettingModel.setTargetName(name);
+    public void setTargetPath(String path) {
+        webAppSettingModel.setTargetPath(path);
     }
 
     public String getTargetName() {
         return webAppSettingModel.getTargetName();
+    }
+
+    public void setTargetName(String name) {
+        webAppSettingModel.setTargetName(name);
     }
 }
