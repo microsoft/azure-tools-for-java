@@ -193,7 +193,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
         });
 
-        cbExistResGrp.addActionListener(e-> {
+        cbExistResGrp.addActionListener(e -> {
             ResourceGroup resGrp = (ResourceGroup) cbExistResGrp.getSelectedItem();
             if (resGrp == null) {
                 return;
@@ -225,6 +225,11 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
             String selectedSid = subscription.subscriptionId();
             if (!Comparing.equal(lastSelectedSid, selectedSid)) {
+                cbExistResGrp.removeAllItems();
+                cbLocation.removeAllItems();
+                cbExistAppServicePlan.removeAllItems();
+                lblLocation.setText(NOT_APPLICABLE);
+                lblPricing.setText(NOT_APPLICABLE);
                 webAppDeployViewPresenter.onLoadResourceGroups(selectedSid);
                 webAppDeployViewPresenter.onLoadLocation(selectedSid);
                 lastSelectedSid = selectedSid;
@@ -585,6 +590,10 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     @Override
     public void fillSubscription(List<Subscription> subscriptions) {
         cbSubscription.removeAllItems();
+        if (subscriptions.size() == 0) {
+            lastSelectedSid = null;
+            return;
+        }
         for (Subscription subscription: subscriptions) {
             cbSubscription.addItem(subscription);
             if (Comparing.equal(subscription.subscriptionId(), webAppConfiguration.getSubscriptionId())) {
@@ -596,6 +605,10 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     @Override
     public void fillResourceGroup(List<ResourceGroup> resourceGroups) {
         cbExistResGrp.removeAllItems();
+        if (resourceGroups.size() == 0) {
+            lastSelectedResGrp = null;
+            return;
+        }
         resourceGroups.stream()
                 .sorted(Comparator.comparing(ResourceGroup::name))
                 .forEach((group) -> {
@@ -609,6 +622,11 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     @Override
     public void fillAppServicePlan(List<AppServicePlan> appServicePlans) {
         cbExistAppServicePlan.removeAllItems();
+        if (appServicePlans.size() == 0) {
+            lblLocation.setText(NOT_APPLICABLE);
+            lblPricing.setText(NOT_APPLICABLE);
+            return;
+        }
         appServicePlans.stream()
                 .filter(item -> Comparing.equal(item.operatingSystem(), OperatingSystem.WINDOWS))
                 .sorted(Comparator.comparing(AppServicePlan::name))
@@ -623,6 +641,10 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     @Override
     public void fillLocation(List<Location> locations) {
         cbLocation.removeAllItems();
+        if (locations.size() == 0) {
+            lastSelectedLocation = null;
+            return;
+        }
         locations.stream()
                 .sorted(Comparator.comparing(Location::displayName))
                 .forEach((location) -> {

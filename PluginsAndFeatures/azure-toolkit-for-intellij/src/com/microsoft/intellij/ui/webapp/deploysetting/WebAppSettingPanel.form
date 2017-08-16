@@ -191,7 +191,7 @@
                 </constraints>
                 <properties>
                   <enabled value="true"/>
-                  <text value=""/>
+                  <text value="N/A"/>
                   <verifyInputWhenFocusTarget value="false"/>
                 </properties>
               </component>
@@ -201,7 +201,7 @@
                 </constraints>
                 <properties>
                   <enabled value="true"/>
-                  <text value=""/>
+                  <text value="N/A"/>
                 </properties>
               </component>
               <component id="b3d20" class="javax.swing.JRadioButton" binding="rdoCreateAppServicePlan">
