@@ -24,6 +24,7 @@ package com.microsoft.azuretools.utils;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -35,18 +36,23 @@ import com.microsoft.azuretools.authmanage.ISubscriptionSelectionListener;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
 
 /**
  * Created by vlashch on 1/9/17.
@@ -197,7 +203,9 @@ public class AzureModelController {
                     @Override
                     public void call(Subscriber<? super RgDepParams> subscriber) {
                         List<WebApp> wal = azure.webApps().listByResourceGroup(rg.name());
-                        List<AppServicePlan> aspl = azure.appServices().appServicePlans().listByResourceGroup(rg.name());
+                        List<AppServicePlan> aspl = azure.appServices().appServicePlans().listByResourceGroup(rg.name())
+                                .stream().filter(item -> OperatingSystem.WINDOWS.equals(item.operatingSystem()))
+                                .collect(Collectors.toList());
                         subscriber.onNext(new RgDepParams(rg, wal, aspl));
                         subscriber.onCompleted();
                     }
