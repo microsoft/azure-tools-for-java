@@ -5,10 +5,10 @@ import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
-
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.artifacts.ArtifactManager;
 import com.intellij.packaging.artifacts.ArtifactType;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -64,6 +64,17 @@ public class MavenRunTaskUtil {
             return null;
         }
         return (List<Artifact>) ArtifactManager.getInstance(project).getArtifactsByType(warArtifactType);
+    }
+
+
+    public static String getTargetPath(MavenProject mavenProject) {
+        return (mavenProject == null) ? null : new File(mavenProject.getBuildDirectory()).getPath() + File.separator
+                + mavenProject.getFinalName() + "." + mavenProject.getPackaging();
+    }
+
+    public static String getTargetName(MavenProject mavenProject) {
+        return (mavenProject == null) ? null : mavenProject.getFinalName() + "." + mavenProject.getPackaging();
+
     }
 
     private static boolean shouldAddMavenPackageTask(List<BeforeRunTask> tasks, Project project) {

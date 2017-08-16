@@ -53,6 +53,7 @@ import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
+import org.jetbrains.idea.maven.utils.MavenUtil;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -417,11 +418,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         } else {
             MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
             if (mavenProject != null) {
-                String targetPath = new File(mavenProject.getBuildDirectory()).getPath()
-                        + File.separator + mavenProject.getFinalName() + "." + mavenProject.getPackaging();
-                String targetName = mavenProject.getFinalName() + "." + mavenProject.getPackaging();
-                webAppConfiguration.setTargetPath(targetPath);
-                webAppConfiguration.setTargetName(targetName);
+                webAppConfiguration.setTargetPath(MavenRunTaskUtil.getTargetPath(mavenProject));
+                webAppConfiguration.setTargetName(MavenRunTaskUtil.getTargetName(mavenProject));
             }
         }
 

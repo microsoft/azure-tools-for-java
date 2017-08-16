@@ -1,29 +1,29 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.tooling.msservices.serviceexplorer.azure;
 
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.ISubscriptionSelectionListener;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -38,12 +38,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostM
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
-<<<<<<< HEAD
-=======
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
->>>>>>> add linux web app node
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapps.WebappsModule;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,17 +53,20 @@ public class AzureModule extends AzureRefreshableNode {
     private VMArmModule vmArmServiceModule;
     private RedisCacheModule redisCacheModule;
     private StorageModule storageModule;
-    private WebappsModule webappsModule;
     private WebAppModule webAppModule;
     private HDInsightRootModule hdInsightModule;
     private DockerHostModule dockerHostModule;
     private ContainerRegistryModule containerRegistryModule;
 
+    /**
+     * Constructor.
+     *
+     * @param project project
+     */
     public AzureModule(Object project) {
         this(null, ICON_PATH, null);
         this.project = project;
         storageModule = new StorageModule(this);
-        webappsModule = new WebappsModule(this);
         webAppModule = new WebAppModule(this);
         //hdInsightModule = new HDInsightRootModule(this);
         vmArmServiceModule = new VMArmModule(this);
@@ -89,10 +88,6 @@ public class AzureModule extends AzureRefreshableNode {
         super(AZURE_SERVICE_MODULE_ID, composeName(), parent, iconPath);
     }
 
-    public void setHdInsightModule(@NotNull HDInsightRootModule rootModule) {
-        this.hdInsightModule = rootModule;
-    }
-
     private static String composeName() {
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
@@ -102,18 +97,24 @@ public class AzureModule extends AzureRefreshableNode {
             }
             SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
             List<SubscriptionDetail> subscriptionDetails = subscriptionManager.getSubscriptionDetails();
-            List<SubscriptionDetail> selectedSubscriptions = subscriptionDetails.stream().filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
+            List<SubscriptionDetail> selectedSubscriptions = subscriptionDetails.stream()
+                    .filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
             if (selectedSubscriptions.size() > 0) {
                 return String.format("%s (%s)", BASE_MODULE_NAME, selectedSubscriptions.size() > 1
                         ? String.format("%s subscriptions", selectedSubscriptions.size())
                         : selectedSubscriptions.get(0).getSubscriptionName());
             }
         } catch (Exception e) {
-        	String msg = "An error occurred while getting the subscription list." + "\n" + "(Message from Azure:" + e.getMessage() + ")";
-        	DefaultLoader.getUIHelper().showException(msg, e,
-        			"MS Services - Error Getting Subscriptions", false, true);
+            String msg = "An error occurred while getting the subscription list." + "\n" + "(Message from Azure:" + e
+                    .getMessage() + ")";
+            DefaultLoader.getUIHelper().showException(msg, e,
+                    "MS Services - Error Getting Subscriptions", false, true);
         }
         return BASE_MODULE_NAME;
+    }
+
+    public void setHdInsightModule(@NotNull HDInsightRootModule rootModule) {
+        this.hdInsightModule = rootModule;
     }
 
     @Override
@@ -130,9 +131,6 @@ public class AzureModule extends AzureRefreshableNode {
         }
         if (!isDirectChild(storageModule)) {
             addChildNode(storageModule);
-        }
-        if (!isDirectChild(webappsModule)) {
-            addChildNode(webappsModule);
         }
         if (!isDirectChild(webAppModule)) {
             addChildNode(webAppModule);
@@ -159,7 +157,6 @@ public class AzureModule extends AzureRefreshableNode {
                 vmArmServiceModule.load(true);
                 redisCacheModule.load(true);
                 storageModule.load(true);
-                webappsModule.load(true);
                 webAppModule.load(true);
                 hdInsightModule.load(true);
                 dockerHostModule.load(true);
@@ -175,14 +172,6 @@ public class AzureModule extends AzureRefreshableNode {
         return project;
     }
 
-    private class SignInOutListener implements Runnable {
-        @Override
-        public void run() {
-            handleSubscriptionChange();
-            addSubscriptionSelectionListener();
-        }
-    }
-
     private void addSubscriptionSelectionListener() {
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
@@ -190,12 +179,9 @@ public class AzureModule extends AzureRefreshableNode {
             if (azureManager == null) {
                 return;
             }
-            azureManager.getSubscriptionManager().addListener(new ISubscriptionSelectionListener() {
-                @Override
-                public void update(boolean isRefresh) {
-                    if (!isRefresh) {
-                        handleSubscriptionChange();
-                    }
+            azureManager.getSubscriptionManager().addListener(isRefresh -> {
+                if (!isRefresh) {
+                    handleSubscriptionChange();
                 }
             });
         } catch (Exception ex) {
@@ -207,6 +193,14 @@ public class AzureModule extends AzureRefreshableNode {
         setName(composeName());
         for (Node child : getChildNodes()) {
             child.removeAllChildNodes();
+        }
+    }
+
+    private class SignInOutListener implements Runnable {
+        @Override
+        public void run() {
+            handleSubscriptionChange();
+            addSubscriptionSelectionListener();
         }
     }
 }

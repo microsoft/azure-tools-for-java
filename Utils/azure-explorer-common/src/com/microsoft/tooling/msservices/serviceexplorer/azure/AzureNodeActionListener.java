@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  * <p/>
  * All rights reserved.
@@ -19,6 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.tooling.msservices.serviceexplorer.azure;
 
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -40,13 +41,8 @@ public abstract class AzureNodeActionListener extends NodeActionListenerAsync {
 
     @NotNull
     @Override
-    protected Callable<Boolean> beforeAsyncActionPerfomed() {
-        return new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return true;
-            }
-        };
+    protected Callable<Boolean> beforeAsyncActionPerformed() {
+        return () -> true;
     }
 
     @Override

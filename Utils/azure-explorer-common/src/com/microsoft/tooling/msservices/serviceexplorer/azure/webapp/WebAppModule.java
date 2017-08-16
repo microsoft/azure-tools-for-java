@@ -32,6 +32,12 @@ public class WebAppModule extends AzureRefreshableNode {
 
     }
 
+    /**
+     * Create nodes for both Windows and Linux Web Apps.
+     *
+     * @param winapps   list of Windows Web Apps
+     * @param linuxapps list of Linux Web Apps
+     */
     public void renderWebApps(List<ResourceEx<WebApp>> winapps, List<ResourceEx<SiteInner>> linuxapps) {
         winapps.forEach(app -> {
             addChildNode(new WinWebAppNode(this, app, ICON_PATH));

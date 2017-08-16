@@ -21,38 +21,40 @@
  */
 package com.microsoft.intellij.serviceexplorer.azure.webapps;
 
-import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.ijidea.ui.RemoteDebuggingClientDialog;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
+import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapps.WebappNode;
-
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.LinuxWebAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WinWebAppNode;
 
 @Name("Remote Debugging...")
 public class RemoteDebugAction extends NodeActionListener {
 
-    private WebappNode webappNode;
+    private WebAppNode webAppNode;
 
-    public RemoteDebugAction(WebappNode webappNode) {
-        this.webappNode = webappNode;
+    public RemoteDebugAction(WinWebAppNode webAppNode) {
+        this.webAppNode = webAppNode;
+    }
+
+    public RemoteDebugAction(LinuxWebAppNode webAppNode) {
+        this.webAppNode = webAppNode;
     }
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        WebApp webApp = webappNode.getWebApp();
+        WebApp webApp = webAppNode.getWebApp();
         try {
             // TODO
-            RemoteDebuggingClientDialog d = new RemoteDebuggingClientDialog((Project) webappNode.getProject(), webApp);
+            RemoteDebuggingClientDialog d = new RemoteDebuggingClientDialog((Project) webAppNode.getProject(), webApp);
             d.show();
         } catch (Exception ex) {
-            PluginUtil.displayErrorDialogAndLog(message("error"), message("error"), ex);
+            PluginUtil.displayErrorDialogAndLog(AzureBundle.message("error"), AzureBundle.message("error"), ex);
         }
     }
 }
