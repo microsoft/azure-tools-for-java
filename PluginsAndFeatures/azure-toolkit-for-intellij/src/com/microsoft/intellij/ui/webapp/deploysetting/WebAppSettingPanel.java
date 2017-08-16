@@ -325,10 +325,12 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private void setupArtifactCombo(List<Artifact> artifacts) {
         isCbArtifactInited = false;
         cbArtifact.removeAllItems();
-        for (Artifact artifact: artifacts) {
-            cbArtifact.addItem(artifact);
-            if (Comparing.equal(artifact.getOutputFilePath(), webAppConfiguration.getTargetPath())) {
-                cbArtifact.setSelectedItem(artifact);
+        if (null != artifacts) {
+            for (Artifact artifact: artifacts) {
+                cbArtifact.addItem(artifact);
+                if (Comparing.equal(artifact.getOutputFilePath(), webAppConfiguration.getTargetPath())) {
+                    cbArtifact.setSelectedItem(artifact);
+                }
             }
         }
         cbArtifact.setVisible(true);

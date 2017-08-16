@@ -60,6 +60,9 @@ public class MavenRunTaskUtil {
 
     public static List<Artifact> collectProjectArtifact(@NotNull Project project) {
         ArtifactType warArtifactType = ArtifactType.findById(MavenConstants.TYPE_WAR);
+        if (warArtifactType == null) {
+            return null;
+        }
         return (List<Artifact>) ArtifactManager.getInstance(project).getArtifactsByType(warArtifactType);
     }
 
