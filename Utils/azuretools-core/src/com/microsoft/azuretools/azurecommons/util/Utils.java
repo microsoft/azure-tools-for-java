@@ -1,20 +1,20 @@
 /**
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
+ * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
  * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
@@ -40,6 +40,9 @@ import java.util.jar.JarFile;
 
 public class Utils {
 
+    private static final Integer RES_GRP_MAX_NAME_LENGTH = 90;
+    private static final String RES_GRP_REGEX = "^[A-Za-z0-9().\\-_]+(?<!\\.)$";
+
 	public static String replaceLastSubString(String location, String find,
 			String replaceWith) {
 		if (location == null || location.isEmpty())
@@ -63,7 +66,7 @@ public class Utils {
 
 	/**
 	 * This method is used for invoking native commands.
-	 * 
+	 *
 	 * @param command
 	 *            :- command to invoke.
 	 * @param ignoreErrorStream
@@ -143,13 +146,12 @@ public class Utils {
 		System.out.println("entryName = " + entryName);
 		JarURLConnection urlConnection = (JarURLConnection) new URL("jar:file:" + jarName + "!/" + entryName).openConnection();
 //        URLConnection urlConnection = originUrl.openConnection();
-		JarURLConnection jarConnection = ((JarURLConnection)urlConnection);
-		JarFile jarFile = jarConnection.getJarFile();
+		JarFile jarFile = urlConnection.getJarFile();
 		Enumeration<JarEntry> entries = jarFile.entries();
 
 		while (entries.hasMoreElements()) {
 			JarEntry entry = entries.nextElement();
-			if (entry.getName().startsWith(jarConnection.getEntryName())) {
+			if (entry.getName().startsWith(urlConnection.getEntryName())) {
 				if (!entry.isDirectory()) {
 					files.add(entry.getName());
 				}
@@ -207,7 +209,7 @@ public class Utils {
 
         return version1Seg.length - version2Seg.length;
     }
-    
+
     public static boolean isEmptyString(String str) {
         return str == null || str.trim().isEmpty();
     }
@@ -221,4 +223,11 @@ public class Utils {
         Clipboard clipboard = toolKit.getSystemClipboard();
         clipboard.setContents(stringSelection, null);
 	}
+
+    public static boolean isResGrpNameValid(String name) {
+        if (null == name || name.length() > RES_GRP_MAX_NAME_LENGTH || !name.matches(RES_GRP_REGEX)) {
+            return false;
+        }
+        return true;
+    }
 }

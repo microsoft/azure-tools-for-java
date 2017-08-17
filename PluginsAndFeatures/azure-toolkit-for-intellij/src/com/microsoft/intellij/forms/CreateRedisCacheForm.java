@@ -35,6 +35,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessorBase;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.intellij.helpers.LinkListener;
@@ -99,19 +100,16 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
 
     // Const Strings
     private static final Integer REDIS_CACHE_MAX_NAME_LENGTH = 63;
-    private static final Integer REG_GRP_MAX_NAME_LENGTH = 90;
     private static final String DIALOG_TITLE = "New Redis Cache";
     private static final String PRICING_LINK = "https://azure.microsoft.com/en-us/pricing/details/cache";
     private static final String INVALID_REDIS_CACHE_NAME = "Invalid Redis Cache name. The name can only contain letters, numbers and hyphens. The first and last characters must each be a letter or a number. Consecutive hyphens are not allowed.";
     private static final String DNS_NAME_REGEX = "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$";
-    private static final String RES_GRP_REGEX = "^[A-Za-z0-9().\\-_]+(?<!\\.)$";
     private static final String VALIDATION_FORMAT = "The name %s is not available.";
     private static final String CREATING_INDICATOR = "Creating Redis Cache %s ...";
     private static final String CREATING_ERROR_INDICATOR = "An error occurred while attempting to %s.\n%s";
     private static final String NEW_RES_GRP_ERROR_FORMAT = "The resource group: %s is already existed.";
-    private static final String RES_GRP_LENGTH_INVALID = "Resource group name only allows up to 90 characters.";
-    private static final String RES_GRP_NAME_RULE = "Resource group name can only include alphanumeric characters, "
-            + "periods, underscores, hyphens and parenthesis and cannot end in a period.";
+    private static final String RES_GRP_NAME_RULE = "Resource group name can only allows up to 90 characters, include"
+            + " alphanumeric characters, periods, underscores, hyphens and parenthesis and cannot end in a period.";
 
     public CreateRedisCacheForm(Project project) throws IOException {
         super(project, true);
@@ -154,10 +152,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
                         return new ValidationInfo(String.format(NEW_RES_GRP_ERROR_FORMAT, selectedResGrpValue), txtNewResGrp);
                     }
                 }
-                if (selectedResGrpValue.length() > REG_GRP_MAX_NAME_LENGTH) {
-                    return new ValidationInfo(RES_GRP_LENGTH_INVALID, txtNewResGrp);
-                }
-                if (!selectedResGrpValue.matches(RES_GRP_REGEX)) {
+                if (!Utils.isResGrpNameValid(selectedResGrpValue)) {
                     return new ValidationInfo(RES_GRP_NAME_RULE, txtNewResGrp);
                 }
             }

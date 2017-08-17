@@ -34,6 +34,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessorBase;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.azureexplorer.messages.MessageHandler;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
@@ -123,11 +124,9 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     private static final Integer INITIAL_WIDTH = 600;
     private static final Integer INITIAL_HEIGHT = 450;
     private static final Integer REDIS_CACHE_MAX_NAME_LENGTH = 63;
-    private static final Integer RES_GRP_MAX_NAME_LENGTH = 90;
     private static final String MODULE_NAME = "rediscache";
     private static final String SUBS_COMBO_ITEMS_FORMAT = "%s (%s)";
     private static final String DNS_NAME_REGEX = "^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$";
-    private static final String RES_GRP_REGEX = "^[A-Za-z0-9().\\-_]+(?<!\\.)$";
 
     // const for widgets
     private static final String DIALOG_TITLE = "DIALOG_TITLE";
@@ -354,8 +353,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             @Override
             public void modifyText(ModifyEvent arg0) {
                 selectedResGrpValue = txtNewResGrpName.getText();
-                if (selectedResGrpValue.length() > RES_GRP_MAX_NAME_LENGTH
-                        || !selectedResGrpValue.matches(RES_GRP_REGEX)) {
+                if (!Utils.isResGrpNameValid(selectedResGrpValue)) {
                     decoratorResGrpName.show();
                 } else {
                     decoratorResGrpName.hide();
@@ -527,8 +525,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     private void validateFields() {
         boolean allFieldsCompleted = loaded && !(dnsNameValue == null || dnsNameValue.isEmpty()
                 || dnsNameValue.length() > REDIS_CACHE_MAX_NAME_LENGTH
-                || !dnsNameValue.matches(DNS_NAME_REGEX) || selectedResGrpValue == null
-                || selectedResGrpValue.length() > RES_GRP_MAX_NAME_LENGTH || !selectedResGrpValue.matches(RES_GRP_REGEX)
+                || !dnsNameValue.matches(DNS_NAME_REGEX) || !Utils.isResGrpNameValid(selectedResGrpValue)
                 || selectedLocationValue == null || selectedLocationValue.isEmpty() || selectedResGrpValue == null
                 || selectedResGrpValue.isEmpty() || selectedPriceTierValue == null || selectedPriceTierValue.isEmpty());
 
