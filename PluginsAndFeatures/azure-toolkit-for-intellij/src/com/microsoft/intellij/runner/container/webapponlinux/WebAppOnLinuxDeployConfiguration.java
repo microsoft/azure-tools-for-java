@@ -73,7 +73,7 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     private boolean firstTimeCreated = true;
 
     protected WebAppOnLinuxDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory) {
-        super(project, factory, project.getName());
+        super(project, factory, String.format("%s:%s", factory.getName(), project.getName()));
         deployModel = new WebAppOnLinuxDeployModel();
     }
 
@@ -285,19 +285,19 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
         deployModel.setAppServicePlanName(appServicePlanName);
     }
 
-    public void setTargetPath(String targetPath) {
-        deployModel.setTargetPath(targetPath);
-    }
-
     public String getTargetPath() {
         return deployModel.getTargetPath();
     }
 
-    public void setTargetName(String targetName) {
-        deployModel.setTargetName(targetName);
+    public void setTargetPath(String targetPath) {
+        deployModel.setTargetPath(targetPath);
     }
 
     public String getTargetName() {
         return deployModel.getTargetName();
+    }
+
+    public void setTargetName(String targetName) {
+        deployModel.setTargetName(targetName);
     }
 }

@@ -39,7 +39,6 @@ import com.microsoft.intellij.serviceexplorer.azure.storage.CreateTableAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ModifyExternalStorageAccountAction;
 import com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAccountAction;
 import com.microsoft.intellij.serviceexplorer.azure.vmarm.CreateVMAction;
-import com.microsoft.intellij.serviceexplorer.azure.webapps.OpenWebAppAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
@@ -52,8 +51,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageMod
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.TableModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.LinuxWebAppNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WinWebAppNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -77,10 +74,6 @@ public class NodeActionsMap {
                 .add(CreateRedisCacheAction.class).build());
         node2Actions.put(StorageNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateBlobContainer.class).build());
-        node2Actions.put(WinWebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(OpenWebAppAction.class).build());
-        node2Actions.put(LinuxWebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(OpenWebAppAction.class).build());
         // todo: what is ConfirmDialogAction?
         //noinspection unchecked
         node2Actions.put(ExternalStorageNode.class,

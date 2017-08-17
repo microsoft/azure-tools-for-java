@@ -85,11 +85,11 @@ public class WebAppOnLinuxAction extends AzureAnAction {
     @SuppressWarnings({"deprecation", "Duplicates"})
     private void runConfiguration(Project project) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
+        final ConfigurationFactory factory = configType.getConfigurationFactories()[0];
         RunnerAndConfigurationSettings settings = manager.findConfigurationByName(
-                String.format("%s:%s", configType.getDisplayName(), project.getName()));
+                String.format("%s:%s", factory.getName(), project.getName()));
         if (settings == null) {
-            final ConfigurationFactory factory = configType.getConfigurationFactories()[0];
-            settings = manager.createConfiguration(String.format("%s:%s", configType.getDisplayName(),
+            settings = manager.createConfiguration(String.format("%s:%s", factory.getName(),
                     project.getName()), factory);
         }
         if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {

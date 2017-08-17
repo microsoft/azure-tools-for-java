@@ -1,10 +1,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
@@ -13,7 +10,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-import java.util.List;
+import java.io.IOException;
 
 public class WebAppModule extends AzureRefreshableNode {
     private static final String REDIS_SERVICE_MODULE_ID = WebAppModule.class.getName();
@@ -39,15 +36,15 @@ public class WebAppModule extends AzureRefreshableNode {
 
     }
 
-    /**
-     * Create nodes for both Windows and Linux Web Apps.
-     *
-     * @param winapps   list of Windows Web Apps
-     * @param linuxapps list of Linux Web Apps
-     */
-    public void renderWebApps(List<ResourceEx<WebApp>> winapps, List<ResourceEx<SiteInner>> linuxapps) {
-        winapps.forEach(app -> addChildNode(new WinWebAppNode(this, app)));
-        linuxapps.forEach(app -> addChildNode(new LinuxWebAppNode(this, app)));
+    @Override
+    public void removeNode(String sid, String id, Node node) {
+        try {
+            webAppModulePresenter.onDeleteWebApp(sid, id);
+            removeDirectChildNode(node);
+        } catch (IOException e) {
+            DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Web App ",
+                    e, "Azure Services Explorer - Error Deleting Web App on Linux", false, true);
+        }
     }
 
     private void createListener() {
@@ -55,9 +52,11 @@ public class WebAppModule extends AzureRefreshableNode {
         AzureUIRefreshListener listener = new AzureUIRefreshListener() {
             @Override
             public void run() {
-                if (event.opsType == AzureUIRefreshEvent.EventType.SIGNIN || event.opsType == AzureUIRefreshEvent .EventType.SIGNOUT) {
+                if (event.opsType == AzureUIRefreshEvent.EventType.SIGNIN || event.opsType == AzureUIRefreshEvent
+                        .EventType.SIGNOUT) {
                     removeAllChildNodes();
-                } else if (event.object == null && (event.opsType == AzureUIRefreshEvent.EventType.UPDATE || event.opsType == AzureUIRefreshEvent.EventType.REMOVE)) {
+                } else if (event.object == null && (event.opsType == AzureUIRefreshEvent.EventType.UPDATE || event
+                        .opsType == AzureUIRefreshEvent.EventType.REMOVE)) {
                     if (hasChildNodes()) {
                         load(true);
                     }
@@ -70,8 +69,11 @@ public class WebAppModule extends AzureRefreshableNode {
                         case ADD:
                             DefaultLoader.getIdeHelper().invokeLater(() -> {
                                 try {
-                                    addChildNode(new WinWebAppNode(WebAppModule.this,
-                                            new ResourceEx<>(webAppDetails.webApp, ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId())));
+                                    addChildNode(new WebAppNode(WebAppModule.this,
+                                            ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId(),
+                                            webAppDetails.webApp.id(),
+                                            webAppDetails.webApp.name(),
+                                            webAppDetails.webApp.state(), null));
                                 } catch (Exception ex) {
                                     DefaultLoader.getUIHelper().logError("WebAppModule::createListener ADD", ex);
                                     ex.printStackTrace();

@@ -22,70 +22,12 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-
-import java.util.HashMap;
 import java.util.Map;
 
 public class WinWebAppNode extends WebAppNode {
-    private final WebApp webApp;
 
-    /**
-     * Constructor.
-     *
-     * @param parent parent Node.
-     * @param app    ResourceEx with Web App instance.
-     */
-    public WinWebAppNode(WebAppModule parent, ResourceEx<WebApp> app) {
-        super(app.getResource().id(), app.getResource().name(), parent, app.getResource().state());
-        webApp = app.getResource();
-        subscriptionId = app.getSubscriptionId();
-
-        loadActions();
-    }
-
-    @Override
-    public WebApp getWebApp() {
-        return webApp;
-    }
-
-    @Override
-    public String getRunState() {
-        return webApp.inner().state();
-    }
-
-    @Override
-    public Map<String, String> toProperties() {
-        final Map<String, String> properties = new HashMap<>();
-        properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
-        properties.put(AppInsightsConstants.Region, this.webApp.regionName());
-        return properties;
-    }
-
-    @Override
-    public String getWebAppId() {
-        return webApp.id();
-    }
-
-    @Override
-    public String getWebAppName() {
-        return webApp.name();
-    }
-
-    @Override
-    public void stopWebApp() {
-        webApp.stop();
-    }
-
-    @Override
-    public void startWebApp() {
-        webApp.start();
-    }
-
-    @Override
-    public void restartWebApp() {
-        webApp.restart();
+    public WinWebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName, String
+            runState, Map<String, String> propertyMap) {
+        super(parent, subscriptionId, webAppId, webAppName, runState, propertyMap);
     }
 }
