@@ -690,6 +690,14 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         }
     }
 
+    /**
+     * Let the presenter release the view. Will be called by:
+     * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#disposeEditor()}.
+     */
+    public void disposeEditor() {
+        webAppDeployViewPresenter.onDetachView();
+    }
+
     // TODO: refactor later
     private void sendTelemetry(String subId) {
         if (telemetrySent) {

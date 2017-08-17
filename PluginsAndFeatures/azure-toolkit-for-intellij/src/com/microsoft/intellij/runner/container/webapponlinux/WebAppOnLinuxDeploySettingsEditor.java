@@ -67,6 +67,12 @@ public class WebAppOnLinuxDeploySettingsEditor extends SettingsEditor<WebAppOnLi
         webAppOnLinuxDeployConfiguration.validate();
     }
 
+    @Override
+    protected void disposeEditor() {
+        settingPanel.disposeEditor();
+        super.disposeEditor();
+    }
+
     @NotNull
     @Override
     protected JComponent createEditor() {

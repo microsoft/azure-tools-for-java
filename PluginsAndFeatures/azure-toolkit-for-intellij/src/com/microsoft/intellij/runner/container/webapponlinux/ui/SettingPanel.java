@@ -684,6 +684,14 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
 
     }
 
+    /**
+     * Let the presenter release the view. Will be called by:
+     * {@link com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeploySettingsEditor#disposeEditor()}.
+     */
+    public void disposeEditor() {
+        webAppOnLinuxDeployPresenter.onDetachView();
+    }
+
 
     private void updateResourceGroupList(String sid) {
         webAppOnLinuxDeployPresenter.onLoadResourceGroup(sid);

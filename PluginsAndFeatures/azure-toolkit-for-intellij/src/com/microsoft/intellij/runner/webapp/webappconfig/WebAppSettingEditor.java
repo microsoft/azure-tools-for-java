@@ -72,4 +72,10 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
     protected JComponent createEditor() {
         return mainPanel.getMainPanel();
     }
+
+    @Override
+    protected void disposeEditor() {
+        mainPanel.disposeEditor();
+        super.disposeEditor();
+    }
 }
