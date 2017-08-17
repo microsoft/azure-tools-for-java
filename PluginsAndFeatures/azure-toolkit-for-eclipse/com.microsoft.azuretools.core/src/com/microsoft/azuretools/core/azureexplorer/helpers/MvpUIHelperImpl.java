@@ -1,9 +1,9 @@
 package com.microsoft.azuretools.core.azureexplorer.helpers;
 
-import org.eclipse.jface.dialogs.MessageDialog;
-
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelper;
+
+import org.eclipse.jface.dialogs.MessageDialog;
 
 public class MvpUIHelperImpl implements MvpUIHelper {
 
