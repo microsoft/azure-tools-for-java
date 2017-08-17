@@ -118,7 +118,6 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
             try {
                 portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
             } catch (Exception exception) {
-                portalUrl = "";
                 System.out.println(exception.getMessage());
             }
             DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl,

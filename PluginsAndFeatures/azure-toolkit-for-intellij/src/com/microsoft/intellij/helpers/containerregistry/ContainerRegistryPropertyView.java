@@ -27,6 +27,7 @@ import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryP
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyViewPresenter;
+
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.BorderFactory;
@@ -60,6 +61,9 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     private JLabel lblPrimaryPwd;
     private JLabel lblUserName;
 
+    /**
+     * Constructor of ACR property view.
+     */
     public ContainerRegistryPropertyView() {
         this.containerPropertyPresenter = new ContainerRegistryPropertyViewPresenter<>();
         this.containerPropertyPresenter.onAttachView(this);
