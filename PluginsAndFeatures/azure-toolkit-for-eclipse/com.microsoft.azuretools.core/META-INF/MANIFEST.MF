@@ -103,5 +103,5 @@ Export-Package: com.microsoft.applicationinsights.preference,
  com.microsoft.tooling.msservices.serviceexplorer.azure.storage,
  com.microsoft.tooling.msservices.serviceexplorer.azure.storage.asm,
  com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm,
- com.microsoft.tooling.msservices.serviceexplorer.azure.webapps
+ com.microsoft.tooling.msservices.serviceexplorer.azure.webapp
 Import-Package: org.eclipse.core.expressions

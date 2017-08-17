@@ -39,6 +39,8 @@ import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSettin
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.spotify.docker.client.DefaultDockerClient;
@@ -58,7 +60,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import rx.Observable;
-import rx.schedulers.Schedulers;
 
 public class WebAppOnLinuxDeployState implements RunProfileState {
     private static final String DOCKER_CONTEXT_FOLDER_NAME = "dockerContext";
@@ -151,6 +152,9 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                             println(String.format("URL:  http://%s.azurewebsites.net/%s", app.name(),
                                     FilenameUtils.removeExtension(targetFileName)));
                             updateConfigurationDataModel(app);
+
+                            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
+                                    null));
                         }
                     } else {
                         // update WebApp
@@ -184,7 +188,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
     }
 
     // TODO: refactor later
-    private void sendTelemetry(boolean success, @Nullable String ErrorMsg) {
+    private void sendTelemetry(boolean success, @Nullable String errorMsg) {
         Map<String, String> map = new HashMap<>();
         map.put("SubscriptionId", deployModel.getSubscriptionId());
         map.put("CreateNewApp", String.valueOf(deployModel.isCreatingNewWebAppOnLinux()));
@@ -192,7 +196,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
         map.put("CreateNewRGP", String.valueOf(deployModel.isCreatingNewResourceGroup()));
         map.put("Success", String.valueOf(success));
         if (!success) {
-            map.put("ErrorMsg", ErrorMsg);
+            map.put("ErrorMsg", errorMsg);
         }
 
         AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "Webapp (Linux)", "Deploy", map);

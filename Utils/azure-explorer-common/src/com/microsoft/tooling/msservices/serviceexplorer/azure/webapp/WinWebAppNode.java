@@ -23,13 +23,8 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,11 +37,10 @@ public class WinWebAppNode extends WebAppNode {
      *
      * @param parent parent Node.
      * @param app    ResourceEx with Web App instance.
-     * @param icon   Node icon path.
      */
-    public WinWebAppNode(WebAppModule parent, ResourceEx app, String icon) {
-        super(((WebApp) app.getResource()).id(), ((WebApp) app.getResource()).name(), parent, icon, true);
-        webApp = (WebApp) app.getResource();
+    public WinWebAppNode(WebAppModule parent, ResourceEx<WebApp> app) {
+        super(app.getResource().id(), app.getResource().name(), parent, app.getResource().state());
+        webApp = app.getResource();
         subscriptionId = app.getSubscriptionId();
 
         loadActions();
@@ -93,34 +87,5 @@ public class WinWebAppNode extends WebAppNode {
     @Override
     public void restartWebApp() {
         webApp.restart();
-    }
-
-    private class DeleteWebAppAction extends AzureNodeActionPromptListener {
-        DeleteWebAppAction() {
-            super(WinWebAppNode.this,
-                    String.format("This operation will delete Web App %s.\nAre you sure you want to continue?",
-                            webApp.name()),
-                    "Deleting Web App");
-        }
-
-        @Override
-        protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-            try {
-                AzureWebAppMvpModel.getInstance().deleteWebApp(subscriptionId, webApp.id());
-
-                DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    // instruct parent node to remove this node
-                    getParent().removeDirectChildNode(WinWebAppNode.this);
-                });
-            } catch (Exception ex) {
-                DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Web App",
-                        ex,
-                        "Azure Services Explorer - Error Deleting Web App", false, true);
-            }
-        }
-
-        @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
-        }
     }
 }

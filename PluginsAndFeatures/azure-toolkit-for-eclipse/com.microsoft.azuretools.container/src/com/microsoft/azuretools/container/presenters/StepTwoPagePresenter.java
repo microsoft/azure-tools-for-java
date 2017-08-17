@@ -33,6 +33,8 @@ import com.microsoft.azuretools.container.utils.WebAppOnLinuxUtil;
 import com.microsoft.azuretools.container.views.StepTwoPageView;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.utils.AzureModel;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.CanceledByUserException;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import java.io.IOException;
@@ -186,6 +188,7 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
                     binderSubscriptionDetails.get(subscriptionSelectionIndex).getSubscriptionId(), resourceGroupName,
                     appName, createNewRg);
             DockerRuntime.getInstance().setLatestWebAppName(app.name());
+            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
             return app;
         }).subscribeOn(getSchedulerProvider().io()).subscribe(app -> {
             DefaultLoader.getIdeHelper().invokeLater(() -> {

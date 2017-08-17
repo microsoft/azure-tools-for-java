@@ -41,11 +41,10 @@ public class LinuxWebAppNode extends WebAppNode {
      *
      * @param parent parent Node.
      * @param app    ResourceEx with Web App instance.
-     * @param icon   Node icon path.
      */
-    public LinuxWebAppNode(WebAppModule parent, ResourceEx app, String icon) {
-        super(((SiteInner) app.getResource()).id(), ((SiteInner) app.getResource()).name(), parent, icon, true);
-        siteInner = (SiteInner) app.getResource();
+    public LinuxWebAppNode(WebAppModule parent, ResourceEx<SiteInner> app) {
+        super(app.getResource().id(), app.getResource().name(), parent, app.getResource().state());
+        siteInner = app.getResource();
         subscriptionId = app.getSubscriptionId();
 
         loadActions();

@@ -5,7 +5,9 @@ import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapps.WebappNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WinWebAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.LinuxWebAppNode;
 
 import org.eclipse.ui.PlatformUI;
 
@@ -14,17 +16,20 @@ import java.net.URL;
 @Name("Open in Browser")
 public class OpenWebappAction extends NodeActionListener {
 
-    private WebappNode webappNode;
+    private WebAppNode webAppNode;
 
-    public OpenWebappAction(WebappNode webappNode) {
-        this.webappNode = webappNode;
+    public OpenWebappAction(WinWebAppNode webappNode) {
+        this.webAppNode = webappNode;
+    }
+    public OpenWebappAction(LinuxWebAppNode webappNode) {
+        this.webAppNode = webappNode;
     }
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-    	try {
-    		WebApp webApp = webappNode.getWebApp();
-    		String appServiceLink = "https://" + webApp.defaultHostName();
+        try {
+            WebApp webApp = webAppNode.getWebApp();
+            String appServiceLink = "https://" + webApp.defaultHostName();
             PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(appServiceLink));
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);

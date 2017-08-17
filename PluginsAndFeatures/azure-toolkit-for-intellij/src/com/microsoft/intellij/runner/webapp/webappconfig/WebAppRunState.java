@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  * <p/>
  * All rights reserved.
@@ -147,9 +147,8 @@ public class WebAppRunState implements RunProfileState {
             processHandler.setText(DEPLOY_SUCCESSFUL);
             processHandler.setText("URL: " + url);
             return webApp;
-        })
-                .subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io())
-                .subscribe(webApp -> {
+        }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
+                webApp -> {
                     processHandler.notifyComplete();
                     if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
                         try {
@@ -157,11 +156,7 @@ public class WebAppRunState implements RunProfileState {
                                     .getResourceGroupBySubscriptionIdAndName(webAppSettingModel.getSubscriptionId(),
                                             webAppSettingModel.getResourceGroup());
                             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
-                                    new WebAppUtils.WebAppDetails(resourceGroup, webApp,
-                                            null /*appServicePlan*/,
-                                            null /*appServicePlanResourceGroup*/,
-                                            null /*subscriptionDetail*/
-                                    )));
+                                    null));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -173,7 +168,8 @@ public class WebAppRunState implements RunProfileState {
                     processHandler.setText(err.getMessage());
                     processHandler.notifyComplete();
                     sendTelemetry(false, err.getMessage());
-                });
+                }
+        );
         return new DefaultExecutionResult(consoleView, processHandler);
     }
 
@@ -186,7 +182,7 @@ public class WebAppRunState implements RunProfileState {
     }
 
     // TODO: refactor later
-    private void sendTelemetry(boolean success, @Nullable String ErrorMsg) {
+    private void sendTelemetry(boolean success, @Nullable String errorMsg) {
         Map<String, String> map = new HashMap<>();
         map.put("SubscriptionId", webAppSettingModel.getSubscriptionId());
         map.put("CreateNewApp", String.valueOf(webAppSettingModel.isCreatingNew()));
@@ -194,7 +190,7 @@ public class WebAppRunState implements RunProfileState {
         map.put("CreateNewRGP", String.valueOf(webAppSettingModel.isCreatingResGrp()));
         map.put("Success", String.valueOf(success));
         if (!success) {
-            map.put("ErrorMsg", ErrorMsg);
+            map.put("ErrorMsg", errorMsg);
         }
 
         AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "Webapp", "Deploy", map);

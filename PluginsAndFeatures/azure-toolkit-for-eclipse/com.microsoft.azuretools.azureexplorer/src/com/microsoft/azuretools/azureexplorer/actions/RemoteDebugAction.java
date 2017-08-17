@@ -5,22 +5,22 @@ import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapps.WebappNode;     
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 
 @Name("Remote debugging...")
 public class RemoteDebugAction extends NodeActionListener {
 
-    private WebappNode webappNode;
+    private WebAppNode webAppNode;
 
-    public RemoteDebugAction(WebappNode webappNode) {
-        this.webappNode = webappNode;
+    public RemoteDebugAction(WebAppNode webappNode) {
+        this.webAppNode = webappNode;
     }
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-    	try {
-    		WebApp webApp = webappNode.getWebApp();
-    		// TODO
+        try {
+            WebApp webApp = webAppNode.getWebApp();
+            // TODO
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
         }

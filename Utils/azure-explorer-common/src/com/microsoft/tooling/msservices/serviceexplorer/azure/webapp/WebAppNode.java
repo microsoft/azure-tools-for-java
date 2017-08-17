@@ -45,8 +45,8 @@ public abstract class WebAppNode extends Node implements TelemetryProperties, We
     private static final String WEB_STOP_ICON = "WebAppStopped_16.png";
     protected String subscriptionId;
 
-    public WebAppNode(String id, String name, Node parent, String iconPath, boolean delayActionLoading) {
-        super(id, name, parent, iconPath, delayActionLoading);
+    public WebAppNode(String id, String name, Node parent, String state) {
+        super(id, name, parent, RUN_STATUS.equals(state) ? WEB_RUN_ICON : WEB_STOP_ICON, true);
     }
 
     public abstract WebApp getWebApp();
