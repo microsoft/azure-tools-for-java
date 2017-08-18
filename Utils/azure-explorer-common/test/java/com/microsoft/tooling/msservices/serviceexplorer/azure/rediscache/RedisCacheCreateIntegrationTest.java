@@ -29,10 +29,12 @@ import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.microsoft.azure.management.resources.Subscription;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -82,6 +84,12 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
 
     @Mock
     private SubscriptionManager subscriptionManagerMock;
+
+    @Mock
+    private Subscription subscriptionMock;
+
+    @Mock
+    private SubscriptionDetail subscriptionDetailMock;
 
     @Mock
     private UIHelper uiHelper;
@@ -205,7 +213,6 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
     @Test
     public void testRedisCacheCreateDupName() throws Exception {
         expectedEx.expect(com.microsoft.azure.CloudException.class);
-        expectedEx.expectMessage("An error occured when trying to reserve the DNS name for the cache instance.");
         CreateRedisCache(azureManagerMock, currentsub, PremNewResGrpConfig);
         CreateRedisCache(azureManagerMock, currentsub, DupNameConfig);
     }
@@ -213,7 +220,6 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
     @Test
     public void testRedisCacheCreateRgNotExist() throws Exception {
         expectedEx.expect(com.microsoft.azure.CloudException.class);
-        expectedEx.expectMessage("Resource group 'NotExistRg' could not be found.");
         CreateRedisCache(azureManagerMock, currentsub, RgNotExistConfig);
     }
 
@@ -227,14 +233,21 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
         Azure.Authenticated azureAuthed = Azure.authenticate(restClient, defaultSubscription, domain);
         azure = azureAuthed.withSubscription(defaultSubscription);
         this.defaultSubscription = defaultSubscription;
-        Set<String> sidList = Stream.of(defaultSubscription).collect(Collectors.toSet());
 
         PowerMockito.mockStatic(AuthMethodManager.class);
         when(AuthMethodManager.getInstance()).thenReturn(authMethodManagerMock);
+        when(authMethodManagerMock.getAzureClient(MOCK_SUBSCRIPTION)).thenReturn(azure);
         when(authMethodManagerMock.getAzureManager()).thenReturn(azureManagerMock);
-        when(azureManagerMock.getAzure(anyString())).thenReturn(azure);
         when(azureManagerMock.getSubscriptionManager()).thenReturn(subscriptionManagerMock);
-        when(subscriptionManagerMock.getAccountSidList()).thenReturn(sidList);
+        final Map<String, Subscription> mockSidToSubscriptionMap = new HashMap<>();
+        mockSidToSubscriptionMap.put(MOCK_SUBSCRIPTION, subscriptionMock);
+        final Map<String, SubscriptionDetail> mockSidToSubDetailMap = new HashMap<>();
+        mockSidToSubDetailMap.put(MOCK_SUBSCRIPTION, subscriptionDetailMock);
+        when(subscriptionDetailMock.isSelected()).thenReturn(true);
+        when(subscriptionDetailMock.getSubscriptionId()).thenReturn(MOCK_SUBSCRIPTION);
+        when(subscriptionManagerMock.getSubscriptionIdToSubscriptionDetailsMap()).thenReturn(mockSidToSubDetailMap);
+        when(subscriptionManagerMock.getSubscriptionIdToSubscriptionMap()).thenReturn(mockSidToSubscriptionMap);
+        when(subscriptionMock.subscriptionId()).thenReturn(MOCK_SUBSCRIPTION);
 
         PowerMockito.mockStatic(DefaultLoader.class);
         when(DefaultLoader.getUIHelper()).thenReturn(uiHelper);
@@ -317,7 +330,7 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
 
     public void CreateRedisCache(AzureManager azureManager, SubscriptionDetail currentSub, RedisCreateConfig config)
             throws Exception {
-        Azure azure = azureManager.getAzure(currentSub.getSubscriptionId());
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(currentSub.getSubscriptionId());
         ProcessingStrategy processor = RedisCacheUtil.doGetProcessor(azure, skus, config.dnsNameValue,
                 config.selectedLocationValue, config.selectedResGrpValue, config.selectedPriceTierValue,
                 config.noSSLPort, config.newResGrp);

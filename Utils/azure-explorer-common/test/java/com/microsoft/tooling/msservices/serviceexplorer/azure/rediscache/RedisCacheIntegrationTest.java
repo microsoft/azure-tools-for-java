@@ -28,10 +28,13 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -78,6 +81,12 @@ public class RedisCacheIntegrationTest extends IntegrationTestBase {
     
     @Mock
     private SubscriptionManager subscriptionManagerMock;
+
+    @Mock
+    private Subscription subscriptionMock;
+
+    @Mock
+    private SubscriptionDetail subscriptionDetailMock;
     
     @Mock
     private UIHelper uiHelper;
@@ -122,15 +131,22 @@ public class RedisCacheIntegrationTest extends IntegrationTestBase {
         Azure.Authenticated azureAuthed = Azure.authenticate(restClient, defaultSubscription, domain);
         azure = azureAuthed.withSubscription(defaultSubscription);
         this.defaultSubscription = defaultSubscription;
-        Set<String> sidList = Stream.of(defaultSubscription).collect(Collectors.toSet());
 
         PowerMockito.mockStatic(AuthMethodManager.class);
         when(AuthMethodManager.getInstance()).thenReturn(authMethodManagerMock);
+        when(authMethodManagerMock.getAzureClient(MOCK_SUBSCRIPTION)).thenReturn(azure);
         when(authMethodManagerMock.getAzureManager()).thenReturn(azureManagerMock);
-        when(azureManagerMock.getAzure(anyString())).thenReturn(azure);
         when(azureManagerMock.getSubscriptionManager()).thenReturn(subscriptionManagerMock);
-        when(subscriptionManagerMock.getAccountSidList()).thenReturn(sidList);
-        
+        final Map<String, Subscription> mockSidToSubscriptionMap = new HashMap<>();
+        mockSidToSubscriptionMap.put(MOCK_SUBSCRIPTION, subscriptionMock);
+        final Map<String, SubscriptionDetail> mockSidToSubDetailMap = new HashMap<>();
+        mockSidToSubDetailMap.put(MOCK_SUBSCRIPTION, subscriptionDetailMock);
+
+        when(subscriptionDetailMock.isSelected()).thenReturn(true);
+        when(subscriptionDetailMock.getSubscriptionId()).thenReturn(MOCK_SUBSCRIPTION);
+        when(subscriptionManagerMock.getSubscriptionIdToSubscriptionDetailsMap()).thenReturn(mockSidToSubDetailMap);
+        when(subscriptionManagerMock.getSubscriptionIdToSubscriptionMap()).thenReturn(mockSidToSubscriptionMap);
+        when(subscriptionMock.subscriptionId()).thenReturn(MOCK_SUBSCRIPTION);
         PowerMockito.mockStatic(DefaultLoader.class);
         when(DefaultLoader.getUIHelper()).thenReturn(uiHelper);
         when(uiHelper.isDarkTheme()).thenReturn(false);

@@ -75,7 +75,7 @@ public class AzureWebAppMvpModel {
      * get the web app by ID.
      */
     public WebApp getWebAppById(String sid, String id) throws IOException {
-        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         return azure.webApps().getById(id);
     }
 
@@ -111,7 +111,7 @@ public class AzureWebAppMvpModel {
     }
 
     private WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
-        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(model.getSubscriptionId());
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
 
         WebApp.DefinitionStages.WithCreate withCreate;
         if (model.isCreatingAppServicePlan()) {

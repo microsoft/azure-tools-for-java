@@ -53,7 +53,7 @@ public class AzureMvpModelHelper {
         HashMap<String, RedisCaches> redisCacheMaps = new HashMap<>();
         List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
         for (Subscription subscription : subscriptions) {
-            Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscription.subscriptionId());
+            Azure azure = AuthMethodManager.getInstance().getAzureClient(subscription.subscriptionId());
             if (azure == null || azure.redisCaches() == null) {
                 continue;
             }
@@ -70,7 +70,7 @@ public class AzureMvpModelHelper {
      * @throws IOException getAzureManager Exception
      */
     public RedisCache getRedisCache(String sid, String id) throws IOException {
-        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         RedisCaches redisCaches = azure.redisCaches();
         if (redisCaches == null) {
             return null;
@@ -85,7 +85,7 @@ public class AzureMvpModelHelper {
      * @throws IOException getAzureManager Exception
      */
     public void deleteRedisCache(String sid, String id) throws IOException {
-        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         RedisCaches redisCaches = azure.redisCaches();
         if (redisCaches == null) {
             return;
