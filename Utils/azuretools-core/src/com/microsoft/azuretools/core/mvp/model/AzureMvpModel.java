@@ -109,11 +109,7 @@ public class AzureMvpModel {
     public List<ResourceGroup> getResourceGroupsBySubscriptionId(String sid) {
         List<ResourceGroup> ret = new ArrayList<>();
         try {
-            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            if (azureManager == null) {
-                return ret;
-            }
-            Azure azure = azureManager.getAzure(sid);
+            Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
             ret.addAll(azure.resourceGroups().list());
         } catch (IOException e) {
             e.printStackTrace();
@@ -126,9 +122,8 @@ public class AzureMvpModel {
      */
     public ResourceGroup getResourceGroupBySubscriptionIdAndName(String sid, String name) throws Exception {
         ResourceGroup resourceGroup;
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         try {
-            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            Azure azure = azureManager.getAzure(sid);
             resourceGroup = azure.resourceGroups().getByName(name);
             if (resourceGroup == null) {
                 throw new Exception(CANNOT_GET_RESOURCE_GROUP);

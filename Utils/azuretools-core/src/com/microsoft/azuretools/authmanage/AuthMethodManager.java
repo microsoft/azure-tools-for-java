@@ -1,28 +1,30 @@
 /*
  * Copyright (c) Microsoft Corporation
- *   <p/>
- *  All rights reserved.
- *   <p/>
- *  MIT License
- *   <p/>
- *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- *  documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- *  the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- *  to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *  <p/>
- *  The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- *  the Software.
- *   <p/>
- *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- *  THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- *  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
  */
 
 package com.microsoft.azuretools.authmanage;
 
 
+import com.microsoft.azure.management.Azure;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.interact.AuthMethod;
@@ -44,18 +46,37 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-
-/**
- * Created by shch on 10/9/2016.
- */
 public class AuthMethodManager {
     private final static Logger LOGGER = Logger.getLogger(AuthMethodManager.class.getName());
-    private AuthMethodDetails authMethodDetails = null;
+    private static final String CANNOT_GET_AZURE_MANAGER = "Cannot get Azure Manager.";
+    private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure by subscription ID.";
     private static AuthMethodManager instance = null;
+    private AuthMethodDetails authMethodDetails = null;
     private AzureManager azureManager;
-    
     private Set<Runnable> signInEventListeners = new HashSet<>();
     private Set<Runnable> signOutEventListeners = new HashSet<>();
+
+    private AuthMethodManager() throws IOException {
+        loadSettings();
+    }
+
+    public static AuthMethodManager getInstance() throws IOException {
+        if (instance == null) {
+            instance = new AuthMethodManager();
+        }
+        return instance;
+    }
+
+    public Azure getAzureClient(String sid) throws IOException {
+        if (azureManager == null) {
+            throw new IOException(CANNOT_GET_AZURE_MANAGER);
+        }
+        Azure azure = azureManager.getAzure(sid);
+        if (azure == null) {
+            throw new IOException(CANNOT_GET_AZURE_BY_SID);
+        }
+        return azure;
+    }
 
     public void addSignInEventListener(Runnable l) {
         if (!signInEventListeners.contains(l)) {
@@ -85,13 +106,6 @@ public class AuthMethodManager {
         if (AzureUIRefreshCore.listeners != null) {
             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.SIGNOUT, null));
         }
-    }
-
-    public static AuthMethodManager getInstance() throws IOException {
-        if( instance == null) {
-            instance = new AuthMethodManager();
-        }
-        return instance;
     }
 
     public AzureManager getAzureManager() throws IOException {
@@ -148,19 +162,15 @@ public class AuthMethodManager {
         return authMethodDetails.getAuthMethod();
     }
 
+    public AuthMethodDetails getAuthMethodDetails() {
+        return this.authMethodDetails;
+    }
+
     public void setAuthMethodDetails(AuthMethodDetails authMethodDetails) throws IOException {
         cleanAll();
         this.authMethodDetails = authMethodDetails;
         saveSettings();
         //if (isSignedIn()) notifySignInEventListener();
-    }
-
-    public AuthMethodDetails getAuthMethodDetails() {
-        return this.authMethodDetails;
-    }
-
-    private AuthMethodManager() throws IOException {
-        loadSettings();
     }
 
     private void loadSettings() throws IOException {
