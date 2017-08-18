@@ -51,9 +51,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class AzureWebAppMvpModel {
-    private static final String NOT_SIGNED_ERROR = "Plugin not signed in error.";
-    private static final String CANNOT_GET_AZURE_MANAGER = "Cannot get Azure Manager.";
-    private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure by subscription ID.";
 
     private static final String CREATE_WEBAPP = "Creating new WebApp...";
     private static final String CREATE_SUCCESSFUL = "WebApp created...";
@@ -74,6 +71,9 @@ public class AzureWebAppMvpModel {
         return SingletonHolder.INSTANCE;
     }
 
+    /**
+     * get the web app by ID.
+     */
     public WebApp getWebAppById(String sid, String id) throws IOException {
         Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
         return azure.webApps().getById(id);
@@ -111,16 +111,7 @@ public class AzureWebAppMvpModel {
     }
 
     private WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) {
-            throw new Exception("There is no azure manager");
-        }
-        Azure azure = azureManager.getAzure(model.getSubscriptionId());
-        if (azure == null) {
-            throw new Exception(
-                    String.format("Cannot get azure instance for subID  %s", model.getSubscriptionId())
-            );
-        }
+        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(model.getSubscriptionId());
 
         WebApp.DefinitionStages.WithCreate withCreate;
         if (model.isCreatingAppServicePlan()) {

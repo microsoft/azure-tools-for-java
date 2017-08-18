@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -25,13 +25,12 @@ package com.microsoft.azuretools.core.mvp.model;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.redis.RedisCaches;
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Set;
+import java.util.List;
 
 public class AzureMvpModelHelper {
     
@@ -51,22 +50,14 @@ public class AzureMvpModelHelper {
      * @throws IOException getAzureManager Exception
      */
     public HashMap<String, RedisCaches> getRedisCaches() throws IOException {
-        HashMap<String, RedisCaches> redisCacheMaps = new HashMap<String, RedisCaches>();
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) {
-            return redisCacheMaps;
-        }
-        SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
-        if (subscriptionManager == null) {
-            return redisCacheMaps;
-        }
-        Set<String> sidList = subscriptionManager.getAccountSidList();
-        for (String sid : sidList) {
-            Azure azure = azureManager.getAzure(sid);
+        HashMap<String, RedisCaches> redisCacheMaps = new HashMap<>();
+        List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        for (Subscription subscription : subscriptions) {
+            Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscription.subscriptionId());
             if (azure == null || azure.redisCaches() == null) {
                 continue;
             }
-            redisCacheMaps.put(sid, azure.redisCaches());
+            redisCacheMaps.put(subscription.subscriptionId(), azure.redisCaches());
         }
         return redisCacheMaps;
     }
@@ -79,18 +70,10 @@ public class AzureMvpModelHelper {
      * @throws IOException getAzureManager Exception
      */
     public RedisCache getRedisCache(String sid, String id) throws IOException {
-        RedisCache redisCache = null;
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) {
-            return redisCache;
-        }
-        Azure azure = azureManager.getAzure(sid);
-        if (azure == null) {
-            return redisCache;
-        }
+        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
         RedisCaches redisCaches = azure.redisCaches();
         if (redisCaches == null) {
-            return redisCache;
+            return null;
         }
         return redisCaches.getById(id);
     }
@@ -102,14 +85,7 @@ public class AzureMvpModelHelper {
      * @throws IOException getAzureManager Exception
      */
     public void deleteRedisCache(String sid, String id) throws IOException {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) {
-            return;
-        }
-        Azure azure = azureManager.getAzure(sid);
-        if (azure == null) {
-            return;
-        }
+        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
         RedisCaches redisCaches = azure.redisCaches();
         if (redisCaches == null) {
             return;
