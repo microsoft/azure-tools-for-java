@@ -27,7 +27,7 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
-import com.microsoft.intellij.ui.webapp.deploysetting.WebAppSettingPanel;
+import com.microsoft.intellij.runner.webapp.webappconfig.ui.WebAppSettingPanel;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 import org.jetbrains.annotations.NotNull;

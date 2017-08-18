@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.ui.webapp.deploysetting;
+package com.microsoft.intellij.runner.webapp.webappconfig.ui;
 
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
