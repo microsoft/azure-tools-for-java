@@ -98,7 +98,7 @@ public class WebAppRunState implements RunProfileState {
             WebApp webApp;
             if (webAppSettingModel.isCreatingNew()) {
                 try {
-                    webApp = WebDeployUtil.createWebAppWithMsg(webAppSettingModel, processHandler);
+                    webApp = AzureWebAppMvpModel.getInstance().createWebAppWithMsg(webAppSettingModel, processHandler);
                 } catch (Exception e) {
                     processHandler.setText(STOP_DEPLOY);
                     throw new Exception("Cannot create webapp for deploy");

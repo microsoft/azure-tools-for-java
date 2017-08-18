@@ -39,6 +39,7 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzulZuluModel;
+import com.microsoft.azuretools.utils.IProgressIndicator;
 import com.microsoft.azuretools.utils.WebAppUtils;
 
 import java.io.IOException;
@@ -50,6 +51,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class AzureWebAppMvpModel {
+    private static final String NOT_SIGNED_ERROR = "Plugin not signed in error.";
+    private static final String CANNOT_GET_AZURE_MANAGER = "Cannot get Azure Manager.";
+    private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure by subscription ID.";
+
+    private static final String CREATE_WEBAPP = "Creating new WebApp...";
+    private static final String CREATE_SUCCESSFUL = "WebApp created...";
+    private static final String CREATE_FALIED = "Failed to create WebApp. Error: %s ...";
+    private static final String DEPLOY_JDK = "Deploying custom JDK...";
+    private static final String JDK_SUCCESSFUL = "Custom JDK deployed successfully...";
+    private static final String JDK_FAILED = "Failed to deploy custom JDK";
+
     private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
     private final Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
 
@@ -62,7 +74,74 @@ public class AzureWebAppMvpModel {
         return SingletonHolder.INSTANCE;
     }
 
-    private static WebApp.DefinitionStages.WithCreate withCreateNewSPlan(
+    public WebApp getWebAppById(String sid, String id) throws IOException {
+        Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(sid);
+        return azure.webApps().getById(id);
+    }
+
+    /**
+     * Create an Azure web app service.
+     */
+    public WebApp createWebAppWithMsg(
+            WebAppSettingModel webAppSettingModel, IProgressIndicator handler) throws Exception {
+        handler.setText(CREATE_WEBAPP);
+        WebApp webApp = null;
+        try {
+            webApp = AzureWebAppMvpModel.getInstance().createWebApp(webAppSettingModel);
+        } catch (Exception e) {
+            handler.setText(String.format(CREATE_FALIED, e.getMessage()));
+            throw new Exception(e);
+        }
+
+        if (!WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(webAppSettingModel.getJdkChoice())) {
+            handler.setText(DEPLOY_JDK);
+            try {
+                WebAppUtils.deployCustomJdk(webApp, webAppSettingModel.getJdkUrl(),
+                        WebContainer.fromString(webAppSettingModel.getWebContainer()),
+                        handler);
+                handler.setText(JDK_SUCCESSFUL);
+            } catch (Exception e) {
+                handler.setText(JDK_FAILED);
+                throw new Exception(e);
+            }
+        }
+        handler.setText(CREATE_SUCCESSFUL);
+
+        return webApp;
+    }
+
+    private WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null) {
+            throw new Exception("There is no azure manager");
+        }
+        Azure azure = azureManager.getAzure(model.getSubscriptionId());
+        if (azure == null) {
+            throw new Exception(
+                    String.format("Cannot get azure instance for subID  %s", model.getSubscriptionId())
+            );
+        }
+
+        WebApp.DefinitionStages.WithCreate withCreate;
+        if (model.isCreatingAppServicePlan()) {
+            withCreate = withCreateNewSPlan(azure, model);
+        } else {
+            withCreate = withCreateExistingSPlan(azure, model);
+        }
+
+        WebApp webApp;
+        if (WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(model.getJdkChoice())) {
+            webApp = withCreate
+                    .withJavaVersion(JavaVersion.JAVA_8_NEWEST)
+                    .withWebContainer(WebContainer.fromString(model.getWebContainer()))
+                    .create();
+        } else {
+            webApp = withCreate.create();
+        }
+        return webApp;
+    }
+
+    private WebApp.DefinitionStages.WithCreate withCreateNewSPlan(
             @NotNull Azure azure,
             @NotNull WebAppSettingModel model) throws Exception {
         String[] tierSize = model.getPricing().split("_");
@@ -99,7 +178,7 @@ public class AzureWebAppMvpModel {
         return withCreateWebApp;
     }
 
-    private static WebApp.DefinitionStages.WithCreate withCreateExistingSPlan(
+    private WebApp.DefinitionStages.WithCreate withCreateExistingSPlan(
             @NotNull Azure azure,
             @NotNull WebAppSettingModel model) {
         AppServicePlan servicePlan = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
@@ -115,34 +194,6 @@ public class AzureWebAppMvpModel {
         }
 
         return withCreate;
-    }
-
-    public WebApp getWebAppById(String sid, String id) throws IOException {
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        return azure.webApps().getById(id);
-    }
-
-    // TODO
-    public WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
-
-        WebApp.DefinitionStages.WithCreate withCreate;
-        if (model.isCreatingAppServicePlan()) {
-            withCreate = withCreateNewSPlan(azure, model);
-        } else {
-            withCreate = withCreateExistingSPlan(azure, model);
-        }
-
-        WebApp webApp;
-        if (WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(model.getJdkChoice())) {
-            webApp = withCreate
-                    .withJavaVersion(JavaVersion.JAVA_8_NEWEST)
-                    .withWebContainer(WebContainer.fromString(model.getWebContainer()))
-                    .create();
-        } else {
-            webApp = withCreate.create();
-        }
-        return webApp;
     }
 
     public void deployWebApp() {
