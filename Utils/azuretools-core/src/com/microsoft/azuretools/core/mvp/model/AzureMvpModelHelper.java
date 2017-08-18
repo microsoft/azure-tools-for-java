@@ -54,7 +54,7 @@ public class AzureMvpModelHelper {
         List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
         for (Subscription subscription : subscriptions) {
             Azure azure = AuthMethodManager.getInstance().getAzureClient(subscription.subscriptionId());
-            if (azure == null || azure.redisCaches() == null) {
+            if (azure.redisCaches() == null) {
                 continue;
             }
             redisCacheMaps.put(subscription.subscriptionId(), azure.redisCaches());

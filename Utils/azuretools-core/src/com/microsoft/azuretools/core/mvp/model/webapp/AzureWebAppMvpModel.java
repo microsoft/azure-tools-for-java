@@ -52,13 +52,6 @@ import java.util.stream.Collectors;
 
 public class AzureWebAppMvpModel {
 
-    private static final String CREATE_WEBAPP = "Creating new WebApp...";
-    private static final String CREATE_SUCCESSFUL = "WebApp created...";
-    private static final String CREATE_FALIED = "Failed to create WebApp. Error: %s ...";
-    private static final String DEPLOY_JDK = "Deploying custom JDK...";
-    private static final String JDK_SUCCESSFUL = "Custom JDK deployed successfully...";
-    private static final String JDK_FAILED = "Failed to deploy custom JDK";
-
     private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
     private final Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
 
@@ -82,35 +75,7 @@ public class AzureWebAppMvpModel {
     /**
      * Create an Azure web app service.
      */
-    public WebApp createWebAppWithMsg(
-            WebAppSettingModel webAppSettingModel, IProgressIndicator handler) throws Exception {
-        handler.setText(CREATE_WEBAPP);
-        WebApp webApp = null;
-        try {
-            webApp = AzureWebAppMvpModel.getInstance().createWebApp(webAppSettingModel);
-        } catch (Exception e) {
-            handler.setText(String.format(CREATE_FALIED, e.getMessage()));
-            throw new Exception(e);
-        }
-
-        if (!WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(webAppSettingModel.getJdkChoice())) {
-            handler.setText(DEPLOY_JDK);
-            try {
-                WebAppUtils.deployCustomJdk(webApp, webAppSettingModel.getJdkUrl(),
-                        WebContainer.fromString(webAppSettingModel.getWebContainer()),
-                        handler);
-                handler.setText(JDK_SUCCESSFUL);
-            } catch (Exception e) {
-                handler.setText(JDK_FAILED);
-                throw new Exception(e);
-            }
-        }
-        handler.setText(CREATE_SUCCESSFUL);
-
-        return webApp;
-    }
-
-    private WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
+    public WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
 
         WebApp.DefinitionStages.WithCreate withCreate;
