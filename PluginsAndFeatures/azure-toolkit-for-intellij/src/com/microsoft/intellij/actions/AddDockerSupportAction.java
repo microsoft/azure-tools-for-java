@@ -62,7 +62,7 @@ public class AddDockerSupportAction extends AzureAnAction {
         }
         // create docker file
         try {
-            DockerUtil.createDockerFile(project, Constant.DOCKER_CONTEXT_FOLDER, Constant.DOCKERFILE_NAME,
+            DockerUtil.createDockerFile(project.getBasePath(), Constant.DOCKER_CONTEXT_FOLDER, Constant.DOCKERFILE_NAME,
                     String.format(Constant.DOCKERFILE_CONTENT_TOMCAT, artifactName));
         } catch (IOException e) {
             e.printStackTrace();

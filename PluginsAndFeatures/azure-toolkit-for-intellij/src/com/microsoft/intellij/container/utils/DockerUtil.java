@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.container.utils;
 
-import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.container.ConsoleLogger;
 import com.microsoft.intellij.container.Constant;
 import com.microsoft.intellij.container.DockerRuntime;
@@ -56,9 +55,8 @@ public class DockerUtil {
     /**
      * create a docker file in specified folder.
      */
-    public static void createDockerFile(Project project, String folderName, String filename, String content)
+    public static void createDockerFile(String basePath, String folderName, String filename, String content)
             throws IOException {
-        String basePath = project.getBasePath();
         if (basePath == null) {
             throw new FileNotFoundException("Project basePath is null.");
         }
@@ -70,7 +68,7 @@ public class DockerUtil {
         }
     }
 
-    public static String createContainer(DockerClient docker, String imageName, String tagName)
+    public static String createContainer(DockerClient docker, String imageNameWithTag)
             throws DockerException, InterruptedException {
         final Map<String, List<PortBinding>> portBindings = new HashMap<>();
         List<PortBinding> randomPort = new ArrayList<>();
@@ -82,7 +80,7 @@ public class DockerUtil {
 
         final ContainerConfig config = ContainerConfig.builder()
                 .hostConfig(hostConfig)
-                .image(String.format("%s:%s", imageName, tagName != null ? tagName : "latest"))
+                .image(imageNameWithTag)
                 .exposedPorts(Constant.TOMCAT_SERVICE_PORT)
                 .build();
         final ContainerCreation container = docker.createContainer(config);
@@ -117,24 +115,13 @@ public class DockerUtil {
 
     /**
      * buildImage.
-     *
-     * @param docker
-     * @param project
-     * @param dockerDirectory
-     * @return
-     * @throws DockerCertificateException
-     * @throws DockerException
-     * @throws InterruptedException
-     * @throws IOException
      */
-    public static String buildImage(DockerClient docker, Project project, Path dockerDirectory, ProgressHandler
+    public static String buildImage(DockerClient docker, String imageNameWithTag, Path dockerDirectory, ProgressHandler
             progressHandler)
             throws DockerCertificateException, DockerException, InterruptedException, IOException {
-        final String imageName = String.format("%s-%s:%tY%<tm%<td%<tH%<tM%<tS", Constant.IMAGE_PREFIX,
-                project.getName().toLowerCase(), new java.util.Date());
-        docker.build(dockerDirectory, imageName, progressHandler);
-        DockerRuntime.getInstance().setLatestImageName(imageName);
-        return imageName;
+        String imageId = docker.build(dockerDirectory, imageNameWithTag, progressHandler);
+        DockerRuntime.getInstance().setLatestImageName(imageNameWithTag);
+        return imageId == null ? null : imageNameWithTag;
     }
 
     public static boolean containerExists(DockerClient docker, String containerId)
@@ -145,13 +132,17 @@ public class DockerUtil {
 
 
     public static void pushImage(DockerClient dockerClient, String registryUrl, String registryUsername,
-                                 String registryPassword, String latestImageName, String targetImageName,
+                                 String registryPassword, String targetImageName,
                                  ProgressHandler handler)
             throws DockerException, InterruptedException {
         final RegistryAuth registryAuth = RegistryAuth.builder().username(registryUsername).password(registryPassword)
                 .build();
-        dockerClient.tag(latestImageName, targetImageName);
-        dockerClient.push(targetImageName, handler, registryAuth);
+        if (targetImageName.startsWith(registryUrl)) {
+            dockerClient.push(targetImageName, handler, registryAuth);
+        }
+        else {
+            throw new DockerException("serverUrl and imageName mismatch.");
+        }
     }
 
     public static void stopContainer(DockerClient dockerClient, String runningContainerId) throws DockerException,

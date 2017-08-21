@@ -152,10 +152,10 @@
             text="Add Docker Support..." description="Add Docker Support"
             icon="/icons/AddDockerSupport_16.png">
     </action>
-    <!--<action id="Actions.DockerRun" class="com.microsoft.intellij.actions.DockerRunAction"-->
-            <!--text="Docker Run..." description="Azure website deployment for Java"-->
-            <!--icon="/icons/DockerRun_16.png">-->
-    <!--</action>-->
+    <action id="Actions.RunOnDockerHost" class="com.microsoft.intellij.actions.RunOnDockerHostAction"
+            text="Run on Docker Host ..." description="Run on Docker Host ..."
+            icon="/icons/DockerRun_16.png">
+    </action>
     <action id="Actions.WebAppOnLinux" class="com.microsoft.intellij.actions.WebAppOnLinuxAction"
             text="Run on Web App (Linux) ..." description="Run on Web App (Linux)"
             icon="/icons/PublishWebAppOnLinux_16.png">
@@ -166,7 +166,7 @@
       <reference ref="Actions.WebDeployAction"/>
       <separator/>
       <reference ref="Actions.AddDockerSupport"/>
-      <!--<reference ref="Actions.DockerRun"/>-->
+      <reference ref="Actions.RunOnDockerHost"/>
       <reference ref="Actions.WebAppOnLinux"/>
       <separator/>
       <reference ref="Actions.AzureDockerHostDeploy"/>

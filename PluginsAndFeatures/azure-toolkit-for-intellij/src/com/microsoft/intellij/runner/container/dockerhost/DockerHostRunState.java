@@ -13,6 +13,7 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.intellij.container.Constant;
 import com.microsoft.intellij.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.RunProcessHandler;
@@ -119,7 +120,8 @@ public class DockerHostRunState implements RunProfileState {
                             dataModel.isTlsEnabled(),
                             dataModel.getDockerCertPath()
                     );
-                    String latestImageName = DockerUtil.buildImage(docker, project,
+                    String latestImageName = DockerUtil.buildImage(docker,
+                            String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()),
                             Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME),
                             (message) -> {
                                 if (message.error() != null) {
@@ -133,13 +135,12 @@ public class DockerHostRunState implements RunProfileState {
                     // docker run
                     String containerId = DockerUtil.createContainer(
                             docker,
-                            dataModel.getImageName(),
-                            dataModel.getTagName()
+                            String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName())
                     );
                     runningContainerId[0] = containerId;
                     return DockerUtil.runContainer(docker, containerId);
                 }
-        ).subscribeOn(Schedulers.io()).subscribe(
+        ).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
                 (res) -> {
                     processHandler.setText("Container started ... ");
                     processHandler.setText(String.format(

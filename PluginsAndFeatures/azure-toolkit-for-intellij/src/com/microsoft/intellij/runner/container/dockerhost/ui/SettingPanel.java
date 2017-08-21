@@ -33,6 +33,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.ListCellRendererWrapper;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.runner.container.dockerhost.DockerHostRunConfiguration;
 import com.microsoft.intellij.runner.container.dockerhost.DockerHostRunModel;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
@@ -132,7 +133,11 @@ public class SettingPanel {
         model.setTlsEnabled(comboTlsEnabled.isSelected());
         model.setDockerCertPath(dockerCertPathTextField.getText());
         model.setImageName(textImageName.getText());
-        model.setTagName(textTagName.getText());
+        if (Utils.isEmptyString(textTagName.getText())) {
+            model.setTagName("latest");
+        } else {
+            model.setTagName(textTagName.getText());
+        }
         // set target
         if (lastSelectedArtifact != null) {
             containerLocalRunConfiguration.getDockerHostRunModel().setTargetPath(lastSelectedArtifact
