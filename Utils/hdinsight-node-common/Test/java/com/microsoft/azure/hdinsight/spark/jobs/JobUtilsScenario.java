@@ -21,6 +21,9 @@
 
 package com.microsoft.azure.hdinsight.spark.jobs;
 
+import com.microsoft.azure.hdinsight.spark.common.MockHttpService;
+import cucumber.api.java.Before;
+import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import rx.Subscription;
 
@@ -33,12 +36,24 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class JobUtilsScenario {
-    @Then("^Yarn log observable from '(http.*)' should produce events:$")
+    private MockHttpService httpServerMock;
+
+    @Before
+    public void setUp() {
+        httpServerMock = new MockHttpService();
+    }
+
+    @Given("^mock a http service in JobUtilsScenario for (.+) request '(.+)' to return '(.+)' with status code (\\d+)$")
+    public void mockHttpService(String action, String serviceUrl, String response, int statusCode) throws Throwable {
+        httpServerMock.stub(action, serviceUrl, statusCode, response);
+    }
+
+    @Then("^Yarn log observable from '(.*)' should produce events:$")
     public void checkYarnLogObservable(String logUrl, List<String> logs) throws Throwable {
         Object lock = new Object();
         Iterator logIterExpect = logs.iterator();
 
-        Subscription sub = JobUtils.createYarnLogObservable(null, null, logUrl, "stderr", 10)
+        Subscription sub = JobUtils.createYarnLogObservable(null, null, httpServerMock.completeUrl(logUrl), "stderr", 10)
                 .subscribe((line) -> {
                     String logExpect = logIterExpect.next().toString();
                     assertEquals(logExpect, line);
