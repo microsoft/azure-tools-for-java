@@ -23,7 +23,6 @@
 package com.microsoft.azuretools.core.mvp.model.rediscache;
 
 import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModelHelper;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -89,7 +88,7 @@ public class RedisConnectionPools {
     }
 
     private void connect(String sid, String id) throws Exception {
-        RedisCache redisCache = AzureMvpModelHelper.getInstance().getRedisCache(sid, id);
+        RedisCache redisCache = AzureRedisMvpModel.getInstance().getRedisCache(sid, id);
 
         if (redisCache == null) {
             throw new Exception(GANNOT_GET_RESID);

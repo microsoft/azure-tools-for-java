@@ -28,6 +28,7 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.core.mvp.model.rediscache.AzureRedisMvpModel;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.junit.After;
 import org.junit.Before;
@@ -57,9 +58,9 @@ import static org.mockito.Mockito.*;
     SubscriptionManager.class
 })
 
-public class AzureMvpModelHelperTest {
+public class AzureRedisMvpModelTest {
     
-    private AzureMvpModelHelper azureMvpModelHelper;
+    private AzureRedisMvpModel azureRedisMvpModel;
 
     @Mock
     private AuthMethodManager authMethodManagerMock;
@@ -93,12 +94,12 @@ public class AzureMvpModelHelperTest {
         when(authMethodManagerMock.getAzureManager()).thenReturn(azureManagerMock);
         when(azureManagerMock.getSubscriptionManager()).thenReturn(subscriptionManagerMock);
 
-        azureMvpModelHelper = AzureMvpModelHelper.getInstance();
+        azureRedisMvpModel = AzureRedisMvpModel.getInstance();
     }
     
     @After
     public void tearDown() {
-        azureMvpModelHelper = null;
+        azureRedisMvpModel = null;
         authMethodManagerMock = null;
         azureMock = null;
         redisCachesMock = null;
@@ -121,7 +122,7 @@ public class AzureMvpModelHelperTest {
         when(subscriptionMock.subscriptionId()).thenReturn(MOCK_SUBSCRIPTION);
         when(azureMock.redisCaches()).thenReturn(redisCachesMock);
         
-        HashMap<String, RedisCaches> redisCachesMap = azureMvpModelHelper.getRedisCaches();
+        HashMap<String, RedisCaches> redisCachesMap = azureRedisMvpModel.getRedisCaches();
         
         assertNotNull(redisCachesMap);
         assertEquals(expectKeySetSize, redisCachesMap.keySet().size());
@@ -132,7 +133,7 @@ public class AzureMvpModelHelperTest {
     public void testDeleteRedisCache() throws IOException {
         when(azureMock.redisCaches()).thenReturn(redisCachesMock);
         
-        azureMvpModelHelper.deleteRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
+        azureRedisMvpModel.deleteRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
         verify(redisCachesMock, times(1)).deleteById(MOCK_REDIS_ID);
     }
     
@@ -140,7 +141,7 @@ public class AzureMvpModelHelperTest {
     public void testDeleteRedisCacheWhenRedisCacheIsNull() throws IOException {
         when(azureMock.redisCaches()).thenReturn(null);
         
-        azureMvpModelHelper.deleteRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
+        azureRedisMvpModel.deleteRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
         verify(redisCachesMock, times(0)).deleteById(MOCK_REDIS_ID);
     }
     
@@ -148,7 +149,7 @@ public class AzureMvpModelHelperTest {
     public void testGetRedisCache() throws IOException {
         when(azureMock.redisCaches()).thenReturn(redisCachesMock);
         
-        azureMvpModelHelper.getRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
+        azureRedisMvpModel.getRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
         verify(redisCachesMock, times(1)).getById(MOCK_REDIS_ID);
     }
     
@@ -156,7 +157,7 @@ public class AzureMvpModelHelperTest {
     public void testGetRedisCacheWhenRedisCacheIsNull() throws IOException {
         when(azureMock.redisCaches()).thenReturn(null);
         
-        azureMvpModelHelper.getRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
+        azureRedisMvpModel.getRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
         verify(redisCachesMock, times(0)).getById(MOCK_REDIS_ID);
     }
 }

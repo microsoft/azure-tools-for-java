@@ -23,7 +23,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModelHelper;
+import com.microsoft.azuretools.core.mvp.model.rediscache.AzureRedisMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisCacheProperty;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -57,7 +57,7 @@ public class RedisPropertyViewPresenter<V extends RedisPropertyMvpView> extends 
             return;
         }
         Observable.fromCallable(() -> {
-            return AzureMvpModelHelper.getInstance().getRedisCache(sid, id);
+            return AzureRedisMvpModel.getInstance().getRedisCache(sid, id);
         })
         .subscribeOn(getSchedulerProvider().io())
         .subscribe(redis -> {

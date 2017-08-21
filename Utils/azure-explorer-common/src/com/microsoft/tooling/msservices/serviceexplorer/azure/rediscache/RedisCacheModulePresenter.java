@@ -24,7 +24,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.redis.RedisCaches;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModelHelper;
+import com.microsoft.azuretools.core.mvp.model.rediscache.AzureRedisMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -39,7 +39,7 @@ public class RedisCacheModulePresenter<V extends RedisCacheModule> extends MvpPr
     private static final String CANNOT_GET_REDIS_ID = "Cannot get Redis Cache's ID.";
     private static final String CANNOT_DELETE_REDIS = "Cannot delete Redis Cache.";
 
-    private final AzureMvpModelHelper azureMvpModelHelper = AzureMvpModelHelper.getInstance();
+    private final AzureRedisMvpModel azureRedisMvpModel = AzureRedisMvpModel.getInstance();
 
     /**
      * Called from view when the view needs refresh.
@@ -47,7 +47,7 @@ public class RedisCacheModulePresenter<V extends RedisCacheModule> extends MvpPr
     public void onModuleRefresh() {
         HashMap<String, ArrayList<NodeContent>> nodeMap = new HashMap<String, ArrayList<NodeContent>>();
         try {
-            HashMap<String, RedisCaches> redisCachesMap = azureMvpModelHelper.getRedisCaches();
+            HashMap<String, RedisCaches> redisCachesMap = azureRedisMvpModel.getRedisCaches();
             for (String sid : redisCachesMap.keySet()) {
                 ArrayList<NodeContent> nodeContentList = new ArrayList<NodeContent>();
                 for (RedisCache redisCache : redisCachesMap.get(sid).list()) {
@@ -83,7 +83,7 @@ public class RedisCacheModulePresenter<V extends RedisCacheModule> extends MvpPr
             return;
         }
         try {
-            azureMvpModelHelper.deleteRedisCache(sid, id);
+            azureRedisMvpModel.deleteRedisCache(sid, id);
         } catch (IOException e) {
             getMvpView().onErrorWithException(CANNOT_DELETE_REDIS, e);
             return;

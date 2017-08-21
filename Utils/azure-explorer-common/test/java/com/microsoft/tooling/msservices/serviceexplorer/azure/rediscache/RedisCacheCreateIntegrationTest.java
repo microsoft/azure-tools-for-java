@@ -24,15 +24,11 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.microsoft.azure.management.resources.Subscription;
 import org.junit.After;
@@ -53,7 +49,7 @@ import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModelHelper;
+import com.microsoft.azuretools.core.mvp.model.rediscache.AzureRedisMvpModel;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.rest.RestClient;
 
@@ -68,7 +64,6 @@ import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import junit.framework.Assert;
 
 @PowerMockIgnore("javax.net.ssl.*")
 @RunWith(PowerMockRunner.class)
@@ -293,7 +288,7 @@ public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
         // verify redisCache properties
         String redisCacheId = String.format(redisCacheQueryString, defaultSubscription, config.selectedResGrpValue,
                 config.dnsNameValue);
-        RedisCache redisCacheInstance = AzureMvpModelHelper.getInstance().getRedisCache(defaultSubscription,
+        RedisCache redisCacheInstance = AzureRedisMvpModel.getInstance().getRedisCache(defaultSubscription,
                 redisCacheId);
         assertEquals(redisCacheInstance.name(), config.dnsNameValue);
         assertEquals(redisCacheInstance.resourceGroupName(), config.selectedResGrpValue);
