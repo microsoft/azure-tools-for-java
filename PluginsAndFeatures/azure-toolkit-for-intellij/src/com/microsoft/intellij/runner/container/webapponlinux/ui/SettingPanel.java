@@ -127,6 +127,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private JTextField textSelectedAppName; // invisible, used to trigger validation on tableRowSelection
     private JComboBox<Artifact> cbArtifact;
     private JLabel lblArtifact;
+    private JPanel pnlArtifact;
     private Artifact lastSelectedArtifact;
     private boolean isCbArtifactInited;
 

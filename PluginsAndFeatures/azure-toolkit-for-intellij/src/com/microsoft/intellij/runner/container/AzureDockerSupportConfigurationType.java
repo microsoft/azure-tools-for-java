@@ -42,8 +42,8 @@ public class AzureDockerSupportConfigurationType implements ConfigurationType {
 
     @Override
     public String getDisplayName() {
-//        return "Azure Docker Support";
-        return "Azure Web App (Linux)";
+       return "Azure Docker Support";
+        // return "Azure Web App (Linux)";
     }
 
     @Override
@@ -65,8 +65,8 @@ public class AzureDockerSupportConfigurationType implements ConfigurationType {
     @Override
     public ConfigurationFactory[] getConfigurationFactories() {
         return new ConfigurationFactory[]{
-//                new DockerHostRunConfigurationFactory(this),
                 new WebAppOnLinuxDeployConfigurationFactory(this),
+                new DockerHostRunConfigurationFactory(this),
         };
     }
 

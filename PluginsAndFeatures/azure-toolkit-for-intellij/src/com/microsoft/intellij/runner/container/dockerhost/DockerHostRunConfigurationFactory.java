@@ -16,11 +16,16 @@ public class DockerHostRunConfigurationFactory extends ConfigurationFactory {
     @NotNull
     @Override
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-        return new DockerHostRunConfiguration(project, this, " createTemplateConfiguration@DockerHostRunConfigurationFactory");
+        return new DockerHostRunConfiguration(project, this);
     }
 
     @Override
     public String getName() {
         return FACTORY_NAME;
+    }
+
+    @Override
+    public RunConfiguration createConfiguration(String name, RunConfiguration template) {
+        return new DockerHostRunConfiguration(template.getProject(), this);
     }
 }

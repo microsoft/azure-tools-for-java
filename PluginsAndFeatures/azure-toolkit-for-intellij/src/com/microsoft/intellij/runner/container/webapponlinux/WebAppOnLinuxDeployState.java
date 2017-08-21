@@ -32,7 +32,6 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Key;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
@@ -68,7 +67,6 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
     private final WebAppOnLinuxDeployModel deployModel;
     private final Project project;
 
-    private final RunProcessHandler processHandler = new RunProcessHandler();
 
     public WebAppOnLinuxDeployState(Project project, WebAppOnLinuxDeployModel webAppOnLinuxDeployModel) {
         this.deployModel = webAppOnLinuxDeployModel;
@@ -77,20 +75,22 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
 
     @Override
     public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) throws ExecutionException {
+        final RunProcessHandler processHandler = new RunProcessHandler();
+        processHandler.addDefaultListener();
         ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         processHandler.startNotify();
         consoleView.attachToProcess(processHandler);
 
         Observable.fromCallable(
                 () -> {
-                    println("Starting job ...  ");
+                    processHandler.setText("Starting job ...  ");
                     String basePath = project.getBasePath();
                     if (basePath == null) {
-                        errorln("Project base path is null.");
+                        processHandler.println("Project base path is null.", ProcessOutputTypes.STDERR);
                         throw new FileNotFoundException("Project base path is null.");
                     }
                     // locate war file to specified location
-                    println("Locate war file ...  ");
+                    processHandler.setText("Locate war file ...  ");
                     String targetFilePath = deployModel.getTargetPath();
                     String targetBuildPath = Paths.get(targetFilePath).getParent().toString();
                     String targetFileName = deployModel.getTargetName();
@@ -111,7 +111,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                     Files.write(targetDockerfile, content.getBytes());
 
                     // build image
-                    println("Build image ...  ");
+                    processHandler.setText("Build image ...  ");
                     DockerClient docker = DefaultDockerClient.fromEnv().build();
                     String latestImageName = DockerUtil.buildImage(docker, project,
                             Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME),
@@ -119,13 +119,13 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                                 if (message.error() != null) {
                                     throw new DockerException(message.error());
                                 } else {
-                                    println(message.stream());
+                                    processHandler.setText(message.stream());
                                 }
                             }
                     );
 
                     // push to ACR
-                    println("Push to ACR ...  ");
+                    processHandler.setText("Push to ACR ...  ");
                     PrivateRegistryImageSetting acrInfo = deployModel.getPrivateRegistryImageSetting();
                     DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
                             latestImageName, acrInfo.getImageNameWithTag(),
@@ -133,7 +133,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                                 if (message.error() != null) {
                                     throw new DockerException(message.error());
                                 } else {
-                                    println(String.format("%s%s",
+                                    processHandler.setText(String.format("%s%s",
                                             message.id() != null ? message.id() + "\t" : "",
                                             message.status() != null ? message.status() : ""));
                                 }
@@ -143,13 +143,13 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                     // deploy
                     if (deployModel.isCreatingNewWebAppOnLinux()) {
                         // create new WebApp
-                        println("Create new WebApp ...  ");
+                        processHandler.setText("Create new WebApp ...  ");
                         WebApp app = AzureWebAppMvpModel.getInstance()
                                 .createWebAppOnLinux(deployModel.getSubscriptionId(), deployModel,
                                         deployModel.getPrivateRegistryImageSetting());
 
                         if (app != null && app.name() != null) {
-                            println(String.format("URL:  http://%s.azurewebsites.net/%s", app.name(),
+                            processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/%s", app.name(),
                                     FilenameUtils.removeExtension(targetFileName)));
                             updateConfigurationDataModel(app);
 
@@ -158,12 +158,12 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                         }
                     } else {
                         // update WebApp
-                        println("Update WebApp ...  ");
+                        processHandler.setText("Update WebApp ...  ");
                         WebApp app = AzureWebAppMvpModel.getInstance()
                                 .updateWebAppOnLinux(deployModel.getSubscriptionId(), deployModel.getWebAppId(),
                                         acrInfo);
                         if (app != null && app.name() != null) {
-                            println(String.format("URL:  http://%s.azurewebsites.net/%s", app.name(),
+                            processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/%s", app.name(),
                                     FilenameUtils.removeExtension(targetFileName)));
                         }
                     }
@@ -171,15 +171,15 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                 }
         ).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
                 (res) -> {
-                    println("Update cache ... ");
+                    processHandler.setText("Update cache ... ");
                     AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
-                    println("Job done");
+                    processHandler.setText("Job done");
                     processHandler.notifyProcessTerminated(0);
                     sendTelemetry(true, null);
                 },
                 (err) -> {
                     err.printStackTrace();
-                    errorln(err.getMessage());
+                    processHandler.println(err.getMessage(), ProcessOutputTypes.STDERR);
                     processHandler.notifyProcessTerminated(0);
                     sendTelemetry(false, err.getMessage());
                 }
@@ -206,21 +206,5 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
         deployModel.setCreatingNewWebAppOnLinux(false);
         deployModel.setWebAppId(app.id());
         deployModel.setResourceGroupName(app.resourceGroupName());
-    }
-
-    private void println(String message, Key type) {
-        if (!processHandler.isProcessTerminating() && !processHandler.isProcessTerminated()) {
-            processHandler.notifyTextAvailable(message + "\n", type);
-        } else {
-            throw new Error("The process has been terminated");
-        }
-    }
-
-    private void println(String message) {
-        println(message, ProcessOutputTypes.SYSTEM);
-    }
-
-    private void errorln(String message) {
-        println(message, ProcessOutputTypes.STDERR);
     }
 }

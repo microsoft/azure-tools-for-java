@@ -15,6 +15,8 @@ public class DockerHostRunModel {
 
     private String imageName;
     private String tagName;
+    private String targetPath;
+    private String targetName;
 
     public DockerHostRunModel() {
         try {
@@ -70,9 +72,19 @@ public class DockerHostRunModel {
         this.tagName = tagName;
     }
 
-    public void readExternal(Element element) {
+    public String getTargetPath() {
+        return targetPath;
     }
 
-    public void writeExternal(Element element) {
+    public void setTargetPath(String targetPath) {
+        this.targetPath = targetPath;
+    }
+
+    public String getTargetName() {
+        return targetName;
+    }
+
+    public void setTargetName(String targetName) {
+        this.targetName = targetName;
     }
 }

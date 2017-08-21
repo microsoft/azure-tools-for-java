@@ -26,6 +26,8 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.container.ConsoleLogger;
 import com.microsoft.intellij.container.Constant;
 import com.microsoft.intellij.container.DockerRuntime;
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DockerCertificates;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.ProgressHandler;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
@@ -35,11 +37,11 @@ import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
-import com.spotify.docker.client.messages.ProgressMessage;
 import com.spotify.docker.client.messages.RegistryAuth;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,7 +50,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 
 public class DockerUtil {
@@ -69,15 +70,7 @@ public class DockerUtil {
         }
     }
 
-    /**
-     * createContainer.
-     *
-     * @param docker    docker client
-     * @param project   active project
-     * @param imageName image to run from
-     * @return web app local url
-     */
-    public static String createContainer(DockerClient docker, Project project, String imageName)
+    public static String createContainer(DockerClient docker, String imageName, String tagName)
             throws DockerException, InterruptedException {
         final Map<String, List<PortBinding>> portBindings = new HashMap<>();
         List<PortBinding> randomPort = new ArrayList<>();
@@ -87,8 +80,11 @@ public class DockerUtil {
 
         final HostConfig hostConfig = HostConfig.builder().portBindings(portBindings).build();
 
-        final ContainerConfig config = ContainerConfig.builder().hostConfig(hostConfig).image(imageName)
-                .exposedPorts(Constant.TOMCAT_SERVICE_PORT).build();
+        final ContainerConfig config = ContainerConfig.builder()
+                .hostConfig(hostConfig)
+                .image(String.format("%s:%s", imageName, tagName != null ? tagName : "latest"))
+                .exposedPorts(Constant.TOMCAT_SERVICE_PORT)
+                .build();
         final ContainerCreation container = docker.createContainer(config);
         return container.id();
     }
@@ -131,7 +127,8 @@ public class DockerUtil {
      * @throws InterruptedException
      * @throws IOException
      */
-    public static String buildImage(DockerClient docker, Project project, Path dockerDirectory, ProgressHandler progressHandler)
+    public static String buildImage(DockerClient docker, Project project, Path dockerDirectory, ProgressHandler
+            progressHandler)
             throws DockerCertificateException, DockerException, InterruptedException, IOException {
         final String imageName = String.format("%s-%s:%tY%<tm%<td%<tH%<tM%<tS", Constant.IMAGE_PREFIX,
                 project.getName().toLowerCase(), new java.util.Date());
@@ -155,5 +152,26 @@ public class DockerUtil {
                 .build();
         dockerClient.tag(latestImageName, targetImageName);
         dockerClient.push(targetImageName, handler, registryAuth);
+    }
+
+    public static void stopContainer(DockerClient dockerClient, String runningContainerId) throws DockerException,
+            InterruptedException {
+        if (runningContainerId != null) {
+            dockerClient.stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
+            dockerClient.removeContainer(runningContainerId);
+        }
+    }
+
+    public static DockerClient getDockerClient(String dockerHost, boolean tlsEnabled, String certPath) throws
+            DockerCertificateException {
+        DockerClient docker = null;
+        if (tlsEnabled) {
+            docker = DefaultDockerClient.builder().uri(URI.create(dockerHost))
+                    .dockerCertificates(new DockerCertificates(Paths.get(certPath)))
+                    .build();
+        } else {
+            docker = DefaultDockerClient.builder().uri(URI.create(dockerHost)).build();
+        }
+        return docker;
     }
 }

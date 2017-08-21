@@ -98,7 +98,7 @@ public class DockerRunAction extends AzureAnAction {
             });
 
             // create a container
-            String containerId = DockerUtil.createContainer(docker, project, imageName);
+            String containerId = DockerUtil.createContainer(docker, imageName, null);
             DefaultLoader.getIdeHelper().invokeAndWait(() -> {
                 ConsoleLogger.info(Constant.MESSAGE_CREATING_CONTAINER);
                 ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_INFO, containerId));
