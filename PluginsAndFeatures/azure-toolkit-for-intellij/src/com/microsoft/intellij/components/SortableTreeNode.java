@@ -43,16 +43,23 @@ public class SortableTreeNode extends DefaultMutableTreeNode {
         this.children.sort(nodeComparator);
     }
 
-    private final Comparator nodeComparator = new Comparator() {
+    @SuppressWarnings("unchecked")
+    @Override
+    public void insert(MutableTreeNode newChild, int childIndex) {
+        super.insert(newChild, childIndex);
+        this.children.sort(nodeComparator);
+    }
+
+    private static final Comparator nodeComparator = new Comparator<SortableTreeNode>() {
         @Override
-        public int compare(Object o1, Object o2) {
-            return o1.toString().compareToIgnoreCase(o2.toString());
+        public int compare(SortableTreeNode node1, SortableTreeNode node2) {
+            return node1.toString().compareToIgnoreCase(node2.toString());
         }
 
         @Override
-        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-        public boolean equals(Object obj)    {
-            return false;
+        public boolean equals(Object obj) {
+            return obj instanceof SortableTreeNode && (this == obj || this.toString()
+                    .toLowerCase().equals(obj.toString().toLowerCase()));
         }
     };
 }
