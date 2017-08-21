@@ -20,27 +20,28 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.core.mvp.model;
+package com.microsoft.azuretools.core.mvp.model.rediscache;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.redis.RedisCaches;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-public class AzureMvpModelHelper {
+public class AzureRedisMvpModel {
     
-    private AzureMvpModelHelper() {}
+    private AzureRedisMvpModel() {}
     
     private static final class  AzureMvpModelHolder {
-        private static final AzureMvpModelHelper INSTANCE = new AzureMvpModelHelper();
+        private static final AzureRedisMvpModel INSTANCE = new AzureRedisMvpModel();
     }
     
-    public static AzureMvpModelHelper getInstance() {
+    public static AzureRedisMvpModel getInstance() {
         return AzureMvpModelHolder.INSTANCE;
     }
     

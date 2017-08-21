@@ -38,14 +38,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.microsoft.azure.management.redis.RedisAccessKeys;
 import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModelHelper;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-    AzureMvpModelHelper.class,
+    AzureRedisMvpModel.class,
     RedisConnectionPools.class,
 })
 public class RedisConnectionPoolsTest {
@@ -57,7 +56,7 @@ public class RedisConnectionPoolsTest {
     private JedisPool jedisPoolMock;
     
     @Mock
-    private AzureMvpModelHelper azureMvpModelHelperMock;
+    private AzureRedisMvpModel azureRedisMvpModelMock;
     
     @Mock
     private RedisCache redisCacheMock;
@@ -72,9 +71,9 @@ public class RedisConnectionPoolsTest {
     
     @Before
     public void setUp() throws Exception {
-        PowerMockito.mockStatic(AzureMvpModelHelper.class);
-        when(AzureMvpModelHelper.getInstance()).thenReturn(azureMvpModelHelperMock);
-        when(azureMvpModelHelperMock.getRedisCache(anyString(), anyString())).thenReturn(redisCacheMock);
+        PowerMockito.mockStatic(AzureRedisMvpModel.class);
+        when(AzureRedisMvpModel.getInstance()).thenReturn(azureRedisMvpModelMock);
+        when(azureRedisMvpModelMock.getRedisCache(anyString(), anyString())).thenReturn(redisCacheMock);
         
         when(redisCacheMock.hostName()).thenReturn(MOCK_RETURN_STRING);
         when(redisCacheMock.keys()).thenReturn(redisAccessKeysMock);
@@ -88,7 +87,7 @@ public class RedisConnectionPoolsTest {
     public void tearDown() {
         jedisMock = null;
         jedisPoolMock = null;
-        azureMvpModelHelperMock = null;
+        azureRedisMvpModelMock = null;
         redisCacheMock = null;
         redisAccessKeysMock = null;
     }

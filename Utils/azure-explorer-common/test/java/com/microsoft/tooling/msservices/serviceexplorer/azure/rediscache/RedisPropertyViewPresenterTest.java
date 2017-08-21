@@ -35,7 +35,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModelHelper;
+import com.microsoft.azuretools.core.mvp.model.rediscache.AzureRedisMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.TestSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisCacheProperty;
@@ -44,7 +44,7 @@ import com.microsoft.tooling.msservices.helpers.IDEHelper;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ 
-    AzureMvpModelHelper.class, 
+    AzureRedisMvpModel.class,
     RedisPropertyViewPresenter.class,
     DefaultLoader.class,
 })
@@ -54,7 +54,7 @@ public class RedisPropertyViewPresenterTest {
     private RedisPropertyMvpView redisPropertyMvpViewMock;
 
     @Mock
-    private AzureMvpModelHelper azureMvpModelHelperMock;
+    private AzureRedisMvpModel azureRedisMvpModelMock;
 
     @Mock
     private RedisCacheProperty redisCachePropertyMock;
@@ -72,9 +72,9 @@ public class RedisPropertyViewPresenterTest {
         redisPropertyViewPresenter = new RedisPropertyViewPresenter<RedisPropertyMvpView>();
         redisPropertyViewPresenter.onAttachView(redisPropertyMvpViewMock);
 
-        PowerMockito.mockStatic(AzureMvpModelHelper.class);
-        when(AzureMvpModelHelper.getInstance()).thenReturn(azureMvpModelHelperMock);
-        when(azureMvpModelHelperMock.getRedisCache(anyString(), anyString())).thenReturn(redisCacheMock);
+        PowerMockito.mockStatic(AzureRedisMvpModel.class);
+        when(AzureRedisMvpModel.getInstance()).thenReturn(azureRedisMvpModelMock);
+        when(azureRedisMvpModelMock.getRedisCache(anyString(), anyString())).thenReturn(redisCacheMock);
         PowerMockito.mockStatic(DefaultLoader.class);
         when(DefaultLoader.getIdeHelper()).thenReturn(mockIDEHelper);
     }
