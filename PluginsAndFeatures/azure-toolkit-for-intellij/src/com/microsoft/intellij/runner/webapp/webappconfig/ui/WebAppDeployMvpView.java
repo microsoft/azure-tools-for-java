@@ -29,9 +29,10 @@ import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
-import com.microsoft.azuretools.utils.AzulZuluModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -52,5 +53,5 @@ public interface WebAppDeployMvpView extends MvpView {
 
     void fillWebContainer(List<WebAppUtils.WebContainerMod> webContainers);
 
-    void fillThirdPartyJdk(List<AzulZuluModel> jdks);
+    void fillJdkVersion(List<JdkModel> jdks);
 }

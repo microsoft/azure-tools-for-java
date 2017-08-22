@@ -57,7 +57,7 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
                         return;
                     }
                     getMvpView().fillSubscription(subscriptions);
-        }), e -> errorHandler(CANNOT_LIST_SUBSCRIPTION, (Exception) e));
+                }), e -> errorHandler(CANNOT_LIST_SUBSCRIPTION, (Exception) e));
     }
 
     /**
@@ -122,10 +122,10 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
     }
 
     /**
-     * Load third party JDKs from model.
+     * Load Java versions from model.
      */
     public void onLoadThirdPartyJdk() {
-        getMvpView().fillThirdPartyJdk(AzureWebAppMvpModel.getInstance().listThirdPartyJdk());
+        getMvpView().fillJdkVersion(AzureWebAppMvpModel.getInstance().listJdks());
     }
 
     private void loadWebApps(boolean forceRefresh) {

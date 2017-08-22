@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -37,6 +37,7 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.XmlSerializer;
+import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
@@ -93,9 +94,7 @@ public class WebAppConfiguration extends RunConfigurationBase {
     public void readExternal(Element element) throws InvalidDataException {
         super.readExternal(element);
         firstTimeCreated = Comparing.equal(element.getAttributeValue("default"), "true");
-        if (element != null) {
-            XmlSerializer.deserializeInto(webAppSettingModel, element);
-        }
+        XmlSerializer.deserializeInto(webAppSettingModel, element);
     }
 
     @Override
@@ -268,20 +267,12 @@ public class WebAppConfiguration extends RunConfigurationBase {
         webAppSettingModel.setPricing(price);
     }
 
-    public String getJdkChoice() {
-        return webAppSettingModel.getJdkChoice();
+    public JavaVersion getJdkVersion() {
+        return webAppSettingModel.getJdkVersion();
     }
 
-    public void setJdkChoice(String jdk) {
-        webAppSettingModel.setJdkChoice(jdk);
-    }
-
-    public String getJdkUrl() {
-        return webAppSettingModel.getJdkUrl();
-    }
-
-    public void setJdkUrl(String url) {
-        webAppSettingModel.setJdkUrl(url);
+    public void setJdkVersion(JavaVersion jdk) {
+        webAppSettingModel.setJdkVersion(jdk);
     }
 
     public String getTargetPath() {
@@ -290,10 +281,6 @@ public class WebAppConfiguration extends RunConfigurationBase {
 
     public void setTargetPath(String path) {
         webAppSettingModel.setTargetPath(path);
-    }
-
-    public String getTargetName() {
-        return webAppSettingModel.getTargetName();
     }
 
     public void setTargetName(String name) {

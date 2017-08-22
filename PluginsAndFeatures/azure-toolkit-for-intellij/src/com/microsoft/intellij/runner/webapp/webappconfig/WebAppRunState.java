@@ -32,7 +32,6 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -41,7 +40,6 @@ import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import com.microsoft.azuretools.utils.IProgressIndicator;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.RunProcessHandler;
 
@@ -62,11 +60,7 @@ import rx.Observable;
 public class WebAppRunState implements RunProfileState {
 
     private static final String CREATE_WEBAPP = "Creating new WebApp...";
-    private static final String CREATE_SUCCESSFUL = "WebApp created...";
     private static final String CREATE_FALIED = "Failed to create WebApp. Error: %s ...";
-    private static final String DEPLOY_JDK = "Deploying custom JDK...";
-    private static final String JDK_SUCCESSFUL = "Custom JDK deployed successfully...";
-    private static final String JDK_FAILED = "Failed to deploy custom JDK";
     private static final String GETTING_DEPLOYMENT_CREDENTIAL = "Getting Deployment Credential...";
     private static final String CONNECTING_FTP = "Connecting to FTP server...";
     private static final String UPLOADING_WAR = "Uploading war file...";
@@ -106,7 +100,13 @@ public class WebAppRunState implements RunProfileState {
             }
             WebApp webApp;
             if (webAppSettingModel.isCreatingNew()) {
-                webApp = createWebAppWithMsg(webAppSettingModel, processHandler);
+                processHandler.setText(CREATE_WEBAPP);
+                try {
+                    webApp = AzureWebAppMvpModel.getInstance().createWebApp(webAppSettingModel);
+                } catch (Exception e) {
+                    processHandler.setText(STOP_DEPLOY);
+                    throw new Exception(String.format(CREATE_FALIED, e.getMessage()));
+                }
             } else {
                 webApp = AzureWebAppMvpModel.getInstance()
                         .getWebAppById(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppId());
@@ -198,33 +198,5 @@ public class WebAppRunState implements RunProfileState {
         }
 
         AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "Webapp", "Deploy", map);
-    }
-
-    private WebApp createWebAppWithMsg(WebAppSettingModel webAppSettingModel, IProgressIndicator handler)
-            throws Exception {
-        handler.setText(CREATE_WEBAPP);
-        WebApp webApp;
-        try {
-            webApp = AzureWebAppMvpModel.getInstance().createWebApp(webAppSettingModel);
-        } catch (Exception e) {
-            handler.setText(STOP_DEPLOY);
-            throw new Exception(String.format(CREATE_FALIED, e.getMessage()));
-        }
-
-        if (!WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(webAppSettingModel.getJdkChoice())) {
-            handler.setText(DEPLOY_JDK);
-            try {
-                WebAppUtils.deployCustomJdk(webApp, webAppSettingModel.getJdkUrl(),
-                        WebContainer.fromString(webAppSettingModel.getWebContainer()),
-                        handler);
-                handler.setText(JDK_SUCCESSFUL);
-            } catch (Exception e) {
-                handler.setText(JDK_FAILED);
-                throw new Exception(e);
-            }
-        }
-        handler.setText(CREATE_SUCCESSFUL);
-
-        return webApp;
     }
 }

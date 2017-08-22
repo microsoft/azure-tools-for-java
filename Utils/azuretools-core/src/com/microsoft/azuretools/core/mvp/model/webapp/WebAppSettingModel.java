@@ -23,6 +23,8 @@
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
+import com.microsoft.azure.management.appservice.JavaVersion;
+
 public class WebAppSettingModel {
 
     // common settings
@@ -45,9 +47,7 @@ public class WebAppSettingModel {
     private String appServicePlanId = "";
     private String region = "";
     private String pricing = "";
-
-    private String jdkChoice = "";
-    private String jdkUrl = "";
+    private JavaVersion jdkVersion = JavaVersion.JAVA_8_NEWEST;
 
     public String getWebAppId() {
         return webAppId;
@@ -169,23 +169,11 @@ public class WebAppSettingModel {
         this.pricing = pricing;
     }
 
-    public String getJdkChoice() {
-        return jdkChoice;
+    public JavaVersion getJdkVersion() {
+        return jdkVersion;
     }
 
-    public void setJdkChoice(String jdkChoice) {
-        this.jdkChoice = jdkChoice;
-    }
-
-    public String getJdkUrl() {
-        return jdkUrl;
-    }
-
-    public void setJdkUrl(String jdkUrl) {
-        this.jdkUrl = jdkUrl;
-    }
-
-    public static enum JdkChoice {
-        DEFAULT, THIRD_PARTY
+    public void setJdkVersion(JavaVersion jdkVersion) {
+        this.jdkVersion = jdkVersion;
     }
 }

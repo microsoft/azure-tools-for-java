@@ -25,7 +25,6 @@ package com.microsoft.azuretools.core.mvp.model.webapp;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
@@ -37,9 +36,6 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.azuretools.utils.AzulZuluModel;
-import com.microsoft.azuretools.utils.IProgressIndicator;
 import com.microsoft.azuretools.utils.WebAppUtils;
 
 import java.io.IOException;
@@ -85,16 +81,10 @@ public class AzureWebAppMvpModel {
             withCreate = withCreateExistingSPlan(azure, model);
         }
 
-        WebApp webApp;
-        if (WebAppSettingModel.JdkChoice.DEFAULT.toString().equals(model.getJdkChoice())) {
-            webApp = withCreate
-                    .withJavaVersion(JavaVersion.JAVA_8_NEWEST)
-                    .withWebContainer(WebContainer.fromString(model.getWebContainer()))
-                    .create();
-        } else {
-            webApp = withCreate.create();
-        }
-        return webApp;
+        return withCreate
+                .withJavaVersion(model.getJdkVersion())
+                .withWebContainer(WebContainer.fromString(model.getWebContainer()))
+                .create();
     }
 
     private WebApp.DefinitionStages.WithCreate withCreateNewSPlan(
@@ -368,15 +358,10 @@ public class AzureWebAppMvpModel {
     /**
      * List available Third Party JDKs.
      */
-    public List<AzulZuluModel> listThirdPartyJdk() {
-        List<AzulZuluModel> jdks = new ArrayList<>();
-        for (AzulZuluModel jdk : AzulZuluModel.values()) {
-            if (jdk.isDeprecated()) {
-                continue;
-            }
-            jdks.add(jdk);
-        }
-        return jdks;
+    public List<JdkModel> listJdks() {
+        List<JdkModel> jdkModels = new ArrayList<>();
+        Collections.addAll(jdkModels, JdkModel.values());
+        return jdkModels;
     }
 
     /**

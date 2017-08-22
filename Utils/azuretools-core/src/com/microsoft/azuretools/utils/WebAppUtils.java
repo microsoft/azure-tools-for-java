@@ -324,11 +324,11 @@ public class WebAppUtils {
     }
 
     public enum WebContainerMod {
-        Newest_Tomcat_70("Newest Tomcat 7.0", "tomcat 7.0"),
-        Newest_Tomcat_80("Newest Tomcat 8.0", "tomcat 8.0"),
         Newest_Tomcat_85("Newest Tomcat 8.5", "tomcat 8.5"),
-        Newest_Jetty_91("Newest Jetty 9.1", "jetty 9.1"),
-        Newest_Jetty_93("Newest Jetty 9.3", "jetty 9.3");
+        Newest_Tomcat_80("Newest Tomcat 8.0", "tomcat 8.0"),
+        Newest_Tomcat_70("Newest Tomcat 7.0", "tomcat 7.0"),
+        Newest_Jetty_93("Newest Jetty 9.3", "jetty 9.3"),
+        Newest_Jetty_91("Newest Jetty 9.1", "jetty 9.1");
 
         private String displayName;
         private String value;

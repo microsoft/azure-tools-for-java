@@ -30,7 +30,6 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.AnActionButton;
-import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
@@ -43,9 +42,8 @@ import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.azuretools.utils.AzulZuluModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
@@ -101,7 +99,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private String lastSelectedPriceTier;
     private Artifact lastSelectedArtifact;
     private boolean isArtifact;
-    private WebAppSettingModel.JdkChoice lastJdkChoice = WebAppSettingModel.JdkChoice.DEFAULT;
     private boolean telemetrySent;
 
     //widgets
@@ -116,8 +113,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JRadioButton rdoUseExistAppServicePlan;
     private JRadioButton rdoCreateResGrp;
     private JRadioButton rdoUseExistResGrp;
-    private JRadioButton rdoDefaultJdk;
-    private JRadioButton rdoThirdPartyJdk;
     private JTextField txtWebAppName;
     private JTextField txtCreateAppServicePlan;
     private JTextField txtNewResGrp;
@@ -128,12 +123,10 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JComboBox<PricingTier> cbPricing;
     private JComboBox<AppServicePlan> cbExistAppServicePlan;
     private JComboBox<ResourceGroup> cbExistResGrp;
-    private JComboBox<AzulZuluModel> cbThirdPartyJdk;
+    private JComboBox<JdkModel> cbJdkVersion;
     private JComboBox<Artifact> cbArtifact;
-    private HyperlinkLabel lblJdkLicense;
     private JLabel lblLocation;
     private JLabel lblPricing;
-    private JLabel lblDefaultJdk;
     private JLabel lblArtifact;
     private JBTable table;
     private AnActionButton btnRefresh;
@@ -167,19 +160,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         btnGrpForAppServicePlan.add(rdoCreateAppServicePlan);
         rdoUseExistAppServicePlan.addActionListener(e -> toggleAppServicePlanPanel(false /*isCreatingNew*/));
         rdoCreateAppServicePlan.addActionListener(e -> toggleAppServicePlanPanel(true /*isCreatingNew*/));
-
-        final ButtonGroup btnGrpForJdk = new ButtonGroup();
-        btnGrpForJdk.add(rdoDefaultJdk);
-        btnGrpForJdk.add(rdoThirdPartyJdk);
-        rdoDefaultJdk.addActionListener(e -> {
-            toggleJdkPanel(WebAppSettingModel.JdkChoice.DEFAULT);
-            lastJdkChoice = WebAppSettingModel.JdkChoice.DEFAULT;
-        });
-        rdoThirdPartyJdk.addActionListener(e -> {
-            toggleJdkPanel(WebAppSettingModel.JdkChoice.THIRD_PARTY);
-            lastJdkChoice = WebAppSettingModel.JdkChoice.THIRD_PARTY;
-            cbThirdPartyJdk.requestFocus();
-        });
 
         cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
             @Override
@@ -276,16 +256,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
         });
 
-        cbThirdPartyJdk.setRenderer(new ListCellRendererWrapper<AzulZuluModel>() {
-            @Override
-            public void customize(JList list, AzulZuluModel azulZuluModel, int
-                    index, boolean isSelected, boolean cellHasFocus) {
-                if (azulZuluModel != null) {
-                    setText(azulZuluModel.getName());
-                }
-            }
-        });
-
         cbArtifact.addActionListener(e -> {
             final Artifact selectArtifact = (Artifact) cbArtifact.getSelectedItem();
             if (!Comparing.equal(lastSelectedArtifact, selectArtifact)) {
@@ -312,9 +282,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 }
             }
         });
-
-        lblJdkLicense.setHyperlinkText("License");
-        lblJdkLicense.setHyperlinkTarget(AzulZuluModel.getLicenseUrl());
     }
 
     /**
@@ -380,11 +347,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 rdoCreateAppServicePlan.doClick();
             } else {
                 rdoUseExistAppServicePlan.doClick();
-            }
-            if (Comparing.equal(webAppConfiguration.getJdkChoice(), WebAppSettingModel.JdkChoice.DEFAULT.toString())) {
-                rdoDefaultJdk.doClick();
-            } else {
-                rdoThirdPartyJdk.doClick();
             }
         } else {
             rdoUseExist.doClick();
@@ -453,17 +415,9 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 }
             }
             // JDK
-            switch (lastJdkChoice) {
-                case DEFAULT:
-                    webAppConfiguration.setJdkChoice(lastJdkChoice.toString());
-                    break;
-                case THIRD_PARTY:
-                    webAppConfiguration.setJdkChoice(lastJdkChoice.toString());
-                    AzulZuluModel azulZuluModel = (AzulZuluModel) cbThirdPartyJdk.getSelectedItem();
-                    webAppConfiguration.setJdkUrl(azulZuluModel == null ? "" : azulZuluModel.getDownloadUrl());
-                    break;
-                default:
-                    break;
+            JdkModel jdkModel = (JdkModel) cbJdkVersion.getSelectedItem();
+            if (jdkModel != null) {
+                webAppConfiguration.setJdkVersion(jdkModel.getJavaVersion());
             }
             webAppConfiguration.setCreatingNew(true);
         }
@@ -514,21 +468,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         cbExistAppServicePlan.setEnabled(!isCreatingNew);
         lblLocation.setEnabled(!isCreatingNew);
         lblPricing.setEnabled(!isCreatingNew);
-    }
-
-    private void toggleJdkPanel(WebAppSettingModel.JdkChoice choice) {
-        switch (choice) {
-            case DEFAULT:
-                lblDefaultJdk.setEnabled(true);
-                cbThirdPartyJdk.setEnabled(false);
-                break;
-            case THIRD_PARTY:
-                lblDefaultJdk.setEnabled(false);
-                cbThirdPartyJdk.setEnabled(true);
-                break;
-            default:
-                break;
-        }
     }
 
     private void resetWidget() {
@@ -675,12 +614,12 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     }
 
     @Override
-    public void fillThirdPartyJdk(List<AzulZuluModel> jdks) {
-        cbThirdPartyJdk.removeAllItems();
-        for (AzulZuluModel jdk : jdks) {
-            cbThirdPartyJdk.addItem(jdk);
-            if (Comparing.equal(jdk.getDownloadUrl(), webAppConfiguration.getJdkUrl())) {
-                cbThirdPartyJdk.setSelectedItem(jdk);
+    public void fillJdkVersion(List<JdkModel> jdks) {
+        cbJdkVersion.removeAllItems();
+        for (JdkModel jdk : jdks) {
+            cbJdkVersion.addItem(jdk);
+            if (Comparing.equal(jdk.getJavaVersion(), webAppConfiguration.getJdkVersion())) {
+                cbJdkVersion.setSelectedItem(jdk);
             }
         }
     }
