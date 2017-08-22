@@ -92,6 +92,7 @@ public class WebAppRunState implements RunProfileState {
     @Override
     public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) throws ExecutionException {
         final RunProcessHandler processHandler = new RunProcessHandler();
+        processHandler.addDefaultListener();
         ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         processHandler.startNotify();
         consoleView.attachToProcess(processHandler);

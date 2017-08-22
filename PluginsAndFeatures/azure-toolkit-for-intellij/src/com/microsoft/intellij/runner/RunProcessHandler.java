@@ -36,7 +36,6 @@ import java.io.OutputStream;
 public class RunProcessHandler extends ProcessHandler implements IProgressIndicator {
 
     private static final String PROCESS_TERMINATED = "The process has been terminated";
-
     @Override
     protected void destroyProcessImpl() {
     }
@@ -92,7 +91,10 @@ public class RunProcessHandler extends ProcessHandler implements IProgressIndica
      * Process handler to show the progress message.
      */
     public RunProcessHandler() {
-        this.addProcessListener(new ProcessListener() {
+    }
+
+    public void addDefaultListener() {
+        ProcessListener defaultListener = new ProcessListener() {
             @Override
             public void startNotified(ProcessEvent processEvent) {
             }
@@ -109,7 +111,8 @@ public class RunProcessHandler extends ProcessHandler implements IProgressIndica
             @Override
             public void onTextAvailable(ProcessEvent processEvent, Key key) {
             }
-        });
+        };
+        addProcessListener(defaultListener);
     }
 
     @Override
