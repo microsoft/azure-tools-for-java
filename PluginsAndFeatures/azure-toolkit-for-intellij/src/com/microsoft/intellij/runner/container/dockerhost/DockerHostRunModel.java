@@ -2,7 +2,6 @@ package com.microsoft.intellij.runner.container.dockerhost;
 
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
-import org.jdom.Element;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

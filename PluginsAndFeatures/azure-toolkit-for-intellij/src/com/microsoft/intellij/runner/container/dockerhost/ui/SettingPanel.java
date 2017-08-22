@@ -63,7 +63,7 @@ public class SettingPanel {
     private JTextField textTagName;
     private JPanel pnlArtifact;
     private JLabel lblArtifact;
-    private JComboBox cbArtifact;
+    private JComboBox<Artifact> cbArtifact;
     private JPanel rootPanel;
 
     private Artifact lastSelectedArtifact;
@@ -72,7 +72,7 @@ public class SettingPanel {
     public SettingPanel(Project project) {
         this.project = project;
 
-        dockerCertPathTextField.addActionListener(event -> onDockerCertPathBrowseButtonClick(event));
+        dockerCertPathTextField.addActionListener(this::onDockerCertPathBrowseButtonClick);
         comboTlsEnabled.addActionListener(event -> updateComponentEnabledState());
 
 
@@ -187,7 +187,7 @@ public class SettingPanel {
                 new FileChooserDescriptor(false, true, true, false, false, false),
                 dockerCertPathTextField,
                 null,
-                path != null && !path.isEmpty() ? LocalFileSystem.getInstance().findFileByPath(path) : null);
+                Utils.isEmptyString(path) ? null : LocalFileSystem.getInstance().findFileByPath(path));
         if (files.length > 0) {
             final StringBuilder builder = new StringBuilder();
             for (VirtualFile file : files) {

@@ -25,7 +25,6 @@ package com.microsoft.intellij.runner.container;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
-import com.intellij.icons.AllIcons;
 import com.microsoft.intellij.runner.container.dockerhost.DockerHostRunConfigurationFactory;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfigurationFactory;
 import com.microsoft.intellij.util.PluginUtil;
@@ -43,7 +42,6 @@ public class AzureDockerSupportConfigurationType implements ConfigurationType {
     @Override
     public String getDisplayName() {
        return "Azure Docker Support";
-        // return "Azure Web App (Linux)";
     }
 
     @Override
@@ -64,6 +62,7 @@ public class AzureDockerSupportConfigurationType implements ConfigurationType {
 
     @Override
     public ConfigurationFactory[] getConfigurationFactories() {
+        // CAUTION: the order cannot be changed, referenced by index in other places.
         return new ConfigurationFactory[]{
                 new WebAppOnLinuxDeployConfigurationFactory(this),
                 new DockerHostRunConfigurationFactory(this),
