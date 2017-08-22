@@ -29,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.FileNotFoundException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -158,7 +159,8 @@ public class DockerHostRunState implements RunProfileState {
                             props.put("publicPort", port);
                         }
                     }
-                    props.put("hostname", new URL(dataModel.getDockerHost()).getHost());
+                    String hostname = new URI(dataModel.getDockerHost()).getHost();
+                    props.put("hostname", hostname != null ? hostname : "localhost");
                     return props;
                 }
         ).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
