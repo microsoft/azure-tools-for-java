@@ -24,7 +24,6 @@ package com.microsoft.intellij.container.utils;
 
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.container.Constant;
-import com.microsoft.intellij.container.DockerRuntime;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerCertificates;
 import com.spotify.docker.client.DockerClient;
@@ -107,7 +106,6 @@ public class DockerUtil {
             progressHandler)
             throws DockerCertificateException, DockerException, InterruptedException, IOException {
         String imageId = docker.build(dockerDirectory, imageNameWithTag, progressHandler);
-        DockerRuntime.getInstance().setLatestImageName(imageNameWithTag);
         return imageId == null ? null : imageNameWithTag;
     }
 

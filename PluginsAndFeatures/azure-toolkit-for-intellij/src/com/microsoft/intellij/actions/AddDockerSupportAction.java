@@ -30,7 +30,6 @@ import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.intellij.container.Constant;
-import com.microsoft.intellij.container.DockerRuntime;
 import com.microsoft.intellij.container.utils.DockerUtil;
 import com.spotify.docker.client.DefaultDockerClient;
 
@@ -72,8 +71,7 @@ public class AddDockerSupportAction extends AzureAnAction {
         // detect docker daemon
         notificationContent += String.format(Constant.MESSAGE_DOCKERFILE_CREATED,
                 Paths.get(Constant.DOCKER_CONTEXT_FOLDER, Constant.DOCKERFILE_NAME)) + "\n";
-        DefaultDockerClient.Builder builder = DockerRuntime.getInstance().getDockerBuilder();
-        notificationContent += String.format(Constant.MESSAGE_DOCKER_HOST_INFO, builder.uri()) + "\n";
+        notificationContent += String.format(Constant.MESSAGE_DOCKER_HOST_INFO, DefaultDockerClient.builder().uri()) + "\n";
         // print instructions
         notificationContent += Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK + "\n";
         notificationContent += Constant.MESSAGE_INSTRUCTION + "\n";
