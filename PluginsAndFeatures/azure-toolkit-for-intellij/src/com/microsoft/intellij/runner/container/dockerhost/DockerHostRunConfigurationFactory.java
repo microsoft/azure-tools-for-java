@@ -4,10 +4,11 @@ import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType;
+
 import org.jetbrains.annotations.NotNull;
 
 public class DockerHostRunConfigurationFactory extends ConfigurationFactory {
-    private static final String FACTORY_NAME = "Docker Host";
+    private static final String FACTORY_NAME = "Docker";
 
     public DockerHostRunConfigurationFactory(AzureDockerSupportConfigurationType dockerSupportConfigurationType) {
         super(dockerSupportConfigurationType);

@@ -1,5 +1,6 @@
 package com.microsoft.intellij.runner.container.dockerhost;
 
+import com.google.common.collect.ImmutableList;
 import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
@@ -14,6 +15,7 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.container.Constant;
 import com.microsoft.intellij.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.RunProcessHandler;
@@ -27,11 +29,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import rx.Observable;
 
@@ -139,37 +142,53 @@ public class DockerHostRunState implements RunProfileState {
                             String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName())
                     );
                     runningContainerId[0] = containerId;
-                    return DockerUtil.runContainer(docker, containerId);
+                    Container container = DockerUtil.runContainer(docker, containerId);
+                    // props
+                    Map<String, String> props = new HashMap<>();
+
+                    ImmutableList<Container.PortMapping> ports = container.ports();
+                    if (ports != null) {
+                        String port = null;
+                        for (Container.PortMapping portMapping : ports) {
+                            if (Constant.TOMCAT_SERVICE_PORT.equals(String.valueOf(portMapping.privatePort()))) {
+                                port = String.valueOf(portMapping.publicPort());
+                            }
+                        }
+                        if (port != null) {
+                            props.put("publicPort", port);
+                        }
+                    }
+                    props.put("hostname", new URL(dataModel.getDockerHost()).getHost());
+                    return props;
                 }
         ).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
-                (Container container) -> {
+                (props) -> {
                     processHandler.setText("Container started ... ");
-                    int port = container.ports().stream()
-                            .filter(portMapping ->
-                                    Constant.TOMCAT_SERVICE_PORT.equals(String.valueOf(portMapping.privatePort())))
-                            .findFirst()
-                            .get()
-                            .publicPort();
-                    String hostname = "localhost";  // default value
-                    try {
-                        hostname = new URL(dataModel.getDockerHost()).getHost();
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
-                    }
                     processHandler.setText(String.format(
                             Constant.MESSAGE_CONTAINER_STARTED,
-                            String.format("%s:%d", hostname, port),
+                            String.format("%s:%s", props.get("hostname"), props.get("publicPort")),
                             FilenameUtils.removeExtension(dataModel.getTargetName())
                     ));
-                    //TODO: sendTelemetry(true, null);
+                    sendTelemetry(true, null);
                 },
                 (err) -> {
                     err.printStackTrace();
                     processHandler.println(err.getMessage(), ProcessOutputTypes.STDERR);
                     processHandler.notifyProcessTerminated(0);
-                    //TODO: sendTelemetry(false, err);
+                    sendTelemetry(false, err.getMessage());
                 }
         );
         return new DefaultExecutionResult(consoleView, processHandler);
+    }
+
+    // TODO: refactor later
+    private void sendTelemetry(boolean success, @Nullable String errorMsg) {
+        Map<String, String> map = new HashMap<>();
+        map.put("Success", String.valueOf(success));
+        if (!success) {
+            map.put("ErrorMsg", errorMsg);
+        }
+
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "Docker", "Run", map);
     }
 }
