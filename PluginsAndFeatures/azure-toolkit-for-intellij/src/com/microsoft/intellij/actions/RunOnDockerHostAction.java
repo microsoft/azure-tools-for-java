@@ -61,13 +61,7 @@ public class RunOnDockerHostAction extends AzureAnAction {
         if (project == null) {
             return;
         }
-        try {
-            if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
-                ApplicationManager.getApplication().invokeLater(() -> runConfiguration(project));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ApplicationManager.getApplication().invokeLater(() -> runConfiguration(project));
     }
 
     @Override

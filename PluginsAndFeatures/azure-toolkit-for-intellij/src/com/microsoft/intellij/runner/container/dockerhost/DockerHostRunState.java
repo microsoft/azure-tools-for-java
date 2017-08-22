@@ -17,9 +17,9 @@ import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.intellij.container.Constant;
 import com.microsoft.intellij.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.RunProcessHandler;
-import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
+import com.spotify.docker.client.messages.Container;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -27,12 +27,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import rx.Observable;
-import rx.schedulers.Schedulers;
 
 public class DockerHostRunState implements RunProfileState {
     private static final String DOCKER_CONTEXT_FOLDER_NAME = "dockerContext";
@@ -141,19 +142,32 @@ public class DockerHostRunState implements RunProfileState {
                     return DockerUtil.runContainer(docker, containerId);
                 }
         ).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
-                (res) -> {
+                (Container container) -> {
                     processHandler.setText("Container started ... ");
+                    int port = container.ports().stream()
+                            .filter(portMapping ->
+                                    Constant.TOMCAT_SERVICE_PORT.equals(String.valueOf(portMapping.privatePort())))
+                            .findFirst()
+                            .get()
+                            .publicPort();
+                    String hostname = "localhost";  // default value
+                    try {
+                        hostname = new URL(dataModel.getDockerHost()).getHost();
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
                     processHandler.setText(String.format(
                             Constant.MESSAGE_CONTAINER_STARTED,
-                            res,
+                            String.format("%s:%d", hostname, port),
                             FilenameUtils.removeExtension(dataModel.getTargetName())
                     ));
-                    // processHandler.notifyProcessTerminated(0);
+                    //TODO: sendTelemetry(true, null);
                 },
                 (err) -> {
                     err.printStackTrace();
                     processHandler.println(err.getMessage(), ProcessOutputTypes.STDERR);
                     processHandler.notifyProcessTerminated(0);
+                    //TODO: sendTelemetry(false, err);
                 }
         );
         return new DefaultExecutionResult(consoleView, processHandler);

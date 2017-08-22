@@ -27,6 +27,7 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
     private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
             + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
             + "and the digits '0' through '9', '.', '-' and '_'.";
+    private static final String MISSING_MODEL = "Configuration data model not initialized.";
     private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.war$";
     private DockerHostRunModel dockerHostRunModel;
     private boolean firstTimeCreated = true;
@@ -65,60 +66,12 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
     }
 
     public void validate() throws ConfigurationException {
-        // try {
-        //     if (!AuthMethodManager.getInstance().isSignedIn()) {
-        //         throw new ConfigurationException(NEED_SIGN_IN);
-        //     }
-        // } catch (IOException e) {
-        //     throw new ConfigurationException(NEED_SIGN_IN);
-        // }
-        // // acr
-        // PrivateRegistryImageSetting setting = deployModel.getPrivateRegistryImageSetting();
-        // if (Utils.isEmptyString(setting.getServerUrl()) || !setting.getServerUrl().matches(DOMAIN_NAME_REGEX)) {
-        //     throw new ConfigurationException(MISSING_SERVER_URL);
-        // }
-        // if (Utils.isEmptyString(setting.getUsername())) {
-        //     throw new ConfigurationException(MISSING_USERNAME);
-        // }
-        // if (Utils.isEmptyString(setting.getPassword())) {
-        //     throw new ConfigurationException(MISSING_PASSWORD);
-        // }
-        // if (Utils.isEmptyString(setting.getImageNameWithTag())) {
-        //     throw new ConfigurationException(MISSING_IMAGE_WITH_TAG);
-        // }
-        // if (!setting.getImageNameWithTag().startsWith(setting.getServerUrl() + "/")) {
-        //     throw new ConfigurationException(String.format(INVALID_IMAGE_WITH_TAG, setting.getServerUrl()));
-        // }
-        // // web app
-        // if (deployModel.isCreatingNewWebAppOnLinux()) {
-        //     if (Utils.isEmptyString(deployModel.getWebAppName())) {
-        //         throw new ConfigurationException(MISSING_WEB_APP);
-        //     }
-        //     if (Utils.isEmptyString(deployModel.getSubscriptionId())) {
-        //         throw new ConfigurationException(MISSING_SUBSCRIPTION);
-        //     }
-        //     if (Utils.isEmptyString(deployModel.getResourceGroupName())) {
-        //         throw new ConfigurationException(MISSING_RESOURCE_GROUP);
-        //     }
-        //
-        //     if (deployModel.isCreatingNewAppServicePlan()) {
-        //         if (Utils.isEmptyString(deployModel.getAppServicePlanName())) {
-        //             throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
-        //         }
-        //     } else {
-        //         if (Utils.isEmptyString(deployModel.getAppServicePlanId())) {
-        //             throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
-        //         }
-        //     }
-        //
-        // } else {
-        //     if (Utils.isEmptyString(deployModel.getWebAppId())) {
-        //         throw new ConfigurationException(MISSING_WEB_APP);
-        //     }
-        // }
-
+        // TODO: add more
+        if (dockerHostRunModel == null) {
+            throw new ConfigurationException(MISSING_MODEL);
+        }
         // target package
-        if (dockerHostRunModel == null || Utils.isEmptyString(dockerHostRunModel.getTargetName())) {
+        if (Utils.isEmptyString(dockerHostRunModel.getTargetName())) {
             throw new ConfigurationException(MISSING_ARTIFACT);
         }
         if (!dockerHostRunModel.getTargetName().matches(WAR_NAME_REGEX)) {

@@ -49,7 +49,7 @@ public class Constant {
     public static final String MESSAGE_CREATING_CONTAINER = "Creating container ...";
     public static final String MESSAGE_CONTAINER_INFO = "Container Id: %s";
     public static final String MESSAGE_STARTING_CONTAINER = "Starting container ...";
-    public static final String MESSAGE_CONTAINER_STARTED = "Container is running now!\nURL: %s/%s";
+    public static final String MESSAGE_CONTAINER_STARTED = "Container is running now!\nURL: http://%s/%s";
     public static final String ERROR_STARTING_CONTAINER = "Fail to start Container #id=%s";
     public static final String MESSAGE_ADD_DOCKER_SUPPORT_OK = "Successfully added docker support!";
     public static final String MESSAGE_ADDING_DOCKER_SUPPORT = "Adding docker support ...";

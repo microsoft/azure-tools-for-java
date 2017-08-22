@@ -22,7 +22,7 @@
 
 package com.microsoft.intellij.container.utils;
 
-import com.microsoft.intellij.container.ConsoleLogger;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.container.Constant;
 import com.microsoft.intellij.container.DockerRuntime;
 import com.spotify.docker.client.DefaultDockerClient;
@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 
 public class DockerUtil {
@@ -57,7 +56,7 @@ public class DockerUtil {
      */
     public static void createDockerFile(String basePath, String folderName, String filename, String content)
             throws IOException {
-        if (basePath == null) {
+        if (Utils.isEmptyString(basePath)) {
             throw new FileNotFoundException("Project basePath is null.");
         }
         Paths.get(basePath, folderName).toFile().mkdirs();
@@ -89,27 +88,15 @@ public class DockerUtil {
 
     /**
      * runContainer.
-     *
-     * @param docker
-     * @param containerId
-     * @return
-     * @throws Exception
      */
-    public static String runContainer(DockerClient docker, String containerId) throws Exception {
+    public static Container runContainer(DockerClient docker, String containerId) throws DockerException,
+            InterruptedException {
         docker.startContainer(containerId);
-        final List<Container> containers = docker.listContainers();
-        final Optional<Container> res = containers.stream().filter(item -> item.id().equals(containerId)).findFirst();
-
-        if (res.isPresent()) {
-            DockerRuntime.getInstance().setRunningContainerId(res.get().id());
-            return String.format("http://%s:%s", docker.getHost(),
-                    res.get().ports().stream()
-                            .filter(item -> item.privatePort().toString().equals(Constant.TOMCAT_SERVICE_PORT))
-                            .findFirst().get().publicPort());
+        List<Container> containers = docker.listContainers();
+        if (containers.stream().anyMatch(item -> item.id().equals(containerId))) {
+            return containers.stream().filter((item -> item.id().equals(containerId))).findFirst().get();
         } else {
-            String errorMsg = String.format(Constant.ERROR_STARTING_CONTAINER, containerId);
-            ConsoleLogger.error(errorMsg);
-            throw new Exception(errorMsg);
+            throw new DockerException("Error in starting container.");
         }
     }
 
@@ -139,8 +126,7 @@ public class DockerUtil {
                 .build();
         if (targetImageName.startsWith(registryUrl)) {
             dockerClient.push(targetImageName, handler, registryAuth);
-        }
-        else {
+        } else {
             throw new DockerException("serverUrl and imageName mismatch.");
         }
     }
@@ -155,14 +141,12 @@ public class DockerUtil {
 
     public static DockerClient getDockerClient(String dockerHost, boolean tlsEnabled, String certPath) throws
             DockerCertificateException {
-        DockerClient docker = null;
         if (tlsEnabled) {
-            docker = DefaultDockerClient.builder().uri(URI.create(dockerHost))
+            return DefaultDockerClient.builder().uri(URI.create(dockerHost))
                     .dockerCertificates(new DockerCertificates(Paths.get(certPath)))
                     .build();
         } else {
-            docker = DefaultDockerClient.builder().uri(URI.create(dockerHost)).build();
+            return DefaultDockerClient.builder().uri(URI.create(dockerHost)).build();
         }
-        return docker;
     }
 }

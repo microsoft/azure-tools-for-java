@@ -146,6 +146,7 @@ public class SettingPanel {
             if (null != p) {
                 containerLocalRunConfiguration.getDockerHostRunModel().setTargetName(p.getFileName().toString());
             } else {
+                // TODO: get package type according to artifact
                 containerLocalRunConfiguration.getDockerHostRunModel().setTargetName(lastSelectedArtifact.getName()
                         + "." + MavenConstants.TYPE_WAR);
             }

@@ -149,15 +149,15 @@
             icon="/icons/PublishWebApp_16.png">
     </action>
     <action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.AddDockerSupportAction"
-            text="Add Docker Support..." description="Add Docker Support"
+            text="Add Docker Support" description="Add Docker Support"
             icon="/icons/AddDockerSupport_16.png">
     </action>
     <action id="Actions.RunOnDockerHost" class="com.microsoft.intellij.actions.RunOnDockerHostAction"
-            text="Run on Docker Host ..." description="Run on Docker Host ..."
+            text="Docker Run" description="Docker Run"
             icon="/icons/DockerRun_16.png">
     </action>
     <action id="Actions.WebAppOnLinux" class="com.microsoft.intellij.actions.WebAppOnLinuxAction"
-            text="Run on Web App (Linux) ..." description="Run on Web App (Linux)"
+            text="Run on Web App (Linux)" description="Run on Web App (Linux)"
             icon="/icons/PublishWebAppOnLinux_16.png">
     </action>
 
