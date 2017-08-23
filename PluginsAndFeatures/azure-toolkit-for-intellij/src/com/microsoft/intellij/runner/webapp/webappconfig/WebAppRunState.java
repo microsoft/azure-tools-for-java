@@ -28,6 +28,7 @@ import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
@@ -169,7 +170,7 @@ public class WebAppRunState implements RunProfileState {
                     AzureWebAppMvpModel.getInstance().listWebApps(true /*force*/);
                     sendTelemetry(true, null);
                 }, err -> {
-                    processHandler.setText(err.getMessage());
+                    processHandler.println(err.getMessage(), ProcessOutputTypes.STDERR);
                     processHandler.notifyComplete();
                     sendTelemetry(false, err.getMessage());
                 }

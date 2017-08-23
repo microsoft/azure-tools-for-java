@@ -30,6 +30,7 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.AnActionButton;
+import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
@@ -80,6 +81,9 @@ import rx.schedulers.Schedulers;
 public class WebAppSettingPanel implements WebAppDeployMvpView {
 
     // const
+    private static final String RESOURCE_GROUP = "Resource Group";
+    private static final String APP_SERVICE_PLAN = "App Service Plan";
+    private static final String JAVA = "Java";
     private static final String NOT_APPLICABLE = "N/A";
     private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
     private static final String TABLE_EMPTY_MESSAGE = "No available Web App.";
@@ -128,6 +132,12 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JLabel lblLocation;
     private JLabel lblPricing;
     private JLabel lblArtifact;
+    private JPanel pnlResourceGroupHolder;
+    private JPanel pnlResourceGroup;
+    private JPanel pnlAppServicePlanHolder;
+    private JPanel pnlAppServicePlan;
+    private JPanel pnlJavaHolder;
+    private JPanel pnlJava;
     private JBTable table;
     private AnActionButton btnRefresh;
 
@@ -282,6 +292,21 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 }
             }
         });
+
+        HideableDecorator resGrpDecorator = new HideableDecorator(pnlResourceGroupHolder,
+                RESOURCE_GROUP, true /*adjustWindow*/);
+        resGrpDecorator.setContentComponent(pnlResourceGroup);
+        resGrpDecorator.setOn(true);
+
+        HideableDecorator appServicePlanDecorator = new HideableDecorator(pnlAppServicePlanHolder,
+                APP_SERVICE_PLAN, true /*adjustWindow*/);
+        appServicePlanDecorator.setContentComponent(pnlAppServicePlan);
+        appServicePlanDecorator.setOn(true);
+
+        HideableDecorator javaDecorator = new HideableDecorator(pnlJavaHolder,
+                JAVA, true /*adjustWindow*/);
+        javaDecorator.setContentComponent(pnlJava);
+        javaDecorator.setOn(true);
     }
 
     /**
