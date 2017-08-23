@@ -357,7 +357,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         this.webAppDeployViewPresenter.onLoadWebContainer();
         this.webAppDeployViewPresenter.onLoadSubscription();
         this.webAppDeployViewPresenter.onLoadPricingTier();
-        this.webAppDeployViewPresenter.onLoadThirdPartyJdk();
+        this.webAppDeployViewPresenter.onLoadJavaVersions();
         sendTelemetry(webAppConfiguration.getSubscriptionId());
     }
 
@@ -524,7 +524,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     }
 
     @Override
-    public void fillSubscription(List<Subscription> subscriptions) {
+    public void fillSubscription(@NotNull List<Subscription> subscriptions) {
         cbSubscription.removeAllItems();
         if (subscriptions.size() == 0) {
             lastSelectedSid = null;
@@ -539,7 +539,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     }
 
     @Override
-    public void fillResourceGroup(List<ResourceGroup> resourceGroups) {
+    public void fillResourceGroup(@NotNull List<ResourceGroup> resourceGroups) {
         cbExistResGrp.removeAllItems();
         if (resourceGroups.size() == 0) {
             lastSelectedResGrp = null;
@@ -556,7 +556,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     }
 
     @Override
-    public void fillAppServicePlan(List<AppServicePlan> appServicePlans) {
+    public void fillAppServicePlan(@NotNull List<AppServicePlan> appServicePlans) {
         cbExistAppServicePlan.removeAllItems();
         if (appServicePlans.size() == 0) {
             lblLocation.setText(NOT_APPLICABLE);
@@ -575,7 +575,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     }
 
     @Override
-    public void fillLocation(List<Location> locations) {
+    public void fillLocation(@NotNull List<Location> locations) {
         cbLocation.removeAllItems();
         if (locations.size() == 0) {
             lastSelectedLocation = null;
@@ -592,7 +592,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     }
 
     @Override
-    public void fillPricingTier(List<PricingTier> prices) {
+    public void fillPricingTier(@NotNull List<PricingTier> prices) {
         cbPricing.removeAllItems();
         for (PricingTier price : prices) {
             cbPricing.addItem(price);
@@ -603,7 +603,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     }
 
     @Override
-    public void fillWebContainer(List<WebAppUtils.WebContainerMod> webContainers) {
+    public void fillWebContainer(@NotNull List<WebAppUtils.WebContainerMod> webContainers) {
         cbWebContainer.removeAllItems();
         for (WebAppUtils.WebContainerMod container : webContainers) {
             cbWebContainer.addItem(container);
@@ -614,7 +614,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     }
 
     @Override
-    public void fillJdkVersion(List<JdkModel> jdks) {
+    public void fillJdkVersion(@NotNull List<JdkModel> jdks) {
         cbJdkVersion.removeAllItems();
         for (JdkModel jdk : jdks) {
             cbJdkVersion.addItem(jdk);

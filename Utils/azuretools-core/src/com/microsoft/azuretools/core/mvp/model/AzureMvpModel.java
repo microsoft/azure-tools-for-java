@@ -141,8 +141,14 @@ public class AzureMvpModel {
      * @return List of Location instances
      */
     public List<Location> listLocationsBySubscriptionId(String sid) {
+        List<Location> locations = new ArrayList<>();
         Subscription subscription = getSubscriptionById(sid);
-        return subscription.listLocations();
+        try {
+            locations.addAll(subscription.listLocations());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return locations;
     }
 
     /**

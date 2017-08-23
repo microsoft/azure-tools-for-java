@@ -41,17 +41,17 @@ public interface WebAppDeployMvpView extends MvpView {
 
     void renderWebAppsTable(@NotNull List<ResourceEx<WebApp>> webAppLists);
 
-    void fillSubscription(List<Subscription> subscriptions);
+    void fillSubscription(@NotNull List<Subscription> subscriptions);
 
-    void fillResourceGroup(List<ResourceGroup> resourceGroups);
+    void fillResourceGroup(@NotNull List<ResourceGroup> resourceGroups);
 
-    void fillAppServicePlan(List<AppServicePlan> appServicePlans);
+    void fillAppServicePlan(@NotNull List<AppServicePlan> appServicePlans);
 
-    void fillLocation(List<Location> locations);
+    void fillLocation(@NotNull List<Location> locations);
 
-    void fillPricingTier(List<PricingTier> prices);
+    void fillPricingTier(@NotNull List<PricingTier> prices);
 
-    void fillWebContainer(List<WebAppUtils.WebContainerMod> webContainers);
+    void fillWebContainer(@NotNull List<WebAppUtils.WebContainerMod> webContainers);
 
-    void fillJdkVersion(List<JdkModel> jdks);
+    void fillJdkVersion(@NotNull List<JdkModel> jdks);
 }

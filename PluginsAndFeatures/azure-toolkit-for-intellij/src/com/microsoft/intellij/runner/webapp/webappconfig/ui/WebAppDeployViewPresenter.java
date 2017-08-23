@@ -124,7 +124,7 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
     /**
      * Load Java versions from model.
      */
-    public void onLoadThirdPartyJdk() {
+    public void onLoadJavaVersions() {
         getMvpView().fillJdkVersion(AzureWebAppMvpModel.getInstance().listJdks());
     }
 

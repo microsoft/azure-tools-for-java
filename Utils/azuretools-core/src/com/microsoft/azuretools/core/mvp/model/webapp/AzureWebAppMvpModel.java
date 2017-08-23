@@ -271,10 +271,15 @@ public class AzureWebAppMvpModel {
     /**
      * List app service plan by subscription id and resource group name.
      */
-    public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group)
-            throws IOException {
-        return AuthMethodManager.getInstance().getAzureClient(sid)
-                .appServices().appServicePlans().listByResourceGroup(group);
+    public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group) {
+        List<AppServicePlan> appServicePlans = new ArrayList<>();
+        try {
+            Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+            appServicePlans.addAll(azure.appServices().appServicePlans().listByResourceGroup(group));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return appServicePlans;
     }
 
 
