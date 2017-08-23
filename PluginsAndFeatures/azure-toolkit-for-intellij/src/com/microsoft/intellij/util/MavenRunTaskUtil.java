@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ * <p/>
+ * All rights reserved.
+ * <p/>
+ * MIT License
+ * <p/>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p/>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ * <p/>
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.intellij.util;
 
 import com.intellij.execution.BeforeRunTask;
@@ -10,6 +32,7 @@ import com.intellij.packaging.artifacts.ArtifactManager;
 import com.intellij.packaging.artifacts.ArtifactType;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -50,6 +73,7 @@ public class MavenRunTaskUtil {
     /**
      * Get the MavenProject object if the given project is a maven typed project.
      */
+    @Nullable
     public static MavenProject getMavenProject(Project project) {
         List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getRootProjects();
         if (mavenProjects.size() > 0) {
@@ -58,12 +82,17 @@ public class MavenRunTaskUtil {
         return null;
     }
 
+    @NotNull
     public static List<Artifact> collectProjectArtifact(@NotNull Project project) {
+        List<Artifact> artifacts = new ArrayList<>();
         ArtifactType warArtifactType = ArtifactType.findById(MavenConstants.TYPE_WAR);
-        if (warArtifactType == null) {
+        ArtifactType jarArtifactType = ArtifactType.findById(MavenConstants.TYPE_JAR);
+        if (warArtifactType == null || jarArtifactType == null) {
             return null;
         }
-        return (List<Artifact>) ArtifactManager.getInstance(project).getArtifactsByType(warArtifactType);
+        artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(warArtifactType));
+        artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(jarArtifactType));
+        return artifacts;
     }
 
 

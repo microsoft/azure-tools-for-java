@@ -22,6 +22,8 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
+import static com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel.DeploymentType.WEB_CONTAINER;
+
 import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
@@ -32,9 +34,9 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Comparing;
+import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
@@ -47,12 +49,12 @@ import com.microsoft.intellij.runner.RunProcessHandler;
 import org.apache.commons.net.ftp.FTPClient;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.maven.model.MavenConstants;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,105 +63,81 @@ import rx.Observable;
 public class WebAppRunState implements RunProfileState {
 
     private static final String CREATE_WEBAPP = "Creating new WebApp...";
-    private static final String CREATE_FALIED = "Failed to create WebApp. Error: %s ...";
+    private static final String CREATE_FAILED = "Failed to create WebApp. Error: %s ...";
     private static final String GETTING_DEPLOYMENT_CREDENTIAL = "Getting Deployment Credential...";
     private static final String CONNECTING_FTP = "Connecting to FTP server...";
-    private static final String UPLOADING_WAR = "Uploading war file...";
+    private static final String UPLOADING_ARTIFACT = "Uploading artifact...";
+    private static final String UPLOADING_WEB_CONFIG = "Uploading web.config (check more details at: https://aka.ms/spring-boot)...";
     private static final String UPLOADING_SUCCESSFUL = "Uploading successfully...";
     private static final String LOGGING_OUT = "Logging out of FTP server...";
-    private static final String DEPLOY_SUCCESSFUL = "Deploy successfully...";
-    private static final String STOP_DEPLOY = "Deploy Failed.";
-    private static final String NO_WEBAPP = "Cannot get webapp for deploy";
-    private static final String NO_TARGETFILE = "Cannot find target file: %s";
-    private static final String FAIL_FTPSTORE = "FTP client can't store the artifact, reply code: %s";
-    private static final String BASE_PATH = "/site/wwwroot/webapps/";
+    private static final String DEPLOY_SUCCESSFUL = "Deploy successfully!";
+    private static final String STOP_DEPLOY = "Deploy Failed!";
+    private static final String NO_WEB_APP = "Cannot get webapp for deploy.";
+    private static final String NO_TARGET_FILE = "Cannot find target file: %s.";
+    private static final String FAIL_FTP_STORE = "FTP client can't store the artifact, reply code: %s.";
+
+    private static final String WEB_CONFIG_PACKAGE_PATH = "/com/microsoft/azuretools/core/mvp/model/webapp/web.config";
+    private static final String BASE_PATH = "/site/wwwroot/";
+    private static final String WEB_APP_BASE_PATH = BASE_PATH + "webapps/";
+    private static final String WEB_CONFIG_FTP_PATH = "/site/wwwroot/web.config";
     private static final String ROOT_PATH = BASE_PATH + "ROOT";
-    private static final String ROOT_FILE_PATH = ROOT_PATH + "." + MavenConstants.TYPE_WAR;
+    private static final String CONTAINER_ROOT_PATH = WEB_APP_BASE_PATH + "ROOT";
+
     private final Project project;
     private final WebAppSettingModel webAppSettingModel;
+    private final RunProcessHandler processHandler;
 
+    /**
+     * Place to execute the Web App deployment task.
+     */
     public WebAppRunState(Project project, WebAppSettingModel webAppSettingModel) {
         this.project = project;
         this.webAppSettingModel = webAppSettingModel;
+        this.processHandler = new RunProcessHandler();
     }
 
     @Nullable
     @Override
     public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) throws ExecutionException {
-        final RunProcessHandler processHandler = new RunProcessHandler();
         processHandler.addDefaultListener();
         ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         processHandler.startNotify();
         consoleView.attachToProcess(processHandler);
         Observable.fromCallable(() -> {
-            File file = new File(webAppSettingModel.getTargetPath());
-            FileInputStream input;
-            if (file.exists()) {
-                input = new FileInputStream(webAppSettingModel.getTargetPath());
-            } else {
-                throw new FileNotFoundException(String.format(NO_TARGETFILE, webAppSettingModel.getTargetPath()));
-            }
-            WebApp webApp;
-            if (webAppSettingModel.isCreatingNew()) {
-                processHandler.setText(CREATE_WEBAPP);
-                try {
-                    webApp = AzureWebAppMvpModel.getInstance().createWebApp(webAppSettingModel);
-                } catch (Exception e) {
-                    processHandler.setText(STOP_DEPLOY);
-                    throw new Exception(String.format(CREATE_FALIED, e.getMessage()));
-                }
-            } else {
-                webApp = AzureWebAppMvpModel.getInstance()
-                        .getWebAppById(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppId());
-            }
+            final FileInputStream input = getFileInputStreamIfExist();
+            WebApp webApp = getWebAppAccordingToConfiguration();
 
-            if (webApp == null) {
-                processHandler.setText(NO_WEBAPP);
-                processHandler.setText(STOP_DEPLOY);
-                throw new Exception(NO_WEBAPP);
-            }
             processHandler.setText(GETTING_DEPLOYMENT_CREDENTIAL);
-            FTPClient ftp;
+            PublishingProfile profile = webApp.getPublishingProfile();
+
             processHandler.setText(CONNECTING_FTP);
-            ftp = WebAppUtils.getFtpConnection(webApp.getPublishingProfile());
-            processHandler.setText(UPLOADING_WAR);
-            String url = "https://" + webApp.defaultHostName();
-            boolean isSuccess;
-            if (webAppSettingModel.isDeployToRoot()) {
-                // Deploy to Root
-                WebAppUtils.removeFtpDirectory(ftp, ROOT_PATH, processHandler);
-                isSuccess = ftp.storeFile(ROOT_FILE_PATH, input);
-            } else {
-                //Deploy according to war file name
-                String subDirectoryName = webAppSettingModel.getTargetName().substring(0,
-                        webAppSettingModel.getTargetName().lastIndexOf("."));
-                url += "/" + subDirectoryName;
-                WebAppUtils.removeFtpDirectory(ftp, BASE_PATH + subDirectoryName, processHandler);
-                isSuccess = ftp.storeFile(BASE_PATH + webAppSettingModel.getTargetName(), input);
-            }
-            if (!isSuccess) {
-                int rc = ftp.getReplyCode();
-                processHandler.setText(String.format(FAIL_FTPSTORE, rc));
-                throw new IOException(String.format(FAIL_FTPSTORE, rc));
-            }
-            processHandler.setText(UPLOADING_SUCCESSFUL);
+            FTPClient ftp = WebAppUtils.getFtpConnection(profile);
+
+            uploadWebConfigFile(ftp);
+
+            int indexOfDot = webAppSettingModel.getTargetName().lastIndexOf(".");
+            String fileName = webAppSettingModel.getTargetName().substring(0, indexOfDot);
+            String fileType = webAppSettingModel.getTargetName().substring(indexOfDot);
+
+            uploadArtifact(input, webApp, ftp, fileName, fileType);
+
             processHandler.setText(LOGGING_OUT);
             ftp.logout();
             input.close();
             if (ftp.isConnected()) {
                 ftp.disconnect();
             }
+
+            String url = getUrl(webApp, fileName);
             processHandler.setText(DEPLOY_SUCCESSFUL);
             processHandler.setText("URL: " + url);
             return webApp;
+
         }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
                 webApp -> {
                     processHandler.notifyComplete();
                     if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
                         try {
-                            ResourceGroup resourceGroup = AzureMvpModel.getInstance()
-                                    .getResourceGroupBySubscriptionIdAndName(webAppSettingModel.getSubscriptionId(),
-                                            webAppSettingModel.getResourceGroup());
                             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
                                     null));
                         } catch (Exception e) {
@@ -176,6 +154,92 @@ public class WebAppRunState implements RunProfileState {
                 }
         );
         return new DefaultExecutionResult(consoleView, processHandler);
+    }
+
+    @NotNull
+    private FileInputStream getFileInputStreamIfExist() throws FileNotFoundException {
+        File file = new File(webAppSettingModel.getTargetPath());
+        FileInputStream input;
+        if (file.exists()) {
+            input = new FileInputStream(webAppSettingModel.getTargetPath());
+        } else {
+            throw new FileNotFoundException(String.format(NO_TARGET_FILE, webAppSettingModel.getTargetPath()));
+        }
+        return input;
+    }
+
+    @NotNull
+    private WebApp getWebAppAccordingToConfiguration() throws Exception {
+        WebApp webApp;
+        if (webAppSettingModel.isCreatingNew()) {
+            processHandler.setText(CREATE_WEBAPP);
+            try {
+                webApp = AzureWebAppMvpModel.getInstance().createWebApp(webAppSettingModel);
+            } catch (Exception e) {
+                processHandler.setText(STOP_DEPLOY);
+                throw new Exception(String.format(CREATE_FAILED, e.getMessage()));
+            }
+        } else {
+            webApp = AzureWebAppMvpModel.getInstance()
+                    .getWebAppById(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppId());
+        }
+        if (webApp == null) {
+            processHandler.setText(STOP_DEPLOY);
+            throw new Exception(NO_WEB_APP);
+        }
+        return webApp;
+    }
+
+    private void uploadWebConfigFile(FTPClient ftp) throws IOException {
+        if (webAppSettingModel.isCreatingNew() && Comparing.equal(webAppSettingModel.getDeploymentType(),
+                WebAppSettingModel.DeploymentType.SPRING_BOOT)) {
+            processHandler.setText(UPLOADING_WEB_CONFIG);
+            InputStream webConfigInput = getClass()
+                    .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH);
+            uploadFileToFtp(ftp, WEB_CONFIG_FTP_PATH, webConfigInput);
+        }
+    }
+
+    private void uploadArtifact(FileInputStream input, WebApp webApp, FTPClient ftp, String fileName, String fileType)
+            throws IOException {
+        webApp.stop();
+        processHandler.setText(UPLOADING_ARTIFACT);
+        switch (webAppSettingModel.getDeploymentType()) {
+            case WEB_CONTAINER:
+                if (webAppSettingModel.isDeployToRoot()) {
+                    WebAppUtils.removeFtpDirectory(ftp, CONTAINER_ROOT_PATH, processHandler);
+                    uploadFileToFtp(ftp, CONTAINER_ROOT_PATH + fileType, input);
+                } else {
+                    WebAppUtils.removeFtpDirectory(ftp, WEB_APP_BASE_PATH + fileName, processHandler);
+                    uploadFileToFtp(ftp, WEB_APP_BASE_PATH + webAppSettingModel.getTargetName(), input);
+                }
+                break;
+            case SPRING_BOOT:
+                uploadFileToFtp(ftp, ROOT_PATH + fileType, input);
+                break;
+            default:
+                break;
+        }
+        webApp.start();
+    }
+
+    private void uploadFileToFtp(FTPClient ftp, String path, InputStream stream) throws IOException {
+        if (!ftp.storeFile(path, stream)) {
+            int rc = ftp.getReplyCode();
+            processHandler.setText(String.format(FAIL_FTP_STORE, rc));
+            throw new IOException(String.format(FAIL_FTP_STORE, rc));
+        }
+        processHandler.setText(UPLOADING_SUCCESSFUL);
+    }
+
+    @NotNull
+    private String getUrl(WebApp webApp, String fileName) {
+        String url = "https://" + webApp.defaultHostName();
+        if (Comparing.equal(webAppSettingModel.getDeploymentType(), WEB_CONTAINER)
+                && !webAppSettingModel.isDeployToRoot()) {
+            url += "/" + fileName;
+        }
+        return url;
     }
 
     private void updateConfigurationDataModel(@NotNull WebApp app) {
