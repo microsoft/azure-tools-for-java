@@ -249,7 +249,7 @@ public class AzureWebAppMvpModel {
         } else {
             // TODO: other types of ImageSetting, e.g. Docker Hub
         }
-        restartWebApp(sid, webAppId);
+        startWebApp(sid, webAppId);
         return app;
     }
 

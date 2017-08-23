@@ -43,6 +43,9 @@ public class DockerProgressHandler implements ProgressHandler {
 
     @Override
     public void progress(ProgressMessage message) throws DockerException {
+        if (message == null) {
+            return;
+        }
         if (message.error() != null) {
             throw new DockerException(message.error());
         }
@@ -51,11 +54,11 @@ public class DockerProgressHandler implements ProgressHandler {
             if (layerMap.containsKey(id) && layerMap.get(id).equals(message.toString())) {
                 return; // ignore duplicate message
             }
-            layerMap.put(message.id(), message.toString());
+            layerMap.put(id, message.toString());
         } else {
             layerMap.clear();
         }
-        String out = Stream.of(message.id(), message.status(), message.stream(), message.progress())
+        String out = Stream.of(id, message.status(), message.stream(), message.progress())
                 .filter(Objects::nonNull)
                 .map(Object::toString)
                 .collect(Collectors.joining("\t"))
