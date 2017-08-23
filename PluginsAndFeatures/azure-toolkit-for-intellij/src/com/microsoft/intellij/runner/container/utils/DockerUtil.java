@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p>
+ *
  * All rights reserved.
- * <p>
+ *
  * MIT License
- * <p>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -20,10 +20,9 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.container.utils;
+package com.microsoft.intellij.runner.container.utils;
 
 import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.intellij.container.Constant;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerCertificates;
 import com.spotify.docker.client.DockerClient;
@@ -47,6 +46,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 public class DockerUtil {
@@ -58,6 +58,7 @@ public class DockerUtil {
         if (Utils.isEmptyString(basePath)) {
             throw new FileNotFoundException("Project basePath is null.");
         }
+        //noinspection ResultOfMethodCallIgnored
         Paths.get(basePath, folderName).toFile().mkdirs();
         Path dockerFilePath = Paths.get(basePath, folderName, filename);
         if (!dockerFilePath.toFile().exists()) {
@@ -66,6 +67,9 @@ public class DockerUtil {
         }
     }
 
+    /**
+     * create container with specified ImageName:TagName.
+     */
     public static String createContainer(DockerClient docker, String imageNameWithTag)
             throws DockerException, InterruptedException {
         final Map<String, List<PortBinding>> portBindings = new HashMap<>();
@@ -92,8 +96,10 @@ public class DockerUtil {
             InterruptedException {
         docker.startContainer(containerId);
         List<Container> containers = docker.listContainers();
-        if (containers.stream().anyMatch(item -> item.id().equals(containerId))) {
-            return containers.stream().filter((item -> item.id().equals(containerId))).findFirst().get();
+        Optional<Container> container = containers.stream().filter(item -> item.id().equals(containerId))
+                .findFirst();
+        if (container.isPresent()) {
+            return container.get();
         } else {
             throw new DockerException("Error in starting container.");
         }
@@ -104,18 +110,14 @@ public class DockerUtil {
      */
     public static String buildImage(DockerClient docker, String imageNameWithTag, Path dockerDirectory, ProgressHandler
             progressHandler)
-            throws DockerCertificateException, DockerException, InterruptedException, IOException {
+            throws DockerException, InterruptedException, IOException {
         String imageId = docker.build(dockerDirectory, imageNameWithTag, progressHandler);
         return imageId == null ? null : imageNameWithTag;
     }
 
-    public static boolean containerExists(DockerClient docker, String containerId)
-            throws DockerException, InterruptedException {
-        long count = docker.listContainers().stream().filter(item -> item.id().equals(containerId)).count();
-        return (count > 0);
-    }
-
-
+    /**
+     * Push image to a private registry.
+     */
     public static void pushImage(DockerClient dockerClient, String registryUrl, String registryUsername,
                                  String registryPassword, String targetImageName,
                                  ProgressHandler handler)
@@ -129,6 +131,9 @@ public class DockerUtil {
         }
     }
 
+    /**
+     * Stop a container by id.
+     */
     public static void stopContainer(DockerClient dockerClient, String runningContainerId) throws DockerException,
             InterruptedException {
         if (runningContainerId != null) {
@@ -137,6 +142,9 @@ public class DockerUtil {
         }
     }
 
+    /**
+     * get DockerClient instance.
+     */
     public static DockerClient getDockerClient(String dockerHost, boolean tlsEnabled, String certPath) throws
             DockerCertificateException {
         if (tlsEnabled) {

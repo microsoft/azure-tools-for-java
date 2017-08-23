@@ -16,11 +16,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.intellij.container.Constant;
-import com.microsoft.intellij.container.utils.DockerUtil;
+import com.microsoft.intellij.runner.container.utils.Constant;
+import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.RunProcessHandler;
+import com.microsoft.intellij.runner.container.utils.DockerProgressHandler;
 import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.Container;
 
 import org.apache.commons.io.FileUtils;
@@ -30,7 +30,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.FileNotFoundException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -98,7 +97,7 @@ public class DockerHostRunState implements RunProfileState {
                         throw new FileNotFoundException("Project base path is null.");
                     }
                     // locate war file to specified location
-                    processHandler.setText("Locate war file ...  ");
+                    processHandler.setText("Locating war file ...  ");
                     String targetFilePath = dataModel.getTargetPath();
                     String targetBuildPath = Paths.get(targetFilePath).getParent().toString();
                     String targetFileName = dataModel.getTargetName();
@@ -107,7 +106,9 @@ public class DockerHostRunState implements RunProfileState {
                             Paths.get(targetBuildPath, targetFileName).toFile(),
                             Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME, targetFileName).toFile()
                     );
+
                     // validate dockerfile
+                    processHandler.setText("Validating dockerfile ... ");
                     FileUtils.copyDirectory(
                             Paths.get(basePath, DOCKER_CONTEXT_FOLDER_NAME).toFile(),
                             Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME).toFile()
@@ -119,22 +120,17 @@ public class DockerHostRunState implements RunProfileState {
                     Files.write(targetDockerfile, content.getBytes());
 
                     // build image
-                    processHandler.setText("Build image ...  ");
+                    processHandler.setText("Building image ... ");
                     DockerClient docker = DockerUtil.getDockerClient(
                             dataModel.getDockerHost(),
                             dataModel.isTlsEnabled(),
                             dataModel.getDockerCertPath()
                     );
+
                     String latestImageName = DockerUtil.buildImage(docker,
                             String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()),
                             Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME),
-                            (message) -> {
-                                if (message.error() != null) {
-                                    throw new DockerException(message.error());
-                                } else {
-                                    processHandler.setText(message.stream());
-                                }
-                            }
+                            new DockerProgressHandler(processHandler)
                     );
 
                     // docker run
