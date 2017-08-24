@@ -31,6 +31,7 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
+import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
@@ -90,6 +91,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private static final String DEFAULT_APP_NAME = "webapp-";
     private static final String DEFAULT_PLAN_NAME = "appsp-";
     private static final String DEFAULT_RGP_NAME = "rg-webapp-";
+    private static final String JAR_FILE_DEPLOY_HINT = "To deploy spring boot executable, please make sure the web.config is correct.";
+    private static final String HTTPS_AKA_MS_SPRING_BOOT = "https://aka.ms/spring-boot";
     // presenter
     private final WebAppDeployViewPresenter<WebAppSettingPanel> webAppDeployViewPresenter;
     private final Project project;
@@ -139,6 +142,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JPanel pnlJavaHolder;
     private JPanel pnlJava;
     private JLabel lblWebContainer;
+    private HyperlinkLabel lblJarDeployHint;
     private JBTable table;
     private AnActionButton btnRefresh;
 
@@ -309,7 +313,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         javaDecorator.setContentComponent(pnlJava);
         javaDecorator.setOn(true);
 
-
+        lblJarDeployHint.setHyperlinkText(JAR_FILE_DEPLOY_HINT);
+        lblJarDeployHint.setHyperlinkTarget(HTTPS_AKA_MS_SPRING_BOOT);
     }
 
     /**
@@ -415,9 +420,9 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         String fileType = webAppConfiguration.getTargetName()
                 .substring(webAppConfiguration.getTargetName().lastIndexOf(".") + 1);
         if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)) {
-            showWebContainer(true);
+            toggleWebContainerSetting(true /*isWar*/);
         } else {
-            showWebContainer(false);
+            toggleWebContainerSetting(false /*isWar*/);
         }
 
         if (rdoUseExist.isSelected()) {
@@ -511,10 +516,11 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         lblPricing.setEnabled(!isCreatingNew);
     }
 
-    private void showWebContainer(boolean visible) {
-        lblWebContainer.setVisible(visible);
-        cbWebContainer.setVisible(visible);
-        chkToRoot.setVisible(visible);
+    private void toggleWebContainerSetting(boolean isWar) {
+        lblWebContainer.setVisible(isWar);
+        cbWebContainer.setVisible(isWar);
+        chkToRoot.setVisible(isWar);
+        lblJarDeployHint.setVisible(!isWar && rdoUseExist.isSelected());
     }
 
     private void resetWidget() {
