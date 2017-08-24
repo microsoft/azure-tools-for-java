@@ -87,11 +87,12 @@ public class MavenRunTaskUtil {
         List<Artifact> artifacts = new ArrayList<>();
         ArtifactType warArtifactType = ArtifactType.findById(MavenConstants.TYPE_WAR);
         ArtifactType jarArtifactType = ArtifactType.findById(MavenConstants.TYPE_JAR);
-        if (warArtifactType == null || jarArtifactType == null) {
-            return null;
+        if (warArtifactType != null) {
+            artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(warArtifactType));
         }
-        artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(warArtifactType));
-        artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(jarArtifactType));
+        if (jarArtifactType != null) {
+            artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(jarArtifactType));
+        }
         return artifacts;
     }
 
