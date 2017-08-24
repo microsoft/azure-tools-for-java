@@ -126,6 +126,9 @@ public class WebAppConfiguration extends RunConfigurationBase {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppName())) {
                 throw new ConfigurationException(MISSING_WEB_APP_NAME);
             }
+            if (Utils.isEmptyString(webAppSettingModel.getWebContainer())) {
+                throw new ConfigurationException(MISSING_WEB_CONTAINER);
+            }
             if (Utils.isEmptyString(webAppSettingModel.getSubscriptionId())) {
                 throw new ConfigurationException(MISSING_SUBSCRIPTION);
             }
@@ -146,15 +149,6 @@ public class WebAppConfiguration extends RunConfigurationBase {
                 if (Utils.isEmptyString(webAppSettingModel.getAppServicePlanId())) {
                     throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
                 }
-            }
-            switch (webAppSettingModel.getDeploymentType()) {
-                case WEB_CONTAINER:
-                    if (Utils.isEmptyString(webAppSettingModel.getWebContainer())) {
-                        throw new ConfigurationException(MISSING_WEB_CONTAINER);
-                    }
-                    break;
-                default:
-                    break;
             }
         } else {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppId())) {
@@ -293,11 +287,8 @@ public class WebAppConfiguration extends RunConfigurationBase {
         webAppSettingModel.setTargetName(name);
     }
 
-    public void setDeploymentType(WebAppSettingModel.DeploymentType type) {
-        webAppSettingModel.setDeploymentType(type);
+    public String getTargetName() {
+        return webAppSettingModel.getTargetName();
     }
 
-    public WebAppSettingModel.DeploymentType getDeploymentType() {
-        return webAppSettingModel.getDeploymentType();
-    }
 }

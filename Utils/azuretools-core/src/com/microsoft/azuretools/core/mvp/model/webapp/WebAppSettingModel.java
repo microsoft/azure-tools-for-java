@@ -40,7 +40,6 @@ public class WebAppSettingModel {
     private String webContainer = "";
 
     private boolean creatingResGrp = false;
-    private DeploymentType deploymentType = DeploymentType.WEB_CONTAINER;
     private String resourceGroup = "";
 
     private boolean creatingAppServicePlan = false;
@@ -178,16 +177,4 @@ public class WebAppSettingModel {
         this.jdkVersion = jdkVersion;
     }
 
-    public DeploymentType getDeploymentType() {
-        return deploymentType;
-    }
-
-    public void setDeploymentType(DeploymentType deploymentType) {
-        this.deploymentType = deploymentType;
-    }
-
-    public static enum DeploymentType {
-        WEB_CONTAINER,
-        SPRING_BOOT
-    }
 }

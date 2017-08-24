@@ -44,7 +44,6 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
@@ -139,8 +138,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JPanel pnlAppServicePlan;
     private JPanel pnlJavaHolder;
     private JPanel pnlJava;
-    private JRadioButton rdoWebContainer;
-    private JRadioButton rdoSpringBoot;
+    private JLabel lblWebContainer;
     private JBTable table;
     private AnActionButton btnRefresh;
 
@@ -173,12 +171,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         btnGrpForAppServicePlan.add(rdoCreateAppServicePlan);
         rdoUseExistAppServicePlan.addActionListener(e -> toggleAppServicePlanPanel(false /*isCreatingNew*/));
         rdoCreateAppServicePlan.addActionListener(e -> toggleAppServicePlanPanel(true /*isCreatingNew*/));
-
-        final ButtonGroup btnGrpForDeploymentType = new ButtonGroup();
-        btnGrpForDeploymentType.add(rdoWebContainer);
-        btnGrpForDeploymentType.add(rdoSpringBoot);
-        rdoWebContainer.addActionListener(e -> toggleDeploymentType(true /*isWebContainer*/));
-        rdoSpringBoot.addActionListener(e -> toggleDeploymentType(false /*isWebContainer*/));
 
         cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
             @Override
@@ -316,6 +308,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 JAVA, true /*adjustWindow*/);
         javaDecorator.setContentComponent(pnlJava);
         javaDecorator.setOn(true);
+
+
     }
 
     /**
@@ -382,12 +376,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             } else {
                 rdoUseExistAppServicePlan.doClick();
             }
-            if (Comparing.equal(webAppConfiguration.getDeploymentType(),
-                    WebAppSettingModel.DeploymentType.WEB_CONTAINER)) {
-                rdoWebContainer.doClick();
-            } else {
-                rdoSpringBoot.doClick();
-            }
         } else {
             rdoUseExist.doClick();
             chkToRoot.setSelected(webAppConfiguration.isDeployToRoot());
@@ -406,14 +394,15 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
      * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#applyEditorTo(Object)}.
      */
     public void applyEditorTo(@NotNull WebAppConfiguration webAppConfiguration) {
-        // Get war output full path and file name
+        // Get output file full path and file name
         if (isArtifact && lastSelectedArtifact != null) {
             webAppConfiguration.setTargetPath(lastSelectedArtifact.getOutputFilePath());
             Path p = Paths.get(webAppConfiguration.getTargetPath());
             if (p != null) {
                 webAppConfiguration.setTargetName(p.getFileName().toString());
             } else {
-                webAppConfiguration.setTargetName(lastSelectedArtifact.getName() + "." + MavenConstants.TYPE_WAR);
+                webAppConfiguration.setTargetName(lastSelectedArtifact.getName()
+                        + "." + lastSelectedArtifact.getArtifactType().getId());
             }
         } else {
             MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
@@ -421,6 +410,14 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 webAppConfiguration.setTargetPath(MavenRunTaskUtil.getTargetPath(mavenProject));
                 webAppConfiguration.setTargetName(MavenRunTaskUtil.getTargetName(mavenProject));
             }
+        }
+
+        String fileType = webAppConfiguration.getTargetName()
+                .substring(webAppConfiguration.getTargetName().lastIndexOf(".") + 1);
+        if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)) {
+            showWebContainer(true);
+        } else {
+            showWebContainer(false);
         }
 
         if (rdoUseExist.isSelected()) {
@@ -457,12 +454,10 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             if (jdkModel != null) {
                 webAppConfiguration.setJdkVersion(jdkModel.getJavaVersion());
             }
-            if (rdoWebContainer.isSelected()) {
-                webAppConfiguration.setDeploymentType(WebAppSettingModel.DeploymentType.WEB_CONTAINER);
+            if (cbWebContainer.isVisible()) {
                 WebAppUtils.WebContainerMod container = (WebAppUtils.WebContainerMod) cbWebContainer.getSelectedItem();
                 webAppConfiguration.setWebContainer(container == null ? "" : container.getValue());
             } else {
-                webAppConfiguration.setDeploymentType(WebAppSettingModel.DeploymentType.SPRING_BOOT);
                 webAppConfiguration.setWebContainer(WebAppUtils.WebContainerMod.Newest_Tomcat_85.getValue());
             }
             webAppConfiguration.setCreatingNew(true);
@@ -516,9 +511,10 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         lblPricing.setEnabled(!isCreatingNew);
     }
 
-    private void toggleDeploymentType(boolean isWebContainer) {
-        cbWebContainer.setEnabled(isWebContainer);
-        chkToRoot.setVisible(isWebContainer);
+    private void showWebContainer(boolean visible) {
+        lblWebContainer.setVisible(visible);
+        cbWebContainer.setVisible(visible);
+        chkToRoot.setVisible(visible);
     }
 
     private void resetWidget() {
