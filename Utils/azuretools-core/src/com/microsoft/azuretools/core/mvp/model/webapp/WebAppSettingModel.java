@@ -176,4 +176,5 @@ public class WebAppSettingModel {
     public void setJdkVersion(JavaVersion jdkVersion) {
         this.jdkVersion = jdkVersion;
     }
+
 }

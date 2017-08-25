@@ -31,6 +31,7 @@ import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -58,6 +59,7 @@ public class WebAppUtils {
     private static String reportFilename = "report.txt";
     private static String statusFilename = "status.txt";
 
+    @NotNull
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
 
         FTPClient ftp = new FTPClient();

@@ -31,6 +31,7 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
+import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
@@ -90,6 +91,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private static final String DEFAULT_APP_NAME = "webapp-";
     private static final String DEFAULT_PLAN_NAME = "appsp-";
     private static final String DEFAULT_RGP_NAME = "rg-webapp-";
+    private static final String JAR_FILE_DEPLOY_HINT = "To deploy spring boot executable, please make sure the web.config is correct.";
+    private static final String HTTPS_AKA_MS_SPRING_BOOT = "https://aka.ms/spring-boot";
     // presenter
     private final WebAppDeployViewPresenter<WebAppSettingPanel> webAppDeployViewPresenter;
     private final Project project;
@@ -138,6 +141,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JPanel pnlAppServicePlan;
     private JPanel pnlJavaHolder;
     private JPanel pnlJava;
+    private JLabel lblWebContainer;
+    private HyperlinkLabel lblJarDeployHint;
     private JBTable table;
     private AnActionButton btnRefresh;
 
@@ -307,6 +312,9 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 JAVA, true /*adjustWindow*/);
         javaDecorator.setContentComponent(pnlJava);
         javaDecorator.setOn(true);
+
+        lblJarDeployHint.setHyperlinkText(JAR_FILE_DEPLOY_HINT);
+        lblJarDeployHint.setHyperlinkTarget(HTTPS_AKA_MS_SPRING_BOOT);
     }
 
     /**
@@ -391,14 +399,15 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
      * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#applyEditorTo(Object)}.
      */
     public void applyEditorTo(@NotNull WebAppConfiguration webAppConfiguration) {
-        // Get war output full path and file name
+        // Get output file full path and file name
         if (isArtifact && lastSelectedArtifact != null) {
             webAppConfiguration.setTargetPath(lastSelectedArtifact.getOutputFilePath());
             Path p = Paths.get(webAppConfiguration.getTargetPath());
             if (p != null) {
                 webAppConfiguration.setTargetName(p.getFileName().toString());
             } else {
-                webAppConfiguration.setTargetName(lastSelectedArtifact.getName() + "." + MavenConstants.TYPE_WAR);
+                webAppConfiguration.setTargetName(lastSelectedArtifact.getName()
+                        + "." + lastSelectedArtifact.getArtifactType().getId());
             }
         } else {
             MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
@@ -408,6 +417,14 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
         }
 
+        String fileType = webAppConfiguration.getTargetName()
+                .substring(webAppConfiguration.getTargetName().lastIndexOf(".") + 1);
+        if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)) {
+            toggleWebContainerSetting(true /*isWar*/);
+        } else {
+            toggleWebContainerSetting(false /*isWar*/);
+        }
+
         if (rdoUseExist.isSelected()) {
             webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
             webAppConfiguration.setSubscriptionId(selectedWebApp == null ? "" : selectedWebApp.getSubscriptionId());
@@ -415,8 +432,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         } else if (rdoCreateNew.isSelected()) {
             webAppConfiguration.setWebAppName(txtWebAppName.getText());
             webAppConfiguration.setSubscriptionId(lastSelectedSid);
-            WebAppUtils.WebContainerMod container = (WebAppUtils.WebContainerMod) cbWebContainer.getSelectedItem();
-            webAppConfiguration.setWebContainer(container == null ? "" : container.getValue());
             // resource group
             if (rdoCreateResGrp.isSelected()) {
                 webAppConfiguration.setCreatingResGrp(true);
@@ -439,10 +454,16 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                     webAppConfiguration.setAppServicePlanId(appServicePlan.id());
                 }
             }
-            // JDK
+            // Java
             JdkModel jdkModel = (JdkModel) cbJdkVersion.getSelectedItem();
             if (jdkModel != null) {
                 webAppConfiguration.setJdkVersion(jdkModel.getJavaVersion());
+            }
+            if (cbWebContainer.isVisible()) {
+                WebAppUtils.WebContainerMod container = (WebAppUtils.WebContainerMod) cbWebContainer.getSelectedItem();
+                webAppConfiguration.setWebContainer(container == null ? "" : container.getValue());
+            } else {
+                webAppConfiguration.setWebContainer(WebAppUtils.WebContainerMod.Newest_Tomcat_85.getValue());
             }
             webAppConfiguration.setCreatingNew(true);
         }
@@ -493,6 +514,13 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         cbExistAppServicePlan.setEnabled(!isCreatingNew);
         lblLocation.setEnabled(!isCreatingNew);
         lblPricing.setEnabled(!isCreatingNew);
+    }
+
+    private void toggleWebContainerSetting(boolean isWar) {
+        lblWebContainer.setVisible(isWar);
+        cbWebContainer.setVisible(isWar);
+        chkToRoot.setVisible(isWar);
+        lblJarDeployHint.setVisible(!isWar && rdoUseExist.isSelected());
     }
 
     private void resetWidget() {

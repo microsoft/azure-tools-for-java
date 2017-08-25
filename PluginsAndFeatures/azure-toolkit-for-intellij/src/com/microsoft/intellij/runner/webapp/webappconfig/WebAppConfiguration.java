@@ -61,12 +61,12 @@ public class WebAppConfiguration extends RunConfigurationBase {
     private static final String MISSING_APP_SERVICE_PLAN = "App Service Plan not provided.";
     private static final String MISSING_LOCATION = "Location not provided.";
     private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
-    private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
+    private static final String MISSING_ARTIFACT = "A web archive (.war|.jar) artifact has not been configured.";
     private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
             + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
             + "the digits '0' through '9', '.', '-' and '_'.";
 
-    private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.war$";
+    private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
     private final WebAppSettingModel webAppSettingModel;
     private boolean firstTimeCreated = true;
 
@@ -126,11 +126,11 @@ public class WebAppConfiguration extends RunConfigurationBase {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppName())) {
                 throw new ConfigurationException(MISSING_WEB_APP_NAME);
             }
-            if (Utils.isEmptyString(webAppSettingModel.getSubscriptionId())) {
-                throw new ConfigurationException(MISSING_SUBSCRIPTION);
-            }
             if (Utils.isEmptyString(webAppSettingModel.getWebContainer())) {
                 throw new ConfigurationException(MISSING_WEB_CONTAINER);
+            }
+            if (Utils.isEmptyString(webAppSettingModel.getSubscriptionId())) {
+                throw new ConfigurationException(MISSING_SUBSCRIPTION);
             }
             if (Utils.isEmptyString(webAppSettingModel.getResourceGroup())) {
                 throw new ConfigurationException(MISSING_RESOURCE_GROUP);
@@ -286,4 +286,9 @@ public class WebAppConfiguration extends RunConfigurationBase {
     public void setTargetName(String name) {
         webAppSettingModel.setTargetName(name);
     }
+
+    public String getTargetName() {
+        return webAppSettingModel.getTargetName();
+    }
+
 }
