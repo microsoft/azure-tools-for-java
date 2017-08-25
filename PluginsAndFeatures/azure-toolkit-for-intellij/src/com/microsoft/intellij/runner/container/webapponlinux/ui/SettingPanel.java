@@ -30,6 +30,7 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.AnActionButton;
+import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
@@ -85,6 +86,10 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private static final String APP_NAME_PREFIX = "webapp-linux";
     private static final String RESOURCE_GROUP_NAME_PREFIX = "rg-web-linux";
     private static final String APP_SERVICE_PLAN_NAME_PREFIX = "appsp-linux-";
+    private static final String TITLE_RESOURCE_GROUP = "Resource Group";
+    private static final String TITLE_APP_SERVICE_PLAN = "App Service Plan";
+    private static final String TITLE_ACR = "Azure Container Registry";
+    private static final String TITLE_WEB_APP = "Web App on Linux";
 
     private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
     private final Project project;
@@ -114,7 +119,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private JLabel lblLocation;
     private JLabel lblPricing;
     private JPanel pnlAcr;
-    private JPanel pnlWebAppInfo;
+    private JPanel pnlWebApp;
     private JBTable webAppTable;
     private AnActionButton btnRefresh;
     private List<ResourceEx<SiteInner>> cachedWebAppList;
@@ -128,6 +133,12 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private JComboBox<Artifact> cbArtifact;
     private JLabel lblArtifact;
     private JPanel pnlArtifact;
+    private JPanel pnlResourceGroupHolder;
+    private JPanel pnlAppServicePlanHolder;
+    private JPanel pnlResourceGroup;
+    private JPanel pnlAppServicePlan;
+    private JPanel pnlAcrHolder;
+    private JPanel pnlWebAppHolder;
     private Artifact lastSelectedArtifact;
     private boolean isCbArtifactInited;
 
@@ -136,17 +147,11 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     /**
      * Constructor.
      */
+
     public SettingPanel(Project project) {
         webAppOnLinuxDeployPresenter = new WebAppOnLinuxDeployPresenter<>();
         webAppOnLinuxDeployPresenter.onAttachView(this);
         this.project = project;
-
-        pnlAcr.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createMatteBorder(1, 0, 0, 0, JBColor.GRAY),
-                "Azure Container Registry"));
-        pnlWebAppInfo.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createMatteBorder(1, 0, 0, 0, JBColor.GRAY),
-                "Web App on Linux"));
 
         // set create/update panel visible
         updatePanelVisibility();
@@ -246,6 +251,28 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 }
             }
         });
+
+        // fold sub panel
+        HideableDecorator resGrpDecorator = new HideableDecorator(pnlResourceGroupHolder,
+                TITLE_RESOURCE_GROUP, true /*adjustWindow*/);
+        resGrpDecorator.setContentComponent(pnlResourceGroup);
+        resGrpDecorator.setOn(true);
+
+        HideableDecorator appServicePlanDecorator = new HideableDecorator(pnlAppServicePlanHolder,
+                TITLE_APP_SERVICE_PLAN, true /*adjustWindow*/);
+        appServicePlanDecorator.setContentComponent(pnlAppServicePlan);
+        appServicePlanDecorator.setOn(true);
+
+        HideableDecorator acrDecorator = new HideableDecorator(pnlAcrHolder,
+                TITLE_ACR, true /*adjustWindow*/);
+        acrDecorator.setContentComponent(pnlAcr);
+        acrDecorator.setOn(true);
+
+        HideableDecorator webAppDecorator = new HideableDecorator(pnlWebAppHolder,
+                TITLE_WEB_APP, true /*adjustWindow*/);
+        webAppDecorator.setContentComponent(pnlWebApp);
+        webAppDecorator.setOn(true);
+
 
         telemetrySent = false;
     }
