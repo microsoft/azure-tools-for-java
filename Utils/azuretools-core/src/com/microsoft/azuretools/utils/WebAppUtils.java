@@ -24,7 +24,14 @@ package com.microsoft.azuretools.utils;
 
 
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.*;
+import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.PublishingProfile;
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.Constants;
@@ -33,17 +40,19 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.util.concurrent.CancellationException;
 
 /**
  * Created by vlashch on 1/19/17.
@@ -52,12 +61,7 @@ public class WebAppUtils {
 
     private static final String ftpRootPath = "/site/wwwroot/";
     private static final String ftpWebAppsPath = ftpRootPath + "webapps/";
-    private static String jdkFolderName = "jdk";
-    private static final String ftpJdkPath = ftpRootPath + jdkFolderName;
-    private static String aspScriptName = "getjdk.aspx";
     private static String webConfigFilename = "web.config";
-    private static String reportFilename = "report.txt";
-    private static String statusFilename = "status.txt";
 
     @NotNull
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
@@ -149,17 +153,6 @@ public class WebAppUtils {
         if (pi != null) pi.setText2("");
     }
 
-    private static void uploadJdkDownloadScript(FTPClient ftp, String jdkDownloadUrl) throws IOException {
-
-        String aspxPageName = aspScriptName;
-
-        byte[] aspxPageData = generateAspxScriptForCustomJdkDownload(jdkDownloadUrl);
-        ftp.storeFile(ftpRootPath + aspxPageName, new ByteArrayInputStream(aspxPageData));
-
-        byte[] webConfigData = generateWebConfigForCustomJdkDownload(aspxPageName, null);
-        ftp.storeFile(ftpRootPath + webConfigFilename, new ByteArrayInputStream(webConfigData));
-    }
-
     public static boolean doesRemoteFileExist(FTPClient ftp, String path, String fileName) throws IOException {
         FTPFile[] files = ftp.listFiles(path);
         for (FTPFile file : files) {
@@ -204,125 +197,15 @@ public class WebAppUtils {
         return true;
     }
 
-    private static void cleanupWorkerData(FTPClient ftp) throws IOException {
-        ftp.deleteFile(ftpRootPath + aspScriptName);
-        ftp.deleteFile(ftpRootPath + "jdk.zip");
-    }
-
-    public static void removeCustomJdkArtifacts(FTPClient ftp, IProgressIndicator pi) throws IOException {
-        if (doesRemoteFolderExist(ftp, ftpRootPath, jdkFolderName)) {
-            removeFtpDirectory(ftp, ftpJdkPath, pi);
-        }
-        ftp.deleteFile(ftpRootPath + webConfigFilename);
-        ftp.deleteFile(ftpRootPath + reportFilename);
-        ftp.deleteFile(ftpRootPath + statusFilename);
-    }
-
     public static class WebAppException extends Exception {
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = 1352713295336034845L;
 
         WebAppException(String message) {
             super(message);
         }
-    }
-
-    public static void deployCustomJdk(WebApp webApp, String jdkDownloadUrl, WebContainer webContainer, IProgressIndicator indicator) throws IOException, InterruptedException, WebAppException {
-        FTPClient ftp = null;
-        String customJdkFolderName =  null;
-        try {
-
-            PublishingProfile pp = webApp.getPublishingProfile();
-            ftp = getFtpConnection(pp);
-
-            // stop and restart web app
-//            if (indicator != null) indicator.setText("Stopping the service...");
-//            webApp.stop();
-
-            if (indicator != null) indicator.setText("Deleting custom jdk artifacts, if any (takes a while)...");
-            removeCustomJdkArtifacts(ftp, indicator);
-
-            if (indicator != null) indicator.setText("Uploading scripts...");
-            uploadJdkDownloadScript(ftp, jdkDownloadUrl);
-
-//            if (indicator != null) indicator.setText("Starting the service...");
-//            webApp.start();
-
-            final String siteUrl = "https://" + webApp.defaultHostName();
-
-            // send get to activate the script
-            sendGet(siteUrl);
-
-            // Polling report.txt...
-            if (indicator != null) indicator.setText("Checking the JDK gets downloaded and unpacked...");
-            //int step = 0;
-            while (!doesRemoteFileExist(ftp, ftpRootPath, reportFilename)) {
-                if (indicator != null && indicator.isCanceled()) throw new CancellationException("Canceled by user.");
-                //if (step++ > 3) checkFreeSpaceAvailability(ftp);
-                Thread.sleep(5000);
-                sendGet(siteUrl);
-            }
-
-            if (indicator != null) indicator.setText("Checking status...");
-            OutputStream reportFileStream = new ByteArrayOutputStream();
-            ftp.retrieveFile("report.txt", reportFileStream);
-            String reportFileString = reportFileStream.toString();
-            if (reportFileString.startsWith("FAIL")) {
-                String err = reportFileString.substring(reportFileString.indexOf(":"+1));
-                throw new WebAppException(err);
-            }
-
-            // get top level jdk folder name (under jdk folder)
-            FTPFile[] ftpDirs = ftp.listDirectories(ftpJdkPath);
-            if (ftpDirs.length != 1) {
-                String err = "Bad JDK archive. Please make sure the JDK archive contains a single JDK folder. For example, 'my-jdk1.7.0_79.zip' archive should contain 'jdk1.7.0_79' folder only";
-                throw new WebAppException(err);
-            }
-
-            customJdkFolderName = ftpDirs[0].getName();
-
-            uploadWebConfigForCustomJdk(ftp, webApp, customJdkFolderName, webContainer, indicator);
-        } catch (IOException | WebAppException | InterruptedException ex){
-            if (doesRemoteFolderExist(ftp, ftpRootPath, jdkFolderName)) {
-                indicator.setText("Error happened. Cleaning up...");
-                removeFtpDirectory(ftp, ftpJdkPath, indicator);
-            }
-            throw ex;
-        } finally {
-            indicator.setText("Removing working data from server...");
-            cleanupWorkerData(ftp);
-            if (ftp != null && ftp.isConnected()) {
-                ftp.disconnect();
-            }
-        }
-    }
-
-    private static void uploadWebConfigForCustomJdk(FTPClient ftp, WebApp webApp, String jdkFolderName, WebContainer webContainer, IProgressIndicator indicator) throws IOException {
-        if  (jdkFolderName == null || jdkFolderName.isEmpty()) {
-            throw new IllegalArgumentException("jdkFolderName is null or empty");
-        }
-
-        if(indicator != null) indicator.setText("Stopping the service...");
-        webApp.stop();
-
-        if(indicator != null) indicator.setText("Deleting "+ webConfigFilename + "...");
-        ftp.deleteFile(ftpRootPath + webConfigFilename);
-
-        if (indicator != null) indicator.setText("Turning the App Service into java based...");
-        webApp.update().withJavaVersion(JavaVersion.JAVA_8_NEWEST).withWebContainer(webContainer).apply();
-
-        if(indicator != null) indicator.setText("Generating " + webConfigFilename + "...");
-        String jdkPath = "%HOME%\\site\\wwwroot\\jdk\\" + jdkFolderName;
-        String webContainerPath = generateWebContainerPath(webContainer);
-        byte[] webConfigData = generateWebConfigForCustomJDK(jdkPath, webContainerPath);
-
-        if(indicator != null) indicator.setText("Uploading " + webConfigFilename + "...");
-        ftp.storeFile(ftpRootPath + webConfigFilename,  new ByteArrayInputStream(webConfigData));
-
-        if(indicator != null) indicator.setText("Starting the service...");
-        webApp.start();
     }
 
     public enum WebContainerMod {
@@ -371,200 +254,11 @@ public class WebAppUtils {
         } else if (webContainer.toString().equals(WebContainerMod.Newest_Jetty_93.getValue())) {
             return "%AZURE_JETTY93_HOME%";
         }
-//        if (webContainer.equals(WebContainer.TOMCAT_7_0_NEWEST)) {
-//            return "%AZURE_TOMCAT7_HOME%";
-//        } else if (webContainer.equals(WebContainer.TOMCAT_8_0_NEWEST)) {
-//            return "%AZURE_TOMCAT8_HOME%";
-//        } else if (webContainer.equals(WebContainer.JETTY_9_1_NEWEST)) {
-//            return "%AZURE_JETTY9_HOME%";
-//        }
-//        String binPath = "%programfiles(x86)%\\";
-//        String wc = webContainer.toString();
-//        int verIdx = wc.indexOf(" ") + 1;
-//        String ver = wc.substring(verIdx);
-//        if (wc.startsWith("tomcat")) {
-//            return binPath + "apache-tomcat-" + ver;
-//        } else if (wc.startsWith("jetty")) {
-//            StringBuilder sbVer = new StringBuilder(ver);
-//            sbVer.insert(ver.lastIndexOf('.')+1, 'v');
-//            return binPath + "jetty-distribution-" + sbVer.toString();
-//        }
 
         throw new IOException("Unknown web container: " + webContainer.toString());
     }
 
-    public static byte[] generateWebConfigForCustomJDK(String jdkPath, String webContainerPath) {
-        String javaPath = jdkPath.isEmpty() ? "%JAVA_HOME%\\bin\\java.exe" : jdkPath + "\\bin\\java.exe";
-        String debugOptions = "-Djava.net.preferIPv4Stack=true -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=127.0.0.1:%HTTP_PLATFORM_DEBUG_PORT% ";
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("<?xml version='1.0' encoding='UTF-8'?>\n");
-        sb.append("<configuration>\n");
-        sb.append("    <system.webServer>\n");
-
-        if (!webContainerPath.toUpperCase().contains("JETTY")) {
-            sb.append("        <httpPlatform>\n");
-            sb.append("            <environmentVariables>\n");
-            sb.append("                <environmentVariable name='JRE_HOME' value='"+ jdkPath +"'/>\n");
-            sb.append("                <environmentVariable name='JAVA_OPTS' value='"+ debugOptions +"'/>\n");
-            sb.append("            </environmentVariables>\n");
-            sb.append("        </httpPlatform>\n");
-        } else {
-            String arg = debugOptions + "-Djetty.port=%HTTP_PLATFORM_PORT% -Djetty.base=\"" +
-                    webContainerPath + "\" -Djetty.webapps=\"d:\\home\\site\\wwwroot\\webapps\"  -jar \"" + webContainerPath + "\\start.jar\" etc\\jetty-logging.xml";
-
-            sb.append("        <httpPlatform processPath='"+ javaPath +"' startupTimeLimit='30' startupRetryCount='10' arguments='"+ arg +"'/>\n");
-        }
-        sb.append("    </system.webServer>\n");
-        sb.append("</configuration>\n");
-
-        return sb.toString().getBytes();
-    }
-
-    public static byte[] generateAspxScriptForCustomJdkDownload(String jdkDownloadUrl) throws IOException {
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("<%@ Page Language=\"C#\" %>\n");
-        sb.append("<%@ Import namespace=\"System.IO\" %>\n");
-        sb.append("<%@ Import namespace=\"System.Net\" %>\n");
-        sb.append("<%@ Import namespace=\"System.IO.Compression\" %>\n");
-        sb.append("<script runat=server>\n");
-
-        sb.append("const string baseDir = @\"d:\\home\\site\\wwwroot\";\n");
-        sb.append("const string keySuccess = \"SUCCESS\";\n");
-        sb.append("const string keyFail = \"FAIL\";\n");
-        sb.append("const string reportPattern = \"{0}:{1}\";\n");
-        sb.append("readonly static string pathReport = Path.Combine(baseDir, \"report.txt\");\n");
-        sb.append("readonly static string pathStatus = Path.Combine(baseDir, \"status.txt\");\n");
-
-        sb.append("string getTime() {\n");
-        sb.append("    getJdk();\n");
-        sb.append("    return DateTime.Now.ToString(\"t\");\n");
-        sb.append("}\n");
-
-        sb.append("static void getJdk() {\n");
-        sb.append("    try {\n");
-        sb.append("         const string downloadSrc = @\"" + jdkDownloadUrl + "\";\n");
-        sb.append("         string downloadDst = Path.Combine(baseDir, \"jdk.zip\");\n");
-        sb.append("         statusAdd(\"Deleting zip file, if any\");\n");
-        sb.append("         if (File.Exists(downloadDst)) { File.Delete(downloadDst); }\n");
-        sb.append("         statusAdd(\"Checking zip size for download\");\n");
-        sb.append("         var req = WebRequest.Create(downloadSrc);\n");
-        sb.append("         req.Method = \"HEAD\";\n");
-        sb.append("         long contentLength;\n");
-        sb.append("         using (WebResponse resp = req.GetResponse()) {\n");
-        sb.append("             if (!long.TryParse(resp.Headers.Get(\"Content-Length\"), out contentLength)) {\n");
-        sb.append("                 throw new Exception(\"Can't get file size\");\n");
-        sb.append("             }\n");
-        sb.append("         }\n");
-        sb.append("         statusAdd(\"zip size is [\" + contentLength + \"] , disk size is [\" + getDiskFreeSpace() + \"]\" );\n");
-        sb.append("         if (contentLength*2 > getDiskFreeSpace()) {\n");
-        sb.append("             throw new Exception(\"There is not enough disk space to complete the operation.\");\n");
-        sb.append("         }\n");
-        sb.append("         statusAdd(\"Downloading zip\");\n");
-        sb.append("         using (var client = new WebClient()) {\n");
-        sb.append("             client.DownloadFile(downloadSrc, downloadDst);\n");
-        sb.append("         }\n");
-        sb.append("         string unpackDst = Path.Combine(baseDir, \"jdk\");\n");
-        sb.append("         statusAdd(\"Deleting jdk dir, if any\");\n");
-        sb.append("         if (Directory.Exists(unpackDst)) { Directory.Delete(unpackDst, true); }\n");
-        sb.append("         string unpackSrc = Path.Combine(baseDir, \"jdk.zip\");\n");
-        sb.append("         statusAdd(\"Checking expected upacked size\");\n");
-        sb.append("         long expectedUnpackedSize;\n");
-        sb.append("         using (ZipArchive archive = ZipFile.OpenRead(unpackSrc)) {\n");
-        sb.append("             expectedUnpackedSize = archive.Entries.Sum(entry => entry.Length);\n");
-        sb.append("         }\n");
-        sb.append("         statusAdd(\"Expected upacked size is [\" + expectedUnpackedSize + \"] , disk size is [\" + getDiskFreeSpace() + \"]\");\n");
-        sb.append("         if (expectedUnpackedSize*2 > getDiskFreeSpace()) {\n");
-        sb.append("             throw new Exception(\"There is not enough disk space to complete the operation.\");\n");
-        sb.append("         }\n");
-        sb.append("         statusAdd(\"Unpacking zip\");\n");
-        sb.append("         ZipFile.ExtractToDirectory(unpackSrc, unpackDst);\n");
-        sb.append("         statusAdd(\"Done\");\n");
-        sb.append("         reportOneLine(string.Format(reportPattern, keySuccess, string.Empty));\n");
-        sb.append("     } catch (Exception e) {\n");
-        sb.append("         statusAdd(\"Exception: \" + e.Message);\n");
-        sb.append("         reportOneLine(string.Format(reportPattern, keyFail, e.Message));\n");
-        sb.append("     }\n");
-        sb.append("}\n");
-
-        sb.append("static long getDiskFreeSpace() {\n");
-        sb.append("     DriveInfo driveInfo = new DriveInfo(@\"d:\");\n");
-        sb.append("     return driveInfo.AvailableFreeSpace;\n");
-        sb.append("}\n");
-
-        sb.append("static void reportOneLine(string message) {\n");
-        sb.append("     if (File.Exists(pathReport)) File.Delete(pathReport);\n");
-        sb.append("     using (StreamWriter sw = File.CreateText(pathReport)) {\n");
-        sb.append("         sw.WriteLine(message);\n");
-        sb.append("     }\n");
-        sb.append("}\n");
-
-        sb.append("static void statusAdd(string message) {\n");
-        sb.append("     if (!File.Exists(pathStatus)) {\n");
-        sb.append("         using (StreamWriter sw = File.CreateText(pathStatus)) {\n");
-        sb.append("             sw.WriteLine(message);\n");
-        sb.append("         }\n");
-        sb.append("     } else {\n");
-        sb.append("         using (StreamWriter sw = File.AppendText(pathStatus)) {\n");
-        sb.append("             sw.WriteLine(message);\n");
-        sb.append("         }\n");
-        sb.append("     }\n");
-        sb.append("}\n");
-
-        sb.append("</script>\n");
-        sb.append("<html>\n");
-        sb.append("<body>\n");
-        sb.append("<form id=\"form1\" runat=\"server\">\n");
-        sb.append("Current server time is <% =getTime()%>\n");
-        sb.append("</form>\n");
-        sb.append("</body>\n");
-        sb.append("</html>\n");
-        return sb.toString().getBytes();
-    }
-
-    public static byte[] generateWebConfigForCustomJdkDownload(String initializationPage, String[] assemblies) throws IOException {
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n");
-        sb.append("<configuration>\n");
-        sb.append("    <system.webServer>\n");
-        sb.append("        <applicationInitialization remapManagedRequestsTo='/hostingstart.html'>\n");
-        if(initializationPage!=null && !initializationPage.isEmpty())
-            sb.append("        <add initializationPage='/" + initializationPage + "'/>\n");
-        sb.append("    </applicationInitialization>\n");
-        sb.append("    </system.webServer>\n");
-        sb.append("    <system.web>\n");
-        sb.append("        <customErrors mode='Off'/>\n");
-        sb.append("        <compilation debug='true' targetFramework='4.5'>\n");
-        sb.append("        <assemblies>\n");
-        sb.append("            <add assembly='System.IO.Compression.FileSystem, Version=4.0.0.0, Culture=neutral, PublicKeyToken=B77A5C561934E089'/>\n");
-        sb.append("            <add assembly='System.IO.Compression, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'/>\n");
-
-        if (assemblies != null) {
-            for (String assembly : assemblies) {
-                sb.append("            <add assembly='" + assembly + "'/>\n");
-            }
-        }
-
-        sb.append("        </assemblies>\n");
-        sb.append("        </compilation>\n");
-        sb.append("        <httpRuntime targetFramework='4.5'/>\n");
-        sb.append("    </system.web>\n");
-        sb.append("</configuration>\n");
-        return sb.toString().getBytes();
-    }
-
-
     public static abstract class CreateAppServiceModel {
-        public enum JdkTab {
-            Default,
-            ThirdParty,
-            Own;
-        }
         public String webAppName;
         public WebContainer webContainer;
         public SubscriptionDetail subscriptionDetail;
@@ -579,11 +273,7 @@ public class WebAppUtils {
         public Location appServicePlanLocationCreateNew;
         public PricingTier appServicePricingTierCreateNew;
 
-        public String jdk3PartyUrl;
-        public String jdkOwnUrl;
-        public String storageAccountKey;
-        public JdkTab jdkTab;
-        public String jdkDownloadUrl;
+        public JavaVersion javaVersion;
 
         public abstract void collectData();
     }
@@ -622,16 +312,11 @@ public class WebAppUtils {
             withCreate = ds1.withExistingResourceGroup(model.resourceGroup);
         }
 
-        if (model.jdkDownloadUrl == null) { // no custom jdk
-            withCreate = withCreate.withJavaVersion(JavaVersion.JAVA_8_NEWEST).withWebContainer(model.webContainer);
+        if (model.javaVersion != null) {
+            withCreate = withCreate.withJavaVersion(model.javaVersion).withWebContainer(model.webContainer);
         }
 
         WebApp myWebApp = withCreate.create();
-
-        if (model.jdkDownloadUrl != null ) {
-            progressIndicator.setText("Deploying custom jdk...");
-            WebAppUtils.deployCustomJdk(myWebApp, model.jdkDownloadUrl, model.webContainer, progressIndicator);
-        }
 
         // update cache
         if (model.isResourceGroupCreateNew) {

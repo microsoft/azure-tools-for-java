@@ -66,7 +66,7 @@ public class WebAppRunState implements RunProfileState {
     private static final String CREATE_FAILED = "Failed to create WebApp. Error: %s ...";
     private static final String GETTING_DEPLOYMENT_CREDENTIAL = "Getting Deployment Credential...";
     private static final String CONNECTING_FTP = "Connecting to FTP server...";
-    private static final String UPLOADING_ARTIFACT = "Uploading artifact...";
+    private static final String UPLOADING_ARTIFACT = "Uploading artifact to: %s ...";
     private static final String UPLOADING_WEB_CONFIG = "Uploading web.config (check more details at: https://aka.ms/spring-boot)...";
     private static final String UPLOADING_SUCCESSFUL = "Uploading successfully...";
     private static final String LOGGING_OUT = "Logging out of FTP server...";
@@ -201,16 +201,17 @@ public class WebAppRunState implements RunProfileState {
             case MavenConstants.TYPE_WAR:
                 if (webAppSettingModel.isDeployToRoot()) {
                     WebAppUtils.removeFtpDirectory(ftp, CONTAINER_ROOT_PATH, processHandler);
-                    processHandler.setText(UPLOADING_ARTIFACT);
+                    processHandler.setText(String.format(UPLOADING_ARTIFACT, CONTAINER_ROOT_PATH + "." + fileType));
                     uploadFileToFtp(ftp, CONTAINER_ROOT_PATH + "." + fileType, input);
                 } else {
                     WebAppUtils.removeFtpDirectory(ftp, WEB_APP_BASE_PATH + fileName, processHandler);
-                    processHandler.setText(UPLOADING_ARTIFACT);
+                    processHandler.setText(String.format(UPLOADING_ARTIFACT,
+                            WEB_APP_BASE_PATH + webAppSettingModel.getTargetName()));
                     uploadFileToFtp(ftp, WEB_APP_BASE_PATH + webAppSettingModel.getTargetName(), input);
                 }
                 break;
             case MavenConstants.TYPE_JAR:
-                processHandler.setText(UPLOADING_ARTIFACT);
+                processHandler.setText(String.format(UPLOADING_ARTIFACT, ROOT_PATH + "." + fileType));
                 uploadFileToFtp(ftp, ROOT_PATH + "." + fileType, input);
                 break;
             default:
