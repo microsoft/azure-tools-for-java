@@ -29,7 +29,9 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
             + "and the digits '0' through '9', '.', '-' and '_'.";
     private static final String MISSING_MODEL = "Configuration data model not initialized.";
     private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.war$";
-    private DockerHostRunModel dockerHostRunModel;
+    private static final String INVALID_DOCKER_HOST = "Please specify a valid docker host.";
+    private static final String INVALID_CERT_PATH = "Please specify a valid certificate path.";
+    private final DockerHostRunModel dockerHostRunModel;
     private boolean firstTimeCreated = true;
 
     protected DockerHostRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory) {
@@ -65,11 +67,25 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
 
     }
 
+    /**
+     * Validate input value.
+     */
     public void validate() throws ConfigurationException {
         // TODO: add more
         if (dockerHostRunModel == null) {
             throw new ConfigurationException(MISSING_MODEL);
         }
+        // docker host
+        if (Utils.isEmptyString(dockerHostRunModel.getDockerHost())) {
+            throw new ConfigurationException(INVALID_DOCKER_HOST);
+        }
+        if (dockerHostRunModel.isTlsEnabled() && Utils.isEmptyString(dockerHostRunModel.getDockerCertPath())) {
+            throw new ConfigurationException(INVALID_CERT_PATH);
+        }
+        if (Utils.isEmptyString(dockerHostRunModel.getImageName())) {
+            throw new ConfigurationException(MISSING_ARTIFACT);
+        }
+
         // target package
         if (Utils.isEmptyString(dockerHostRunModel.getTargetName())) {
             throw new ConfigurationException(MISSING_ARTIFACT);

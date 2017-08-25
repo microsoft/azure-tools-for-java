@@ -65,10 +65,14 @@ public class SettingPanel {
     private JLabel lblArtifact;
     private JComboBox<Artifact> cbArtifact;
     private JPanel rootPanel;
+    private JPanel pnlDockerCertPath;
 
     private Artifact lastSelectedArtifact;
     private boolean isCbArtifactInited;
 
+    /**
+     * Constructor.
+     */
     public SettingPanel(Project project) {
         this.project = project;
 
@@ -111,6 +115,12 @@ public class SettingPanel {
         return rootPanel;
     }
 
+
+    /**
+     * Function triggered in constructing the panel.
+     *
+     * @param containerLocalRunConfiguration configuration instance
+     */
     public void reset(DockerHostRunConfiguration containerLocalRunConfiguration) {
         DockerHostRunModel model = containerLocalRunConfiguration.getDockerHostRunModel();
         textDockerHost.setText(model.getDockerHost());
@@ -127,6 +137,11 @@ public class SettingPanel {
 
     }
 
+    /**
+     * Function triggered by any content change events.
+     *
+     * @param containerLocalRunConfiguration configuration instance
+     */
     public void apply(DockerHostRunConfiguration containerLocalRunConfiguration) {
         DockerHostRunModel model = containerLocalRunConfiguration.getDockerHostRunModel();
         model.setDockerHost(textDockerHost.getText());
@@ -153,14 +168,15 @@ public class SettingPanel {
         } else {
             MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
             if (mavenProject != null) {
-                containerLocalRunConfiguration.getDockerHostRunModel().setTargetPath(MavenRunTaskUtil.getTargetPath
-                        (mavenProject));
-                containerLocalRunConfiguration.getDockerHostRunModel().setTargetName(MavenRunTaskUtil.getTargetName
-                        (mavenProject));
+                containerLocalRunConfiguration.getDockerHostRunModel()
+                        .setTargetPath(MavenRunTaskUtil.getTargetPath(mavenProject));
+                containerLocalRunConfiguration.getDockerHostRunModel()
+                        .setTargetName(MavenRunTaskUtil.getTargetName(mavenProject));
             }
         }
     }
 
+    @SuppressWarnings("Duplicates")
     private void setupArtifactCombo(List<Artifact> artifacts, String targetPath) {
         isCbArtifactInited = false;
         cbArtifact.removeAllItems();
@@ -178,7 +194,7 @@ public class SettingPanel {
     }
 
     private void updateComponentEnabledState() {
-        dockerCertPathTextField.setEnabled(comboTlsEnabled.isSelected());
+        pnlDockerCertPath.setVisible(comboTlsEnabled.isSelected());
     }
 
     private void onDockerCertPathBrowseButtonClick(ActionEvent event) {
