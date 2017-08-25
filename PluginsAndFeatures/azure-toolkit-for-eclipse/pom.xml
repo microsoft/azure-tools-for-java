@@ -43,7 +43,7 @@
         <repository>
             <id>scala</id>
             <layout>p2</layout>
-            <url>http://download.scala-ide.org/sdk/lithium/e44/scala211/stable/site</url>
+            <url>https://azuredownloads.blob.core.windows.net/scalaidesdk/lithium/e44/scala211/stable</url>
         </repository>
     </repositories>
 
