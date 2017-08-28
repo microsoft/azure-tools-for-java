@@ -110,4 +110,60 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
     public void setFirstTimeCreated(boolean firstTimeCreated) {
         this.firstTimeCreated = firstTimeCreated;
     }
+
+    public String getDockerHost() {
+        return dockerHostRunModel.getDockerHost();
+    }
+
+    public void setDockerHost(String dockerHost) {
+        dockerHostRunModel.setDockerHost(dockerHost);
+    }
+
+    public String getDockerCertPath() {
+        return dockerHostRunModel.getDockerCertPath();
+    }
+
+    public void setDockerCertPath(String dockerCertPath) {
+        dockerHostRunModel.setDockerCertPath(dockerCertPath);
+    }
+
+    public boolean isTlsEnabled() {
+        return dockerHostRunModel.isTlsEnabled();
+    }
+
+    public void setTlsEnabled(boolean tlsEnabled) {
+        dockerHostRunModel.setTlsEnabled(tlsEnabled);
+    }
+
+    public String getImageName() {
+        return dockerHostRunModel.getImageName();
+    }
+
+    public void setImageName(String imageName) {
+        dockerHostRunModel.setImageName(imageName);
+    }
+
+    public String getTagName() {
+        return dockerHostRunModel.getTagName();
+    }
+
+    public void setTagName(String tagName) {
+        dockerHostRunModel.setTagName(tagName);
+    }
+
+    public String getTargetPath() {
+        return dockerHostRunModel.getTargetPath();
+    }
+
+    public void setTargetPath(String targetPath) {
+        dockerHostRunModel.setTargetPath(targetPath);
+    }
+
+    public String getTargetName() {
+        return dockerHostRunModel.getTargetName();
+    }
+
+    public void setTargetName(String targetName) {
+        dockerHostRunModel.setTargetName(targetName);
+    }
 }

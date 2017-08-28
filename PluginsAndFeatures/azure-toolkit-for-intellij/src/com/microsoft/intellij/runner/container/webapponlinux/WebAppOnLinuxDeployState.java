@@ -40,14 +40,13 @@ import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.RunProcessHandler;
+import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.container.utils.DockerProgressHandler;
+import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerException;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -62,9 +61,6 @@ import java.util.Map;
 import rx.Observable;
 
 public class WebAppOnLinuxDeployState implements RunProfileState {
-    private static final String DOCKER_CONTEXT_FOLDER_NAME = "dockerContext";
-    private static final String DOCKER_FILE_NAME = "Dockerfile";
-
     private final WebAppOnLinuxDeployModel deployModel;
     private final Project project;
 
@@ -90,46 +86,37 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                         processHandler.println("Project base path is null.", ProcessOutputTypes.STDERR);
                         throw new FileNotFoundException("Project base path is null.");
                     }
-                    // locate war file to specified location
-                    processHandler.setText("Locating war file ...  ");
+                    // locate artifact to specified location
                     String targetFilePath = deployModel.getTargetPath();
-                    String targetBuildPath = Paths.get(targetFilePath).getParent().toString();
+                    processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
                     String targetFileName = deployModel.getTargetName();
 
-                    FileUtils.copyFile(
-                            Paths.get(targetBuildPath, targetFileName).toFile(),
-                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME, targetFileName).toFile()
-                    );
                     // validate dockerfile
-                    processHandler.setText("Validating dockerfile ... ");
-                    FileUtils.copyDirectory(
-                            Paths.get(basePath, DOCKER_CONTEXT_FOLDER_NAME).toFile(),
-                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME).toFile()
-                    );
+                    Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
+                    processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
+                    if (!targetDockerfile.toFile().exists()) {
+                        throw new FileNotFoundException("Dockerfile not found.");
+                    }
                     // replace placeholder if exists
-                    Path targetDockerfile = Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME, DOCKER_FILE_NAME);
                     String content = new String(Files.readAllBytes(targetDockerfile));
-                    content = content.replaceAll("<artifact>", targetFileName);
+                    content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
+                            Paths.get(basePath).toUri().relativize(Paths.get(targetFilePath).toUri()).getPath()
+                    );
                     Files.write(targetDockerfile, content.getBytes());
 
                     // build image
-                    processHandler.setText("Building image ...  ");
+                    String imageNameWithTag = deployModel.getPrivateRegistryImageSetting().getImageNameWithTag();
+                    processHandler.setText(String.format("Building image ...  [%s]", imageNameWithTag));
                     DockerClient docker = DefaultDockerClient.fromEnv().build();
                     String latestImageName = DockerUtil.buildImage(docker,
-                            deployModel.getPrivateRegistryImageSetting().getImageNameWithTag(),
-                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME),
-                            (message) -> {
-                                if (message.error() != null) {
-                                    throw new DockerException(message.error());
-                                } else {
-                                    processHandler.setText(message.stream());
-                                }
-                            }
+                            imageNameWithTag,
+                            Paths.get(basePath, Constant.DOCKERFILE_FOLDER),
+                            new DockerProgressHandler(processHandler)
                     );
 
                     // push to ACR
-                    processHandler.setText("Pushing to ACR ...  ");
                     PrivateRegistryImageSetting acrInfo = deployModel.getPrivateRegistryImageSetting();
+                    processHandler.setText(String.format("Pushing to ACR ... [%s] ", acrInfo.getServerUrl()));
                     DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
                             acrInfo.getImageNameWithTag(),
                             new DockerProgressHandler(processHandler)
@@ -138,7 +125,8 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                     // deploy
                     if (deployModel.isCreatingNewWebAppOnLinux()) {
                         // create new WebApp
-                        processHandler.setText("Creating new WebApp ...  ");
+                        processHandler.setText(String.format("Creating new WebApp ... [%s]",
+                                deployModel.getWebAppName()));
                         WebApp app = AzureWebAppMvpModel.getInstance()
                                 .createWebAppOnLinux(deployModel.getSubscriptionId(), deployModel,
                                         deployModel.getPrivateRegistryImageSetting());
@@ -153,7 +141,8 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                         }
                     } else {
                         // update WebApp
-                        processHandler.setText("Updating WebApp ...  ");
+                        processHandler.setText(String.format("Updating new WebApp ... [%s]",
+                                deployModel.getWebAppName()));
                         WebApp app = AzureWebAppMvpModel.getInstance()
                                 .updateWebAppOnLinux(deployModel.getSubscriptionId(), deployModel.getWebAppId(),
                                         acrInfo);

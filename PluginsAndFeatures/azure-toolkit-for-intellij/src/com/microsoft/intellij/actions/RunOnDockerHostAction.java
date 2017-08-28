@@ -68,7 +68,7 @@ public class RunOnDockerHostAction extends AzureAnAction {
         boolean dockerFileExists = false;
         if (project != null) {
             String basePath = project.getBasePath();
-            dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKER_CONTEXT_FOLDER,
+            dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKERFILE_FOLDER,
                     Constant.DOCKERFILE_NAME).toFile().exists();
         }
         event.getPresentation().setEnabledAndVisible(dockerFileExists);

@@ -35,7 +35,6 @@ import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.runner.container.dockerhost.DockerHostRunConfiguration;
-import com.microsoft.intellij.runner.container.dockerhost.DockerHostRunModel;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -119,20 +118,19 @@ public class SettingPanel {
     /**
      * Function triggered in constructing the panel.
      *
-     * @param containerLocalRunConfiguration configuration instance
+     * @param conf configuration instance
      */
-    public void reset(DockerHostRunConfiguration containerLocalRunConfiguration) {
-        DockerHostRunModel model = containerLocalRunConfiguration.getDockerHostRunModel();
-        textDockerHost.setText(model.getDockerHost());
-        comboTlsEnabled.setSelected(model.isTlsEnabled());
-        dockerCertPathTextField.setText(model.getDockerCertPath());
-        textImageName.setText(model.getImageName());
-        textTagName.setText(model.getTagName());
+    public void reset(DockerHostRunConfiguration conf) {
+        textDockerHost.setText(conf.getDockerHost());
+        comboTlsEnabled.setSelected(conf.isTlsEnabled());
+        dockerCertPathTextField.setText(conf.getDockerCertPath());
+        textImageName.setText(conf.getImageName());
+        textTagName.setText(conf.getTagName());
         updateComponentEnabledState();
 
         if (!MavenRunTaskUtil.isMavenProject(project)) {
             List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
-            setupArtifactCombo(artifacts, containerLocalRunConfiguration.getDockerHostRunModel().getTargetPath());
+            setupArtifactCombo(artifacts, conf.getDockerHostRunModel().getTargetPath());
         }
 
     }
@@ -140,38 +138,34 @@ public class SettingPanel {
     /**
      * Function triggered by any content change events.
      *
-     * @param containerLocalRunConfiguration configuration instance
+     * @param conf configuration instance
      */
-    public void apply(DockerHostRunConfiguration containerLocalRunConfiguration) {
-        DockerHostRunModel model = containerLocalRunConfiguration.getDockerHostRunModel();
-        model.setDockerHost(textDockerHost.getText());
-        model.setTlsEnabled(comboTlsEnabled.isSelected());
-        model.setDockerCertPath(dockerCertPathTextField.getText());
-        model.setImageName(textImageName.getText());
+    @SuppressWarnings("Duplicates")
+    public void apply(DockerHostRunConfiguration conf) {
+        conf.setDockerHost(textDockerHost.getText());
+        conf.setTlsEnabled(comboTlsEnabled.isSelected());
+        conf.setDockerCertPath(dockerCertPathTextField.getText());
+        conf.setImageName(textImageName.getText());
         if (Utils.isEmptyString(textTagName.getText())) {
-            model.setTagName("latest");
+            conf.setTagName("latest");
         } else {
-            model.setTagName(textTagName.getText());
+            conf.setTagName(textTagName.getText());
         }
         // set target
         if (lastSelectedArtifact != null) {
-            containerLocalRunConfiguration.getDockerHostRunModel().setTargetPath(lastSelectedArtifact
-                    .getOutputFilePath());
-            Path p = Paths.get(containerLocalRunConfiguration.getDockerHostRunModel().getTargetPath());
+            conf.setTargetPath(lastSelectedArtifact.getOutputFilePath());
+            Path p = Paths.get(conf.getTargetPath());
             if (null != p) {
-                containerLocalRunConfiguration.getDockerHostRunModel().setTargetName(p.getFileName().toString());
+                conf.setTargetName(p.getFileName().toString());
             } else {
                 // TODO: get package type according to artifact
-                containerLocalRunConfiguration.getDockerHostRunModel().setTargetName(lastSelectedArtifact.getName()
-                        + "." + MavenConstants.TYPE_WAR);
+                conf.setTargetName(lastSelectedArtifact.getName() + "." + MavenConstants.TYPE_WAR);
             }
         } else {
             MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
             if (mavenProject != null) {
-                containerLocalRunConfiguration.getDockerHostRunModel()
-                        .setTargetPath(MavenRunTaskUtil.getTargetPath(mavenProject));
-                containerLocalRunConfiguration.getDockerHostRunModel()
-                        .setTargetName(MavenRunTaskUtil.getTargetName(mavenProject));
+                conf.setTargetPath(MavenRunTaskUtil.getTargetPath(mavenProject));
+                conf.setTargetName(MavenRunTaskUtil.getTargetName(mavenProject));
             }
         }
     }

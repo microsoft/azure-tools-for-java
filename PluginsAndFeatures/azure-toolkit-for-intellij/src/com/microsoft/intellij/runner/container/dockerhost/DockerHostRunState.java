@@ -16,14 +16,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.intellij.runner.container.utils.Constant;
-import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.RunProcessHandler;
+import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.container.utils.DockerProgressHandler;
+import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.Container;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,8 +38,6 @@ import java.util.Map;
 import rx.Observable;
 
 public class DockerHostRunState implements RunProfileState {
-    private static final String DOCKER_CONTEXT_FOLDER_NAME = "dockerContext";
-    private static final String DOCKER_FILE_NAME = "Dockerfile";
     private final DockerHostRunModel dataModel;
     private final Project project;
 
@@ -78,6 +75,7 @@ public class DockerHostRunState implements RunProfileState {
                             dataModel.getDockerCertPath()
                     );
                     DockerUtil.stopContainer(docker, runningContainerId[0]);
+                    processHandler.setText("Container stopped.");
                 } catch (Exception e) {
                     // ignore
                 }
@@ -96,31 +94,26 @@ public class DockerHostRunState implements RunProfileState {
                         processHandler.println("Project base path is null.", ProcessOutputTypes.STDERR);
                         throw new FileNotFoundException("Project base path is null.");
                     }
-                    // locate war file to specified location
-                    processHandler.setText("Locating war file ...  ");
+                    // locate artifact to specified location
                     String targetFilePath = dataModel.getTargetPath();
-                    String targetBuildPath = Paths.get(targetFilePath).getParent().toString();
-                    String targetFileName = dataModel.getTargetName();
-
-                    FileUtils.copyFile(
-                            Paths.get(targetBuildPath, targetFileName).toFile(),
-                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME, targetFileName).toFile()
-                    );
+                    processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
 
                     // validate dockerfile
-                    processHandler.setText("Validating dockerfile ... ");
-                    FileUtils.copyDirectory(
-                            Paths.get(basePath, DOCKER_CONTEXT_FOLDER_NAME).toFile(),
-                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME).toFile()
-                    );
+                    Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
+                    processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
+                    if (!targetDockerfile.toFile().exists()) {
+                        throw new FileNotFoundException("Dockerfile not found.");
+                    }
                     // replace placeholder if exists
-                    Path targetDockerfile = Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME, DOCKER_FILE_NAME);
                     String content = new String(Files.readAllBytes(targetDockerfile));
-                    content = content.replaceAll("<artifact>", targetFileName);
+                    content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
+                            Paths.get(basePath).toUri().relativize(Paths.get(targetFilePath).toUri()).getPath()
+                    );
                     Files.write(targetDockerfile, content.getBytes());
 
                     // build image
-                    processHandler.setText("Building image ... ");
+                    String imageNameWithTag = String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName());
+                    processHandler.setText(String.format("Building image ...  [%s]", imageNameWithTag));
                     DockerClient docker = DockerUtil.getDockerClient(
                             dataModel.getDockerHost(),
                             dataModel.isTlsEnabled(),
@@ -128,8 +121,8 @@ public class DockerHostRunState implements RunProfileState {
                     );
 
                     String latestImageName = DockerUtil.buildImage(docker,
-                            String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()),
-                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME),
+                            imageNameWithTag,
+                            Paths.get(basePath, Constant.DOCKERFILE_FOLDER),
                             new DockerProgressHandler(processHandler)
                     );
 
@@ -141,32 +134,28 @@ public class DockerHostRunState implements RunProfileState {
                     runningContainerId[0] = containerId;
                     Container container = DockerUtil.runContainer(docker, containerId);
                     // props
-                    Map<String, String> props = new HashMap<>();
-
+                    String hostname = new URI(dataModel.getDockerHost()).getHost();
+                    String publicPort = null;
                     ImmutableList<Container.PortMapping> ports = container.ports();
                     if (ports != null) {
-                        String port = null;
                         for (Container.PortMapping portMapping : ports) {
                             if (Constant.TOMCAT_SERVICE_PORT.equals(String.valueOf(portMapping.privatePort()))) {
-                                port = String.valueOf(portMapping.publicPort());
+                                publicPort = String.valueOf(portMapping.publicPort());
                             }
                         }
-                        if (port != null) {
-                            props.put("publicPort", port);
-                        }
                     }
-                    String hostname = new URI(dataModel.getDockerHost()).getHost();
-                    props.put("hostname", hostname != null ? hostname : "localhost");
-                    return props;
+                    processHandler.setText(String.format(
+                            Constant.MESSAGE_CONTAINER_STARTED,
+                            String.format("%s:%s",
+                                    hostname != null ? hostname : "localhost",
+                                    publicPort),
+                            FilenameUtils.removeExtension(dataModel.getTargetName())
+                    ));
+                    return null;
                 }
         ).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
                 (props) -> {
-                    processHandler.setText("Container started ... ");
-                    processHandler.setText(String.format(
-                            Constant.MESSAGE_CONTAINER_STARTED,
-                            String.format("%s:%s", props.get("hostname"), props.get("publicPort")),
-                            FilenameUtils.removeExtension(dataModel.getTargetName())
-                    ));
+                    processHandler.setText("Container started.");
                     sendTelemetry(true, null);
                 },
                 (err) -> {

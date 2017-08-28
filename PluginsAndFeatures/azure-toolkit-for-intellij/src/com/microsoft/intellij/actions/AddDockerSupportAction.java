@@ -38,6 +38,7 @@ import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 
+import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
@@ -53,23 +54,26 @@ public class AddDockerSupportAction extends AzureAnAction {
     @Override
     public void onActionPerformed(AnActionEvent anActionEvent) {
         project = DataKeys.PROJECT.getData(anActionEvent.getDataContext());
-        if (project == null) {
+        if (project == null || project.getBasePath() == null) {
             notifyError(Constant.ERROR_NO_SELECTED_PROJECT);
             return;
         }
-        String artifactName = "<artifact>";
+        String artifactRelativePath = Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER;
         List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getRootProjects();
         if (mavenProjects.size() > 0) {
-            artifactName = String.format("%s.%s",
-                    mavenProjects.get(0).getFinalName(), mavenProjects.get(0).getPackaging());
+            String artifactName = mavenProjects.get(0).getFinalName() + "." + mavenProjects.get(0).getPackaging();
+            artifactRelativePath = Paths.get(project.getBasePath()).toUri()
+                    .relativize(Paths.get(mavenProjects.get(0).getBuildDirectory(), artifactName).toUri())
+                    .getPath();
         }
         try {
             // create docker file
-            DockerUtil.createDockerFile(project.getBasePath(), Constant.DOCKER_CONTEXT_FOLDER, Constant.DOCKERFILE_NAME,
-                    String.format(Constant.DOCKERFILE_CONTENT_TOMCAT, artifactName));
+            DockerUtil.createDockerFile(project.getBasePath(), Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME,
+                    String.format(Constant.DOCKERFILE_CONTENT_TOMCAT,
+                            FilenameUtils.separatorsToUnix(artifactRelativePath)));
             VirtualFileManager.getInstance().asyncRefresh(() -> {
                         VirtualFile virtualDockerFile = LocalFileSystem.getInstance().findFileByPath(Paths.get(
-                                project.getBasePath(), Constant.DOCKER_CONTEXT_FOLDER, Constant.DOCKERFILE_NAME
+                                project.getBasePath(), Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME
                         ).toString());
                         if (virtualDockerFile != null) {
                             new OpenFileDescriptor(project, virtualDockerFile).navigate(true);
@@ -92,7 +96,7 @@ public class AddDockerSupportAction extends AzureAnAction {
         // print instructions
         String notificationContent = "";
         notificationContent += String.format(Constant.MESSAGE_DOCKERFILE_CREATED,
-                Paths.get(Constant.DOCKER_CONTEXT_FOLDER, Constant.DOCKERFILE_NAME)) + "\n";
+                Paths.get(Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME)) + "\n";
         notificationContent += String.format(Constant.MESSAGE_DOCKER_HOST_INFO, defaultDockerHost) + "\n";
         notificationContent += Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK + "\n";
         notificationContent += Constant.MESSAGE_INSTRUCTION + "\n";
@@ -105,7 +109,7 @@ public class AddDockerSupportAction extends AzureAnAction {
         boolean dockerFileExists = false;
         if (project != null) {
             String basePath = project.getBasePath();
-            dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKER_CONTEXT_FOLDER,
+            dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKERFILE_FOLDER,
                     Constant.DOCKERFILE_NAME).toFile().exists();
         }
         event.getPresentation().setEnabledAndVisible(!dockerFileExists);
