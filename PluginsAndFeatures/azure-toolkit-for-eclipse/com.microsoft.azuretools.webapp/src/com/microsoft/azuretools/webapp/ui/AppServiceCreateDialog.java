@@ -406,7 +406,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         lblJavaVersion.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblJavaVersion.setText("Java version");
 
-        cbJavaVersion = new Combo(compositeJDK, SWT.NONE);
+        cbJavaVersion = new Combo(compositeJDK, SWT.READ_ONLY);
         cbJavaVersion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         dec_cbJavaVersion = decorateContorolAndRegister(cbJavaVersion);
 

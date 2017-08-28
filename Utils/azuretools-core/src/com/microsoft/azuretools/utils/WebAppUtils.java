@@ -62,6 +62,8 @@ public class WebAppUtils {
     private static final String ftpRootPath = "/site/wwwroot/";
     private static final String ftpWebAppsPath = ftpRootPath + "webapps/";
     private static String webConfigFilename = "web.config";
+    private static final String TYPE_WAR = "war";
+    private static final String TYPE_JAR = "jar";
 
     @NotNull
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
@@ -101,19 +103,35 @@ public class WebAppUtils {
 
             if (indicator != null) indicator.setText("Uploading the application...");
             input = new FileInputStream(artifactPath);
-            if (toRoot) {
-                WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + "ROOT", indicator);
-                ftp.deleteFile(ftpWebAppsPath + "ROOT.war");
-                ftp.storeFile(ftpWebAppsPath + "ROOT.war", input);
-            } else {
-                WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + artifactName, indicator);
-                ftp.deleteFile(artifactName + ".war");
-                boolean success = ftp.storeFile(ftpWebAppsPath + artifactName + ".war", input);
-                if (!success) {
-                    int rc = ftp.getReplyCode();
-                    throw new IOException("FTP client can't store the artifact, reply code: " + rc);
-                }
+            int indexOfDot = artifactPath.lastIndexOf(".");
+            String fileType = artifactPath.substring(indexOfDot + 1);
+            switch (fileType) {
+                case TYPE_WAR:
+                    if (toRoot) {
+                        WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + "ROOT", indicator);
+                        ftp.deleteFile(ftpWebAppsPath + "ROOT.war");
+                        ftp.storeFile(ftpWebAppsPath + "ROOT.war", input);
+                    } else {
+                        WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + artifactName, indicator);
+                        ftp.deleteFile(artifactName + ".war");
+                        boolean success = ftp.storeFile(ftpWebAppsPath + artifactName + ".war", input);
+                        if (!success) {
+                            int rc = ftp.getReplyCode();
+                            throw new IOException("FTP client can't store the artifact, reply code: " + rc);
+                        }
+                    }
+                    break;
+                case TYPE_JAR:
+                    boolean success = ftp.storeFile(ftpRootPath + "ROOT.jar", input);
+                    if (!success) {
+                        int rc = ftp.getReplyCode();
+                        throw new IOException("FTP client can't store the artifact, reply code: " + rc);
+                    }
+                    break;
+                default:
+                    break;
             }
+
             if (indicator != null) indicator.setText("Logging out of FTP server...");
             ftp.logout();
         } finally {
