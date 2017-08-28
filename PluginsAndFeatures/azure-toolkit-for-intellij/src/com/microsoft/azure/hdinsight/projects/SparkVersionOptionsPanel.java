@@ -43,6 +43,7 @@ public class SparkVersionOptionsPanel extends JPanel {
             sparkVersionComboBox.addItem(sv);
         }
 
+        sparkVersionComboBox.setSelectedIndex(0);
         String cachedSparkVersion = DefaultLoader.getIdeHelper().getApplicationProperty(SPARK_VERSION_KEY);
         if (cachedSparkVersion != null) {
             useCachedSparkVersion(cachedSparkVersion);
