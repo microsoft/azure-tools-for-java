@@ -31,6 +31,7 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
     private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.war$";
     private static final String INVALID_DOCKER_HOST = "Please specify a valid docker host.";
     private static final String INVALID_CERT_PATH = "Please specify a valid certificate path.";
+    private static final String MISSING_IMAGE_NAME = "Please specify a valid image name.";
     private final DockerHostRunModel dockerHostRunModel;
     private boolean firstTimeCreated = true;
 
@@ -83,7 +84,7 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
             throw new ConfigurationException(INVALID_CERT_PATH);
         }
         if (Utils.isEmptyString(dockerHostRunModel.getImageName())) {
-            throw new ConfigurationException(MISSING_ARTIFACT);
+            throw new ConfigurationException(MISSING_IMAGE_NAME);
         }
 
         // target package
