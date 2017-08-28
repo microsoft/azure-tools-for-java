@@ -141,7 +141,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                         }
                     } else {
                         // update WebApp
-                        processHandler.setText(String.format("Updating new WebApp ... [%s]",
+                        processHandler.setText(String.format("Updating WebApp ... [%s]",
                                 deployModel.getWebAppName()));
                         WebApp app = AzureWebAppMvpModel.getInstance()
                                 .updateWebAppOnLinux(deployModel.getSubscriptionId(), deployModel.getWebAppId(),

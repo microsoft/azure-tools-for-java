@@ -38,7 +38,6 @@ import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 
-import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -80,7 +79,7 @@ public class AddDockerSupportAction extends AzureAnAction {
         try {
             // create docker file
             DockerUtil.createDockerFile(project.getBasePath(), Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME,
-                    String.format(dockerFileContent, FilenameUtils.separatorsToUnix(artifactRelativePath)));
+                    String.format(dockerFileContent, artifactRelativePath));
             VirtualFileManager.getInstance().asyncRefresh(() -> {
                         VirtualFile virtualDockerFile = LocalFileSystem.getInstance().findFileByPath(Paths.get(
                                 project.getBasePath(), Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME
