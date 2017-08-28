@@ -62,11 +62,11 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     private static final String INVALID_IMAGE_WITH_TAG = "Image and Tag should start with '%s/'";
 
     // TODO: move to util
-    private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
+    private static final String MISSING_ARTIFACT = "A web archive (.war|.jar) artifact has not been configured.";
     private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
             + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
             + "and the digits '0' through '9', '.', '-' and '_'.";
-    private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.war$";
+    private static final String ARTIFACT_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
     private static final String DOMAIN_NAME_REGEX = "^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$";
 
     private final WebAppOnLinuxDeployModel deployModel;
@@ -119,6 +119,9 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
         return new WebAppOnLinuxDeployState(getProject(), deployModel);
     }
 
+    /**
+     * Configuration value Validation.
+     */
     public void validate() throws ConfigurationException {
         try {
             if (!AuthMethodManager.getInstance().isSignedIn()) {
@@ -173,10 +176,10 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
         }
 
         // target package
-        if (deployModel == null || Utils.isEmptyString(deployModel.getTargetName())) {
+        if (Utils.isEmptyString(deployModel.getTargetName())) {
             throw new ConfigurationException(MISSING_ARTIFACT);
         }
-        if (!deployModel.getTargetName().matches(WAR_NAME_REGEX)) {
+        if (!deployModel.getTargetName().matches(ARTIFACT_NAME_REGEX)) {
             throw new ConfigurationException(String.format(INVALID_WAR_FILE, deployModel.getTargetName()));
         }
     }

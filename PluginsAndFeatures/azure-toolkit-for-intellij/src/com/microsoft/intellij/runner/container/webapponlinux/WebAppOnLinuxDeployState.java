@@ -147,8 +147,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                                 .updateWebAppOnLinux(deployModel.getSubscriptionId(), deployModel.getWebAppId(),
                                         acrInfo);
                         if (app != null && app.name() != null) {
-                            processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/%s", app.name(),
-                                    FilenameUtils.removeExtension(targetFileName)));
+                            processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
                         }
                     }
                     return null;

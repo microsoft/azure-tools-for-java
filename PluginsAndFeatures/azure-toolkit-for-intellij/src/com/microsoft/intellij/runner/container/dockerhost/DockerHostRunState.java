@@ -23,7 +23,6 @@ import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.Container;
 
-import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -75,7 +74,6 @@ public class DockerHostRunState implements RunProfileState {
                             dataModel.getDockerCertPath()
                     );
                     DockerUtil.stopContainer(docker, runningContainerId[0]);
-                    processHandler.setText("Container stopped.");
                 } catch (Exception e) {
                     // ignore
                 }
@@ -144,12 +142,8 @@ public class DockerHostRunState implements RunProfileState {
                             }
                         }
                     }
-                    processHandler.setText(String.format(
-                            Constant.MESSAGE_CONTAINER_STARTED,
-                            String.format("%s:%s",
-                                    hostname != null ? hostname : "localhost",
-                                    publicPort),
-                            FilenameUtils.removeExtension(dataModel.getTargetName())
+                    processHandler.setText(String.format(Constant.MESSAGE_CONTAINER_STARTED,
+                            (hostname != null ? hostname : "localhost") + (publicPort != null ? ":" + publicPort : "")
                     ));
                     return null;
                 }

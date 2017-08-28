@@ -41,7 +41,14 @@ public class Constant {
             + "with exception:\n%s";
     public static final String ERROR_RUNNING_DOCKER = "Error occurred in Docker Run, with exception:\n%s";
     public static final String DOCKERFILE_CONTENT_TOMCAT = "FROM tomcat:8.5-jre8\r\n"
-            + "COPY %s /usr/local/tomcat/webapps/\r\n";
+            + "RUN rm -fr /usr/local/tomcat/webapps/ROOT\r\n"
+            + "COPY %s /usr/local/tomcat/webapps/ROOT.war\r\n";
+    public static final String DOCKERFILE_CONTENT_SPRING = "FROM java:8\r\n"
+            + "VOLUME /tmp\r\n"
+            + "EXPOSE 8080\r\n"
+            + "COPY %s app.jar\r\n"
+            + "RUN bash -c 'touch /app.jar'\r\n"
+            + "ENTRYPOINT java -Djava.security.egd=file:/dev/./urandom -jar /app.jar";
     public static final String ERROR_NO_SELECTED_PROJECT = "Can't detect an active project";
     public static final String MESSAGE_EXPORTING_PROJECT = "Packaging project into WAR file: %s";
     public static final String MESSAGE_BUILDING_IMAGE = "Building Image ...";
@@ -49,7 +56,7 @@ public class Constant {
     public static final String MESSAGE_CREATING_CONTAINER = "Creating container ...";
     public static final String MESSAGE_CONTAINER_INFO = "Container Id: %s";
     public static final String MESSAGE_STARTING_CONTAINER = "Starting container ...";
-    public static final String MESSAGE_CONTAINER_STARTED = "Container is running now!\nURL: http://%s/%s";
+    public static final String MESSAGE_CONTAINER_STARTED = "Container is running now!\nURL: http://%s/";
     public static final String ERROR_STARTING_CONTAINER = "Fail to start Container #id=%s";
     public static final String MESSAGE_ADD_DOCKER_SUPPORT_OK = "Successfully added docker support!";
     public static final String MESSAGE_ADDING_DOCKER_SUPPORT = "Adding docker support ...";

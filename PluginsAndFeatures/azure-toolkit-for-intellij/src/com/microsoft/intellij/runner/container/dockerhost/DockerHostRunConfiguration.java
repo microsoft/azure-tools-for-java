@@ -28,7 +28,7 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
             + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
             + "and the digits '0' through '9', '.', '-' and '_'.";
     private static final String MISSING_MODEL = "Configuration data model not initialized.";
-    private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.war$";
+    private static final String ARTIFACT_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
     private static final String INVALID_DOCKER_HOST = "Please specify a valid docker host.";
     private static final String INVALID_CERT_PATH = "Please specify a valid certificate path.";
     private static final String MISSING_IMAGE_NAME = "Please specify a valid image name.";
@@ -91,7 +91,7 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
         if (Utils.isEmptyString(dockerHostRunModel.getTargetName())) {
             throw new ConfigurationException(MISSING_ARTIFACT);
         }
-        if (!dockerHostRunModel.getTargetName().matches(WAR_NAME_REGEX)) {
+        if (!dockerHostRunModel.getTargetName().matches(ARTIFACT_NAME_REGEX)) {
             throw new ConfigurationException(String.format(INVALID_WAR_FILE, dockerHostRunModel.getTargetName()));
         }
     }

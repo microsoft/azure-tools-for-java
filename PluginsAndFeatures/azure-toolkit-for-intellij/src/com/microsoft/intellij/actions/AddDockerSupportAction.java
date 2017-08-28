@@ -39,6 +39,7 @@ import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 
 import org.apache.commons.io.FilenameUtils;
+import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
@@ -59,18 +60,27 @@ public class AddDockerSupportAction extends AzureAnAction {
             return;
         }
         String artifactRelativePath = Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER;
+        String dockerFileContent = Constant.DOCKERFILE_CONTENT_TOMCAT;
         List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getRootProjects();
         if (mavenProjects.size() > 0) {
-            String artifactName = mavenProjects.get(0).getFinalName() + "." + mavenProjects.get(0).getPackaging();
+            MavenProject mvnPrj = mavenProjects.get(0); // TODO: be more elegant
+            String artifactName = mvnPrj.getFinalName() + "." + mvnPrj.getPackaging();
             artifactRelativePath = Paths.get(project.getBasePath()).toUri()
-                    .relativize(Paths.get(mavenProjects.get(0).getBuildDirectory(), artifactName).toUri())
+                    .relativize(Paths.get(mvnPrj.getBuildDirectory(), artifactName).toUri())
                     .getPath();
+            // pre-define dockerfile content according to artifact type
+            if (MavenConstants.TYPE_WAR.equals(mvnPrj.getPackaging())) {
+                // maven war: tomcat
+                dockerFileContent = Constant.DOCKERFILE_CONTENT_TOMCAT;
+            } else if (MavenConstants.TYPE_JAR.equals(mvnPrj.getPackaging())) {
+                // maven jar: spring boot
+                dockerFileContent = Constant.DOCKERFILE_CONTENT_SPRING;
+            }
         }
         try {
             // create docker file
             DockerUtil.createDockerFile(project.getBasePath(), Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME,
-                    String.format(Constant.DOCKERFILE_CONTENT_TOMCAT,
-                            FilenameUtils.separatorsToUnix(artifactRelativePath)));
+                    String.format(dockerFileContent, FilenameUtils.separatorsToUnix(artifactRelativePath)));
             VirtualFileManager.getInstance().asyncRefresh(() -> {
                         VirtualFile virtualDockerFile = LocalFileSystem.getInstance().findFileByPath(Paths.get(
                                 project.getBasePath(), Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME
