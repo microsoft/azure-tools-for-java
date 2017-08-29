@@ -34,6 +34,8 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
 
+import java.nio.file.Paths;
+
 public class DockerizeHandler extends AzureAbstractHandler {
 
     @Override
@@ -44,10 +46,12 @@ public class DockerizeHandler extends AzureAbstractHandler {
             if (project == null) {
                 throw new Exception(Constant.ERROR_NO_SELECTED_PROJECT);
             }
-            DockerUtil.createDockerFile(project, Constant.DOCKER_CONTEXT_FOLDER, Constant.DOCKERFILE_NAME,
-                    Constant.DOCKERFILE_CONTENT_TOMCAT);
+            String dockerFileContent = Constant.DOCKERFILE_CONTENT_TOMCAT;
+            String artifactRelativePath = Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER;
+            DockerUtil.createDockerFile(project.getLocation().toString(), Constant.DOCKERFILE_FOLDER,
+                    Constant.DOCKERFILE_NAME, String.format(dockerFileContent, artifactRelativePath));
             ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKERFILE_CREATED,
-                    project.getFolder(Constant.DOCKER_CONTEXT_FOLDER).getFile(Constant.DOCKERFILE_NAME).getFullPath()));
+                    Paths.get(Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME).toString()));
             Builder builder = DockerRuntime.getInstance().getDockerBuilder();
             ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKER_HOST_INFO, builder.uri()));
             ConsoleLogger.info(Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK);

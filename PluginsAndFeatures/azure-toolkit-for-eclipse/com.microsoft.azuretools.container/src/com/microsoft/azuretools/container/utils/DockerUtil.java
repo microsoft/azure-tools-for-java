@@ -22,9 +22,10 @@
 
 package com.microsoft.azuretools.container.utils;
 
-import com.microsoft.azuretools.container.ConsoleLogger;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.container.Constant;
-import com.microsoft.azuretools.container.DockerRuntime;
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DockerCertificates;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.ProgressHandler;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
@@ -34,50 +35,81 @@ import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
-import com.spotify.docker.client.messages.ProgressMessage;
-import java.io.ByteArrayInputStream;
+import com.spotify.docker.client.messages.RegistryAuth;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 
 public class DockerUtil {
     /**
      * create a docker file in specified folder.
      */
-    public static void createDockerFile(IProject project, String foldername, String filename, String content)
-            throws CoreException {
-        // create file
-        IFolder folder = project.getFolder(foldername);
-        if (!folder.exists()) {
-            folder.create(true, true, null);
+    public static void createDockerFile(String basePath, String folderName, String filename, String content)
+            throws IOException {
+        if (Utils.isEmptyString(basePath)) {
+            throw new FileNotFoundException("Project basePath is null.");
         }
-        IFile dockerfile = folder.getFile(filename);
-        if (!dockerfile.exists()) {
-            byte[] bytes = String.format(content, project.getName()).getBytes();
-            dockerfile.create(new ByteArrayInputStream(bytes), false, null);
+
+        Paths.get(basePath, folderName).toFile().mkdirs();
+        Path dockerFilePath = Paths.get(basePath, folderName, filename);
+        if (!dockerFilePath.toFile().exists()) {
+            byte[] bytes = content.getBytes();
+            Files.write(dockerFilePath, bytes);
         }
     }
 
     /**
-     * createContainer.
-     * 
-     * @param docker
-     * @param project
-     * @param imageName
-     * @return
-     * @throws DockerException
-     * @throws InterruptedException
+     * runContainer.
      */
-    public static String createContainer(DockerClient docker, IProject project, String imageName)
+    public static Container runContainer(DockerClient docker, String containerId)
+            throws DockerException, InterruptedException {
+        docker.startContainer(containerId);
+        List<Container> containers = docker.listContainers();
+        Optional<Container> container = containers.stream().filter(item -> item.id().equals(containerId)).findFirst();
+        if (container.isPresent()) {
+            return container.get();
+        } else {
+            throw new DockerException("Error in starting container.");
+        }
+    }
+
+    /**
+     * buildImage.
+     */
+    public static String buildImage(DockerClient docker, String imageNameWithTag, Path dockerDirectory,
+            ProgressHandler progressHandler) throws DockerException, InterruptedException, IOException {
+        String imageId = docker.build(dockerDirectory, imageNameWithTag, progressHandler);
+        return imageId == null ? null : imageNameWithTag;
+    }
+
+    /**
+     * Push image to a private registry.
+     */
+    public static void pushImage(DockerClient dockerClient, String registryUrl, String registryUsername,
+            String registryPassword, String targetImageName, ProgressHandler handler)
+            throws DockerException, InterruptedException {
+        final RegistryAuth registryAuth = RegistryAuth.builder().username(registryUsername).password(registryPassword)
+                .build();
+        if (targetImageName.startsWith(registryUrl)) {
+            dockerClient.push(targetImageName, handler, registryAuth);
+        } else {
+            throw new DockerException("serverUrl and imageName mismatch.");
+        }
+    }
+
+    /**
+     * create container with specified ImageName:TagName.
+     */
+    public static String createContainer(DockerClient docker, String imageNameWithTag)
             throws DockerException, InterruptedException {
         final Map<String, List<PortBinding>> portBindings = new HashMap<>();
         List<PortBinding> randomPort = new ArrayList<>();
@@ -87,66 +119,34 @@ public class DockerUtil {
 
         final HostConfig hostConfig = HostConfig.builder().portBindings(portBindings).build();
 
-        final ContainerConfig config = ContainerConfig.builder().hostConfig(hostConfig).image(imageName)
+        final ContainerConfig config = ContainerConfig.builder().hostConfig(hostConfig).image(imageNameWithTag)
                 .exposedPorts(Constant.TOMCAT_SERVICE_PORT).build();
         final ContainerCreation container = docker.createContainer(config);
         return container.id();
     }
 
     /**
-     * runContainer.
-     * 
-     * @param docker
-     * @param containerId
-     * @return
-     * @throws Exception
+     * Stop a container by id.
      */
-    public static String runContainer(DockerClient docker, String containerId) throws Exception {
-        docker.startContainer(containerId);
-        final List<Container> containers = docker.listContainers();
-        final Optional<Container> res = containers.stream().filter(item -> item.id().equals(containerId)).findFirst();
-
-        if (res.isPresent()) {
-            DockerRuntime.getInstance().setRunningContainerId(res.get().id());
-            return String.format("http://%s:%s", docker.getHost(),
-                    res.get().ports().stream()
-                            .filter(item -> item.privatePort().toString().equals(Constant.TOMCAT_SERVICE_PORT))
-                            .findFirst().get().publicPort());
-        } else {
-            String errorMsg = String.format(Constant.ERROR_STARTING_CONTAINER, containerId);
-            ConsoleLogger.error(errorMsg);
-            throw new Exception(errorMsg);
+    public static void stopContainer(DockerClient dockerClient, String runningContainerId)
+            throws DockerException, InterruptedException {
+        if (runningContainerId != null) {
+            dockerClient.stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
+            dockerClient.removeContainer(runningContainerId);
         }
     }
 
     /**
-     * buildImage.
-     * 
-     * @param docker
-     * @param project
-     * @param dockerDirectory
-     * @return
-     * @throws DockerCertificateException
-     * @throws DockerException
-     * @throws InterruptedException
-     * @throws IOException
+     * get DockerClient instance.
      */
-    public static String buildImage(DockerClient docker, IProject project, String dockerDirectory)
-            throws DockerCertificateException, DockerException, InterruptedException, IOException {
-        final AtomicReference<String> imageIdFromMessage = new AtomicReference<>();
-        final String imageName = String.format("%s-%s:%tY%<tm%<td%<tH%<tM%<tS", Constant.IMAGE_PREFIX,
-                project.getName().toLowerCase(), new java.util.Date());
-        docker.build(Paths.get(dockerDirectory), imageName, new ProgressHandler() {
-            @Override
-            public void progress(ProgressMessage message) throws DockerException {
-                final String imageId = message.buildImageId();
-                if (imageId != null) {
-                    imageIdFromMessage.set(imageId);
-                }
-            }
-        });
-        DockerRuntime.getInstance().setLatestImageName(imageName);
-        return imageName;
+    public static DockerClient getDockerClient(String dockerHost, boolean tlsEnabled, String certPath)
+            throws DockerCertificateException {
+        if (tlsEnabled) {
+            return DefaultDockerClient.builder().uri(URI.create(dockerHost))
+                    .dockerCertificates(new DockerCertificates(Paths.get(certPath))).build();
+        } else {
+            return DefaultDockerClient.builder().uri(URI.create(dockerHost)).build();
+        }
     }
 
     public static boolean containerExists(DockerClient docker, String containerId)

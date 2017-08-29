@@ -22,24 +22,35 @@
 
 package com.microsoft.azuretools.container.handlers;
 
+import com.google.common.collect.ImmutableList;
 import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.Constant;
+import com.microsoft.azuretools.container.DockerProgressHandler;
 import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.container.utils.WarUtil;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.DockerClient;
-import java.util.HashMap;
-import java.util.Map;
+import com.spotify.docker.client.messages.Container;
+import com.spotify.docker.client.messages.Container.PortMapping;
+
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+
+import java.io.FileNotFoundException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -49,14 +60,17 @@ public class DockerRunHandler extends AzureAbstractHandler {
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
         IProject project = PluginUtil.getSelectedProject();
-        String destinationPath;
+        String basePath;
+        String destinationPath; // relative
         DockerClient docker;
 
         try {
             if (project == null) {
                 throw new Exception(Constant.ERROR_NO_SELECTED_PROJECT);
             }
-            destinationPath = project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER + project.getName() + ".war";
+            basePath = project.getLocation().toString();
+            destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war").normalize()
+                    .toString();
             // Initialize docker client according to env DOCKER_HOST &
             // DOCKER_CERT_PATH
             ConsoleLogger.info(Constant.MESSAGE_DOCKER_CONNECTING);
@@ -82,44 +96,61 @@ public class DockerRunHandler extends AzureAbstractHandler {
 
         Observable.fromCallable(() -> {
             // export WAR file
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
-            });
+            ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
             WarUtil.export(project, destinationPath);
 
+            // validate dockerfile
+            Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
+            ConsoleLogger.info(String.format("Validating dockerfile ... [%s]", targetDockerfile));
+            if (!targetDockerfile.toFile().exists()) {
+                throw new FileNotFoundException("Dockerfile not found.");
+            }
+            // replace placeholder if exists
+            String content = new String(Files.readAllBytes(targetDockerfile));
+            content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
+                    Paths.get(basePath).toUri().relativize(Paths.get(destinationPath).toUri()).getPath());
+            Files.write(targetDockerfile, content.getBytes());
+
             // build image based on WAR file
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
-            });
-            String imageName = DockerUtil.buildImage(docker, project,
-                    project.getLocation() + Constant.DOCKER_CONTEXT_FOLDER);
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageName));
-            });
+            ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
+            String imageNameWithTag = DockerUtil.buildImage(docker, Constant.DEFAULT_IMAGE_NAME_WITH_TAG,
+                    Paths.get(project.getLocation().toString(), Constant.DOCKERFILE_FOLDER),
+                    new DockerProgressHandler());
+            ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageNameWithTag));
 
             // create a container
-            String containerId = DockerUtil.createContainer(docker, project, imageName);
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                ConsoleLogger.info(Constant.MESSAGE_CREATING_CONTAINER);
-                ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_INFO, containerId));
-            });
+            String containerId = DockerUtil.createContainer(docker, imageNameWithTag);
+            ConsoleLogger.info(Constant.MESSAGE_CREATING_CONTAINER);
+            ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_INFO, containerId));
 
             // start container
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                ConsoleLogger.info(Constant.MESSAGE_STARTING_CONTAINER);
-            });
-            String webappUrl = DockerUtil.runContainer(docker, containerId);
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_STARTED, webappUrl, project.getName()));
-            });
+            ConsoleLogger.info(Constant.MESSAGE_STARTING_CONTAINER);
+
+            Container container = DockerUtil.runContainer(docker, containerId);
+            DockerRuntime.getInstance().setRunningContainerId(container.id());
+            // props
+
+            String hostname = new URI(docker.getHost()).getHost();
+            ImmutableList<PortMapping> ports = container.ports();
+            String publicPort = ports == null ? null
+                    : String.valueOf(ports.stream()
+                            .filter(m -> Constant.TOMCAT_SERVICE_PORT.equals(String.valueOf(m.privatePort())))
+                            .findFirst().get().publicPort());
+
+            ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_STARTED,
+                    (hostname != null ? hostname : "localhost") + (publicPort != null ? ":" + publicPort : "")));
+
             return project.getName();
-        }).subscribeOn(Schedulers.io()).subscribe(ret -> {
-            Map<String, String> extraInfo = new HashMap<>();
-            extraInfo.put("ProjectName", ret);
-            sendTelemetryOnSuccess(event, extraInfo);
-        }, e -> {
-            sendTelemetryOnException(event, e);
-        });
+        }).subscribeOn(Schedulers.io()).subscribe(
+                ret -> {
+                    Map<String, String> extraInfo = new HashMap<>();
+                    extraInfo.put("ProjectName", ret);
+                    sendTelemetryOnSuccess(event, extraInfo);
+                }, 
+                e -> {
+                    sendTelemetryOnException(event, e);
+                }
+        );
         return null;
     }
 

@@ -29,10 +29,6 @@ import com.microsoft.azuretools.container.views.StepOnePageView;
 import com.microsoft.azuretools.core.components.AzureWizardPage;
 import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyledText;
@@ -46,6 +42,10 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class StepOnePage extends AzureWizardPage implements StepOnePageView, PublishWizardPageView {
     private static final String TEXT_TITLE = "Push Docker Image to Azure Container Registry";
