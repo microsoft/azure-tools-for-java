@@ -20,7 +20,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.p2.core,
  org.eclipse.equinox.p2.repository,
  org.eclipse.equinox.p2.metadata,
- org.eclipse.epp.mpc.ui 
+ org.eclipse.epp.mpc.ui,
+ org.eclipse.m2e.core,
+ org.eclipse.m2e.maven.runtime
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: Microsoft Corp.
