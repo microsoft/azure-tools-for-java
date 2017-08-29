@@ -61,6 +61,7 @@ import java.net.URL;
  */
 public class WebAppUtils {
 
+    private static final String WEB_CONFIG_PACKAGE_PATH = "/webapp/web.config";
     private static final String ftpRootPath = "/site/wwwroot/";
     private static final String ftpWebAppsPath = ftpRootPath + "webapps/";
     private static String webConfigFilename = "web.config";
@@ -301,6 +302,8 @@ public class WebAppUtils {
 
         public JavaVersion javaVersion;
 
+        public String packaging;
+
         public abstract void collectData();
     }
 
@@ -365,6 +368,13 @@ public class WebAppUtils {
             if (model.isAppServicePlanCreateNew) {
                 //AppServicePlan asp = azure.appServices().appServicePlans().getById(myWebApp.appServicePlanId());
                 AzureModelController.addNewAppServicePlanToExistingResourceGroup(rg, appServicePlan);
+            }
+        }
+
+        if (model.packaging != null && model.packaging.equals(TYPE_JAR)) {
+            try (InputStream webConfigInput = WebAppUtils.class
+                    .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
+                uploadWebConfig(myWebApp, webConfigInput, progressIndicator);
             }
         }
 
