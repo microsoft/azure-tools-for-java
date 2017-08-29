@@ -24,6 +24,7 @@ package com.microsoft.azuretools.webapp.ui;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -31,6 +32,7 @@ import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.core.ui.ErrorWindow;
+import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
 import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
@@ -39,6 +41,7 @@ import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.webapp.Activator;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -89,6 +92,8 @@ import java.util.Set;
 public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     private static ILog LOG = Activator.getDefault().getLog();
 
+    private IProject project;
+
     private Text textAppName;
     private Text textResourceGroupName;
     private Text textAppSevicePlanName;
@@ -102,6 +107,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     private Label lblJavaVersion;
     private Label lblAppSevicePlanLocation;
     private Label lblAppServicePlanPricingTier;
+    private Label lblWebContainer;
 
     private ControlDecoration dec_textAppName;
     private ControlDecoration dec_textNewResGrName;
@@ -125,44 +131,46 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     private List<PricingTier> binderAppServicePlanPricingTier;
     private List<JdkModel> javaVersions;
 
-    TabFolder tabFolder;
+    private TabFolder tabFolder;
 
-    TabItem tabItemAppServicePlan;
-    Composite compositeAppServicePlan;
-    Button btnAppServiceCreateNew;
-    Label lblAppServiceCreateNewPricingTier;
-    Label lblAppServiceCreateNewLocation;
+    private TabItem tabItemAppServicePlan;
+    private Composite compositeAppServicePlan;
+    private Button btnAppServiceCreateNew;
+    private Label lblAppServiceCreateNewPricingTier;
+    private Label lblAppServiceCreateNewLocation;
 
-    Button btnAppServiceUseExisting;
-    Label lblAppServiceUseExictingLocation;
-    Label lblAppServiceUseExistiogPrisingTier;
-    Link linkAppServicePricing;
+    private Button btnAppServiceUseExisting;
+    private Label lblAppServiceUseExictingLocation;
+    private Label lblAppServiceUseExistiogPrisingTier;
+    private Link linkAppServicePricing;
 
-    TabItem tabItemResourceGroup;
-    Composite compositeResourceGroup;
-    Button btnResourceGroupCreateNew;
-    Button btnResourceGroupUseExisting;
+    private TabItem tabItemResourceGroup;
+    private Composite compositeResourceGroup;
+    private Button btnResourceGroupCreateNew;
+    private Button btnResourceGroupUseExisting;
 
-    TabItem tabItemJDK;
-    Composite compositeJDK;
+    private TabItem tabItemJDK;
+    private Composite compositeJDK;
 
     protected WebApp webApp;
+    private String packaging = WebAppUtils.TYPE_WAR;
 
     public WebApp getWebApp() {
         return this.webApp;
     }
 
-    public static AppServiceCreateDialog go(Shell parentShell) {
-        AppServiceCreateDialog d = new AppServiceCreateDialog(parentShell);
+    public static AppServiceCreateDialog go(Shell parentShell, IProject project) {
+        AppServiceCreateDialog d = new AppServiceCreateDialog(parentShell, project);
         if (d.open() == Window.OK) {
             return d;
         }
         return null;
     }
 
-    private AppServiceCreateDialog(Shell parentShell) {
+    private AppServiceCreateDialog(Shell parentShell, IProject project) {
         super(parentShell);
         setHelpAvailable(false);
+        this.project = project;
         setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.APPLICATION_MODAL);
     }
 
@@ -205,13 +213,6 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
 
         Label lblazurewebsitescom = new Label(grpAppService, SWT.NONE);
         lblazurewebsitescom.setText(".azurewebsites.net");
-
-        Label lblWebContainer = new Label(grpAppService, SWT.NONE);
-        lblWebContainer.setText("Web container");
-
-        comboWebContainer = new Combo(grpAppService, SWT.READ_ONLY);
-        comboWebContainer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-        dec_comboWebContainer = decorateContorolAndRegister(comboWebContainer);
 
         Label lblSubscription = new Label(grpAppService, SWT.NONE);
         lblSubscription.setText("Subscription");
@@ -403,12 +404,18 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         compositeJDK.setLayout(new GridLayout(2, false));
 
         lblJavaVersion = new Label(compositeJDK, SWT.NONE);
-        lblJavaVersion.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblJavaVersion.setText("Java version");
 
         cbJavaVersion = new Combo(compositeJDK, SWT.READ_ONLY);
         cbJavaVersion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         dec_cbJavaVersion = decorateContorolAndRegister(cbJavaVersion);
+
+        lblWebContainer = new Label(compositeJDK, SWT.NONE);
+        lblWebContainer.setText("Web container");
+
+        comboWebContainer = new Combo(compositeJDK, SWT.READ_ONLY);
+        comboWebContainer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        dec_comboWebContainer = decorateContorolAndRegister(comboWebContainer);
 
         DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
         String date = df.format(new Date());
@@ -468,6 +475,17 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
 
     protected void fillWebContainers() {
         try {
+            if (MavenUtils.isMavenProject(project)) {
+                packaging = MavenUtils.getPackaging(project);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "fillWebContainers@AppServiceCreateDialog", e));
+        }
+        if (packaging.equals(WebAppUtils.TYPE_JAR)) {
+            lblWebContainer.setVisible(false);
+            comboWebContainer.setVisible(false);
+        } else {
             comboWebContainer.removeAll();
             binderWebConteiners = new ArrayList<>();
             for (WebAppUtils.WebContainerMod wc : WebAppUtils.WebContainerMod.values()) {
@@ -478,9 +496,6 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
             if (comboWebContainer.getItemCount() > 0) {
                 comboWebContainer.select(0);
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "fillWebContainers@AppServiceCreateDialog", ex));
         }
     }
 
@@ -866,40 +881,45 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     protected class Model extends WebAppUtils.CreateAppServiceModel {
         @Override
         public void collectData() {
-          webAppName = textAppName.getText().trim();
+            webAppName = textAppName.getText().trim();
+            int index;
+            if (AppServiceCreateDialog.this.packaging.equals(WebAppUtils.TYPE_JAR)) {
+                webContainer = WebContainer.TOMCAT_8_5_NEWEST;
+            } else {
+                index = comboWebContainer.getSelectionIndex();
+                webContainer = index < 0 ? null : binderWebConteiners.get(index).toWebContainer();
+            }
 
-          int index = comboWebContainer.getSelectionIndex();
-          webContainer = index < 0 ? null : binderWebConteiners.get(index).toWebContainer();
-
-          index = comboSubscription.getSelectionIndex();
-          subscriptionDetail = index < 0 ? null : binderSubscriptionDetails.get(index);
+            index = comboSubscription.getSelectionIndex();
+            subscriptionDetail = index < 0 ? null : binderSubscriptionDetails.get(index);
 
 
-          //isResourceGroupCreateNew = tabFolderResourceGroup.getSelection()[0] == tabItemResGrCreateNew;
-          isResourceGroupCreateNew = btnResourceGroupCreateNew.getSelection();
-          index = comboResourceGroup.getSelectionIndex();
-          resourceGroup = index < 0 ? null : binderResourceGroup.get(index);
-          resourceGroupNameCreateNew = textResourceGroupName.getText().trim();
+            //isResourceGroupCreateNew = tabFolderResourceGroup.getSelection()[0] == tabItemResGrCreateNew;
+            isResourceGroupCreateNew = btnResourceGroupCreateNew.getSelection();
+            index = comboResourceGroup.getSelectionIndex();
+            resourceGroup = index < 0 ? null : binderResourceGroup.get(index);
+            resourceGroupNameCreateNew = textResourceGroupName.getText().trim();
 
-          //isAppServicePlanCreateNew = tabFolderAppServicePlan.getSelection()[0] == tabItemAppServicePlanCreateNew;
-          isAppServicePlanCreateNew = btnAppServiceCreateNew.getSelection();
-          index = comboAppServicePlan.getSelectionIndex();
-          appServicePlan = index < 0 ? null : binderAppServicePlan.get(index);
+            //isAppServicePlanCreateNew = tabFolderAppServicePlan.getSelection()[0] == tabItemAppServicePlanCreateNew;
+            isAppServicePlanCreateNew = btnAppServiceCreateNew.getSelection();
+            index = comboAppServicePlan.getSelectionIndex();
+            appServicePlan = index < 0 ? null : binderAppServicePlan.get(index);
 
-          appServicePlanNameCreateNew = textAppSevicePlanName.getText().trim();
+            appServicePlanNameCreateNew = textAppSevicePlanName.getText().trim();
 
-          index = comboAppServicePlanPricingTier.getSelectionIndex();
-          appServicePricingTierCreateNew = index < 0 ? null : binderAppServicePlanPricingTier.get(index);
+            index = comboAppServicePlanPricingTier.getSelectionIndex();
+            appServicePricingTierCreateNew = index < 0 ? null : binderAppServicePlanPricingTier.get(index);
 
-          index = comboAppServicePlanLocation.getSelectionIndex();
-          appServicePlanLocationCreateNew = index < 0 ? null : binderAppServicePlanLocation.get(index);
+            index = comboAppServicePlanLocation.getSelectionIndex();
+            appServicePlanLocationCreateNew = index < 0 ? null : binderAppServicePlanLocation.get(index);
 
-          index = cbJavaVersion.getSelectionIndex();
-          if (index < 0 || index >= cbJavaVersion.getItemCount()) {
-              javaVersion = null;
-          } else {
+            index = cbJavaVersion.getSelectionIndex();
+            if (index < 0 || index >= cbJavaVersion.getItemCount()) {
+                javaVersion = null;
+            } else {
               javaVersion = javaVersions.get(index).getJavaVersion();
-          }
+            }
+            packaging = AppServiceCreateDialog.this.packaging;
         }
     }
 
