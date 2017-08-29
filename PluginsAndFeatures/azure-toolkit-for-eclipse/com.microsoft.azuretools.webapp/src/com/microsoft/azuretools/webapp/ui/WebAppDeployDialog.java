@@ -23,7 +23,6 @@ import com.microsoft.azuretools.webapp.Activator;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -239,11 +238,11 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         btnDeployToRoot = new Button(container, SWT.CHECK);
         btnDeployToRoot.setText("Deploy to root");
         try {
-            if (MavenUtils.isMavenProject(project)) {
+            if (MavenUtils.isMavenProject(project) && MavenUtils.getPackaging(project).equals(WebAppUtils.TYPE_JAR)) {
                 btnDeployToRoot.setSelection(true);
                 btnDeployToRoot.setVisible(false);
             }
-        } catch (CoreException e) {
+        } catch (Exception e) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "WebAppDeployDialog", e));
             e.printStackTrace();
         }

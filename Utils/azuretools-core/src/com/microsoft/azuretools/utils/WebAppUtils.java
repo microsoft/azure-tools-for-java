@@ -46,7 +46,9 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
@@ -62,8 +64,10 @@ public class WebAppUtils {
     private static final String ftpRootPath = "/site/wwwroot/";
     private static final String ftpWebAppsPath = ftpRootPath + "webapps/";
     private static String webConfigFilename = "web.config";
-    private static final String TYPE_WAR = "war";
-    private static final String TYPE_JAR = "jar";
+    private static final String NO_TARGET_FILE = "Cannot find target file: %s.";
+    private static final String ROOT = "ROOT";
+    public static final String TYPE_WAR = "war";
+    public static final String TYPE_JAR = "jar";
 
     @NotNull
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
@@ -94,6 +98,10 @@ public class WebAppUtils {
     }
 
     public static void deployArtifact(String artifactName, String artifactPath, PublishingProfile pp, boolean toRoot, IProgressIndicator indicator) throws IOException {
+        File file = new File(artifactPath);
+        if (!file.exists()) {
+            throw new FileNotFoundException(String.format(NO_TARGET_FILE, artifactPath));
+        }
         FTPClient ftp = null;
         InputStream input = null;
         try {
@@ -108,13 +116,13 @@ public class WebAppUtils {
             switch (fileType) {
                 case TYPE_WAR:
                     if (toRoot) {
-                        WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + "ROOT", indicator);
-                        ftp.deleteFile(ftpWebAppsPath + "ROOT.war");
-                        ftp.storeFile(ftpWebAppsPath + "ROOT.war", input);
+                        WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + ROOT, indicator);
+                        ftp.deleteFile(ftpWebAppsPath + ROOT + "." + TYPE_WAR);
+                        ftp.storeFile(ftpWebAppsPath + ROOT + "." + TYPE_WAR, input);
                     } else {
                         WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + artifactName, indicator);
-                        ftp.deleteFile(artifactName + ".war");
-                        boolean success = ftp.storeFile(ftpWebAppsPath + artifactName + ".war", input);
+                        ftp.deleteFile(artifactName + "." + TYPE_WAR);
+                        boolean success = ftp.storeFile(ftpWebAppsPath + artifactName + "." + TYPE_WAR, input);
                         if (!success) {
                             int rc = ftp.getReplyCode();
                             throw new IOException("FTP client can't store the artifact, reply code: " + rc);
@@ -122,7 +130,7 @@ public class WebAppUtils {
                     }
                     break;
                 case TYPE_JAR:
-                    boolean success = ftp.storeFile(ftpRootPath + "ROOT.jar", input);
+                    boolean success = ftp.storeFile(ftpRootPath + ROOT + "." + TYPE_JAR, input);
                     if (!success) {
                         int rc = ftp.getReplyCode();
                         throw new IOException("FTP client can't store the artifact, reply code: " + rc);
