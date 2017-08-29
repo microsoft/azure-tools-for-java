@@ -34,6 +34,7 @@ public class MavenUtils {
     private static final String CANNOT_GET_REG = "Cannot get Maven project registry.";
     private static final String CANNOT_CREATE_FACADE = "Cannot create Maven project facade.";
     private static final String CANNOT_GET_MAVEN_PROJ = "Cannot get Maven project.";
+    private static final String CANNOT_GET_MAVEN = "Cannot get Maven from Maven Plugin.";
 
     public static boolean isMavenProject(@NotNull IProject project) throws CoreException {
         if (project != null && project.exists() && project.isAccessible()
@@ -78,14 +79,14 @@ public class MavenUtils {
         final List<String> goals = Arrays.asList(MAVEN_CLEAN, MAVEN_PACKAGE);
         final IMaven maven = MavenPlugin.getMaven();
         if (maven == null) {
-            return;
+            throw new Exception(CANNOT_GET_MAVEN);
         }
         IMavenExecutionContext context = maven.createExecutionContext();
         final MavenExecutionRequest request = context.getExecutionRequest();
         File pomFile = pom.getRawLocation().toFile();
         request.setPom(pomFile);
         request.setGoals(goals);
-        request.setUpdateSnapshots(true);
+        request.setUpdateSnapshots(false);
         final NullProgressMonitor monitor = new NullProgressMonitor();
         MavenExecutionResult result = context.execute(new ICallable<MavenExecutionResult>() {
             @Override
@@ -96,7 +97,12 @@ public class MavenUtils {
           }, monitor);
         List<Throwable> exceptions = result.getExceptions();
         if (exceptions.size() > 0) {
-            throw new Exception(exceptions.get(0));
+            String errorMsg = "";
+            for (Throwable throwable: exceptions) {
+                errorMsg += throwable.getMessage();
+                errorMsg += "\n\n";
+            }
+            throw new Exception(errorMsg);
         }
     }
 
