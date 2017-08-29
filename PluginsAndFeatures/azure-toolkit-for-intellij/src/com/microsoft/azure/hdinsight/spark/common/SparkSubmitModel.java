@@ -65,6 +65,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel.SUBMISSION_CONTENT_SSH_CERT;
+
 public class SparkSubmitModel {
 
     private static final String[] columns = {"Key", "Value", ""};
@@ -82,10 +84,6 @@ public class SparkSubmitModel {
     private static final String SUBMISSION_CONTENT_COMMAND_LINE_ARGS = "cmd_line_args";
     private static final String SUBMISSION_CONTENT_REF_JARS = "ref_jars";
     private static final String SUBMISSION_CONTENT_REF_FILES = "ref_files";
-    private static final String SUBMISSION_CONTENT_SSH_CERT= "ssh_cert";
-    private static final String SUBMISSION_ATTRIBUTE_SSH_CERT_AUTHTYPE_NAME= "auth_type";
-    private static final String SUBMISSION_ATTRIBUTE_SSH_CERT_USER_NAME= "user";
-    private static final String SUBMISSION_ATTRIBUTE_SSH_CERT_PRIVATE_KEYPATH_NAME= "private_key_path";
 
     private static Map<Project, SparkSubmissionParameter> submissionParameterMap = new HashMap<>();
 
@@ -438,14 +436,14 @@ public class SparkSubmitModel {
     private IClusterDetail getClusterConfiguration(@NotNull final IClusterDetail selectedClusterDetail, @NotNull final boolean isFirstSubmit) {
         try {
             if (!selectedClusterDetail.isConfigInfoAvailable()) {
-                selectedClusterDetail.getConfigurationInfo(getProject());
+                selectedClusterDetail.getConfigurationInfo();
             }
         } catch (AuthenticationException authenticationException) {
             if (isFirstSubmit) {
                 HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, "Error: Cluster Credentials Expired, Please sign in again...");
                 //get new credentials by call getClusterDetails
                 cachedClusterDetails.clear();
-                cachedClusterDetails.addAll(ClusterManagerEx.getInstance().getClusterDetails(getProject()));
+                cachedClusterDetails.addAll(ClusterManagerEx.getInstance().getClusterDetails());
 
                 for (IClusterDetail iClusterDetail : cachedClusterDetails) {
                     if (iClusterDetail.getName().equalsIgnoreCase(selectedClusterDetail.getName())) {
@@ -635,15 +633,7 @@ public class SparkSubmitModel {
 
         SparkSubmitAdvancedConfigModel advConfModel = getAdvancedConfigModel();
         if (advConfModel != null && advConfModel.enableRemoteDebug) {
-            Element sshCertElement = new Element(SUBMISSION_CONTENT_SSH_CERT);
-            sshCertElement.setAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_USER_NAME, advConfModel.sshUserName);
-
-            sshCertElement.setAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_AUTHTYPE_NAME, advConfModel.sshAuthType.name());
-            if (advConfModel.sshAuthType == SparkSubmitAdvancedConfigModel.SSHAuthType.UseKeyFile) {
-                sshCertElement.setAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_PRIVATE_KEYPATH_NAME, advConfModel.sshKyeFile.toString());
-            }
-
-            submitModelElement.addContent(sshCertElement);
+            submitModelElement.addContent(advConfModel.exportToElement());
         }
 
         return submitModelElement;
@@ -692,22 +682,10 @@ public class SparkSubmitModel {
             );
 
             SparkSubmitModel newSubmitModel = new SparkSubmitModel(project, parameter);
+
             Optional.ofNullable(element.getChild(SUBMISSION_CONTENT_SSH_CERT))
-                    .ifPresent(sshCertElem -> {
-                        SparkSubmitAdvancedConfigModel advConfigModel = new SparkSubmitAdvancedConfigModel();
-
-                        advConfigModel.enableRemoteDebug = true;
-
-                        Optional.ofNullable(sshCertElem.getAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_USER_NAME))
-                                .ifPresent(attribute -> advConfigModel.sshUserName = attribute.getValue());
-                        Optional.ofNullable(sshCertElem.getAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_AUTHTYPE_NAME))
-                                .ifPresent(attribute -> advConfigModel.sshAuthType =
-                                        SparkSubmitAdvancedConfigModel.SSHAuthType.valueOf(attribute.getValue()));
-                        Optional.ofNullable(sshCertElem.getAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_PRIVATE_KEYPATH_NAME))
-                                .ifPresent(attribute -> advConfigModel.sshKyeFile = new File(attribute.getValue()));
-
-                        newSubmitModel.setAdvancedConfigModel(advConfigModel);
-                    });
+                    .map(SparkSubmitAdvancedConfigModel::factoryFromElement)
+                    .ifPresent(newSubmitModel::setAdvancedConfigModel);
 
             return newSubmitModel;
         }).orElseThrow(() -> new InvalidDataException("Bad submission parameters"));

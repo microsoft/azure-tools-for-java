@@ -21,21 +21,68 @@
  */
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.intellij.openapi.util.InvalidDataException;
+import org.jdom.Element;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
+import java.util.Optional;
 
 public class SparkSubmitAdvancedConfigModel {
+    public static final String SUBMISSION_CONTENT_SSH_CERT= "ssh_cert";
+    private static final String SUBMISSION_ATTRIBUTE_SSH_CERT_AUTHTYPE_NAME= "auth_type";
+    private static final String SUBMISSION_ATTRIBUTE_SSH_CERT_USER_NAME= "user";
+    private static final String SUBMISSION_ATTRIBUTE_SSH_CERT_PRIVATE_KEYPATH_NAME= "private_key_path";
 
     public boolean enableRemoteDebug = false;
 
     public String sshUserName = "sshuser";
 
     public SSHAuthType sshAuthType = SSHAuthType.UsePassword;
-    public File sshKyeFile;
+    public File sshKeyFile;
     public String sshPassword = "";
 
     public enum SSHAuthType {
         UsePassword,
         UseKeyFile
+    }
+
+    public void apply(SparkSubmitAdvancedConfigModel source) {
+        this.enableRemoteDebug = source.enableRemoteDebug;
+        this.sshUserName = source.sshUserName;
+        this.sshAuthType = source.sshAuthType;
+        this.sshKeyFile = source.sshKeyFile;
+        this.sshPassword = source.sshPassword;
+    }
+
+    public Element exportToElement() {
+        Element sshCertElement = new Element(SUBMISSION_CONTENT_SSH_CERT);
+        sshCertElement.setAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_USER_NAME, this.sshUserName);
+        sshCertElement.setAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_AUTHTYPE_NAME, this.sshAuthType.name());
+        if (this.sshAuthType == SparkSubmitAdvancedConfigModel.SSHAuthType.UseKeyFile) {
+            sshCertElement.setAttribute(
+                    SUBMISSION_ATTRIBUTE_SSH_CERT_PRIVATE_KEYPATH_NAME,
+                    Optional.ofNullable(this.sshKeyFile).map(File::toString).orElse(""));
+        }
+
+        return sshCertElement;
+    }
+
+    static public SparkSubmitAdvancedConfigModel factoryFromElement(@NotNull Element sshCertElem)
+            throws InvalidDataException {
+        SparkSubmitAdvancedConfigModel advConfigModel = new SparkSubmitAdvancedConfigModel();
+
+        advConfigModel.enableRemoteDebug = true;
+
+        Optional.ofNullable(sshCertElem.getAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_USER_NAME))
+                .ifPresent(attribute -> advConfigModel.sshUserName = attribute.getValue());
+        Optional.ofNullable(sshCertElem.getAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_AUTHTYPE_NAME))
+                .ifPresent(attribute -> advConfigModel.sshAuthType =
+                        SparkSubmitAdvancedConfigModel.SSHAuthType.valueOf(attribute.getValue()));
+        Optional.ofNullable(sshCertElem.getAttribute(SUBMISSION_ATTRIBUTE_SSH_CERT_PRIVATE_KEYPATH_NAME))
+                .ifPresent(attribute -> advConfigModel.sshKeyFile = new File(attribute.getValue()));
+
+        return advConfigModel;
     }
 
     public static class UnknownSSHAuthTypeException extends SparkJobException {

@@ -41,26 +41,26 @@ import com.microsoft.azuretools.core.utils.Messages;
 public class SubmitHandler extends AzureAbstractHandler {
     private List<IClusterDetail> cachedClusterDetails = null;
    
-	@Override
-	public Object onExecute(ExecutionEvent event) throws ExecutionException {
-		synchronized (SubmitHandler.class) {
-					TreeSelection selection = (TreeSelection)HandlerUtil.getCurrentSelection(event);
-					 
-					IProject project = null;
-					Object selectedObj = selection.getFirstElement();
-					
-					// for different version of Eclipse
-					if (selectedObj instanceof IProjectNature) {
-						IProjectNature projectNature = (IProjectNature)selectedObj;
-						project = projectNature.getProject();
-					} else if (selectedObj instanceof IProject){
-						project = (IProject)selectedObj;
-					}
-					
-					AppInsightsClient.create(Messages.SparkSubmissionRightClickProject, Activator.getDefault().getBundle().getVersion().toString());
+    @Override
+    public Object onExecute(ExecutionEvent event) throws ExecutionException {
+        synchronized (SubmitHandler.class) {
+                    TreeSelection selection = (TreeSelection)HandlerUtil.getCurrentSelection(event);
+                     
+                    IProject project = null;
+                    Object selectedObj = selection.getFirstElement();
+                    
+                    // for different version of Eclipse
+                    if (selectedObj instanceof IProjectNature) {
+                        IProjectNature projectNature = (IProjectNature)selectedObj;
+                        project = projectNature.getProject();
+                    } else if (selectedObj instanceof IProject){
+                        project = (IProject)selectedObj;
+                    }
+                    
+                    AppInsightsClient.create(Messages.SparkSubmissionRightClickProject, Activator.getDefault().getBundle().getVersion().toString());
                     HDInsightUtil.showInfoOnSubmissionMessageWindow("List spark clusters ...", true);
                     
-                    cachedClusterDetails = ClusterManagerEx.getInstance().getClusterDetailsWithoutAsync(true, null);
+                    cachedClusterDetails = ClusterManagerEx.getInstance().getClusterDetailsWithoutAsync(true);
                     if(!ClusterManagerEx.getInstance().isSelectedSubscriptionExist()) {
                         HDInsightUtil.showWarningMessageOnSubmissionMessageWindow("No selected subscription(s), Please go to HDInsight Explorer to sign in....");
                     }
@@ -80,5 +80,5 @@ public class SubmitHandler extends AzureAbstractHandler {
             return null;
         }
 
-	}
+    }
 }

@@ -21,6 +21,7 @@
  */
 package com.microsoft.azure.hdinsight.common;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -37,6 +38,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ClusterManagerEx {
 
@@ -44,7 +46,6 @@ public class ClusterManagerEx {
 
     private static ClusterManagerEx instance = null;
 
-    private List<IClusterDetail> cachedClusterDetails = new ArrayList<>();
     private List<IClusterDetail> hdinsightAdditionalClusterDetails = new ArrayList<>();
     private List<IClusterDetail> emulatorClusterDetails = new ArrayList<>();
 
@@ -83,15 +84,15 @@ public class ClusterManagerEx {
 
     public boolean isListEmulatorClusterSuccess() { return isListEmulatorClusterSuccess; }
 
-    public List<IClusterDetail> getClusterDetailsWithoutAsync(Object project) {
-        return getClusterDetailsWithoutAsync(false, project);
+    public ImmutableList<IClusterDetail> getClusterDetailsWithoutAsync() {
+        return getClusterDetailsWithoutAsync(false);
     }
 
-    public List<IClusterDetail> getClusterDetailsWithoutAsync(boolean isIgnoreErrorCluster, Object projectObject) {
-        cachedClusterDetails = ClusterMetaDataService.getInstance().getCachedClusterDetails();
-        if(cachedClusterDetails.size() == 0) {
-            cachedClusterDetails = getClusterDetails(projectObject);
-        }
+    public ImmutableList<IClusterDetail> getClusterDetailsWithoutAsync(boolean isIgnoreErrorCluster) {
+        final ImmutableList<IClusterDetail> cachedClusterDetails =
+                Optional.of(ClusterMetaDataService.getInstance().getCachedClusterDetails())
+                        .filter(clusters -> !clusters.isEmpty())
+                        .orElseGet(this::getClusterDetails);
 
         if (isIgnoreErrorCluster) {
             List<IClusterDetail> result = new ArrayList<>();
@@ -101,21 +102,36 @@ public class ClusterManagerEx {
                 }
                 result.add(clusterDetail);
             }
-            return result;
+            return ImmutableList.copyOf(result);
         } else {
             return cachedClusterDetails;
         }
     }
 
-    public synchronized List<IClusterDetail> getClusterDetails(Object project) {
-        cachedClusterDetails.clear();
+    public Optional<IClusterDetail> getClusterDetailByName(String clusterName) {
+        return getClusterDetailsWithoutAsync(true)
+                .stream()
+                .filter(cluster -> cluster.getName().equals(clusterName))
+                .findFirst()
+                .flatMap(cluster -> {
+                    try {
+                        cluster.getConfigurationInfo();
+                    } catch (Exception ignore) {
+                    }
+
+                    return cluster.isConfigInfoAvailable() ? Optional.of(cluster) : Optional.empty();
+                });
+    }
+
+    public synchronized ImmutableList<IClusterDetail> getClusterDetails() {
+        List<IClusterDetail> clusterDetails = new ArrayList<>();
 
         if(!isLIstAdditionalClusterSuccess) {
-            hdinsightAdditionalClusterDetails = getAdditionalClusters(project);
+            hdinsightAdditionalClusterDetails = getAdditionalClusters();
         }
 
         if(!isListEmulatorClusterSuccess) {
-            emulatorClusterDetails = getEmulatorClusters(project);
+            emulatorClusterDetails = getEmulatorClusters();
         }
 
         isListClusterSuccess = false;
@@ -123,48 +139,39 @@ public class ClusterManagerEx {
         try {
             manager = AuthMethodManager.getInstance().getAzureManager();
         } catch (Exception ex) {
-            manager = null;
+            // not authenticated
+            clusterDetails.addAll(hdinsightAdditionalClusterDetails);
+            clusterDetails.addAll(emulatorClusterDetails);
+            ClusterMetaDataService.getInstance().addCachedClusters(clusterDetails);
+            return ClusterMetaDataService.getInstance().getCachedClusterDetails();
         }
-        // not authenticated
-        if (manager == null) {
-            cachedClusterDetails.addAll(hdinsightAdditionalClusterDetails);
-            cachedClusterDetails.addAll(emulatorClusterDetails);
-            return cachedClusterDetails;
-        }
+
         List<SubscriptionDetail> subscriptionList = null;
         try {
             subscriptionList = manager.getSubscriptionManager().getSubscriptionDetails();
-            cachedClusterDetails = ClusterManager.getInstance().getHDInsightClustersWithSpecificType(subscriptionList, OSTYPE, project);
+            clusterDetails = ClusterManager.getInstance().getHDInsightClustersWithSpecificType(subscriptionList, OSTYPE);
+
             // TODO: so far we have not a good way to judge whether it is token expired as we have changed the way to list hdinsight clusters
-            if (cachedClusterDetails.size() == 0) {
-                //DefaultLoader.getUIHelper().showError("Falied to get HDInsight Cluster, Please make sure there's no login problem first","List HDInsight Cluster Error");
-                isListClusterSuccess = false;
-            } else {
-                isListClusterSuccess = true;
-            }
+            isListClusterSuccess = clusterDetails.size() != 0;
         } catch (AggregatedException aggregateException) {
             if (dealWithAggregatedException(aggregateException)) {
-                DefaultLoader.getUIHelper().showError("Falied to get HDInsight Cluster, Please make sure there's no login problem first","List HDInsight Cluster Error");
+                DefaultLoader.getUIHelper().showError("Failed to get HDInsight Cluster, Please make sure there's no login problem first","List HDInsight Cluster Error");
             }
         } catch (Exception ex) {
-            DefaultLoader.getUIHelper().showError("Falied to get HDInsight Clusters","List HDInsight Cluster Error");
+            DefaultLoader.getUIHelper().showError("Failed to get HDInsight Clusters","List HDInsight Cluster Error");
         }
 
-        if (subscriptionList == null || subscriptionList.isEmpty()) {
-            isSelectedSubscriptionExist = false;
-        } else {
-            isSelectedSubscriptionExist = true;
-        }
+        isSelectedSubscriptionExist = subscriptionList != null && !subscriptionList.isEmpty();
 
-        cachedClusterDetails.addAll(hdinsightAdditionalClusterDetails);
-        cachedClusterDetails.addAll(emulatorClusterDetails);
-        ClusterMetaDataService.getInstance().addCachedClusters(cachedClusterDetails);
-        return cachedClusterDetails;
+        clusterDetails.addAll(hdinsightAdditionalClusterDetails);
+        clusterDetails.addAll(emulatorClusterDetails);
+        ClusterMetaDataService.getInstance().addCachedClusters(clusterDetails);
+        return ClusterMetaDataService.getInstance().getCachedClusterDetails();
     }
 
     public synchronized  void addEmulatorCluster(EmulatorClusterDetail emulatorClusterDetail) {
         emulatorClusterDetails.add(emulatorClusterDetail);
-        cachedClusterDetails.add(emulatorClusterDetail);
+        ClusterMetaDataService.getInstance().addClusterToCache(emulatorClusterDetail);
 
         saveEmulatorClusters();
     }
@@ -172,14 +179,14 @@ public class ClusterManagerEx {
     public synchronized void addHDInsightAdditionalCluster(HDInsightAdditionalClusterDetail hdInsightClusterDetail) {
 
         hdinsightAdditionalClusterDetails.add(hdInsightClusterDetail);
-        cachedClusterDetails.add(hdInsightClusterDetail);
+        ClusterMetaDataService.getInstance().addClusterToCache(hdInsightClusterDetail);
 
         saveAdditionalClusters();
     }
 
     public synchronized  void removeEmulatorCluster(EmulatorClusterDetail emulatorClusterDetail) {
         emulatorClusterDetails.remove(emulatorClusterDetail);
-        cachedClusterDetails.remove(emulatorClusterDetail);
+        ClusterMetaDataService.getInstance().removeClusterFromCache(emulatorClusterDetail);
 
         saveEmulatorClusters();
     }
@@ -187,7 +194,7 @@ public class ClusterManagerEx {
     public synchronized void removeHDInsightAdditionalCluster(HDInsightAdditionalClusterDetail hdInsightClusterDetail) {
 
         hdinsightAdditionalClusterDetails.remove(hdInsightClusterDetail);
-        cachedClusterDetails.remove(hdInsightClusterDetail);
+        ClusterMetaDataService.getInstance().removeClusterFromCache(hdInsightClusterDetail);
 
         saveAdditionalClusters();
     }
@@ -198,6 +205,10 @@ public class ClusterManagerEx {
         return 2: cluster is valid to add to cluster list but storage account is not default
      */
     public int isHDInsightAdditionalStorageExist(String clusterName, String storageName) {
+        final ImmutableList<IClusterDetail> cachedClusterDetails =
+                Optional.of(ClusterMetaDataService.getInstance().getCachedClusterDetails())
+                        .filter(clusters -> !clusters.isEmpty())
+                        .orElseGet(this::getClusterDetails);
 
         for (IClusterDetail clusterDetail : cachedClusterDetails) {
             if (clusterDetail.getName().equals(clusterName)) {
@@ -224,6 +235,11 @@ public class ClusterManagerEx {
     }
 
     public boolean isEmulatorClusterExist(String clusterName) {
+        final ImmutableList<IClusterDetail> cachedClusterDetails =
+                Optional.of(ClusterMetaDataService.getInstance().getCachedClusterDetails())
+                        .filter(clusters -> !clusters.isEmpty())
+                        .orElseGet(this::getClusterDetails);
+
         for( IClusterDetail clusterDetail : cachedClusterDetails) {
             if( clusterDetail.getName().equals(clusterName)) {
                 return true;
@@ -245,7 +261,7 @@ public class ClusterManagerEx {
         DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS, json);
     }
 
-    private List<IClusterDetail> getAdditionalClusters(Object projectObject) {
+    private List<IClusterDetail> getAdditionalClusters() {
         Gson gson = new Gson();
         String json = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS);
         List<IClusterDetail> hdiLocalClusters = new ArrayList<>();
@@ -269,7 +285,7 @@ public class ClusterManagerEx {
         return hdiLocalClusters;
     }
 
-    private List<IClusterDetail> getEmulatorClusters(Object projectObject) {
+    private List<IClusterDetail> getEmulatorClusters() {
         Gson gson = new Gson();
         String json = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.EMULATOR_CLUSTERS);
         List<IClusterDetail> emulatorClusters = new ArrayList<>();

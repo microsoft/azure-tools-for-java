@@ -218,7 +218,7 @@ public class SparkSubmissionContentPanel extends JPanel{
             Project project = submitModel.getProject();
 
             HDInsightUtil.showInfoOnSubmissionMessageWindow(submitModel.getProject(), "List spark clusters ...", true);
-            List<IClusterDetail> cachedClusters = ClusterManagerEx.getInstance().getClusterDetailsWithoutAsync(true, submitModel.getProject());
+            List<IClusterDetail> cachedClusters = ClusterManagerEx.getInstance().getClusterDetailsWithoutAsync(true);
 
             if (!ClusterManagerEx.getInstance().isSelectedSubscriptionExist()) {
                 HDInsightUtil.showWarningMessageOnSubmissionMessageWindow(project, "No selected subscription(s), Please go to HDInsight Explorer to sign in....");
@@ -281,7 +281,7 @@ public class SparkSubmissionContentPanel extends JPanel{
             public void actionPerformed(ActionEvent e) {
                 Cursor cursor = getCursor();
                 setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                List<IClusterDetail> clusterDetails = ClusterManagerEx.getInstance().getClusterDetails(submitModel.getProject());
+                List<IClusterDetail> clusterDetails = ClusterManagerEx.getInstance().getClusterDetails();
                 setCursor(cursor);
                 submitModel.setClusterComboBoxModel(clusterDetails);
             }
@@ -666,6 +666,7 @@ public class SparkSubmissionContentPanel extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 advancedConfigDialog = new SparkSubmissionAdvancedConfigDialog(
+                        submitModel,
                         submitModel.getAdvancedConfigModel(),
                         new CallBack() {
                             @Override

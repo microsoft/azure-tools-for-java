@@ -103,102 +103,102 @@ public class SparkSubmitModel {
         if (isLocalArtifact()) {
             submit();
         } else {
-        	IWorkspace workspace = ResourcesPlugin.getWorkspace();
+            IWorkspace workspace = ResourcesPlugin.getWorkspace();
             IWorkspaceRoot root = workspace.getRoot();
             IProject proj = root.getProject(submissionParameter.getArtifactName());
-        	JarExportJob job = new JarExportJob("Building jar", proj);
-        	job.schedule();
-			job.addJobChangeListener(new JobChangeAdapter() {
-				public void done(IJobChangeEvent event) {
-					if (event.getResult().isOK()) {
-						submit();						
-					}
-				};
-			});
+            JarExportJob job = new JarExportJob("Building jar", proj);
+            job.schedule();
+            job.addJobChangeListener(new JobChangeAdapter() {
+                public void done(IJobChangeEvent event) {
+                    if (event.getResult().isOK()) {
+                        submit();						
+                    }
+                };
+            });
         }
     }
 
     private class JarExportJob extends Job {
-    	private IProject project;
-    	private String errorMessage;
-    	
-    	public JarExportJob(String name, IProject project) {
-			super(name);
-			this.project = project;
-		}
+        private IProject project;
+        private String errorMessage;
+        
+        public JarExportJob(String name, IProject project) {
+            super(name);
+            this.project = project;
+        }
 
-		@Override
-		protected IStatus run(final IProgressMonitor monitor) {
-			monitor.beginTask("Begin building task", IProgressMonitor.UNKNOWN);
-			try {
-				// TODO： IncrementalProjectBuilder
-				// build will new thread to run and we have no better way to get status of the thread
-				//project.build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
-				
-				super.setName("");
-				final JarPackageData jarPackageData = new JarPackageData();
-				jarPackageData.setElements(new Object[]{project});
-				
-				jarPackageData.setExportClassFiles(true);
-				jarPackageData.setBuildIfNeeded(true);
-				jarPackageData.setExportOutputFolders(true);
-				jarPackageData.setExportJavaFiles(false);
-				jarPackageData.setExportErrors(false);
-				jarPackageData.setExportWarnings(false);
-				jarPackageData.setRefactoringAware(false);
-				jarPackageData.setCompress(true);
-				jarPackageData.setIncludeDirectoryEntries(false);
-				jarPackageData.setOverwrite(true);
-				String dest = String.format("%s%s%s%s", project.getLocation(), File.separator, project.getName(), ".jar");
-				IPath destPath = new Path(dest);
-				
-				jarPackageData.setJarLocation(destPath);
-				monitor.worked(5);
-				monitor.setTaskName("Creating Jar file...");
-				Display.getDefault().syncExec(new Runnable() {
-					
-					@SuppressWarnings("restriction")
-					@Override
-					public void run() {
-						try {
-							JarFileExportOperation jarFileExportOperation = new JarFileExportOperation(jarPackageData, Display.getDefault().getActiveShell());
-							jarFileExportOperation.run(SubMonitor.convert(monitor,"Compiler Spark project", 100));
-						} catch (InvocationTargetException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						
-					}
-				});
-			} catch (Exception ex) {
-				errorMessage = ex.getMessage();
-				return Status.CANCEL_STATUS;
-			} finally {
-				monitor.done();
-			}
-			if (monitor.isCanceled()) {
+        @Override
+        protected IStatus run(final IProgressMonitor monitor) {
+            monitor.beginTask("Begin building task", IProgressMonitor.UNKNOWN);
+            try {
+                // TODO： IncrementalProjectBuilder
+                // build will new thread to run and we have no better way to get status of the thread
+                //project.build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
+                
+                super.setName("");
+                final JarPackageData jarPackageData = new JarPackageData();
+                jarPackageData.setElements(new Object[]{project});
+                
+                jarPackageData.setExportClassFiles(true);
+                jarPackageData.setBuildIfNeeded(true);
+                jarPackageData.setExportOutputFolders(true);
+                jarPackageData.setExportJavaFiles(false);
+                jarPackageData.setExportErrors(false);
+                jarPackageData.setExportWarnings(false);
+                jarPackageData.setRefactoringAware(false);
+                jarPackageData.setCompress(true);
+                jarPackageData.setIncludeDirectoryEntries(false);
+                jarPackageData.setOverwrite(true);
+                String dest = String.format("%s%s%s%s", project.getLocation(), File.separator, project.getName(), ".jar");
+                IPath destPath = new Path(dest);
+                
+                jarPackageData.setJarLocation(destPath);
+                monitor.worked(5);
+                monitor.setTaskName("Creating Jar file...");
+                Display.getDefault().syncExec(new Runnable() {
+                    
+                    @SuppressWarnings("restriction")
+                    @Override
+                    public void run() {
+                        try {
+                            JarFileExportOperation jarFileExportOperation = new JarFileExportOperation(jarPackageData, Display.getDefault().getActiveShell());
+                            jarFileExportOperation.run(SubMonitor.convert(monitor,"Compiler Spark project", 100));
+                        } catch (InvocationTargetException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        
+                    }
+                });
+            } catch (Exception ex) {
+                errorMessage = ex.getMessage();
+                return Status.CANCEL_STATUS;
+            } finally {
+                monitor.done();
+            }
+            if (monitor.isCanceled()) {
               return Status.CANCEL_STATUS;
-			} else {
-				return Status.OK_STATUS;
-			}    
-		}
-    	
+            } else {
+                return Status.OK_STATUS;
+            }    
+        }
+        
     }
     
     private void uploadFileToCluster(@NotNull final IClusterDetail selectedClusterDetail, @NotNull final String selectedArtifactName) throws Exception {
-    	String buildJarPath;
-    	if (submissionParameter.isLocalArtifact()) {
-    		buildJarPath = submissionParameter.getLocalArtifactPath();
-    	} else {
+        String buildJarPath;
+        if (submissionParameter.isLocalArtifact()) {
+            buildJarPath = submissionParameter.getLocalArtifactPath();
+        } else {
             IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
             IProject proj = root.getProject(submissionParameter.getArtifactName());
             buildJarPath = String.format("%s%s%s%s", proj.getLocation(), File.separator, proj.getName(), ".jar");
-			 
-    	}
-    	
+             
+        }
+        
         String filePath = selectedClusterDetail.isEmulator() ?
                 SparkSubmitHelper.uploadFileToEmulator(selectedClusterDetail, buildJarPath) :
                 SparkSubmitHelper.uploadFileToHDFS(selectedClusterDetail, buildJarPath);
@@ -218,20 +218,20 @@ public class SparkSubmitModel {
             
             HDInsightUtil.setHyperLinkWithText("See spark job view from ", jobLink, jobLink);
             @SuppressWarnings("serial")
-			final SparkSubmitResponse sparkSubmitResponse = new Gson().fromJson(response.getMessage(), new TypeToken<SparkSubmitResponse>() {
+            final SparkSubmitResponse sparkSubmitResponse = new Gson().fromJson(response.getMessage(), new TypeToken<SparkSubmitResponse>() {
             }.getType());
 
             // Set submitted spark application id and http request info for stopping running application
-      		Display.getDefault().syncExec(new Runnable() {
-      			@Override
-      			public void run() {
-      				SparkSubmissionToolWindowView view = HDInsightUtil.getSparkSubmissionToolWindowView();
-      				view.setSparkApplicationStopInfo(selectedClusterDetail.getConnectionUrl(), sparkSubmitResponse.getId());
-      				view.setStopButtonState(true);
-      				view.getJobStatusManager().resetJobStateManager();
-      			}
-      		});
-      		SparkSubmitHelper.getInstance().printRunningLogStreamingly(sparkSubmitResponse.getId(), selectedClusterDetail, postEventProperty);
+              Display.getDefault().syncExec(new Runnable() {
+                  @Override
+                  public void run() {
+                      SparkSubmissionToolWindowView view = HDInsightUtil.getSparkSubmissionToolWindowView();
+                      view.setSparkApplicationStopInfo(selectedClusterDetail.getConnectionUrl(), sparkSubmitResponse.getId());
+                      view.setStopButtonState(true);
+                      view.getJobStatusManager().resetJobStateManager();
+                  }
+              });
+              SparkSubmitHelper.getInstance().printRunningLogStreamingly(sparkSubmitResponse.getId(), selectedClusterDetail, postEventProperty);
         } else {
             HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(
                     String.format("Error : Failed to submit to spark cluster. error code : %d, reason :  %s.", response.getCode(), response.getContent()));
@@ -265,12 +265,12 @@ public class SparkSubmitModel {
     private IClusterDetail getClusterConfiguration(@NotNull final IClusterDetail selectedClusterDetail, @NotNull final boolean isFirstSubmit) {
         try {
             if (!selectedClusterDetail.isConfigInfoAvailable()) {
-                selectedClusterDetail.getConfigurationInfo(null);
+                selectedClusterDetail.getConfigurationInfo();
             }
         } catch (AuthenticationException authenticationException) {
             if (isFirstSubmit) {
                 HDInsightUtil.showErrorMessageOnSubmissionMessageWindow("Error: Cluster Credentials Expired, Please sign in again...");
-                cachedClusterDetails = ClusterManagerEx.getInstance().getClusterDetails(null);
+                cachedClusterDetails = ClusterManagerEx.getInstance().getClusterDetails();
 
                 for (IClusterDetail iClusterDetail : cachedClusterDetails) {
                     if (iClusterDetail.getName().equalsIgnoreCase(selectedClusterDetail.getName())) {
@@ -290,7 +290,7 @@ public class SparkSubmitModel {
     }
 
     private void submit() {
-    	postEventAction();
+        postEventAction();
         DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
             @Override
             public void run() {
@@ -306,10 +306,10 @@ public class SparkSubmitModel {
                 }
 
                 try {
-                	uploadFileToCluster(selectedClusterDetail, selectedArtifactName);
-                	tryToCreateBatchSparkJob(selectedClusterDetail);
+                    uploadFileToCluster(selectedClusterDetail, selectedArtifactName);
+                    tryToCreateBatchSparkJob(selectedClusterDetail);
                 } catch (Exception exception) {
-                	exception.printStackTrace();
+                    exception.printStackTrace();
                     showFailedSubmitErrorMessage(exception);
                 } finally {
                     HDInsightUtil.getSparkSubmissionToolWindowView().setStopButtonState(false);

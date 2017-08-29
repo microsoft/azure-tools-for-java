@@ -249,7 +249,6 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
     private Single<SimpleEntry<SparkBatchRemoteDebugJob, IClusterDetail>> createDebugJobSession(
                                                                             @NotNull SparkSubmitModel submitModel) {
         SparkSubmissionParameter submissionParameter = submitModel.getSubmissionParameter();
-        Project project = submitModel.getProject();
         String selectedClusterName = submissionParameter.getClusterName();
 
         return submitModel
@@ -257,19 +256,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                 .flatMap(artifact -> Single.create((SingleSubscriber<? super IClusterDetail> ob) -> {
                     try {
                         IClusterDetail clusterDetail = ClusterManagerEx.getInstance()
-                                .getClusterDetailsWithoutAsync(true, project)
-                                .stream()
-                                .filter(cluster -> cluster.getName().equalsIgnoreCase(selectedClusterName))
-                                .findFirst()
-                                .map(cluster -> {
-                                    try {
-                                        cluster.getConfigurationInfo(project);
-                                    } catch (Exception e) {
-                                        ob.onError(e);
-                                    }
-
-                                    return cluster;
-                                })
+                                .getClusterDetailByName(selectedClusterName)
                                 .orElseThrow(() -> new HDIException(
                                         "No cluster name matched selection: " + selectedClusterName));
 
@@ -351,7 +338,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
     /*
      * Create a Spark Batch Job Debug Session with SSH certification
      */
-    private SparkBatchDebugSession createSparkBatchDebugSession(
+    public SparkBatchDebugSession createSparkBatchDebugSession(
             String connectionUrl, SparkSubmitAdvancedConfigModel advModel) throws SparkJobException, JSchException {
         if (advModel == null) {
             throw new SparkSubmitAdvancedConfigModel.NotAdvancedConfig("SSH authentication not set");
@@ -369,7 +356,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
 
         switch (advModel.sshAuthType) {
             case UseKeyFile:
-                session.setPrivateKeyFile(advModel.sshKyeFile);
+                session.setPrivateKeyFile(advModel.sshKeyFile);
                 break;
             case UsePassword:
                 session.setPassword(advModel.sshPassword);

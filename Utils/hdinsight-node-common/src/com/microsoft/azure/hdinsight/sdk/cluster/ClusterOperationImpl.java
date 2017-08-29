@@ -42,12 +42,6 @@ public class ClusterOperationImpl implements IClusterOperation {
 
      private final String VERSION = "2015-03-01-preview";
 
-     private Object project;
-
-     public ClusterOperationImpl(Object project) {
-          this.project = project;
-     }
-
      /**
       * list hdinsight cluster
       *

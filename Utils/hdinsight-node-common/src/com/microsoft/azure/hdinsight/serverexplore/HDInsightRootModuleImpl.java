@@ -57,7 +57,7 @@ public class HDInsightRootModuleImpl extends HDInsightRootModule {
         synchronized (this) { //todo???
 //            TelemetryManager.postEvent(TelemetryCommon.HDInsightExplorerHDInsightNodeExpand, null, null);
 
-            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails(getProject());
+            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails();
 
             if (clusterDetailList != null) {
                 for (IClusterDetail clusterDetail : clusterDetailList) {
@@ -71,7 +71,7 @@ public class HDInsightRootModuleImpl extends HDInsightRootModule {
     public void refreshWithoutAsync() {
         synchronized (this) {
             removeAllChildNodes();
-            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetailsWithoutAsync(getProject());
+            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetailsWithoutAsync();
 
             if (clusterDetailList != null) {
                 for (IClusterDetail clusterDetail : clusterDetailList) {

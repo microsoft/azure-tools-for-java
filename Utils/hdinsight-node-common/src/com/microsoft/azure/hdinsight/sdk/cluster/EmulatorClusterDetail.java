@@ -121,7 +121,7 @@ public class EmulatorClusterDetail implements IClusterDetail {
 		}
 
 	@Override
-		public void getConfigurationInfo(Object project) throws IOException, HDIException, AzureCmdException {
+		public void getConfigurationInfo() throws IOException, HDIException, AzureCmdException {
 
 		}
 

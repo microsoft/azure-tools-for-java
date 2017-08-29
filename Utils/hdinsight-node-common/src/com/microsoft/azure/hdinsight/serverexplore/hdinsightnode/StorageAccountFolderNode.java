@@ -49,7 +49,7 @@ public class StorageAccountFolderNode extends RefreshableNode {
             throws AzureCmdException {
         if (clusterDetail != null && !clusterDetail.isEmulator()) {
             try {
-                clusterDetail.getConfigurationInfo(getProject());
+                clusterDetail.getConfigurationInfo();
                 addChildNode(new StorageAccountNode(this, clusterDetail.getStorageAccount(), true));
                 List<HDStorageAccount> additionalStorageAccount = clusterDetail.getAdditionalStorageAccounts();
                 if (additionalStorageAccount != null) {
