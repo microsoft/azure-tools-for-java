@@ -154,38 +154,32 @@ public class AzureWebAppMvpModel {
     /**
      * API to create Web App on Linux.
      *
-     * @param sid          subscription id
-     * @param profile      parameters
-     * @param imageSetting container related settings
+     * @param model      parameters
      * @return instance of created WebApp
      * @throws IOException IOExceptions
      */
-    public WebApp createWebAppOnLinux(String sid, WebAppOnLinuxDeployModel profile, ImageSetting imageSetting)
+    public WebApp createWebAppOnLinux(WebAppOnLinuxDeployModel model)
             throws IOException {
-        if (!(imageSetting instanceof PrivateRegistryImageSetting)) {
-            // TODO: other types of ImageSetting, e.g. Docker Hub
-            return null;
-        }
-        PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
+        PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
         WebApp app;
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        PricingTier pricingTier = new PricingTier(profile.getPricingSkuTier(), profile.getPricingSkuSize());
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
+        PricingTier pricingTier = new PricingTier(model.getPricingSkuTier(), model.getPricingSkuSize());
 
-        WebApp.DefinitionStages.Blank webAppDefinition = azure.webApps().define(profile.getWebAppName());
-        if (profile.isCreatingNewAppServicePlan()) {
+        WebApp.DefinitionStages.Blank webAppDefinition = azure.webApps().define(model.getWebAppName());
+        if (model.isCreatingNewAppServicePlan()) {
             // new asp
             AppServicePlan.DefinitionStages.WithCreate asp;
-            if (profile.isCreatingNewResourceGroup()) {
+            if (model.isCreatingNewResourceGroup()) {
                 // new rg
                 asp = azure.appServices().appServicePlans()
-                        .define(profile.getAppServicePlanName())
-                        .withRegion(Region.findByLabelOrName(profile.getLocationName()))
-                        .withNewResourceGroup(profile.getResourceGroupName())
+                        .define(model.getAppServicePlanName())
+                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withNewResourceGroup(model.getResourceGroupName())
                         .withPricingTier(pricingTier)
                         .withOperatingSystem(OperatingSystem.LINUX);
                 app = webAppDefinition
-                        .withRegion(Region.findByLabelOrName(profile.getLocationName()))
-                        .withNewResourceGroup(profile.getResourceGroupName())
+                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withNewResourceGroup(model.getResourceGroupName())
                         .withNewLinuxPlan(asp)
                         .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
@@ -193,14 +187,14 @@ public class AzureWebAppMvpModel {
             } else {
                 // old rg
                 asp = azure.appServices().appServicePlans()
-                        .define(profile.getAppServicePlanName())
-                        .withRegion(Region.findByLabelOrName(profile.getLocationName()))
-                        .withExistingResourceGroup(profile.getResourceGroupName())
+                        .define(model.getAppServicePlanName())
+                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withExistingResourceGroup(model.getResourceGroupName())
                         .withPricingTier(pricingTier)
                         .withOperatingSystem(OperatingSystem.LINUX);
                 app = webAppDefinition
-                        .withRegion(Region.findByLabelOrName(profile.getLocationName()))
-                        .withExistingResourceGroup(profile.getResourceGroupName())
+                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withExistingResourceGroup(model.getResourceGroupName())
                         .withNewLinuxPlan(asp)
                         .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
@@ -208,12 +202,12 @@ public class AzureWebAppMvpModel {
             }
         } else {
             // old asp
-            AppServicePlan asp = azure.appServices().appServicePlans().getById(profile.getAppServicePlanId());
-            if (profile.isCreatingNewResourceGroup()) {
+            AppServicePlan asp = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
+            if (model.isCreatingNewResourceGroup()) {
                 // new rg
                 app = webAppDefinition
                         .withExistingLinuxPlan(asp)
-                        .withNewResourceGroup(profile.getResourceGroupName())
+                        .withNewResourceGroup(model.getResourceGroupName())
                         .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
                         .withStartUpCommand(pr.getStartupFile()).create();
@@ -221,7 +215,7 @@ public class AzureWebAppMvpModel {
                 // old rg
                 app = webAppDefinition
                         .withExistingLinuxPlan(asp)
-                        .withExistingResourceGroup(profile.getResourceGroupName())
+                        .withExistingResourceGroup(model.getResourceGroupName())
                         .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
                         .withStartUpCommand(pr.getStartupFile()).create();

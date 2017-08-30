@@ -128,8 +128,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                         processHandler.setText(String.format("Creating new WebApp ... [%s]",
                                 deployModel.getWebAppName()));
                         WebApp app = AzureWebAppMvpModel.getInstance()
-                                .createWebAppOnLinux(deployModel.getSubscriptionId(), deployModel,
-                                        deployModel.getPrivateRegistryImageSetting());
+                                .createWebAppOnLinux(deployModel);
 
                         if (app != null && app.name() != null) {
                             processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
