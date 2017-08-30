@@ -192,6 +192,7 @@ public class AzureWebAppMvpModelTest {
         PrivateRegistryImageSetting imageSetting = new PrivateRegistryImageSetting("url",
                 "name", "password", "imageNameWithTag",
                 "startUpFile");
+        model.setPrivateRegistryImageSetting(imageSetting);
 
         WebApp.DefinitionStages.Blank def = mock(WebApp.DefinitionStages.Blank.class);
         when(webAppsMock.define(model.getWebAppName())).thenReturn(def);
@@ -201,7 +202,7 @@ public class AzureWebAppMvpModelTest {
         when(def.withExistingLinuxPlan(srvPlan)).thenReturn(withGrp);
 
         try{
-            azureWebAppMvpModel.createWebAppOnLinux(MOCK_SUBSCRIPTION, model, imageSetting);
+            azureWebAppMvpModel.createWebAppOnLinux(model);
         } catch(Exception e) {
         }
 
