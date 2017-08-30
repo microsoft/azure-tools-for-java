@@ -105,9 +105,7 @@ public class PublishHandler extends AzureAbstractHandler {
         DockerClient docker = DockerRuntime.getInstance().getDockerBuilder().build();
         // export WAR file
 
-        String destinationPath = project.getLocation() + Constant.DOCKERFILE_FOLDER + project.getName() + ".war";
-        ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
-
+        String destinationPath = null;
         if (MavenUtils.isMavenProject(project)) {
             destinationPath = MavenUtils.getTargetPath(project);
             MavenUtils.executePackageGoal(project);

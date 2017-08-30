@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.container.utils;
 
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.container.Constant;
 import com.spotify.docker.client.DefaultDockerClient;
@@ -70,7 +71,8 @@ public class DockerUtil {
     /**
      * runContainer.
      */
-    public static Container runContainer(DockerClient docker, String containerId)
+    @NotNull
+    public static Container runContainer(@NotNull DockerClient docker, @NotNull String containerId)
             throws DockerException, InterruptedException {
         docker.startContainer(containerId);
         List<Container> containers = docker.listContainers();
@@ -85,8 +87,9 @@ public class DockerUtil {
     /**
      * buildImage.
      */
-    public static String buildImage(DockerClient docker, String imageNameWithTag, Path dockerDirectory,
-            ProgressHandler progressHandler) throws DockerException, InterruptedException, IOException {
+    public static String buildImage(@NotNull DockerClient docker, @NotNull String imageNameWithTag,
+            @NotNull Path dockerDirectory, ProgressHandler progressHandler)
+            throws DockerException, InterruptedException, IOException {
         String imageId = docker.build(dockerDirectory, imageNameWithTag, progressHandler);
         return imageId == null ? null : imageNameWithTag;
     }
@@ -94,9 +97,9 @@ public class DockerUtil {
     /**
      * Push image to a private registry.
      */
-    public static void pushImage(DockerClient dockerClient, String registryUrl, String registryUsername,
-            String registryPassword, String targetImageName, ProgressHandler handler)
-            throws DockerException, InterruptedException {
+    public static void pushImage(@NotNull DockerClient dockerClient, @NotNull String registryUrl,
+            @NotNull String registryUsername, @NotNull String registryPassword, @NotNull String targetImageName,
+            ProgressHandler handler) throws DockerException, InterruptedException {
         final RegistryAuth registryAuth = RegistryAuth.builder().username(registryUsername).password(registryPassword)
                 .build();
         if (targetImageName.startsWith(registryUrl)) {
@@ -109,7 +112,8 @@ public class DockerUtil {
     /**
      * create container with specified ImageName:TagName.
      */
-    public static String createContainer(DockerClient docker, String imageNameWithTag)
+    @NotNull
+    public static String createContainer(@NotNull DockerClient docker, @NotNull String imageNameWithTag)
             throws DockerException, InterruptedException {
         final Map<String, List<PortBinding>> portBindings = new HashMap<>();
         List<PortBinding> randomPort = new ArrayList<>();
@@ -128,7 +132,7 @@ public class DockerUtil {
     /**
      * Stop a container by id.
      */
-    public static void stopContainer(DockerClient dockerClient, String runningContainerId)
+    public static void stopContainer(@NotNull DockerClient dockerClient, @NotNull String runningContainerId)
             throws DockerException, InterruptedException {
         if (runningContainerId != null) {
             dockerClient.stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
@@ -139,7 +143,8 @@ public class DockerUtil {
     /**
      * get DockerClient instance.
      */
-    public static DockerClient getDockerClient(String dockerHost, boolean tlsEnabled, String certPath)
+    @NotNull
+    public static DockerClient getDockerClient(@NotNull String dockerHost, boolean tlsEnabled, String certPath)
             throws DockerCertificateException {
         if (tlsEnabled) {
             return DefaultDockerClient.builder().uri(URI.create(dockerHost))
@@ -149,7 +154,7 @@ public class DockerUtil {
         }
     }
 
-    public static boolean containerExists(DockerClient docker, String containerId)
+    public static boolean containerExists(@NotNull DockerClient docker, @NotNull String containerId)
             throws DockerException, InterruptedException {
         long count = docker.listContainers().stream().filter(item -> item.id().equals(containerId)).count();
         return (count > 0);

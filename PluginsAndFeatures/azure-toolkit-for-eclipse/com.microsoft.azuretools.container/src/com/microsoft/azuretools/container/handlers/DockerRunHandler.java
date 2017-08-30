@@ -62,8 +62,8 @@ public class DockerRunHandler extends AzureAbstractHandler {
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
         IProject project = PluginUtil.getSelectedProject();
         String basePath;
-        String destinationPath; // relative
         DockerClient docker;
+        String destinationPath;
 
         try {
             if (project == null) {
@@ -114,6 +114,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
             if (!targetDockerfile.toFile().exists()) {
                 throw new FileNotFoundException("Dockerfile not found.");
             }
+
             // replace placeholder if exists
             String content = new String(Files.readAllBytes(targetDockerfile));
             content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
