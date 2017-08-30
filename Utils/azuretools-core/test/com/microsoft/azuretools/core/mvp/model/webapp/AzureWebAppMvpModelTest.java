@@ -145,7 +145,6 @@ public class AzureWebAppMvpModelTest {
         try {
             azureWebAppMvpModel.createWebApp(settingModel);
         }catch (Exception e) {
-           // printException(e);
         }
 
         verify(with, times(1)).withNewWindowsPlan(withCreate);
@@ -172,7 +171,6 @@ public class AzureWebAppMvpModelTest {
         try{
             azureWebAppMvpModel.createWebApp(settingModel);
         } catch (Exception e) {
-          //  printException(e);
         }
 
         verify(withGrp, times(1)).withExistingResourceGroup(anyString());
@@ -205,7 +203,6 @@ public class AzureWebAppMvpModelTest {
         try{
             azureWebAppMvpModel.createWebAppOnLinux(MOCK_SUBSCRIPTION, model, imageSetting);
         } catch(Exception e) {
-       //     printException(e);
         }
 
         verify(withGrp, times(1)).withExistingResourceGroup(anyString());
