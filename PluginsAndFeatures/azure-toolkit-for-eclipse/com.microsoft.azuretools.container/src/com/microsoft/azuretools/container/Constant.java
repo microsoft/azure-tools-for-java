@@ -50,7 +50,7 @@ public class Constant {
             + "RUN bash -c 'touch /app.jar'\r\n"
             + "ENTRYPOINT java -Djava.security.egd=file:/dev/./urandom -jar /app.jar";
     public static final String ERROR_NO_SELECTED_PROJECT = "Can't detect an active project";
-    public static final String MESSAGE_EXPORTING_PROJECT = "Packaging project into WAR file: %s";
+    public static final String MESSAGE_EXPORTING_PROJECT = "Packaging project into artifact: %s";
     public static final String MESSAGE_BUILDING_IMAGE = "Building Image ...";
     public static final String MESSAGE_IMAGE_INFO = "Image name: %s";
     public static final String MESSAGE_CREATING_CONTAINER = "Creating container ...";

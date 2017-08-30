@@ -27,12 +27,21 @@ import com.microsoft.azuretools.container.Constant;
 import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
+import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 
 import java.nio.file.Paths;
 
@@ -46,10 +55,28 @@ public class DockerizeHandler extends AzureAbstractHandler {
             if (project == null) {
                 throw new Exception(Constant.ERROR_NO_SELECTED_PROJECT);
             }
+            String basePath = project.getLocation().toString();
             String dockerFileContent = Constant.DOCKERFILE_CONTENT_TOMCAT;
             String artifactRelativePath = Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER;
+            if (MavenUtils.isMavenProject(project)) {
+                artifactRelativePath = Paths.get(basePath).toUri()
+                        .relativize(Paths.get(MavenUtils.getTargetPath(project)).toUri()).toString();
+                if ("war".equals(MavenUtils.getPackaging(project))) {
+                    // maven war: tomcat
+                    dockerFileContent = Constant.DOCKERFILE_CONTENT_TOMCAT;
+                } else if ("jar".equals(MavenUtils.getPackaging(project))) {
+                    // maven jar: spring
+                    dockerFileContent = Constant.DOCKERFILE_CONTENT_SPRING;
+                }
+            } else {
+                artifactRelativePath = Paths.get(Constant.DOCKERFILE_FOLDER, project.getName() + ".war").normalize()
+                        .toString();
+                dockerFileContent = Constant.DOCKERFILE_CONTENT_TOMCAT;
+            }
             DockerUtil.createDockerFile(project.getLocation().toString(), Constant.DOCKERFILE_FOLDER,
                     Constant.DOCKERFILE_NAME, String.format(dockerFileContent, artifactRelativePath));
+            project.refreshLocal(IResource.DEPTH_INFINITE, null);
+            openFile(project.getFile(Paths.get(Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME).toString()));
             ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKERFILE_CREATED,
                     Paths.get(Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME).toString()));
             Builder builder = DockerRuntime.getInstance().getDockerBuilder();
@@ -61,5 +88,19 @@ public class DockerizeHandler extends AzureAbstractHandler {
             ConsoleLogger.error(String.format(Constant.ERROR_CREATING_DOCKERFILE, e.getMessage()));
         }
         return null;
+    }
+
+    private void openFile(IFile file) {
+        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        IWorkbenchPage page = window.getActivePage();
+        IMarker marker;
+        try {
+            marker = file.createMarker(IMarker.TEXT);
+            IDE.openEditor(page, marker);
+            marker.delete();
+
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
     }
 }

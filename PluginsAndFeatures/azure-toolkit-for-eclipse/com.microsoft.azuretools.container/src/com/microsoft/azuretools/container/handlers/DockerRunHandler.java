@@ -30,6 +30,7 @@ import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.container.utils.WarUtil;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
+import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.DockerClient;
@@ -69,8 +70,12 @@ public class DockerRunHandler extends AzureAbstractHandler {
                 throw new Exception(Constant.ERROR_NO_SELECTED_PROJECT);
             }
             basePath = project.getLocation().toString();
-            destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war").normalize()
-                    .toString();
+            if (MavenUtils.isMavenProject(project)) {
+                destinationPath = MavenUtils.getTargetPath(project);
+            } else {
+                destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war")
+                        .normalize().toString();
+            }
             // Initialize docker client according to env DOCKER_HOST &
             // DOCKER_CERT_PATH
             ConsoleLogger.info(Constant.MESSAGE_DOCKER_CONNECTING);
@@ -97,7 +102,11 @@ public class DockerRunHandler extends AzureAbstractHandler {
         Observable.fromCallable(() -> {
             // export WAR file
             ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
-            WarUtil.export(project, destinationPath);
+            if (MavenUtils.isMavenProject(project)) {
+                MavenUtils.executePackageGoal(project);
+            } else {
+                WarUtil.export(project, destinationPath);
+            }
 
             // validate dockerfile
             Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
@@ -141,16 +150,13 @@ public class DockerRunHandler extends AzureAbstractHandler {
                     (hostname != null ? hostname : "localhost") + (publicPort != null ? ":" + publicPort : "")));
 
             return project.getName();
-        }).subscribeOn(Schedulers.io()).subscribe(
-                ret -> {
-                    Map<String, String> extraInfo = new HashMap<>();
-                    extraInfo.put("ProjectName", ret);
-                    sendTelemetryOnSuccess(event, extraInfo);
-                }, 
-                e -> {
-                    sendTelemetryOnException(event, e);
-                }
-        );
+        }).subscribeOn(Schedulers.io()).subscribe(ret -> {
+            Map<String, String> extraInfo = new HashMap<>();
+            extraInfo.put("ProjectName", ret);
+            sendTelemetryOnSuccess(event, extraInfo);
+        }, e -> {
+            sendTelemetryOnException(event, e);
+        });
         return null;
     }
 

@@ -32,9 +32,14 @@ import com.microsoft.azuretools.container.utils.ConfigFileUtil;
 import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.container.utils.WarUtil;
 import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
+import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
+import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DockerClient;
+
+import rx.Observable;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -45,6 +50,9 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
@@ -60,38 +68,74 @@ public class PublishHandler extends AzureAbstractHandler {
         String basePath = project.getLocation().toString();
         Properties props = ConfigFileUtil.loadConfig(project);
         DockerRuntime.getInstance().loadFromProps(props);
-        try {
+
+        ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
+        Observable.fromCallable(() -> {
             buildImage(project);
-        } catch (Exception e) {
+            return null;
+        }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(ret -> {
+            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                PublishWizard pw = new PublishWizard();
+                WizardDialog pwd = new PublishWizardDialog(window.getShell(), pw);
+                if (pwd.open() == Window.OK) {
+                    ConsoleLogger.info(String.format("URL: http://%s.azurewebsites.net/",
+                            DockerRuntime.getInstance().getLatestWebAppName()));
+                    ConfigFileUtil.saveConfig(project, DockerRuntime.getInstance().saveToProps(props));
+                }
+            });
+        }, err -> {
             String dockerHost = DockerRuntime.getInstance().getDockerBuilder().uri().toString();
             String dockerFileRelativePath = Paths.get(basePath).getParent().toUri()
                     .relativize(Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME).toUri())
                     .toString();
-            MessageDialog.openError(window.getShell(), "Error on building image",
-                    String.format(Constant.ERROR_BUILDING_IMAGE, dockerHost, dockerFileRelativePath, e.getMessage()));
-            return null;
-        }
-        PublishWizard pw = new PublishWizard();
-        WizardDialog pwd = new PublishWizardDialog(window.getShell(), pw);
-        if (pwd.open() == Window.OK) {
-            ConsoleLogger.info(String.format("URL: http://%s.azurewebsites.net/",
-                    DockerRuntime.getInstance().getLatestWebAppName()));
-            props = DockerRuntime.getInstance().saveToProps(props);
-            ConfigFileUtil.saveConfig(project, props);
-        }
+            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                MessageDialog.openError(window.getShell(), "Error on building image", String
+                        .format(Constant.ERROR_BUILDING_IMAGE, dockerHost, dockerFileRelativePath, err.getMessage()));
+            });
+        });
+
         return null;
     }
 
     private void buildImage(IProject project) throws Exception {
-        DockerClient dockerClient = DockerRuntime.getInstance().getDockerBuilder().build();
+        if (project == null) {
+            throw new Exception("Project is null.");
+        }
+        String basePath = project.getLocation().toString();
+        DockerClient docker = DockerRuntime.getInstance().getDockerBuilder().build();
+        // export WAR file
+
         String destinationPath = project.getLocation() + Constant.DOCKERFILE_FOLDER + project.getName() + ".war";
-        WarUtil.export(project, destinationPath);
-        DockerProgressHandler progressHandler = new DockerProgressHandler();
-        String imageNameWithTag = DockerUtil.buildImage(dockerClient, Constant.DEFAULT_IMAGE_NAME_WITH_TAG,
-                Paths.get(project.getLocation().toString(), Constant.DOCKERFILE_FOLDER), progressHandler);
-        DockerUtil.buildImage(dockerClient, imageNameWithTag,
-                Paths.get(project.getLocation().toString(), Constant.DOCKERFILE_FOLDER), progressHandler);
+        ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
+
+        if (MavenUtils.isMavenProject(project)) {
+            destinationPath = MavenUtils.getTargetPath(project);
+            MavenUtils.executePackageGoal(project);
+        } else {
+            destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war").normalize()
+                    .toString();
+            WarUtil.export(project, destinationPath);
+        }
+
+        // validate dockerfile
+        Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
+        ConsoleLogger.info(String.format("Validating dockerfile ... [%s]", targetDockerfile));
+        if (!targetDockerfile.toFile().exists()) {
+            throw new FileNotFoundException("Dockerfile not found.");
+        }
+        // replace placeholder if exists
+        String content = new String(Files.readAllBytes(targetDockerfile));
+        content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
+                Paths.get(basePath).toUri().relativize(Paths.get(destinationPath).toUri()).getPath());
+        Files.write(targetDockerfile, content.getBytes());
+
+        // build image based on WAR file
+        ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
+        String imageNameWithTag = DockerUtil.buildImage(docker, Constant.DEFAULT_IMAGE_NAME_WITH_TAG,
+                Paths.get(project.getLocation().toString(), Constant.DOCKERFILE_FOLDER), new DockerProgressHandler());
+        ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageNameWithTag));
+
         DockerRuntime.getInstance().setLatestImageName(imageNameWithTag);
-        DockerRuntime.getInstance().setLatestArtifactName(project.getName());
     }
+
 }
