@@ -166,7 +166,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sendTelemetry("CREATE");
-                createAppService();
+                createAppService(project);
                 //cleanError();
             }
         });
@@ -422,8 +422,8 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         }
     }
 
-    private void createAppService() {
-        AppServiceCreateDialog d = AppServiceCreateDialog.go(getShell());
+    private void createAppService(IProject project) {
+        AppServiceCreateDialog d = AppServiceCreateDialog.go(getShell(), project);
         if (d == null) {
             // something went wrong - report an error!
             return;

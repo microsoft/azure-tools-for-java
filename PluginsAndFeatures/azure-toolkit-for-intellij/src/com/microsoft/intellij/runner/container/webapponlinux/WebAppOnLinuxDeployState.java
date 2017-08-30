@@ -132,8 +132,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                                         deployModel.getPrivateRegistryImageSetting());
 
                         if (app != null && app.name() != null) {
-                            processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/%s", app.name(),
-                                    FilenameUtils.removeExtension(targetFileName)));
+                            processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
                             updateConfigurationDataModel(app);
 
                             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
