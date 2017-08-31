@@ -15,18 +15,6 @@
       <handler
             commandId="com.microsoft.azuretools.webapp.commands.deployToAzure"
             class="com.microsoft.azuretools.webapp.handlers.DeployToAzureHandler">
-             <enabledWhen checkEnabled="false">
-                <with 
-                variable="selection">
-                <count value="1"/> 
-                <iterate 
-                    operator="or">
-                    <adapt type="org.eclipse.core.resources.IProject">
-                        <test property="com.microsoft.ui.webapp.property.isWebProj"/>
-                    </adapt>
-                </iterate> 
-                </with>
-              </enabledWhen>
       </handler>
    </extension>
    
@@ -36,26 +24,36 @@
                label="Azure"
                id="com.microsoft.azuretools.webprojmenu"
                icon="icons/windowsAzure.png">
-              <command 
-                      commandId="com.microsoft.azuretools.webapp.commands.deployToAzure"/>
-<!--
-              <visibleWhen checkEnabled="false">
-                <with 
-                variable="selection">
-                <count value="1"/> 
-                <iterate 
-                    operator="or">
-                    <adapt type="org.eclipse.core.resources.IProject">
-                        <test property="com.microsoft.ui.webapp.property.isWebProj"/>
-                    </adapt>
-                </iterate> 
-                </with>
-              </visibleWhen>
--->
+              <command commandId="com.microsoft.azuretools.webapp.commands.deployToAzure">
+                <visibleWhen  checkEnabled="false">
+                    <with 
+                    variable="selection">
+                        <count value="1"/> 
+                        <iterate 
+                            operator="or">
+                            <adapt type="org.eclipse.core.resources.IProject">
+                                <test property="com.microsoft.ui.webapp.property.isSupportedProj"/>
+                            </adapt>
+                        </iterate> 
+                    </with>
+                </visibleWhen>
+              </command>
           </menu>
       </menuContribution>
       <menuContribution locationURI="menu:com.microsoft.ui.dropdown.toolbar.command">
          <command commandId="com.microsoft.azuretools.webapp.commands.deployToAzure" style="push">
+            <visibleWhen  checkEnabled="false">
+                <with 
+                variable="selection">
+                    <count value="1"/> 
+                    <iterate 
+                        operator="or">
+                        <adapt type="org.eclipse.core.resources.IProject">
+                            <test property="com.microsoft.ui.webapp.property.isSupportedProj"/>
+                        </adapt>
+                    </iterate> 
+                </with>
+            </visibleWhen>
          </command>
       </menuContribution>
    </extension>

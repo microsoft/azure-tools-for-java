@@ -93,6 +93,7 @@ public final class Messages extends NLS {
 	public static String natJava;
 	public static String natJs;
 	public static String propWebProj;
+	public static String propSpProj;
 	public static String propErr;
 	
 	// For HDInsight telemetrics
