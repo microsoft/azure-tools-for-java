@@ -26,6 +26,7 @@ import com.microsoft.azuretools.core.mvp.ui.base.ResourceProperty;
 
 public class ContainerRegistryProperty extends ResourceProperty {
 
+    private final String id;
     private String loginServerUrl;
     private boolean isAdminEnabled;
     private String userName;
@@ -35,15 +36,20 @@ public class ContainerRegistryProperty extends ResourceProperty {
     /**
      * Model class for ACR property.
      */
-    public ContainerRegistryProperty(String name, String type, String groupName, String regionName,
+    public ContainerRegistryProperty(String id, String name, String type, String groupName, String regionName,
                                      String subscriptionId, String loginServerUrl, boolean isAdminEnabled,
                                      String userName, String password, String password2) {
         super(name, type, groupName, regionName, subscriptionId);
+        this.id = id;
         this.loginServerUrl = loginServerUrl;
         this.isAdminEnabled = isAdminEnabled;
         this.userName = userName;
         this.password = password;
         this.password2 = password2;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getLoginServerUrl() {

@@ -29,6 +29,7 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,5 +72,20 @@ public class ContainerRegistryMvpModel {
             return null;
         }
         return registries.getById(id);
+    }
+
+    public Registry setAdminUserEnabled(String sid, String id, boolean enabled) throws IOException {
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        Registries registries = azure.containerRegistries();
+        if (registries == null) {
+            return null;
+        }
+        Registry registry = registries.getById(id);
+        if (enabled) {
+            registry.update().withRegistryNameAsAdminUser().apply();
+        } else {
+            registry.update().withoutRegistryNameAsAdminUser().apply();
+        }
+        return registry;
     }
 }
