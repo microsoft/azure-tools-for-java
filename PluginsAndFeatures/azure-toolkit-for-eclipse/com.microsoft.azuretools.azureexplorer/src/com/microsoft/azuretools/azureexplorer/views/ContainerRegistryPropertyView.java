@@ -68,7 +68,7 @@ public class ContainerRegistryPropertyView extends ViewPart implements Container
     private static final String LABEL_PASSWORD2 = "Password2";
     private static final String LOADING = "<Loading...>";
     private static final String COPY_TO_CLIPBOARD = "<a>Copy to Clipboard</a>";
-    private static final Color COLOR_CHOSEN = new Color(null, 0, 240, 240);
+    private static final Color COLOR_CHOSEN = new Color(null, 191, 238, 251);
     private static final Color COLOR_UNCHOSEN = new Color(null, 240, 240, 240);
 
     private final ContainerRegistryPropertyViewPresenter<ContainerRegistryPropertyView> containerPropertyPresenter;
