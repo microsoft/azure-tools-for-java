@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  * <p/>
  * All rights reserved.
@@ -74,18 +74,24 @@ public class ContainerRegistryMvpModel {
         return registries.getById(id);
     }
 
+    /**
+     * Set AdminUser enabled status of container registry.
+     */
     public Registry setAdminUserEnabled(String sid, String id, boolean enabled) throws IOException {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         Registries registries = azure.containerRegistries();
-        if (registries == null) {
+        if (registries != null) {
+            Registry registry = registries.getById(id);
+            if (registry != null) {
+                if (enabled) {
+                    registry.update().withRegistryNameAsAdminUser().apply();
+                } else {
+                    registry.update().withoutRegistryNameAsAdminUser().apply();
+                }
+            }
+            return registry;
+        } else {
             return null;
         }
-        Registry registry = registries.getById(id);
-        if (enabled) {
-            registry.update().withRegistryNameAsAdminUser().apply();
-        } else {
-            registry.update().withoutRegistryNameAsAdminUser().apply();
-        }
-        return registry;
     }
 }
