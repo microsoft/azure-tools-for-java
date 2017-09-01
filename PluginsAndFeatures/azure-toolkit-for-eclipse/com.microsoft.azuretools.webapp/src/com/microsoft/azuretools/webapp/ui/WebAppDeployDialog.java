@@ -534,9 +534,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                 monitor.beginTask(message, IProgressMonitor.UNKNOWN);
                 try {
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 5, message);
-                    if (MavenUtils.isMavenProject(project)) {
-                        MavenUtils.executePackageGoal(project);
-                    } else {
+                    if (!MavenUtils.isMavenProject(project)) {
                         export(artifactName, artifactPath);
                     }
                     message = "Deploying Web App...";

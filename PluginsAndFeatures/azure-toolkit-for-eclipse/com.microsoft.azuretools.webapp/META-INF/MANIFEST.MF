@@ -3,14 +3,14 @@ Bundle-ManifestVersion: 2
 Bundle-Name: WebApp Plugin for Eclipse
 Bundle-SymbolicName: com.microsoft.azuretools.webapp;singleton:=true
 Bundle-Version: 3.0.7.qualifier
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.eclipse.wst.common.frameworks,
- org.eclipse.jst.j2ee,
- org.eclipse.jst.j2ee.web,
+Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.jdt.core,
  org.eclipse.jdt.ui,
+ org.eclipse.jst.j2ee,
+ org.eclipse.jst.j2ee.web,
+ org.eclipse.ui,
+ org.eclipse.wst.common.frameworks,
  com.microsoft.azuretools.core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: com.microsoft.azuretools.webapp.Activator

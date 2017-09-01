@@ -29,23 +29,29 @@ import com.microsoft.azuretools.container.DockerProgressHandler;
 import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.container.utils.WarUtil;
+import com.microsoft.azuretools.core.actions.MavenExecuteAction;
+import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.Container.PortMapping;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -53,18 +59,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import rx.Observable;
-import rx.schedulers.Schedulers;
 
 public class DockerRunHandler extends AzureAbstractHandler {
 
+    private static final String MAVEN_GOALS = "clean package";
+    private static final String MODE = "run";
+    private IWorkbenchWindow window;
+    private IProject project;
+    private String basePath;
+    private DockerClient docker;
+    private String destinationPath;
+
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
-        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-        IProject project = PluginUtil.getSelectedProject();
-        String basePath;
-        DockerClient docker;
-        String destinationPath;
-
+        window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+        project = PluginUtil.getSelectedProject();
         try {
             if (project == null) {
                 throw new Exception(Constant.ERROR_NO_SELECTED_PROJECT);
@@ -92,22 +101,33 @@ public class DockerRunHandler extends AzureAbstractHandler {
                     return null;
                 }
             }
+
+            // Build artifact
+            ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
+            if (MavenUtils.isMavenProject(project)) {
+                MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
+                IContainer container;
+                container = MavenUtils.getPomFile(project).getParent();
+                action.launch(container, MODE, () -> {
+                    // TODO: callback after mvn package done. IMPORTANT
+                    buildAndRun(event);
+                    return null;
+                });
+            } else {
+                WarUtil.export(project, destinationPath);
+                buildAndRun(event);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             ConsoleLogger.error(String.format(Constant.ERROR_RUNNING_DOCKER, e.getMessage()));
             sendTelemetryOnException(event, e);
-            return null;
         }
+        return null;
+    }
 
+    private void buildAndRun(ExecutionEvent event)
+            throws IOException, DockerException, InterruptedException, URISyntaxException {
         Observable.fromCallable(() -> {
-            // export WAR file
-            ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
-            if (MavenUtils.isMavenProject(project)) {
-                MavenUtils.executePackageGoal(project);
-            } else {
-                WarUtil.export(project, destinationPath);
-            }
-
             // validate dockerfile
             Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
             ConsoleLogger.info(String.format("Validating dockerfile ... [%s]", targetDockerfile));
@@ -149,16 +169,15 @@ public class DockerRunHandler extends AzureAbstractHandler {
 
             ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_STARTED,
                     (hostname != null ? hostname : "localhost") + (publicPort != null ? ":" + publicPort : "")));
-
             return project.getName();
-        }).subscribeOn(Schedulers.io()).subscribe(ret -> {
+        }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(ret -> {
             Map<String, String> extraInfo = new HashMap<>();
             extraInfo.put("ProjectName", ret);
             sendTelemetryOnSuccess(event, extraInfo);
         }, e -> {
             sendTelemetryOnException(event, e);
         });
-        return null;
+
     }
 
 }

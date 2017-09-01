@@ -21,34 +21,56 @@
  */
 package com.microsoft.azuretools.webapp.handlers;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.handlers.HandlerUtil;
-
+import com.microsoft.azuretools.core.actions.MavenExecuteAction;
 import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
+import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.webapp.ui.WebAppDeployDialog;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.handlers.HandlerUtil;
 
 public class DeployToAzureHandler extends AzureAbstractHandler {
 
+    private static final String MAVEN_GOALS = "clean package";
+    private static final String MODE = "run";
+    private static final String TITLE = "Deploy to Azure App Service";
+    private static final String NO_PROJECT_ERR = "Can't detect an active project";
+
     @Override
     public Object onExecute(ExecutionEvent ee) throws ExecutionException {
-        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(ee);
+        Shell shell = HandlerUtil.getActiveWorkbenchWindowChecked(ee).getShell();
         IProject project = PluginUtil.getSelectedProject();
         if (project != null) {
-            if (!SignInCommandHandler.doSignIn( window.getShell())) return null;
-            WebAppDeployDialog.go(window.getShell(), project);
+            if (!SignInCommandHandler.doSignIn(shell)) {
+                return null;
+            }
         } else {
-            MessageDialog.openInformation(
-                    window.getShell(),
-                    "Deploy to Azure App Service",
-                    "Can't detect an active project");
+            MessageDialog.openInformation(shell, TITLE, NO_PROJECT_ERR);
+        }
+        try {
+            if (MavenUtils.isMavenProject(project)) {
+                MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
+                IContainer container;
+                container = MavenUtils.getPomFile(project).getParent();
+                action.launch(container, MODE, () -> {
+                    DefaultLoader.getIdeHelper().invokeLater(() -> WebAppDeployDialog.go(shell, project));
+                    return null;
+                });
+            } else {
+                WebAppDeployDialog.go(shell, project);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            MessageDialog.openInformation(shell, TITLE, e.getMessage());
         }
         return null;
     }
-
 }

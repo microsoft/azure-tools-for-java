@@ -6,6 +6,8 @@ Bundle-Version: 3.0.7.qualifier
 Bundle-Activator: com.microsoft.azuretools.core.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
+ org.eclipse.jdt.launching,
+ org.eclipse.debug.ui,
  org.eclipse.jdt.ui;bundle-version="3.10.0",
  org.eclipse.jdt.core;bundle-version="3.10.0",
  org.eclipse.core.resources;bundle-version="3.9.0",
@@ -22,7 +24,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.p2.metadata,
  org.eclipse.epp.mpc.ui,
  org.eclipse.m2e.core,
- org.eclipse.m2e.maven.runtime
+ org.eclipse.m2e.maven.runtime,
+ org.eclipse.m2e.launching
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: Microsoft Corp.
@@ -69,6 +72,7 @@ Export-Package: com.microsoft.applicationinsights.preference,
  com.microsoft.azuretools.azurecommons.util,
  com.microsoft.azuretools.azurecommons.xmlhandling,
  com.microsoft.azuretools.core,
+ com.microsoft.azuretools.core.actions,
  com.microsoft.azuretools.core.applicationinsights,
  com.microsoft.azuretools.core.azureexplorer.helpers,
  com.microsoft.azuretools.core.components,
