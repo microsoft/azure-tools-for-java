@@ -29,9 +29,9 @@ import com.microsoft.azuretools.container.DockerProgressHandler;
 import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.container.utils.WarUtil;
+import com.microsoft.azuretools.core.actions.MavenExecuteAction;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.MavenUtils;
-import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.Container;
@@ -39,8 +39,10 @@ import com.spotify.docker.client.messages.Container.PortMapping;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jst.j2ee.internal.archive.ArchiveExportParticipantsExtensionPoint.PluginUtil;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -56,6 +58,9 @@ import rx.Observable;
 import rx.schedulers.Schedulers;
 
 public class DockerRunHandler extends AzureAbstractHandler {
+
+    private static final String MAVEN_GOALS = "clean package";
+    private static final String MODE = "run";
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
@@ -102,7 +107,15 @@ public class DockerRunHandler extends AzureAbstractHandler {
         Observable.fromCallable(() -> {
             // export WAR file
             ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
-            if (!MavenUtils.isMavenProject(project)) {
+            if (MavenUtils.isMavenProject(project)) {
+                MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
+                IContainer container;
+                container = MavenUtils.getPomFile(project).getParent();
+                action.launch(container, MODE, () -> {
+                    // TODO: callback after mvn package done. IMPORTANT
+                    return null;
+                });
+            } else {
                 WarUtil.export(project, destinationPath);
             }
             // validate dockerfile

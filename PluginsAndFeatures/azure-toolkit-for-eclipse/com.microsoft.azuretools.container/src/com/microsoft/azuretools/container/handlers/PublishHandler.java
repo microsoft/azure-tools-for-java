@@ -31,6 +31,7 @@ import com.microsoft.azuretools.container.ui.wizard.publish.PublishWizardDialog;
 import com.microsoft.azuretools.container.utils.ConfigFileUtil;
 import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.container.utils.WarUtil;
+import com.microsoft.azuretools.core.actions.MavenExecuteAction;
 import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
@@ -39,10 +40,9 @@ import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DockerClient;
 
-import rx.Observable;
-
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
@@ -56,7 +56,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
+import rx.Observable;
+
 public class PublishHandler extends AzureAbstractHandler {
+
+    private static final String MAVEN_GOALS = "clean package";
+    private static final String MODE = "run";
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
@@ -108,7 +113,13 @@ public class PublishHandler extends AzureAbstractHandler {
         String destinationPath = null;
         if (MavenUtils.isMavenProject(project)) {
             destinationPath = MavenUtils.getTargetPath(project);
-            MavenUtils.executePackageGoal(project);
+            MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
+            IContainer container;
+            container = MavenUtils.getPomFile(project).getParent();
+            action.launch(container, MODE, () -> {
+                // TODO: callback after mvn package done. IMPORTANT
+                return null;
+            });
         } else {
             destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war").normalize()
                     .toString();
