@@ -60,7 +60,8 @@ import static org.mockito.Mockito.*;
         AzureMvpModel.class
 })
 public class ContainerRegistryMvpModelTest {
-    private static final String MOCK_SUBSCRIPTION = "00000000-0000-0000-0000-000000000000";
+    private static final String MOCK_SUBSCRIPTION_ID = "00000000-0000-0000-0000-000000000000";
+    private static final String MOCK_SUBSCRIPTION_ID_WITHOUT_REGISTRIES = "00000000-0000-0000-0000-000000000001";
     private static final String MOCK_REGISTRY_ID = "MOCK_REGISTRY_ID";
 
     private ContainerRegistryMvpModel containerRegistryMvpModel;
@@ -86,12 +87,21 @@ public class ContainerRegistryMvpModelTest {
     @Mock
     private Registry registryMock;
 
+    @Mock
+    private Azure azureMockWithoutRegistries;
+
+    @Mock
+    private Subscription subscriptionWithoutRegistries;
+
     @Before
     public void setUp() throws Exception {
         PowerMockito.mockStatic(AuthMethodManager.class);
         PowerMockito.mockStatic(AzureMvpModel.class);
+        when(azureMockWithoutRegistries.containerRegistries()).thenReturn(null);
+        when(subscriptionWithoutRegistries.subscriptionId()).thenReturn(MOCK_SUBSCRIPTION_ID_WITHOUT_REGISTRIES);
         when(AuthMethodManager.getInstance()).thenReturn(authMethodManagerMock);
-        when(authMethodManagerMock.getAzureClient(MOCK_SUBSCRIPTION)).thenReturn(azureMock);
+        when(authMethodManagerMock.getAzureClient(MOCK_SUBSCRIPTION_ID)).thenReturn(azureMock);
+        when(authMethodManagerMock.getAzureClient(MOCK_SUBSCRIPTION_ID_WITHOUT_REGISTRIES)).thenReturn(azureMockWithoutRegistries);
         when(authMethodManagerMock.getAzureManager()).thenReturn(azureManagerMock);
         when(azureManagerMock.getSubscriptionManager()).thenReturn(subscriptionManagerMock);
         when(azureMock.containerRegistries()).thenReturn(registriesMock);
@@ -129,6 +139,7 @@ public class ContainerRegistryMvpModelTest {
 
         subscriptions.add(sub1);
         subscriptions.add(sub2);
+        subscriptions.add(subscriptionWithoutRegistries);
         Map<String, Registries> registriesMap = containerRegistryMvpModel.getContainerRegistries();
         assertEquals(2, registriesMap.size());
         assertEquals(registries1, registriesMap.get(sub1.subscriptionId()));
@@ -137,8 +148,12 @@ public class ContainerRegistryMvpModelTest {
 
     @Test
     public void getContainerRegistry() throws Exception {
-        Registry registry = containerRegistryMvpModel.getContainerRegistry(MOCK_SUBSCRIPTION, MOCK_REGISTRY_ID);
+        Registry registry = containerRegistryMvpModel.getContainerRegistry(MOCK_SUBSCRIPTION_ID, MOCK_REGISTRY_ID);
         assertEquals(registryMock, registry);
+
+
+        Registry registryNull = containerRegistryMvpModel.getContainerRegistry(MOCK_SUBSCRIPTION_ID_WITHOUT_REGISTRIES, MOCK_REGISTRY_ID);
+        assertEquals(null, registryNull);
     }
 
     @Test
@@ -150,11 +165,17 @@ public class ContainerRegistryMvpModelTest {
         when(update.withRegistryNameAsAdminUser()).thenReturn(with);
         when(update.withoutRegistryNameAsAdminUser()).thenReturn(without);
 
-        containerRegistryMvpModel.setAdminUserEnabled(MOCK_SUBSCRIPTION, MOCK_REGISTRY_ID, true);
+        Registry registry;
+        registry = containerRegistryMvpModel.setAdminUserEnabled(MOCK_SUBSCRIPTION_ID, MOCK_REGISTRY_ID, true);
         verify(with, times(1)).apply();
+        assertEquals(registryMock, registry);
 
-        containerRegistryMvpModel.setAdminUserEnabled(MOCK_SUBSCRIPTION, MOCK_REGISTRY_ID, false);
+        registry = containerRegistryMvpModel.setAdminUserEnabled(MOCK_SUBSCRIPTION_ID, MOCK_REGISTRY_ID, false);
         verify(without, times(1)).apply();
+        assertEquals(registryMock, registry);
+
+        registry = containerRegistryMvpModel.setAdminUserEnabled(MOCK_SUBSCRIPTION_ID_WITHOUT_REGISTRIES, MOCK_REGISTRY_ID, true);
+        assertEquals(null, registry);
     }
 
 }
