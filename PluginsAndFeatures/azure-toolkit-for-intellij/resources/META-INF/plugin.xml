@@ -173,6 +173,8 @@
 
     <group id="AzureToolbarGroup" text="Azure" description="Azure">
       <group id="PublishToAzureGroup" text="Publish Group" description="Publish Group" popup="true" icon="/icons/Publish_16.png">
+        <reference ref="Actions.WebDeployAction"/>
+        <reference ref="Actions.WebAppOnLinux"/>
         <reference ref="Actions.AzureDockerHostDeploy"/>
       </group>
       <reference ref="Actions.AzureExplorerOpenAction"/>
