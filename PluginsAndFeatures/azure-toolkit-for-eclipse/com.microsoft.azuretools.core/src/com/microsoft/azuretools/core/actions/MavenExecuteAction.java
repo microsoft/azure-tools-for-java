@@ -94,15 +94,15 @@ public class MavenExecuteAction {
             ILaunchConfigurationType launchConfigurationType = launchManager
                     .getLaunchConfigurationType(MavenLaunchConstants.LAUNCH_CONFIGURATION_TYPE_ID);
 
-            String rawConfigName = NLS.bind(Messages.ExecutePomAction_executing, goal,
-                    basedir.getLocation().toString());
-            String safeConfigName = launchManager.generateLaunchConfigurationName(rawConfigName);
+            String launchSafeGoalName = goal.replace(':', '-');
 
-            ILaunchConfigurationWorkingCopy workingCopy = launchConfigurationType.newInstance(null, safeConfigName);
+            ILaunchConfigurationWorkingCopy workingCopy = launchConfigurationType.newInstance(null,
+                    NLS.bind(Messages.ExecutePomAction_executing, launchSafeGoalName,
+                            basedir.getLocation().toString().replace('/', '-')));
             workingCopy.setAttribute(MavenLaunchConstants.ATTR_POM_DIR, basedir.getLocation().toOSString());
             workingCopy.setAttribute(MavenLaunchConstants.ATTR_GOALS, goal);
             workingCopy.setAttribute(IDebugUIConstants.ATTR_PRIVATE, true);
-            workingCopy.setAttribute(RefreshTab.ATTR_REFRESH_SCOPE, "${project}"); //$NON-NLS-1$
+            workingCopy.setAttribute(RefreshTab.ATTR_REFRESH_SCOPE, "${project}");
             workingCopy.setAttribute(RefreshTab.ATTR_REFRESH_RECURSIVE, true);
 
             setProjectConfiguration(workingCopy, basedir);
@@ -133,7 +133,6 @@ public class MavenExecuteAction {
         }
     }
 
-    // TODO ideally it should use MavenProject, but it is faster to scan
     // IJavaProjects
     private IPath getJREContainerPath(IContainer basedir) throws CoreException {
         IProject project = basedir.getProject();
@@ -246,8 +245,7 @@ public class MavenExecuteAction {
         String newName = launchManager.generateLaunchConfigurationName(basedirLocation.lastSegment());
         try {
             ILaunchConfigurationWorkingCopy workingCopy = launchConfigurationType.newInstance(null, newName);
-            workingCopy.setAttribute(MavenLaunchConstants.ATTR_POM_DIR,
-                    LaunchingUtils.generateProjectLocationVariableExpression(basedir.getProject()));
+            workingCopy.setAttribute(MavenLaunchConstants.ATTR_POM_DIR, basedirLocation.toString());
 
             setProjectConfiguration(workingCopy, basedir);
 
@@ -260,4 +258,5 @@ public class MavenExecuteAction {
     private Shell getShell() {
         return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
     }
+
 }
