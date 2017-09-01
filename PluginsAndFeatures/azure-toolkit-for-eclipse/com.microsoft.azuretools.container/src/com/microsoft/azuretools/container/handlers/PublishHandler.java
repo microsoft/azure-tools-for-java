@@ -62,21 +62,72 @@ public class PublishHandler extends AzureAbstractHandler {
 
     private static final String MAVEN_GOALS = "clean package";
     private static final String MODE = "run";
+    private IWorkbenchWindow window;
+    private IProject project;
+    private String destinationPath;
+    private String basePath;
+    private Properties props;
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
-        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-        IProject project = PluginUtil.getSelectedProject();
+        window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+        project = PluginUtil.getSelectedProject();
         if (project == null || !SignInCommandHandler.doSignIn(window.getShell())) {
             return null;
         }
-        String basePath = project.getLocation().toString();
-        Properties props = ConfigFileUtil.loadConfig(project);
+        basePath = project.getLocation().toString();
+        props = ConfigFileUtil.loadConfig(project);
         DockerRuntime.getInstance().loadFromProps(props);
 
-        ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
+        try {
+            ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
+            if (MavenUtils.isMavenProject(project)) {
+                destinationPath = MavenUtils.getTargetPath(project);
+                MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
+                IContainer container;
+                container = MavenUtils.getPomFile(project).getParent();
+                action.launch(container, MODE, () -> {
+                    buildAndRun(event);
+                    return null;
+                });
+            } else {
+                destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war")
+                        .normalize().toString();
+                WarUtil.export(project, destinationPath);
+                buildAndRun(event);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendTelemetryOnException(event, e);
+        }
+        return null;
+    }
+
+    private void buildAndRun(ExecutionEvent event) {
         Observable.fromCallable(() -> {
-            buildImage(project);
+            DockerClient docker = DockerRuntime.getInstance().getDockerBuilder().build();
+
+            // validate dockerfile
+            Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
+            ConsoleLogger.info(String.format("Validating dockerfile ... [%s]", targetDockerfile));
+            if (!targetDockerfile.toFile().exists()) {
+                throw new FileNotFoundException("Dockerfile not found.");
+            }
+            // replace placeholder if exists
+            String content = new String(Files.readAllBytes(targetDockerfile));
+            content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
+                    Paths.get(basePath).toUri().relativize(Paths.get(destinationPath).toUri()).getPath());
+            Files.write(targetDockerfile, content.getBytes());
+
+            // build image based on WAR file
+            ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
+            String imageNameWithTag = DockerUtil.buildImage(docker, Constant.DEFAULT_IMAGE_NAME_WITH_TAG,
+                    Paths.get(project.getLocation().toString(), Constant.DOCKERFILE_FOLDER),
+                    new DockerProgressHandler());
+            ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageNameWithTag));
+
+            DockerRuntime.getInstance().setLatestImageName(imageNameWithTag);
             return null;
         }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(ret -> {
             DefaultLoader.getIdeHelper().invokeAndWait(() -> {
@@ -98,53 +149,5 @@ public class PublishHandler extends AzureAbstractHandler {
                         .format(Constant.ERROR_BUILDING_IMAGE, dockerHost, dockerFileRelativePath, err.getMessage()));
             });
         });
-
-        return null;
     }
-
-    private void buildImage(IProject project) throws Exception {
-        if (project == null) {
-            throw new Exception("Project is null.");
-        }
-        String basePath = project.getLocation().toString();
-        DockerClient docker = DockerRuntime.getInstance().getDockerBuilder().build();
-        // export WAR file
-
-        String destinationPath = null;
-        if (MavenUtils.isMavenProject(project)) {
-            destinationPath = MavenUtils.getTargetPath(project);
-            MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
-            IContainer container;
-            container = MavenUtils.getPomFile(project).getParent();
-            action.launch(container, MODE, () -> {
-                // TODO: callback after mvn package done. IMPORTANT
-                return null;
-            });
-        } else {
-            destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war").normalize()
-                    .toString();
-            WarUtil.export(project, destinationPath);
-        }
-
-        // validate dockerfile
-        Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
-        ConsoleLogger.info(String.format("Validating dockerfile ... [%s]", targetDockerfile));
-        if (!targetDockerfile.toFile().exists()) {
-            throw new FileNotFoundException("Dockerfile not found.");
-        }
-        // replace placeholder if exists
-        String content = new String(Files.readAllBytes(targetDockerfile));
-        content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
-                Paths.get(basePath).toUri().relativize(Paths.get(destinationPath).toUri()).getPath());
-        Files.write(targetDockerfile, content.getBytes());
-
-        // build image based on WAR file
-        ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
-        String imageNameWithTag = DockerUtil.buildImage(docker, Constant.DEFAULT_IMAGE_NAME_WITH_TAG,
-                Paths.get(project.getLocation().toString(), Constant.DOCKERFILE_FOLDER), new DockerProgressHandler());
-        ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageNameWithTag));
-
-        DockerRuntime.getInstance().setLatestImageName(imageNameWithTag);
-    }
-
 }
