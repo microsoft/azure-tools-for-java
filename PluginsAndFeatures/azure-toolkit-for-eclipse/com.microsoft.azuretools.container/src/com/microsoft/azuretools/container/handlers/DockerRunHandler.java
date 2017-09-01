@@ -102,12 +102,9 @@ public class DockerRunHandler extends AzureAbstractHandler {
         Observable.fromCallable(() -> {
             // export WAR file
             ConsoleLogger.info(String.format(Constant.MESSAGE_EXPORTING_PROJECT, destinationPath));
-            if (MavenUtils.isMavenProject(project)) {
-                MavenUtils.executePackageGoal(project);
-            } else {
+            if (!MavenUtils.isMavenProject(project)) {
                 WarUtil.export(project, destinationPath);
             }
-
             // validate dockerfile
             Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
             ConsoleLogger.info(String.format("Validating dockerfile ... [%s]", targetDockerfile));
