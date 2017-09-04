@@ -86,9 +86,13 @@ public class WebAppRunState implements RunProfileState {
     private static final String ROOT_PATH = BASE_PATH + "ROOT";
     private static final String CONTAINER_ROOT_PATH = WEB_APP_BASE_PATH + "ROOT";
 
+    private static final int UPLOADING_MAX_TRY = 3;
+
     private final Project project;
     private final WebAppSettingModel webAppSettingModel;
     private final RunProcessHandler processHandler;
+
+    private final Map<String, String> telemetryMap;
 
     /**
      * Place to execute the Web App deployment task.
@@ -97,6 +101,7 @@ public class WebAppRunState implements RunProfileState {
         this.project = project;
         this.webAppSettingModel = webAppSettingModel;
         this.processHandler = new RunProcessHandler();
+        this.telemetryMap = new HashMap<>();
     }
 
     @Nullable
@@ -196,7 +201,8 @@ public class WebAppRunState implements RunProfileState {
             processHandler.setText(UPLOADING_WEB_CONFIG);
             try (InputStream webConfigInput = getClass()
                     .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
-                uploadFileToFtp(ftp, WEB_CONFIG_FTP_PATH, webConfigInput);
+                int webConfigCount = uploadFileToFtp(ftp, WEB_CONFIG_FTP_PATH, webConfigInput);
+                telemetryMap.put("webConfigUploadCount", String.valueOf(webConfigCount));
             }
         }
     }
@@ -204,36 +210,43 @@ public class WebAppRunState implements RunProfileState {
     private void uploadArtifact(@NotNull FileInputStream input, @NotNull WebApp webApp, @NotNull FTPClient ftp,
                                 @NotNull String fileName, @NotNull String fileType)
             throws IOException {
+        int artifactUploadCount = 0;
         switch (fileType) {
             case MavenConstants.TYPE_WAR:
                 if (webAppSettingModel.isDeployToRoot()) {
                     WebAppUtils.removeFtpDirectory(ftp, CONTAINER_ROOT_PATH, processHandler);
                     processHandler.setText(String.format(UPLOADING_ARTIFACT, CONTAINER_ROOT_PATH + "." + fileType));
-                    uploadFileToFtp(ftp, CONTAINER_ROOT_PATH + "." + fileType, input);
+                    artifactUploadCount = uploadFileToFtp(ftp, CONTAINER_ROOT_PATH + "." + fileType, input);
                 } else {
                     WebAppUtils.removeFtpDirectory(ftp, WEB_APP_BASE_PATH + fileName, processHandler);
                     processHandler.setText(String.format(UPLOADING_ARTIFACT,
                             WEB_APP_BASE_PATH + webAppSettingModel.getTargetName()));
-                    uploadFileToFtp(ftp, WEB_APP_BASE_PATH + webAppSettingModel.getTargetName(), input);
+                    artifactUploadCount = uploadFileToFtp(ftp, WEB_APP_BASE_PATH + webAppSettingModel.getTargetName(), input);
                 }
                 break;
             case MavenConstants.TYPE_JAR:
                 processHandler.setText(String.format(UPLOADING_ARTIFACT, ROOT_PATH + "." + fileType));
-                uploadFileToFtp(ftp, ROOT_PATH + "." + fileType, input);
+                artifactUploadCount = uploadFileToFtp(ftp, ROOT_PATH + "." + fileType, input);
                 break;
             default:
                 break;
         }
+        telemetryMap.put("artifactUploadCount", String.valueOf(artifactUploadCount));
     }
 
-    private void uploadFileToFtp(@NotNull FTPClient ftp, @NotNull String path,
+    private int uploadFileToFtp(@NotNull FTPClient ftp, @NotNull String path,
                                  @NotNull InputStream stream) throws IOException {
-        if (!ftp.storeFile(path, stream)) {
+        boolean success = false;
+        int count = 0;
+        while (!success && ++count < UPLOADING_MAX_TRY) {
+            success = ftp.storeFile(path, stream);
+        }
+        if (!success) {
             int rc = ftp.getReplyCode();
-            processHandler.setText(String.format(FAIL_FTP_STORE, rc));
             throw new IOException(String.format(FAIL_FTP_STORE, rc));
         }
         processHandler.setText(UPLOADING_SUCCESSFUL);
+        return count;
     }
 
     @NotNull
@@ -256,17 +269,16 @@ public class WebAppRunState implements RunProfileState {
 
     // TODO: refactor later
     private void sendTelemetry(boolean success, @Nullable String errorMsg) {
-        Map<String, String> map = new HashMap<>();
-        map.put("SubscriptionId", webAppSettingModel.getSubscriptionId());
-        map.put("CreateNewApp", String.valueOf(webAppSettingModel.isCreatingNew()));
-        map.put("CreateNewSP", String.valueOf(webAppSettingModel.isCreatingAppServicePlan()));
-        map.put("CreateNewRGP", String.valueOf(webAppSettingModel.isCreatingResGrp()));
-        map.put("FileType", MavenRunTaskUtil.getFileType(webAppSettingModel.getTargetName()));
-        map.put("Success", String.valueOf(success));
+        telemetryMap.put("SubscriptionId", webAppSettingModel.getSubscriptionId());
+        telemetryMap.put("CreateNewApp", String.valueOf(webAppSettingModel.isCreatingNew()));
+        telemetryMap.put("CreateNewSP", String.valueOf(webAppSettingModel.isCreatingAppServicePlan()));
+        telemetryMap.put("CreateNewRGP", String.valueOf(webAppSettingModel.isCreatingResGrp()));
+        telemetryMap.put("FileType", MavenRunTaskUtil.getFileType(webAppSettingModel.getTargetName()));
+        telemetryMap.put("Success", String.valueOf(success));
         if (!success) {
-            map.put("ErrorMsg", errorMsg);
+            telemetryMap.put("ErrorMsg", errorMsg);
         }
 
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "Webapp", "Deploy", map);
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "Webapp", "Deploy", telemetryMap);
     }
 }
