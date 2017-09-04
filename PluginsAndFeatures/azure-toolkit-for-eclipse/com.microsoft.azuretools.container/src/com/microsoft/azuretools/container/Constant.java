@@ -43,11 +43,10 @@ public class Constant {
     public static final String DOCKERFILE_CONTENT_TOMCAT = "FROM tomcat:8.5-jre8\r\n"
             + "RUN rm -fr /usr/local/tomcat/webapps/ROOT\r\n"
             + "COPY %s /usr/local/tomcat/webapps/ROOT.war\r\n";
-    public static final String DOCKERFILE_CONTENT_SPRING = "FROM java:8\r\n"
+    public static final String DOCKERFILE_CONTENT_SPRING = "FROM openjdk:8-jdk-alpine\r\n"
             + "VOLUME /tmp\r\n"
             + "EXPOSE 8080\r\n"
             + "COPY %s app.jar\r\n"
-            + "RUN bash -c 'touch /app.jar'\r\n"
             + "ENTRYPOINT java -Djava.security.egd=file:/dev/./urandom -jar /app.jar";
     public static final String ERROR_NO_SELECTED_PROJECT = "Can't detect an active project";
     public static final String MESSAGE_EXPORTING_PROJECT = "Packaging project into artifact: %s";
