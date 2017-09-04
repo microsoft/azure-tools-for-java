@@ -76,14 +76,8 @@ public class AdAuthManager {
         AuthContext ac = new AuthContext(String.format("%s/%s", Constants.authority, commonTid), cache);
 
         AuthenticationResult result = ac.acquireToken(AzureEnvironment.AZURE.resourceManagerEndpoint(), Constants.clientId, Constants.redirectUri, PromptBehavior.Always, null);
-        String uniqueId = result.getUserInfo().getUniqueId();
         String displayableId = result.getUserInfo().getDisplayableId();
-        UserIdentifier uid;
-        if (uniqueId != null) {
-            uid = new UserIdentifier(uniqueId, UserIdentifierType.UniqueId);
-        } else {
-            uid = new UserIdentifier(displayableId, UserIdentifierType.RequiredDisplayableId);
-        }
+        UserIdentifier uid = new UserIdentifier(displayableId, UserIdentifierType.RequiredDisplayableId);
 
         Map<String, List<String>> tidToSidsMap = new HashMap<>();
 //        List<Tenant> tenants = AccessTokenAzureManager.authTid(commonTid).tenants().list();

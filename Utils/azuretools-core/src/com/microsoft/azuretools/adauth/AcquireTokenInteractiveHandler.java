@@ -174,27 +174,4 @@ public class AcquireTokenInteractiveHandler extends AcquireTokenHandlerBase {
         requestParameters.put(OAuthParameter.Code, authorizationResult.getCode());
         requestParameters.put(OAuthParameter.RedirectUri, this.redirectUriRequestParameter);
     }
-
-    @Override
-    protected void postTokenRequest(AuthenticationResult result) throws IOException {
-        super.postTokenRequest(result);
-        if ((this.displayableId == null && this.uniqueId == null)
-                || this.userIdentifierType == UserIdentifierType.OptionalDisplayableId) {
-            return;
-        }
-        String uniqueId = (result.userInfo != null && result.userInfo.uniqueId != null) ? result.userInfo.uniqueId : "NULL";
-        String displayableId = (result.userInfo != null) ? result.userInfo.displayableId : "NULL";
-        if (this.userIdentifierType == UserIdentifierType.UniqueId
-                && uniqueId.compareTo(this.uniqueId) != 0) {
-            String message = "Expected and returned userInfo.uniqueId doesn't match: " + this.uniqueId + " != " + uniqueId;
-            log.log(Level.SEVERE, message);
-            throw new AuthException(message);
-        }
-        if (this.userIdentifierType == UserIdentifierType.RequiredDisplayableId
-                && displayableId.compareToIgnoreCase(this.displayableId) != 0) {
-            String message = "Expected and returned userInfo.displayableId doesn't match: " + this.displayableId + " != " + displayableId;
-            log.log(Level.SEVERE, message);
-            throw new AuthException(message);
-        }
-    }
 }
