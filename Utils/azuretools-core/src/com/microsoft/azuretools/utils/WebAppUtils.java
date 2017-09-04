@@ -100,13 +100,14 @@ public class WebAppUtils {
         return ftp;
     }
 
-    public static void deployArtifact(String artifactName, String artifactPath, PublishingProfile pp, boolean toRoot, IProgressIndicator indicator) throws IOException {
+    public static int deployArtifact(String artifactName, String artifactPath, PublishingProfile pp, boolean toRoot, IProgressIndicator indicator) throws IOException {
         File file = new File(artifactPath);
         if (!file.exists()) {
             throw new FileNotFoundException(String.format(NO_TARGET_FILE, artifactPath));
         }
         FTPClient ftp = null;
         InputStream input = null;
+        int uploadingTryCount = 0;
         try {
             if (indicator != null) indicator.setText("Connecting to FTP server...");
 
@@ -116,9 +117,8 @@ public class WebAppUtils {
             input = new FileInputStream(artifactPath);
             int indexOfDot = artifactPath.lastIndexOf(".");
             String fileType = artifactPath.substring(indexOfDot + 1);
-            int count = 0;
             boolean success = false;
-            while (!success && ++count <= FTP_MAX_TRY) {
+            while (!success && ++uploadingTryCount <= FTP_MAX_TRY) {
                 switch (fileType) {
                     case TYPE_WAR:
                         if (toRoot) {
@@ -129,10 +129,6 @@ public class WebAppUtils {
                             WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + artifactName, indicator);
                             ftp.deleteFile(artifactName + "." + TYPE_WAR);
                             success = ftp.storeFile(ftpWebAppsPath + artifactName + "." + TYPE_WAR, input);
-                            if (!success) {
-                                int rc = ftp.getReplyCode();
-                                throw new IOException("FTP client can't store the artifact, reply code: " + rc);
-                            }
                         }
                         break;
                     case TYPE_JAR:
@@ -155,6 +151,7 @@ public class WebAppUtils {
                 ftp.disconnect();
             }
         }
+        return uploadingTryCount;
     }
 
     public static void removeFtpDirectory(FTPClient ftpClient, String path, IProgressIndicator pi) throws IOException {
