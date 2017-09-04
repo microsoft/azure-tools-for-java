@@ -122,4 +122,13 @@ public class MavenRunTaskUtil {
         }
         return shouldAdd;
     }
+
+    public static String getFileType(@NotNull final String fileName) {
+        String fileType = "";
+        int index = fileName.lastIndexOf(".");
+        if (index >= 0 && (index + 1) < fileName.length()) {
+            fileType = fileName.substring(index + 1);
+        }
+        return fileType;
+    }
 }

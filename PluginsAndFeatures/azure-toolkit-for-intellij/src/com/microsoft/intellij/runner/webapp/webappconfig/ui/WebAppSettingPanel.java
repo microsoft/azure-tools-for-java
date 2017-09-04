@@ -417,8 +417,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
         }
 
-        String fileType = webAppConfiguration.getTargetName()
-                .substring(webAppConfiguration.getTargetName().lastIndexOf(".") + 1);
+        String fileType = MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName());
         if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)) {
             toggleWebContainerSetting(true /*isWar*/);
         } else {
@@ -693,6 +692,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         Observable.fromCallable(() -> {
             Map<String, String> map = new HashMap<>();
             map.put("SubscriptionId", subId);
+            map.put("FileType", MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName()));
             AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog,
                     "Run On Web App" /*objectName*/,
                     "Open" /*action*/,

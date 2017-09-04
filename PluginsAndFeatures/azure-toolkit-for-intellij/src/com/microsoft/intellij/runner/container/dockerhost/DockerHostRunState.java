@@ -20,6 +20,7 @@ import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.container.utils.DockerProgressHandler;
 import com.microsoft.intellij.runner.container.utils.DockerUtil;
+import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.Container;
 
@@ -166,6 +167,12 @@ public class DockerHostRunState implements RunProfileState {
     private void sendTelemetry(boolean success, @Nullable String errorMsg) {
         Map<String, String> map = new HashMap<>();
         map.put("Success", String.valueOf(success));
+        String fileName = dataModel.getTargetName();
+        if (null != fileName) {
+            map.put("FileType", MavenRunTaskUtil.getFileType(fileName));
+        } else {
+            map.put("FileType", "");
+        }
         if (!success) {
             map.put("ErrorMsg", errorMsg);
         }

@@ -278,13 +278,18 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     }
 
     // TODO: refactor later
-    private void sendTelemetry(String subId) {
+    private void sendTelemetry(String subId, String targetName) {
         if (telemetrySent) {
             return;
         }
         Observable.fromCallable(() -> {
             Map<String, String> map = new HashMap<>();
             map.put("SubscriptionId", subId);
+            String fileType = "";
+            if (targetName != null) {
+                fileType = MavenRunTaskUtil.getFileType(targetName);
+            }
+            map.put("FileType", fileType);
             AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, "Run On Web App (Linux)",
                     "Open", map);
             return true;
@@ -538,7 +543,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             txtCreateAppServicePlan.setText(String.format("%s-%s", APP_SERVICE_PLAN_NAME_PREFIX, date));
         }
 
-        sendTelemetry(conf.getSubscriptionId());
+        sendTelemetry(conf.getSubscriptionId(), conf.getTargetName());
 
     }
 

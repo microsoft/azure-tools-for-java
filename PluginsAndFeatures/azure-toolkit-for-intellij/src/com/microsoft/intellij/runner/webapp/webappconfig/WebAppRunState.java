@@ -44,6 +44,7 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.RunProcessHandler;
 
+import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.apache.commons.net.ftp.FTPClient;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -254,6 +255,7 @@ public class WebAppRunState implements RunProfileState {
         map.put("CreateNewApp", String.valueOf(webAppSettingModel.isCreatingNew()));
         map.put("CreateNewSP", String.valueOf(webAppSettingModel.isCreatingAppServicePlan()));
         map.put("CreateNewRGP", String.valueOf(webAppSettingModel.isCreatingResGrp()));
+        map.put("FileType", MavenRunTaskUtil.getFileType(webAppSettingModel.getTargetName()));
         map.put("Success", String.valueOf(success));
         if (!success) {
             map.put("ErrorMsg", errorMsg);

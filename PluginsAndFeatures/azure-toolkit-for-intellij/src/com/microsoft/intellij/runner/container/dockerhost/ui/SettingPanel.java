@@ -34,17 +34,22 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.runner.container.dockerhost.DockerHostRunConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -68,6 +73,8 @@ public class SettingPanel {
 
     private Artifact lastSelectedArtifact;
     private boolean isCbArtifactInited;
+
+    private boolean telemetrySent;
 
     /**
      * Constructor.
@@ -108,6 +115,29 @@ public class SettingPanel {
                 }
             }
         });
+
+        telemetrySent = false;
+    }
+
+    // TODO: refactor later
+    private void sendTelemetry(String targetName) {
+        if (telemetrySent) {
+            return;
+        }
+        Observable.fromCallable(() -> {
+            Map<String, String> map = new HashMap<>();
+            String fileType = "";
+            if (targetName != null) {
+                fileType = MavenRunTaskUtil.getFileType(targetName);
+            }
+            map.put("FileType", fileType);
+            AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, "Docker Run",
+                    "Open", map);
+            return true;
+        }).subscribeOn(Schedulers.io()).subscribe(
+                (res) -> telemetrySent = true,
+                (err) -> telemetrySent = true
+        );
     }
 
     public JPanel getRootPanel() {
@@ -132,7 +162,7 @@ public class SettingPanel {
             List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
             setupArtifactCombo(artifacts, conf.getDockerHostRunModel().getTargetPath());
         }
-
+        sendTelemetry(conf.getTargetName());
     }
 
     /**

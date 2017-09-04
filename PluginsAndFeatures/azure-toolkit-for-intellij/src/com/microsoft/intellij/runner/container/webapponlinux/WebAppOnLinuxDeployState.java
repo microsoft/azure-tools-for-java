@@ -44,6 +44,7 @@ import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.container.utils.DockerProgressHandler;
 import com.microsoft.intellij.runner.container.utils.DockerUtil;
+import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 
@@ -176,6 +177,11 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
         map.put("CreateNewSP", String.valueOf(deployModel.isCreatingNewAppServicePlan()));
         map.put("CreateNewRGP", String.valueOf(deployModel.isCreatingNewResourceGroup()));
         map.put("Success", String.valueOf(success));
+        String fileType = "";
+        if (null != deployModel.getTargetName()) {
+            fileType = MavenRunTaskUtil.getFileType(deployModel.getTargetName());
+        }
+        map.put("FileType", fileType);
         if (!success) {
             map.put("ErrorMsg", errorMsg);
         }
