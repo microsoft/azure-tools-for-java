@@ -117,10 +117,8 @@ public class WebAppUtils {
             int indexOfDot = artifactPath.lastIndexOf(".");
             String fileType = artifactPath.substring(indexOfDot + 1);
             int count = 0;
-            int maxTries = FTP_MAX_TRY;
             boolean success = false;
-            while (!success && ++count <= maxTries) {
-                System.out.println("Try time: " + count);
+            while (!success && ++count <= FTP_MAX_TRY) {
                 switch (fileType) {
                     case TYPE_WAR:
                         if (toRoot) {
