@@ -2,14 +2,19 @@ package com.microsoft.azuretools.hdinsight.projects;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.BuildPathsBlock;
 import org.eclipse.jdt.ui.wizards.JavaCapabilityConfigurationPage;
@@ -42,12 +47,69 @@ public class HDInsightScalaPageTwo extends NewJavaProjectWizardPageTwo {
 			Object r = method.invoke(this);
 			((BuildPathsBlock) r).configureJavaProject(newProjectCompliance,
 					new SubProgressMonitor((IProgressMonitor) monitor, 5));
+			
+			addMoreSourcetoClassPath();
+			
+			if (parent == null) { 
+				parent = (HDInsightsScalaProjectWizard) this.getWizard();
+			}
+
 			parent.canFinish = true;
 		} catch (OperationCanceledException | NoSuchMethodException | SecurityException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException ex) {
 			throw new InterruptedException();
 		} finally {
 			((IProgressMonitor) monitor).done();
+		}
+	}
+	
+	private void addMoreSourcetoClassPath() throws JavaModelException {
+		if (parent == null) { 
+			parent = (HDInsightsScalaProjectWizard) this.getWizard();
+		}
+		
+		if (parent.useMaven) {
+			IProject project = this.getJavaProject().getProject();
+			final IFolder sourceRootFolder = project.getFolder("src");
+			if (!sourceRootFolder.exists()) {
+				try {
+					sourceRootFolder.create(false, true, null);
+				} catch (CoreException e) {
+					e.printStackTrace();
+				}
+			}
+
+			final IFolder mainFolder = sourceRootFolder.getFolder("main");
+			if (!mainFolder.exists()) {
+				try {
+					mainFolder.create(false, true, null);
+				} catch (CoreException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			final IFolder scalaFolder = mainFolder.getFolder("scala");
+			if (!scalaFolder.exists()) {
+				try {
+					scalaFolder.create(false, true, null);
+				} catch (CoreException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			IJavaProject javaProject = this.getJavaProject();
+			
+			IClasspathEntry[] entries = javaProject.getRawClasspath();
+	
+			IClasspathEntry[] newEntries = new IClasspathEntry[entries.length];
+			
+			IClasspathEntry scalaSrcFolder = JavaCore.newSourceEntry(scalaFolder.getFullPath());
+	
+			System.arraycopy(entries, 0, newEntries, 0, entries.length);
+			
+			newEntries[entries.length - 1] = scalaSrcFolder;
+			
+			javaProject.setRawClasspath(newEntries, new NullProgressMonitor());
 		}
 	}
 	

@@ -22,6 +22,7 @@ package com.microsoft.azuretools.hdinsight.projects;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IWorkspace;
@@ -37,7 +38,9 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.wizards.JavaProjectWizard;
 import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.BuildPathsBlock;
@@ -46,6 +49,8 @@ import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.m2e.core.MavenPlugin;
+import org.eclipse.m2e.core.project.ResolverConfiguration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -61,25 +66,44 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IExecutableExtension {
 	private String id;
-	private HDInsightJavaPageOne pageOne;
+	public HDInsightJavaPageOne pageOne;
+	public HDInsightJavaPageTwo pageTwo;
 	
 	public HDInsightsJavaProjectWizard() {
 			this(new HDInsightJavaPageOne());
 		}
 	
 	public HDInsightsJavaProjectWizard(HDInsightJavaPageOne page1) {
-		super(page1, new HDInsightJavaPageTwo(page1));
+		this(page1, new HDInsightJavaPageTwo(page1));
+	}
+	
+	public HDInsightsJavaProjectWizard(HDInsightJavaPageOne page1, HDInsightJavaPageTwo page2) {
+		super(page1, page2);
 		this.pageOne = page1;
+		this.pageTwo = page2;
 	}
 	
 	@Override
 	public boolean performFinish() {
 		try {
-			CreateProjectUtil.createSampleFile(this.id, this.pageOne.getProjectName());
+			CreateProjectUtil.createSampleFile(this.id, this.pageOne.getProjectName(), pageOne.sparkLibraryOptionsPanel.useMaven, pageOne.sparkLibraryOptionsPanel.getSparkVersion());
 		} catch (CoreException e) {
 			Activator.getDefault().log("Create HDInsight project error", e);
 		}
-		return super.performFinish();
+		
+		// Configure Java project first and then enable Maven nature, otherwise the classpath will be overwritten
+		boolean result = super.performFinish();
+		if (pageOne.sparkLibraryOptionsPanel.useMaven) {
+			try {
+				MavenPlugin.getProjectConfigurationManager().enableMavenNature(this.pageTwo.getJavaProject().getProject(), 
+						new ResolverConfiguration(), 
+						new NullProgressMonitor());
+			} catch (CoreException e1) {
+				Activator.getDefault().log("Enable Maven nature error", e1);
+			}
+		}
+		
+		return result;
 	}
 	
 	@Override
@@ -101,10 +125,13 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 		
 		@Override
 		public boolean canFlipToNextPage() {
-			final String jarPathString = sparkLibraryOptionsPanel.getSparkLibraryPath();
-			if(StringUtils.isNullOrEmpty(jarPathString)) {
-				return false;
+			if (!sparkLibraryOptionsPanel.useMaven) {
+				final String jarPathString = sparkLibraryOptionsPanel.getSparkLibraryPath();
+				if(StringUtils.isNullOrEmpty(jarPathString)) {
+					return false;
+				}
 			}
+			
 			return super.canFlipToNextPage();
 		}
 
@@ -115,15 +142,17 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 			Display.getDefault().syncExec(new Runnable() {
 				@Override
 				public void run() {
-					final String jarPathString = sparkLibraryOptionsPanel.getSparkLibraryPath();
-					if (StringUtils.isNullOrEmpty(jarPathString)) {
-						DefaultLoader.getUIHelper().showError("Spark Library Path cannot be null",
-								"Spark Project Settings");
-					} else {
-						IPath jarPath = new Path(jarPathString);
-						IClasspathEntry sparkEntry = JavaCore.newLibraryEntry(jarPath, null, null);
-						System.arraycopy(entries, 0, newEntries, 0, entries.length);
-						newEntries[entries.length] = sparkEntry;
+					if (!sparkLibraryOptionsPanel.useMaven) {
+						final String jarPathString = sparkLibraryOptionsPanel.getSparkLibraryPath();
+						if (StringUtils.isNullOrEmpty(jarPathString)) {
+							DefaultLoader.getUIHelper().showError("Spark Library Path cannot be null",
+									"Spark Project Settings");
+						} else {
+							IPath jarPath = new Path(jarPathString);
+							IClasspathEntry sparkEntry = JavaCore.newLibraryEntry(jarPath, null, null);
+							System.arraycopy(entries, 0, newEntries, 0, entries.length);
+							newEntries[entries.length] = sparkEntry;
+						}
 					}
 				}
 			});
@@ -157,8 +186,6 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 			
 			Control workingSetControl= createWorkingSetControl(composite);
 			workingSetControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-			
-
 			
 			Control infoControl= createInfoControl(composite);
 			infoControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -202,11 +229,13 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 	        byte nSteps = 6;
 	        ((IProgressMonitor)monitor).beginTask(NewWizardMessages.JavaCapabilityConfigurationPage_op_desc_java, nSteps);
 	        try {
-	        	IProject project = addHDInsightNature(monitor);
+	            IProject project = addHDInsightNature(monitor);
 	            Method method = JavaCapabilityConfigurationPage.class.getDeclaredMethod("getBuildPathsBlock");
 	            method.setAccessible(true);
 	            Object r = method.invoke(this);
 	            ((BuildPathsBlock) r).configureJavaProject(newProjectCompliance, new SubProgressMonitor((IProgressMonitor)monitor, 5));
+		            
+	            addMoreSourcetoClassPath();
 	        } catch (OperationCanceledException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
 	            throw new InterruptedException();
 	        } finally {
@@ -214,6 +243,53 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 	        }
 	    }
 
+		private void addMoreSourcetoClassPath() throws JavaModelException {
+			HDInsightJavaPageOne previousPage = (HDInsightJavaPageOne)getPreviousPage();
+			if (previousPage.sparkLibraryOptionsPanel.useMaven) {
+				IProject project = this.getJavaProject().getProject();
+				final IFolder sourceRootFolder = project.getFolder("src");
+				if (!sourceRootFolder.exists()) {
+					try {
+						sourceRootFolder.create(false, true, null);
+					} catch (CoreException e) {
+						e.printStackTrace();
+					}
+				}
+
+				final IFolder mainFolder = sourceRootFolder.getFolder("main");
+				if (!mainFolder.exists()) {
+					try {
+						mainFolder.create(false, true, null);
+					} catch (CoreException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				final IFolder scalaFolder = mainFolder.getFolder("java");
+				if (!scalaFolder.exists()) {
+					try {
+						scalaFolder.create(false, true, null);
+					} catch (CoreException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				IJavaProject javaProject = this.getJavaProject();
+				
+				IClasspathEntry[] entries = javaProject.getRawClasspath();
+		
+				IClasspathEntry[] newEntries = new IClasspathEntry[entries.length];
+				
+				IClasspathEntry scalaSrcFolder = JavaCore.newSourceEntry(scalaFolder.getFullPath());
+		
+				System.arraycopy(entries, 0, newEntries, 0, entries.length);
+				
+				newEntries[entries.length - 1] = scalaSrcFolder;
+				
+				javaProject.setRawClasspath(newEntries, new NullProgressMonitor());
+			}
+		}
+		
 		private IProject addHDInsightNature(IProgressMonitor monitor) throws CoreException {
 			if (monitor != null && monitor.isCanceled()) {
 			      throw new OperationCanceledException();

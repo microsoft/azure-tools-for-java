@@ -23,62 +23,152 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.PlatformUI;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azure.hdinsight.projects.SparkVersion;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.hdinsight.Activator;
 import com.microsoft.azuretools.core.utils.Messages;
+import com.microsoft.azuretools.core.utils.PluginUtil;
 
 public class SparkLibraryOptionsPanel extends Composite {
-	private Combo comboBox;
-	private Button button;
+	public boolean useMaven = true;
+
+	private SparkVersion sparkVersion;
+	private Composite comUseMaven;
+	private Composite comAddSparkManually;
+	private Button radioUseMaven;
+	private Button radioAddManually;
+	private Combo comboBoxUseMaven;
+	private Combo comboBoxAddSparkManually;
+	private Link tipLabel;
+	private Button btnSelectSparkLib;
 	private WizardPage parentPage;
 	private List<String> cachedLibraryPath = new ArrayList<>();
 	
 	public SparkLibraryOptionsPanel(WizardPage parentPage,Composite parent, int style) {
 		super(parent, style);
 		this.parentPage = parentPage;
-//		Composite composite = new Composite(parent, SWT.NONE);
         GridLayout gridLayout = new GridLayout();
         gridLayout.numColumns = 2;
         GridData gridData = new GridData();
         gridData.grabExcessHorizontalSpace = true;
         setLayout(gridLayout);
         setLayoutData(gridData);
-        Label lblProjName = new Label(this, SWT.LEFT | SWT.TOP);
-        lblProjName.setText("Spark SDK:");
-//		Composite composite = new Composite(parent, SWT.NONE);
+        
+        // Use Maven to configure Spark version
+        radioUseMaven = new Button(this, SWT.RADIO);
+        radioUseMaven.setSelection(true);
+        radioUseMaven.setText("Use Maven to configure Spark SDK:");
+        radioUseMaven.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				enableUseMaven(true);
+				
+				enableAddSparkManually(false);
+				
+				updateNextPageStatus();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				widgetSelected(e);
+			}
+        });
+       		
+        comUseMaven = new Composite(this, SWT.NONE);
+        gridLayout = new GridLayout();
+        gridLayout.numColumns = 1;
+        gridData = new GridData();
+        gridData.horizontalAlignment = SWT.FILL;
+        gridData.grabExcessHorizontalSpace = true;
+        comUseMaven.setLayout(gridLayout);
+        comUseMaven.setLayoutData(gridData);
+        
+        gridData = new GridData();
+        gridData.horizontalAlignment = SWT.FILL;
+        gridData.grabExcessHorizontalSpace = true;
+        comboBoxUseMaven = new Combo(comUseMaven, SWT.READ_ONLY);
+        comboBoxUseMaven.setLayoutData(gridData);
+        for (SparkVersion sv : SparkVersion.class.getEnumConstants()) {
+        	comboBoxUseMaven.add(sv.toString(), comboBoxUseMaven.getItemCount());
+        }
+        sparkVersion = SparkVersion.class.getEnumConstants()[0];
+        
+        comboBoxUseMaven.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Combo combo = (Combo)e.getSource();
+				if (combo.getSelectionIndex() >= 0) {
+					sparkVersion = SparkVersion.parseString(combo.getItem(combo.getSelectionIndex()));
+				}
+				
+				updateNextPageStatus();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				widgetSelected(e);
+			}
+        	
+        });
+        
+        comboBoxUseMaven.select(0);
+        enableUseMaven(true);
+        
+        // Add Spark SDK manually
+        radioAddManually = new Button(this, SWT.RADIO);
+        radioAddManually.setText("Add Spark SDK manually:");
+        radioAddManually.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				enableUseMaven(false);
+				
+				enableAddSparkManually(true);
+				
+				updateNextPageStatus();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				widgetSelected(e);				
+			}
+        	
+        });
+        
 		gridLayout = new GridLayout();
 		gridLayout.numColumns = 2;
 		gridData = new GridData();
 		gridData.horizontalAlignment = SWT.FILL;
 		gridData.grabExcessHorizontalSpace = true;
-		Composite composite = new Composite(this, SWT.NONE);
-		composite.setLayout(gridLayout);
-		composite.setLayoutData(gridData);
+		comAddSparkManually = new Composite(this, SWT.NONE);
+		comAddSparkManually.setLayout(gridLayout);
+		comAddSparkManually.setLayoutData(gridData);
 
 		gridData = new GridData();
 		gridData.horizontalAlignment = SWT.FILL;
 		gridData.grabExcessHorizontalSpace = true;
-		comboBox = new Combo(composite, SWT.READ_ONLY);
-		comboBox.setLayoutData(gridData);
+		comboBoxAddSparkManually = new Combo(comAddSparkManually, SWT.READ_ONLY);
+		comboBoxAddSparkManually.setLayoutData(gridData);
 		
-		comboBox.addSelectionListener(new SelectionAdapter() {
+		comboBoxAddSparkManually.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				Combo combo = (Combo)e.getSource();
@@ -93,32 +183,34 @@ public class SparkLibraryOptionsPanel extends Composite {
 					}
 					
 					updateNextPageStatus();
-					DefaultLoader.getIdeHelper().setProperties(CommonConst.CACHED_SPARK_SDK_PATHS, comboBox.getItems());
+					DefaultLoader.getIdeHelper().setProperties(CommonConst.CACHED_SPARK_SDK_PATHS, comboBoxAddSparkManually.getItems());
 				}
 			}
 		});
-		
+
 		String[] tmp = DefaultLoader.getIdeHelper().getProperties(CommonConst.CACHED_SPARK_SDK_PATHS);
 		if (tmp != null) {
             cachedLibraryPath.addAll(Arrays.asList(tmp));
         }
+		
 		for (int i = 0; i < cachedLibraryPath.size(); ++i) {
-
-			comboBox.add(cachedLibraryPath.get(i));
+			comboBoxAddSparkManually.add(cachedLibraryPath.get(i));
 			try {
 				SparkLibraryInfoForEclipse info = new SparkLibraryInfoForEclipse(cachedLibraryPath.get(i));
-				comboBox.setData(cachedLibraryPath.get(i), info);
+				comboBoxAddSparkManually.setData(cachedLibraryPath.get(i), info);
 			} catch (Exception e) {
 				e.printStackTrace(System.err);
 				// do nothing if we can not get the library info
 			}
 		}
+		
 		if (cachedLibraryPath.size() > 0) {
-			comboBox.select(0);
+			comboBoxAddSparkManually.select(0);
 		}
-		button = new Button(composite, SWT.PUSH);
-		button.setText("Select...");
-		button.addSelectionListener(new SelectionAdapter() {
+		
+		btnSelectSparkLib = new Button(comAddSparkManually, SWT.PUSH);
+		btnSelectSparkLib.setText("Select...");
+		btnSelectSparkLib.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
 				FileDialog dialog = new FileDialog(SparkLibraryOptionsPanel.this.getShell());
@@ -127,11 +219,11 @@ public class SparkLibraryOptionsPanel extends Composite {
 				String file = dialog.open();
 				if (file != null) {
 					try {
-						comboBox.add(file, 0);
-						comboBox.setData(file, new SparkLibraryInfoForEclipse(file));
-						comboBox.select(0);
+						comboBoxAddSparkManually.add(file, 0);
+						comboBoxAddSparkManually.setData(file, new SparkLibraryInfoForEclipse(file));
+						comboBoxAddSparkManually.select(0);
 						updateNextPageStatus();
-						DefaultLoader.getIdeHelper().setProperties(CommonConst.CACHED_SPARK_SDK_PATHS, comboBox.getItems());
+						DefaultLoader.getIdeHelper().setProperties(CommonConst.CACHED_SPARK_SDK_PATHS, comboBoxAddSparkManually.getItems());
 					} catch (Exception e) {
 						Activator.getDefault().log("Error adding Spark library", e);
 					}
@@ -139,7 +231,7 @@ public class SparkLibraryOptionsPanel extends Composite {
 			}
 		});
 
-		Link tipLabel = new Link(this, SWT.FILL);
+		tipLabel = new Link(this, SWT.FILL);
 		tipLabel.setText(
 				"You can either download Spark library from <a href=\"http://go.microsoft.com/fwlink/?LinkID=723585&clcid=0x409\">here</a> or add Apache Spark packages from Maven repository in the project manually.");
 		gridData = new GridData();
@@ -160,16 +252,38 @@ public class SparkLibraryOptionsPanel extends Composite {
 				}
 			}
 		});
-	}	
+		
+        enableAddSparkManually(false);
+	}
+	
+	private void enableUseMaven(boolean toEnable) {
+		useMaven = toEnable;
+		comUseMaven.setEnabled(toEnable);
+		comboBoxUseMaven.setEnabled(toEnable);
+		
+		if (MavenPluginUtil.checkMavenPluginInstallation() != true) {
+			MavenPluginUtil.installMavenPlugin();
+		}
+	}
+	
+	private void enableAddSparkManually(boolean toEnable) {
+		useMaven = !toEnable;
+		comAddSparkManually.setEnabled(toEnable);
+		comboBoxAddSparkManually.setEnabled(toEnable);
+		tipLabel.setEnabled(toEnable);
+	}
         
-	private void updateNextPageStatus() 
-	{
+	private void updateNextPageStatus() {
 		if(parentPage.canFlipToNextPage()) {
 			parentPage.setPageComplete(true);
 		}
 	}
 	
 	public String getSparkLibraryPath() {
-		return comboBox.getText();
+		return comboBoxAddSparkManually.getText();
+	}
+	
+	public SparkVersion getSparkVersion() {
+		return sparkVersion;
 	}
 }

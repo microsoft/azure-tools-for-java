@@ -21,26 +21,34 @@ package com.microsoft.azuretools.hdinsight.projects;
 
 import java.awt.Dialog;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.wizards.JavaProjectWizard;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
+import org.eclipse.m2e.core.MavenPlugin;
+import org.eclipse.m2e.core.project.ResolverConfiguration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 
+import com.microsoft.azure.hdinsight.projects.SparkVersion;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.hdinsight.Activator;
 
 public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements IExecutableExtension {
-	private String id;
-	private Composite sparkLibraryOptionsPanel;
-	private static NewJavaProjectWizardPageOne hdInsightScalaPageOne;
-	private NewJavaProjectWizardPageTwo hdInsightScalaPageTwo;
 	public static boolean canFinish = false;
+	public boolean useMaven = true;
+	public SparkVersion sparkVersion;
+
+	private String id;
+	public static NewJavaProjectWizardPageOne hdInsightScalaPageOne;
+	public NewJavaProjectWizardPageTwo hdInsightScalaPageTwo;
+	
 	
 	public HDInsightsScalaProjectWizard() {
 		this(
@@ -89,7 +97,6 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 		
 		try {
 			classHDInsightScalaPageOne = Class.forName("com.microsoft.azuretools.hdinsight.projects.HDInsightScalaPageOne");
-			Constructor<?>[] temp = classHDInsightScalaPageOne.getConstructors();
 			ctorHDInsightScalaPageOne =  classHDInsightScalaPageOne.getConstructor();
 			
 			result = (NewJavaProjectWizardPageOne)ctorHDInsightScalaPageOne.newInstance();
@@ -134,11 +141,23 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 	@Override
 	public boolean performFinish() {
 		try {
-			CreateProjectUtil.createSampleFile(this.id, this.hdInsightScalaPageOne.getProjectName());
+			CreateProjectUtil.createSampleFile(this.id, this.hdInsightScalaPageOne.getProjectName(), this.useMaven, this.sparkVersion);
 		} catch (CoreException e) {
 			Activator.getDefault().log("Create HDInsight project error", e);
 		}
+		
+		// Configure Java project first and then enable Maven nature, otherwise the classpath will be overwritten
+		boolean result = super.performFinish();
+		if (useMaven) {
+			try {
+				MavenPlugin.getProjectConfigurationManager().enableMavenNature(this.hdInsightScalaPageTwo.getJavaProject().getProject(), 
+						new ResolverConfiguration(), 
+						new NullProgressMonitor());
+			} catch (CoreException e1) {
+				Activator.getDefault().log("Enable Maven nature error", e1);
+			}
+		}
 
-		return super.performFinish();
+		return result;
 	}
 }

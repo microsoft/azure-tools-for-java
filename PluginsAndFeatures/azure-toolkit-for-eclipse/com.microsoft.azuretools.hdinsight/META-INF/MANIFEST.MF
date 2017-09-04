@@ -13,7 +13,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.swt,
  org.eclipse.ui.workbench,
  org.scala-ide.sdt.core;resolution:=optional,
- org.eclipse.jface
+ org.eclipse.jface,
+ org.eclipse.m2e.core;resolution:=optional
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Import-Package: com.microsoft.azuretools.hdinsight.common2,
