@@ -34,6 +34,7 @@ import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.utils.WebAppUtils;
 import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
@@ -173,6 +174,10 @@ public class DockerRunHandler extends AzureAbstractHandler {
         }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(ret -> {
             Map<String, String> extraInfo = new HashMap<>();
             extraInfo.put("ProjectName", ret);
+            try {
+                boolean isJar = MavenUtils.isMavenProject(this.project) && MavenUtils.getPackaging(this.project).equals(WebAppUtils.TYPE_JAR);
+                extraInfo.put("FileType", isJar?"jar":"war");
+            } catch (Exception e) {}
             sendTelemetryOnSuccess(event, extraInfo);
         }, e -> {
             sendTelemetryOnException(event, e);

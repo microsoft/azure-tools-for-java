@@ -530,6 +530,10 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                 String errorMessage = "Error";
                 Map<String, String> postEventProperties = new HashMap<String, String>();
                 postEventProperties.put("Java App Name", project.getName());
+                try{
+                    boolean isJar = MavenUtils.isMavenProject(project) && MavenUtils.getPackaging(project).equals(WebAppUtils.TYPE_JAR);
+                    postEventProperties.put("FileType", isJar?"jar":"war");
+                } catch (Exception e) {}
 
                 monitor.beginTask(message, IProgressMonitor.UNKNOWN);
                 try {
@@ -667,6 +671,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         final Map<String, String> properties = new HashMap<>();
         properties.put("Window", this.getClass().getSimpleName());
         properties.put("Title", this.getShell().getText());
+
         AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, this.getClass().getSimpleName(), action, properties);
     }
 }

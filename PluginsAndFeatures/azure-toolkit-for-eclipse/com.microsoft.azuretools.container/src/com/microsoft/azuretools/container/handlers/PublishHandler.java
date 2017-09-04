@@ -37,6 +37,7 @@ import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DockerClient;
 
@@ -54,6 +55,8 @@ import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import rx.Observable;
@@ -139,15 +142,24 @@ public class PublishHandler extends AzureAbstractHandler {
                     ConfigFileUtil.saveConfig(project, DockerRuntime.getInstance().saveToProps(props));
                 }
             });
+            
+            Map<String, String> extraInfo = new HashMap<>();
+            try {
+                boolean isJar = MavenUtils.isMavenProject(this.project) && MavenUtils.getPackaging(this.project).equals(WebAppUtils.TYPE_JAR);
+                extraInfo.put("FileType", isJar?"jar":"war");
+            } catch (Exception e) {}
+            sendTelemetryOnSuccess(event, extraInfo);
         }, err -> {
             String dockerHost = DockerRuntime.getInstance().getDockerBuilder().uri().toString();
             String dockerFileRelativePath = Paths.get(basePath).getParent().toUri()
                     .relativize(Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME).toUri())
                     .toString();
+
             DefaultLoader.getIdeHelper().invokeAndWait(() -> {
                 MessageDialog.openError(window.getShell(), "Error on building image", String
                         .format(Constant.ERROR_BUILDING_IMAGE, dockerHost, dockerFileRelativePath, err.getMessage()));
             });
+            sendTelemetryOnException(event, err);
         });
     }
 }
