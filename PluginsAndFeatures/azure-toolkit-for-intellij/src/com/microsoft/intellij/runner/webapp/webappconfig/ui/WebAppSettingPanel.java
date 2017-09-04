@@ -43,6 +43,7 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
@@ -91,8 +92,9 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private static final String DEFAULT_APP_NAME = "webapp-";
     private static final String DEFAULT_PLAN_NAME = "appsp-";
     private static final String DEFAULT_RGP_NAME = "rg-webapp-";
-    private static final String JAR_FILE_DEPLOY_HINT = "To deploy spring boot executable, please make sure the web.config is correct.";
-    private static final String HTTPS_AKA_MS_SPRING_BOOT = "https://aka.ms/spring-boot";
+    private static final String WEB_CONFIG_URL_FORMAT = "https://%s/dev/wwwroot/web.config";
+    private static final String JAR_FILE_DEPLOY_HINT = "Please check the web.config file used to deploy this JAR " +
+            "executable.";
     // presenter
     private final WebAppDeployViewPresenter<WebAppSettingPanel> webAppDeployViewPresenter;
     private final Project project;
@@ -314,7 +316,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         javaDecorator.setOn(true);
 
         lblJarDeployHint.setHyperlinkText(JAR_FILE_DEPLOY_HINT);
-        lblJarDeployHint.setHyperlinkTarget(HTTPS_AKA_MS_SPRING_BOOT);
     }
 
     /**
@@ -324,7 +325,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         isCbArtifactInited = false;
         cbArtifact.removeAllItems();
         if (null != artifacts) {
-            for (Artifact artifact: artifacts) {
+            for (Artifact artifact : artifacts) {
                 cbArtifact.addItem(artifact);
                 if (Comparing.equal(artifact.getOutputFilePath(), webAppConfiguration.getTargetPath())) {
                     cbArtifact.setSelectedItem(artifact);
@@ -559,6 +560,13 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
             selectedWebApp = cachedWebAppList.get(selectedRow);
             txtSelectedWebApp.setText(selectedWebApp.toString());
+            try {
+                String scmSuffix = AuthMethodManager.getInstance().getAzureManager().getScmSuffix();
+                lblJarDeployHint.setHyperlinkTarget(String.format(WEB_CONFIG_URL_FORMAT, selectedWebApp.getResource()
+                        .name() + scmSuffix));
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
         });
 
         btnRefresh = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {

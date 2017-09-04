@@ -63,13 +63,15 @@ import rx.Observable;
 
 public class WebAppRunState implements RunProfileState {
 
-    private static final String CREATE_WEBAPP = "Creating new WebApp...";
-    private static final String CREATE_FAILED = "Failed to create WebApp. Error: %s ...";
+    private static final String CREATE_WEBAPP = "Creating new Web App...";
+    private static final String CREATE_FAILED = "Failed to create Web App. Error: %s ...";
     private static final String GETTING_DEPLOYMENT_CREDENTIAL = "Getting Deployment Credential...";
     private static final String CONNECTING_FTP = "Connecting to FTP server...";
     private static final String UPLOADING_ARTIFACT = "Uploading artifact to: %s ...";
     private static final String UPLOADING_WEB_CONFIG = "Uploading web.config (check more details at: https://aka.ms/spring-boot)...";
     private static final String UPLOADING_SUCCESSFUL = "Uploading successfully...";
+    private static final String STOP_WEB_APP = "Stop Web App...";
+    private static final String START_WEB_APP = "Start Web App...";
     private static final String LOGGING_OUT = "Logging out of FTP server...";
     private static final String DEPLOY_SUCCESSFUL = "Deploy successfully!";
     private static final String STOP_DEPLOY = "Deploy Failed!";
@@ -121,12 +123,16 @@ public class WebAppRunState implements RunProfileState {
             String fileName = webAppSettingModel.getTargetName().substring(0, indexOfDot);
             String fileType = webAppSettingModel.getTargetName().substring(indexOfDot + 1);
 
+            processHandler.setText(STOP_WEB_APP);
             webApp.stop();
+
             uploadWebConfigFile(ftp, fileType);
 
             try (FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath())) {
                 uploadArtifact(input, webApp, ftp, fileName, fileType);
             }
+
+            processHandler.setText(START_WEB_APP);
             webApp.start();
 
             processHandler.setText(LOGGING_OUT);
