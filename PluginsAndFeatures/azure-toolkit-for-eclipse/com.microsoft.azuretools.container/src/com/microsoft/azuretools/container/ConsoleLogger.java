@@ -22,6 +22,8 @@
 
 package com.microsoft.azuretools.container;
 
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -36,18 +38,17 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
 public class ConsoleLogger {
-    private MessageConsole console = null;
-    private MessageConsoleStream out = null;
-    private MessageConsoleStream err = null;
+    final MessageConsole console;
+    final MessageConsoleStream out;
+    final MessageConsoleStream err;
 
     private ConsoleLogger() {
         console = findConsole(Constant.CONSOLE_NAME);
         out = console.newMessageStream();
         err = console.newMessageStream();
-        out.setColor(new Color(null, 0, 0, 255));
+        out.setColor(new Color(null, 0, 0, 0));
         err.setColor(new Color(null, 255, 0, 0));
     }
-    
 
     private static class LazyHolder {
         static final ConsoleLogger INSTANCE = new ConsoleLogger();
@@ -58,12 +59,12 @@ public class ConsoleLogger {
     }
 
     public static void info(String infoMsg) {
-        LazyHolder.INSTANCE.out.println(String.format("[INFO]\t%s", infoMsg));
+        LazyHolder.INSTANCE.out.println(infoMsg);
         LazyHolder.INSTANCE.showConsole();
     }
 
     public static void error(String errorMsg) {
-        LazyHolder.INSTANCE.err.println(String.format("[ERROR]\t%s", errorMsg));
+        LazyHolder.INSTANCE.err.println(errorMsg);
         LazyHolder.INSTANCE.showConsole();
     }
 
@@ -78,24 +79,30 @@ public class ConsoleLogger {
                 return (MessageConsole) existing[i];
             }
         }
-        //no console found, so create a new one
+        // no console found, so create a new one
         MessageConsole myConsole = new MessageConsole(name, null);
         conMan.addConsoles(new IConsole[] { myConsole });
         return myConsole;
     }
-    
+
     private void showConsole() {
-        IConsole myConsole = this.console;
-        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        IWorkbenchPage page = window.getActivePage();
-        String id = IConsoleConstants.ID_CONSOLE_VIEW;
-        IConsoleView view;
-        try {
-            view = (IConsoleView) page.showView(id);
-            view.display(myConsole);
-        } catch (PartInitException e) {
-            e.printStackTrace();
-        }
+        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+            IConsole myConsole = this.console;
+            IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+            if (window != null) {
+                IWorkbenchPage page = window.getActivePage();
+                if (page != null) {
+                    String id = IConsoleConstants.ID_CONSOLE_VIEW;
+                    IConsoleView view;
+                    try {
+                        view = (IConsoleView) page.showView(id);
+                        view.display(myConsole);
+                    } catch (PartInitException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
-    
+
 }

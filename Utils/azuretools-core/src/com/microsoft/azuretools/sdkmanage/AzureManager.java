@@ -52,6 +52,7 @@ public interface AzureManager {
     String getAccessToken(String tid) throws IOException;
     String getManagementURI() throws IOException;
     String getStorageEndpointSuffix();
+    String getScmSuffix();
     Environment getEnvironment();
     String getPortalUrl();
 }

@@ -31,6 +31,7 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
+import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
@@ -42,6 +43,7 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
@@ -90,6 +92,9 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private static final String DEFAULT_APP_NAME = "webapp-";
     private static final String DEFAULT_PLAN_NAME = "appsp-";
     private static final String DEFAULT_RGP_NAME = "rg-webapp-";
+    private static final String WEB_CONFIG_URL_FORMAT = "https://%s/dev/wwwroot/web.config";
+    private static final String JAR_FILE_DEPLOY_HINT = "Please check the web.config file used to deploy this JAR " +
+            "executable.";
     // presenter
     private final WebAppDeployViewPresenter<WebAppSettingPanel> webAppDeployViewPresenter;
     private final Project project;
@@ -138,6 +143,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JPanel pnlAppServicePlan;
     private JPanel pnlJavaHolder;
     private JPanel pnlJava;
+    private JLabel lblWebContainer;
+    private HyperlinkLabel lblJarDeployHint;
     private JBTable table;
     private AnActionButton btnRefresh;
 
@@ -307,6 +314,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 JAVA, true /*adjustWindow*/);
         javaDecorator.setContentComponent(pnlJava);
         javaDecorator.setOn(true);
+
+        lblJarDeployHint.setHyperlinkText(JAR_FILE_DEPLOY_HINT);
     }
 
     /**
@@ -316,7 +325,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         isCbArtifactInited = false;
         cbArtifact.removeAllItems();
         if (null != artifacts) {
-            for (Artifact artifact: artifacts) {
+            for (Artifact artifact : artifacts) {
                 cbArtifact.addItem(artifact);
                 if (Comparing.equal(artifact.getOutputFilePath(), webAppConfiguration.getTargetPath())) {
                     cbArtifact.setSelectedItem(artifact);
@@ -391,14 +400,15 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
      * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#applyEditorTo(Object)}.
      */
     public void applyEditorTo(@NotNull WebAppConfiguration webAppConfiguration) {
-        // Get war output full path and file name
+        // Get output file full path and file name
         if (isArtifact && lastSelectedArtifact != null) {
             webAppConfiguration.setTargetPath(lastSelectedArtifact.getOutputFilePath());
             Path p = Paths.get(webAppConfiguration.getTargetPath());
             if (p != null) {
                 webAppConfiguration.setTargetName(p.getFileName().toString());
             } else {
-                webAppConfiguration.setTargetName(lastSelectedArtifact.getName() + "." + MavenConstants.TYPE_WAR);
+                webAppConfiguration.setTargetName(lastSelectedArtifact.getName()
+                        + "." + lastSelectedArtifact.getArtifactType().getId());
             }
         } else {
             MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
@@ -408,6 +418,13 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
         }
 
+        String fileType = MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName());
+        if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)) {
+            toggleWebContainerSetting(true /*isWar*/);
+        } else {
+            toggleWebContainerSetting(false /*isWar*/);
+        }
+
         if (rdoUseExist.isSelected()) {
             webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
             webAppConfiguration.setSubscriptionId(selectedWebApp == null ? "" : selectedWebApp.getSubscriptionId());
@@ -415,8 +432,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         } else if (rdoCreateNew.isSelected()) {
             webAppConfiguration.setWebAppName(txtWebAppName.getText());
             webAppConfiguration.setSubscriptionId(lastSelectedSid);
-            WebAppUtils.WebContainerMod container = (WebAppUtils.WebContainerMod) cbWebContainer.getSelectedItem();
-            webAppConfiguration.setWebContainer(container == null ? "" : container.getValue());
             // resource group
             if (rdoCreateResGrp.isSelected()) {
                 webAppConfiguration.setCreatingResGrp(true);
@@ -439,10 +454,16 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                     webAppConfiguration.setAppServicePlanId(appServicePlan.id());
                 }
             }
-            // JDK
+            // Java
             JdkModel jdkModel = (JdkModel) cbJdkVersion.getSelectedItem();
             if (jdkModel != null) {
                 webAppConfiguration.setJdkVersion(jdkModel.getJavaVersion());
+            }
+            if (cbWebContainer.isVisible()) {
+                WebAppUtils.WebContainerMod container = (WebAppUtils.WebContainerMod) cbWebContainer.getSelectedItem();
+                webAppConfiguration.setWebContainer(container == null ? "" : container.getValue());
+            } else {
+                webAppConfiguration.setWebContainer(WebAppUtils.WebContainerMod.Newest_Tomcat_85.getValue());
             }
             webAppConfiguration.setCreatingNew(true);
         }
@@ -495,6 +516,13 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         lblPricing.setEnabled(!isCreatingNew);
     }
 
+    private void toggleWebContainerSetting(boolean isWar) {
+        lblWebContainer.setVisible(isWar);
+        cbWebContainer.setVisible(isWar);
+        chkToRoot.setVisible(isWar);
+        lblJarDeployHint.setVisible(!isWar && rdoUseExist.isSelected());
+    }
+
     private void resetWidget() {
         btnRefresh.setEnabled(false);
         DefaultTableModel model = (DefaultTableModel) table.getModel();
@@ -532,6 +560,13 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
             selectedWebApp = cachedWebAppList.get(selectedRow);
             txtSelectedWebApp.setText(selectedWebApp.toString());
+            try {
+                String scmSuffix = AuthMethodManager.getInstance().getAzureManager().getScmSuffix();
+                lblJarDeployHint.setHyperlinkTarget(String.format(WEB_CONFIG_URL_FORMAT, selectedWebApp.getResource()
+                        .name() + scmSuffix));
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
         });
 
         btnRefresh = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
@@ -665,6 +700,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         Observable.fromCallable(() -> {
             Map<String, String> map = new HashMap<>();
             map.put("SubscriptionId", subId);
+            map.put("FileType", MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName()));
             AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog,
                     "Run On Web App" /*objectName*/,
                     "Open" /*action*/,

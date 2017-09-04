@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  * <p/>
  * All rights reserved.
@@ -25,12 +25,9 @@ package com.microsoft.azuretools.core.mvp.model.container;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.containerregistry.Registries;
 import com.microsoft.azure.management.containerregistry.Registry;
-import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.azure.management.redis.RedisCaches;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -38,9 +35,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ContainerRegistryMvpModel {
-
-    private static final String NOT_SIGNED_ERROR = "Azure account is not signed in.";
-    private static final String FAILED_LOAD_AZURE = "Failed to load Azure resources.";
 
     private ContainerRegistryMvpModel() {}
 
@@ -52,15 +46,14 @@ public class ContainerRegistryMvpModel {
         return SingletonHolder.INSTANCE;
     }
 
+    /**
+     * Get ACR manager.
+     */
     public Map<String, Registries> getContainerRegistries() throws Exception {
         Map<String, Registries> registries = new HashMap<>();
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) {
-            throw new Exception(NOT_SIGNED_ERROR);
-        }
         List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
         for (Subscription sub: subscriptions) {
-            Azure azure = azureManager.getAzure(sub.subscriptionId());
+            Azure azure = AuthMethodManager.getInstance().getAzureClient(sub.subscriptionId());
             if (azure == null || azure.containerRegistries() == null) {
                 continue;
             }
@@ -73,18 +66,32 @@ public class ContainerRegistryMvpModel {
      * Get ACR by Id.
      */
     public Registry getContainerRegistry(String sid, String id) throws Exception {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) {
-            throw new Exception(NOT_SIGNED_ERROR);
-        }
-        Azure azure = azureManager.getAzure(sid);
-        if (azure == null) {
-            throw new Exception(FAILED_LOAD_AZURE);
-        }
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         Registries registries = azure.containerRegistries();
         if (registries == null) {
             return null;
         }
         return registries.getById(id);
+    }
+
+    /**
+     * Set AdminUser enabled status of container registry.
+     */
+    public Registry setAdminUserEnabled(String sid, String id, boolean enabled) throws IOException {
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        Registries registries = azure.containerRegistries();
+        if (registries != null) {
+            Registry registry = registries.getById(id);
+            if (registry != null) {
+                if (enabled) {
+                    registry.update().withRegistryNameAsAdminUser().apply();
+                } else {
+                    registry.update().withoutRegistryNameAsAdminUser().apply();
+                }
+            }
+            return registry;
+        } else {
+            return null;
+        }
     }
 }

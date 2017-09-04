@@ -30,6 +30,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.container.Containe
 
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -40,9 +43,14 @@ import javax.swing.JTextField;
 public class ContainerRegistryPropertyView extends BaseEditor implements ContainerRegistryPropertyMvpView {
 
     public static final String ID = ContainerRegistryPropertyView.class.getName();
+    private static final Color COLOR_CHOSEN = new Color(191, 238, 251);
+    private static final Color COLOR_UNCHOSEN = null;
 
     private final ContainerRegistryPropertyViewPresenter<ContainerRegistryPropertyView> containerPropertyPresenter;
 
+    boolean isAdminEnabled;
+    private String registryId = "";
+    private String subscriptionId = "";
     private String password = "";
     private String password2 = "";
 
@@ -53,13 +61,15 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     private JTextField txtRegion;
     private JTextField txtServerUrl;
     private JTextField txtUserName;
-    private JTextField txtIsAdminEnabled;
     private JButton btnPrimaryPassword;
     private JButton btnSecondaryPassword;
     private JTextField txtType;
     private JLabel lblSecondaryPwd;
     private JLabel lblPrimaryPwd;
     private JLabel lblUserName;
+    private JButton btnEnable;
+    private JButton btnDisable;
+    private JPanel pnlAdminUserBtn;
 
     /**
      * Constructor of ACR property view.
@@ -86,7 +96,24 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                 onError(e.getMessage());
             }
         });
+
+        btnEnable.addActionListener(this::onAdminUserBtnClick);
+        btnDisable.addActionListener(this::onAdminUserBtnClick);
     }
+
+    private void onAdminUserBtnClick(ActionEvent actionEvent) {
+        btnEnable.setEnabled(false);
+        btnDisable.setEnabled(false);
+        this.containerPropertyPresenter.onEnableAdminUser(subscriptionId, registryId, !isAdminEnabled);
+    }
+
+    private void updateAdminUserBtn(boolean isAdminEnabled) {
+        btnEnable.setEnabled(!isAdminEnabled);
+        btnDisable.setEnabled(isAdminEnabled);
+        btnEnable.setBackground(isAdminEnabled ? COLOR_CHOSEN : COLOR_UNCHOSEN);
+        btnDisable.setBackground(!isAdminEnabled ? COLOR_CHOSEN : COLOR_UNCHOSEN);
+    }
+
 
     @NotNull
     @Override
@@ -113,25 +140,29 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
     @Override
     public void showProperty(ContainerRegistryProperty property) {
+        registryId = property.getId();
+        subscriptionId = property.getSubscriptionId();
+        isAdminEnabled = property.isAdminEnabled();
+
         txtName.setText(property.getName());
         txtType.setText(property.getType());
         txtResGrp.setText(property.getGroupName());
-        txtSubscription.setText(property.getSubscriptionId());
+        txtSubscription.setText(subscriptionId);
         txtRegion.setText(property.getRegionName());
         txtServerUrl.setText(property.getLoginServerUrl());
-        boolean isAdminEnabled = property.isAdminEnabled();
-        txtIsAdminEnabled.setText(String.valueOf(isAdminEnabled));
+
+        lblUserName.setVisible(isAdminEnabled);
+        txtUserName.setVisible(isAdminEnabled);
+        lblPrimaryPwd.setVisible(isAdminEnabled);
+        btnPrimaryPassword.setVisible(isAdminEnabled);
+        lblSecondaryPwd.setVisible(isAdminEnabled);
+        btnSecondaryPassword.setVisible(isAdminEnabled);
         if (isAdminEnabled) {
-            lblUserName.setVisible(true);
-            txtUserName.setVisible(true);
             txtUserName.setText(property.getUserName());
-            lblPrimaryPwd.setVisible(true);
-            btnPrimaryPassword.setVisible(true);
-            lblSecondaryPwd.setVisible(true);
-            btnSecondaryPassword.setVisible(true);
             password = property.getPassword();
             password2 = property.getPassword2();
         }
+        updateAdminUserBtn(isAdminEnabled);
     }
 
     private void disableTxtBoard() {
@@ -141,7 +172,6 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         txtSubscription.setBorder(BorderFactory.createEmptyBorder());
         txtRegion.setBorder(BorderFactory.createEmptyBorder());
         txtServerUrl.setBorder(BorderFactory.createEmptyBorder());
-        txtIsAdminEnabled.setBorder(BorderFactory.createEmptyBorder());
         txtUserName.setBorder(BorderFactory.createEmptyBorder());
     }
 
@@ -152,7 +182,6 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         txtSubscription.setBackground(null);
         txtRegion.setBackground(null);
         txtServerUrl.setBackground(null);
-        txtIsAdminEnabled.setBackground(null);
         txtUserName.setBackground(null);
     }
 }

@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
+import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azure.management.containerregistry.RegistryPassword;
 import com.microsoft.azure.management.containerregistry.implementation.RegistryListCredentials;
 import com.microsoft.azuretools.azurecommons.util.Utils;
@@ -63,25 +64,53 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
                         getMvpView().onError(CANNOT_GET_REGISTRY_PROPERTY);
                         return;
                     }
-                    String userName = "";
-                    String password = "";
-                    String password2 = "";
-                    if (registry.adminUserEnabled()) {
-                        RegistryListCredentials credentials = registry.listCredentials();
-                        userName = credentials.username();
-                        List<RegistryPassword> passwords = credentials.passwords();
-                        if (passwords.size() > 0) {
-                            password = passwords.get(0).value();
-                        }
-                        if (passwords.size() > 1) {
-                            password2 = passwords.get(1).value();
-                        }
-                    }
-                    ContainerRegistryProperty property = new ContainerRegistryProperty(registry.name(), registry.type(),
-                            registry.resourceGroupName(), registry.regionName(), sid, registry.loginServerUrl(),
-                            registry.adminUserEnabled(), userName, password, password2);
+                    ContainerRegistryProperty property = getProperty(registry, sid);
                     getMvpView().showProperty(property);
                 }), e -> errorHandler(CANNOT_GET_REGISTRY_PROPERTY, (Exception) e));
+    }
+
+    public void onEnableAdminUser(String sid, String id, boolean b) {
+        if (Utils.isEmptyString(sid)) {
+            getMvpView().onError(CANNOT_GET_SUBSCRIPTION_ID);
+            return;
+        }
+        if (Utils.isEmptyString(id)) {
+            getMvpView().onError(CANNOT_GET_REGISTRY_ID);
+            return;
+        }
+        Observable.fromCallable(() -> ContainerRegistryMvpModel.getInstance().setAdminUserEnabled(sid, id, b))
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(registry -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    if (registry == null) {
+                        getMvpView().onError(CANNOT_GET_REGISTRY_PROPERTY);
+                        return;
+                    }
+                    ContainerRegistryProperty property = getProperty(registry, sid);
+                    getMvpView().showProperty(property);
+                }), e -> errorHandler(CANNOT_GET_REGISTRY_PROPERTY, (Exception) e));
+    }
+
+    private ContainerRegistryProperty getProperty(Registry registry, String sid) {
+        String userName = "";
+        String password = "";
+        String password2 = "";
+        if (registry.adminUserEnabled()) {
+            RegistryListCredentials credentials = registry.listCredentials();
+            userName = credentials.username();
+            List<RegistryPassword> passwords = credentials.passwords();
+            if (passwords.size() > 0) {
+                password = passwords.get(0).value();
+            }
+            if (passwords.size() > 1) {
+                password2 = passwords.get(1).value();
+            }
+        }
+        return new ContainerRegistryProperty(registry.id(), registry.name(), registry.type(),
+                registry.resourceGroupName(), registry.regionName(), sid, registry.loginServerUrl(),
+                registry.adminUserEnabled(), userName, password, password2);
     }
 
     private void errorHandler(String msg, Exception e) {

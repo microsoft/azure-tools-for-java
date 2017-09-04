@@ -74,6 +74,9 @@
                     <exclude>**/Main.java</exclude>
                 </excludes>
             </resource>
+            <resource>
+                <directory>resources</directory>
+            </resource>
         </resources>
     </build>
     <dependencies>

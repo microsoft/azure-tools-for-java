@@ -37,10 +37,12 @@ import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.CanceledByUserException;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
 import rx.Observable;
 
 public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresenter<V> {
@@ -152,9 +154,8 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
                 }
                 V v = getMvpView();
                 v.onRequestSucceed(new RequestPayload(TEXT_DEPLOYING_TO_EXISTING_WEB_APP,
-                        String.format("http://%s.azurewebsites.net/%s",
-                                DockerRuntime.getInstance().getLatestWebAppName(),
-                                DockerRuntime.getInstance().getLatestArtifactName())));
+                        String.format("http://%s.azurewebsites.net/",
+                                DockerRuntime.getInstance().getLatestWebAppName())));
                 v.finishDeploy();
             });
         }, err -> {
@@ -172,13 +173,6 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
 
     /**
      * Create new Web App on Linux and deploy on it.
-     * 
-     * @param appName
-     * @param subscriptionSelectionIndex
-     * @param resourceGroupName
-     * @param createNewRg
-     *            flag indicating whether resource group should be created.
-     * @throws IOException
      */
     public void onDeployToNewWebApp(String appName, int subscriptionSelectionIndex, String resourceGroupName,
             boolean createNewRg) throws IOException {
@@ -197,9 +191,8 @@ public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresente
                 }
                 V v = getMvpView();
                 v.onRequestSucceed(new RequestPayload(TEXT_DEPLOYING_TO_NEW_WEB_APP,
-                        String.format("http://%s.azurewebsites.net/%s",
-                                DockerRuntime.getInstance().getLatestWebAppName(),
-                                DockerRuntime.getInstance().getLatestArtifactName())));
+                        String.format("http://%s.azurewebsites.net/",
+                                DockerRuntime.getInstance().getLatestWebAppName())));
                 v.finishDeploy();
             });
         }, err -> {

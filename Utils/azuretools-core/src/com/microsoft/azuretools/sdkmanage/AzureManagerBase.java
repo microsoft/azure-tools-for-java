@@ -34,8 +34,12 @@ import java.util.Map;
 public abstract class AzureManagerBase implements AzureManager {
     private static final String CHINA_PORTAL = "https://portal.azure.cn";
     private static final String GLOBAL_PORTAL = "https://ms.portal.azure.com";
+
+    private static final String CHINA_SCM_SUFFIX = ".scm.chinacloudsites.cn";
+    private static final String GLOBAL_SCM_SUFFIX = ".scm.azurewebsites.net";
     
     protected Map<String, Azure> sidToAzureMap = new HashMap<>();
+
     @Override
     public String getPortalUrl() {
         Environment env = getEnvironment();
@@ -50,6 +54,19 @@ public abstract class AzureManagerBase implements AzureManager {
                 return AzureEnvironment.AZURE_US_GOVERNMENT.portal();
             default:
                 return GLOBAL_PORTAL;
+        }
+    }
+
+    @Override
+    public String getScmSuffix() {
+        Environment env = getEnvironment();
+        switch (env) {
+            case GLOBAL:
+                return GLOBAL_SCM_SUFFIX;
+            case CHINA:
+                return CHINA_SCM_SUFFIX;
+            default:
+                return GLOBAL_SCM_SUFFIX;
         }
     }
 }

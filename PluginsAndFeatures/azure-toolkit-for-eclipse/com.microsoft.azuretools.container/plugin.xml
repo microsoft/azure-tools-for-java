@@ -17,20 +17,42 @@
         <separator visible="true" name="Docker related commands"/>
         <command name="dockerize" commandId="com.microsoft.azuretools.container.commands.dockerize">
           <visibleWhen checkEnabled="false">
-            <not>
-              <reference definitionId="when.is.dockerized"/>
-            </not>
+            <with variable="selection">
+                <count value="1"/>
+                <iterate>
+                    <adapt type="org.eclipse.core.resources.IProject">
+                        <not><reference definitionId="when.is.dockerized"/></not>
+                        <test property="com.microsoft.ui.webapp.property.isSupportedProj"/>
+                    </adapt>
+                </iterate>
+            </with>
           </visibleWhen>
         </command>
         <command name="dockerrun" commandId="com.microsoft.azuretools.container.commands.dockerrun">
-          <visibleWhen checkEnabled="false">
-            <reference definitionId="when.is.dockerized"/>
-          </visibleWhen>
+            <visibleWhen checkEnabled="false">
+                <with variable="selection">
+                    <count value="1"/> 
+                    <iterate>
+                        <adapt type="org.eclipse.core.resources.IProject">
+                            <test property="com.microsoft.ui.webapp.property.isSupportedProj"/>
+                            <test property="com.microsoft.azuretools.container.testers.isDockerized"/>
+                        </adapt>
+                    </iterate> 
+                </with>
+            </visibleWhen>
         </command>
         <command name="publishwebapp" commandId="com.microsoft.azuretools.container.commands.publishwebapp">
-          <visibleWhen checkEnabled="false">
-            <reference definitionId="when.is.dockerized"/>
-          </visibleWhen>
+            <visibleWhen checkEnabled="false">
+                <with variable="selection">
+                    <count value="1"/> 
+                    <iterate>
+                        <adapt type="org.eclipse.core.resources.IProject">
+                            <test property="com.microsoft.ui.webapp.property.isSupportedProj"/>
+                            <test property="com.microsoft.azuretools.container.testers.isDockerized"/>
+                        </adapt>
+                    </iterate> 
+                </with>
+            </visibleWhen>
         </command>
       </menu>
     </menuContribution>

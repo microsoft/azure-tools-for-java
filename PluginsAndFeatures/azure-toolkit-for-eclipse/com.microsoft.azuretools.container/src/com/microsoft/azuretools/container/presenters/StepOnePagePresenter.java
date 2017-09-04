@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.container.presenters;
 
+import com.microsoft.azuretools.container.DockerProgressHandler;
 import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.views.StepOnePageView;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
@@ -29,7 +30,6 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.ProgressHandler;
 import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.ProgressMessage;
 import com.spotify.docker.client.messages.RegistryAuth;
 
 import rx.Observable;
@@ -40,29 +40,15 @@ public class StepOnePagePresenter<V extends StepOnePageView> extends MvpPresente
 
     /**
      * onPushLatestImageToRegistry.
-     * 
-     * @param registryUrl
-     * @param registryUsername
-     * @param registryPassword
-     * @return
      */
     public boolean onPushLatestImageToRegistry(String registryUrl, String registryUsername, String registryPassword) {
         try {
             getMvpView().onRequestPending(TEXT_PUSHING_LATEST_IMAGE_TO_REGISTRY);
             DockerClient dockerClient = DockerRuntime.getInstance().getDockerBuilder().build();
-            ProgressHandler progressHandler = new ProgressHandler() {
-                @Override
-                public void progress(ProgressMessage message) throws DockerException {
-                    if (message.error() != null) {
-                        throw new DockerException(message.toString());
-                    }
-                }
-            };
-
             // push image async
             Observable.fromCallable(() -> {
                 doPushImage(dockerClient, registryUrl, registryUsername, registryPassword,
-                        DockerRuntime.getInstance().getLatestImageName(), progressHandler);
+                        DockerRuntime.getInstance().getLatestImageName(), new DockerProgressHandler());
                 updateRuntimeRegistryInfo(registryUrl, registryUsername, registryPassword);
                 return null;
             }).subscribeOn(getSchedulerProvider().io()).subscribe(wal -> {
@@ -76,6 +62,7 @@ public class StepOnePagePresenter<V extends StepOnePageView> extends MvpPresente
                 });
             }, err -> {
                 System.err.println("onPushLatestImageToRegistry@StepOnePagePresenter");
+                err.printStackTrace();
                 DefaultLoader.getIdeHelper().invokeAndWait(() -> {
                     if (isViewDetached()) {
                         return;

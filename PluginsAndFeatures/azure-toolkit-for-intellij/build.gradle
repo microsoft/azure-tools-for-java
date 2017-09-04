@@ -95,8 +95,6 @@ dependencies {
     testCompile 'info.cukes:cucumber-java:1.2.5'
     testCompile 'org.mockito:mockito-core:2.7.22'
     testCompile 'org.assertj:assertj-swing-junit:3.5.0'
-    runtime 'com.microsoft.azure:azure-client-runtime:1.0.2'
-    runtime 'com.microsoft.azure:azure-client-authentication:1.0.2'
 }
 
 task cucumberPackJar(type: Jar) {

@@ -97,12 +97,11 @@ public class AdAuthManager {
         }
 
         // save account email
-        String accountEmail = displayableId;
-        if (accountEmail == null) {
+        if (displayableId == null) {
             throw new IllegalArgumentException("accountEmail is null");
         }
 
-        adAuthDetails.setAccountEmail(accountEmail);
+        adAuthDetails.setAccountEmail(displayableId);
         adAuthDetails.setTidToSidsMap(tidToSidsMap);
 //        saveSettings();
 

@@ -34,10 +34,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
-import com.microsoft.intellij.container.Constant;
+import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType;
 
 import java.nio.file.Paths;
@@ -70,7 +68,7 @@ public class RunOnDockerHostAction extends AzureAnAction {
         boolean dockerFileExists = false;
         if (project != null) {
             String basePath = project.getBasePath();
-            dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKER_CONTEXT_FOLDER,
+            dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKERFILE_FOLDER,
                     Constant.DOCKERFILE_NAME).toFile().exists();
         }
         event.getPresentation().setEnabledAndVisible(dockerFileExists);

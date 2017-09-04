@@ -31,13 +31,6 @@ import java.awt.event.ItemEvent;
 
 public class SparkVersionOptionsPanel extends JPanel {
     private static final String SPARK_VERSION_KEY = "com.microsoft.azure.hdinsight.SparkVersion";
-    private static final SparkVersion[] sparkVersions = new SparkVersion[]{
-            SparkVersion.SPARK_1_5_2,
-            SparkVersion.SPARK_1_6_2,
-            SparkVersion.SPARK_1_6_3,
-            SparkVersion.SPARK_2_0_2,
-            SparkVersion.SPARK_2_1_0,
-    };
     private ComboBox sparkVersionComboBox;
 
     public SparkVersion apply() {
@@ -46,10 +39,11 @@ public class SparkVersionOptionsPanel extends JPanel {
 
     public SparkVersionOptionsPanel() {
         sparkVersionComboBox = new ComboBox();
-        for (SparkVersion sv : sparkVersions) {
+        for (SparkVersion sv : SparkVersion.class.getEnumConstants()) {
             sparkVersionComboBox.addItem(sv);
         }
 
+        sparkVersionComboBox.setSelectedIndex(0);
         String cachedSparkVersion = DefaultLoader.getIdeHelper().getApplicationProperty(SPARK_VERSION_KEY);
         if (cachedSparkVersion != null) {
             useCachedSparkVersion(cachedSparkVersion);

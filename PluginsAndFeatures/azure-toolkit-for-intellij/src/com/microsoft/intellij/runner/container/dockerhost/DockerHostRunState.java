@@ -16,21 +16,19 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.intellij.container.Constant;
-import com.microsoft.intellij.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.RunProcessHandler;
+import com.microsoft.intellij.runner.container.utils.Constant;
+import com.microsoft.intellij.runner.container.utils.DockerProgressHandler;
+import com.microsoft.intellij.runner.container.utils.DockerUtil;
+import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.Container;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.FileNotFoundException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,8 +38,6 @@ import java.util.Map;
 import rx.Observable;
 
 public class DockerHostRunState implements RunProfileState {
-    private static final String DOCKER_CONTEXT_FOLDER_NAME = "dockerContext";
-    private static final String DOCKER_FILE_NAME = "Dockerfile";
     private final DockerHostRunModel dataModel;
     private final Project project;
 
@@ -97,44 +93,36 @@ public class DockerHostRunState implements RunProfileState {
                         processHandler.println("Project base path is null.", ProcessOutputTypes.STDERR);
                         throw new FileNotFoundException("Project base path is null.");
                     }
-                    // locate war file to specified location
-                    processHandler.setText("Locate war file ...  ");
+                    // locate artifact to specified location
                     String targetFilePath = dataModel.getTargetPath();
-                    String targetBuildPath = Paths.get(targetFilePath).getParent().toString();
-                    String targetFileName = dataModel.getTargetName();
+                    processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
 
-                    FileUtils.copyFile(
-                            Paths.get(targetBuildPath, targetFileName).toFile(),
-                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME, targetFileName).toFile()
-                    );
                     // validate dockerfile
-                    FileUtils.copyDirectory(
-                            Paths.get(basePath, DOCKER_CONTEXT_FOLDER_NAME).toFile(),
-                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME).toFile()
-                    );
+                    Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
+                    processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
+                    if (!targetDockerfile.toFile().exists()) {
+                        throw new FileNotFoundException("Dockerfile not found.");
+                    }
                     // replace placeholder if exists
-                    Path targetDockerfile = Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME, DOCKER_FILE_NAME);
                     String content = new String(Files.readAllBytes(targetDockerfile));
-                    content = content.replaceAll("<artifact>", targetFileName);
+                    content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
+                            Paths.get(basePath).toUri().relativize(Paths.get(targetFilePath).toUri()).getPath()
+                    );
                     Files.write(targetDockerfile, content.getBytes());
 
                     // build image
-                    processHandler.setText("Build image ...  ");
+                    String imageNameWithTag = String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName());
+                    processHandler.setText(String.format("Building image ...  [%s]", imageNameWithTag));
                     DockerClient docker = DockerUtil.getDockerClient(
                             dataModel.getDockerHost(),
                             dataModel.isTlsEnabled(),
                             dataModel.getDockerCertPath()
                     );
+
                     String latestImageName = DockerUtil.buildImage(docker,
-                            String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()),
-                            Paths.get(targetBuildPath, DOCKER_CONTEXT_FOLDER_NAME),
-                            (message) -> {
-                                if (message.error() != null) {
-                                    throw new DockerException(message.error());
-                                } else {
-                                    processHandler.setText(message.stream());
-                                }
-                            }
+                            imageNameWithTag,
+                            Paths.get(basePath, Constant.DOCKERFILE_FOLDER),
+                            new DockerProgressHandler(processHandler)
                     );
 
                     // docker run
@@ -145,32 +133,24 @@ public class DockerHostRunState implements RunProfileState {
                     runningContainerId[0] = containerId;
                     Container container = DockerUtil.runContainer(docker, containerId);
                     // props
-                    Map<String, String> props = new HashMap<>();
-
+                    String hostname = new URI(dataModel.getDockerHost()).getHost();
+                    String publicPort = null;
                     ImmutableList<Container.PortMapping> ports = container.ports();
                     if (ports != null) {
-                        String port = null;
                         for (Container.PortMapping portMapping : ports) {
                             if (Constant.TOMCAT_SERVICE_PORT.equals(String.valueOf(portMapping.privatePort()))) {
-                                port = String.valueOf(portMapping.publicPort());
+                                publicPort = String.valueOf(portMapping.publicPort());
                             }
                         }
-                        if (port != null) {
-                            props.put("publicPort", port);
-                        }
                     }
-                    String hostname = new URI(dataModel.getDockerHost()).getHost();
-                    props.put("hostname", hostname != null ? hostname : "localhost");
-                    return props;
+                    processHandler.setText(String.format(Constant.MESSAGE_CONTAINER_STARTED,
+                            (hostname != null ? hostname : "localhost") + (publicPort != null ? ":" + publicPort : "")
+                    ));
+                    return null;
                 }
         ).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
                 (props) -> {
-                    processHandler.setText("Container started ... ");
-                    processHandler.setText(String.format(
-                            Constant.MESSAGE_CONTAINER_STARTED,
-                            String.format("%s:%s", props.get("hostname"), props.get("publicPort")),
-                            FilenameUtils.removeExtension(dataModel.getTargetName())
-                    ));
+                    processHandler.setText("Container started.");
                     sendTelemetry(true, null);
                 },
                 (err) -> {
@@ -187,6 +167,12 @@ public class DockerHostRunState implements RunProfileState {
     private void sendTelemetry(boolean success, @Nullable String errorMsg) {
         Map<String, String> map = new HashMap<>();
         map.put("Success", String.valueOf(success));
+        String fileName = dataModel.getTargetName();
+        if (null != fileName) {
+            map.put("FileType", MavenRunTaskUtil.getFileType(fileName));
+        } else {
+            map.put("FileType", "");
+        }
         if (!success) {
             map.put("ErrorMsg", errorMsg);
         }

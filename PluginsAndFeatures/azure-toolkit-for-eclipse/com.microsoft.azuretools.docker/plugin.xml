@@ -28,24 +28,37 @@
                icon="icons/windowsAzure.png">
             <command
                   name="Publish as Docker Container..."
-                  commandId="com.microsoft.azuretools.docker.commands.azurePublishDockerContainer"/>
-            <visibleWhen checkEnabled="false">
-			    <with 
-				variable="selection">
-				<count value="1"/> 
-				<iterate 
-					operator="or">
-					<adapt type="org.eclipse.core.resources.IProject">
-        				<test property="com.microsoft.ui.webapp.property.isWebProj"/>
-            		</adapt>
-				</iterate> 
-		    	</with>
-			</visibleWhen>
+                  commandId="com.microsoft.azuretools.docker.commands.azurePublishDockerContainer">
+                <visibleWhen  checkEnabled="false">
+                    <with 
+                    variable="selection">
+                        <count value="1"/> 
+                        <iterate 
+                            operator="or">
+                            <adapt type="org.eclipse.core.resources.IProject">
+                                <test property="com.microsoft.ui.webapp.property.isWebProj"/>
+                            </adapt>
+                        </iterate> 
+                    </with>
+                </visibleWhen>
+            </command>
          </menu>
       </menuContribution>
       <menuContribution locationURI="menu:com.microsoft.ui.dropdown.toolbar.command">
-         <command commandId="com.microsoft.azuretools.docker.commands.azurePublishDockerContainer" style="push">
-         </command>
+          <command commandId="com.microsoft.azuretools.docker.commands.azurePublishDockerContainer" style="push">
+              <visibleWhen  checkEnabled="false">
+                  <with 
+                  variable="selection">
+                      <count value="1"/> 
+                      <iterate 
+                          operator="or">
+                          <adapt type="org.eclipse.core.resources.IProject">
+                              <test property="com.microsoft.ui.webapp.property.isWebProj"/>
+                          </adapt>
+                      </iterate> 
+                  </with>
+              </visibleWhen>
+           </command>
       </menuContribution>
    </extension>
    
