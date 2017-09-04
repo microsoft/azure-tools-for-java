@@ -61,14 +61,16 @@ import java.net.URL;
  */
 public class WebAppUtils {
 
+    public static final String TYPE_WAR = "war";
+    public static final String TYPE_JAR = "jar";
+
     private static final String WEB_CONFIG_PACKAGE_PATH = "/webapp/web.config";
     private static final String ftpRootPath = "/site/wwwroot/";
     private static final String ftpWebAppsPath = ftpRootPath + "webapps/";
     private static String webConfigFilename = "web.config";
     private static final String NO_TARGET_FILE = "Cannot find target file: %s.";
     private static final String ROOT = "ROOT";
-    public static final String TYPE_WAR = "war";
-    public static final String TYPE_JAR = "jar";
+    private static final int FTP_MAX_TRY = 3;
 
     @NotNull
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
@@ -114,33 +116,38 @@ public class WebAppUtils {
             input = new FileInputStream(artifactPath);
             int indexOfDot = artifactPath.lastIndexOf(".");
             String fileType = artifactPath.substring(indexOfDot + 1);
-            switch (fileType) {
-                case TYPE_WAR:
-                    if (toRoot) {
-                        WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + ROOT, indicator);
-                        ftp.deleteFile(ftpWebAppsPath + ROOT + "." + TYPE_WAR);
-                        ftp.storeFile(ftpWebAppsPath + ROOT + "." + TYPE_WAR, input);
-                    } else {
-                        WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + artifactName, indicator);
-                        ftp.deleteFile(artifactName + "." + TYPE_WAR);
-                        boolean success = ftp.storeFile(ftpWebAppsPath + artifactName + "." + TYPE_WAR, input);
-                        if (!success) {
-                            int rc = ftp.getReplyCode();
-                            throw new IOException("FTP client can't store the artifact, reply code: " + rc);
+            int count = 0;
+            int maxTries = FTP_MAX_TRY;
+            boolean success = false;
+            while (!success && ++count <= maxTries) {
+                System.out.println("Try time: " + count);
+                switch (fileType) {
+                    case TYPE_WAR:
+                        if (toRoot) {
+                            WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + ROOT, indicator);
+                            ftp.deleteFile(ftpWebAppsPath + ROOT + "." + TYPE_WAR);
+                            success = ftp.storeFile(ftpWebAppsPath + ROOT + "." + TYPE_WAR, input);
+                        } else {
+                            WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + artifactName, indicator);
+                            ftp.deleteFile(artifactName + "." + TYPE_WAR);
+                            success = ftp.storeFile(ftpWebAppsPath + artifactName + "." + TYPE_WAR, input);
+                            if (!success) {
+                                int rc = ftp.getReplyCode();
+                                throw new IOException("FTP client can't store the artifact, reply code: " + rc);
+                            }
                         }
-                    }
-                    break;
-                case TYPE_JAR:
-                    boolean success = ftp.storeFile(ftpRootPath + ROOT + "." + TYPE_JAR, input);
-                    if (!success) {
-                        int rc = ftp.getReplyCode();
-                        throw new IOException("FTP client can't store the artifact, reply code: " + rc);
-                    }
-                    break;
-                default:
-                    break;
+                        break;
+                    case TYPE_JAR:
+                        success = ftp.storeFile(ftpRootPath + ROOT + "." + TYPE_JAR, input);
+                        break;
+                    default:
+                        break;
+                }
             }
-
+            if (!success) {
+                int rc = ftp.getReplyCode();
+                throw new IOException("FTP client can't store the artifact, reply code: " + rc);
+            }
             if (indicator != null) indicator.setText("Logging out of FTP server...");
             ftp.logout();
         } finally {

@@ -540,8 +540,8 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     message = "Deploying Web App...";
                     monitor.setTaskName(message);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 35, message);
-                    PublishingProfile pp = webApp.getPublishingProfile();
                     webApp.stop();
+                    PublishingProfile pp = webApp.getPublishingProfile();
                     WebAppUtils.deployArtifact(artifactName, artifactPath,
                             pp, isDeployToRoot, new UpdateProgressIndicator(monitor));
                     webApp.start();
@@ -595,6 +595,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     ex.printStackTrace();
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@deploy@AppServiceCreateDialog", ex));
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1, errorMessage);
+                    webApp.start();
                     Display.getDefault().asyncExec(new Runnable() {
                         @Override
                         public void run() {
