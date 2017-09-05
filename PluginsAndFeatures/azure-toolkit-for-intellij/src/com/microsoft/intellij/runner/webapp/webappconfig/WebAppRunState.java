@@ -92,8 +92,6 @@ public class WebAppRunState implements RunProfileState {
     private final WebAppSettingModel webAppSettingModel;
     private final RunProcessHandler processHandler;
 
-    private final Map<String, String> telemetryMap;
-
     /**
      * Place to execute the Web App deployment task.
      */
@@ -101,7 +99,6 @@ public class WebAppRunState implements RunProfileState {
         this.project = project;
         this.webAppSettingModel = webAppSettingModel;
         this.processHandler = new RunProcessHandler();
-        this.telemetryMap = new HashMap<>();
     }
 
     @Nullable
@@ -111,6 +108,7 @@ public class WebAppRunState implements RunProfileState {
         ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         processHandler.startNotify();
         consoleView.attachToProcess(processHandler);
+        Map<String, String> telemetryMap = new HashMap<>();
         Observable.fromCallable(() -> {
             File file = new File(webAppSettingModel.getTargetPath());
             if (!file.exists()) {
@@ -131,10 +129,12 @@ public class WebAppRunState implements RunProfileState {
             processHandler.setText(STOP_WEB_APP);
             webApp.stop();
 
-            uploadWebConfigFile(ftp, fileType);
+            int webConfigUploadCount = uploadWebConfigFile(ftp, fileType);
+            telemetryMap.put("webConfigCount", String.valueOf(webConfigUploadCount));
 
             try (FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath())) {
-                uploadArtifact(input, webApp, ftp, fileName, fileType);
+                int artifactUploadCount = uploadArtifact(input, webApp, ftp, fileName, fileType);
+                telemetryMap.put("artifactUploadCount", String.valueOf(artifactUploadCount));
             }
 
             processHandler.setText(START_WEB_APP);
@@ -164,11 +164,11 @@ public class WebAppRunState implements RunProfileState {
                     }
                     updateConfigurationDataModel(webApp);
                     AzureWebAppMvpModel.getInstance().listWebApps(true /*force*/);
-                    sendTelemetry(true, null);
+                    sendTelemetry(telemetryMap, true /*success*/, null /*errorMsg*/);
                 }, err -> {
                     processHandler.println(err.getMessage(), ProcessOutputTypes.STDERR);
                     processHandler.notifyComplete();
-                    sendTelemetry(false, err.getMessage());
+                    sendTelemetry(telemetryMap, false /*success*/, err.getMessage());
                 }
         );
         return new DefaultExecutionResult(consoleView, processHandler);
@@ -196,42 +196,38 @@ public class WebAppRunState implements RunProfileState {
         return webApp;
     }
 
-    private void uploadWebConfigFile(@NotNull FTPClient ftp, @NotNull String fileType) throws IOException {
+    private int uploadWebConfigFile(@NotNull FTPClient ftp, @NotNull String fileType) throws IOException {
         if (webAppSettingModel.isCreatingNew() && Comparing.equal(fileType, MavenConstants.TYPE_JAR)) {
             processHandler.setText(UPLOADING_WEB_CONFIG);
             try (InputStream webConfigInput = getClass()
                     .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
-                int webConfigCount = uploadFileToFtp(ftp, WEB_CONFIG_FTP_PATH, webConfigInput);
-                telemetryMap.put("webConfigUploadCount", String.valueOf(webConfigCount));
+                return uploadFileToFtp(ftp, WEB_CONFIG_FTP_PATH, webConfigInput);
             }
         }
+        return 0;
     }
 
-    private void uploadArtifact(@NotNull FileInputStream input, @NotNull WebApp webApp, @NotNull FTPClient ftp,
+    private int uploadArtifact(@NotNull FileInputStream input, @NotNull WebApp webApp, @NotNull FTPClient ftp,
                                 @NotNull String fileName, @NotNull String fileType)
             throws IOException {
-        int artifactUploadCount = 0;
         switch (fileType) {
             case MavenConstants.TYPE_WAR:
                 if (webAppSettingModel.isDeployToRoot()) {
                     WebAppUtils.removeFtpDirectory(ftp, CONTAINER_ROOT_PATH, processHandler);
                     processHandler.setText(String.format(UPLOADING_ARTIFACT, CONTAINER_ROOT_PATH + "." + fileType));
-                    artifactUploadCount = uploadFileToFtp(ftp, CONTAINER_ROOT_PATH + "." + fileType, input);
+                    return uploadFileToFtp(ftp, CONTAINER_ROOT_PATH + "." + fileType, input);
                 } else {
                     WebAppUtils.removeFtpDirectory(ftp, WEB_APP_BASE_PATH + fileName, processHandler);
                     processHandler.setText(String.format(UPLOADING_ARTIFACT,
                             WEB_APP_BASE_PATH + webAppSettingModel.getTargetName()));
-                    artifactUploadCount = uploadFileToFtp(ftp, WEB_APP_BASE_PATH + webAppSettingModel.getTargetName(), input);
+                    return uploadFileToFtp(ftp, WEB_APP_BASE_PATH + webAppSettingModel.getTargetName(), input);
                 }
-                break;
             case MavenConstants.TYPE_JAR:
                 processHandler.setText(String.format(UPLOADING_ARTIFACT, ROOT_PATH + "." + fileType));
-                artifactUploadCount = uploadFileToFtp(ftp, ROOT_PATH + "." + fileType, input);
-                break;
+                return uploadFileToFtp(ftp, ROOT_PATH + "." + fileType, input);
             default:
-                break;
+                return 0;
         }
-        telemetryMap.put("artifactUploadCount", String.valueOf(artifactUploadCount));
     }
 
     private int uploadFileToFtp(@NotNull FTPClient ftp, @NotNull String path,
@@ -268,7 +264,7 @@ public class WebAppRunState implements RunProfileState {
     }
 
     // TODO: refactor later
-    private void sendTelemetry(boolean success, @Nullable String errorMsg) {
+    private void sendTelemetry(@NotNull Map<String, String> telemetryMap, boolean success, @Nullable String errorMsg) {
         telemetryMap.put("SubscriptionId", webAppSettingModel.getSubscriptionId());
         telemetryMap.put("CreateNewApp", String.valueOf(webAppSettingModel.isCreatingNew()));
         telemetryMap.put("CreateNewSP", String.valueOf(webAppSettingModel.isCreatingAppServicePlan()));
