@@ -25,19 +25,13 @@ package com.microsoft.azuretools.utils;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.JavaVersion;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.appservice.WebContainer;
-import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 
@@ -285,102 +279,6 @@ public class WebAppUtils {
         }
 
         throw new IOException("Unknown web container: " + webContainer.toString());
-    }
-
-    public static abstract class CreateAppServiceModel {
-        public String webAppName;
-        public WebContainer webContainer;
-        public SubscriptionDetail subscriptionDetail;
-
-        public boolean isResourceGroupCreateNew;
-        public ResourceGroup resourceGroup;
-        public String resourceGroupNameCreateNew;
-
-        public boolean isAppServicePlanCreateNew;
-        public AppServicePlan appServicePlan;
-        public String appServicePlanNameCreateNew;
-        public Location appServicePlanLocationCreateNew;
-        public PricingTier appServicePricingTierCreateNew;
-
-        public JavaVersion javaVersion;
-
-        public String packaging;
-
-        public abstract void collectData();
-    }
-
-    public static WebApp createAppService(IProgressIndicator progressIndicator, CreateAppServiceModel model) throws IOException, WebAppException, InterruptedException, AzureCmdException {
-
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        // not signed in
-        if (azureManager == null) { return null; }
-
-        Azure azure = azureManager.getAzure(model.subscriptionDetail.getSubscriptionId());
-
-        AppServicePlan appServicePlan = null;
-        if (model.isAppServicePlanCreateNew) {
-            AppServicePlan.DefinitionStages.WithGroup ds1 = azure.appServices().appServicePlans()
-                    .define(model.appServicePlanNameCreateNew)
-                    .withRegion(model.appServicePlanLocationCreateNew.name());
-            AppServicePlan.DefinitionStages.WithPricingTier ds2;
-            if (model.isResourceGroupCreateNew) {
-                ds2 = ds1.withNewResourceGroup(model.resourceGroupNameCreateNew);
-            } else {
-                ds2 = ds1.withExistingResourceGroup(model.resourceGroup);
-            }
-            appServicePlan = ds2.withPricingTier(model.appServicePricingTierCreateNew).withOperatingSystem(OperatingSystem.WINDOWS).create();
-        } else {
-            appServicePlan = model.appServicePlan;
-        }
-
-        WebApp.DefinitionStages.Blank definitionStages = azure.webApps().define(model.webAppName);
-        WebAppBase.DefinitionStages.WithCreate<WebApp> withCreate;
-
-        WebApp.DefinitionStages.ExistingWindowsPlanWithGroup ds1 = definitionStages.withExistingWindowsPlan(appServicePlan);
-        if (model.isResourceGroupCreateNew) {
-            withCreate = ds1.withNewResourceGroup(model.resourceGroupNameCreateNew);
-        } else {
-            withCreate = ds1.withExistingResourceGroup(model.resourceGroup);
-        }
-
-        if (model.javaVersion != null) {
-            withCreate = withCreate.withJavaVersion(model.javaVersion).withWebContainer(model.webContainer);
-        }
-
-        WebApp myWebApp = withCreate.create();
-
-        // update cache
-        if (model.isResourceGroupCreateNew) {
-            ResourceGroup rg = azure.resourceGroups().getByName(model.resourceGroupNameCreateNew);
-            if (rg == null) {
-                throw new AzureCmdException(String.format("azure.resourceGroups().getByName(%s) returned null"), model.resourceGroupNameCreateNew);
-            }
-
-            AzureModelController.addNewResourceGroup(model.subscriptionDetail, rg);
-            AzureModelController.addNewWebAppToJustCreatedResourceGroup(rg, myWebApp);
-            if (model.isAppServicePlanCreateNew) {
-                AzureModelController.addNewAppServicePlanToJustCreatedResourceGroup(rg, appServicePlan);
-            } else {
-                // add empty list
-                AzureModelController.addNewAppServicePlanToJustCreatedResourceGroup(rg, null);
-            }
-        } else {
-            ResourceGroup rg = model.resourceGroup;
-            AzureModelController.addNewWebAppToExistingResourceGroup(rg, myWebApp);
-            if (model.isAppServicePlanCreateNew) {
-                //AppServicePlan asp = azure.appServices().appServicePlans().getById(myWebApp.appServicePlanId());
-                AzureModelController.addNewAppServicePlanToExistingResourceGroup(rg, appServicePlan);
-            }
-        }
-
-        if (model.packaging != null && model.packaging.equals(TYPE_JAR)) {
-            try (InputStream webConfigInput = WebAppUtils.class
-                    .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
-                uploadWebConfig(myWebApp, webConfigInput, progressIndicator);
-            }
-        }
-
-        return myWebApp;
     }
 
     public static void deleteAppService(WebAppDetails webAppDetails) throws IOException {

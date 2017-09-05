@@ -29,8 +29,10 @@ import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.core.ui.ErrorWindow;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -667,9 +669,6 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         SubscriptionDetail sd = binderSubscriptionDetails.get(i);
         List<Location> locl = sdlocMap.get(sd);
 
-        comboAppServicePlanLocation.add("<select location>");
-        binderAppServicePlanLocation.add(null);
-
         for (Location loc : locl) {
             comboAppServicePlanLocation.add(loc.displayName());
             binderAppServicePlanLocation.add(loc);
@@ -710,49 +709,54 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
 
     @Override
     protected void okPressed() {
-        if (validated()) {
-            String errTitle = "Create App Service Error";
-            try {
-                ProgressDialog.get(this.getShell(), "Create App Service Progress").run(true, true, new IRunnableWithProgress() {
-                    @Override
-                    public void run(IProgressMonitor monitor) {
-                           monitor.beginTask("Creating App Service....", IProgressMonitor.UNKNOWN);
-                        if (monitor.isCanceled()) {
-                            AzureModel.getInstance().setResourceGroupToWebAppMap(null);
-                            Display.getDefault().asyncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    AppServiceCreateDialog.super.cancelPressed();
-                                }
-                            });
-                        }
-
-                        try {
-                            webApp = WebAppUtils.createAppService(new UpdateProgressIndicator(monitor), model);
-                            Display.getDefault().asyncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    AppServiceCreateDialog.super.okPressed();
-                                };
-                            });
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));
-                            Display.getDefault().asyncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    ErrorWindow.go(getShell(), ex.getMessage(), errTitle);;
-                                }
-                            });
-
-                        }
+        String errTitle = "Create App Service Error";
+        cleanError();
+        collectData();
+        try {
+            ProgressDialog.get(this.getShell(), "Create App Service Progress").run(true, true, new IRunnableWithProgress() {
+                @Override
+                public void run(IProgressMonitor monitor) {
+                    monitor.beginTask("Validate Form Fields....", IProgressMonitor.UNKNOWN);
+                    if (!validated()) {
+                        return;
                     }
-                });
-            } catch (InvocationTargetException | InterruptedException ex) {
-                ex.printStackTrace();
-                LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@AppServiceCreateDialog", ex));
-                ErrorWindow.go(getShell(), ex.getMessage(), errTitle);;
-            }
+                    monitor.setTaskName("Creating App Service....");
+                    if (monitor.isCanceled()) {
+                        AzureModel.getInstance().setResourceGroupToWebAppMap(null);
+                        Display.getDefault().asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                AppServiceCreateDialog.super.cancelPressed();
+                            }
+                        });
+                    }
+                    try {
+                        webApp = AzureWebAppMvpModel.getInstance().createWebApp(model);
+                        monitor.setTaskName("Updating Azure local cache...");
+                        AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));
+                        Display.getDefault().asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                AppServiceCreateDialog.super.okPressed();
+                            };
+                        });
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));
+                        Display.getDefault().asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                ErrorWindow.go(getShell(), ex.getMessage(), errTitle);;
+                            }
+                        });
+
+                    }
+                }
+            });
+        } catch (InvocationTargetException | InterruptedException ex) {
+            ex.printStackTrace();
+            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@AppServiceCreateDialog", ex));
+            ErrorWindow.go(getShell(), ex.getMessage(), errTitle);;
         }
     }
 
@@ -769,9 +773,11 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     }
 
     protected void setError(ControlDecoration d, String message) {
-        d.setDescriptionText(message);
-        setErrorMessage("Form validation error.");
-        d.show();
+        Display.getDefault().asyncExec(() -> {
+            d.setDescriptionText(message);
+            setErrorMessage("Form validation error.");
+            d.show();
+        });
     }
 
     protected void cleanError() {
@@ -782,9 +788,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     }
 
     protected boolean validated() {
-        cleanError();
-        model.collectData();
-        String webappName = model.webAppName;
+        String webappName = model.getWebAppName();
         if (webappName.length() > 60 || !webappName.matches("^[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$")) {
             StringBuilder builder = new StringBuilder();
             builder.append("The name can contain letters, numbers and hyphens but the first and last characters must be a letter or number. ");
@@ -802,126 +806,122 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
             }
         }
 
-        if (model.webContainer == null) {
-            setError(dec_comboWebContainer,"Select a valid web container.");
-            return false;
-        }
-        if (model.subscriptionDetail == null) {
+        if (model.getSubscriptionId() == null || model.getSubscriptionId().isEmpty()) {
             setError(dec_comboSubscription,"Select a valid subscription.");
             return false;
         }
 
-        if (model.isAppServicePlanCreateNew) {
-            if (model.appServicePlanNameCreateNew.isEmpty()) {
+        if (model.isCreatingAppServicePlan()) {
+            if (model.getAppServicePlanName().isEmpty()) {
                 setError(dec_textAppSevicePlanName, "Enter a valid App Service Plan name.");
                 return false;
             } else {
-                if (!model.appServicePlanNameCreateNew.matches("^[A-Za-z0-9-]*[A-Za-z0-9-]$")) {
+                if (!model.getAppServicePlanName().matches("^[A-Za-z0-9-]*[A-Za-z0-9-]$")) {
                     setError(dec_textAppSevicePlanName, "App Service Plan name can only include alphanumeric characters and hyphens.");
                     return false;
                 }
                 // App service plan name must be unique in each subscription
-                SubscriptionDetail sd = model.subscriptionDetail;
-                List<ResourceGroup> rgl = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(sd);
+                List<ResourceGroup> rgl = AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(model.getSubscriptionId());
                 for (ResourceGroup rg : rgl ) {
-                    List<AppServicePlan> aspl = AzureModel.getInstance().getResourceGroupToAppServicePlanMap().get(rg);
+                    List<AppServicePlan> aspl = AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionIdAndResourceGroupName(model.getSubscriptionId(), rg.name());
                     for (AppServicePlan asp : aspl) {
-                        if (asp.name().toLowerCase().equals(model.appServicePlanNameCreateNew.toLowerCase())) {
+                        if (asp.name().toLowerCase().equals(model.getAppServicePlanName().toLowerCase())) {
                             setError(dec_textAppSevicePlanName, "App service plan name must be unuque in each subscription.");
                             return false;
                         }
                     }
                 }
             }
-            if (model.appServicePlanLocationCreateNew == null) {
+            if (model.getRegion() == null || model.getRegion().isEmpty()) {
                 setError(dec_comboAppServicePlanLocation, "Select a location.");
                 return false;
             }
         } else {
-            if (model.appServicePlan == null ) {
+            if (model.getAppServicePlanId() == null || model.getAppServicePlanId().isEmpty()) {
                 setError(dec_comboAppServicePlan,"Select a valid App Service Plan.");
                 return false;
             }
         }
 
-        if (model.isResourceGroupCreateNew) {
-            if (model.resourceGroupNameCreateNew.isEmpty()) {
+        if (model.isCreatingResGrp()) {
+            if (model.getResourceGroup() == null || model.getResourceGroup().isEmpty()) {
                 setError(dec_textNewResGrName,"Enter a valid resource group name");
                 return false;
-            } else {
-                if (!model.resourceGroupNameCreateNew.matches("^[A-Za-z0-9-_()\\.]*[A-Za-z0-9-_()]$")) {
-                    setError(dec_textNewResGrName,"Resounce group name can only include alphanumeric characters, periods, underscores, hyphens, and parenthesis and can't end in a period.");
+            }
+            if (!model.getResourceGroup().matches("^[A-Za-z0-9-_()\\.]*[A-Za-z0-9-_()]$")) {
+                setError(dec_textNewResGrName,"Resounce group name can only include alphanumeric characters, periods, underscores, hyphens, and parenthesis and can't end in a period.");
+                return false;
+            }
+            for (ResourceGroup rg : AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(model.getSubscriptionId())) {
+                if (rg.name().toLowerCase().equals(model.getResourceGroup().toLowerCase())) {
+                    setError(dec_textNewResGrName,"The name is already taken");
                     return false;
-                }
-
-                for (List<ResourceGroup> rgl : AzureModel.getInstance().getSubscriptionToResourceGroupMap().values()) {
-                    for (ResourceGroup rg : rgl) {
-                        if (rg.name().toLowerCase().equals(model.resourceGroupNameCreateNew.toLowerCase())) {
-                            setError(dec_textNewResGrName,"The name is already taken");
-                            return false;
-                        }
-                    }
                 }
             }
         } else {
-            if (model.resourceGroup == null ) {
+            if (model.getResourceGroup() == null || model.getResourceGroup().isEmpty()) {
                 setError(dec_comboSelectResGr, "Select a valid resource group.");
                 return false;
             }
         }
 
-        if (model.javaVersion == null) {
+        if (model.getJdkVersion() == null) {
             setError(dec_cbJavaVersion, "Select Java version.");
+            return false;
+        }
+
+        if (model.getWebContainer() == null || model.getWebContainer().isEmpty()) {
+            setError(dec_comboWebContainer,"Select a valid web container.");
             return false;
         }
 
         return true;
     }
 
-    protected class Model extends WebAppUtils.CreateAppServiceModel {
-        @Override
-        public void collectData() {
-            webAppName = textAppName.getText().trim();
-            int index;
-            if (AppServiceCreateDialog.this.packaging.equals(WebAppUtils.TYPE_JAR)) {
-                webContainer = WebContainer.TOMCAT_8_5_NEWEST;
-            } else {
-                index = comboWebContainer.getSelectionIndex();
-                webContainer = index < 0 ? null : binderWebConteiners.get(index).toWebContainer();
-            }
+    private void collectData() {
+        model.setCreatingNew(true);
+        model.setWebAppName(textAppName.getText().trim());
+        int index;
+        index = comboSubscription.getSelectionIndex();
+        model.setSubscriptionId(index < 0 ? null : binderSubscriptionDetails.get(index).getSubscriptionId());
 
-            index = comboSubscription.getSelectionIndex();
-            subscriptionDetail = index < 0 ? null : binderSubscriptionDetails.get(index);
-
-
-            //isResourceGroupCreateNew = tabFolderResourceGroup.getSelection()[0] == tabItemResGrCreateNew;
-            isResourceGroupCreateNew = btnResourceGroupCreateNew.getSelection();
+        // Resource Group
+        boolean isCreatingNewResGrp = btnResourceGroupCreateNew.getSelection();
+        model.setCreatingResGrp(isCreatingNewResGrp);
+        if (isCreatingNewResGrp) {
+            model.setResourceGroup(textResourceGroupName.getText().trim());
+        } else {
             index = comboResourceGroup.getSelectionIndex();
-            resourceGroup = index < 0 ? null : binderResourceGroup.get(index);
-            resourceGroupNameCreateNew = textResourceGroupName.getText().trim();
+            model.setResourceGroup(index < 0 ? null : binderResourceGroup.get(index).name());
+        }
 
-            //isAppServicePlanCreateNew = tabFolderAppServicePlan.getSelection()[0] == tabItemAppServicePlanCreateNew;
-            isAppServicePlanCreateNew = btnAppServiceCreateNew.getSelection();
-            index = comboAppServicePlan.getSelectionIndex();
-            appServicePlan = index < 0 ? null : binderAppServicePlan.get(index);
-
-            appServicePlanNameCreateNew = textAppSevicePlanName.getText().trim();
-
-            index = comboAppServicePlanPricingTier.getSelectionIndex();
-            appServicePricingTierCreateNew = index < 0 ? null : binderAppServicePlanPricingTier.get(index);
+        // App Service Plan
+        boolean isCreatingAppServicePlan = btnAppServiceCreateNew.getSelection();
+        model.setCreatingAppServicePlan(isCreatingAppServicePlan);
+        if (isCreatingAppServicePlan) {
+            model.setAppServicePlanName(textAppSevicePlanName.getText().trim());
 
             index = comboAppServicePlanLocation.getSelectionIndex();
-            appServicePlanLocationCreateNew = index < 0 ? null : binderAppServicePlanLocation.get(index);
+            model.setRegion(index < 0 ? null : binderAppServicePlanLocation.get(index).name());
 
-            index = cbJavaVersion.getSelectionIndex();
-            if (index < 0 || index >= cbJavaVersion.getItemCount()) {
-                javaVersion = null;
-            } else {
-              javaVersion = javaVersions.get(index).getJavaVersion();
-            }
-            packaging = AppServiceCreateDialog.this.packaging;
+            index = comboAppServicePlanPricingTier.getSelectionIndex();
+            model.setPricing(index < 0 ? null : binderAppServicePlanPricingTier.get(index).toString());
+        } else {
+            index = comboAppServicePlan.getSelectionIndex();
+            model.setAppServicePlanId(index < 0 ? null : binderAppServicePlan.get(index).id());
+        }
+
+        // Java
+        index = cbJavaVersion.getSelectionIndex();
+        model.setJdkVersion(index < 0 ? null : javaVersions.get(index).getJavaVersion());
+
+        if (packaging.equals(WebAppUtils.TYPE_JAR)) {
+            model.setWebContainer(WebContainer.TOMCAT_8_5_NEWEST.toString());
+        } else {
+            index = comboWebContainer.getSelectionIndex();
+            model.setWebContainer(index < 0 ? null : binderWebConteiners.get(index).toWebContainer().toString());
         }
     }
 
-    protected WebAppUtils.CreateAppServiceModel model = new Model();
+    protected WebAppSettingModel model = new WebAppSettingModel();
 }
