@@ -59,7 +59,6 @@ public class SettingPanel {
     private JTextField textServerUrl;
     private JTextField textUsername;
     private JPasswordField passwordField;
-    private JTextField textAppName;
     private JTextField textImageTag;
     private JTextField textStartupFile;
     private JComboBox<Artifact> cbArtifact;

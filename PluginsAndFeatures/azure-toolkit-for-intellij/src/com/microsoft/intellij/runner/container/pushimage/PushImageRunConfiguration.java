@@ -116,6 +116,7 @@ public class PushImageRunConfiguration extends RunConfigurationBase {
         if (Utils.isEmptyString(setting.getImageNameWithTag())) {
             throw new ConfigurationException(MISSING_IMAGE_WITH_TAG);
         }
+        // TODO: "<serverUrl>/" shall not pass. Use regex later.
         if (!setting.getImageNameWithTag().startsWith(setting.getServerUrl() + "/")) {
             throw new ConfigurationException(String.format(INVALID_IMAGE_WITH_TAG, setting.getServerUrl()));
         }

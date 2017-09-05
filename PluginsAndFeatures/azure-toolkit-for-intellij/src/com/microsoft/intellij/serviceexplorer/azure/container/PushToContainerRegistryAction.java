@@ -31,10 +31,16 @@ import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.management.containerregistry.RegistryPassword;
+import com.microsoft.azure.management.containerregistry.implementation.RegistryListCredentials;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType;
+import com.microsoft.intellij.runner.container.pushimage.PushImageRunConfiguration;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -79,6 +85,26 @@ public class PushToContainerRegistryAction extends NodeActionListener {
         if (settings == null) {
             settings = manager.createConfiguration(
                     String.format("%s: %s", factory.getName(), currentNode.getName()), factory);
+            // read configuration for the ACR node.
+            // TODO: currently it's blocking, later use a presenter to do this.
+            PushImageRunConfiguration conf = (PushImageRunConfiguration) settings.getConfiguration();
+            Registry registry = null;
+            try {
+                registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(currentNode.getSubscriptionId
+                        (), currentNode.getResourceId());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (registry !=null && registry.adminUserEnabled()) {
+                RegistryListCredentials credentials = registry.listCredentials();
+                List<RegistryPassword> passwords = credentials.passwords();
+                if (passwords != null && passwords.size() > 0) {
+                    PrivateRegistryImageSetting imagesetting = new PrivateRegistryImageSetting(registry
+                            .loginServerUrl(), credentials.username(), passwords.get
+                            (0).value(), null, null);
+                    conf.setPrivateRegistryImageSetting(imagesetting);
+                }
+            }
         }
         if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
             List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
