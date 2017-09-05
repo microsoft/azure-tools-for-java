@@ -207,8 +207,7 @@
                   <text value="&lt;Loading...&gt;"/>
                 </properties>
               </component>
-              <grid id="d7639" binding="pnlAdminUserBtn" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="true" same-size-vertically="true" hgap="-1" vgap="-1">
-                <margin top="0" left="0" bottom="0" right="0"/>
+              <grid id="d7639" binding="pnlAdminUserBtn" layout-manager="BorderLayout" hgap="0" vgap="0">
                 <constraints>
                   <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="2" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -218,24 +217,18 @@
                 </properties>
                 <border type="none"/>
                 <children>
-                  <component id="747fd" class="javax.swing.JButton" binding="btnDisable">
-                    <constraints>
-                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <margin top="0" left="0" bottom="0" right="0"/>
-                      <text value="Disable"/>
-                    </properties>
-                  </component>
                   <component id="dea5" class="javax.swing.JButton" binding="btnEnable">
-                    <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false">
-                        <preferred-size width="47" height="32"/>
-                      </grid>
-                    </constraints>
+                    <constraints border-constraint="West"/>
                     <properties>
                       <margin top="0" left="0" bottom="0" right="0"/>
                       <text value="Enable"/>
+                    </properties>
+                  </component>
+                  <component id="747fd" class="javax.swing.JButton" binding="btnDisable">
+                    <constraints border-constraint="Center"/>
+                    <properties>
+                      <margin top="0" left="0" bottom="0" right="0"/>
+                      <text value="Disable"/>
                     </properties>
                   </component>
                 </children>

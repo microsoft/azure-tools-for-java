@@ -30,9 +30,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.container.Containe
 
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -43,12 +40,10 @@ import javax.swing.JTextField;
 public class ContainerRegistryPropertyView extends BaseEditor implements ContainerRegistryPropertyMvpView {
 
     public static final String ID = ContainerRegistryPropertyView.class.getName();
-    private static final Color COLOR_CHOSEN = new Color(191, 238, 251);
-    private static final Color COLOR_UNCHOSEN = null;
 
     private final ContainerRegistryPropertyViewPresenter<ContainerRegistryPropertyView> containerPropertyPresenter;
 
-    boolean isAdminEnabled;
+    private boolean isAdminEnabled;
     private String registryId = "";
     private String subscriptionId = "";
     private String password = "";
@@ -97,11 +92,11 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
             }
         });
 
-        btnEnable.addActionListener(this::onAdminUserBtnClick);
-        btnDisable.addActionListener(this::onAdminUserBtnClick);
+        btnEnable.addActionListener(actionEvent -> onAdminUserBtnClick());
+        btnDisable.addActionListener(actionEvent -> onAdminUserBtnClick());
     }
 
-    private void onAdminUserBtnClick(ActionEvent actionEvent) {
+    private void onAdminUserBtnClick() {
         btnEnable.setEnabled(false);
         btnDisable.setEnabled(false);
         this.containerPropertyPresenter.onEnableAdminUser(subscriptionId, registryId, !isAdminEnabled);
@@ -110,8 +105,6 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     private void updateAdminUserBtn(boolean isAdminEnabled) {
         btnEnable.setEnabled(!isAdminEnabled);
         btnDisable.setEnabled(isAdminEnabled);
-        btnEnable.setBackground(isAdminEnabled ? COLOR_CHOSEN : COLOR_UNCHOSEN);
-        btnDisable.setBackground(!isAdminEnabled ? COLOR_CHOSEN : COLOR_UNCHOSEN);
     }
 
 
