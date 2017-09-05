@@ -21,14 +21,14 @@
  */
 package com.microsoft.azure.hdinsight.spark.run.configuration;
 
-import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configuration.ConfigurationFactoryEx;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunConfigurationModule;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
-public class RemoteDebugConfigurationFactory extends ConfigurationFactory{
+public class RemoteDebugConfigurationFactory extends ConfigurationFactoryEx {
     private static final String NAME = "Submit Spark Job";
 
     protected RemoteDebugConfigurationFactory(@NotNull ConfigurationType type) {
@@ -48,5 +48,13 @@ public class RemoteDebugConfigurationFactory extends ConfigurationFactory{
                 this,
                 new RunConfigurationModule(project),
                 NAME);
+    }
+
+    @Override
+    public void onNewConfigurationCreated(@org.jetbrains.annotations.NotNull RunConfiguration configuration) {
+        RemoteDebugRunConfiguration sparkRemoteDebugConfiguration = (RemoteDebugRunConfiguration) configuration;
+        sparkRemoteDebugConfiguration.setAsNew();
+
+        super.onNewConfigurationCreated(configuration);
     }
 }

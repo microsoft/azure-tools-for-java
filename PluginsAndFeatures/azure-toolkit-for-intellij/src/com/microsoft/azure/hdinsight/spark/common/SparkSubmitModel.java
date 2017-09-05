@@ -87,8 +87,6 @@ public class SparkSubmitModel {
 
     private static Map<Project, SparkSubmissionParameter> submissionParameterMap = new HashMap<>();
 
-    private static Map<Project, SparkSubmitAdvancedConfigModel> submissionAdvancedConfigModelMap = new HashMap<>();
-
     private final Project project;
 
     private List<IClusterDetail> cachedClusterDetails;
@@ -119,7 +117,6 @@ public class SparkSubmitModel {
         this.clusterComboBoxModel = new DefaultComboBoxModel<>();
         this.artifactComboBoxModel = new DefaultComboBoxModel<>();
         this.submissionParameter = submissionParameter;
-        this.advancedConfigModel = submissionAdvancedConfigModelMap.get(project);
 
         final List<Artifact> artifacts = ArtifactUtil.getArtifactWithOutputPaths(project);
 
@@ -152,7 +149,6 @@ public class SparkSubmitModel {
 
     public void setAdvancedConfigModel(SparkSubmitAdvancedConfigModel advancedConfigModel) {
         this.advancedConfigModel = advancedConfigModel;
-        submissionAdvancedConfigModelMap.put(project, this.advancedConfigModel);
     }
 
     @NotNull
