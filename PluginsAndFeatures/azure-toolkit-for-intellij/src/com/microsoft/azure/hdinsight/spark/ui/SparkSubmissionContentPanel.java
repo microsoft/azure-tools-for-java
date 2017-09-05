@@ -41,24 +41,20 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import org.apache.commons.lang.StringUtils;
+import rx.subjects.BehaviorSubject;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 public class SparkSubmissionContentPanel extends JPanel{
     public SparkSubmissionContentPanel(@NotNull Project project, @Nullable CallBack updateCallBack){
@@ -148,6 +144,9 @@ public class SparkSubmissionContentPanel extends JPanel{
     private JRadioButton localArtifactRadioButton;
     private final JLabel[] errorMessageLabels = new JLabel[5];
     private SparkSubmissionAdvancedConfigDialog advancedConfigDialog;
+    private JButton advancedConfigButton= new JButton("Advanced configuration");
+
+    private BehaviorSubject<String> clusterSelectedSubject = BehaviorSubject.create();
 
     /**
      * Apply the parameters in new SubmitModel
@@ -176,6 +175,15 @@ public class SparkSubmissionContentPanel extends JPanel{
         initializeModel();
         updateTableColumn();
         loadParameter(submitModel.getSubmissionParameter());
+
+        addContainerListener(new ContainerAdapter() {
+            @Override
+            public void componentRemoved(ContainerEvent e) {
+                cleanUp();
+
+                super.componentRemoved(e);
+            }
+        });
     }
 
     private void loadParameter(SparkSubmissionParameter parameter) {
@@ -237,6 +245,7 @@ public class SparkSubmissionContentPanel extends JPanel{
             submitModel.setClusterComboBoxModel(cachedClusters);
             clustersListComboBox.getComboBox().setModel(submitModel.getClusterComboBoxModel());
             clustersListComboBox.getButton().setEnabled(true);
+            clusterSelectedSubject.onNext((String) clustersListComboBox.getComboBox().getSelectedItem());
         });
 
         selectedArtifactComboBox.setModel(submitModel.getArtifactComboBoxModel());
@@ -290,12 +299,14 @@ public class SparkSubmissionContentPanel extends JPanel{
         clustersListComboBox.getComboBox().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName() == "model" && evt.getNewValue() instanceof DefaultComboBoxModel) {
+                if (evt.getPropertyName().equals("model") && evt.getNewValue() instanceof DefaultComboBoxModel) {
                     int size = ((DefaultComboBoxModel) evt.getNewValue()).getSize();
                     setVisibleForFixedErrorMessageLabel(ErrorMessageLabelTag.ClusterName.ordinal(), size <= 0);
                 }
             }
         });
+        clustersListComboBox.getComboBox().addItemListener(ev ->
+                clusterSelectedSubject.onNext(ev.getStateChange() == ItemEvent.SELECTED ? ev.getItem().toString() : null));
 
         add(clustersListComboBox,
                 new GridBagConstraints(1, displayLayoutCurrentRow,
@@ -652,8 +663,12 @@ public class SparkSubmissionContentPanel extends JPanel{
     }
 
     private void addAdvancedConfigLineItem() {
-        JButton advancedConfigButton = new JButton("Advanced configuration");
+        advancedConfigButton.setEnabled(false);
         advancedConfigButton.setToolTipText("Specify advanced configuration, for example, enabling Spark remote debug");
+
+        clusterSelectedSubject
+                .throttleWithTimeout(200, TimeUnit.MILLISECONDS)
+                .subscribe(cluster -> advancedConfigButton.setEnabled(cluster != null));
 
         add(advancedConfigButton,
                 new GridBagConstraints(0, ++displayLayoutCurrentRow,
@@ -662,24 +677,21 @@ public class SparkSubmissionContentPanel extends JPanel{
                         GridBagConstraints.SOUTHEAST, GridBagConstraints.NONE,
                         new Insets(margin, margin, 0, 0), 0, 0));
 
-        advancedConfigButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                advancedConfigDialog = new SparkSubmissionAdvancedConfigDialog(
-                        submitModel,
-                        submitModel.getAdvancedConfigModel(),
-                        new CallBack() {
-                            @Override
-                            public void run() {
-                                if (null != advancedConfigDialog){
-                                    submitModel.setAdvancedConfigModel(advancedConfigDialog.getAdvancedConfigModel());
-                                }
-                            }
+        advancedConfigButton.addActionListener(e -> {
+            // Read the current panel setting into current model
+            SparkSubmitModel currentModel = new SparkSubmitModel(submitModel.getProject(), constructSubmissionParameter());
+
+            advancedConfigDialog = new SparkSubmissionAdvancedConfigDialog(
+                    currentModel,
+                    submitModel.getAdvancedConfigModel(),
+                    () -> {
+                        if (null != advancedConfigDialog){
+                            submitModel.setAdvancedConfigModel(advancedConfigDialog.getAdvancedConfigModel());
                         }
-                );
-                advancedConfigDialog.setModal(true);
-                advancedConfigDialog.setVisible(true);
-            }
+                    }
+            );
+            advancedConfigDialog.setModal(true);
+            advancedConfigDialog.setVisible(true);
         });
     }
 
@@ -721,5 +733,9 @@ public class SparkSubmissionContentPanel extends JPanel{
 
     private void setStatusForMessageLabel(@NotNull int label, @NotNull boolean isVisible, @Nullable String message) {
         setStatusForMessageLabel(label, isVisible, message, false);
+    }
+
+    public void cleanUp() {
+        clusterSelectedSubject.onCompleted();
     }
 }
