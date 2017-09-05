@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewEmulatorAction;
+import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.CreateNewDockerHostAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.DeleteDockerHostAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.DeployDockerContainerAction;
@@ -41,6 +42,7 @@ import com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAcco
 import com.microsoft.intellij.serviceexplorer.azure.vmarm.CreateVMAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
@@ -74,6 +76,8 @@ public class NodeActionsMap {
                 .add(CreateRedisCacheAction.class).build());
         node2Actions.put(StorageNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateBlobContainer.class).build());
+        node2Actions.put(ContainerRegistryNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(PushToContainerRegistryAction.class).build());
         // todo: what is ConfirmDialogAction?
         //noinspection unchecked
         node2Actions.put(ExternalStorageNode.class,
