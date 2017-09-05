@@ -347,7 +347,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         String appServiceName = table.getItems()[selectedRow].getText(0);
 
         try {
-            if (MavenUtils.isMavenProject(project) && MavenUtils.getPackaging(project).equals(WebAppUtils.TYPE_JAR)) {
+            if (lnkWebConfig != null) {
                 String scmSuffix = AuthMethodManager.getInstance().getAzureManager().getScmSuffix();
                 lnkWebConfig.setText(String.format(WEB_CONFIG_LINK_FORMAT, appServiceName + scmSuffix));
             }
@@ -519,7 +519,6 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@AppServiceCreateDialog", ex));
         }
-        ;
         super.okPressed();
     }
 
@@ -655,7 +654,6 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                         @Override
                         public void run() {
                             ErrorWindow.go(parentShell, ex.getMessage(), errTitle);
-                            ;
                         }
                     });
                 }
