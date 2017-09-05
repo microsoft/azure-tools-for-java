@@ -22,14 +22,19 @@
 
 package com.microsoft.azure.hdinsight.spark.ui;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.openapi.ui.popup.IconButton;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.InplaceButton;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.hdinsight.common.CallBack;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
+import com.microsoft.azure.hdinsight.common.Docs;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchDebugSession;
@@ -45,6 +50,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.io.File;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel.SSHAuthType.UseKeyFile;
@@ -62,6 +68,10 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
         this.advancedConfigModel = advancedConfigModel;
 
         this.updateCallBack = updateCallBack;
+
+        // FIXME!!! Since the Intellij has no locale setting, just set en-us here.
+        this.helpUrl = new Docs(Locale.US).getDocUrlByTopic(Docs.TOPIC_CONNECT_HADOOP_LINUX_USING_SSH);
+
         this.sshCheckSubject = PublishSubject.create();
         this.inputListener = new DocumentAdapter() {
             @Override
@@ -118,6 +128,7 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
 
     private SparkSubmitModel submitModel;
     private SparkSubmitAdvancedConfigModel advancedConfigModel;
+    private String helpUrl;
 
     private final int margin = 12;
 
@@ -135,6 +146,9 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
     JButton cancelButton;
     BackgroundTaskIndicator checkSshCertIndicator;
     DocumentListener inputListener;
+    IconButton helpButton;
+    JPanel helpPanel;
+    JPanel operationPanel;
 
     private PublishSubject<String> sshCheckSubject;
     private Subscription sshCheckSubscription;
@@ -228,7 +242,7 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
     }
 
     private void addOperationPanel() {
-        JPanel operationPanel = new JPanel();
+        operationPanel = new JPanel();
         operationPanel.setLayout(new FlowLayout());
 
         okButton = new JButton("Ok");
@@ -239,8 +253,16 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
 
         getRootPane().setDefaultButton(cancelButton);
 
+        helpPanel = new JPanel();
+        helpPanel.setLayout(new BoxLayout(helpPanel, BoxLayout.LINE_AXIS));
+
+        helpButton = new IconButton("Help about connection to HDInsight using SSH", AllIcons.Actions.Help);
         checkSshCertIndicator = new BackgroundTaskIndicator("Verify SSH Authentication...");
-        add(checkSshCertIndicator,
+
+        helpPanel.add(new InplaceButton(helpButton, e -> BrowserUtil.browse(this.helpUrl)));
+        helpPanel.add(checkSshCertIndicator);
+
+        add(helpPanel,
                 new GridBagConstraints(0, ++displayLayoutCurrentRow,
                         0, 1,
                         1, 0,
