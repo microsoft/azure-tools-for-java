@@ -46,7 +46,7 @@ public class RunOnDockerHostAction extends AzureAnAction {
 
     private static final String DIALOG_TITLE = "Run on Docker Host";
 
-    private final ConfigurationType configType;
+    private final AzureDockerSupportConfigurationType configType;
 
     public RunOnDockerHostAction() {
         this.configType = AzureDockerSupportConfigurationType.getInstance();
@@ -77,11 +77,11 @@ public class RunOnDockerHostAction extends AzureAnAction {
     @SuppressWarnings({"deprecation", "Duplicates"})
     private void runConfiguration(Project project) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
-        final ConfigurationFactory factory = configType.getConfigurationFactories()[1]; // TODO: Robustness
+        final ConfigurationFactory factory = configType.getDockerHostRunConfigurationFactory();
         RunnerAndConfigurationSettings settings = manager.findConfigurationByName(
-                String.format("%s:%s", factory.getName(), project.getName()));
+                String.format("%s: %s", factory.getName(), project.getName()));
         if (settings == null) {
-            settings = manager.createConfiguration(String.format("%s:%s", factory.getName(),
+            settings = manager.createConfiguration(String.format("%s: %s", factory.getName(),
                     project.getName()), factory);
         }
         if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {

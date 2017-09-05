@@ -10,14 +10,14 @@ import org.jetbrains.annotations.NotNull;
 public class DockerHostRunConfigurationFactory extends ConfigurationFactory {
     private static final String FACTORY_NAME = "Docker";
 
-    public DockerHostRunConfigurationFactory(AzureDockerSupportConfigurationType dockerSupportConfigurationType) {
-        super(dockerSupportConfigurationType);
+    public DockerHostRunConfigurationFactory(AzureDockerSupportConfigurationType configurationType) {
+        super(configurationType);
     }
 
     @NotNull
     @Override
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-        return new DockerHostRunConfiguration(project, this);
+        return new DockerHostRunConfiguration(project, this, null);
     }
 
     @Override
@@ -27,6 +27,6 @@ public class DockerHostRunConfigurationFactory extends ConfigurationFactory {
 
     @Override
     public RunConfiguration createConfiguration(String name, RunConfiguration template) {
-        return new DockerHostRunConfiguration(template.getProject(), this);
+        return new DockerHostRunConfiguration(template.getProject(), this, name);
     }
 }

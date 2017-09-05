@@ -26,6 +26,7 @@ import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
 import com.microsoft.intellij.runner.container.dockerhost.DockerHostRunConfigurationFactory;
+import com.microsoft.intellij.runner.container.pushimage.PushImageRunConfigurationFactory;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfigurationFactory;
 import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NotNull;
@@ -66,7 +67,19 @@ public class AzureDockerSupportConfigurationType implements ConfigurationType {
         return new ConfigurationFactory[]{
                 new WebAppOnLinuxDeployConfigurationFactory(this),
                 new DockerHostRunConfigurationFactory(this),
+                new PushImageRunConfigurationFactory(this),
         };
     }
 
+    public WebAppOnLinuxDeployConfigurationFactory getWebAppOnLinuxDeployConfigurationFactory() {
+        return new WebAppOnLinuxDeployConfigurationFactory(this);
+    }
+
+    public DockerHostRunConfigurationFactory getDockerHostRunConfigurationFactory() {
+        return new DockerHostRunConfigurationFactory(this);
+    }
+
+    public PushImageRunConfigurationFactory getPushImageRunConfigurationFactory() {
+        return new PushImageRunConfigurationFactory(this);
+    }
 }

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.container.webapponlinux;
+package com.microsoft.intellij.runner.container.pushimage;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
@@ -29,17 +29,17 @@ import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationTy
 
 import org.jetbrains.annotations.NotNull;
 
-public class WebAppOnLinuxDeployConfigurationFactory extends ConfigurationFactory {
-    private static final String FACTORY_NAME = "Web App (Linux)";
+public class PushImageRunConfigurationFactory extends ConfigurationFactory {
+    private static final String FACTORY_NAME = "Push Image";
 
-    public WebAppOnLinuxDeployConfigurationFactory(AzureDockerSupportConfigurationType configurationType) {
+    public PushImageRunConfigurationFactory(AzureDockerSupportConfigurationType configurationType) {
         super(configurationType);
     }
 
     @NotNull
     @Override
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-        return new WebAppOnLinuxDeployConfiguration(project, this, null);
+        return new PushImageRunConfiguration(project, this, null);
     }
 
     @Override
@@ -49,6 +49,6 @@ public class WebAppOnLinuxDeployConfigurationFactory extends ConfigurationFactor
 
     @Override
     public RunConfiguration createConfiguration(String name, RunConfiguration template) {
-        return new WebAppOnLinuxDeployConfiguration(template.getProject(), this, name);
+        return new PushImageRunConfiguration(template.getProject(), this, name);
     }
 }

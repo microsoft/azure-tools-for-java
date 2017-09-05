@@ -35,8 +35,8 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
     private final DockerHostRunModel dockerHostRunModel;
     private boolean firstTimeCreated = true;
 
-    protected DockerHostRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory) {
-        super(project, factory, String.format("%s:%s", factory.getName(), project.getName()));
+    protected DockerHostRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
+        super(project, factory, name);
         dockerHostRunModel = new DockerHostRunModel();
     }
 

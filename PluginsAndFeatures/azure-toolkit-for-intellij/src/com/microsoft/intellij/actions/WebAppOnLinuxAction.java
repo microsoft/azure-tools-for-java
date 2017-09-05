@@ -27,7 +27,6 @@ import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -37,8 +36,8 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
-import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType;
+import com.microsoft.intellij.runner.container.utils.Constant;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -48,7 +47,7 @@ public class WebAppOnLinuxAction extends AzureAnAction {
 
     private static final String DIALOG_TITLE = "Run on Web App (Linux)";
 
-    private final ConfigurationType configType;
+    private final AzureDockerSupportConfigurationType configType;
 
     public WebAppOnLinuxAction() {
         this.configType = AzureDockerSupportConfigurationType.getInstance();
@@ -85,12 +84,12 @@ public class WebAppOnLinuxAction extends AzureAnAction {
     @SuppressWarnings({"deprecation", "Duplicates"})
     private void runConfiguration(Project project) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
-        final ConfigurationFactory factory = configType.getConfigurationFactories()[0];
+        final ConfigurationFactory factory = configType.getWebAppOnLinuxDeployConfigurationFactory();
         RunnerAndConfigurationSettings settings = manager.findConfigurationByName(
-                String.format("%s:%s", factory.getName(), project.getName()));
+                String.format("%s: %s", factory.getName(), project.getName()));
         if (settings == null) {
-            settings = manager.createConfiguration(String.format("%s:%s", factory.getName(),
-                    project.getName()), factory);
+            settings = manager.createConfiguration(String.format("%s: %s", factory.getName(), project.getName()),
+                    factory);
         }
         if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
             List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
