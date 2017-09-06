@@ -453,7 +453,7 @@ public class SparkSubmissionAdvancedConfigDialog extends JDialog{
     }
 
     private void onOk() {
-        this.advancedConfigModel.apply(saveParameters());
+        this.advancedConfigModel = saveParameters();
 
         if (updateCallBack != null) {
             updateCallBack.run();
