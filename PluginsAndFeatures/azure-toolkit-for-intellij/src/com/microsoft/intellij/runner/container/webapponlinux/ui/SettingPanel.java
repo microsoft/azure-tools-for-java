@@ -360,6 +360,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         ));
 
         // set target
+        //noinspection Duplicates
         if (lastSelectedArtifact != null) {
             webAppOnLinuxDeployConfiguration.setTargetPath(lastSelectedArtifact.getOutputFilePath());
             Path p = Paths.get(webAppOnLinuxDeployConfiguration.getTargetPath());
@@ -454,6 +455,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         }
     }
 
+
+    @SuppressWarnings("Duplicates")
     private void setupArtifactCombo(List<Artifact> artifacts, String targetPath) {
         isCbArtifactInited = false;
         cbArtifact.removeAllItems();

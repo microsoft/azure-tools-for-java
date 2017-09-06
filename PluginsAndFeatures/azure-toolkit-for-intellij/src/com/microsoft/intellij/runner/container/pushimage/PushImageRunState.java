@@ -122,6 +122,7 @@ public class PushImageRunState implements RunProfileState {
         ).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
                 (props) -> {
                     processHandler.setText("pushed.");
+                    processHandler.notifyProcessTerminated(0);
                     sendTelemetry(true, null);
                 },
                 (err) -> {

@@ -65,7 +65,7 @@ public class ContainerRegistryMvpModel {
     /**
      * Get ACR by Id.
      */
-    public Registry getContainerRegistry(String sid, String id) throws Exception {
+    public Registry getContainerRegistry(String sid, String id) throws IOException {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         Registries registries = azure.containerRegistries();
         if (registries == null) {

@@ -152,6 +152,10 @@
             text="Docker Run" description="Docker Run"
             icon="/icons/DockerRun_16.png">
     </action>
+    <action id="Actions.PushImage" class="com.microsoft.intellij.actions.PushImageAction"
+            text="Push Image" description="Push Image"
+            icon="/icons/AddDockerSupport_16.png">
+    </action>
     <action id="Actions.WebAppOnLinux" class="com.microsoft.intellij.actions.WebAppOnLinuxAction"
             text="Run on Web App (Linux)" description="Run on Web App (Linux)"
             icon="/icons/PublishWebAppOnLinux_16.png">
@@ -163,6 +167,7 @@
       <separator/>
       <reference ref="Actions.AddDockerSupport"/>
       <reference ref="Actions.RunOnDockerHost"/>
+      <reference ref="Actions.PushImage"/>
       <reference ref="Actions.WebAppOnLinux"/>
       <separator/>
       <reference ref="Actions.AzureDockerHostDeploy"/>
