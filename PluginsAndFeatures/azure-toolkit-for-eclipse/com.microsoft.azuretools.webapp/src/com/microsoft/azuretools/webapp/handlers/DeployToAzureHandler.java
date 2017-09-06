@@ -40,7 +40,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 public class DeployToAzureHandler extends AzureAbstractHandler {
 
     private static final String MAVEN_GOALS = "clean package";
-    private static final String MODE = "run";
     private static final String TITLE = "Deploy to Azure App Service";
     private static final String NO_PROJECT_ERR = "Can't detect an active project";
 
@@ -60,7 +59,7 @@ public class DeployToAzureHandler extends AzureAbstractHandler {
                 MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
                 IContainer container;
                 container = MavenUtils.getPomFile(project).getParent();
-                action.launch(container, MODE, () -> {
+                action.launch(container, () -> {
                     DefaultLoader.getIdeHelper().invokeLater(() -> WebAppDeployDialog.go(shell, project));
                     return null;
                 });

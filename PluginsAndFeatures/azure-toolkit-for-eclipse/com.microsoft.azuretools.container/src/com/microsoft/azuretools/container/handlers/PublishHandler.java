@@ -64,7 +64,6 @@ import rx.Observable;
 public class PublishHandler extends AzureAbstractHandler {
 
     private static final String MAVEN_GOALS = "clean package";
-    private static final String MODE = "run";
     private IWorkbenchWindow window;
     private IProject project;
     private String destinationPath;
@@ -89,7 +88,7 @@ public class PublishHandler extends AzureAbstractHandler {
                 MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
                 IContainer container;
                 container = MavenUtils.getPomFile(project).getParent();
-                action.launch(container, MODE, () -> {
+                action.launch(container, () -> {
                     buildAndRun(event);
                     return null;
                 });
@@ -142,7 +141,7 @@ public class PublishHandler extends AzureAbstractHandler {
                     ConfigFileUtil.saveConfig(project, DockerRuntime.getInstance().saveToProps(props));
                 }
             });
-            
+
             Map<String, String> extraInfo = new HashMap<>();
             try {
                 boolean isJar = MavenUtils.isMavenProject(this.project) && MavenUtils.getPackaging(this.project).equals(WebAppUtils.TYPE_JAR);

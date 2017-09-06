@@ -64,7 +64,6 @@ import rx.Observable;
 public class DockerRunHandler extends AzureAbstractHandler {
 
     private static final String MAVEN_GOALS = "clean package";
-    private static final String MODE = "run";
     private IWorkbenchWindow window;
     private IProject project;
     private String basePath;
@@ -109,7 +108,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
                 MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
                 IContainer container;
                 container = MavenUtils.getPomFile(project).getParent();
-                action.launch(container, MODE, () -> {
+                action.launch(container, () -> {
                     // TODO: callback after mvn package done. IMPORTANT
                     buildAndRun(event);
                     return null;
