@@ -39,6 +39,7 @@ import com.microsoft.azure.management.containerregistry.RegistryPassword;
 import com.microsoft.azure.management.containerregistry.implementation.RegistryListCredentials;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
@@ -84,7 +85,7 @@ public class PushToContainerRegistryAction extends NodeActionListener {
     }
 
     @SuppressWarnings({"deprecation", "Duplicates"})
-    private void runConfiguration(Project project) {
+    private void runConfiguration(@NotNull Project project) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = configType.getPushImageRunConfigurationFactory();
         RunnerAndConfigurationSettings settings = manager.findConfigurationByName(
@@ -106,6 +107,7 @@ public class PushToContainerRegistryAction extends NodeActionListener {
         }
     }
 
+    // TODO: Should move to presenter. Load info dynamically after opening the dialog first.
     private PrivateRegistryImageSetting querySettings(String subscriptionId, String resourceId) throws IOException {
         Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(subscriptionId, resourceId);
         String serverUrl = null;
