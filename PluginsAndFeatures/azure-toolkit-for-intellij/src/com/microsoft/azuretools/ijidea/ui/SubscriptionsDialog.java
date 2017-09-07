@@ -226,7 +226,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         return "SubscriptionsDialog";
     }
 
-    private static class SubscriptionTableModel extends DefaultTableModel {
+    private class SubscriptionTableModel extends DefaultTableModel {
         final Class[] columnClass = new Class[]{
                 Boolean.class, String.class, String.class
         };
