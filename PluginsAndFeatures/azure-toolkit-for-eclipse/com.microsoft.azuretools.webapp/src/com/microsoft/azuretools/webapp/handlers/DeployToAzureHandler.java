@@ -39,7 +39,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 public class DeployToAzureHandler extends AzureAbstractHandler {
 
-    private static final String MAVEN_GOALS = "clean package";
+    private static final String MAVEN_GOALS = "package";
     private static final String TITLE = "Deploy to Azure App Service";
     private static final String NO_PROJECT_ERR = "Can't detect an active project";
 

@@ -63,7 +63,7 @@ import rx.Observable;
 
 public class PublishHandler extends AzureAbstractHandler {
 
-    private static final String MAVEN_GOALS = "clean package";
+    private static final String MAVEN_GOALS = "package";
     private IWorkbenchWindow window;
     private IProject project;
     private String destinationPath;
