@@ -154,7 +154,7 @@
     </action>
     <action id="Actions.PushImage" class="com.microsoft.intellij.actions.PushImageAction"
             text="Push Image" description="Push Image"
-            icon="/icons/AddDockerSupport_16.png">
+            icon="/icons/PushImage_16.png">
     </action>
     <action id="Actions.WebAppOnLinux" class="com.microsoft.intellij.actions.WebAppOnLinuxAction"
             text="Run on Web App (Linux)" description="Run on Web App (Linux)"
