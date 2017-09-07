@@ -18,6 +18,14 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.0.8]</h3>
+      <ul>
+        <li>Support Spring Boot Project: The Azure Toolkits for IntelliJ now support running your Spring Boot Project (Jar package) on Azure Web App and Azure Web App (Linux).</li>
+        <li>Docker Run Locally: You can now docker run your projects locally after adding docker support.</li>
+        <li>New Node in Azure Explorer: You can now view the property of your resources in Azure Container Registry.</li>
+        <li>Added validation for Spark remote debug SSH authentication.</li>
+        <li>Fixed some bugs.</li>
+      </ul>
       <h3>[3.0.7]</h3>
       <ul>
         <li>Support Community Edition: The Azure Toolkit for IntelliJ now supports deploying your Maven projects to Azure App Service from IntelliJ IDEA, both Community and Ultimate Edition.</li>

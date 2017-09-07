@@ -100,5 +100,9 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
         this.submitModel.setSubmissionParameters(submissionPanel.constructSubmissionParameter());
         this.submitModel.setAdvancedConfigModel(submissionPanel.getSubmitModel().getAdvancedConfigModel());
     }
+
+    public void setAsNew() {
+        this.submitModel.setAdvancedConfigModel(null);
+    }
 }
 
