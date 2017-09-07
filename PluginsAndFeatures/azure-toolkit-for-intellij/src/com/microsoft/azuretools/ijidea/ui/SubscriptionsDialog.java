@@ -37,54 +37,30 @@ import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
-public class SubscriptionsDialog extends AzureDialogWrapper {
-    private static final Logger LOGGER = Logger.getInstance(SubscriptionsDialog.class);
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 
+public class SubscriptionsDialog extends AzureDialogWrapper {
+    private static final int CHECKBOX_COLUMN = 0;
+    private static final Logger LOGGER = Logger.getInstance(SubscriptionsDialog.class);
+    private final Project project;
     private JPanel contentPane;
     private JPanel panelTable;
     private JTable table;
     private List<SubscriptionDetail> sdl;
-
-    private Project project;
-
-    private static class SubscriptionTableModel extends DefaultTableModel {
-        final Class[] columnClass = new Class[]{
-                Boolean.class, String.class, String.class
-        };
-
-        @Override
-        public boolean isCellEditable(int row, int col) {
-            return (col == 0);
-        }
-
-        @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            return columnClass[columnIndex];
-        }
-    }
-
-    ;
-
-    public List<SubscriptionDetail> getSubscriptionDetails() {
-        return sdl;
-    }
-
-    public static SubscriptionsDialog go(List<SubscriptionDetail> sdl, Project project) throws Exception {
-        SubscriptionsDialog d = new SubscriptionsDialog(sdl, project);
-        d.show();
-        if (d.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
-            return d;
-        }
-
-        return null;
-    }
 
     private SubscriptionsDialog(List<SubscriptionDetail> sdl, Project project) {
         super(project, true, IdeModalityType.PROJECT);
@@ -99,6 +75,24 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         init();
     }
 
+    /**
+     * Open select-subscription dialog.
+     */
+    public static SubscriptionsDialog go(List<SubscriptionDetail> sdl, Project project) {
+        SubscriptionsDialog d = new SubscriptionsDialog(sdl, project);
+        d.show();
+        if (d.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+            return d;
+        }
+
+        return null;
+    }
+
+    public List<SubscriptionDetail> getSubscriptionDetails() {
+        return sdl;
+    }
+
+    @NotNull
     @Override
     protected Action[] createActions() {
         return new Action[]{this.getOKAction(), this.getCancelAction()};
@@ -113,7 +107,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             final SubscriptionManager subscriptionManager = manager.getSubscriptionManager();
             subscriptionManager.cleanSubscriptions();
 
-            DefaultTableModel dm = (DefaultTableModel)table.getModel();
+            DefaultTableModel dm = (DefaultTableModel) table.getModel();
             dm.getDataVector().removeAllElements();
             dm.fireTableDataChanged();
 
@@ -133,26 +127,48 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
     }
 
     private void setSubscriptions() {
-        DefaultTableModel model = (DefaultTableModel)table.getModel();
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
         for (SubscriptionDetail sd : sdl) {
-            model.addRow(new Object[] {sd.isSelected(), sd.getSubscriptionName(), sd.getSubscriptionId()});
+            model.addRow(new Object[]{sd.isSelected(), sd.getSubscriptionName(), sd.getSubscriptionId()});
         }
         model.fireTableDataChanged();
     }
 
     private void createUIComponents() {
         DefaultTableModel model = new SubscriptionTableModel();
-        model.addColumn("");
+        model.addColumn(""); // TODO: name for 'select/deselect all'
         model.addColumn("Subscription name");
         model.addColumn("Subscription ID");
 
         table = new JBTable();
         table.setModel(model);
-        TableColumn column = table.getColumnModel().getColumn(0);
+        TableColumn column = table.getColumnModel().getColumn(CHECKBOX_COLUMN);
         column.setMinWidth(23);
         column.setMaxWidth(23);
         table.setRowSelectionAllowed(false);
         table.setCellSelectionEnabled(false);
+        table.getTableHeader().setReorderingAllowed(false);
+
+        // secret functionality: select all subs
+        table.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int col = table.columnAtPoint(e.getPoint());
+                if (col == CHECKBOX_COLUMN) {
+                    boolean anySelected = false;
+                    for (int row = 0; row < table.getRowCount(); row++) {
+                        Boolean b = (Boolean) table.getValueAt(row, CHECKBOX_COLUMN);
+                        if (b) {
+                            anySelected = true;
+                            break;
+                        }
+                    }
+                    for (int row = 0; row < table.getRowCount(); row++) {
+                        table.getModel().setValueAt(!anySelected, row, CHECKBOX_COLUMN);
+                    }
+                }
+            }
+        });
 
         AnActionButton refreshAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override
@@ -163,11 +179,12 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         };
 
         ToolbarDecorator tableToolbarDecorator =
-            ToolbarDecorator.createDecorator(table)
-                .disableUpDownActions()
-                .addExtraActions(refreshAction);
+                ToolbarDecorator.createDecorator(table)
+                        .disableUpDownActions()
+                        .addExtraActions(refreshAction);
 
         panelTable = tableToolbarDecorator.createPanel();
+
     }
 
     @Nullable
@@ -178,12 +195,14 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
 
     @Override
     protected void doOKAction() {
-        DefaultTableModel model = (DefaultTableModel)table.getModel();
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
         int rc = model.getRowCount();
         int unselectedCount = 0;
         for (int ri = 0; ri < rc; ++ri) {
-            boolean selected = (boolean)model.getValueAt(ri, 0);
-            if (!selected) unselectedCount++;
+            boolean selected = (boolean) model.getValueAt(ri, CHECKBOX_COLUMN);
+            if (!selected) {
+                unselectedCount++;
+            }
         }
 
         if (unselectedCount == rc) {
@@ -195,7 +214,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         }
 
         for (int ri = 0; ri < rc; ++ri) {
-            boolean selected = (boolean)model.getValueAt(ri, 0);
+            boolean selected = (boolean) model.getValueAt(ri, CHECKBOX_COLUMN);
             this.sdl.get(ri).setSelected(selected);
         }
         super.doOKAction();
@@ -205,6 +224,22 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
     @Override
     protected String getDimensionServiceKey() {
         return "SubscriptionsDialog";
+    }
+
+    private static class SubscriptionTableModel extends DefaultTableModel {
+        final Class[] columnClass = new Class[]{
+                Boolean.class, String.class, String.class
+        };
+
+        @Override
+        public boolean isCellEditable(int row, int col) {
+            return (col == CHECKBOX_COLUMN);
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return columnClass[columnIndex];
+        }
     }
 
 }
