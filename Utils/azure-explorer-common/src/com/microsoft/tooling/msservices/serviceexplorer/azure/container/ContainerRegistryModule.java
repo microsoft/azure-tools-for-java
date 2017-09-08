@@ -31,7 +31,7 @@ public class ContainerRegistryModule extends AzureRefreshableNode {
 
     private static final String ACR_MODULE_ID = ContainerRegistryModule.class.getName();
     private static final String ICON_PATH = "acr.png";
-    private static final String BASE_MODULE_NAME = "Container Registry";
+    private static final String BASE_MODULE_NAME = "Container Registries";
     private final ContainerRegistryModulePresenter<ContainerRegistryModule> containerRegistryPresenter;
 
     /**
