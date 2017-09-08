@@ -243,6 +243,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         });
 
         btnDeployToRoot = new Button(container, SWT.CHECK);
+        btnDeployToRoot.setSelection(true);
         btnDeployToRoot.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
         btnDeployToRoot.setText("Deploy to root");
 
