@@ -92,6 +92,67 @@ import java.util.Map;
 import java.util.Set;
 
 public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
+
+    // validation error string constants
+    private static final String SELECT_WEB_CONTAINER = "Select a valid web container.";
+    private static final String SELECT_JAVA_VERSION = "Select Java version.";
+    private static final String SELECT_RESOURCE_GROUP = "Select a valid resource group.";
+    private static final String ENTER_RESOURCE_GROUP = "Enter a valid resource group name";
+    private static final String SELECT_APP_SERVICE_PLAN = "Select a valid App Service Plan.";
+    private static final String SELECT_LOCATION = "Select a location.";
+    private static final String SELECT_A_VALID_SUBSCRIPTION = "Select a valid subscription.";
+    private static final String ENTER_APP_SERVICE_PLAN_NAME = "Enter a valid App Service Plan name.";
+    private static final String NAME_ALREADY_TAKEN = "The name is already taken";
+    private static final String APP_SERVICE_PLAN_NAME_MUST_UNUQUE = "App service plan name must be unuque in each subscription.";
+    private static final String APP_SERVICE_PLAN_NAME_INVALID_MSG = "App Service Plan name can only include alphanumeric characters and hyphens.";
+    private static final String RESOURCE_GROUP_NAME_INVALID_MSG = "Resounce group name can only include alphanumeric characters, periods, underscores, hyphens, and parenthesis and can't end in a period.";
+    private static final String WEB_APP_NAME_INVALID_MSG = "The name can contain letters, numbers and hyphens but the first and last characters must be a letter or number. The length must be between 2 and 60 characters.";
+
+    // validation regex
+    private static final String WEB_APP_NAME_REGEX = "^[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$";
+    private static final String APP_SERVICE_PLAN_NAME_REGEX = "^[A-Za-z0-9-]*[A-Za-z0-9-]$";
+    private static final String RESOURCE_GROUP_NAME_REGEX = "^[A-Za-z0-9-_()\\.]*[A-Za-z0-9-_()]$";
+
+    // widgets
+    private static final String LBL_WEB_CONTAINER = "Web container";
+    private static final String LBL_JAVA = "Java version";
+    private static final String LBL_PRICING_TIER = "Pricing tier";
+    private static final String LBL_LOCATION = "Location";
+    private static final String LBL_APP_NAME = "Enter name";
+    private static final String LBL_SUBSCRIPTION = "Subscription";
+
+    private static final String TXT_APP_NAME_MSG = "<enter name>";
+
+    private static final String BTN_USE_EXISTING = "Use existing";
+    private static final String BTN_CREATE_NEW = "Create new";
+    private static final String BTN_OK = "Create";
+
+    private static final String TAB_APP_SERVICE_PLAN = "App service plan";
+    private static final String TAB_RESOURCE_GROUP = "Resource group";
+    private static final String TAB_JAVA = "Java";
+
+    private static final String PRICING_URL = "https://azure.microsoft.com/en-us/pricing/details/app-service/";
+    private static final String LNK_PRICING = "<a>App service pricing details</a>";
+    private static final String NOT_AVAILABLE = "N/A";
+    private static final String RESOURCE_GROUP_PREFIX = "rg-webapp-";
+    private static final String APP_SERVICE_PLAN_PREFIX = "asp-";
+    private static final String URL_SUFFIX = ".azurewebsites.net";
+    private static final String WEB_APP_PREFIX = "webapp-";
+    private static final String DATE_FORMAT = "yyMMddHHmmss";
+
+
+    // dialog
+    private static final String FORM_VALIDATION_ERROR = "Form validation error.";
+    private static final String CREATING_APP_SERVICE = "Creating App Service....";
+    private static final String VALIDATING_FORM_FIELDS = "Validating Form Fields....";
+    private static final String CREATE_APP_SERVICE_PROGRESS_TITLE = "Create App Service Progress";
+    private static final String ERROR_DIALOG_TITLE = "Create App Service Error";
+    private static final String UPDATING_AZURE_LOCAL_CACHE = "Updating Azure local cache...";
+    private static final String GETTING_APP_SERVICES = "Getting App Services...";
+    private static final String DIALOG_TITLE = "Create App Service";
+    private static final String DIALOG_MESSAGE = "Create Azure App Service";
+
+
     private static ILog LOG = Activator.getDefault().getLog();
 
     private IProject project;
@@ -121,8 +182,6 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     private ControlDecoration dec_comboAppServicePlanLocation;
     //private ControlDecoration dec_comboAppServicePlanPricingTier;
     private ControlDecoration dec_cbJavaVersion;
-
-    private final static String textNotAvailable = "N/A";
 
     // controls to types bindings by index
     private List<WebAppUtils.WebContainerMod> binderWebConteiners;
@@ -187,8 +246,8 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
 
     @Override
     protected Control createDialogArea(Composite parent) {
-        setMessage("Create Azure App Service");
-        setTitle("Create App Service");
+        setMessage(DIALOG_MESSAGE);
+        setTitle(DIALOG_TITLE);
         Composite area = (Composite) super.createDialogArea(parent);
 
         Composite composite = new Composite(area, SWT.NONE);
@@ -200,7 +259,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         grpAppService.setLayout(new GridLayout(3, false));
 
         Label lblAppName = new Label(grpAppService, SWT.NONE);
-        lblAppName.setText("Enter name");
+        lblAppName.setText(LBL_APP_NAME);
 
         textAppName = new Text(grpAppService, SWT.BORDER);
         textAppName.addFocusListener(new FocusAdapter() {
@@ -210,14 +269,14 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
             }
         });
         textAppName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        textAppName.setMessage("<enter name>");
+        textAppName.setMessage(TXT_APP_NAME_MSG);
         dec_textAppName = decorateContorolAndRegister(textAppName);
 
         Label lblazurewebsitescom = new Label(grpAppService, SWT.NONE);
-        lblazurewebsitescom.setText(".azurewebsites.net");
+        lblazurewebsitescom.setText(URL_SUFFIX);
 
         Label lblSubscription = new Label(grpAppService, SWT.NONE);
-        lblSubscription.setText("Subscription");
+        lblSubscription.setText(LBL_SUBSCRIPTION);
 
         comboSubscription = new Combo(grpAppService, SWT.READ_ONLY);
         comboSubscription.addSelectionListener(new SelectionAdapter() {
@@ -238,7 +297,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         tabItemAppServicePlan = new TabItem(tabFolder, SWT.NONE);
-        tabItemAppServicePlan.setText("App service plan");
+        tabItemAppServicePlan.setText(TAB_APP_SERVICE_PLAN);
 
         compositeAppServicePlan = new Composite(tabFolder, SWT.NONE);
         tabItemAppServicePlan.setControl(compositeAppServicePlan);
@@ -253,7 +312,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         });
         btnAppServiceCreateNew.setSelection(true);
         btnAppServiceCreateNew.setBounds(0, 0, 90, 16);
-        btnAppServiceCreateNew.setText("Create new");
+        btnAppServiceCreateNew.setText(BTN_CREATE_NEW);
 
         textAppSevicePlanName = new Text(compositeAppServicePlan, SWT.BORDER);
         textAppSevicePlanName.addFocusListener(new FocusAdapter() {
@@ -263,14 +322,14 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
             }
         });
         textAppSevicePlanName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        textAppSevicePlanName.setMessage("<enter name>");
+        textAppSevicePlanName.setMessage(TXT_APP_NAME_MSG);
         dec_textAppSevicePlanName = decorateContorolAndRegister(textAppSevicePlanName);
 
         lblAppServiceCreateNewLocation = new Label(compositeAppServicePlan, SWT.NONE);
         GridData gd_lblAppServiceCreateNewLocation = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
         gd_lblAppServiceCreateNewLocation.horizontalIndent = 15;
         lblAppServiceCreateNewLocation.setLayoutData(gd_lblAppServiceCreateNewLocation);
-        lblAppServiceCreateNewLocation.setText("Location");
+        lblAppServiceCreateNewLocation.setText(LBL_LOCATION);
 
         comboAppServicePlanLocation = new Combo(compositeAppServicePlan, SWT.READ_ONLY);
         comboAppServicePlanLocation.addFocusListener(new FocusAdapter() {
@@ -287,7 +346,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         GridData gd_lblAppServiceCreateNewPricingTier = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
         gd_lblAppServiceCreateNewPricingTier.horizontalIndent = 15;
         lblAppServiceCreateNewPricingTier.setLayoutData(gd_lblAppServiceCreateNewPricingTier);
-        lblAppServiceCreateNewPricingTier.setText("Pricing tier");
+        lblAppServiceCreateNewPricingTier.setText(LBL_PRICING_TIER);
 
         comboAppServicePlanPricingTier = new Combo(compositeAppServicePlan, SWT.READ_ONLY);
         comboAppServicePlanPricingTier.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -299,7 +358,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                 radioAppServicePlanLogic();
             }
         });
-        btnAppServiceUseExisting.setText("Use existing");
+        btnAppServiceUseExisting.setText(BTN_USE_EXISTING);
 
         comboAppServicePlan = new Combo(compositeAppServicePlan, SWT.READ_ONLY);
         comboAppServicePlan.setEnabled(false);
@@ -318,36 +377,36 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         GridData gd_lblAppServiceUseExictingLocation = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
         gd_lblAppServiceUseExictingLocation.horizontalIndent = 15;
         lblAppServiceUseExictingLocation.setLayoutData(gd_lblAppServiceUseExictingLocation);
-        lblAppServiceUseExictingLocation.setText("Location");
+        lblAppServiceUseExictingLocation.setText(LBL_LOCATION);
 
         lblAppSevicePlanLocation = new Label(compositeAppServicePlan, SWT.NONE);
         lblAppSevicePlanLocation.setEnabled(false);
         lblAppSevicePlanLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        lblAppSevicePlanLocation.setText("N/A");
+        lblAppSevicePlanLocation.setText(NOT_AVAILABLE);
 
         lblAppServiceUseExistiogPrisingTier = new Label(compositeAppServicePlan, SWT.NONE);
         lblAppServiceUseExistiogPrisingTier.setEnabled(false);
         GridData gd_lblAppServiceUseExistiogPrisingTier = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
         gd_lblAppServiceUseExistiogPrisingTier.horizontalIndent = 15;
         lblAppServiceUseExistiogPrisingTier.setLayoutData(gd_lblAppServiceUseExistiogPrisingTier);
-        lblAppServiceUseExistiogPrisingTier.setText("Pricing tier");
+        lblAppServiceUseExistiogPrisingTier.setText(LBL_PRICING_TIER);
 
         lblAppServicePlanPricingTier = new Label(compositeAppServicePlan, SWT.NONE);
         lblAppServicePlanPricingTier.setEnabled(false);
         lblAppServicePlanPricingTier.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        lblAppServicePlanPricingTier.setText("N/A");
+        lblAppServicePlanPricingTier.setText(NOT_AVAILABLE);
         new Label(compositeAppServicePlan, SWT.NONE);
         //dec_comboAppServicePlanPricingTier = decorateContorolAndRegister(comboAppServicePlanPricingTier);
 
         linkAppServicePricing = new Link(compositeAppServicePlan, SWT.NONE);
         linkAppServicePricing.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        linkAppServicePricing.setText("<a>App service pricing details</a>");
+        linkAppServicePricing.setText(LNK_PRICING);
         linkAppServicePricing.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 try {
                     PlatformUI.getWorkbench().getBrowserSupport().
-                    getExternalBrowser().openURL(new URL("https://azure.microsoft.com/en-us/pricing/details/app-service/"));
+                    getExternalBrowser().openURL(new URL(PRICING_URL));
                 } catch (PartInitException | MalformedURLException ex) {
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "widgetSelected@SelectionAdapter@linkAppServicePricing@AppServiceCreateDialog", ex));
                 }
@@ -355,7 +414,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         });
 
         tabItemResourceGroup = new TabItem(tabFolder, SWT.NONE);
-        tabItemResourceGroup.setText("Resource group");
+        tabItemResourceGroup.setText(TAB_RESOURCE_GROUP);
 
         compositeResourceGroup = new Composite(tabFolder, SWT.NONE);
         tabItemResourceGroup.setControl(compositeResourceGroup);
@@ -369,7 +428,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
             }
         });
         btnResourceGroupCreateNew.setSelection(true);
-        btnResourceGroupCreateNew.setText("Create new");
+        btnResourceGroupCreateNew.setText(BTN_CREATE_NEW);
 
         textResourceGroupName = new Text(compositeResourceGroup, SWT.BORDER);
         textResourceGroupName.addFocusListener(new FocusAdapter() {
@@ -380,7 +439,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         });
         textResourceGroupName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         textResourceGroupName.setBounds(0, 0, 64, 19);
-        textResourceGroupName.setMessage("<enter name>");
+        textResourceGroupName.setMessage(TXT_APP_NAME_MSG);
         dec_textNewResGrName = decorateContorolAndRegister(textResourceGroupName);
 
         btnResourceGroupUseExisting = new Button(compositeResourceGroup, SWT.RADIO);
@@ -390,7 +449,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                 radioResourceGroupLogic();
             }
         });
-        btnResourceGroupUseExisting.setText("Use existing");
+        btnResourceGroupUseExisting.setText(BTN_USE_EXISTING);
 
         comboResourceGroup = new Combo(compositeResourceGroup, SWT.READ_ONLY);
         comboResourceGroup.setEnabled(false);
@@ -399,31 +458,31 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         dec_comboSelectResGr = decorateContorolAndRegister(comboResourceGroup);
 
         tabItemJDK = new TabItem(tabFolder, SWT.NONE);
-        tabItemJDK.setText("Java");
+        tabItemJDK.setText(TAB_JAVA);
 
         compositeJDK = new Composite(tabFolder, SWT.NONE);
         tabItemJDK.setControl(compositeJDK);
         compositeJDK.setLayout(new GridLayout(2, false));
 
         lblJavaVersion = new Label(compositeJDK, SWT.NONE);
-        lblJavaVersion.setText("Java version");
+        lblJavaVersion.setText(LBL_JAVA);
 
         cbJavaVersion = new Combo(compositeJDK, SWT.READ_ONLY);
         cbJavaVersion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         dec_cbJavaVersion = decorateContorolAndRegister(cbJavaVersion);
 
         lblWebContainer = new Label(compositeJDK, SWT.NONE);
-        lblWebContainer.setText("Web container");
+        lblWebContainer.setText(LBL_WEB_CONTAINER);
 
         comboWebContainer = new Combo(compositeJDK, SWT.READ_ONLY);
         comboWebContainer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         dec_comboWebContainer = decorateContorolAndRegister(comboWebContainer);
 
-        DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
+        DateFormat df = new SimpleDateFormat(DATE_FORMAT);
         String date = df.format(new Date());
-        textAppName.setText("webapp-" + date);
-        textAppSevicePlanName.setText("asp-" + date);
-        textResourceGroupName.setText("rg-webapp-" + date);
+        textAppName.setText(WEB_APP_PREFIX + date);
+        textAppSevicePlanName.setText(APP_SERVICE_PLAN_PREFIX + date);
+        textResourceGroupName.setText(RESOURCE_GROUP_PREFIX + date);
 
         fillWebContainers();
         fillSubscriptions();
@@ -442,7 +501,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         cleanError();
         super.createButtonsForButtonBar(parent);
         Button okButton = getButton(IDialogConstants.OK_ID);
-        okButton.setText("Create");
+        okButton.setText(BTN_OK);
     }
 
     private void radioAppServicePlanLogic() {
@@ -528,10 +587,10 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
 
     private void updateAndFillSubscriptions() {
         try {
-            ProgressDialog.get(this.getShell(), "Getting App Services...").run(true, true, new IRunnableWithProgress() {
+            ProgressDialog.get(this.getShell(), GETTING_APP_SERVICES).run(true, true, new IRunnableWithProgress() {
                 @Override
                 public void run(IProgressMonitor monitor) {
-                       monitor.beginTask("Updating Azure local cache...", IProgressMonitor.UNKNOWN);
+                       monitor.beginTask(UPDATING_AZURE_LOCAL_CACHE, IProgressMonitor.UNKNOWN);
                     if (monitor.isCanceled()) {
                         AzureModel.getInstance().setResourceGroupToWebAppMap(null);
                         Display.getDefault().asyncExec(new Runnable() {
@@ -646,8 +705,8 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     protected void fillAppServicePlansDetails() {
         int i = comboAppServicePlan.getSelectionIndex();
         if (i < 0) {
-            lblAppSevicePlanLocation.setText(textNotAvailable);
-            lblAppServicePlanPricingTier.setText(textNotAvailable);
+            lblAppSevicePlanLocation.setText(NOT_AVAILABLE);
+            lblAppServicePlanPricingTier.setText(NOT_AVAILABLE);
         } else {
             AppServicePlan asp = binderAppServicePlan.get(i);
             lblAppSevicePlanLocation.setText(asp.region().label());
@@ -709,18 +768,18 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
 
     @Override
     protected void okPressed() {
-        String errTitle = "Create App Service Error";
+        String errTitle = ERROR_DIALOG_TITLE;
         cleanError();
         collectData();
         try {
-            ProgressDialog.get(this.getShell(), "Create App Service Progress").run(true, true, new IRunnableWithProgress() {
+            ProgressDialog.get(this.getShell(), CREATE_APP_SERVICE_PROGRESS_TITLE).run(true, true, new IRunnableWithProgress() {
                 @Override
                 public void run(IProgressMonitor monitor) {
-                    monitor.beginTask("Validating Form Fields....", IProgressMonitor.UNKNOWN);
+                    monitor.beginTask(VALIDATING_FORM_FIELDS, IProgressMonitor.UNKNOWN);
                     if (!validated()) {
                         return;
                     }
-                    monitor.setTaskName("Creating App Service....");
+                    monitor.setTaskName(CREATING_APP_SERVICE);
                     if (monitor.isCanceled()) {
                         AzureModel.getInstance().setResourceGroupToWebAppMap(null);
                         Display.getDefault().asyncExec(new Runnable() {
@@ -732,7 +791,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                     }
                     try {
                         webApp = AzureWebAppMvpModel.getInstance().createWebApp(model);
-                        monitor.setTaskName("Updating Azure local cache...");
+                        monitor.setTaskName(UPDATING_AZURE_LOCAL_CACHE);
                         AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));
                         Display.getDefault().asyncExec(new Runnable() {
                             @Override
@@ -775,7 +834,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     protected void setError(ControlDecoration d, String message) {
         Display.getDefault().asyncExec(() -> {
             d.setDescriptionText(message);
-            setErrorMessage("Form validation error.");
+            setErrorMessage(FORM_VALIDATION_ERROR);
             d.show();
         });
     }
@@ -789,17 +848,14 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
 
     protected boolean validated() {
         String webappName = model.getWebAppName();
-        if (webappName.length() > 60 || !webappName.matches("^[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$")) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("The name can contain letters, numbers and hyphens but the first and last characters must be a letter or number. ");
-            builder.append("The length can be between 2 and 60 characters. ");
-            setError(dec_textAppName, builder.toString());
+        if (webappName.length() > 60 || !webappName.matches(WEB_APP_NAME_REGEX)) {
+            setError(dec_textAppName, WEB_APP_NAME_INVALID_MSG);
             return false;
         } else {
             for (List<WebApp> wal : AzureModel.getInstance().getResourceGroupToWebAppMap().values()) {
                 for (WebApp wa : wal) {
                     if (wa.name().toLowerCase().equals(webappName.toLowerCase())) {
-                        setError(dec_textAppName,"The name is already taken");
+                        setError(dec_textAppName,NAME_ALREADY_TAKEN);
                         return false;
                     }
                 }
@@ -807,17 +863,17 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         }
 
         if (model.getSubscriptionId() == null || model.getSubscriptionId().isEmpty()) {
-            setError(dec_comboSubscription,"Select a valid subscription.");
+            setError(dec_comboSubscription, SELECT_A_VALID_SUBSCRIPTION);
             return false;
         }
 
         if (model.isCreatingAppServicePlan()) {
             if (model.getAppServicePlanName().isEmpty()) {
-                setError(dec_textAppSevicePlanName, "Enter a valid App Service Plan name.");
+                setError(dec_textAppSevicePlanName, ENTER_APP_SERVICE_PLAN_NAME);
                 return false;
             } else {
-                if (!model.getAppServicePlanName().matches("^[A-Za-z0-9-]*[A-Za-z0-9-]$")) {
-                    setError(dec_textAppSevicePlanName, "App Service Plan name can only include alphanumeric characters and hyphens.");
+                if (!model.getAppServicePlanName().matches(APP_SERVICE_PLAN_NAME_REGEX)) {
+                    setError(dec_textAppSevicePlanName, APP_SERVICE_PLAN_NAME_INVALID_MSG);
                     return false;
                 }
                 // App service plan name must be unique in each subscription
@@ -826,52 +882,52 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                     List<AppServicePlan> aspl = AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionIdAndResourceGroupName(model.getSubscriptionId(), rg.name());
                     for (AppServicePlan asp : aspl) {
                         if (asp.name().toLowerCase().equals(model.getAppServicePlanName().toLowerCase())) {
-                            setError(dec_textAppSevicePlanName, "App service plan name must be unuque in each subscription.");
+                            setError(dec_textAppSevicePlanName, APP_SERVICE_PLAN_NAME_MUST_UNUQUE);
                             return false;
                         }
                     }
                 }
             }
             if (model.getRegion() == null || model.getRegion().isEmpty()) {
-                setError(dec_comboAppServicePlanLocation, "Select a location.");
+                setError(dec_comboAppServicePlanLocation, SELECT_LOCATION);
                 return false;
             }
         } else {
             if (model.getAppServicePlanId() == null || model.getAppServicePlanId().isEmpty()) {
-                setError(dec_comboAppServicePlan,"Select a valid App Service Plan.");
+                setError(dec_comboAppServicePlan, SELECT_APP_SERVICE_PLAN);
                 return false;
             }
         }
 
         if (model.isCreatingResGrp()) {
             if (model.getResourceGroup() == null || model.getResourceGroup().isEmpty()) {
-                setError(dec_textNewResGrName,"Enter a valid resource group name");
+                setError(dec_textNewResGrName, ENTER_RESOURCE_GROUP);
                 return false;
             }
-            if (!model.getResourceGroup().matches("^[A-Za-z0-9-_()\\.]*[A-Za-z0-9-_()]$")) {
-                setError(dec_textNewResGrName,"Resounce group name can only include alphanumeric characters, periods, underscores, hyphens, and parenthesis and can't end in a period.");
+            if (!model.getResourceGroup().matches(RESOURCE_GROUP_NAME_REGEX)) {
+                setError(dec_textNewResGrName, RESOURCE_GROUP_NAME_INVALID_MSG);
                 return false;
             }
             for (ResourceGroup rg : AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(model.getSubscriptionId())) {
                 if (rg.name().toLowerCase().equals(model.getResourceGroup().toLowerCase())) {
-                    setError(dec_textNewResGrName,"The name is already taken");
+                    setError(dec_textNewResGrName, NAME_ALREADY_TAKEN);
                     return false;
                 }
             }
         } else {
             if (model.getResourceGroup() == null || model.getResourceGroup().isEmpty()) {
-                setError(dec_comboSelectResGr, "Select a valid resource group.");
+                setError(dec_comboSelectResGr, SELECT_RESOURCE_GROUP);
                 return false;
             }
         }
 
         if (model.getJdkVersion() == null) {
-            setError(dec_cbJavaVersion, "Select Java version.");
+            setError(dec_cbJavaVersion, SELECT_JAVA_VERSION);
             return false;
         }
 
         if (model.getWebContainer() == null || model.getWebContainer().isEmpty()) {
-            setError(dec_comboWebContainer,"Select a valid web container.");
+            setError(dec_comboWebContainer, SELECT_WEB_CONTAINER);
             return false;
         }
 
