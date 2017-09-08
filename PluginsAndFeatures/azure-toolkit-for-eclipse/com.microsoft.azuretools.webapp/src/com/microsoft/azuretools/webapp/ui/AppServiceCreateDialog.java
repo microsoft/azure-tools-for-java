@@ -716,7 +716,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
             ProgressDialog.get(this.getShell(), "Create App Service Progress").run(true, true, new IRunnableWithProgress() {
                 @Override
                 public void run(IProgressMonitor monitor) {
-                    monitor.beginTask("Validate Form Fields....", IProgressMonitor.UNKNOWN);
+                    monitor.beginTask("Validating Form Fields....", IProgressMonitor.UNKNOWN);
                     if (!validated()) {
                         return;
                     }
