@@ -33,10 +33,13 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 
 import com.microsoft.azure.hdinsight.projects.SparkVersion;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -141,6 +144,89 @@ public class CreateProjectUtil {
 		
 		copyFileTo(pomFileName, rootPath, "/pom.xml");
 	}
+	
+	public static void removeSourceFolderfromClassPath(IJavaProject javaProject, String folderUnderRoot) throws JavaModelException {
+		IClasspathEntry[] entries = javaProject.getRawClasspath();
+		String folderFullPath = "/" + javaProject.getProject().getName() + "/" + folderUnderRoot;
+		int index = -1;
+		for (int i = 0; i < entries.length; i++) {
+			if (entries[i].getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+				String currPath = entries[i].getPath().toString();
+				if (currPath.equals(folderFullPath)) {
+					index = i;
+					break;
+				}
+			}
+		}
+		
+		if (index == -1 || entries.length <= 0) {
+			return;
+		}
+				
+		IClasspathEntry[] newEntries = new IClasspathEntry[entries.length - 1];
+
+		if (index > 0) {
+			System.arraycopy(entries, 0, newEntries, 0, index);
+		}
+		
+		if (index < entries.length - 1) {
+			System.arraycopy(entries, index + 1, newEntries, index, entries.length - index - 1);
+		}
+		
+		javaProject.setRawClasspath(newEntries, new NullProgressMonitor());
+	}
+	
+	public static void addSourceFoldertoClassPath(IJavaProject javaProject, String folderUnderRoot) throws JavaModelException {
+		IProject project = javaProject.getProject();
+		
+		IFolder currFolder = createFolderUnderRoot(project, folderUnderRoot);
+		
+		IClasspathEntry[] entries = javaProject.getRawClasspath();
+
+		IClasspathEntry newSrcFolder = JavaCore.newSourceEntry(currFolder.getFullPath());
+
+		IClasspathEntry[] newEntries;
+		if (addExclusiontoClassPath(newSrcFolder, entries) == true) {
+			newEntries = new IClasspathEntry[entries.length + 1];
+			
+			newEntries[entries.length] = newSrcFolder;
+		} else {
+			newEntries = new IClasspathEntry[entries.length];
+		}
+		
+		System.arraycopy(entries, 0, newEntries, 0, entries.length);
+		
+		javaProject.setRawClasspath(newEntries, new NullProgressMonitor());
+	}
+
+	private static boolean addExclusiontoClassPath(IClasspathEntry newEntry, IClasspathEntry[] entries) {
+		IPath newEntryPath = newEntry.getPath();
+		for (int i = 0; i < entries.length; i++) {
+			if (entries[i].getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+				IPath currPath = entries[i].getPath();
+				if (currPath.equals(newEntryPath)) {
+					return false;
+				} else {
+					if (currPath.isPrefixOf(newEntryPath)) {
+						IPath[] exclusionFilters = (IPath[])entries[i].getExclusionPatterns();
+						if (!JavaModelUtil.isExcludedPath(currPath, exclusionFilters)) {
+							IPath pathToExclude = newEntryPath.removeFirstSegments(currPath.segmentCount()).addTrailingSeparator();
+							IPath[] newExclusionFilters = new IPath[exclusionFilters.length + 1];
+							System.arraycopy(exclusionFilters, 0, newExclusionFilters, 0, exclusionFilters.length);
+							newExclusionFilters[exclusionFilters.length] = pathToExclude;
+							entries[i] = JavaCore.newSourceEntry(currPath, 
+									entries[i].getInclusionPatterns(), 
+									newExclusionFilters, 
+									entries[i].getOutputLocation(), 
+									entries[i].getExtraAttributes());
+						}
+					}
+				}
+			}
+		}
+		
+		return true;
+	}
 
 	@NotNull
 	private static IFile convert(@NotNull File file) {
@@ -156,38 +242,56 @@ public class CreateProjectUtil {
 		copyFileTo(Scala_Local_Run_Sample, rootPath);
 		
 		// Copy data
-		String dataRelativePathtoRoot = "";
-		IFolder dataFolder = null;
-		if (useMaven) {
-			dataRelativePathtoRoot = "resources/data";
-			IFolder parentFolder = sourceRootFolder.getParent().getFolder(new Path("resources"));
-			if (!parentFolder.exists()) {
-				parentFolder.create(false, true, null);
-			}
-			
-			dataFolder = parentFolder.getFolder(new Path("data"));
-		} else {
-			dataRelativePathtoRoot = "data";
-			
-			dataFolder = sourceRootFolder.getParent().getFolder(new Path(dataRelativePathtoRoot));
-		}
+		String strDataFolder;
+		//if (useMaven) {
+		//	strDataFolder = "src/main/scala/resources/data";
+		//} else {
+			strDataFolder = "data";
+		//}
+		
+		IFolder dataFolder = createFolderUnderRoot(project, strDataFolder);
 
-		if (!dataFolder.exists()) {
-			dataFolder.create(false, true, null);
-		}
 		copyFileTo(Scala_Local_Run_Sample_Data, dataFolder.getLocation().toFile().getAbsolutePath());
 
 		IJavaProject javaProject = JavaCore.create(project);
-		IClasspathEntry[] entries = javaProject.getRawClasspath();
-
-		IClasspathEntry[] newEntries = new IClasspathEntry[entries.length + 1];
-		System.arraycopy(entries, 0, newEntries, 0, entries.length);
-
-		IPath dataPath = javaProject.getPath().append(dataRelativePathtoRoot);
-		IClasspathEntry dataEntry = JavaCore.newSourceEntry(dataPath, null);
-
-		newEntries[entries.length] = JavaCore.newSourceEntry(dataEntry.getPath());
-		javaProject.setRawClasspath(newEntries, null);
+		
+		addSourceFoldertoClassPath(javaProject, strDataFolder);
+	}
+	
+	private static IFolder createFolderUnderRoot(@NotNull IProject project, @NotNull String relativeFolder) {
+		return createFolderUnderRoot(project, relativeFolder, null);
+	}
+	
+	private static IFolder createFolderUnderRoot(@NotNull IProject project, String relativeFolder, String rootFolder ) {
+		String[] srcFolders = relativeFolder.split("/");
+		if (srcFolders.length == 0) {
+			return null;
+		}
+		
+		IFolder[] parentFolder = new IFolder[1];
+		int startIndex = 0;
+		if (rootFolder != null && rootFolder.length() >= 0) {
+			parentFolder[0] = project.getFolder(rootFolder);
+		} else {
+			parentFolder[0] = project.getFolder(new Path(srcFolders[0]));
+			startIndex = 1;
+		}
+		
+		for (int i = startIndex; i < srcFolders.length; i++) {
+			String srcFolder = srcFolders[i];
+		
+			IFolder currFolder = parentFolder[0].getFolder(srcFolder);
+			if (!currFolder.exists()) {
+				try {
+					currFolder.create(false, true, null);
+				} catch (CoreException e) {
+					e.printStackTrace();
+				}
+			}
+			parentFolder[0] = currFolder;
+		}
+		
+		return parentFolder[0];
 	}
 
 	@NotNull

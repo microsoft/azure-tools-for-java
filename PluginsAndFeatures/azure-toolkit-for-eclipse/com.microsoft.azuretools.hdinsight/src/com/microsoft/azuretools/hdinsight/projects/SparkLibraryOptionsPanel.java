@@ -261,7 +261,7 @@ public class SparkLibraryOptionsPanel extends Composite {
 		comUseMaven.setEnabled(toEnable);
 		comboBoxUseMaven.setEnabled(toEnable);
 		
-		if (MavenPluginUtil.checkMavenPluginInstallation() != true) {
+		if (toEnable && MavenPluginUtil.checkMavenPluginInstallation() != true) {
 			MavenPluginUtil.installMavenPlugin();
 		}
 	}

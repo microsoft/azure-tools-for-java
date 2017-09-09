@@ -246,48 +246,10 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 		private void addMoreSourcetoClassPath() throws JavaModelException {
 			HDInsightJavaPageOne previousPage = (HDInsightJavaPageOne)getPreviousPage();
 			if (previousPage.sparkLibraryOptionsPanel.useMaven) {
-				IProject project = this.getJavaProject().getProject();
-				final IFolder sourceRootFolder = project.getFolder("src");
-				if (!sourceRootFolder.exists()) {
-					try {
-						sourceRootFolder.create(false, true, null);
-					} catch (CoreException e) {
-						e.printStackTrace();
-					}
-				}
-
-				final IFolder mainFolder = sourceRootFolder.getFolder("main");
-				if (!mainFolder.exists()) {
-					try {
-						mainFolder.create(false, true, null);
-					} catch (CoreException e) {
-						e.printStackTrace();
-					}
-				}
-				
-				final IFolder scalaFolder = mainFolder.getFolder("java");
-				if (!scalaFolder.exists()) {
-					try {
-						scalaFolder.create(false, true, null);
-					} catch (CoreException e) {
-						e.printStackTrace();
-					}
-				}
-				
-				IJavaProject javaProject = this.getJavaProject();
-				
-				IClasspathEntry[] entries = javaProject.getRawClasspath();
-		
-				IClasspathEntry[] newEntries = new IClasspathEntry[entries.length];
-				
-				IClasspathEntry scalaSrcFolder = JavaCore.newSourceEntry(scalaFolder.getFullPath());
-		
-				System.arraycopy(entries, 0, newEntries, 0, entries.length);
-				
-				newEntries[entries.length - 1] = scalaSrcFolder;
-				
-				javaProject.setRawClasspath(newEntries, new NullProgressMonitor());
+				CreateProjectUtil.removeSourceFolderfromClassPath(this.getJavaProject(), "src");
+				CreateProjectUtil.addSourceFoldertoClassPath(this.getJavaProject(), "src/main/java");
 			}
+
 		}
 		
 		private IProject addHDInsightNature(IProgressMonitor monitor) throws CoreException {
