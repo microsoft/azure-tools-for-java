@@ -28,6 +28,7 @@ public class PushImageRunModel {
     private PrivateRegistryImageSetting privateRegistryImageSetting = new PrivateRegistryImageSetting();
     private String targetPath;
     private String targetName;
+    private String dockerFilePath;
 
     public PrivateRegistryImageSetting getPrivateRegistryImageSetting() {
         return privateRegistryImageSetting;
@@ -51,5 +52,13 @@ public class PushImageRunModel {
 
     public void setTargetName(String targetName) {
         this.targetName = targetName;
+    }
+
+    public String getDockerFilePath() {
+        return dockerFilePath;
+    }
+
+    public void setDockerFilePath(String dockerFilePath) {
+        this.dockerFilePath = dockerFilePath;
     }
 }

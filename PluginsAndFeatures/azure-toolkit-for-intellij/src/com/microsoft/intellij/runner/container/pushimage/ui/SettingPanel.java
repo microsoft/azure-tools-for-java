@@ -22,14 +22,21 @@
 
 package com.microsoft.intellij.runner.container.pushimage.ui;
 
+import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.Comparing;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.ListCellRendererWrapper;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.runner.container.pushimage.PushImageRunConfiguration;
+import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -54,16 +61,14 @@ import rx.schedulers.Schedulers;
 public class SettingPanel {
     private final Project project;
     private JPanel rootPanel;
-    private JPanel pnlAcr;
-    private JPanel pnlAcrHolder;
     private JTextField textServerUrl;
     private JTextField textUsername;
     private JPasswordField passwordField;
     private JTextField textImageTag;
-    private JTextField textStartupFile;
     private JComboBox<Artifact> cbArtifact;
     private JLabel lblArtifact;
     private JPanel pnlArtifact;
+    private TextFieldWithBrowseButton dockerFilePathTextField;
     private Artifact lastSelectedArtifact;
     private boolean isCbArtifactInited;
 
@@ -75,6 +80,25 @@ public class SettingPanel {
 
     public SettingPanel(Project project) {
         this.project = project;
+
+        dockerFilePathTextField.addActionListener(e -> {
+            String path = dockerFilePathTextField.getText();
+            final VirtualFile file = FileChooser.chooseFile(
+                    new FileChooserDescriptor(
+                            true /*chooseFiles*/,
+                            false /*chooseFolders*/,
+                            false /*chooseJars*/,
+                            false /*chooseJarsAsFiles*/,
+                            false /*chooseJarContents*/,
+                            false /*chooseMultiple*/
+                    ),
+                    project,
+                    Utils.isEmptyString(path) ? null : LocalFileSystem.getInstance().findFileByPath(path)
+            );
+            if (file != null) {
+                dockerFilePathTextField.setText(file.getPath());
+            }
+        });
 
         // Artifact to build
         isCbArtifactInited = false;
@@ -139,13 +163,14 @@ public class SettingPanel {
      */
     @SuppressWarnings("Duplicates")
     public void apply(PushImageRunConfiguration pushImageRunConfiguration) {
+        pushImageRunConfiguration.setDockerFilePath(dockerFilePathTextField.getText());
         // set ACR info
         pushImageRunConfiguration.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(
                 textServerUrl.getText().replaceFirst("^https?://", "").replaceFirst("/$", ""),
                 textUsername.getText(),
                 String.valueOf(passwordField.getPassword()),
                 textImageTag.getText(),
-                textStartupFile.getText()
+                ""
         ));
 
         // set target
@@ -200,9 +225,12 @@ public class SettingPanel {
         textUsername.setText(acrInfo.getUsername());
         passwordField.setText(acrInfo.getPassword());
         textImageTag.setText(acrInfo.getImageNameWithTag());
-        textStartupFile.setText(acrInfo.getStartupFile());
+        if (Utils.isEmptyString(conf.getDockerFilePath())) {
+            dockerFilePathTextField.setText(DockerUtil.getDefaultDockerFilePathIfExist(project));
+        } else {
+            dockerFilePathTextField.setText(conf.getDockerFilePath());
+        }
 
         sendTelemetry(conf.getTargetName());
     }
-
 }

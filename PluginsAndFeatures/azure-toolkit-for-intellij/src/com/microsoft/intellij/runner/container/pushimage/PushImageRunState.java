@@ -87,7 +87,7 @@ public class PushImageRunState implements RunProfileState {
                     String targetFileName = dataModel.getTargetName();
 
                     // validate dockerfile
-                    Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
+                    Path targetDockerfile = Paths.get(dataModel.getDockerFilePath());
                     processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
                     if (!targetDockerfile.toFile().exists()) {
                         throw new FileNotFoundException("Dockerfile not found.");
@@ -103,9 +103,10 @@ public class PushImageRunState implements RunProfileState {
                     String imageNameWithTag = dataModel.getPrivateRegistryImageSetting().getImageNameWithTag();
                     processHandler.setText(String.format("Building image ...  [%s]", imageNameWithTag));
                     DockerClient docker = DefaultDockerClient.fromEnv().build();
-                    String latestImageName = DockerUtil.buildImage(docker,
+                    DockerUtil.buildImage(docker,
                             imageNameWithTag,
-                            Paths.get(basePath, Constant.DOCKERFILE_FOLDER),
+                            targetDockerfile.getParent(),
+                            targetDockerfile.getFileName().toString(),
                             new DockerProgressHandler(processHandler)
                     );
 

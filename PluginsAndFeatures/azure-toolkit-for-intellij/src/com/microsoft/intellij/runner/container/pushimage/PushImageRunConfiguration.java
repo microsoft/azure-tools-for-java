@@ -44,6 +44,8 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.file.Paths;
+
 public class PushImageRunConfiguration extends RunConfigurationBase {
     // TODO: move to util
     private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
@@ -51,6 +53,7 @@ public class PushImageRunConfiguration extends RunConfigurationBase {
     private static final String MISSING_USERNAME = "Please specify Username.";
     private static final String MISSING_PASSWORD = "Please specify Password.";
     private static final String MISSING_IMAGE_WITH_TAG = "Please specify Image and Tag.";
+    private static final String INVALID_DOCKER_FILE = "Please specify a valid docker file.";
     private static final String INVALID_IMAGE_WITH_TAG = "Image and Tag should start with '%s/'";
     private static final String INVALID_ARTIFACT_FILE = "The artifact name %s is invalid. "
             + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
@@ -101,6 +104,10 @@ public class PushImageRunConfiguration extends RunConfigurationBase {
     public void validate() throws ConfigurationException {
         if (dataModel == null) {
             throw new ConfigurationException(MISSING_MODEL);
+        }
+        if (Utils.isEmptyString(dataModel.getDockerFilePath())
+                || !Paths.get(dataModel.getDockerFilePath()).toFile().exists()) {
+            throw new ConfigurationException(INVALID_DOCKER_FILE);
         }
         // acr
         PrivateRegistryImageSetting setting = dataModel.getPrivateRegistryImageSetting();
@@ -158,6 +165,14 @@ public class PushImageRunConfiguration extends RunConfigurationBase {
 
     public void setTargetName(String targetName) {
         dataModel.setTargetName(targetName);
+    }
+
+    public String getDockerFilePath() {
+        return dataModel.getDockerFilePath();
+    }
+
+    public void setDockerFilePath(String dockerFilePath) {
+        dataModel.setDockerFilePath(dockerFilePath);
     }
 
     public PrivateRegistryImageSetting getPrivateRegistryImageSetting() {
