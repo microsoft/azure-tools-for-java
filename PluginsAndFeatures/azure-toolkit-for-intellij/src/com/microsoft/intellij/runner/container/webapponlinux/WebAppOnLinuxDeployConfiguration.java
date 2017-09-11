@@ -47,6 +47,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 
 public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
 
@@ -60,6 +61,7 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     private static final String MISSING_RESOURCE_GROUP = "Please specify Resource Group.";
     private static final String MISSING_APP_SERVICE_PLAN = "Please specify App Service Plan.";
     private static final String INVALID_IMAGE_WITH_TAG = "Image and Tag should start with '%s/'";
+    private static final String INVALID_DOCKER_FILE = "Please specify a valid docker file.";
 
     // TODO: move to util
     private static final String MISSING_ARTIFACT = "A web archive (.war|.jar) artifact has not been configured.";
@@ -130,6 +132,10 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
             }
         } catch (IOException e) {
             throw new ConfigurationException(NEED_SIGN_IN);
+        }
+        if (Utils.isEmptyString(deployModel.getDockerFilePath())
+                || !Paths.get(deployModel.getDockerFilePath()).toFile().exists()) {
+            throw new ConfigurationException(INVALID_DOCKER_FILE);
         }
         // acr
         PrivateRegistryImageSetting setting = deployModel.getPrivateRegistryImageSetting();
@@ -303,5 +309,13 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
 
     public void setTargetName(String targetName) {
         deployModel.setTargetName(targetName);
+    }
+
+    public String getDockerFilePath() {
+        return deployModel.getDockerFilePath();
+    }
+
+    public void setDockerFilePath(String dockerFilePath) {
+        deployModel.setDockerFilePath(dockerFilePath);
     }
 }

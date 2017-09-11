@@ -84,7 +84,6 @@ public class PushImageRunState implements RunProfileState {
                     // locate artifact to specified location
                     String targetFilePath = dataModel.getTargetPath();
                     processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
-                    String targetFileName = dataModel.getTargetName();
 
                     // validate dockerfile
                     Path targetDockerfile = Paths.get(dataModel.getDockerFilePath());

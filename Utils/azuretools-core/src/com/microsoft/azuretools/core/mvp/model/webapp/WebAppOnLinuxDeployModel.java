@@ -39,6 +39,7 @@ public class WebAppOnLinuxDeployModel {
     private String appServicePlanName;
     private String targetPath;
     private String targetName;
+    private String dockerFilePath;
 
 
     public WebAppOnLinuxDeployModel() {
@@ -163,5 +164,13 @@ public class WebAppOnLinuxDeployModel {
     
     public String getTargetName() {
         return this.targetName;
+    }
+
+    public String getDockerFilePath() {
+        return dockerFilePath;
+    }
+
+    public void setDockerFilePath(String dockerFilePath) {
+        this.dockerFilePath = dockerFilePath;
     }
 }

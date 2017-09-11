@@ -25,8 +25,13 @@ package com.microsoft.intellij.runner.container.webapponlinux.ui;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.Comparing;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.AnActionButton;
@@ -45,6 +50,7 @@ import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
@@ -137,6 +143,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private JPanel pnlAppServicePlan;
     private JPanel pnlAcrHolder;
     private JPanel pnlWebAppHolder;
+    private TextFieldWithBrowseButton dockerFilePathTextField;
     private Artifact lastSelectedArtifact;
     private boolean isCbArtifactInited;
 
@@ -150,6 +157,25 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         webAppOnLinuxDeployPresenter = new WebAppOnLinuxDeployPresenter<>();
         webAppOnLinuxDeployPresenter.onAttachView(this);
         this.project = project;
+
+        dockerFilePathTextField.addActionListener(e -> {
+            String path = dockerFilePathTextField.getText();
+            final VirtualFile file = FileChooser.chooseFile(
+                    new FileChooserDescriptor(
+                            true /*chooseFiles*/,
+                            false /*chooseFolders*/,
+                            false /*chooseJars*/,
+                            false /*chooseJarsAsFiles*/,
+                            false /*chooseJarContents*/,
+                            false /*chooseMultiple*/
+                    ),
+                    project,
+                    Utils.isEmptyString(path) ? null : LocalFileSystem.getInstance().findFileByPath(path)
+            );
+            if (file != null) {
+                dockerFilePathTextField.setText(file.getPath());
+            }
+        });
 
         // set create/update panel visible
         updatePanelVisibility();
@@ -350,6 +376,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
      * @param webAppOnLinuxDeployConfiguration configuration instance
      */
     public void apply(WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
+        webAppOnLinuxDeployConfiguration.setDockerFilePath(dockerFilePathTextField.getText());
         // set ACR info
         webAppOnLinuxDeployConfiguration.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(
                 textServerUrl.getText().replaceFirst("^https?://", "").replaceFirst("/$", ""),
@@ -484,6 +511,11 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             setupArtifactCombo(artifacts, conf.getTargetPath());
         }
 
+        if (Utils.isEmptyString(conf.getDockerFilePath())) {
+            dockerFilePathTextField.setText(DockerUtil.getDefaultDockerFilePathIfExist(project));
+        } else {
+            dockerFilePathTextField.setText(conf.getDockerFilePath());
+        }
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
         textServerUrl.setText(acrInfo.getServerUrl());
         textUsername.setText(acrInfo.getUsername());
