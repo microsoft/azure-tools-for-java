@@ -43,6 +43,8 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.file.Paths;
+
 public class DockerHostRunConfiguration extends RunConfigurationBase {
     // TODO: move to util
     private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
@@ -103,7 +105,8 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
         if (Utils.isEmptyString(dockerHostRunModel.getDockerHost())) {
             throw new ConfigurationException(INVALID_DOCKER_HOST);
         }
-        if (Utils.isEmptyString(dockerHostRunModel.getDockerFilePath())) {
+        if (Utils.isEmptyString(dockerHostRunModel.getDockerFilePath())
+                || !Paths.get(dockerHostRunModel.getDockerFilePath()).toFile().exists()) {
             throw new ConfigurationException(INVALID_DOCKER_FILE);
         }
         if (dockerHostRunModel.isTlsEnabled() && Utils.isEmptyString(dockerHostRunModel.getDockerCertPath())) {

@@ -87,7 +87,6 @@ public class SettingPanel {
         dockerCertPathTextField.addActionListener(this::onDockerCertPathBrowseButtonClick);
         comboTlsEnabled.addActionListener(event -> updateComponentEnabledState());
 
-        dockerFilePathTextField.setText(DockerUtil.getDefaultDockerFilePathIfExist(project));
         dockerFilePathTextField.addActionListener(e -> {
             String path = dockerFilePathTextField.getText();
             final VirtualFile file = FileChooser.chooseFile(
@@ -174,7 +173,11 @@ public class SettingPanel {
         textDockerHost.setText(conf.getDockerHost());
         comboTlsEnabled.setSelected(conf.isTlsEnabled());
         dockerCertPathTextField.setText(conf.getDockerCertPath());
-        dockerFilePathTextField.setText(conf.getDockerFilePath());
+        if (Utils.isEmptyString(conf.getDockerFilePath())) {
+            dockerFilePathTextField.setText(DockerUtil.getDefaultDockerFilePathIfExist(project));
+        } else {
+            dockerFilePathTextField.setText(conf.getDockerFilePath());
+        }
         textImageName.setText(conf.getImageName());
         textTagName.setText(conf.getTagName());
         updateComponentEnabledState();
