@@ -24,7 +24,7 @@ package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.implementation.SiteInner;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
@@ -34,7 +34,7 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import java.util.List;
 
 public interface WebAppOnLinuxDeployView extends MvpView {
-    void renderWebAppOnLinuxList(List<ResourceEx<SiteInner>> webAppOnLinuxList);
+    void renderWebAppOnLinuxList(List<ResourceEx<WebApp>> webAppOnLinuxList);
 
     void renderSubscriptionList(List<Subscription> subscriptions);
 

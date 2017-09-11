@@ -37,7 +37,7 @@ import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.implementation.SiteInner;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
@@ -120,7 +120,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private JPanel pnlWebApp;
     private JBTable webAppTable;
     private AnActionButton btnRefresh;
-    private List<ResourceEx<SiteInner>> cachedWebAppList;
+    private List<ResourceEx<WebApp>> cachedWebAppList;
     private String defaultWebAppId;
     private String defaultLocationName;
     private String defaultPricingTier;
@@ -382,7 +382,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         if (rdoUseExist.isSelected()) {
             // existing web app
             webAppOnLinuxDeployConfiguration.setCreatingNewWebAppOnLinux(false);
-            ResourceEx<SiteInner> selectedWebApp = null;
+            ResourceEx<WebApp> selectedWebApp = null;
             int index = webAppTable.getSelectedRow();
             if (cachedWebAppList != null && index >= 0 && index < cachedWebAppList.size()) {
                 selectedWebApp = cachedWebAppList.get(webAppTable.getSelectedRow());
@@ -391,7 +391,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 webAppOnLinuxDeployConfiguration.setWebAppId(selectedWebApp.getResource().id());
                 webAppOnLinuxDeployConfiguration.setAppName(selectedWebApp.getResource().name());
                 webAppOnLinuxDeployConfiguration.setSubscriptionId(selectedWebApp.getSubscriptionId());
-                webAppOnLinuxDeployConfiguration.setResourceGroupName(selectedWebApp.getResource().resourceGroup());
+                webAppOnLinuxDeployConfiguration.setResourceGroupName(selectedWebApp.getResource().resourceGroupName());
             } else {
                 webAppOnLinuxDeployConfiguration.setWebAppId(null);
                 webAppOnLinuxDeployConfiguration.setAppName(null);
@@ -605,21 +605,21 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     }
 
     @Override
-    public void renderWebAppOnLinuxList(List<ResourceEx<SiteInner>> webAppOnLinuxList) {
+    public void renderWebAppOnLinuxList(List<ResourceEx<WebApp>> webAppOnLinuxList) {
         btnRefresh.setEnabled(true);
         webAppTable.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
-        List<ResourceEx<SiteInner>> sortedList = webAppOnLinuxList.stream()
+        List<ResourceEx<WebApp>> sortedList = webAppOnLinuxList.stream()
                 .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
                 .collect(Collectors.toList());
         cachedWebAppList = sortedList;
         if (cachedWebAppList.size() > 0) {
             DefaultTableModel model = (DefaultTableModel) webAppTable.getModel();
             model.getDataVector().clear();
-            for (ResourceEx<SiteInner> resource : sortedList) {
-                SiteInner app = resource.getResource();
+            for (ResourceEx<WebApp> resource : sortedList) {
+                WebApp app = resource.getResource();
                 model.addRow(new String[]{
                         app.name(),
-                        app.resourceGroup()
+                        app.resourceGroupName()
                 });
             }
         }

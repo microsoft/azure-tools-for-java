@@ -23,7 +23,7 @@
 package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
 import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.implementation.SiteInner;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -43,7 +43,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
     private static final String CANNOT_LIST_LOCATION = "Failed to list location.";
     private static final String CANNOT_LIST_APP_SERVICE_PLAN = "Failed to list app service plan.";
 
-    private List<ResourceEx<SiteInner>> retrieveListOfWebAppOnLinux(boolean force) {
+    private List<ResourceEx<WebApp>> retrieveListOfWebAppOnLinux(boolean force) {
         return AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(force);
     }
 

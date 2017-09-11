@@ -1,12 +1,12 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -27,14 +27,16 @@ public class WebAppModulePresenter<V extends WebAppModule> extends MvpPresenter<
      * Called from view when the view needs refresh.
      */
     public void onModuleRefresh() {
-        List<ResourceEx<WebApp>> winApps = AzureWebAppMvpModel.getInstance().listWebApps(true);
-        List<ResourceEx<SiteInner>> linuxApps = AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
+        List<ResourceEx<WebApp>> webapps = new ArrayList<>();
+        // TODO: add API in mvpModel, listBothWinAndLinuxWebApps to improve performance
+        webapps.addAll(AzureWebAppMvpModel.getInstance().listWebApps(true));
+        webapps.addAll(AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true));
 
         if (getMvpView() == null) {
             return;
         }
 
-        winApps.forEach(app -> getMvpView().addChildNode(new WebAppNode(
+        webapps.forEach(app -> getMvpView().addChildNode(new WebAppNode(
                 getMvpView(),
                 app.getSubscriptionId(),
                 app.getResource().id(),
@@ -43,19 +45,6 @@ public class WebAppModulePresenter<V extends WebAppModule> extends MvpPresenter<
                 new HashMap<String, String>() {
                     {
                         put("regionName", app.getResource().regionName());
-                    }
-                }
-        )));
-
-        linuxApps.forEach(app -> getMvpView().addChildNode(new WebAppNode(
-                getMvpView(),
-                app.getSubscriptionId(),
-                app.getResource().id(),
-                app.getResource().name(),
-                app.getResource().state(),
-                new HashMap<String, String>() {
-                    {
-                        put("regionName", app.getResource().location());
                     }
                 }
         )));

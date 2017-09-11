@@ -5,8 +5,6 @@ import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.appservice.implementation.AppServiceManager;
-import com.microsoft.azure.management.appservice.implementation.SiteInner;
-import com.microsoft.azure.management.appservice.implementation.WebAppsInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
@@ -351,42 +349,41 @@ public class AzureWebAppMvpModelTest {
 
     @Test
     public void testListWebAppsOnLinuxBySubscriptionId() {
-        List< SiteInner > storedList = new PagedList<SiteInner>() {
+        List<WebApp> storedList = new PagedList<WebApp>() {
             @Override
-            public Page<SiteInner> nextPage(String nextPageLink) throws RestException, IOException {
+            public Page<WebApp> nextPage(String nextPageLink) throws RestException, IOException {
                 return null;
             }
         };
 
-        SiteInner app1 = mock(SiteInner.class); when(app1.kind()).thenReturn("app");
-        SiteInner app2 = mock(SiteInner.class); when(app2.kind()).thenReturn("app");
-        SiteInner app3 = mock(SiteInner.class); when(app3.kind()).thenReturn("app,linux");
+        WebApp app1 = mock(WebApp.class); when(app1.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
+        WebApp app2 = mock(WebApp.class); when(app2.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
+        WebApp app3 = mock(WebApp.class); when(app3.operatingSystem()).thenReturn(OperatingSystem.LINUX);
         storedList.add(app1);
         storedList.add(app2);
-        WebAppsInner inner = mock(WebAppsInner.class);
-        when(webAppsMock.inner()).thenReturn(inner);
-        when(inner.list()).thenReturn((PagedList<SiteInner>) storedList);
+        when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
 
-        List<ResourceEx<SiteInner>> rstList = azureWebAppMvpModel.listWebAppsOnLinuxBySubscriptionId(MOCK_SUBSCRIPTION, false);
-        verify(inner, times(1)).list();
+        List<ResourceEx<WebApp>> rstList = azureWebAppMvpModel.listWebAppsOnLinuxBySubscriptionId(MOCK_SUBSCRIPTION, false);
+        verify(webAppsMock, times(1)).list();
         assertEquals(0, rstList.size());
-        reset(inner);
+        reset(webAppsMock);
 
         storedList.add(app3);
         rstList = azureWebAppMvpModel.listWebAppsOnLinuxBySubscriptionId(MOCK_SUBSCRIPTION, false);
-        verify(inner, times(0)).list();
+        verify(webAppsMock, times(0)).list();
         assertEquals(0, rstList.size());
-        reset(inner);
+        reset(webAppsMock);
 
-        when(inner.list()).thenReturn((PagedList<SiteInner>) storedList);
+        when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
         rstList = azureWebAppMvpModel.listWebAppsOnLinuxBySubscriptionId(MOCK_SUBSCRIPTION, true);
-        verify(inner, times(1)).list();
+        verify(webAppsMock, times(1)).list();
         assertEquals(1, rstList.size());
-        reset(inner);
+        reset(webAppsMock);
     }
 
     @Test
     public void testListAllWebAppsOnLinux() {
+
         List<Subscription> subscriptions = new ArrayList<Subscription>();
         Subscription sub1 = mock(Subscription.class); when(sub1.subscriptionId()).thenReturn("1");
         Subscription sub2 = mock(Subscription.class); when(sub2.subscriptionId()).thenReturn("2");
@@ -396,11 +393,9 @@ public class AzureWebAppMvpModelTest {
         AzureWebAppMvpModel mockWebAppModel = spy(azureWebAppMvpModel);
         try {
             when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
-            WebAppsInner inner = mock(WebAppsInner.class);
-            when(webAppsMock.inner()).thenReturn(inner);
-            when(inner.list()).thenReturn(new PagedList<SiteInner>() {
+            when(webAppsMock.list()).thenReturn(new PagedList<WebApp>() {
                 @Override
-                public Page<SiteInner> nextPage(String nextPageLink) throws RestException, IOException {
+                public Page<WebApp> nextPage(String nextPageLink) throws RestException, IOException {
                     return null;
                 }
             });
