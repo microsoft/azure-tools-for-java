@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.container.utils;
 
+import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerCertificates;
@@ -116,6 +117,16 @@ public class DockerUtil {
     }
 
     /**
+     * build image.
+     */
+    public static String buildImage(DockerClient docker, String imageNameWithTag, Path dockerDirectory,
+                                    String dockerFile, ProgressHandler progressHandler)
+            throws DockerException, InterruptedException, IOException {
+        String imageId = docker.build(dockerDirectory, imageNameWithTag, dockerFile, progressHandler);
+        return imageId == null ? null : imageNameWithTag;
+    }
+
+    /**
      * Push image to a private registry.
      */
     public static void pushImage(DockerClient dockerClient, String registryUrl, String registryUsername,
@@ -143,7 +154,7 @@ public class DockerUtil {
     }
 
     /**
-     * get DockerClient instance.
+     * Get DockerClient instance.
      */
     public static DockerClient getDockerClient(String dockerHost, boolean tlsEnabled, String certPath) throws
             DockerCertificateException {
@@ -154,5 +165,21 @@ public class DockerUtil {
         } else {
             return DefaultDockerClient.builder().uri(URI.create(dockerHost)).build();
         }
+    }
+
+    /**
+     * check if the default docker file exists (in project base path).
+     * If yes, return the path as a String.
+     * Else return an empty String.
+     */
+    public static String getDefaultDockerFilePathIfExist(Project project) {
+        String basePath = project.getBasePath();
+        if (!Utils.isEmptyString(basePath)) {
+            Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_NAME);
+            if (targetDockerfile != null && targetDockerfile.toFile().exists()) {
+                return targetDockerfile.toString();
+            }
+        }
+        return "";
     }
 }

@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.intellij.runner.container.dockerhost;
 
 import com.intellij.execution.ExecutionException;
@@ -30,6 +52,7 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
     private static final String MISSING_MODEL = "Configuration data model not initialized.";
     private static final String ARTIFACT_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
     private static final String INVALID_DOCKER_HOST = "Please specify a valid docker host.";
+    private static final String INVALID_DOCKER_FILE = "Please specify a valid docker file.";
     private static final String INVALID_CERT_PATH = "Please specify a valid certificate path.";
     private static final String MISSING_IMAGE_NAME = "Please specify a valid image name.";
     private final DockerHostRunModel dockerHostRunModel;
@@ -80,6 +103,9 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
         if (Utils.isEmptyString(dockerHostRunModel.getDockerHost())) {
             throw new ConfigurationException(INVALID_DOCKER_HOST);
         }
+        if (Utils.isEmptyString(dockerHostRunModel.getDockerFilePath())) {
+            throw new ConfigurationException(INVALID_DOCKER_FILE);
+        }
         if (dockerHostRunModel.isTlsEnabled() && Utils.isEmptyString(dockerHostRunModel.getDockerCertPath())) {
             throw new ConfigurationException(INVALID_CERT_PATH);
         }
@@ -125,6 +151,14 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
 
     public void setDockerCertPath(String dockerCertPath) {
         dockerHostRunModel.setDockerCertPath(dockerCertPath);
+    }
+
+    public String getDockerFilePath() {
+        return dockerHostRunModel.getDockerFilePath();
+    }
+
+    public void setDockerFilePath(String dockerFilePath) {
+        dockerHostRunModel.setDockerFilePath(dockerFilePath);
     }
 
     public boolean isTlsEnabled() {

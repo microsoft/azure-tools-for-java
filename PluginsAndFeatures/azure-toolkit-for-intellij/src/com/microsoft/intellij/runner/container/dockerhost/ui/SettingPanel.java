@@ -36,6 +36,7 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.runner.container.dockerhost.DockerHostRunConfiguration;
+import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -70,6 +71,7 @@ public class SettingPanel {
     private JComboBox<Artifact> cbArtifact;
     private JPanel rootPanel;
     private JPanel pnlDockerCertPath;
+    private TextFieldWithBrowseButton dockerFilePathTextField;
 
     private Artifact lastSelectedArtifact;
     private boolean isCbArtifactInited;
@@ -85,6 +87,25 @@ public class SettingPanel {
         dockerCertPathTextField.addActionListener(this::onDockerCertPathBrowseButtonClick);
         comboTlsEnabled.addActionListener(event -> updateComponentEnabledState());
 
+        dockerFilePathTextField.setText(DockerUtil.getDefaultDockerFilePathIfExist(project));
+        dockerFilePathTextField.addActionListener(e -> {
+            String path = dockerFilePathTextField.getText();
+            final VirtualFile file = FileChooser.chooseFile(
+                    new FileChooserDescriptor(
+                            true /*chooseFiles*/,
+                            false /*chooseFolders*/,
+                            false /*chooseJars*/,
+                            false /*chooseJarsAsFiles*/,
+                            false /*chooseJarContents*/,
+                            false /*chooseMultiple*/
+                    ),
+                    project,
+                    Utils.isEmptyString(path) ? null : LocalFileSystem.getInstance().findFileByPath(path)
+            );
+            if (file != null) {
+                dockerFilePathTextField.setText(file.getPath());
+            }
+        });
 
         // Artifact to build
         isCbArtifactInited = false;
@@ -102,7 +123,6 @@ public class SettingPanel {
                     }
                 }
                 lastSelectedArtifact = selectedArtifact;
-
             }
         });
 
@@ -154,6 +174,7 @@ public class SettingPanel {
         textDockerHost.setText(conf.getDockerHost());
         comboTlsEnabled.setSelected(conf.isTlsEnabled());
         dockerCertPathTextField.setText(conf.getDockerCertPath());
+        dockerFilePathTextField.setText(conf.getDockerFilePath());
         textImageName.setText(conf.getImageName());
         textTagName.setText(conf.getTagName());
         updateComponentEnabledState();
@@ -175,6 +196,7 @@ public class SettingPanel {
         conf.setDockerHost(textDockerHost.getText());
         conf.setTlsEnabled(comboTlsEnabled.isSelected());
         conf.setDockerCertPath(dockerCertPathTextField.getText());
+        conf.setDockerFilePath(dockerFilePathTextField.getText());
         conf.setImageName(textImageName.getText());
         if (Utils.isEmptyString(textTagName.getText())) {
             conf.setTagName("latest");
