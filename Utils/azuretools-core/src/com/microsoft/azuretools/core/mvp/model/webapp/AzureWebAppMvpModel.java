@@ -398,7 +398,7 @@ public class AzureWebAppMvpModel {
      * An issue is logged at https://github.com/Azure/azure-sdk-for-java/issues/1755 .
      * Remove all tags here to make it work.
      */
-    private void clearTags(final WebApp app) {
+    private void clearTags(@NotNull final WebApp app) {
         app.inner().withTags(null);
     }
 }
