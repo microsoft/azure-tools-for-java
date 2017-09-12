@@ -62,18 +62,6 @@ public class RunOnDockerHostAction extends AzureAnAction {
         ApplicationManager.getApplication().invokeLater(() -> runConfiguration(project));
     }
 
-    @Override
-    public void update(AnActionEvent event) {
-        Project project = DataKeys.PROJECT.getData(event.getDataContext());
-        boolean dockerFileExists = false;
-        if (project != null) {
-            String basePath = project.getBasePath();
-            dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKERFILE_FOLDER,
-                    Constant.DOCKERFILE_NAME).toFile().exists();
-        }
-        event.getPresentation().setEnabledAndVisible(dockerFileExists);
-    }
-
     @SuppressWarnings({"deprecation", "Duplicates"})
     private void runConfiguration(Project project) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);

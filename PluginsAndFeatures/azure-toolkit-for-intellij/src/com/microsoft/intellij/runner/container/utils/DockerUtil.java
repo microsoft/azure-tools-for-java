@@ -107,16 +107,6 @@ public class DockerUtil {
     }
 
     /**
-     * buildImage.
-     */
-    public static String buildImage(DockerClient docker, String imageNameWithTag, Path dockerDirectory, ProgressHandler
-            progressHandler)
-            throws DockerException, InterruptedException, IOException {
-        String imageId = docker.build(dockerDirectory, imageNameWithTag, progressHandler);
-        return imageId == null ? null : imageNameWithTag;
-    }
-
-    /**
      * build image.
      */
     public static String buildImage(DockerClient docker, String imageNameWithTag, Path dockerDirectory,
