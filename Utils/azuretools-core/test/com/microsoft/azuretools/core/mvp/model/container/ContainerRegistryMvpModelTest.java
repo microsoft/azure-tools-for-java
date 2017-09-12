@@ -122,32 +122,7 @@ public class ContainerRegistryMvpModelTest {
     }
 
     @Test
-    public void getContainerRegistries() throws Exception {
-        List<Subscription> subscriptions = new ArrayList<Subscription>();
-        Registries registries1 = mock(Registries.class);
-        Registries registries2 = mock(Registries.class);
-        Azure azure1 = mock(Azure.class); when(azure1.containerRegistries()).thenReturn(registries1);
-        Azure azure2 = mock(Azure.class); when(azure2.containerRegistries()).thenReturn(registries2);
-        Subscription sub1 = mock(Subscription.class); when(sub1.subscriptionId()).thenReturn("1");
-        Subscription sub2 = mock(Subscription.class); when(sub2.subscriptionId()).thenReturn("2");
-        when(authMethodManagerMock.getAzureClient("1")).thenReturn(azure1);
-        when(authMethodManagerMock.getAzureClient("2")).thenReturn(azure2);
-        when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);
-
-        Map<String, Registries> emptyRegistriesMap = containerRegistryMvpModel.getContainerRegistries();
-        assertEquals(0, emptyRegistriesMap.size());
-
-        subscriptions.add(sub1);
-        subscriptions.add(sub2);
-        subscriptions.add(subscriptionWithoutRegistries);
-        Map<String, Registries> registriesMap = containerRegistryMvpModel.getContainerRegistries();
-        assertEquals(2, registriesMap.size());
-        assertEquals(registries1, registriesMap.get(sub1.subscriptionId()));
-        assertEquals(registries2, registriesMap.get(sub2.subscriptionId()));
-    }
-
-    @Test
-    public void getContainerRegistry() throws Exception {
+    public void testGetContainerRegistry() throws Exception {
         Registry registry = containerRegistryMvpModel.getContainerRegistry(MOCK_SUBSCRIPTION_ID, MOCK_REGISTRY_ID);
         assertEquals(registryMock, registry);
 
@@ -157,7 +132,7 @@ public class ContainerRegistryMvpModelTest {
     }
 
     @Test
-    public void setAdminUserEnabled() throws Exception {
+    public void testSetAdminUserEnabled() throws Exception {
         Registry.Update update = mock(Registry.Update.class);
         Registry.Update with = mock(Registry.Update.class);
         Registry.Update without = mock(Registry.Update.class);

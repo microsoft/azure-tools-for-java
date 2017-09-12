@@ -22,7 +22,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
-import com.microsoft.azure.management.containerregistry.Registries;
 import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
@@ -30,6 +29,7 @@ import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ContainerRegistryModulePresenter<V extends ContainerRegistryModule> extends MvpPresenter<V> {
@@ -42,10 +42,10 @@ public class ContainerRegistryModulePresenter<V extends ContainerRegistryModule>
     public void onModuleRefresh() {
         HashMap<String, ArrayList<NodeContent>> nodeMap = new HashMap<>();
         try {
-            Map<String, Registries> registriesMap = containerRegistryMvpModel.getContainerRegistries();
+            Map<String, List<Registry>> registriesMap = containerRegistryMvpModel.getContainerRegistryMap(true /*force*/);
             for (String sid : registriesMap.keySet()) {
                 ArrayList<NodeContent> nodeContentList = new ArrayList<>();
-                for (Registry registry : registriesMap.get(sid).list()) {
+                for (Registry registry : registriesMap.get(sid)) {
                     nodeContentList
                             .add(new NodeContent(registry.id(), registry.name(), "" /*provisionState*/));
                 }
