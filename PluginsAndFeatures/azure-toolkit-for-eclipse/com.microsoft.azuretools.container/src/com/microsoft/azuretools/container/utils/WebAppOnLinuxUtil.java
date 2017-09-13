@@ -37,6 +37,7 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.CanceledByUserException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,7 +52,7 @@ public class WebAppOnLinuxUtil {
 
     /**
      * Create a new Web App on Linux and deploy on it.
-     * 
+     *
      * @param subscriptionId
      * @param resourceGroup
      * @param appName
@@ -69,7 +70,7 @@ public class WebAppOnLinuxUtil {
 
     /**
      * Deploy on an existing Web App on Linux.
-     * 
+     *
      * @param app
      * @return
      * @throws IOException
@@ -100,7 +101,7 @@ public class WebAppOnLinuxUtil {
 
     /**
      * List all Web App on Linux under all subscriptions.
-     * 
+     *
      * @param update
      * @return list of Web App on Linux
      * @throws IOException
@@ -186,6 +187,7 @@ public class WebAppOnLinuxUtil {
     }
 
     private static WebApp updateApp(WebApp app, PrivateRegistry pr, String imageName) {
+        app.inner().withTags(null);
         app.update().withPrivateRegistryImage(String.format("%s/%s", pr.getUrl(), imageName), pr.getUrl())
                 .withCredentials(pr.getUsername(), pr.getPassword()).withStartUpCommand(pr.getStartupFile())
                 .withAppSettings(defaultAppSettings).apply();
