@@ -74,6 +74,6 @@ public enum SparkVersion {
     }
     
     public String getSparkVersioninDashFormat() {
-    	return sparkVersion.replace(".", "_");
+    	return sparkVersion.replace(".", "_") + "_";
     }
 }
