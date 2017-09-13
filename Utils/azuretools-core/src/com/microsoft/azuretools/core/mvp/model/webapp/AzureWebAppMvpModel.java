@@ -48,6 +48,7 @@ import java.util.stream.Collectors;
 
 public class AzureWebAppMvpModel {
 
+    public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
     private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
     private final Map<String, List<ResourceEx<SiteInner>>> subscriptionIdToWebAppsOnLinuxMap;
 
@@ -63,9 +64,13 @@ public class AzureWebAppMvpModel {
     /**
      * get the web app by ID.
      */
-    public WebApp getWebAppById(String sid, String id) throws IOException {
+    public WebApp getWebAppById(String sid, String id) throws Exception {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        return azure.webApps().getById(id);
+        WebApp app = azure.webApps().getById(id);
+        if (app == null) {
+            throw new Exception(CANNOT_GET_WEB_APP_WITH_ID + id);
+        }
+        return app;
     }
 
     /**
@@ -233,8 +238,8 @@ public class AzureWebAppMvpModel {
      * @param imageSetting new container settings
      * @return instance of the updated Web App on Linux
      */
-    public WebApp updateWebAppOnLinux(String sid, String webAppId, ImageSetting imageSetting) throws IOException {
-        WebApp app = AzureWebAppMvpModel.getInstance().getWebAppById(sid, webAppId);
+    public WebApp updateWebAppOnLinux(String sid, String webAppId, ImageSetting imageSetting) throws Exception {
+        WebApp app = getWebAppById(sid, webAppId);
         clearTags(app);
         if (imageSetting instanceof PrivateRegistryImageSetting) {
             PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
