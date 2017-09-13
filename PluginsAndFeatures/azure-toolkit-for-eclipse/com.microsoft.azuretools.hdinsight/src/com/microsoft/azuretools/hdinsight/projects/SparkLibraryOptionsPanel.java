@@ -46,8 +46,7 @@ import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 
 public class SparkLibraryOptionsPanel extends Composite {
-	public boolean useMaven = true;
-
+	private boolean isUsingMaven = true;
 	private SparkVersion sparkVersion;
 	private Composite comUseMaven;
 	private Composite comAddSparkManually;
@@ -256,8 +255,16 @@ public class SparkLibraryOptionsPanel extends Composite {
         enableAddSparkManually(false);
 	}
 	
+	public boolean getUsingMaven() {
+		return isUsingMaven;
+	}
+	
+	public void setUsingMaven(boolean val) {
+		isUsingMaven = val;
+	}
+	
 	private void enableUseMaven(boolean toEnable) {
-		useMaven = toEnable;
+		isUsingMaven = toEnable;
 		comUseMaven.setEnabled(toEnable);
 		comboBoxUseMaven.setEnabled(toEnable);
 		
@@ -267,7 +274,7 @@ public class SparkLibraryOptionsPanel extends Composite {
 	}
 	
 	private void enableAddSparkManually(boolean toEnable) {
-		useMaven = !toEnable;
+		isUsingMaven = !toEnable;
 		comAddSparkManually.setEnabled(toEnable);
 		comboBoxAddSparkManually.setEnabled(toEnable);
 		tipLabel.setEnabled(toEnable);

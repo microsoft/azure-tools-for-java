@@ -70,7 +70,7 @@ public class HDInsightScalaPageTwo extends NewJavaProjectWizardPageTwo {
 			parent = (HDInsightsScalaProjectWizard) this.getWizard();
 		}
 		
-		if (parent.useMaven) {
+		if (parent.getUsingMaven()) {
 			CreateProjectUtil.removeSourceFolderfromClassPath(this.getJavaProject(), "src");
 			CreateProjectUtil.addSourceFoldertoClassPath(this.getJavaProject(), "src/main/scala");
 		}

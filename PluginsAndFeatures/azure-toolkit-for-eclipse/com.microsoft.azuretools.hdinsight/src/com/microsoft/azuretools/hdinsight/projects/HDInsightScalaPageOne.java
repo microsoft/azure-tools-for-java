@@ -29,7 +29,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 class HDInsightScalaPageOne extends NewScalaProjectWizardPageOne {
 	
 	private SparkLibraryOptionsPanel sparkLibraryOptionsPanel;
-	private HDInsightsScalaProjectWizard parent = null;
+	private HDInsightsScalaProjectWizard parent;
 	
 	public HDInsightScalaPageOne() {
 		super();
@@ -42,7 +42,7 @@ class HDInsightScalaPageOne extends NewScalaProjectWizardPageOne {
 	
 	@Override
 	public boolean canFlipToNextPage() {
-		if (!sparkLibraryOptionsPanel.useMaven) {
+		if (!sparkLibraryOptionsPanel.getUsingMaven()) {
 			final String jarPathString = sparkLibraryOptionsPanel.getSparkLibraryPath();
 			if(StringUtils.isNullOrEmpty(jarPathString)) {
 				return false;
@@ -50,8 +50,8 @@ class HDInsightScalaPageOne extends NewScalaProjectWizardPageOne {
 		}
 		
 		if (parent != null && sparkLibraryOptionsPanel != null) {
-			parent.useMaven = sparkLibraryOptionsPanel.useMaven;
-			parent.sparkVersion = sparkLibraryOptionsPanel.getSparkVersion();
+			parent.setUsingMaven(sparkLibraryOptionsPanel.getUsingMaven());
+			parent.setSparkVersion(sparkLibraryOptionsPanel.getSparkVersion());
 		}
 		
 		return super.canFlipToNextPage();
@@ -61,12 +61,12 @@ class HDInsightScalaPageOne extends NewScalaProjectWizardPageOne {
 	public IClasspathEntry[] getDefaultClasspathEntries() {
 		final IClasspathEntry[] entries = super.getDefaultClasspathEntries();
 
-		IClasspathEntry[] newEntries = new IClasspathEntry[entries.length + 1];
+		final IClasspathEntry[] newEntries = new IClasspathEntry[entries.length + 1];
 
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
-				if (!sparkLibraryOptionsPanel.useMaven) {
+				if (sparkLibraryOptionsPanel != null && !sparkLibraryOptionsPanel.getUsingMaven()) {
 					final String jarPathString = sparkLibraryOptionsPanel.getSparkLibraryPath();
 					if (StringUtils.isNullOrEmpty(jarPathString)) {
 						DefaultLoader.getUIHelper().showError("Spark Library Path cannot be null",

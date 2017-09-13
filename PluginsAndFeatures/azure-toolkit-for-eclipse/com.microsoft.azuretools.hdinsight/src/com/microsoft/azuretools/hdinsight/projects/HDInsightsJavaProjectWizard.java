@@ -49,6 +49,8 @@ import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.project.ResolverConfiguration;
 import org.eclipse.swt.SWT;
@@ -86,20 +88,34 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 	@Override
 	public boolean performFinish() {
 		try {
-			CreateProjectUtil.createSampleFile(this.id, this.pageOne.getProjectName(), pageOne.sparkLibraryOptionsPanel.useMaven, pageOne.sparkLibraryOptionsPanel.getSparkVersion());
+			CreateProjectUtil.createSampleFile(this.id, 
+					this.pageOne.getProjectName(), 
+					pageOne.sparkLibraryOptionsPanel.getUsingMaven(), 
+					pageOne.sparkLibraryOptionsPanel.getSparkVersion());
 		} catch (CoreException e) {
 			Activator.getDefault().log("Create HDInsight project error", e);
 		}
 		
 		// Configure Java project first and then enable Maven nature, otherwise the classpath will be overwritten
 		boolean result = super.performFinish();
-		if (pageOne.sparkLibraryOptionsPanel.useMaven) {
+		if (pageOne.sparkLibraryOptionsPanel.getUsingMaven()) {
 			try {
-				MavenPlugin.getProjectConfigurationManager().enableMavenNature(this.pageTwo.getJavaProject().getProject(), 
-						new ResolverConfiguration(), 
-						new NullProgressMonitor());
-			} catch (CoreException e1) {
-				Activator.getDefault().log("Enable Maven nature error", e1);
+				ProgressMonitorDialog dialog = new ProgressMonitorDialog(getShell());
+				
+				dialog.run(true, true, new IRunnableWithProgress() {
+					@Override
+					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						try {
+							MavenPlugin.getProjectConfigurationManager().enableMavenNature(pageTwo.getJavaProject().getProject(), 
+									new ResolverConfiguration(), 
+									monitor);
+						} catch (CoreException e) {
+							Activator.getDefault().log("Error in enabling Maven nature", e);
+						}
+					}
+				});
+			} catch (InvocationTargetException | InterruptedException e1) {
+				Activator.getDefault().log("Fail to enable Maven feature", e1);
 			}
 		}
 		
@@ -125,7 +141,7 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 		
 		@Override
 		public boolean canFlipToNextPage() {
-			if (!sparkLibraryOptionsPanel.useMaven) {
+			if (!sparkLibraryOptionsPanel.getUsingMaven()) {
 				final String jarPathString = sparkLibraryOptionsPanel.getSparkLibraryPath();
 				if(StringUtils.isNullOrEmpty(jarPathString)) {
 					return false;
@@ -142,7 +158,7 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 			Display.getDefault().syncExec(new Runnable() {
 				@Override
 				public void run() {
-					if (!sparkLibraryOptionsPanel.useMaven) {
+					if (!sparkLibraryOptionsPanel.getUsingMaven()) {
 						final String jarPathString = sparkLibraryOptionsPanel.getSparkLibraryPath();
 						if (StringUtils.isNullOrEmpty(jarPathString)) {
 							DefaultLoader.getUIHelper().showError("Spark Library Path cannot be null",
@@ -245,7 +261,7 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 
 		private void addMoreSourcetoClassPath() throws JavaModelException {
 			HDInsightJavaPageOne previousPage = (HDInsightJavaPageOne)getPreviousPage();
-			if (previousPage.sparkLibraryOptionsPanel.useMaven) {
+			if (previousPage.sparkLibraryOptionsPanel.getUsingMaven()) {
 				CreateProjectUtil.removeSourceFolderfromClassPath(this.getJavaProject(), "src");
 				CreateProjectUtil.addSourceFoldertoClassPath(this.getJavaProject(), "src/main/java");
 			}

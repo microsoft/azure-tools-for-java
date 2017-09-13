@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.core.resources.IContainer;
+import com.microsoft.azuretools.hdinsight.Activator;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -46,8 +46,6 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.core.utils.Messages;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import org.eclipse.m2e.core.MavenPlugin;
 
 public class CreateProjectUtil {
 
@@ -90,12 +88,11 @@ public class CreateProjectUtil {
 			// refresh after copy
 			convert(toFile).refreshLocal(IResource.DEPTH_ONE, null);
 		} catch (IOException | CoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Activator.getDefault().log("Copy file error", e);
 		}
 	}
 
-	public static void createSampleFile(@NotNull String id, @NotNull String projectName, boolean useMaven, SparkVersion sparkVersion) throws CoreException {
+	public static void createSampleFile(@NotNull String id, @NotNull String projectName, boolean useMaven, @NotNull SparkVersion sparkVersion) throws CoreException {
 		final IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 		final IFolder sourceRootFolder = project.getFolder("src");
 
@@ -106,12 +103,18 @@ public class CreateProjectUtil {
 
 		switch (id) {
 		case "com.microsoft.azure.hdinsight.local-scala.projwizard":
-			if (useMaven) rootPath += ScalaMavenProjectFolder;
+			if (useMaven) {
+				rootPath += ScalaMavenProjectFolder;
+			}
+			
 			createResourceStructForLocalRunScalaProject(sourceRootFolder, rootPath, project, useMaven);
 			AppInsightsClient.create(Messages.SparkProjectSystemScalaCreation, null);
 			break;
 		case "com.microsoft.azure.hdinsight.local-java.projwizard":
-			if (useMaven) rootPath += JavaMavenProjectFolder;
+			if (useMaven) {
+				rootPath += JavaMavenProjectFolder;
+			}
+			
 			copyFileTo(Java_Local_RunSample, rootPath);
 			AppInsightsClient.create(Messages.SparkProjectSystemJavaSampleCreation, null);
 			break;
@@ -131,7 +134,7 @@ public class CreateProjectUtil {
 			break;
 		}
 		
-		if (useMaven && sparkVersion != null) {
+		if (useMaven) {
 			CreateProjectUtil.copyPomFile(sparkVersion, projectName);
 		}
 	}
@@ -285,7 +288,7 @@ public class CreateProjectUtil {
 				try {
 					currFolder.create(false, true, null);
 				} catch (CoreException e) {
-					e.printStackTrace();
+					Activator.getDefault().log("Create project folder error", e);
 				}
 			}
 			parentFolder[0] = currFolder;
