@@ -235,6 +235,7 @@ public class AzureWebAppMvpModel {
      */
     public WebApp updateWebAppOnLinux(String sid, String webAppId, ImageSetting imageSetting) throws IOException {
         WebApp app = AzureWebAppMvpModel.getInstance().getWebAppById(sid, webAppId);
+        clearTags(app);
         if (imageSetting instanceof PrivateRegistryImageSetting) {
             PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
             app.update().withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
@@ -389,5 +390,16 @@ public class AzureWebAppMvpModel {
 
     private static final class SingletonHolder {
         private static final AzureWebAppMvpModel INSTANCE = new AzureWebAppMvpModel();
+    }
+
+    /**
+     * Work Around:
+     * When a web app is created from Azure Portal, there are hidden tags associated with the app.
+     * It will be messed up when calling "update" API.
+     * An issue is logged at https://github.com/Azure/azure-sdk-for-java/issues/1755 .
+     * Remove all tags here to make it work.
+     */
+    private void clearTags(@NotNull final WebApp app) {
+        app.inner().withTags(null);
     }
 }
