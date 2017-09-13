@@ -23,6 +23,8 @@
 package com.microsoft.azure.hdinsight.projects;
 
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public enum SparkVersion {
     SPARK_2_1_0("2.1.0", "2.11.8", "2.11"),
@@ -72,13 +74,6 @@ public enum SparkVersion {
     }
     
     public String getSparkVersioninDashFormat() {
-    	StringTokenizer st = new StringTokenizer(sparkVersion, ".");
-    	StringBuilder stringBuilder = new StringBuilder();
-    	while (st.hasMoreTokens()) {
-    		stringBuilder.append(st.nextToken());
-    		stringBuilder.append("_");
-    	}
-    	
-    	return stringBuilder.toString();
+    	return sparkVersion.replace(".", "_");
     }
 }

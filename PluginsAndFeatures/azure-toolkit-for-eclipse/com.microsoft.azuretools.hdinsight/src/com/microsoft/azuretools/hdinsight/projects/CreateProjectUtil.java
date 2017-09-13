@@ -22,6 +22,7 @@ package com.microsoft.azuretools.hdinsight.projects;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import org.apache.commons.io.FileUtils;
 import com.microsoft.azuretools.hdinsight.Activator;
@@ -150,32 +151,13 @@ public class CreateProjectUtil {
 	
 	public static void removeSourceFolderfromClassPath(IJavaProject javaProject, String folderUnderRoot) throws JavaModelException {
 		IClasspathEntry[] entries = javaProject.getRawClasspath();
-		String folderFullPath = "/" + javaProject.getProject().getName() + "/" + folderUnderRoot;
-		int index = -1;
-		for (int i = 0; i < entries.length; i++) {
-			if (entries[i].getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-				String currPath = entries[i].getPath().toString();
-				if (currPath.equals(folderFullPath)) {
-					index = i;
-					break;
-				}
-			}
-		}
 		
-		if (index == -1 || entries.length <= 0) {
-			return;
-		}
-				
-		IClasspathEntry[] newEntries = new IClasspathEntry[entries.length - 1];
+		IPath targetPath = javaProject.getProject().getFullPath().append(new Path(folderUnderRoot));
+		IClasspathEntry[] newEntries = Arrays.stream(entries)
+				.filter(e -> e.getEntryKind() != IClasspathEntry.CPE_SOURCE 
+							|| !e.getPath().equals(targetPath))
+				.toArray(IClasspathEntry[]::new);
 
-		if (index > 0) {
-			System.arraycopy(entries, 0, newEntries, 0, index);
-		}
-		
-		if (index < entries.length - 1) {
-			System.arraycopy(entries, index + 1, newEntries, index, entries.length - index - 1);
-		}
-		
 		javaProject.setRawClasspath(newEntries, new NullProgressMonitor());
 	}
 	
@@ -246,6 +228,7 @@ public class CreateProjectUtil {
 		
 		// Copy data
 		String strDataFolder;
+		// Putting data to "src/main/scala/resources/data" seems like not working
 		//if (useMaven) {
 		//	strDataFolder = "src/main/scala/resources/data";
 		//} else {
@@ -262,10 +245,10 @@ public class CreateProjectUtil {
 	}
 	
 	private static IFolder createFolderUnderRoot(@NotNull IProject project, @NotNull String relativeFolder) {
-		return createFolderUnderRoot(project, relativeFolder, null);
+		return createFolderUnderSpecifiedRoot(project, relativeFolder, null);
 	}
 	
-	private static IFolder createFolderUnderRoot(@NotNull IProject project, String relativeFolder, String rootFolder ) {
+	private static IFolder createFolderUnderSpecifiedRoot(@NotNull IProject project, String relativeFolder, String rootFolder ) {
 		String[] srcFolders = relativeFolder.split("/");
 		if (srcFolders.length == 0) {
 			return null;
