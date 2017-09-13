@@ -108,7 +108,7 @@ public class PushToContainerRegistryAction extends NodeActionListener {
     }
 
     // TODO: Should move to presenter. Load info dynamically after opening the dialog first.
-    private PrivateRegistryImageSetting querySettings(String subscriptionId, String resourceId) throws IOException {
+    private PrivateRegistryImageSetting querySettings(String subscriptionId, String resourceId) throws Exception {
         Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(subscriptionId, resourceId);
         String serverUrl = null;
         String username = null;

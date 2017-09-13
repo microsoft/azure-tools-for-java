@@ -125,10 +125,11 @@ public class ContainerRegistryMvpModelTest {
     public void testGetContainerRegistry() throws Exception {
         Registry registry = containerRegistryMvpModel.getContainerRegistry(MOCK_SUBSCRIPTION_ID, MOCK_REGISTRY_ID);
         assertEquals(registryMock, registry);
+    }
 
-
-        Registry registryNull = containerRegistryMvpModel.getContainerRegistry(MOCK_SUBSCRIPTION_ID_WITHOUT_REGISTRIES, MOCK_REGISTRY_ID);
-        assertEquals(null, registryNull);
+    @Test(expected = Exception.class)
+    public void testGetNonExistContainerRegistry() throws Exception {
+        containerRegistryMvpModel.getContainerRegistry(MOCK_SUBSCRIPTION_ID_WITHOUT_REGISTRIES, MOCK_REGISTRY_ID);
     }
 
     @Test

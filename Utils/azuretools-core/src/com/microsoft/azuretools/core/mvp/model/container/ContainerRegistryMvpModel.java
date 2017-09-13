@@ -27,6 +27,7 @@ import com.microsoft.azure.management.containerregistry.Registries;
 import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 
 import java.io.IOException;
@@ -35,6 +36,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ContainerRegistryMvpModel {
+
+    public static final String CANNOT_GET_REGISTRY = "Cannot get Registry with resource Id: ";
 
     private ContainerRegistryMvpModel() {}
 
@@ -70,13 +73,18 @@ public class ContainerRegistryMvpModel {
     /**
      * Get ACR by Id.
      */
-    public Registry getContainerRegistry(String sid, String id) throws IOException {
+    @NotNull
+    public Registry getContainerRegistry(String sid, String id) throws Exception {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         Registries registries = azure.containerRegistries();
         if (registries == null) {
-            return null;
+            throw new Exception(CANNOT_GET_REGISTRY + id);
         }
-        return registries.getById(id);
+        Registry registry = registries.getById(id);
+        if (registry == null) {
+            throw new Exception(CANNOT_GET_REGISTRY + id);
+        }
+        return registry;
     }
 
     /**
