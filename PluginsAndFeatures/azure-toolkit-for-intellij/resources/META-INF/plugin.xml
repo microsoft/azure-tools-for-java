@@ -18,6 +18,10 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.0.9]</h3>
+      <ul>
+        <li>Fixed "Unexpected token" error when using Run on Web App (Linux). (<a href="https://github.com/Microsoft/azure-tools-for-java/issues/1014">#1014</a>)</li>
+      </ul>
       <h3>[3.0.8]</h3>
       <ul>
         <li>Support Spring Boot Project: The Azure Toolkits for IntelliJ now support running your Spring Boot Project (Jar package) on Azure Web App and Azure Web App (Linux).</li>
