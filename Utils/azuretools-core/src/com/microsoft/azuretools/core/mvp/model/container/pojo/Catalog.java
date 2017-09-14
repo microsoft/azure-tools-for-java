@@ -26,7 +26,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 
-public class Repository {
+public class Catalog {
 
     @SerializedName("repositories")
     private ArrayList<String> repositories;
