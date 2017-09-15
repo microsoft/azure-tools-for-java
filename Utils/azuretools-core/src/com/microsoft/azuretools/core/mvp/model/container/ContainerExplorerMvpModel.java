@@ -31,6 +31,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ContainerExplorerMvpModel {
@@ -40,6 +41,8 @@ public class ContainerExplorerMvpModel {
     private static final String TAG_PATH = "v2/%s/tags/list";
     private static final String HEADER_AUTH = "Authorization";
     private static final String INVALID_URL = "The request URL is NULL.";
+    private static final String BODY = "body";
+    private static final String LINK_HEADER = "link";
 
     private final OkHttpClient sharedClient = new OkHttpClient();
 
@@ -57,7 +60,7 @@ public class ContainerExplorerMvpModel {
     /**
      * list repositories under the given private registry.
      */
-    public String listRepositories(@NotNull String serverUrl, @NotNull String username, @NotNull String password,
+    public Map<String, String> listRepositories(@NotNull String serverUrl, @NotNull String username, @NotNull String password,
                                    @Nullable Map<String, String> query) throws Exception {
         OkHttpClient client = createRestClient(username, password);
         HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
@@ -73,9 +76,9 @@ public class ContainerExplorerMvpModel {
     }
 
     /**
-     * list repositories under the given repository.
+     * list tags under the given repository.
      */
-    public String listTags(@NotNull String serverUrl, @NotNull String username, @NotNull String password,
+    public Map<String, String> listTags(@NotNull String serverUrl, @NotNull String username, @NotNull String password,
                                  @NotNull String repo, @Nullable Map<String, String> query) throws Exception {
         OkHttpClient client = createRestClient(username, password);
         HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
@@ -91,14 +94,17 @@ public class ContainerExplorerMvpModel {
     }
 
     @NotNull
-    private String getResponse(@NotNull OkHttpClient client, HttpUrl url) throws Exception {
+    private Map<String, String> getResponse(@NotNull OkHttpClient client, HttpUrl url) throws Exception {
         if (url == null) {
             throw new NullPointerException(INVALID_URL);
         }
         Request request = new Request.Builder().url(url).get().build();
         try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful()) {
-                return response.body().string();
+                Map<String, String> responseMap = new HashMap<>();
+                responseMap.put(BODY, response.body().string());
+                responseMap.put(LINK_HEADER, response.header(LINK_HEADER));
+                return responseMap;
             } else {
                 throw new Exception(response.message());
             }
