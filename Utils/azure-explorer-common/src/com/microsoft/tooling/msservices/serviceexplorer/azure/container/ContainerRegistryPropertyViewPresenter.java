@@ -22,17 +22,27 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
+import com.google.gson.Gson;
 import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azure.management.containerregistry.RegistryPassword;
 import com.microsoft.azure.management.containerregistry.implementation.RegistryListCredentials;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.core.mvp.model.container.ContainerExplorerMvpModel;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
+import com.microsoft.azuretools.core.mvp.model.container.pojo.Catalog;
+import com.microsoft.azuretools.core.mvp.model.container.pojo.Tag;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
+import okhttp3.HttpUrl;
 import rx.Observable;
 
 public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryPropertyMvpView>
@@ -41,17 +51,35 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
     private static final String CANNOT_GET_SUBSCRIPTION_ID = "Cannot get Subscription ID.";
     private static final String CANNOT_GET_REGISTRY_ID = "Cannot get Container Registry's ID.";
     private static final String CANNOT_GET_REGISTRY_PROPERTY = "Cannot get Container Registry's property.";
+    private static final String CANNOT_GET_REPOS = "Cannot get repositories.";
+    private static final String CANNOT_GET_TAGS = "Cannot get tags.";
+
+    private static final String PAGE_SIZE = "1";
+    private static final String KEY_LAST = "last";
+    private static final String KEY_PAGE_SIZE = "n";
+    private static final String CANNOT_GET_REGISTRY_CREDENTIALS = "Cannot get Registry Credentials";
+    private static final String HEADER_LINK = "link";
+    private static final String FAKE_URL = "http://a";
+    private final Stack<String> repoStack;
+    private final Stack<String> tagStack;
+    private String nextRepo;
+    private String nextTag;
+
+    /**
+     * Constructor.
+     */
+    public ContainerRegistryPropertyViewPresenter() {
+        repoStack = new Stack<>();
+        tagStack = new Stack<>();
+        nextRepo = "";
+        nextTag = "";
+    }
 
     /**
      * Called by view when the view needs to load the property of an ACR.
      */
     public void onGetRegistryProperty(String sid, String id) {
-        if (Utils.isEmptyString(sid)) {
-            getMvpView().onError(CANNOT_GET_SUBSCRIPTION_ID);
-            return;
-        }
-        if (Utils.isEmptyString(id)) {
-            getMvpView().onError(CANNOT_GET_REGISTRY_ID);
+        if (isSubscriptionIdAndResourceIdInValid(sid, id)) {
             return;
         }
         Observable.fromCallable(() -> ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id))
@@ -69,13 +97,11 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
                 }), e -> errorHandler(CANNOT_GET_REGISTRY_PROPERTY, (Exception) e));
     }
 
+    /**
+     * Called when switching admin user enabled status.
+     */
     public void onEnableAdminUser(String sid, String id, boolean b) {
-        if (Utils.isEmptyString(sid)) {
-            getMvpView().onError(CANNOT_GET_SUBSCRIPTION_ID);
-            return;
-        }
-        if (Utils.isEmptyString(id)) {
-            getMvpView().onError(CANNOT_GET_REGISTRY_ID);
+        if (isSubscriptionIdAndResourceIdInValid(sid, id)) {
             return;
         }
         Observable.fromCallable(() -> ContainerRegistryMvpModel.getInstance().setAdminUserEnabled(sid, id, b))
@@ -91,6 +117,129 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
                     ContainerRegistryProperty property = getProperty(registry, sid);
                     getMvpView().showProperty(property);
                 }), e -> errorHandler(CANNOT_GET_REGISTRY_PROPERTY, (Exception) e));
+    }
+
+    /**
+     * Called when listing repositories of ACR.
+     */
+    public void onListRepositories(String sid, String id, boolean nextPage) {
+        if (isSubscriptionIdAndResourceIdInValid(sid, id)) {
+            return;
+        }
+        Observable.fromCallable(() -> {
+            Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
+            final RegistryListCredentials credentials = registry.listCredentials();
+            if (credentials == null) {
+                throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
+            }
+            String username = credentials.username();
+            final List<RegistryPassword> passwords = credentials.passwords();
+            if (Utils.isEmptyString(username) || passwords == null || passwords.size() == 0) {
+                throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
+            }
+            Map<String, String> query = buildQueryMap(nextPage, repoStack, nextRepo);
+            Map<String, String> responseMap = ContainerExplorerMvpModel.getInstance().listRepositories(registry
+                    .loginServerUrl(), username, passwords.get(0).value(), query);
+            updateStack(nextPage, repoStack, nextRepo);
+            Gson gson = new Gson();
+            Catalog catalog = gson.fromJson(responseMap.get("body"), Catalog.class);
+            nextRepo = getNextPage(responseMap.get(HEADER_LINK));
+            return catalog.getRepositories();
+        })
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(repos -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().listRepo(repos);
+                }), e -> errorHandler(CANNOT_GET_REPOS, (Exception) e));
+    }
+
+    /**
+     * Called when listing image tags for the given repository.
+     */
+    public void onListTags(String sid, String id, String repo, boolean nextPage) {
+        if (isSubscriptionIdAndResourceIdInValid(sid, id)) {
+            return;
+        }
+        Observable.fromCallable(() -> {
+            Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
+            final RegistryListCredentials credentials = registry.listCredentials();
+            if (credentials == null) {
+                throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
+            }
+            String username = credentials.username();
+            final List<RegistryPassword> passwords = credentials.passwords();
+            if (Utils.isEmptyString(username) || passwords == null || passwords.size() == 0) {
+                throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
+            }
+            Map<String, String> query = buildQueryMap(nextPage, tagStack, nextTag);
+            Map<String, String> responseMap = ContainerExplorerMvpModel.getInstance().listTags(registry
+                    .loginServerUrl(), username, passwords.get(0).value(), repo, query);
+            updateStack(nextPage, tagStack, nextTag);
+            Gson gson = new Gson();
+            Tag tag = gson.fromJson(responseMap.get("body"), Tag.class);
+            nextTag = getNextPage(responseMap.get(HEADER_LINK));
+            return tag.getTags();
+        })
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(tags -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().listTag(tags);
+                }), e -> errorHandler(CANNOT_GET_TAGS, (Exception) e));
+    }
+
+    public boolean hasNextRepoPage() {
+        return nextRepo != null;
+    }
+
+    public boolean hasNextTagPage() {
+        return nextTag != null;
+    }
+
+    public boolean hasPreviousRepoPage() {
+        return repoStack.size() != 0;
+    }
+
+    public boolean hasPreviousTagPage() {
+        return tagStack.size() != 0;
+    }
+
+    public void resetRepoStack() {
+        repoStack.clear();
+        nextRepo = "";
+    }
+
+    public void resetTagStack() {
+        tagStack.clear();
+        nextTag = "";
+    }
+
+    private String parseLinkHeader(String header) {
+        int start = header.indexOf("<") + 1;
+        int end = header.lastIndexOf(">");
+        if (start <= 0 || end < 0 || end >= header.length() || start >= end) {
+            return "";
+        }
+        HttpUrl url = HttpUrl.parse(FAKE_URL + header.substring(start, end));
+        if (url == null) {
+            return "";
+        }
+        return url.queryParameter(KEY_LAST);
+    }
+
+    private boolean isSubscriptionIdAndResourceIdInValid(String sid, String id) {
+        if (Utils.isEmptyString(sid)) {
+            getMvpView().onError(CANNOT_GET_SUBSCRIPTION_ID);
+            return true;
+        }
+        if (Utils.isEmptyString(id)) {
+            getMvpView().onError(CANNOT_GET_REGISTRY_ID);
+            return true;
+        }
+        return false;
     }
 
     private ContainerRegistryProperty getProperty(Registry registry, String sid) {
@@ -120,5 +269,44 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
             }
             getMvpView().onErrorWithException(msg, e);
         });
+    }
+
+    private Map<String, String> buildQueryMap(boolean nextPage, @NotNull Stack<String> stack, @Nullable String next) {
+        Map<String, String> query = new HashMap<>();
+        query.put(KEY_PAGE_SIZE, PAGE_SIZE);
+        if (nextPage) {
+            if (next != null) {
+                query.put(KEY_LAST, next);
+            }
+        } else {
+            if (stack.size() > 0) {
+                stack.pop();
+                if (stack.size() > 0) {
+                    query.put(KEY_LAST, stack.peek());
+                }
+            }
+        }
+        return query;
+    }
+
+    private void updateStack(boolean nextPage, @NotNull Stack<String> stack, @Nullable String next) {
+        if (nextPage) {
+            if (!Utils.isEmptyString(next)) {
+                stack.push(next);
+            }
+        } else {
+            if (stack.size() > 0) {
+                stack.pop();
+            }
+        }
+    }
+
+    @Nullable
+    private String getNextPage(@Nullable String linkHeader) {
+        if (Utils.isEmptyString(linkHeader)) {
+            return null;
+        } else {
+            return parseLinkHeader(linkHeader);
+        }
     }
 }

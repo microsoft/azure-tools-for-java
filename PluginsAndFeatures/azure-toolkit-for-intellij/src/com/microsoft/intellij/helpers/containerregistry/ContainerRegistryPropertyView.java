@@ -22,6 +22,15 @@
 
 package com.microsoft.intellij.helpers.containerregistry;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.ActionToolbarPosition;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.util.Comparing;
+import com.intellij.ui.AnActionButton;
+import com.intellij.ui.HideableDecorator;
+import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.table.JBTable;
+import com.intellij.util.ui.JBUI;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
 import com.microsoft.intellij.helpers.base.BaseEditor;
@@ -36,6 +45,10 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
+import java.util.Comparator;
+import java.util.List;
 
 public class ContainerRegistryPropertyView extends BaseEditor implements ContainerRegistryPropertyMvpView {
 
@@ -43,11 +56,21 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
     private final ContainerRegistryPropertyViewPresenter<ContainerRegistryPropertyView> containerPropertyPresenter;
 
+    private static final String REFRESH = "Refresh";
+    private static final String PREVIOUS_PAGE = "Previous page";
+    private static final String NEXT_PAGE = "Next page";
+    private static final String TAG = "Tag";
+    private static final String REPOSITORY = "Repository";
+    private static final String PROPERTY = "Properties";
+    private static final String TABLE_LOADING_MESSAGE = "Loading...";
+    private static final String TABLE_EMPTY_MESSAGE = "No available items.";
+
     private boolean isAdminEnabled;
     private String registryId = "";
     private String subscriptionId = "";
     private String password = "";
     private String password2 = "";
+    private String currentRepo;
 
     private JPanel pnlMain;
     private JTextField txtName;
@@ -64,7 +87,19 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     private JLabel lblUserName;
     private JButton btnEnable;
     private JButton btnDisable;
-    private JPanel pnlAdminUserBtn;
+    private JPanel pnlPropertyHolder;
+    private JPanel pnlProperty;
+    private JPanel pnlRepoTable;
+    private JPanel pnlTagTable;
+    private JPanel pnlExplorer;
+    private JBTable tblRepo;
+    private JBTable tblTag;
+    private AnActionButton btnRepoRefresh;
+    private AnActionButton btnRepoPrevious;
+    private AnActionButton btnRepoNext;
+    private AnActionButton btnTagRefresh;
+    private AnActionButton btnTagPrevious;
+    private AnActionButton btnTagNext;
 
     /**
      * Constructor of ACR property view.
@@ -94,6 +129,20 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
         btnEnable.addActionListener(actionEvent -> onAdminUserBtnClick());
         btnDisable.addActionListener(actionEvent -> onAdminUserBtnClick());
+
+        HideableDecorator resGrpDecorator = new HideableDecorator(pnlPropertyHolder,
+                PROPERTY, false /*adjustWindow*/);
+        resGrpDecorator.setContentComponent(pnlProperty);
+        resGrpDecorator.setOn(true);
+
+        DefaultTableModel tableModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tableModel.addColumn(REPOSITORY);
+        tblRepo.setModel(tableModel);
     }
 
     private void onAdminUserBtnClick() {
@@ -156,6 +205,185 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
             password2 = property.getPassword2();
         }
         updateAdminUserBtn(isAdminEnabled);
+        if (isAdminEnabled) {
+            containerPropertyPresenter.onListRepositories(subscriptionId, registryId, true);
+        } else {
+            pnlExplorer.setVisible(false);
+            containerPropertyPresenter.resetRepoStack();
+            containerPropertyPresenter.resetTagStack();
+        }
+    }
+
+    @Override
+    public void listRepo(@NotNull List<String> repos) {
+        btnRepoRefresh.setEnabled(true);
+        fillTable(repos, tblRepo);
+        if (containerPropertyPresenter.hasNextRepoPage()) {
+            btnRepoNext.setEnabled(true);
+        } else {
+            btnRepoNext.setEnabled(false);
+        }
+        if (containerPropertyPresenter.hasPreviousRepoPage()) {
+            btnRepoPrevious.setEnabled(true);
+        } else {
+            btnRepoPrevious.setEnabled(false);
+        }
+    }
+
+    @Override
+    public void listTag(@NotNull List<String> tags) {
+        btnTagRefresh.setEnabled(true);
+        fillTable(tags, tblTag);
+        if (containerPropertyPresenter.hasNextTagPage()) {
+            btnTagNext.setEnabled(true);
+        } else {
+            btnTagNext.setEnabled(false);
+        }
+
+        if (containerPropertyPresenter.hasPreviousTagPage()) {
+            btnTagPrevious.setEnabled(true);
+        } else {
+            btnTagPrevious.setEnabled(false);
+        }
+    }
+
+    private void createUIComponents() {
+        DefaultTableModel repoModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        repoModel.addColumn(REPOSITORY);
+
+        tblRepo = new JBTable(repoModel);
+        tblRepo.getEmptyText().setText(TABLE_LOADING_MESSAGE);
+        tblRepo.setRowSelectionAllowed(true);
+        tblRepo.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tblRepo.setStriped(true);
+        tblRepo.getSelectionModel().addListSelectionListener(event -> {
+            if (event.getValueIsAdjusting()) {
+                return;
+            }
+            int selectedRow = tblRepo.getSelectedRow();
+            if (selectedRow < 0 || selectedRow >= tblRepo.getModel().getRowCount()) {
+                return;
+            }
+            String selectedRepo = (String) tblRepo.getModel().getValueAt(selectedRow, 0);
+            if (Utils.isEmptyString(selectedRepo) || Comparing.equal(selectedRepo, currentRepo)) {
+                return;
+            }
+            currentRepo = selectedRepo;
+            resetTagTable();
+            tblTag.getEmptyText().setText(TABLE_LOADING_MESSAGE);
+            containerPropertyPresenter.resetTagStack();
+            containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, true /*nextPage*/);
+        });
+
+        btnRepoRefresh = new AnActionButton(REFRESH, AllIcons.Actions.Refresh) {
+            @Override
+            public void actionPerformed(AnActionEvent anActionEvent) {
+                resetRepoTable();
+                containerPropertyPresenter.resetRepoStack();
+                containerPropertyPresenter.resetTagStack();
+                containerPropertyPresenter.onListRepositories(subscriptionId, registryId, true /*nextPage*/);
+            }
+        };
+
+        btnRepoPrevious = new AnActionButton(PREVIOUS_PAGE, AllIcons.Actions.MoveUp) {
+            @Override
+            public void actionPerformed(AnActionEvent anActionEvent) {
+                resetRepoTable();
+                tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
+                containerPropertyPresenter.resetTagStack();
+                containerPropertyPresenter.onListRepositories(subscriptionId, registryId, false /*nextPage*/);
+            }
+        };
+
+        btnRepoNext = new AnActionButton(NEXT_PAGE, AllIcons.Actions.MoveDown) {
+            @Override
+            public void actionPerformed(AnActionEvent anActionEvent) {
+                resetRepoTable();
+                tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
+                containerPropertyPresenter.resetTagStack();
+                containerPropertyPresenter.onListRepositories(subscriptionId, registryId, true /*nextPage*/);
+            }
+        };
+
+        ToolbarDecorator repoDecorator = ToolbarDecorator.createDecorator(tblRepo)
+                .addExtraActions(btnRepoRefresh).setToolbarPosition(ActionToolbarPosition.LEFT)
+                .addExtraAction(btnRepoPrevious).setToolbarPosition(ActionToolbarPosition.BOTTOM)
+                .addExtraAction(btnRepoNext).setToolbarPosition(ActionToolbarPosition.BOTTOM)
+                .setToolbarBorder(JBUI.Borders.empty());
+
+        pnlRepoTable = repoDecorator.createPanel();
+
+        DefaultTableModel tagModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tagModel.addColumn(TAG);
+
+        tblTag = new JBTable(tagModel);
+        tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
+        tblTag.setRowSelectionAllowed(true);
+        tblTag.setStriped(true);
+        tblTag.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        btnTagRefresh = new AnActionButton(REFRESH, AllIcons.Actions.Refresh) {
+            @Override
+            public void actionPerformed(AnActionEvent anActionEvent) {
+                if (Utils.isEmptyString(currentRepo)) {
+                    return;
+                }
+                resetTagTable();
+                containerPropertyPresenter.resetTagStack();
+                containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, true /*nextPage*/);
+            }
+        };
+
+        btnTagPrevious = new AnActionButton(PREVIOUS_PAGE, AllIcons.Actions.MoveUp) {
+            @Override
+            public void actionPerformed(AnActionEvent anActionEvent) {
+                if (Utils.isEmptyString(currentRepo)) {
+                    return;
+                }
+                resetTagTable();
+                containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, false /*nextPage*/);
+            }
+        };
+
+        btnTagNext = new AnActionButton(NEXT_PAGE, AllIcons.Actions.MoveDown) {
+            @Override
+            public void actionPerformed(AnActionEvent anActionEvent) {
+                if (Utils.isEmptyString(currentRepo)) {
+                    return;
+                }
+                resetTagTable();
+                containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, true /*nextPage*/);
+            }
+        };
+
+        ToolbarDecorator tagDecorator = ToolbarDecorator.createDecorator(tblTag)
+                .addExtraActions(btnTagRefresh).setToolbarPosition(ActionToolbarPosition.LEFT)
+                .addExtraAction(btnTagPrevious).setToolbarPosition(ActionToolbarPosition.BOTTOM)
+                .addExtraAction(btnTagNext).setToolbarPosition(ActionToolbarPosition.BOTTOM)
+                .setToolbarBorder(JBUI.Borders.empty());
+
+        pnlTagTable = tagDecorator.createPanel();
+        disableActionButtons();
+    }
+
+    private void fillTable(@NotNull List<String> list, @NotNull JBTable table) {
+        if (list.size() > 0) {
+            DefaultTableModel model = (DefaultTableModel) table.getModel();
+            model.getDataVector().clear();
+            list.stream().sorted().forEach(item -> model.addRow(new String[]{item}));
+        } else {
+            table.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
+        }
     }
 
     private void disableTxtBoard() {
@@ -176,5 +404,40 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         txtRegion.setBackground(null);
         txtServerUrl.setBackground(null);
         txtUserName.setBackground(null);
+    }
+
+    private void resetRepoTable() {
+        currentRepo = null;
+        disableActionButtons();
+        DefaultTableModel model = (DefaultTableModel) tblRepo.getModel();
+        model.getDataVector().clear();
+        model.fireTableDataChanged();
+        model = (DefaultTableModel) tblTag.getModel();
+        model.getDataVector().clear();
+        model.fireTableDataChanged();
+    }
+
+    private void resetTagTable() {
+        disableTagActionButtons();
+        DefaultTableModel model = (DefaultTableModel) tblTag.getModel();
+        model.getDataVector().clear();
+        model.fireTableDataChanged();
+    }
+
+    private void disableActionButtons() {
+        disableRepoActionButtons();
+        disableTagActionButtons();
+    }
+
+    private void disableRepoActionButtons() {
+        btnRepoRefresh.setEnabled(false);
+        btnRepoPrevious.setEnabled(false);
+        btnRepoNext.setEnabled(false);
+    }
+
+    private void disableTagActionButtons() {
+        btnTagRefresh.setEnabled(false);
+        btnTagPrevious.setEnabled(false);
+        btnTagNext.setEnabled(false);
     }
 }
