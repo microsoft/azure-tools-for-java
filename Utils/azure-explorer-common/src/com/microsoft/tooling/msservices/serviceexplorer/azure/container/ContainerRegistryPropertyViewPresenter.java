@@ -54,7 +54,8 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
     private static final String CANNOT_GET_REPOS = "Cannot get repositories.";
     private static final String CANNOT_GET_TAGS = "Cannot get tags.";
 
-    private static final String PAGE_SIZE = "1";
+    private static final String BODY = "body";
+    private static final String PAGE_SIZE = "30";
     private static final String KEY_LAST = "last";
     private static final String KEY_PAGE_SIZE = "n";
     private static final String CANNOT_GET_REGISTRY_CREDENTIALS = "Cannot get Registry Credentials";
@@ -142,7 +143,7 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
                     .loginServerUrl(), username, passwords.get(0).value(), query);
             updateStack(nextPage, repoStack, nextRepo);
             Gson gson = new Gson();
-            Catalog catalog = gson.fromJson(responseMap.get("body"), Catalog.class);
+            Catalog catalog = gson.fromJson(responseMap.get(BODY), Catalog.class);
             nextRepo = getNextPage(responseMap.get(HEADER_LINK));
             return catalog.getRepositories();
         })
@@ -178,7 +179,7 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
                     .loginServerUrl(), username, passwords.get(0).value(), repo, query);
             updateStack(nextPage, tagStack, nextTag);
             Gson gson = new Gson();
-            Tag tag = gson.fromJson(responseMap.get("body"), Tag.class);
+            Tag tag = gson.fromJson(responseMap.get(BODY), Tag.class);
             nextTag = getNextPage(responseMap.get(HEADER_LINK));
             return tag.getTags();
         })
@@ -217,31 +218,6 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
         nextTag = "";
     }
 
-    private String parseLinkHeader(String header) {
-        int start = header.indexOf("<") + 1;
-        int end = header.lastIndexOf(">");
-        if (start <= 0 || end < 0 || end >= header.length() || start >= end) {
-            return "";
-        }
-        HttpUrl url = HttpUrl.parse(FAKE_URL + header.substring(start, end));
-        if (url == null) {
-            return "";
-        }
-        return url.queryParameter(KEY_LAST);
-    }
-
-    private boolean isSubscriptionIdAndResourceIdInValid(String sid, String id) {
-        if (Utils.isEmptyString(sid)) {
-            getMvpView().onError(CANNOT_GET_SUBSCRIPTION_ID);
-            return true;
-        }
-        if (Utils.isEmptyString(id)) {
-            getMvpView().onError(CANNOT_GET_REGISTRY_ID);
-            return true;
-        }
-        return false;
-    }
-
     private ContainerRegistryProperty getProperty(Registry registry, String sid) {
         String userName = "";
         String password = "";
@@ -262,13 +238,16 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
                 registry.adminUserEnabled(), userName, password, password2);
     }
 
-    private void errorHandler(String msg, Exception e) {
-        DefaultLoader.getIdeHelper().invokeLater(() -> {
-            if (isViewDetached()) {
-                return;
-            }
-            getMvpView().onErrorWithException(msg, e);
-        });
+    private boolean isSubscriptionIdAndResourceIdInValid(String sid, String id) {
+        if (Utils.isEmptyString(sid)) {
+            getMvpView().onError(CANNOT_GET_SUBSCRIPTION_ID);
+            return true;
+        }
+        if (Utils.isEmptyString(id)) {
+            getMvpView().onError(CANNOT_GET_REGISTRY_ID);
+            return true;
+        }
+        return false;
     }
 
     private Map<String, String> buildQueryMap(boolean nextPage, @NotNull Stack<String> stack, @Nullable String next) {
@@ -308,5 +287,27 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
         } else {
             return parseLinkHeader(linkHeader);
         }
+    }
+
+    private String parseLinkHeader(String header) {
+        int start = header.indexOf("<") + 1;
+        int end = header.lastIndexOf(">");
+        if (start <= 0 || end < 0 || end >= header.length() || start >= end) {
+            return "";
+        }
+        HttpUrl url = HttpUrl.parse(FAKE_URL + header.substring(start, end));
+        if (url == null) {
+            return "";
+        }
+        return url.queryParameter(KEY_LAST);
+    }
+
+    private void errorHandler(String msg, Exception e) {
+        DefaultLoader.getIdeHelper().invokeLater(() -> {
+            if (isViewDetached()) {
+                return;
+            }
+            getMvpView().onErrorWithException(msg, e);
+        });
     }
 }

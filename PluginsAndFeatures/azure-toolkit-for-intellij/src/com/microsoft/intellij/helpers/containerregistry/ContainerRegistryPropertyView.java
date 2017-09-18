@@ -130,121 +130,10 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         btnEnable.addActionListener(actionEvent -> onAdminUserBtnClick());
         btnDisable.addActionListener(actionEvent -> onAdminUserBtnClick());
 
-        HideableDecorator resGrpDecorator = new HideableDecorator(pnlPropertyHolder,
+        HideableDecorator propertyDecorator = new HideableDecorator(pnlPropertyHolder,
                 PROPERTY, false /*adjustWindow*/);
-        resGrpDecorator.setContentComponent(pnlProperty);
-        resGrpDecorator.setOn(true);
-
-        DefaultTableModel tableModel = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        tableModel.addColumn(REPOSITORY);
-        tblRepo.setModel(tableModel);
-    }
-
-    private void onAdminUserBtnClick() {
-        btnEnable.setEnabled(false);
-        btnDisable.setEnabled(false);
-        this.containerPropertyPresenter.onEnableAdminUser(subscriptionId, registryId, !isAdminEnabled);
-    }
-
-    private void updateAdminUserBtn(boolean isAdminEnabled) {
-        btnEnable.setEnabled(!isAdminEnabled);
-        btnDisable.setEnabled(isAdminEnabled);
-    }
-
-
-    @NotNull
-    @Override
-    public JComponent getComponent() {
-        return pnlMain;
-    }
-
-    @NotNull
-    @Override
-    public String getName() {
-        return ID;
-    }
-
-    @Override
-    public void dispose() {
-        containerPropertyPresenter.onAttachView(this);
-    }
-
-    @Override
-    public void onReadProperty(String sid, String id) {
-        containerPropertyPresenter.onGetRegistryProperty(sid, id);
-    }
-
-
-    @Override
-    public void showProperty(ContainerRegistryProperty property) {
-        registryId = property.getId();
-        subscriptionId = property.getSubscriptionId();
-        isAdminEnabled = property.isAdminEnabled();
-
-        txtName.setText(property.getName());
-        txtType.setText(property.getType());
-        txtResGrp.setText(property.getGroupName());
-        txtSubscription.setText(subscriptionId);
-        txtRegion.setText(property.getRegionName());
-        txtServerUrl.setText(property.getLoginServerUrl());
-
-        lblUserName.setVisible(isAdminEnabled);
-        txtUserName.setVisible(isAdminEnabled);
-        lblPrimaryPwd.setVisible(isAdminEnabled);
-        btnPrimaryPassword.setVisible(isAdminEnabled);
-        lblSecondaryPwd.setVisible(isAdminEnabled);
-        btnSecondaryPassword.setVisible(isAdminEnabled);
-        if (isAdminEnabled) {
-            txtUserName.setText(property.getUserName());
-            password = property.getPassword();
-            password2 = property.getPassword2();
-        }
-        updateAdminUserBtn(isAdminEnabled);
-        if (isAdminEnabled) {
-            containerPropertyPresenter.onListRepositories(subscriptionId, registryId, true);
-        } else {
-            pnlExplorer.setVisible(false);
-            containerPropertyPresenter.resetRepoStack();
-            containerPropertyPresenter.resetTagStack();
-        }
-    }
-
-    @Override
-    public void listRepo(@NotNull List<String> repos) {
-        btnRepoRefresh.setEnabled(true);
-        fillTable(repos, tblRepo);
-        if (containerPropertyPresenter.hasNextRepoPage()) {
-            btnRepoNext.setEnabled(true);
-        } else {
-            btnRepoNext.setEnabled(false);
-        }
-        if (containerPropertyPresenter.hasPreviousRepoPage()) {
-            btnRepoPrevious.setEnabled(true);
-        } else {
-            btnRepoPrevious.setEnabled(false);
-        }
-    }
-
-    @Override
-    public void listTag(@NotNull List<String> tags) {
-        btnTagRefresh.setEnabled(true);
-        fillTable(tags, tblTag);
-        if (containerPropertyPresenter.hasNextTagPage()) {
-            btnTagNext.setEnabled(true);
-        } else {
-            btnTagNext.setEnabled(false);
-        }
-
-        if (containerPropertyPresenter.hasPreviousTagPage()) {
-            btnTagPrevious.setEnabled(true);
-        } else {
-            btnTagPrevious.setEnabled(false);
-        }
+        propertyDecorator.setContentComponent(pnlProperty);
+        propertyDecorator.setOn(true);
     }
 
     private void createUIComponents() {
@@ -284,6 +173,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 resetRepoTable();
+                tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
                 containerPropertyPresenter.resetRepoStack();
                 containerPropertyPresenter.resetTagStack();
                 containerPropertyPresenter.onListRepositories(subscriptionId, registryId, true /*nextPage*/);
@@ -376,14 +266,105 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         disableActionButtons();
     }
 
-    private void fillTable(@NotNull List<String> list, @NotNull JBTable table) {
-        if (list.size() > 0) {
-            DefaultTableModel model = (DefaultTableModel) table.getModel();
-            model.getDataVector().clear();
-            list.stream().sorted().forEach(item -> model.addRow(new String[]{item}));
-        } else {
-            table.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
+    @NotNull
+    @Override
+    public JComponent getComponent() {
+        return pnlMain;
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return ID;
+    }
+
+    @Override
+    public void dispose() {
+        containerPropertyPresenter.onAttachView(this);
+    }
+
+    @Override
+    public void onReadProperty(String sid, String id) {
+        containerPropertyPresenter.onGetRegistryProperty(sid, id);
+    }
+
+
+    @Override
+    public void showProperty(ContainerRegistryProperty property) {
+        registryId = property.getId();
+        subscriptionId = property.getSubscriptionId();
+        isAdminEnabled = property.isAdminEnabled();
+
+        txtName.setText(property.getName());
+        txtType.setText(property.getType());
+        txtResGrp.setText(property.getGroupName());
+        txtSubscription.setText(subscriptionId);
+        txtRegion.setText(property.getRegionName());
+        txtServerUrl.setText(property.getLoginServerUrl());
+
+        lblUserName.setVisible(isAdminEnabled);
+        txtUserName.setVisible(isAdminEnabled);
+        lblPrimaryPwd.setVisible(isAdminEnabled);
+        btnPrimaryPassword.setVisible(isAdminEnabled);
+        lblSecondaryPwd.setVisible(isAdminEnabled);
+        btnSecondaryPassword.setVisible(isAdminEnabled);
+        if (isAdminEnabled) {
+            txtUserName.setText(property.getUserName());
+            password = property.getPassword();
+            password2 = property.getPassword2();
         }
+        updateAdminUserBtn(isAdminEnabled);
+        if (isAdminEnabled) {
+            containerPropertyPresenter.onListRepositories(subscriptionId, registryId, true);
+        } else {
+            pnlExplorer.setVisible(false);
+            containerPropertyPresenter.resetRepoStack();
+            containerPropertyPresenter.resetTagStack();
+        }
+    }
+
+    @Override
+    public void listRepo(@NotNull List<String> repos) {
+        btnRepoRefresh.setEnabled(true);
+        fillTable(repos, tblRepo);
+        if (containerPropertyPresenter.hasNextRepoPage()) {
+            btnRepoNext.setEnabled(true);
+        } else {
+            btnRepoNext.setEnabled(false);
+        }
+        if (containerPropertyPresenter.hasPreviousRepoPage()) {
+            btnRepoPrevious.setEnabled(true);
+        } else {
+            btnRepoPrevious.setEnabled(false);
+        }
+    }
+
+    @Override
+    public void listTag(@NotNull List<String> tags) {
+        btnTagRefresh.setEnabled(true);
+        fillTable(tags, tblTag);
+        if (containerPropertyPresenter.hasNextTagPage()) {
+            btnTagNext.setEnabled(true);
+        } else {
+            btnTagNext.setEnabled(false);
+        }
+
+        if (containerPropertyPresenter.hasPreviousTagPage()) {
+            btnTagPrevious.setEnabled(true);
+        } else {
+            btnTagPrevious.setEnabled(false);
+        }
+    }
+
+    private void onAdminUserBtnClick() {
+        btnEnable.setEnabled(false);
+        btnDisable.setEnabled(false);
+        this.containerPropertyPresenter.onEnableAdminUser(subscriptionId, registryId, !isAdminEnabled);
+    }
+
+    private void updateAdminUserBtn(boolean isAdminEnabled) {
+        btnEnable.setEnabled(!isAdminEnabled);
+        btnDisable.setEnabled(isAdminEnabled);
     }
 
     private void disableTxtBoard() {
@@ -404,6 +385,16 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         txtRegion.setBackground(null);
         txtServerUrl.setBackground(null);
         txtUserName.setBackground(null);
+    }
+
+    private void fillTable(@NotNull List<String> list, @NotNull JBTable table) {
+        if (list.size() > 0) {
+            DefaultTableModel model = (DefaultTableModel) table.getModel();
+            model.getDataVector().clear();
+            list.stream().sorted().forEach(item -> model.addRow(new String[]{item}));
+        } else {
+            table.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
+        }
     }
 
     private void resetRepoTable() {

@@ -32,7 +32,9 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -45,8 +47,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.layout.GridData;
+
+import java.util.List;
 
 public class ContainerRegistryPropertyView extends ViewPart implements ContainerRegistryPropertyMvpView {
 
@@ -325,5 +327,17 @@ public class ContainerRegistryPropertyView extends ViewPart implements Container
                 control.setBackground(transparentColor);
             }
         }
+    }
+
+    @Override
+    public void listRepo(List<String> repos) {
+        // TODO implement
+
+    }
+
+    @Override
+    public void listTag(List<String> tags) {
+        // TODO implement
+
     }
 }
