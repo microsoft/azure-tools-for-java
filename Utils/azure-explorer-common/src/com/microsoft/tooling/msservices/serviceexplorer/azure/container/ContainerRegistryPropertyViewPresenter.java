@@ -61,8 +61,10 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
     private static final String CANNOT_GET_REGISTRY_CREDENTIALS = "Cannot get Registry Credentials";
     private static final String HEADER_LINK = "link";
     private static final String FAKE_URL = "http://a";
-    private final Stack<String> repoStack;
-    private final Stack<String> tagStack;
+    private final Stack<String> repoStack = new Stack<>();
+    private final Stack<String> tagStack = new Stack<>();
+    private String currentRepo;
+    private String currentTag;
     private String nextRepo;
     private String nextTag;
 
@@ -70,10 +72,8 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
      * Constructor.
      */
     public ContainerRegistryPropertyViewPresenter() {
-        repoStack = new Stack<>();
-        tagStack = new Stack<>();
-        nextRepo = "";
-        nextTag = "";
+        resetRepoStack();
+        resetTagStack();
     }
 
     /**
@@ -150,7 +150,7 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
             Map<String, String> query = buildQueryMap(isNextPage, repoStack, nextRepo);
             Map<String, String> responseMap = ContainerExplorerMvpModel.getInstance().listRepositories(registry
                     .loginServerUrl(), username, passwords.get(0).value(), query);
-            nextRepo = updatePaginationInfo(isNextPage, repoStack, nextRepo, responseMap.get(HEADER_LINK));
+            updatePaginationInfo(isNextPage, Type.REPO, responseMap.get(HEADER_LINK));
             Gson gson = new Gson();
             Catalog catalog = gson.fromJson(responseMap.get(BODY), Catalog.class);
             return catalog.getRepositories();
@@ -186,7 +186,7 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
             Map<String, String> query = buildQueryMap(isNextPage, tagStack, nextTag);
             Map<String, String> responseMap = ContainerExplorerMvpModel.getInstance().listTags(registry
                     .loginServerUrl(), username, passwords.get(0).value(), repo, query);
-            nextTag = updatePaginationInfo(isNextPage, tagStack, nextTag, responseMap.get(HEADER_LINK));
+            updatePaginationInfo(isNextPage, Type.TAG, responseMap.get(HEADER_LINK));
             Gson gson = new Gson();
             Tag tag = gson.fromJson(responseMap.get(BODY), Tag.class);
             return tag.getTags();
@@ -218,11 +218,13 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
 
     private void resetRepoStack() {
         repoStack.clear();
+        currentRepo = null;
         nextRepo = "";
     }
 
     private void resetTagStack() {
         tagStack.clear();
+        currentTag = null;
         nextTag = "";
     }
 
@@ -267,25 +269,54 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
             }
         } else {
             if (stack.size() > 0) {
-                next = stack.pop();
-                if (stack.size() > 0) {
-                    query.put(KEY_LAST, stack.peek());
-                }
-            } else {
-                next = "";
+                query.put(KEY_LAST, stack.peek());
             }
         }
         return query;
     }
 
-    @Nullable
-    private String updatePaginationInfo(boolean isNextPage, @NotNull Stack<String> stack, @Nullable String next, @Nullable String linkHeader) {
-        if (isNextPage && !Utils.isEmptyString(next)) {
-            stack.push(next);
-            // No previous page condition, because next flag
-            // is already updated in buildQueryMap()
+    private void updatePaginationInfo(boolean isNextPage, @NotNull Type type, @Nullable String linkHeader) {
+        if (isNextPage) {
+            switch (type) {
+                case REPO:
+                    if (this.currentRepo != null) {
+                        repoStack.push(this.currentRepo);
+                    }
+                    if (this.nextRepo != null) {
+                        this.currentRepo = this.nextRepo;
+                    }
+                    this.nextRepo = linkHeader == null ? null : parseLinkHeader(linkHeader);
+                    break;
+                case TAG:
+                    if (this.currentTag != null) {
+                        tagStack.push(this.currentTag);
+                    }
+                    if (this.nextTag != null) {
+                        this.currentTag = this.nextTag;
+                    }
+                    this.nextTag = linkHeader == null ? null : parseLinkHeader(linkHeader);
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            switch (type) {
+                case REPO:
+                    if (repoStack.size() > 0) {
+                        this.nextRepo = this.currentRepo;
+                        this.currentRepo = repoStack.pop();
+                    }
+                    break;
+                case TAG:
+                    if (tagStack.size() > 0) {
+                        this.nextTag = this.currentTag;
+                        this.currentTag = tagStack.pop();
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
-        return linkHeader == null ? null : parseLinkHeader(linkHeader);
     }
 
     @Nullable
@@ -309,5 +340,10 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
             }
             getMvpView().onErrorWithException(msg, e);
         });
+    }
+
+    private enum Type {
+        REPO,
+        TAG
     }
 }

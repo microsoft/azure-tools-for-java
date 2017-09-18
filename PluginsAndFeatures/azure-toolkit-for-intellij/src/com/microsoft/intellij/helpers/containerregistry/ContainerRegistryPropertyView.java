@@ -47,7 +47,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
-import java.util.Comparator;
 import java.util.List;
 
 public class ContainerRegistryPropertyView extends BaseEditor implements ContainerRegistryPropertyMvpView {
@@ -163,6 +162,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                 return;
             }
             currentRepo = selectedRepo;
+            tblRepo.setEnabled(false);
             resetTagTable();
             tblTag.getEmptyText().setText(TABLE_LOADING_MESSAGE);
             containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, true /*isNextPage*/);
@@ -317,8 +317,8 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
     @Override
     public void listRepo(@NotNull List<String> repos) {
-        btnRepoRefresh.setEnabled(true);
         fillTable(repos, tblRepo);
+        btnRepoRefresh.setEnabled(true);
         if (containerPropertyPresenter.hasNextRepoPage()) {
             btnRepoNext.setEnabled(true);
         } else {
@@ -333,8 +333,9 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
     @Override
     public void listTag(@NotNull List<String> tags) {
-        btnTagRefresh.setEnabled(true);
         fillTable(tags, tblTag);
+        btnTagRefresh.setEnabled(true);
+        tblRepo.setEnabled(true);
         if (containerPropertyPresenter.hasNextTagPage()) {
             btnTagNext.setEnabled(true);
         } else {
