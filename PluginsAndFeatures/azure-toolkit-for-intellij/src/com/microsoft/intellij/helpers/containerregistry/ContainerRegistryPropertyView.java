@@ -165,8 +165,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
             currentRepo = selectedRepo;
             resetTagTable();
             tblTag.getEmptyText().setText(TABLE_LOADING_MESSAGE);
-            containerPropertyPresenter.resetTagStack();
-            containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, true /*nextPage*/);
+            containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, true /*isNextPage*/);
         });
 
         btnRepoRefresh = new AnActionButton(REFRESH, AllIcons.Actions.Refresh) {
@@ -174,9 +173,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
             public void actionPerformed(AnActionEvent anActionEvent) {
                 resetRepoTable();
                 tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
-                containerPropertyPresenter.resetRepoStack();
-                containerPropertyPresenter.resetTagStack();
-                containerPropertyPresenter.onListRepositories(subscriptionId, registryId, true /*nextPage*/);
+                containerPropertyPresenter.onRefreshRepositories(subscriptionId, registryId, true /*isNextPage*/);
             }
         };
 
@@ -185,8 +182,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
             public void actionPerformed(AnActionEvent anActionEvent) {
                 resetRepoTable();
                 tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
-                containerPropertyPresenter.resetTagStack();
-                containerPropertyPresenter.onListRepositories(subscriptionId, registryId, false /*nextPage*/);
+                containerPropertyPresenter.onListRepositories(subscriptionId, registryId, false /*isNextPage*/);
             }
         };
 
@@ -195,15 +191,15 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
             public void actionPerformed(AnActionEvent anActionEvent) {
                 resetRepoTable();
                 tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
-                containerPropertyPresenter.resetTagStack();
-                containerPropertyPresenter.onListRepositories(subscriptionId, registryId, true /*nextPage*/);
+                containerPropertyPresenter.onListRepositories(subscriptionId, registryId, true /*isNextPage*/);
             }
         };
 
         ToolbarDecorator repoDecorator = ToolbarDecorator.createDecorator(tblRepo)
-                .addExtraActions(btnRepoRefresh).setToolbarPosition(ActionToolbarPosition.LEFT)
-                .addExtraAction(btnRepoPrevious).setToolbarPosition(ActionToolbarPosition.BOTTOM)
-                .addExtraAction(btnRepoNext).setToolbarPosition(ActionToolbarPosition.BOTTOM)
+                .addExtraActions(btnRepoRefresh)
+                .addExtraAction(btnRepoPrevious)
+                .addExtraAction(btnRepoNext)
+                .setToolbarPosition(ActionToolbarPosition.BOTTOM)
                 .setToolbarBorder(JBUI.Borders.empty());
 
         pnlRepoTable = repoDecorator.createPanel();
@@ -229,8 +225,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                     return;
                 }
                 resetTagTable();
-                containerPropertyPresenter.resetTagStack();
-                containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, true /*nextPage*/);
+                containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, true /*isNextPage*/);
             }
         };
 
@@ -241,7 +236,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                     return;
                 }
                 resetTagTable();
-                containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, false /*nextPage*/);
+                containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, false /*isNextPage*/);
             }
         };
 
@@ -252,14 +247,15 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                     return;
                 }
                 resetTagTable();
-                containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, true /*nextPage*/);
+                containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, true /*isNextPage*/);
             }
         };
 
         ToolbarDecorator tagDecorator = ToolbarDecorator.createDecorator(tblTag)
-                .addExtraActions(btnTagRefresh).setToolbarPosition(ActionToolbarPosition.LEFT)
-                .addExtraAction(btnTagPrevious).setToolbarPosition(ActionToolbarPosition.BOTTOM)
-                .addExtraAction(btnTagNext).setToolbarPosition(ActionToolbarPosition.BOTTOM)
+                .addExtraActions(btnTagRefresh)
+                .addExtraAction(btnTagPrevious)
+                .addExtraAction(btnTagNext)
+                .setToolbarPosition(ActionToolbarPosition.BOTTOM)
                 .setToolbarBorder(JBUI.Borders.empty());
 
         pnlTagTable = tagDecorator.createPanel();
@@ -312,15 +308,11 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
             txtUserName.setText(property.getUserName());
             password = property.getPassword();
             password2 = property.getPassword2();
-        }
-        updateAdminUserBtn(isAdminEnabled);
-        if (isAdminEnabled) {
-            containerPropertyPresenter.onListRepositories(subscriptionId, registryId, true);
+            containerPropertyPresenter.onRefreshRepositories(subscriptionId, registryId, true /*isNextPage*/);
         } else {
             pnlExplorer.setVisible(false);
-            containerPropertyPresenter.resetRepoStack();
-            containerPropertyPresenter.resetTagStack();
         }
+        updateAdminUserBtn(isAdminEnabled);
     }
 
     @Override
@@ -403,6 +395,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         DefaultTableModel model = (DefaultTableModel) tblRepo.getModel();
         model.getDataVector().clear();
         model.fireTableDataChanged();
+
         model = (DefaultTableModel) tblTag.getModel();
         model.getDataVector().clear();
         model.fireTableDataChanged();

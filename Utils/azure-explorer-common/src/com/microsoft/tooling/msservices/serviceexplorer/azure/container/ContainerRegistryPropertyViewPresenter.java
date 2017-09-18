@@ -121,12 +121,21 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
     }
 
     /**
+     * Called when refreshing repositories in ACR Explorer
+     */
+    public void onRefreshRepositories(String sid, String id, boolean isNextPage) {
+        resetRepoStack();
+        onListRepositories(sid, id, isNextPage);
+    }
+
+    /**
      * Called when listing repositories of ACR.
      */
-    public void onListRepositories(String sid, String id, boolean nextPage) {
+    public void onListRepositories(String sid, String id, boolean isNextPage) {
         if (isSubscriptionIdAndResourceIdInValid(sid, id)) {
             return;
         }
+        resetTagStack();
         Observable.fromCallable(() -> {
             Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
             final RegistryListCredentials credentials = registry.listCredentials();
@@ -138,13 +147,12 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
             if (Utils.isEmptyString(username) || passwords == null || passwords.size() == 0) {
                 throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
             }
-            Map<String, String> query = buildQueryMap(nextPage, repoStack, nextRepo);
+            Map<String, String> query = buildQueryMap(isNextPage, repoStack, nextRepo);
             Map<String, String> responseMap = ContainerExplorerMvpModel.getInstance().listRepositories(registry
                     .loginServerUrl(), username, passwords.get(0).value(), query);
-            updateStack(nextPage, repoStack, nextRepo);
+            nextRepo = updatePaginationInfo(isNextPage, repoStack, nextRepo, responseMap.get(HEADER_LINK));
             Gson gson = new Gson();
             Catalog catalog = gson.fromJson(responseMap.get(BODY), Catalog.class);
-            nextRepo = getNextPage(responseMap.get(HEADER_LINK));
             return catalog.getRepositories();
         })
                 .subscribeOn(getSchedulerProvider().io())
@@ -159,10 +167,11 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
     /**
      * Called when listing image tags for the given repository.
      */
-    public void onListTags(String sid, String id, String repo, boolean nextPage) {
+    public void onListTags(String sid, String id, String repo, boolean isNextPage) {
         if (isSubscriptionIdAndResourceIdInValid(sid, id)) {
             return;
         }
+        resetTagStack();
         Observable.fromCallable(() -> {
             Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
             final RegistryListCredentials credentials = registry.listCredentials();
@@ -174,13 +183,12 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
             if (Utils.isEmptyString(username) || passwords == null || passwords.size() == 0) {
                 throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
             }
-            Map<String, String> query = buildQueryMap(nextPage, tagStack, nextTag);
+            Map<String, String> query = buildQueryMap(isNextPage, tagStack, nextTag);
             Map<String, String> responseMap = ContainerExplorerMvpModel.getInstance().listTags(registry
                     .loginServerUrl(), username, passwords.get(0).value(), repo, query);
-            updateStack(nextPage, tagStack, nextTag);
+            nextTag = updatePaginationInfo(isNextPage, tagStack, nextTag, responseMap.get(HEADER_LINK));
             Gson gson = new Gson();
             Tag tag = gson.fromJson(responseMap.get(BODY), Tag.class);
-            nextTag = getNextPage(responseMap.get(HEADER_LINK));
             return tag.getTags();
         })
                 .subscribeOn(getSchedulerProvider().io())
@@ -208,12 +216,12 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
         return tagStack.size() != 0;
     }
 
-    public void resetRepoStack() {
+    private void resetRepoStack() {
         repoStack.clear();
         nextRepo = "";
     }
 
-    public void resetTagStack() {
+    private void resetTagStack() {
         tagStack.clear();
         nextTag = "";
     }
@@ -250,54 +258,46 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
         return false;
     }
 
-    private Map<String, String> buildQueryMap(boolean nextPage, @NotNull Stack<String> stack, @Nullable String next) {
+    private Map<String, String> buildQueryMap(boolean isNextPage, @NotNull Stack<String> stack, @Nullable String next) {
         Map<String, String> query = new HashMap<>();
         query.put(KEY_PAGE_SIZE, PAGE_SIZE);
-        if (nextPage) {
+        if (isNextPage) {
             if (next != null) {
                 query.put(KEY_LAST, next);
             }
         } else {
             if (stack.size() > 0) {
-                stack.pop();
+                next = stack.pop();
                 if (stack.size() > 0) {
                     query.put(KEY_LAST, stack.peek());
                 }
+            } else {
+                next = "";
             }
         }
         return query;
     }
 
-    private void updateStack(boolean nextPage, @NotNull Stack<String> stack, @Nullable String next) {
-        if (nextPage) {
-            if (!Utils.isEmptyString(next)) {
-                stack.push(next);
-            }
-        } else {
-            if (stack.size() > 0) {
-                stack.pop();
-            }
+    @Nullable
+    private String updatePaginationInfo(boolean isNextPage, @NotNull Stack<String> stack, @Nullable String next, @Nullable String linkHeader) {
+        if (isNextPage && !Utils.isEmptyString(next)) {
+            stack.push(next);
+            // No previous page condition, because next flag
+            // is already updated in buildQueryMap()
         }
+        return linkHeader == null ? null : parseLinkHeader(linkHeader);
     }
 
     @Nullable
-    private String getNextPage(@Nullable String linkHeader) {
-        if (Utils.isEmptyString(linkHeader)) {
-            return null;
-        } else {
-            return parseLinkHeader(linkHeader);
-        }
-    }
-
-    private String parseLinkHeader(String header) {
+    private String parseLinkHeader(@NotNull String header) {
         int start = header.indexOf("<") + 1;
         int end = header.lastIndexOf(">");
         if (start <= 0 || end < 0 || end >= header.length() || start >= end) {
-            return "";
+            return null;
         }
         HttpUrl url = HttpUrl.parse(FAKE_URL + header.substring(start, end));
         if (url == null) {
-            return "";
+            return null;
         }
         return url.queryParameter(KEY_LAST);
     }
