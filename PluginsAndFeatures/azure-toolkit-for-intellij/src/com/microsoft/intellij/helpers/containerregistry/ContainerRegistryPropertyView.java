@@ -85,6 +85,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     private static final String CANNOT_GET_REGISTRY_CREDENTIALS = "Cannot get Registry Credentials";
     private static final String DISPLAY_ID = "Azure Plugin";
     private static final String IMAGE_PULL_SUCCESS = "%s is successfully pulled.";
+    private static final String REPO_TAG_NOT_AVAILABLE = "Cannot get Current repository and tag";
 
     private boolean isAdminEnabled;
     private String registryId = "";
@@ -160,10 +161,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         menu = new JPopupMenu();
         JMenuItem menuItem = new JMenuItem(PULL_IMAGE);
         menuItem.addActionListener(e -> {
-            if (Utils.isEmptyString(currentRepo) || Utils.isEmptyString(currentTag)) {
-                return;
-            }
-            pullImage(subscriptionId, registryId, String.format("%s:%s", currentRepo, currentTag));
+            pullImage(subscriptionId, registryId, currentRepo, currentTag);
         });
         menu.add(menuItem);
     }
@@ -475,11 +473,15 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         btnTagNext.setEnabled(false);
     }
 
-    private void pullImage(String sid, String id, String image) {
+    private void pullImage(String sid, String id, String repo, String tag) {
         ProgressManager.getInstance().run(new Task.Backgroundable(null, PULL_IMAGE, true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
+                    if (Utils.isEmptyString(repo) || Utils.isEmptyString(tag)) {
+                        throw new Exception(REPO_TAG_NOT_AVAILABLE);
+                    }
+                    final String image = String.format("%s:%s", repo, tag);
                     final Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
                     if (!registry.adminUserEnabled()) {
                         throw new Exception(ADMIN_NOT_ENABLED);
@@ -494,7 +496,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                         throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
                     }
                     DockerClient docker = DefaultDockerClient.fromEnv().build();
-                    String fullImageTagName = String.format("%s/%s", registry.loginServerUrl(), image);
+                    final String fullImageTagName = String.format("%s/%s", registry.loginServerUrl(), image);
                     DockerUtil.pullImage(docker, registry.loginServerUrl(), username, passwords.get(0).value(),
                             fullImageTagName);
                     String message = String.format(IMAGE_PULL_SUCCESS, fullImageTagName);
