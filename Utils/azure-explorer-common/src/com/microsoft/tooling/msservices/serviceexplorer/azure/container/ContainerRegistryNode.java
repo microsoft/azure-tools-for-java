@@ -43,7 +43,7 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
     private final String resourceId;
 
     // action name
-    private static final String SHOW_PROPERTY_ACTION = "Show properties";
+    private static final String OPEN_EXPLORER_ACTION = "Open ACR Explorer";
     private static final String OPEN_IN_BROWSER_ACTION = "Open in browser";
 
     // string formatter
@@ -62,7 +62,7 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
 
     @Override
     protected void loadActions() {
-        addAction(SHOW_PROPERTY_ACTION, null, new ShowContainerRegistryPropertyAction());
+        addAction(OPEN_EXPLORER_ACTION, null, new ShowContainerRegistryPropertyAction());
         addAction(OPEN_IN_BROWSER_ACTION, null, new OpenInBrowserAction());
         super.loadActions();
     }

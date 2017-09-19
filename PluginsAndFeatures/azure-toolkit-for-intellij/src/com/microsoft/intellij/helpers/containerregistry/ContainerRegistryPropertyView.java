@@ -23,36 +23,53 @@
 package com.microsoft.intellij.helpers.containerregistry;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
+import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.management.containerregistry.RegistryPassword;
+import com.microsoft.azure.management.containerregistry.implementation.RegistryListCredentials;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
 import com.microsoft.intellij.helpers.base.BaseEditor;
+import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyViewPresenter;
 
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DockerClient;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class ContainerRegistryPropertyView extends BaseEditor implements ContainerRegistryPropertyMvpView {
 
     public static final String ID = ContainerRegistryPropertyView.class.getName();
-
     private final ContainerRegistryPropertyViewPresenter<ContainerRegistryPropertyView> containerPropertyPresenter;
 
     private static final String REFRESH = "Refresh";
@@ -63,6 +80,11 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     private static final String PROPERTY = "Properties";
     private static final String TABLE_LOADING_MESSAGE = "Loading...";
     private static final String TABLE_EMPTY_MESSAGE = "No available items.";
+    private static final String ADMIN_NOT_ENABLED = "Admin user is not enabled.";
+    private static final String PULL_IMAGE = "Pull Image";
+    private static final String CANNOT_GET_REGISTRY_CREDENTIALS = "Cannot get Registry Credentials";
+    private static final String DISPLAY_ID = "Azure Plugin";
+    private static final String IMAGE_PULL_SUCCESS = "Image: %s is successfully pulled.";
 
     private boolean isAdminEnabled;
     private String registryId = "";
@@ -70,6 +92,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     private String password = "";
     private String password2 = "";
     private String currentRepo;
+    private String currentTag;
 
     private JPanel pnlMain;
     private JTextField txtName;
@@ -90,7 +113,6 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     private JPanel pnlProperty;
     private JPanel pnlRepoTable;
     private JPanel pnlTagTable;
-    private JPanel pnlExplorer;
     private JBTable tblRepo;
     private JBTable tblTag;
     private AnActionButton btnRepoRefresh;
@@ -99,6 +121,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     private AnActionButton btnTagRefresh;
     private AnActionButton btnTagPrevious;
     private AnActionButton btnTagNext;
+    private JPopupMenu menu;
 
     /**
      * Constructor of ACR property view.
@@ -133,6 +156,16 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                 PROPERTY, false /*adjustWindow*/);
         propertyDecorator.setContentComponent(pnlProperty);
         propertyDecorator.setOn(true);
+
+        menu = new JPopupMenu();
+        JMenuItem menuItem = new JMenuItem(PULL_IMAGE);
+        menuItem.addActionListener(e -> {
+            if (Utils.isEmptyString(currentRepo) || Utils.isEmptyString(currentTag)) {
+                return;
+            }
+            pullImage(subscriptionId, registryId, String.format("%s:%s", currentRepo, currentTag));
+        });
+        menu.add(menuItem);
     }
 
     private void createUIComponents() {
@@ -154,7 +187,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                 return;
             }
             int selectedRow = tblRepo.getSelectedRow();
-            if (selectedRow < 0 || selectedRow >= tblRepo.getModel().getRowCount()) {
+            if (selectedRow < 0 || selectedRow >= tblRepo.getRowCount()) {
                 return;
             }
             String selectedRepo = (String) tblRepo.getModel().getValueAt(selectedRow, 0);
@@ -217,7 +250,19 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         tblTag.setRowSelectionAllowed(true);
         tblTag.setStriped(true);
         tblTag.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+        tblTag.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    int rowIndex = tblTag.getSelectedRow();
+                    if (rowIndex < 0 || rowIndex >= tblTag.getRowCount()) {
+                        return;
+                    }
+                    currentTag = (String) tblTag.getModel().getValueAt(rowIndex, 0);
+                    menu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
         btnTagRefresh = new AnActionButton(REFRESH, AllIcons.Actions.Refresh) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
@@ -304,21 +349,25 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         btnPrimaryPassword.setVisible(isAdminEnabled);
         lblSecondaryPwd.setVisible(isAdminEnabled);
         btnSecondaryPassword.setVisible(isAdminEnabled);
+        resetRepoTable();
         if (isAdminEnabled) {
             txtUserName.setText(property.getUserName());
             password = property.getPassword();
             password2 = property.getPassword2();
+            tblRepo.getEmptyText().setText(TABLE_LOADING_MESSAGE);
+            tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
             containerPropertyPresenter.onRefreshRepositories(subscriptionId, registryId, true /*isNextPage*/);
         } else {
-            pnlExplorer.setVisible(false);
+            tblRepo.getEmptyText().setText(ADMIN_NOT_ENABLED);
+            tblTag.getEmptyText().setText(ADMIN_NOT_ENABLED);
         }
         updateAdminUserBtn(isAdminEnabled);
     }
 
     @Override
     public void listRepo(@NotNull List<String> repos) {
-        fillTable(repos, tblRepo);
         btnRepoRefresh.setEnabled(true);
+        fillTable(repos, tblRepo);
         if (containerPropertyPresenter.hasNextRepoPage()) {
             btnRepoNext.setEnabled(true);
         } else {
@@ -333,8 +382,8 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
     @Override
     public void listTag(@NotNull List<String> tags) {
-        fillTable(tags, tblTag);
         btnTagRefresh.setEnabled(true);
+        fillTable(tags, tblTag);
         tblRepo.setEnabled(true);
         if (containerPropertyPresenter.hasNextTagPage()) {
             btnTagNext.setEnabled(true);
@@ -424,5 +473,40 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         btnTagRefresh.setEnabled(false);
         btnTagPrevious.setEnabled(false);
         btnTagNext.setEnabled(false);
+    }
+
+    private void pullImage(String sid, String id, String image) {
+        ProgressManager.getInstance().run(new Task.Backgroundable(null, PULL_IMAGE, true) {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                try {
+                    final Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
+                    if (!registry.adminUserEnabled()) {
+                        throw new Exception(ADMIN_NOT_ENABLED);
+                    }
+                    final RegistryListCredentials credentials = registry.listCredentials();
+                    if (credentials == null) {
+                        throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
+                    }
+                    String username = credentials.username();
+                    final List<RegistryPassword> passwords = credentials.passwords();
+                    if (Utils.isEmptyString(username) || passwords == null || passwords.size() == 0) {
+                        throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
+                    }
+                    DockerClient docker = DefaultDockerClient.fromEnv().build();
+                    String fullImageTagName = String.format("%s/%s", registry.loginServerUrl(), image);
+                    DockerUtil.pullImage(docker, registry.loginServerUrl(), username, passwords.get(0).value(),
+                            fullImageTagName);
+                    String message = String.format(IMAGE_PULL_SUCCESS, fullImageTagName);
+                    Notification notification = new Notification(DISPLAY_ID, PULL_IMAGE, message,
+                            NotificationType.INFORMATION);
+                    Notifications.Bus.notify(notification);
+                } catch (Exception e) {
+                    Notification notification = new Notification(DISPLAY_ID, PULL_IMAGE,
+                            e.getMessage(), NotificationType.ERROR);
+                    Notifications.Bus.notify(notification);
+                }
+            }
+        });
     }
 }
