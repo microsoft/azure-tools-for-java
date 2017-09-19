@@ -22,12 +22,14 @@ package com.microsoft.azuretools.azureexplorer.helpers;
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.azureexplorer.editors.StorageEditorInput;
+import com.microsoft.azuretools.azureexplorer.editors.container.ContainerRegistryExplorerEditor;
+import com.microsoft.azuretools.azureexplorer.editors.container.ContainerRegistryExplorerEditorInput;
 import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor;
 import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditorInput;
 import com.microsoft.azuretools.azureexplorer.forms.OpenSSLFinderForm;
-import com.microsoft.azuretools.azureexplorer.views.ContainerRegistryPropertyView;
 import com.microsoft.azuretools.azureexplorer.views.RedisPropertyView;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -67,7 +69,7 @@ public class UIHelperImpl implements UIHelper {
 
     private static final String UNABLE_TO_OPEN_BROWSER = "Unable to open external web browser";
     private static final String UNABLE_TO_GET_PROPERTY = "Error opening view page";
-    private static final String UNABLE_TO_OPEN_EXPLORER = "Unable to open the Redis Cache Explorer";
+    private static final String UNABLE_TO_OPEN_EXPLORER = "Unable to open explorer";
 
     @Override
     public void showException(final String message,
@@ -284,10 +286,13 @@ public class UIHelperImpl implements UIHelper {
     public void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node) {
         String sid = node.getSubscriptionId();
         String resId = node.getResourceId();
-        if (sid == null || resId == null) {
+        if (Utils.isEmptyString(sid) || Utils.isEmptyString(resId)) {
             return;
         }
-        openView(ContainerRegistryPropertyView.ID, sid, resId);
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        ContainerRegistryExplorerEditorInput input = new ContainerRegistryExplorerEditorInput(sid, resId, node.getName());
+        IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(ContainerRegistryExplorerEditor.ID);
+        openEditor(EditorType.CONTAINER_EXPLORER, input, descriptor);
     }
 
     @Override
@@ -319,6 +324,7 @@ public class UIHelperImpl implements UIHelper {
             }
             switch (type) {
                 case REDIS_EXPLORER:
+                case CONTAINER_EXPLORER:
                     page.openEditor(input, descriptor.getId());
                     break;
                 default:
@@ -344,11 +350,6 @@ public class UIHelperImpl implements UIHelper {
                     final RedisPropertyView redisPropertyView = (RedisPropertyView) page.showView(RedisPropertyView.ID,
                             resId, IWorkbenchPage.VIEW_ACTIVATE);
                     redisPropertyView.onReadProperty(sid, resId);
-                    break;
-                case ContainerRegistryPropertyView.ID:
-                    final ContainerRegistryPropertyView registryPropertyView = (ContainerRegistryPropertyView)
-                            page.showView(ContainerRegistryPropertyView.ID, resId, IWorkbenchPage.VIEW_ACTIVATE);
-                    registryPropertyView.onReadProperty(sid, resId);
                     break;
                 default:
                     break;

@@ -1,18 +1,18 @@
 /**
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -20,13 +20,14 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.azureexplorer.views;
+package com.microsoft.azuretools.azureexplorer.editors.container;
 
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyViewPresenter;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -40,19 +41,22 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.part.EditorPart;
 
 import java.util.List;
 
-public class ContainerRegistryPropertyView extends ViewPart implements ContainerRegistryPropertyMvpView {
+public class ContainerRegistryExplorerEditor extends EditorPart implements ContainerRegistryPropertyMvpView {
 
-    public static final String ID = "com.microsoft.azuretools.azureexplorer.views.ContainerRegistryPropertyView";
+    public static final String ID = "com.microsoft.azuretools.azureexplorer.editors.container.ContainerRegistryExplorerEditor";
+
+    private final ContainerRegistryPropertyViewPresenter<ContainerRegistryExplorerEditor> containerExplorerPresenter;
 
     private static final int VERTICAL_SPACING = 10;
     private static final int HORIZONTAL_SPACING = 30;
@@ -70,10 +74,6 @@ public class ContainerRegistryPropertyView extends ViewPart implements Container
     private static final String LABEL_PASSWORD2 = "Password2";
     private static final String LOADING = "<Loading...>";
     private static final String COPY_TO_CLIPBOARD = "<a>Copy to Clipboard</a>";
-    private static final Color COLOR_CHOSEN = new Color(null, 191, 238, 251);
-    private static final Color COLOR_UNCHOSEN = new Color(null, 240, 240, 240);
-
-    private final ContainerRegistryPropertyViewPresenter<ContainerRegistryPropertyView> containerPropertyPresenter;
 
     private String password = "";
     private String password2 = "";
@@ -101,9 +101,9 @@ public class ContainerRegistryPropertyView extends ViewPart implements Container
 
     private String subscriptionId;
 
-    public ContainerRegistryPropertyView() {
-        this.containerPropertyPresenter = new ContainerRegistryPropertyViewPresenter<>();
-        this.containerPropertyPresenter.onAttachView(this);
+    public ContainerRegistryExplorerEditor() {
+        this.containerExplorerPresenter = new ContainerRegistryPropertyViewPresenter<ContainerRegistryExplorerEditor>();
+        this.containerExplorerPresenter.onAttachView(this);
     }
 
     @Override
@@ -159,25 +159,22 @@ public class ContainerRegistryPropertyView extends ViewPart implements Container
         lblAdminUserEnabled.setText(LABEL_ADMIN_USER_ENABLED);
 
         compAdminUserBtn = new Composite(container, SWT.NONE);
-        GridData gd_composite = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-        gd_composite.heightHint = 35;
-        gd_composite.widthHint = 112;
-        compAdminUserBtn.setLayoutData(gd_composite);
-        GridLayout gl_composite = new GridLayout(2, true);
-        gl_composite.horizontalSpacing = 0;
-        gl_composite.verticalSpacing = 0;
-        compAdminUserBtn.setLayout(gl_composite);
+        compAdminUserBtn.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        GridLayout compositeLayout = new GridLayout(2, true);
+        compositeLayout.marginWidth = 0;
+        compositeLayout.marginHeight = 0;
+        compositeLayout.horizontalSpacing = 0;
+        compositeLayout.verticalSpacing = 0;
+        compAdminUserBtn.setLayout(compositeLayout);
 
         btnEnable = new Button(compAdminUserBtn, SWT.NONE);
-        GridData gd_btnEnable = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-        gd_btnEnable.widthHint = 50;
-        btnEnable.setLayoutData(gd_btnEnable);
+        btnEnable.setEnabled(false);
+        btnEnable.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnEnable.setText("Enable");
 
         btnDisable = new Button(compAdminUserBtn, SWT.NONE);
-        GridData gd_btnDisable = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-        gd_btnDisable.widthHint = 50;
-        btnDisable.setLayoutData(gd_btnDisable);
+        btnDisable.setEnabled(false);
+        btnDisable.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnDisable.setText("Disable");
 
         lblUserName = new Label(container, SWT.NONE);
@@ -233,44 +230,9 @@ public class ContainerRegistryPropertyView extends ViewPart implements Container
         btnDisable.addListener(SWT.Selection, event -> onAdminUserBtnClick());
     }
 
-    private void onAdminUserBtnClick() {
-        compAdminUserBtn.setEnabled(false);
-        btnEnable.setEnabled(false);
-        btnDisable.setEnabled(false);
-        this.containerPropertyPresenter.onEnableAdminUser(subscriptionId, registryId, !isAdminEnabled);
-    }
-
-    @Override
-    public void setFocus() {
-    }
-
-    @Override
-    public void init(IViewSite site) throws PartInitException {
-        super.init(site);
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        final IWorkbenchPage activePage = workbench.getActiveWorkbenchWindow().getActivePage();
-        workbench.addWorkbenchListener(new IWorkbenchListener() {
-            @Override
-            public boolean preShutdown(IWorkbench workbench, boolean forced) {
-                activePage.hideView(ContainerRegistryPropertyView.this);
-                return true;
-            }
-
-            @Override
-            public void postShutdown(IWorkbench workbench) {
-            }
-        });
-    }
-
-    @Override
-    public void dispose() {
-        this.containerPropertyPresenter.onDetachView();
-        super.dispose();
-    }
-
     @Override
     public void onReadProperty(String sid, String id) {
-        containerPropertyPresenter.onGetRegistryProperty(sid, id);
+        containerExplorerPresenter.onGetRegistryProperty(sid, id);
     }
 
     @Override
@@ -305,11 +267,82 @@ public class ContainerRegistryPropertyView extends ViewPart implements Container
         this.setPartName(property.getName());
     }
 
+    @Override
+    public void listRepo(List<String> repos) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void listTag(List<String> tags) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void dispose() {
+        this.containerExplorerPresenter.onDetachView();
+        super.dispose();
+    }
+
+    @Override
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+        setSite(site);
+        setInput(input);
+        if (input instanceof ContainerRegistryExplorerEditorInput) {
+            ContainerRegistryExplorerEditorInput containerInput = (ContainerRegistryExplorerEditorInput) input;
+            this.setPartName(containerInput.getName());
+            containerExplorerPresenter.onGetRegistryProperty(containerInput.getSubscriptionId(),
+                    containerInput.getId());
+        }
+
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        final IWorkbenchPage activePage = workbench.getActiveWorkbenchWindow().getActivePage();
+        workbench.addWorkbenchListener(new IWorkbenchListener() {
+            @Override
+            public boolean preShutdown(IWorkbench workbench, boolean forced) {
+                activePage.closeEditor(ContainerRegistryExplorerEditor.this, true);
+                return true;
+            }
+
+            @Override
+            public void postShutdown(IWorkbench workbench) {
+            }
+        });
+    }
+
+    @Override
+    public boolean isDirty() {
+        return false;
+    }
+
+    @Override
+    public boolean isSaveAsAllowed() {
+        return false;
+    }
+
+    @Override
+    public void setFocus() {
+    }
+
+    @Override
+    public void doSave(IProgressMonitor arg0) {
+    }
+
+    @Override
+    public void doSaveAs() {
+    }
+
+    private void onAdminUserBtnClick() {
+        compAdminUserBtn.setEnabled(false);
+        btnEnable.setEnabled(false);
+        btnDisable.setEnabled(false);
+        this.containerExplorerPresenter.onEnableAdminUser(subscriptionId, registryId, !isAdminEnabled);
+    }
+
     private void updateAdminUserBtn(boolean isAdminEnabled) {
         btnEnable.setEnabled(!isAdminEnabled);
         btnDisable.setEnabled(isAdminEnabled);
-        btnEnable.setBackground(isAdminEnabled ? COLOR_CHOSEN : COLOR_UNCHOSEN);
-        btnDisable.setBackground(!isAdminEnabled ? COLOR_CHOSEN : COLOR_UNCHOSEN);
     }
 
     private void setScrolledCompositeContent() {
@@ -329,15 +362,4 @@ public class ContainerRegistryPropertyView extends ViewPart implements Container
         }
     }
 
-    @Override
-    public void listRepo(List<String> repos) {
-        // TODO implement
-
-    }
-
-    @Override
-    public void listTag(List<String> tags) {
-        // TODO implement
-
-    }
 }

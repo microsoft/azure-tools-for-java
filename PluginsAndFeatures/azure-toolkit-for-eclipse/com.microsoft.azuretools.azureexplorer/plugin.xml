@@ -33,12 +33,6 @@
              icon="icons/RedisCache.png"
              name="Redis Cache Property">
        </view>
-       <view
-             class="com.microsoft.azuretools.azureexplorer.views.ContainerRegistryPropertyView"
-             id="com.microsoft.azuretools.azureexplorer.views.ContainerRegistryPropertyView"
-             icon="icons/acr.png"
-             name="Container Registry Property">
-       </view>
    </extension>
    <extension
             point="org.eclipse.ui.editors">
@@ -70,7 +64,13 @@
              icon="icons/RedisCache.png"
              id="com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor"
              name="Redis Cache Explorer">
-       </editor>        
+       </editor>
+       <editor
+             class="com.microsoft.azuretools.azureexplorer.editors.container.ContainerRegistryExplorerEditor"
+             icon="icons/acr.png"
+             id="com.microsoft.azuretools.azureexplorer.editors.container.ContainerRegistryExplorerEditor"
+             name="ACR Explorer">
+       </editor>
     </extension>
 
 	<extension point="org.eclipse.ui.handlers">
