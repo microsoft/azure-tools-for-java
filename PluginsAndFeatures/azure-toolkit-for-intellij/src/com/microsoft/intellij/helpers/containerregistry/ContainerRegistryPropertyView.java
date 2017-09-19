@@ -84,7 +84,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     private static final String PULL_IMAGE = "Pull Image";
     private static final String CANNOT_GET_REGISTRY_CREDENTIALS = "Cannot get Registry Credentials";
     private static final String DISPLAY_ID = "Azure Plugin";
-    private static final String IMAGE_PULL_SUCCESS = "Image: %s is successfully pulled.";
+    private static final String IMAGE_PULL_SUCCESS = "%s is successfully pulled.";
 
     private boolean isAdminEnabled;
     private String registryId = "";
@@ -321,7 +321,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
     @Override
     public void dispose() {
-        containerPropertyPresenter.onAttachView(this);
+        containerPropertyPresenter.onDetachView();
     }
 
     @Override
