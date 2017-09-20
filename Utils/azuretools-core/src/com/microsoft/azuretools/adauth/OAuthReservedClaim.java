@@ -22,7 +22,7 @@
 
 package com.microsoft.azuretools.adauth;
 
-public class OAuthReservedClaim {
+class OAuthReservedClaim {
     public static final String Code = "code";
     public static final String TokenType = "token_type";
     public static final String AccessToken = "access_token";

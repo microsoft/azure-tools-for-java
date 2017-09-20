@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.adauth;
 
+// TODO: remove later
 public enum PromptBehavior {
     /// <summary>
     /// Acquire token will prompt the user for credentials only when necessary.  If a token

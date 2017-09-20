@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.adauth;
 
+import com.microsoft.aad.adal4j.AuthenticationException;
 import com.microsoft.azuretools.Constants;
 
 import java.io.*;
@@ -35,7 +36,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class HttpHelper {
+class HttpHelper {
     final static Logger log = Logger.getLogger(HttpHelper.class.getName());
 
     public static <T> T sendPostRequestAndDeserializeJsonResponse(final String uri,
@@ -85,7 +86,7 @@ public class HttpHelper {
 
             TokenResponse r = JsonHelper.deserialize(TokenResponse.class, err.toString());
             if (r.error.equals("invalid_grant"))
-                throw new AuthException(message);
+                throw new AuthenticationException(message);
             else
                 throw new IOException(message);
         }
