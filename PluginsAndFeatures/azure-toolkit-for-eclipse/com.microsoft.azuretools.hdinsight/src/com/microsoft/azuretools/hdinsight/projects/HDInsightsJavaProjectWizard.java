@@ -67,9 +67,11 @@ import com.microsoft.azuretools.hdinsight.Activator;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IExecutableExtension {
-	private String id;
 	public HDInsightJavaPageOne pageOne;
 	public HDInsightJavaPageTwo pageTwo;
+	
+	private String id;
+	private boolean canFinish = false;
 	
 	public HDInsightsJavaProjectWizard() {
 			this(new HDInsightJavaPageOne());
@@ -77,6 +79,8 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 	
 	public HDInsightsJavaProjectWizard(HDInsightJavaPageOne page1) {
 		this(page1, new HDInsightJavaPageTwo(page1));
+		
+		canFinish = false;
 	}
 	
 	public HDInsightsJavaProjectWizard(HDInsightJavaPageOne page1, HDInsightJavaPageTwo page2) {
@@ -85,6 +89,12 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 		this.pageTwo = page2;
 	}
 	
+	
+	@Override
+	public boolean canFinish() {
+		return canFinish & super.canFinish();
+	}
+
 	@Override
 	public boolean performFinish() {
 		try {
@@ -252,6 +262,11 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 	            ((BuildPathsBlock) r).configureJavaProject(newProjectCompliance, new SubProgressMonitor((IProgressMonitor)monitor, 5));
 		            
 	            addMoreSourcetoClassPath();
+	            
+	            HDInsightsJavaProjectWizard parent = (HDInsightsJavaProjectWizard)getWizard();
+	            if (parent != null) {
+	            	parent.canFinish = true;
+	            }
 	        } catch (OperationCanceledException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
 	            throw new InterruptedException();
 	        } finally {
