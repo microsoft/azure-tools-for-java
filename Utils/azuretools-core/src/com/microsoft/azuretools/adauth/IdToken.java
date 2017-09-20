@@ -75,7 +75,7 @@ class IdToken {
     String onprem_sid;
 
     @JsonProperty(IdTokenClaim.PasswordExpiration)
-    long passwordExpiration;
+    String passwordExpiration;
 
     @JsonProperty(IdTokenClaim.PasswordChangeUrl)
     String passwordChangeUrl;

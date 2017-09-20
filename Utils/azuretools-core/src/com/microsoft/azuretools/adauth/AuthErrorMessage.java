@@ -22,7 +22,7 @@
 
 package com.microsoft.azuretools.adauth;
 
-public class AuthErrorMessage {
+class AuthErrorMessage {
     public final static String AccessingMetadataDocumentFailed = "Accessing WS metadata exchange failed";
     public final static String AssemblyLoadFailedTemplate = "Loading an assembly required for interactive user authentication failed. Make sure assembly '{0}' exists";
     public final static String AuthenticationUiFailed = "The browser based authentication dialog failed to complete";

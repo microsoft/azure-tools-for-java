@@ -28,6 +28,7 @@ package com.microsoft.azuretools.authmanage.srvpri.rest;
 
 
 import com.microsoft.azuretools.Constants;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureException;
 import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureGraphException;
 
@@ -35,8 +36,8 @@ public class GraphRequestFactory extends RequestFactoryBase {
 
     public GraphRequestFactory(String tenantId) {
         this.tenantId = tenantId;
-        this.urlPrefix = Constants.resourceGraph + this.tenantId + "/";
-        this.resource =  Constants.resourceGraph;;
+        this.urlPrefix = CommonSettings.getAdEnvironment().graphEndpoint() + this.tenantId + "/";
+        this.resource =  CommonSettings.getAdEnvironment().graphEndpoint();
         apiVersion = "api-version=1.6";
     }
 

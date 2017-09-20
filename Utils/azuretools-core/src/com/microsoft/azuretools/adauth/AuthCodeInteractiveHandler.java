@@ -1,0 +1,120 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ *   <p/>
+ *  All rights reserved.
+ *   <p/>
+ *  MIT License
+ *   <p/>
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ *  documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ *  the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ *  to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *  <p/>
+ *  The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ *  the Software.
+ *   <p/>
+ *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ *  THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ *  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *  SOFTWARE.
+ */
+
+package com.microsoft.azuretools.adauth;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+
+class AuthCodeInteractiveHandler {
+    final static Logger log = Logger.getLogger(AuthCodeInteractiveHandler.class.getName());
+    public final static String LOGIN = "login";
+    
+    private final URI redirectUri;
+    private final String clientId;
+    private final IWebUi webUi;
+    private final String resource;
+    private final AuthenticationAuthority authenticator;
+    private final String userDisplayableId;
+    
+    AuthCodeInteractiveHandler(@NotNull final AuthenticationAuthority authenticator, @NotNull String clientId,
+            @NotNull IWebUi webUi, @NotNull final String redirectUri, @NotNull final String resource,
+            final String userDisplayableId) throws Exception{
+        this.authenticator = authenticator;
+        this.clientId = clientId;
+        try {
+            this.redirectUri = new URI(redirectUri);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
+        }
+        if (this.redirectUri.getFragment() != null && !this.redirectUri.getFragment().isEmpty()) {
+            throw new IllegalArgumentException("redirectUri: " + AuthErrorMessage.RedirectUriContainsFragment);
+        }
+        this.webUi = webUi;
+        this.resource = resource;
+        this.userDisplayableId = userDisplayableId;
+        log.log(Level.FINEST, String.format(
+                "\n=== AcquireTokenInteractiveHandler params:\n\tresource: %s\n\twebUi: %s\n\tdisplabableId: %s\n\tauthority: %s"
+                , this.resource
+                , this.webUi.getClass().getName()
+                , this.userDisplayableId
+                , this.authenticator.getAuthority()));
+    }
+     
+    String acquireAuthCode(UUID correlationId) throws AuthException{
+        if (null == webUi) {
+            return null;
+        }
+        
+        try {
+            log.log(Level.FINEST, "acquireAuthorization...");
+            URI authorizationUri = this.createAuthorizationUri(correlationId);
+            log.log(Level.FINEST, "Starting web ui...");
+            String resultUri = webUi.authenticate(authorizationUri, redirectUri);
+            if(resultUri == null) {
+                String message = "Interactive sign in is unsuccessful or canceled.";
+                log.log(Level.SEVERE, message);
+                throw new AuthException(message);
+            }
+            return resultUri;
+
+        } catch (UnsupportedEncodingException | URISyntaxException ex) {
+            log.log(Level.SEVERE, "acquireAuthorization@AcquireTokenInteractiveHandler: " + ex);
+            throw new AuthException(ex.getMessage(), ex);
+        }
+    }    
+
+    private URI createAuthorizationUri(UUID correlationId) throws UnsupportedEncodingException, URISyntaxException {
+        Map<String, String> requestParameters = this.createAuthorizationRequest(correlationId);
+        return new URI(this.authenticator.getAuthorizationEndpoint() + "?" + UriUtils.toQueryString(requestParameters));
+    }
+
+    private Map<String, String> createAuthorizationRequest(UUID correlationId) {
+        String loginHint = userDisplayableId;
+        Map<String, String> authorizationRequestParameters = new HashMap<>();
+        authorizationRequestParameters.put(OAuthParameter.Resource, this.resource);
+        authorizationRequestParameters.put(OAuthParameter.ClientId, this.clientId);
+        authorizationRequestParameters.put(OAuthParameter.ResponseType, OAuthResponseType.Code);
+        authorizationRequestParameters.put(OAuthParameter.RedirectUri, redirectUri.toString());
+        if (!StringUtils.isNullOrEmpty(loginHint)) {
+            authorizationRequestParameters.put(OAuthParameter.LoginHint, loginHint);
+        }
+        
+        if (correlationId != null) {
+            authorizationRequestParameters.put(OAuthParameter.CorrelationId, correlationId.toString());
+            authorizationRequestParameters.put(OAuthHeader.RequestCorrelationIdInResponse, "true");
+        }
+        
+        authorizationRequestParameters.put(OAuthParameter.Prompt, LOGIN);
+
+        return authorizationRequestParameters;
+    }
+
+}
