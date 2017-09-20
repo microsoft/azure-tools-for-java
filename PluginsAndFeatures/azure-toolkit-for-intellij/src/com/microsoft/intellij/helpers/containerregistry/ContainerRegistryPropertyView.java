@@ -151,11 +151,11 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         });
 
         btnEnable.addActionListener(actionEvent -> {
-            disableWidgets();
+            disableWidgets(true, true);
             onAdminUserBtnClick();
         });
         btnDisable.addActionListener(actionEvent -> {
-            disableWidgets();
+            disableWidgets(false, false);
             onAdminUserBtnClick();
         });
 
@@ -170,6 +170,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
             pullImage(subscriptionId, registryId, currentRepo, currentTag);
         });
         menu.add(menuItem);
+        disableWidgets(true, true);
     }
 
     private void createUIComponents() {
@@ -199,8 +200,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                 return;
             }
             currentRepo = selectedRepo;
-            resetTagTable();
-            disableWidgets();
+            disableWidgets(false, true);
             tblTag.getEmptyText().setText(TABLE_LOADING_MESSAGE);
             containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, true /*isNextPage*/);
         });
@@ -208,8 +208,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         btnRepoRefresh = new AnActionButton(REFRESH, AllIcons.Actions.Refresh) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-                resetRepoTable();
-                disableWidgets();
+                disableWidgets(true, true);
                 tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
                 containerPropertyPresenter.onRefreshRepositories(subscriptionId, registryId, true /*isNextPage*/);
             }
@@ -218,8 +217,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         btnRepoPrevious = new AnActionButton(PREVIOUS_PAGE, AllIcons.Actions.MoveUp) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-                resetRepoTable();
-                disableWidgets();
+                disableWidgets(true, true);
                 tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
                 containerPropertyPresenter.onListRepositories(subscriptionId, registryId, false /*isNextPage*/);
             }
@@ -228,8 +226,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         btnRepoNext = new AnActionButton(NEXT_PAGE, AllIcons.Actions.MoveDown) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-                resetRepoTable();
-                disableWidgets();
+                disableWidgets(true, true);
                 tblTag.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
                 containerPropertyPresenter.onListRepositories(subscriptionId, registryId, true /*isNextPage*/);
             }
@@ -276,8 +273,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                 if (Utils.isEmptyString(currentRepo)) {
                     return;
                 }
-                resetTagTable();
-                disableWidgets();
+                disableWidgets(false, true);
                 containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, true /*isNextPage*/);
             }
         };
@@ -288,8 +284,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                 if (Utils.isEmptyString(currentRepo)) {
                     return;
                 }
-                resetTagTable();
-                disableWidgets();
+                disableWidgets(false, true);
                 containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, false /*isNextPage*/);
             }
         };
@@ -300,8 +295,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                 if (Utils.isEmptyString(currentRepo)) {
                     return;
                 }
-                resetTagTable();
-                disableWidgets();
+                disableWidgets(false, true);
                 containerPropertyPresenter.onListTags(subscriptionId, registryId, currentRepo, true /*isNextPage*/);
             }
         };
@@ -314,7 +308,6 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                 .setToolbarBorder(JBUI.Borders.empty());
 
         pnlTagTable = tagDecorator.createPanel();
-        disableWidgets();
     }
 
     @NotNull
@@ -359,7 +352,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         btnPrimaryPassword.setVisible(isAdminEnabled);
         lblSecondaryPwd.setVisible(isAdminEnabled);
         btnSecondaryPassword.setVisible(isAdminEnabled);
-        resetRepoTable();
+        disableWidgets(true, true);
         if (isAdminEnabled) {
             txtUserName.setText(property.getUserName());
             password = property.getPassword();
@@ -387,8 +380,6 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     }
 
     private void onAdminUserBtnClick() {
-        btnEnable.setEnabled(false);
-        btnDisable.setEnabled(false);
         this.containerPropertyPresenter.onEnableAdminUser(subscriptionId, registryId, !isAdminEnabled);
     }
 
@@ -427,24 +418,9 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         }
     }
 
-    private void resetRepoTable() {
-        currentRepo = null;
-        DefaultTableModel model = (DefaultTableModel) tblRepo.getModel();
-        model.getDataVector().clear();
-        model.fireTableDataChanged();
-
-        model = (DefaultTableModel) tblTag.getModel();
-        model.getDataVector().clear();
-        model.fireTableDataChanged();
-    }
-
-    private void resetTagTable() {
-        DefaultTableModel model = (DefaultTableModel) tblTag.getModel();
-        model.getDataVector().clear();
-        model.fireTableDataChanged();
-    }
-
-    private void disableWidgets() {
+    private void disableWidgets(boolean needResetRepo, boolean needResetTag) {
+        btnEnable.setEnabled(false);
+        btnDisable.setEnabled(false);
         tblRepo.setEnabled(false);
         btnRepoRefresh.setEnabled(false);
         btnRepoNext.setEnabled(false);
@@ -453,9 +429,18 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         btnTagRefresh.setEnabled(false);
         btnTagNext.setEnabled(false);
         btnTagPrevious.setEnabled(false);
+        if (needResetRepo) {
+            currentRepo = null;
+            cleanTableData((DefaultTableModel) tblRepo.getModel());
+        }
+        if (needResetTag) {
+            currentTag = null;
+            cleanTableData((DefaultTableModel) tblTag.getModel());
+        }
     }
 
     private void enableWidgets() {
+        updateAdminUserBtn(isAdminEnabled);
         tblRepo.setEnabled(true);
         btnRepoRefresh.setEnabled(true);
         if (containerPropertyPresenter.hasNextRepoPage()) {
@@ -514,5 +499,10 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                 }
             }
         });
+    }
+
+    private void cleanTableData(DefaultTableModel model) {
+        model.getDataVector().clear();
+        model.fireTableDataChanged();
     }
 }
