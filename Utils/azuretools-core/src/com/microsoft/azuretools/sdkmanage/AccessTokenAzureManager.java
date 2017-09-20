@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
-import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
 import com.microsoft.azure.management.Azure;
@@ -143,6 +142,7 @@ public class AccessTokenAzureManager extends AzureManagerBase {
             @Override
             public String doAuthenticate(String authorization, String resource, String scope) {
             try {
+            	// TODO: check usage
                 return AdAuthManager.getInstance().getAccessToken(tid, Constants.resourceVault, PromptBehavior.Auto);
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
@@ -160,21 +160,22 @@ public class AccessTokenAzureManager extends AzureManagerBase {
 
     @Override
     public String getAccessToken(String tid) throws IOException {
-        return AdAuthManager.getInstance().getAccessToken(tid, Constants.resourceARM, PromptBehavior.Auto);
+        return AdAuthManager.getInstance().getAccessToken(tid, CommonSettings.getAdEnvironment().resourceManagerEndpoint(), PromptBehavior.Auto);
     }
 
     @Override
     public String getManagementURI() throws IOException {
         // environments other than global cloud are not supported for interactive login for now
-        return Constants.resourceARM;
+        return CommonSettings.getAdEnvironment().resourceManagerEndpoint();
     }
 
     public String getStorageEndpointSuffix() {
-        return AzureEnvironment.AZURE.storageEndpointSuffix();
+        return CommonSettings.getAdEnvironment().storageEndpointSuffix();
     }
     
     @Override
     public Environment getEnvironment() {
+    	// TODO: later parse the env from commonSetting
         return Environment.GLOBAL;
     }
 

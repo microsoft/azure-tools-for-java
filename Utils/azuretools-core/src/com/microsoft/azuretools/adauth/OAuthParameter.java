@@ -22,7 +22,7 @@
 
 package com.microsoft.azuretools.adauth;
 
-public class OAuthParameter {
+class OAuthParameter {
     public static final String ResponseType = "response_type";
     public static final String GrantType = "grant_type";
     public static final String ClientId = "client_id";

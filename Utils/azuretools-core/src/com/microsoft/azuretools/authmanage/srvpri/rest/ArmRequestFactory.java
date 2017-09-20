@@ -22,7 +22,7 @@
 
 package com.microsoft.azuretools.authmanage.srvpri.rest;
 
-import com.microsoft.azuretools.Constants;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureArmException;
 import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureException;
 
@@ -32,9 +32,9 @@ import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureException;
 class ArmRequestFactory extends RequestFactoryBase {
 
     public ArmRequestFactory(String tenantId) {
-        this.urlPrefix = Constants.resourceARM + "subscriptions/";
+        this.urlPrefix = CommonSettings.getAdEnvironment().resourceManagerEndpoint() + "subscriptions/";
         this.tenantId = tenantId;
-        this.resource =  Constants.resourceARM;;
+        this.resource =  CommonSettings.getAdEnvironment().resourceManagerEndpoint();
         this.apiVersion = "api-version=2015-07-01";
     }
 

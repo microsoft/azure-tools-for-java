@@ -31,42 +31,45 @@ enum AuthorizationStatus {
 };
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AuthorizationResult {
-    AuthorizationResult(String code) {
-        this.status = AuthorizationStatus.Success;
-        this.code = code;
+class AuthCode {
+    AuthCode(final String code) {
+        if (code != null) {
+            this.status = AuthorizationStatus.Success;
+            this.code = code;
+        } else {
+            this.status = AuthorizationStatus.Failed;
+        }
     }
 
     public AuthorizationStatus getStatus() {
         return status;
     }
 
-    AuthorizationResult(String error, String errorDescription) {
+    AuthCode(String error, String errorDescription) {
         this.status = AuthorizationStatus.Failed;
-        this.error = error;
-        this.errorDescription = errorDescription;
-        this.errorSubcode = null;
+        this.error = error != null ? error : "";
+        this.errorDescription = errorDescription != null ? errorDescription : "";
     }
 
-    AuthorizationResult(String error, String errorDescription, String errorSubcode) {
+    AuthCode(String error, String errorDescription, String errorSubcode) {
         this.status = AuthorizationStatus.Failed;
-        this.error = error;
-        this.errorDescription = errorDescription;
-        this.errorSubcode = errorSubcode;
+        this.error = error != null ? error : "";
+        this.errorDescription = errorDescription != null ? errorDescription : "";
+        this.errorSubcode = errorSubcode != null ? errorSubcode : "";
     }
 
     private AuthorizationStatus status;
     
     @JsonProperty("Code")
-    private String code;
+    private String code = "";
 
     @JsonProperty("Error")
-    private String error;
+    private String error = "";
 
     @JsonProperty("ErrorDescription")
     private String errorDescription;
 
-    private String errorSubcode;
+    private String errorSubcode = "";
 
     public String getCode() {
         return code;

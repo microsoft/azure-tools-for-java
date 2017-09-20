@@ -22,6 +22,6 @@
 
 package com.microsoft.azuretools.adauth;
 
-public class OAuthResponseType {
+class OAuthResponseType {
     public static final String Code = "code";
 }
