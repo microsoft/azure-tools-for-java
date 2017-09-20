@@ -22,14 +22,14 @@
 
 package com.microsoft.azuretools.authmanage;
 
-import com.microsoft.azuretools.adauth.StringUtils;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import com.microsoft.azuretools.adauth.StringUtils;
 
 /**
  * Created by shch on 10/5/2016.

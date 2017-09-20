@@ -22,7 +22,7 @@
 
 package com.microsoft.azuretools.adauth;
 
-public class IdTokenClaim {
+class IdTokenClaim {
 	public final static String ObjectId = "oid";
     public final static String Subject = "sub";
     public final static String TenantId = "tid";

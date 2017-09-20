@@ -28,6 +28,7 @@ import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.adauth.*;
 import com.microsoft.azuretools.authmanage.models.AdAuthDetails;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 
 import java.io.IOException;
@@ -35,12 +36,15 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public class AdAuthManager {
     private final static Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
-    private final TokenCache cache;
-    private TokenFileStorage tokenFileStorage;
+  //  private final TokenCache cache;
+   // private TokenFileStorage tokenFileStorage;
+    private IWebUi webUi;
+    private AzureEnvironment env;
     private static AdAuthManager instance = null;
     //private static String adAuthSettingsFileName = "AdAuthDetails.json";
     private static AdAuthDetails adAuthDetails = new AdAuthDetails();
@@ -48,8 +52,8 @@ public class AdAuthManager {
 
     public static AdAuthManager getInstance() throws IOException {
         if( instance == null) {
-            AuthContext.setUserDefinedWebUi(CommonSettings.getUiFactory().getWebUi());
-            instance = new AdAuthManager(false);
+            //AuthContext.setUserDefinedWebUi(CommonSettings.getUiFactory().getWebUi());
+            instance = new AdAuthManager();
             // load accountEmail
 //            instance.loadSettings();
         }
@@ -57,38 +61,40 @@ public class AdAuthManager {
     }
 
     public String getAccessToken(String tid) throws IOException {
-        return getAccessToken(tid, Constants.resourceARM, PromptBehavior.Auto);
+        return getAccessToken(tid, env.resourceManagerEndpoint(), PromptBehavior.Auto);
     }
 
     public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
-        AuthContext ac = new AuthContext(String.format("%s/%s", Constants.authority, tid), cache);
-        AuthenticationResult result = ac.acquireToken(resource, Constants.clientId, Constants.redirectUri, promptBehavior, null);
+        AuthContext ac = createContext(tid, null);
+        AuthResult result = ac.acquireToken(resource, false, null, false);
         return result.getAccessToken();
     }
 
-    public AuthenticationResult signIn() throws IOException {
+    public AuthResult signIn() throws IOException {
 
         // build token cache for azure and graph api
         // using azure sdk directly
 
         cleanCache();
         String commonTid = "common";
-        AuthContext ac = new AuthContext(String.format("%s/%s", Constants.authority, commonTid), cache);
-
-        AuthenticationResult result = ac.acquireToken(AzureEnvironment.AZURE.resourceManagerEndpoint(), Constants.clientId, Constants.redirectUri, PromptBehavior.Always, null);
-        String displayableId = result.getUserInfo().getDisplayableId();
-        UserIdentifier uid = new UserIdentifier(displayableId, UserIdentifierType.RequiredDisplayableId);
+        AuthContext ac = createContext(commonTid, null); 
+        //AuthResult result = ac.acquireToken(AzureEnvironment.AZURE.resourceManagerEndpoint(), true, null, false);
+        AuthResult result = ac.acquireToken(env.managementEndpoint(), true, null, false);
+        String userId = result.getUserId();
+        boolean isDisplayable = result.isUserIdDisplayble();
 
         Map<String, List<String>> tidToSidsMap = new HashMap<>();
 //        List<Tenant> tenants = AccessTokenAzureManager.authTid(commonTid).tenants().list();
         List<Tenant> tenants = AccessTokenAzureManager.getTenants(commonTid);
         for (Tenant t : tenants) {
             String tid = t.tenantId();
-            AuthContext ac1 = new AuthContext(String.format("%s/%s", Constants.authority, tid), cache);
+            AuthContext ac1 = createContext(tid, null);
             // put tokens into the cache
-            ac1.acquireToken(AzureEnvironment.AZURE.resourceManagerEndpoint(), Constants.clientId, Constants.redirectUri, PromptBehavior.Auto, uid);
-            ac1.acquireToken(AzureEnvironment.AZURE.graphEndpoint(), Constants.clientId, Constants.redirectUri, PromptBehavior.Auto, uid);
-            ac1.acquireToken(Constants.resourceVault, Constants.clientId, Constants.redirectUri, PromptBehavior.Auto, uid);
+            ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable);
+            ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable);
+            ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable);
+            // TODO: remove later
+            ac1.acquireToken(Constants.resourceVault, false, userId, isDisplayable);
             List<String> sids = new LinkedList<>();
             for (Subscription s : AccessTokenAzureManager.getSubscriptions(tid)) {
                 sids.add(s.subscriptionId());
@@ -97,11 +103,11 @@ public class AdAuthManager {
         }
 
         // save account email
-        if (displayableId == null) {
+        if (!isDisplayable) {
             throw new IllegalArgumentException("accountEmail is null");
         }
 
-        adAuthDetails.setAccountEmail(displayableId);
+        adAuthDetails.setAccountEmail(userId);
         adAuthDetails.setTidToSidsMap(tidToSidsMap);
 //        saveSettings();
 
@@ -125,32 +131,53 @@ public class AdAuthManager {
 
     public String getAccountEmail() { return adAuthDetails.getAccountEmail(); }
 
+    private AuthContext createContext(@NotNull final String tid, final UUID corrId) throws IOException{
+    	String authority = null;
+    	String endpoint = env.activeDirectoryEndpoint();
+    	if (StringUtils.isNullOrEmpty(endpoint)) {
+    		throw new IOException("Azure authority endpoint is empty");
+    	}
+    	
+    	if (endpoint.endsWith("/")) {
+    		authority = endpoint + tid;
+    	} else {
+    		authority = endpoint + "/" + tid;
+    	}
+        return new AuthContext(authority, Constants.clientId, Constants.redirectUri,
+                this.webUi, true, corrId);
+    }
+    
     // logout
-    public void cleanCache() {
-        cache.clear();
+    private void cleanCache() {
+        AdTokenCache.getInstance().clear();
     }
 
-    private AdAuthManager(boolean useFileCache) throws IOException {
-        cache = new TokenCache();
-        if (useFileCache) {
-            tokenFileStorage = new TokenFileStorage(CommonSettings.settingsBaseDir);
-            byte[] data = tokenFileStorage.read();
-            cache.deserialize(data);
-
-            cache.setOnAfterAccessCallback(new Runnable() {
-                public void run() {
-                    try {
-                        if(cache.getHasStateChanged()) {
-                            tokenFileStorage.write(cache.serialize());
-                            cache.setHasStateChanged(false);
-                        }
-                    } catch (IOException ex) {
-                        System.out.println(ex.getMessage());
-                    }
-                }
-            });
+    private AdAuthManager() throws IOException {
+        webUi = CommonSettings.getUiFactory().getWebUi();
+        env = CommonSettings.getAdEnvironment();
+        if (env == null) {
+        	throw new IOException("Azure environment is not setup");
         }
     }
+//        if (useFileCache) {
+//            tokenFileStorage = new TokenFileStorage(CommonSettings.settingsBaseDir);
+//            byte[] data = tokenFileStorage.read();
+//            cache.deserialize(data);
+//
+//            cache.setOnAfterAccessCallback(new Runnable() {
+//                public void run() {
+//                    try {
+//                        if(cache.getHasStateChanged()) {
+//                            tokenFileStorage.write(cache.serialize());
+//                            cache.setHasStateChanged(false);
+//                        }
+//                    } catch (IOException ex) {
+//                        System.out.println(ex.getMessage());
+//                    }
+//                }
+//            });
+//        }
+//    }
 
 //    private void loadSettings() {
 //        System.out.println("loadSettings()");

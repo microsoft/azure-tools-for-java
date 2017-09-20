@@ -24,7 +24,7 @@ package com.microsoft.azuretools.adauth;
 
 import java.util.UUID;
 
-public class CallState {
+class CallState {
     UUID correlationId;
     CallState(UUID correlationId) {
         this.correlationId = correlationId;

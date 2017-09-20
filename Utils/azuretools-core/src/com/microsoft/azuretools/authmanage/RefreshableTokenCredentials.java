@@ -26,6 +26,7 @@ import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.credentials.AzureTokenCredentialsInterceptor;
 import com.microsoft.azuretools.adauth.PromptBehavior;
+
 import okhttp3.OkHttpClient;
 
 import java.io.IOException;
@@ -66,7 +67,7 @@ public class RefreshableTokenCredentials extends AzureTokenCredentials {
 
     @Override
     public AzureEnvironment environment() {
-        return AzureEnvironment.AZURE;
+        return CommonSettings.getAdEnvironment();
     }
 
     @Override
