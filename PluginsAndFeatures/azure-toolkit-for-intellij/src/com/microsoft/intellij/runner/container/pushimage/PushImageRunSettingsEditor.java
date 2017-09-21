@@ -38,7 +38,7 @@ import javax.swing.JComponent;
 
 public class PushImageRunSettingsEditor extends SettingsEditor<PushImageRunConfiguration> {
     private final Project project;
-    private SettingPanel settingPanel;
+    private final SettingPanel settingPanel;
 
     public PushImageRunSettingsEditor(Project project) {
         this.project = project;
@@ -71,12 +71,15 @@ public class PushImageRunSettingsEditor extends SettingsEditor<PushImageRunConfi
         containerLocalRunConfiguration.validate();
     }
 
-
     @NotNull
     @Override
     protected JComponent createEditor() {
         return settingPanel.getRootPanel();
     }
 
-
+    @Override
+    protected void disposeEditor() {
+        settingPanel.disposeEditor();
+        super.disposeEditor();
+    }
 }

@@ -22,19 +22,15 @@
 
 package com.microsoft.intellij.runner.container.pushimage.ui;
 
-import com.intellij.openapi.fileChooser.FileChooser;
-import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.Comparing;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.runner.container.common.ContainerSettingPanel;
 import com.microsoft.intellij.runner.container.pushimage.PushImageRunConfiguration;
 import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
@@ -42,18 +38,15 @@ import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
 
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
 
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -61,14 +54,10 @@ import rx.schedulers.Schedulers;
 public class SettingPanel {
     private final Project project;
     private JPanel rootPanel;
-    private JTextField textServerUrl;
-    private JTextField textUsername;
-    private JPasswordField passwordField;
-    private JTextField textImageTag;
     private JComboBox<Artifact> cbArtifact;
     private JLabel lblArtifact;
     private JPanel pnlArtifact;
-    private TextFieldWithBrowseButton dockerFilePathTextField;
+    private ContainerSettingPanel containerSettingPanel;
     private Artifact lastSelectedArtifact;
     private boolean isCbArtifactInited;
 
@@ -80,25 +69,6 @@ public class SettingPanel {
 
     public SettingPanel(Project project) {
         this.project = project;
-
-        dockerFilePathTextField.addActionListener(e -> {
-            String path = dockerFilePathTextField.getText();
-            final VirtualFile file = FileChooser.chooseFile(
-                    new FileChooserDescriptor(
-                            true /*chooseFiles*/,
-                            false /*chooseFolders*/,
-                            false /*chooseJars*/,
-                            false /*chooseJarsAsFiles*/,
-                            false /*chooseJarContents*/,
-                            false /*chooseMultiple*/
-                    ),
-                    project,
-                    Utils.isEmptyString(path) ? null : LocalFileSystem.getInstance().findFileByPath(path)
-            );
-            if (file != null) {
-                dockerFilePathTextField.setText(file.getPath());
-            }
-        });
 
         // Artifact to build
         isCbArtifactInited = false;
@@ -163,13 +133,13 @@ public class SettingPanel {
      */
     @SuppressWarnings("Duplicates")
     public void apply(PushImageRunConfiguration pushImageRunConfiguration) {
-        pushImageRunConfiguration.setDockerFilePath(dockerFilePathTextField.getText());
+        pushImageRunConfiguration.setDockerFilePath(containerSettingPanel.getDockerPath());
         // set ACR info
         pushImageRunConfiguration.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(
-                textServerUrl.getText().replaceFirst("^https?://", "").replaceFirst("/$", ""),
-                textUsername.getText(),
-                String.valueOf(passwordField.getPassword()),
-                textImageTag.getText(),
+                containerSettingPanel.getServerUrl().replaceFirst("^https?://", "").replaceFirst("/$", ""),
+                containerSettingPanel.getUserName(),
+                containerSettingPanel.getPassword(),
+                containerSettingPanel.getImageTag(),
                 ""
         ));
 
@@ -221,16 +191,21 @@ public class SettingPanel {
         }
 
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
-        textServerUrl.setText(acrInfo.getServerUrl());
-        textUsername.setText(acrInfo.getUsername());
-        passwordField.setText(acrInfo.getPassword());
-        textImageTag.setText(acrInfo.getImageNameWithTag());
-        if (Utils.isEmptyString(conf.getDockerFilePath())) {
-            dockerFilePathTextField.setText(DockerUtil.getDefaultDockerFilePathIfExist(project));
-        } else {
-            dockerFilePathTextField.setText(conf.getDockerFilePath());
-        }
 
+        containerSettingPanel.setServerUrl(acrInfo.getServerUrl());
+        containerSettingPanel.setUserName(acrInfo.getUsername());
+        containerSettingPanel.setPasswordField(acrInfo.getPassword());
+        containerSettingPanel.setImageTag(acrInfo.getImageNameWithTag());
+        if (Utils.isEmptyString(conf.getDockerFilePath())) {
+            containerSettingPanel.setDockerPath(DockerUtil.getDefaultDockerFilePathIfExist(project));
+        } else {
+            containerSettingPanel.setDockerPath(conf.getDockerFilePath());
+        }
+        containerSettingPanel.onListRegistries();
         sendTelemetry(conf.getTargetName());
+    }
+
+    public void disposeEditor() {
+        containerSettingPanel.disposeEditor();
     }
 }

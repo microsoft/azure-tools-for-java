@@ -94,7 +94,10 @@ public class PushToContainerRegistryAction extends NodeActionListener {
         if (settings != null) {
             openRunDialog(project, settings);
         } else {
-            Observable.fromCallable(() -> querySettings(currentNode.getSubscriptionId(), currentNode.getResourceId()))
+            Observable.fromCallable(() -> {
+                Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(currentNode.getSubscriptionId(), currentNode.getResourceId());
+                return ContainerRegistryMvpModel.getInstance().getRegistryCredential(registry);
+            })
                     .subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io())
                     .subscribe(
                             ret -> ApplicationManager.getApplication().invokeLater(() -> openRunDialog(project, ret)),
@@ -105,28 +108,6 @@ public class PushToContainerRegistryAction extends NodeActionListener {
                                 Notifications.Bus.notify(notification);
                             });
         }
-    }
-
-    // TODO: Should move to presenter. Load info dynamically after opening the dialog first.
-    private PrivateRegistryImageSetting querySettings(String subscriptionId, String resourceId) throws Exception {
-        Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(subscriptionId, resourceId);
-        String serverUrl = null;
-        String username = null;
-        String password = null;
-        if (registry != null) {
-            serverUrl = registry.loginServerUrl();
-            if (registry.adminUserEnabled()) {
-                RegistryListCredentials credentials = registry.listCredentials();
-                if (credentials != null) {
-                    username = credentials.username();
-                    List<RegistryPassword> passwords = credentials.passwords();
-                    if (passwords != null && passwords.size() > 0) {
-                        password = passwords.get(0).value();
-                    }
-                }
-            }
-        }
-        return new PrivateRegistryImageSetting(serverUrl, username, password, null, null);
     }
 
     @SuppressWarnings({"deprecation", "Duplicates"})

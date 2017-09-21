@@ -25,21 +25,32 @@ package com.microsoft.azuretools.core.mvp.model.container;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.containerregistry.Registries;
 import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.management.containerregistry.RegistryPassword;
+import com.microsoft.azure.management.containerregistry.implementation.RegistryListCredentials;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ContainerRegistryMvpModel {
 
-    public static final String CANNOT_GET_REGISTRY = "Cannot get Registry with resource Id: ";
+    private final Map<String, List<Registry>> subscriptionIdToRegistryMap;
 
-    private ContainerRegistryMvpModel() {}
+    private static final String CANNOT_GET_REGISTRY = "Cannot get Registry with resource Id: ";
+    private static final String CANNOT_GET_CREDENTIAL = "Cannot get credential.";
+    private static final String ADMIN_USER_NOT_ENABLED = "Admin user is not enabled.";
+
+    private ContainerRegistryMvpModel() {
+        subscriptionIdToRegistryMap = new ConcurrentHashMap<>();
+    }
 
     private static final class SingletonHolder {
         private static final ContainerRegistryMvpModel INSTANCE = new ContainerRegistryMvpModel();
@@ -49,25 +60,53 @@ public class ContainerRegistryMvpModel {
         return SingletonHolder.INSTANCE;
     }
 
-    private final Map<String, List<Registry>> subscriptionIdToRegistryMap = new ConcurrentHashMap<>();
-
     /**
      * Get Registry instances mapped by Subscription id.
      */
     public Map<String, List<Registry>> getContainerRegistryMap(boolean force) throws IOException {
-        if (force) {
-            clearRegistryMap();
-            List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
-            for (Subscription sub: subscriptions) {
-                Azure azure = AuthMethodManager.getInstance().getAzureClient(sub.subscriptionId());
-                if (azure == null || azure.containerRegistries() == null) {
-                    continue;
-                }
-                subscriptionIdToRegistryMap.put(sub.subscriptionId(), azure.containerRegistries().list());
-            }
-            return subscriptionIdToRegistryMap;
+        List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        for (Subscription sub : subscriptions) {
+            listRegistryBySubscriptionId(sub.subscriptionId(), force);
         }
         return subscriptionIdToRegistryMap;
+    }
+
+    /**
+     * Get Registry by subscription id.
+     */
+    public List<Registry> listRegistryBySubscriptionId(@NotNull String sid, boolean force) {
+        if (!force && subscriptionIdToRegistryMap.containsKey(sid)) {
+            return subscriptionIdToRegistryMap.get(sid);
+        }
+        List<Registry> registryList = new ArrayList<>();
+        try {
+            Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+            registryList.addAll(azure.containerRegistries().list());
+            subscriptionIdToRegistryMap.put(sid, registryList);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return registryList;
+    }
+
+    /**
+     * Get Registry Credential.
+     */
+    public PrivateRegistryImageSetting getRegistryCredential(@NotNull final Registry registry) throws Exception {
+        if (!registry.adminUserEnabled()) {
+            throw new Exception(ADMIN_USER_NOT_ENABLED);
+        }
+        final RegistryListCredentials credentials = registry.listCredentials();
+        if (credentials == null) {
+            throw new Exception(CANNOT_GET_CREDENTIAL);
+        }
+        String username = credentials.username();
+        final List<RegistryPassword> passwords = credentials.passwords();
+        if (Utils.isEmptyString(username) || passwords == null || passwords.size() == 0) {
+            throw new Exception(CANNOT_GET_CREDENTIAL);
+        }
+        return new PrivateRegistryImageSetting(registry.loginServerUrl(), username, passwords.get(0).value(), null,
+                null);
     }
 
     /**
