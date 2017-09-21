@@ -24,6 +24,7 @@ package com.microsoft.azuretools.azureexplorer.editors.container;
 
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.core.components.AzureListenerWrapper;
 import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyMvpView;
@@ -89,6 +90,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
     private static final String COPY_TO_CLIPBOARD = "<a>Copy to Clipboard</a>";
 
     private static final int PROGRESS_BAR_HEIGHT = 3;
+    private static final String REFRESH_ICON_PATH = "icons/refresh_16.png";
 
     private String password = "";
     private String password2 = "";
@@ -120,7 +122,6 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
     private Composite cmpoRepo;
     private Composite cmpoTag;
     private ToolBar repoToolBar;
-    private ToolItem tltmRefreshRepo;
     private ToolItem tltmRepoPreviousPage;
     private ToolItem tltmRepoNextPage;
     private org.eclipse.swt.widgets.List lstRepo;
@@ -128,11 +129,14 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
     private Label lblTag;
     private org.eclipse.swt.widgets.List lstTag;
     private ToolBar tagToolBar;
-    private ToolItem tltmRefreshTag;
     private ToolItem tltmTagPreviousPage;
     private ToolItem tltmTagNextPage;
     private Composite container;
     private ProgressBar progressBar;
+    private ToolBar repoRefreshToolBar;
+    private ToolItem tltmRefreshRepo;
+    private ToolBar tagRefreshToolBar;
+    private ToolItem tltmRefreshTag;
 
     public ContainerRegistryExplorerEditor() {
         this.containerExplorerPresenter = new ContainerRegistryPropertyViewPresenter<ContainerRegistryExplorerEditor>();
@@ -287,15 +291,28 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         sashForm = new SashForm(container, SWT.NONE);
         sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
 
-        cmpoRepo = new Composite(sashForm, SWT.NONE);
-        cmpoRepo.setLayout(new GridLayout(1, false));
+        cmpoRepo = new Composite(sashForm, SWT.BORDER);
+        cmpoRepo.setLayout(new GridLayout(2, false));
 
         Label lblRepo = new Label(cmpoRepo, SWT.NONE);
-        lblRepo.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1));
+        lblRepo.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
         lblRepo.setText(LABEL_REPOSITORY);
 
+        repoRefreshToolBar = new ToolBar(cmpoRepo, SWT.FLAT | SWT.RIGHT);
+
+        tltmRefreshRepo = new ToolItem(repoRefreshToolBar, SWT.NONE);
+        tltmRefreshRepo.setImage(Activator.getImageDescriptor(REFRESH_ICON_PATH).createImage());
+        tltmRefreshRepo.setToolTipText(TLTM_REFRESH);
+        tltmRefreshRepo.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmRefreshRepo", null) {
+            @Override
+            protected void handleEventFunc(Event event) {
+                disableWidgets(true, true);
+                containerExplorerPresenter.onRefreshRepositories(subscriptionId, registryId, true /* isNextPage */);
+            }
+        });
+
         lstRepo = new org.eclipse.swt.widgets.List(cmpoRepo, SWT.BORDER);
-        lstRepo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        lstRepo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
         lstRepo.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "lstRepo", null) {
             @Override
             protected void handleEventFunc(Event event) {
@@ -314,18 +331,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         });
 
         repoToolBar = new ToolBar(cmpoRepo, SWT.FLAT | SWT.RIGHT);
-        repoToolBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-
-        tltmRefreshRepo = new ToolItem(repoToolBar, SWT.NONE);
-        tltmRefreshRepo.setToolTipText(TLTM_REFRESH);
-        tltmRefreshRepo.setText(TLTM_REFRESH);
-        tltmRefreshRepo.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmRefreshRepo", null) {
-            @Override
-            protected void handleEventFunc(Event event) {
-                disableWidgets(true, true);
-                containerExplorerPresenter.onRefreshRepositories(subscriptionId, registryId, true /* isNextPage */);
-            }
-        });
+        repoToolBar.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
 
         tltmRepoPreviousPage = new ToolItem(repoToolBar, SWT.NONE);
         tltmRepoPreviousPage.setToolTipText(TLTM_PREVIOUS_PAGE);
@@ -348,25 +354,21 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
             @Override
             protected void handleEventFunc(Event event) {
                 disableWidgets(true, true);
-                containerExplorerPresenter.onListRepositories(subscriptionId, registryId, false /* isNextPage */);
+                containerExplorerPresenter.onListRepositories(subscriptionId, registryId, true /* isNextPage */);
             }
         });
-        cmpoTag = new Composite(sashForm, SWT.NONE);
-        cmpoTag.setLayout(new GridLayout(1, false));
+        cmpoTag = new Composite(sashForm, SWT.BORDER);
+        cmpoTag.setLayout(new GridLayout(2, false));
 
         lblTag = new Label(cmpoTag, SWT.NONE);
-        lblTag.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1));
+        lblTag.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
         lblTag.setText(LABEL_TAG);
 
-        lstTag = new org.eclipse.swt.widgets.List(cmpoTag, SWT.BORDER);
-        lstTag.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        tagRefreshToolBar = new ToolBar(cmpoTag, SWT.FLAT | SWT.RIGHT);
 
-        tagToolBar = new ToolBar(cmpoTag, SWT.FLAT | SWT.RIGHT);
-        tagToolBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-
-        tltmRefreshTag = new ToolItem(tagToolBar, SWT.NONE);
+        tltmRefreshTag = new ToolItem(tagRefreshToolBar, SWT.NONE);
+        tltmRefreshTag.setImage(Activator.getImageDescriptor(REFRESH_ICON_PATH).createImage());
         tltmRefreshTag.setToolTipText(TLTM_REFRESH);
-        tltmRefreshTag.setText(TLTM_REFRESH);
         tltmRefreshTag.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmRefreshTag", null) {
             @Override
             protected void handleEventFunc(Event event) {
@@ -377,6 +379,12 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
                 containerExplorerPresenter.onListTags(subscriptionId, registryId, currentRepo, true /* isNextPage */);
             }
         });
+
+        lstTag = new org.eclipse.swt.widgets.List(cmpoTag, SWT.BORDER);
+        lstTag.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+
+        tagToolBar = new ToolBar(cmpoTag, SWT.FLAT | SWT.RIGHT);
+        tagToolBar.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
 
         tltmTagPreviousPage = new ToolItem(tagToolBar, SWT.NONE);
         tltmTagPreviousPage.setToolTipText(TLTM_PREVIOUS_PAGE);
@@ -577,10 +585,10 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
             return;
         }
         tltmRefreshTag.setEnabled(true);
-        if (containerExplorerPresenter.hasNextRepoPage()) {
+        if (containerExplorerPresenter.hasNextTagPage()) {
             tltmTagNextPage.setEnabled(true);
         }
-        if (containerExplorerPresenter.hasPreviousRepoPage()) {
+        if (containerExplorerPresenter.hasPreviousTagPage()) {
             tltmTagPreviousPage.setEnabled(true);
         }
     }
