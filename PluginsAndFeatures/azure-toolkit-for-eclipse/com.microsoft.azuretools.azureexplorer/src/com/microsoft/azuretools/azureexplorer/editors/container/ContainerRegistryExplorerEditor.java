@@ -308,9 +308,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
                     return;
                 }
                 currentRepo = selectedRepo;
-                disableWidgets();
-                resetTagList();
-                progressBar.setVisible(true);
+                disableWidgets(false, true);
                 containerExplorerPresenter.onListTags(subscriptionId, registryId, currentRepo, true /* isNextPage */);
             }
         });
@@ -324,9 +322,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         tltmRefreshRepo.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmRefreshRepo", null) {
             @Override
             protected void handleEventFunc(Event event) {
-                resetRepoList();
-                disableWidgets();
-                progressBar.setVisible(true);
+                disableWidgets(true, true);
                 containerExplorerPresenter.onRefreshRepositories(subscriptionId, registryId, true /* isNextPage */);
             }
         });
@@ -339,9 +335,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
                 new AzureListenerWrapper(INSIGHT_NAME, "tltmRepoPreviousPage", null) {
                     @Override
                     protected void handleEventFunc(Event event) {
-                        resetRepoList();
-                        disableWidgets();
-                        progressBar.setVisible(true);
+                        disableWidgets(true, true);
                         containerExplorerPresenter.onListRepositories(subscriptionId, registryId,
                                 false /* isNextPage */);
                     }
@@ -353,9 +347,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         tltmRepoNextPage.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmRepoNextPage", null) {
             @Override
             protected void handleEventFunc(Event event) {
-                resetRepoList();
-                disableWidgets();
-                progressBar.setVisible(true);
+                disableWidgets(true, true);
                 containerExplorerPresenter.onListRepositories(subscriptionId, registryId, false /* isNextPage */);
             }
         });
@@ -381,9 +373,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
                 if (Utils.isEmptyString(currentRepo)) {
                     return;
                 }
-                resetTagList();
-                disableWidgets();
-                progressBar.setVisible(true);
+                disableWidgets(false, true);
                 containerExplorerPresenter.onListTags(subscriptionId, registryId, currentRepo, true /* isNextPage */);
             }
         });
@@ -398,9 +388,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
                         if (Utils.isEmptyString(currentRepo)) {
                             return;
                         }
-                        resetTagList();
-                        disableWidgets();
-                        progressBar.setVisible(true);
+                        disableWidgets(false, true);
                         containerExplorerPresenter.onListTags(subscriptionId, registryId, currentRepo,
                                 false /* isNextPage */);
                     }
@@ -415,9 +403,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
                 if (Utils.isEmptyString(currentRepo)) {
                     return;
                 }
-                resetTagList();
-                disableWidgets();
-                progressBar.setVisible(true);
+                disableWidgets(false, true);
                 containerExplorerPresenter.onListTags(subscriptionId, registryId, currentRepo, true /* isNextPage */);
             }
         });
@@ -426,7 +412,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         btnEnable.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "btnEnable", null) {
             @Override
             protected void handleEventFunc(Event event) {
-                disableWidgets();
+                disableWidgets(true, true);
                 onAdminUserBtnClick();
             }
         });
@@ -434,44 +420,39 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         btnDisable.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "btnDisable", null) {
             @Override
             protected void handleEventFunc(Event event) {
-                disableWidgets();
+                disableWidgets(false, false);
                 onAdminUserBtnClick();
             }
         });
-        disableWidgets();
+        disableWidgets(true, true);
     }
 
     @Override
     public void onReadProperty(String sid, String id) {
-        progressBar.setVisible(true);
         containerExplorerPresenter.onGetRegistryProperty(sid, id);
     }
 
     @Override
     public void showProperty(ContainerRegistryProperty property) {
         isAdminEnabled = property.isAdminEnabled();
-
         txtRegistryName.setText(property.getName());
         txtType.setText(property.getType());
         txtResGrp.setText(property.getGroupName());
         txtSubscriptionId.setText(subscriptionId);
         txtRegion.setText(property.getRegionName());
         txtLoginServerUrl.setText(property.getLoginServerUrl());
-
-        compAdminUserBtn.setEnabled(true);
-        updateAdminUserBtn(isAdminEnabled);
+        disableWidgets(true, true);
         lblUserName.setVisible(isAdminEnabled);
         txtUserName.setVisible(isAdminEnabled);
         lblPrimaryPassword.setVisible(isAdminEnabled);
         lnkPrimaryPassword.setVisible(isAdminEnabled);
         lblSecondaryPassword.setVisible(isAdminEnabled);
         lnkSecondaryPassword.setVisible(isAdminEnabled);
-        resetRepoList();
+        updateAdminUserBtn(isAdminEnabled);
         if (isAdminEnabled) {
             txtUserName.setText(property.getUserName());
             password = property.getPassword();
             password2 = property.getPassword2();
-            progressBar.setVisible(true);
             containerExplorerPresenter.onRefreshRepositories(subscriptionId, registryId, true /* isNextPage */);
             sashForm.setVisible(true);
         } else {
@@ -489,7 +470,6 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         lstRepo.removeAll();
         fillList(repos, lstRepo);
         enableWidgets();
-        progressBar.setVisible(false);
     }
 
     @Override
@@ -497,7 +477,6 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         lstTag.removeAll();
         fillList(tags, lstTag);
         enableWidgets();
-        progressBar.setVisible(false);
     }
 
     @Override
@@ -557,10 +536,6 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
     }
 
     private void onAdminUserBtnClick() {
-        compAdminUserBtn.setEnabled(false);
-        btnEnable.setEnabled(false);
-        btnDisable.setEnabled(false);
-        progressBar.setVisible(true);
         this.containerExplorerPresenter.onEnableAdminUser(subscriptionId, registryId, !isAdminEnabled);
     }
 
@@ -586,19 +561,11 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         }
     }
 
-    private void resetRepoList() {
-        currentRepo = null;
-        lstRepo.removeAll();
-        lstTag.removeAll();
-    }
-
-    private void resetTagList() {
-        lstTag.removeAll();
-    }
-
     private void enableWidgets() {
+        updateAdminUserBtn(isAdminEnabled);
         lstRepo.setEnabled(true);
         tltmRefreshRepo.setEnabled(true);
+        progressBar.setVisible(false);
         if (containerExplorerPresenter.hasNextRepoPage()) {
             tltmRepoNextPage.setEnabled(true);
         }
@@ -618,7 +585,16 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         }
     }
 
-    private void disableWidgets() {
+    private void disableWidgets(boolean needResetRepo, boolean needResetTag) {
+        btnEnable.setEnabled(false);
+        btnDisable.setEnabled(false);
+        if (needResetRepo) {
+            currentRepo = null;
+            lstRepo.removeAll();
+        }
+        if (needResetTag) {
+            lstTag.removeAll();
+        }
         lstRepo.setEnabled(false);
         tltmRefreshRepo.setEnabled(false);
         tltmRepoPreviousPage.setEnabled(false);
@@ -627,6 +603,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         tltmRefreshTag.setEnabled(false);
         tltmTagPreviousPage.setEnabled(false);
         tltmTagNextPage.setEnabled(false);
+        progressBar.setVisible(true);
     }
 
     private void fillList(@NotNull List<String> list, @NotNull org.eclipse.swt.widgets.List widget) {
