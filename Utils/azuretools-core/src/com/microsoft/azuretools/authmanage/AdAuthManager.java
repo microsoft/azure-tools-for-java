@@ -41,21 +41,14 @@ import java.util.logging.Logger;
 
 public class AdAuthManager {
     private final static Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
-  //  private final TokenCache cache;
-   // private TokenFileStorage tokenFileStorage;
     private IWebUi webUi;
     private AzureEnvironment env;
+    private AdAuthDetails adAuthDetails;
     private static AdAuthManager instance = null;
-    //private static String adAuthSettingsFileName = "AdAuthDetails.json";
-    private static AdAuthDetails adAuthDetails = new AdAuthDetails();
-    //private static Map<String, List<String>> tidToSidsMap = new HashMap<>();
 
     public static AdAuthManager getInstance() throws IOException {
         if( instance == null) {
-            //AuthContext.setUserDefinedWebUi(CommonSettings.getUiFactory().getWebUi());
             instance = new AdAuthManager();
-            // load accountEmail
-//            instance.loadSettings();
         }
         return instance;
     }
@@ -66,7 +59,7 @@ public class AdAuthManager {
 
     public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
         AuthContext ac = createContext(tid, null);
-        AuthResult result = ac.acquireToken(resource, false, null, false);
+        AuthResult result = ac.acquireToken(resource, false, adAuthDetails.getAccountEmail(), false);
         return result.getAccessToken();
     }
 
@@ -102,14 +95,12 @@ public class AdAuthManager {
             tidToSidsMap.put(t.tenantId(), sids);
         }
 
-        // save account email
         if (!isDisplayable) {
             throw new IllegalArgumentException("accountEmail is null");
         }
 
         adAuthDetails.setAccountEmail(userId);
         adAuthDetails.setTidToSidsMap(tidToSidsMap);
-//        saveSettings();
 
         return result;
     }
@@ -153,49 +144,11 @@ public class AdAuthManager {
     }
 
     private AdAuthManager() throws IOException {
+        adAuthDetails = new AdAuthDetails();
         webUi = CommonSettings.getUiFactory().getWebUi();
         env = CommonSettings.getAdEnvironment();
         if (env == null) {
         	throw new IOException("Azure environment is not setup");
         }
     }
-//        if (useFileCache) {
-//            tokenFileStorage = new TokenFileStorage(CommonSettings.settingsBaseDir);
-//            byte[] data = tokenFileStorage.read();
-//            cache.deserialize(data);
-//
-//            cache.setOnAfterAccessCallback(new Runnable() {
-//                public void run() {
-//                    try {
-//                        if(cache.getHasStateChanged()) {
-//                            tokenFileStorage.write(cache.serialize());
-//                            cache.setHasStateChanged(false);
-//                        }
-//                    } catch (IOException ex) {
-//                        System.out.println(ex.getMessage());
-//                    }
-//                }
-//            });
-//        }
-//    }
-
-//    private void loadSettings() {
-//        System.out.println("loadSettings()");
-//        FileStorage fs = new FileStorage(adAuthSettingsFileName, settingsBaseDir);
-//        byte[] data = fs.read();
-//        String json = new String(data);
-//        if (json.isEmpty()) {
-//            adAuthDetails = new AdAuthDetails();
-//            System.out.println(adAuthSettingsFileName + "file is empty");
-//            return;
-//        }
-//        adAuthDetails = JsonHelper.deserialize(AdAuthDetails.class, json);
-//    }
-
-//    private void saveSettings() {
-//        System.out.println("saveSettings()");
-//        String sd = JsonHelper.serialize(adAuthDetails);
-//        FileStorage fs = new FileStorage(adAuthSettingsFileName, settingsBaseDir);
-//        fs.write(sd.getBytes(Charset.forName("utf-8")));
-//    }
 }
