@@ -311,7 +311,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
             }
         });
 
-        lstRepo = new org.eclipse.swt.widgets.List(cmpoRepo, SWT.BORDER);
+        lstRepo = new org.eclipse.swt.widgets.List(cmpoRepo, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         lstRepo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
         lstRepo.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "lstRepo", null) {
             @Override
@@ -380,7 +380,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
             }
         });
 
-        lstTag = new org.eclipse.swt.widgets.List(cmpoTag, SWT.BORDER);
+        lstTag = new org.eclipse.swt.widgets.List(cmpoTag, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         lstTag.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
         tagToolBar = new ToolBar(cmpoTag, SWT.FLAT | SWT.RIGHT);
