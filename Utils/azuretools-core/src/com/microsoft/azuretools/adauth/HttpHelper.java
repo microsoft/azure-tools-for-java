@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.adauth;
 
-import com.microsoft.aad.adal4j.AuthenticationException;
 import com.microsoft.azuretools.Constants;
 
 import java.io.*;
@@ -86,7 +85,7 @@ class HttpHelper {
 
             TokenResponse r = JsonHelper.deserialize(TokenResponse.class, err.toString());
             if (r.error.equals("invalid_grant"))
-                throw new AuthenticationException(message);
+                throw new AuthException(message);
             else
                 throw new IOException(message);
         }

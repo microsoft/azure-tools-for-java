@@ -1,4 +1,29 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.azuretools.adauth;
+
+import com.microsoft.azuretools.adauth.AdTokenCache.TokenCacheKey;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -6,10 +31,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.microsoft.azuretools.adauth.AdTokenCache.TokenCacheKey;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-
-public abstract class CacheDriver {
+abstract class CacheDriver {
     private static final Logger log = Logger.getLogger(CacheDriver.class.getName());
     private static final long EXPIREBUFFER = 300000; //in milliseconds
     private static final String DUPLICATETOKEN = "More than one token matches the criteria. The result is ambiguous.";
@@ -17,15 +39,16 @@ public abstract class CacheDriver {
     private final String authority;
     private final String clientId;
 
-    public CacheDriver(@NotNull final String authority, @NotNull final String clientId) {
+    CacheDriver(@NotNull final String authority, @NotNull final String clientId) {
         this.authority = authority;
         this.clientId = clientId;
     }
-    
-    public AuthResult find(final String resource, final String userId) throws AuthException{
+
+
+    AuthResult find(@NotNull final String resource, final String userId) throws AuthException {
         TokenCacheKey key = new TokenCacheKey(this.authority, this.clientId, userId, resource);
         SingleEntryResult singleRes = loadSingleEntry(key);
-        if(singleRes != null) {
+        if (singleRes != null) {
             AdTokenCacheEntry entry = refreshEntryIfNecessary(singleRes, key);
             if (null != entry) {
                 return entry.getAuthResult();
@@ -34,21 +57,28 @@ public abstract class CacheDriver {
         return null;
     }
     
-    public AdTokenCacheEntry createAddEntry(@NotNull final AuthResult result, final String resource) {
-        String newResource = result.getResource();
-        if (StringUtils.isNullOrEmpty(newResource)) {
+    AdTokenCacheEntry createAddEntry(@NotNull final AuthResult result, final String resource) {
+        return createAddEntry(result, resource, null);
+    }
+
+    private AdTokenCacheEntry createAddEntry(@NotNull final AuthResult result,
+                                             final String resource, final UserInfo info) {
+        if (StringUtils.isNullOrEmpty(result.getUserId())) {
+            result.setUserInfo(info);
+        }
+
+        if (StringUtils.isNullOrEmpty(result.getResource())) {
             result.setResource(resource);
-        } 
-        
+        }
+
         AdTokenCacheEntry entry = new AdTokenCacheEntry(result, this.authority, this.clientId);
         updateRefreshTokens(result);
         AdTokenCache.getInstance().add(entry);
         return entry;
     }
-    
-    abstract protected AuthResult getTokenWithRefreshToken(@NotNull final String refreshToken, final String resource) throws AuthException;
-    
-    private AdTokenCacheEntry refreshEntryIfNecessary(@NotNull final SingleEntryResult result, @NotNull final TokenCacheKey key) throws AuthException {
+
+    private AdTokenCacheEntry refreshEntryIfNecessary(@NotNull final SingleEntryResult result,
+                                                      @NotNull final TokenCacheKey key) throws AuthException {
         AdTokenCacheEntry entry = result.cacheEntry;
         if (entry == null || entry.getAuthResult() == null) {
             throw new AuthException("Null auth result in cache entry");
@@ -68,32 +98,34 @@ public abstract class CacheDriver {
       
         if (result.isResourceSpecific && nowPlusBuffer > expireTimeStamp) {
             AdTokenCache.getInstance().remove(entry);
-            return refreshExpireEntry(refreshToken, key.getResource());
+            return refreshExpireEntry(refreshToken, key.getResource(), authResult.getUserInfo());
         } else if (!result.isResourceSpecific && authResult.isMultipleResourceRefreshToken()) {
-            return acquireTokenFromMRRT(refreshToken, key.getResource());
+            return acquireTokenFromMrrt(refreshToken, key.getResource(), authResult.getUserInfo());
         } else {
             return entry;
         }
     }
 
-    private AdTokenCacheEntry acquireTokenFromMRRT(@NotNull final String refreshToken, final String resource) throws AuthException{
+    private AdTokenCacheEntry acquireTokenFromMrrt(@NotNull final String refreshToken,
+                                                   final String resource, final UserInfo info) throws AuthException {
         AuthResult result = getTokenWithRefreshToken(refreshToken, resource);
 
         if (null == result) {
             throw new AuthException("Fail to refresh the token");
         }
-        
-        return createAddEntry(result, resource);
+
+        return createAddEntry(result, resource, info);
     }
 
-    private AdTokenCacheEntry refreshExpireEntry(@NotNull final String refreshToken, final String resource) throws AuthException{
+    private AdTokenCacheEntry refreshExpireEntry(@NotNull final String refreshToken,
+                                                 final String resource, final UserInfo info) throws AuthException {
         AuthResult result = getTokenWithRefreshToken(refreshToken, null);
 
         if (null == result) {
             throw new AuthException("Fail to refresh the token");
         }
-        
-        return createAddEntry(result, resource);
+
+        return createAddEntry(result, resource, info);
     }
 
     private void updateRefreshTokens(@NotNull final AuthResult result) {
@@ -102,7 +134,7 @@ public abstract class CacheDriver {
             String refreshToken = result.getRefreshToken();
             
             if (!StringUtils.isNullOrEmpty(userId)) {
-                List<AdTokenCacheEntry> mrrtEntries = getMRRTEntriesForUser(userId);
+                List<AdTokenCacheEntry> mrrtEntries = getMrrtEntriesForUser(userId);
                 AdTokenCache.getInstance().removeMultiple(mrrtEntries);
                 
                 for (AdTokenCacheEntry entry : mrrtEntries) {
@@ -117,7 +149,7 @@ public abstract class CacheDriver {
     }
     
     
-    private List<AdTokenCacheEntry> getMRRTEntriesForUser(@NotNull final String userId) {
+    private List<AdTokenCacheEntry> getMrrtEntriesForUser(@NotNull final String userId) {
         TokenCacheKey queryKey = new TokenCacheKey(null, this.clientId, userId, null);
         return AdTokenCache.getInstance().query(queryKey, true);
     }
@@ -126,8 +158,8 @@ public abstract class CacheDriver {
         TokenCacheKey potentialKey = new TokenCacheKey(null, key.getClientId(), key.getUserId(), null);
         return AdTokenCache.getInstance().query(potentialKey, null);
     }
-    
-    private SingleEntryResult loadSingleEntry(@NotNull final TokenCacheKey key) throws AuthException{
+
+    private SingleEntryResult loadSingleEntry(@NotNull final TokenCacheKey key) throws AuthException {
         List<AdTokenCacheEntry> entries = getPotentialEntries(key);
         List<AdTokenCacheEntry> resSpecificEntries = new ArrayList<AdTokenCacheEntry>();
         AdTokenCacheEntry mrrtToken = null;
@@ -138,7 +170,7 @@ public abstract class CacheDriver {
                 if (key.getResource().equalsIgnoreCase(result.getResource())
                         && key.getAuthority().equalsIgnoreCase(entry.getAuthority())) {
                     resSpecificEntries.add(entry);
-                } else if(null == mrrtToken
+                } else if (null == mrrtToken
                         && result.isMultipleResourceRefreshToken()) {
                     mrrtToken = entry;
                 }
@@ -154,13 +186,18 @@ public abstract class CacheDriver {
             throw new AuthException(DUPLICATETOKEN);
         }
     }
-    
-    private class SingleEntryResult{
+
+    protected abstract AuthResult getTokenWithRefreshToken(@NotNull final String refreshToken,
+                                                           final String resource) throws AuthException;
+
+    private class SingleEntryResult {
         private final AdTokenCacheEntry cacheEntry;
         private final boolean isResourceSpecific;
-        public SingleEntryResult(final AdTokenCacheEntry cacheEntry, boolean isResourceSpecific) {
+
+        SingleEntryResult(final AdTokenCacheEntry cacheEntry, boolean isResourceSpecific) {
             this.cacheEntry = cacheEntry;
             this.isResourceSpecific = isResourceSpecific;
         }
     }
+
 }
