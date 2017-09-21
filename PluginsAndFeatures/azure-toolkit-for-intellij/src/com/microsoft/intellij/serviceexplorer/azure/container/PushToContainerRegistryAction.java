@@ -89,25 +89,34 @@ public class PushToContainerRegistryAction extends NodeActionListener {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = configType.getPushImageRunConfigurationFactory();
         RunnerAndConfigurationSettings settings = manager.findConfigurationByName(
-                String.format("%s: %s", factory.getName(), currentNode.getName())
+                String.format("%s: %s", factory.getName(), project.getName())
         );
-        if (settings != null) {
-            openRunDialog(project, settings);
-        } else {
-            Observable.fromCallable(() -> {
-                Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(currentNode.getSubscriptionId(), currentNode.getResourceId());
-                return ContainerRegistryMvpModel.getInstance().getRegistryCredential(registry);
-            })
-                    .subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io())
-                    .subscribe(
-                            ret -> ApplicationManager.getApplication().invokeLater(() -> openRunDialog(project, ret)),
-                            err -> {
-                                err.printStackTrace();
-                                Notification notification = new Notification(NOTIFICATION_GROUP_ID, DIALOG_TITLE,
-                                        err.getMessage(), NotificationType.ERROR);
-                                Notifications.Bus.notify(notification);
-                            });
-        }
+        Observable.fromCallable(() -> {
+            Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(currentNode
+                    .getSubscriptionId(), currentNode.getResourceId());
+            return ContainerRegistryMvpModel.getInstance().createImageSettingWithRegistry(registry);
+        })
+                .subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io())
+                .subscribe(
+                        ret -> {
+                            if (settings != null) {
+                                PushImageRunConfiguration conf = (PushImageRunConfiguration) settings
+                                        .getConfiguration();
+                                PrivateRegistryImageSetting imageSetting = conf.getPrivateRegistryImageSetting();
+                                imageSetting.setServerUrl(ret.getServerUrl());
+                                imageSetting.setUsername(ret.getUsername());
+                                imageSetting.setPassword(ret.getPassword());
+                                ApplicationManager.getApplication().invokeLater(() -> openRunDialog(project, settings));
+                                return;
+                            }
+                            ApplicationManager.getApplication().invokeLater(() -> openRunDialog(project, ret));
+                        },
+                        err -> {
+                            err.printStackTrace();
+                            Notification notification = new Notification(NOTIFICATION_GROUP_ID, DIALOG_TITLE,
+                                    err.getMessage(), NotificationType.ERROR);
+                            Notifications.Bus.notify(notification);
+                        });
     }
 
     @SuppressWarnings({"deprecation", "Duplicates"})
@@ -125,7 +134,7 @@ public class PushToContainerRegistryAction extends NodeActionListener {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = configType.getPushImageRunConfigurationFactory();
         RunnerAndConfigurationSettings settings = manager.createConfiguration(
-                String.format("%s: %s", factory.getName(), currentNode.getName()), factory);
+                String.format("%s: %s", factory.getName(), project.getName()), factory);
         PushImageRunConfiguration conf = (PushImageRunConfiguration) settings.getConfiguration();
         conf.setPrivateRegistryImageSetting(imageSetting);
 

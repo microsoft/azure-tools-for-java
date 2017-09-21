@@ -92,7 +92,7 @@ public class ContainerRegistryMvpModel {
     /**
      * Get Registry Credential.
      */
-    public PrivateRegistryImageSetting getRegistryCredential(@NotNull final Registry registry) throws Exception {
+    public PrivateRegistryImageSetting createImageSettingWithRegistry(@NotNull final Registry registry) throws Exception {
         if (!registry.adminUserEnabled()) {
             throw new Exception(ADMIN_USER_NOT_ENABLED);
         }

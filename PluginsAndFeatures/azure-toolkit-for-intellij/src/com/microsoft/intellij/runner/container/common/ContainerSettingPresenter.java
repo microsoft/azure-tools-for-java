@@ -69,7 +69,7 @@ public class ContainerSettingPresenter<V extends ContainerSettingView> extends M
      * Called when UI need to fill the user credential.
      */
     public void onGetRegistryCredential(@NotNull Registry registry) {
-        Observable.fromCallable(() -> ContainerRegistryMvpModel.getInstance().getRegistryCredential(registry))
+        Observable.fromCallable(() -> ContainerRegistryMvpModel.getInstance().createImageSettingWithRegistry(registry))
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(credential -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {
