@@ -365,6 +365,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
             tblTag.getEmptyText().setText(ADMIN_NOT_ENABLED);
         }
         updateAdminUserBtn(isAdminEnabled);
+        pnlProperty.revalidate();
     }
 
     @Override
