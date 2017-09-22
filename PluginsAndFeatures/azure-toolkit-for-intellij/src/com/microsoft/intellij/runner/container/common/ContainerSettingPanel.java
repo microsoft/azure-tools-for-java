@@ -36,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -54,6 +55,8 @@ public class ContainerSettingPanel implements ContainerSettingView {
     private TextFieldWithBrowseButton dockerFilePathTextField;
     private JComboBox<Object> cbContainerRegistry;
     private JPanel pnlRoot;
+    private JTextField txtStartupFile;
+    private JLabel lblStartupFile;
 
     private static final String SELECT_REGISTRY = "<Select Container Registry>";
     private static final String LOADING = "<Loading...>";
@@ -135,6 +138,10 @@ public class ContainerSettingPanel implements ContainerSettingView {
         return dockerFilePathTextField.getText();
     }
 
+    public String getStartupFile() {
+        return txtStartupFile.getText();
+    }
+
     public void setServerUrl(String url) {
         txtServerUrl.setText(url);
     }
@@ -155,6 +162,10 @@ public class ContainerSettingPanel implements ContainerSettingView {
         dockerFilePathTextField.setText(path);
     }
 
+    public void setStartupFile(String startupFile) {
+        txtStartupFile.setText(startupFile);
+    }
+
     private void disableWidgets() {
         txtServerUrl.setEnabled(false);
         txtUserName.setEnabled(false);
@@ -165,6 +176,12 @@ public class ContainerSettingPanel implements ContainerSettingView {
         txtServerUrl.setEnabled(true);
         txtUserName.setEnabled(true);
         passwordField.setEnabled(true);
+    }
+
+    @Override
+    public void setStartupFileVisible(boolean visible) {
+        lblStartupFile.setVisible(visible);
+        txtStartupFile.setVisible(visible);
     }
 
     @Override

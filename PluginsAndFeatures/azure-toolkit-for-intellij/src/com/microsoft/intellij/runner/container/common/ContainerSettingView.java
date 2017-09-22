@@ -39,4 +39,6 @@ public interface ContainerSettingView extends MvpView {
     void fillCredential(@NotNull final PrivateRegistryImageSetting setting);
 
     void disposeEditor();
+
+    void setStartupFileVisible(boolean visible);
 }

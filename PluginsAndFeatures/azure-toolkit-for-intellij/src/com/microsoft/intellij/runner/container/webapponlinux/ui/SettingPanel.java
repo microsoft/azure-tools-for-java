@@ -25,13 +25,8 @@ package com.microsoft.intellij.runner.container.webapponlinux.ui;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.fileChooser.FileChooser;
-import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.Comparing;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.AnActionButton;
@@ -50,6 +45,7 @@ import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.runner.container.common.ContainerSettingPanel;
 import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
@@ -72,7 +68,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -97,14 +92,9 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
 
     private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
     private final Project project;
-    private JTextField textServerUrl;
-    private JTextField textUsername;
-    private JPasswordField passwordField;
     private JTextField textAppName;
     private JComboBox<Subscription> comboSubscription;
     private JComboBox<ResourceGroup> comboResourceGroup;
-    private JTextField textImageTag;
-    private JTextField textStartupFile;
     private JPanel pnlUpdate;
     private JPanel rootPanel;
     private JPanel pnlWebAppOnLinuxTable;
@@ -143,7 +133,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private JPanel pnlAppServicePlan;
     private JPanel pnlAcrHolder;
     private JPanel pnlWebAppHolder;
-    private TextFieldWithBrowseButton dockerFilePathTextField;
+    private ContainerSettingPanel containerSettingPanel;
     private Artifact lastSelectedArtifact;
     private boolean isCbArtifactInited;
 
@@ -157,25 +147,6 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         webAppOnLinuxDeployPresenter = new WebAppOnLinuxDeployPresenter<>();
         webAppOnLinuxDeployPresenter.onAttachView(this);
         this.project = project;
-
-        dockerFilePathTextField.addActionListener(e -> {
-            String path = dockerFilePathTextField.getText();
-            final VirtualFile file = FileChooser.chooseFile(
-                    new FileChooserDescriptor(
-                            true /*chooseFiles*/,
-                            false /*chooseFolders*/,
-                            false /*chooseJars*/,
-                            false /*chooseJarsAsFiles*/,
-                            false /*chooseJarContents*/,
-                            false /*chooseMultiple*/
-                    ),
-                    project,
-                    Utils.isEmptyString(path) ? null : LocalFileSystem.getInstance().findFileByPath(path)
-            );
-            if (file != null) {
-                dockerFilePathTextField.setText(file.getPath());
-            }
-        });
 
         // set create/update panel visible
         updatePanelVisibility();
@@ -297,7 +268,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         webAppDecorator.setContentComponent(pnlWebApp);
         webAppDecorator.setOn(true);
 
-
+        containerSettingPanel.setStartupFileVisible(true);
+        containerSettingPanel.onListRegistries();
         telemetrySent = false;
     }
 
@@ -376,14 +348,14 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
      * @param webAppOnLinuxDeployConfiguration configuration instance
      */
     public void apply(WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
-        webAppOnLinuxDeployConfiguration.setDockerFilePath(dockerFilePathTextField.getText());
+        webAppOnLinuxDeployConfiguration.setDockerFilePath(containerSettingPanel.getDockerPath());
         // set ACR info
         webAppOnLinuxDeployConfiguration.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(
-                textServerUrl.getText().replaceFirst("^https?://", "").replaceFirst("/$", ""),
-                textUsername.getText(),
-                String.valueOf(passwordField.getPassword()),
-                textImageTag.getText(),
-                textStartupFile.getText()
+                containerSettingPanel.getServerUrl().replaceFirst("^https?://", "").replaceFirst("/$", ""),
+                containerSettingPanel.getUserName(),
+                containerSettingPanel.getPassword(),
+                containerSettingPanel.getImageTag(),
+                containerSettingPanel.getStartupFile()
         ));
 
         // set target
@@ -512,16 +484,16 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         }
 
         if (Utils.isEmptyString(conf.getDockerFilePath())) {
-            dockerFilePathTextField.setText(DockerUtil.getDefaultDockerFilePathIfExist(project));
+            containerSettingPanel.setDockerPath(DockerUtil.getDefaultDockerFilePathIfExist(project));
         } else {
-            dockerFilePathTextField.setText(conf.getDockerFilePath());
+            containerSettingPanel.setDockerPath(conf.getDockerFilePath());
         }
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
-        textServerUrl.setText(acrInfo.getServerUrl());
-        textUsername.setText(acrInfo.getUsername());
-        passwordField.setText(acrInfo.getPassword());
-        textImageTag.setText(acrInfo.getImageNameWithTag());
-        textStartupFile.setText(acrInfo.getStartupFile());
+        containerSettingPanel.setServerUrl(acrInfo.getServerUrl());
+        containerSettingPanel.setUserName(acrInfo.getUsername());
+        containerSettingPanel.setPasswordField(acrInfo.getPassword());
+        containerSettingPanel.setImageTag(acrInfo.getImageNameWithTag());
+        containerSettingPanel.setStartupFile(acrInfo.getStartupFile());
 
         // cache for table/combo selection
         defaultSubscriptionId = conf.getSubscriptionId();
@@ -746,6 +718,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
      * {@link com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeploySettingsEditor#disposeEditor()}.
      */
     public void disposeEditor() {
+        containerSettingPanel.disposeEditor();
         webAppOnLinuxDeployPresenter.onDetachView();
     }
 
