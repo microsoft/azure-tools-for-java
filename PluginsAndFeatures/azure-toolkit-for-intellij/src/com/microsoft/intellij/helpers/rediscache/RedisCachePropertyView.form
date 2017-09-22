@@ -1,240 +1,274 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView">
-  <grid id="916bf" binding="pnlContent" layout-manager="GridLayoutManager" row-count="12" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="10">
-    <margin top="10" left="10" bottom="0" right="0"/>
+  <grid id="916bf" binding="pnlContent" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="10">
+    <margin top="0" left="10" bottom="0" right="0"/>
     <constraints>
-      <xy x="0" y="0" width="464" height="651"/>
+      <xy x="0" y="0" width="464" height="523"/>
     </constraints>
     <properties>
       <autoscrolls value="true"/>
-      <maximumSize width="460" height="550"/>
-      <minimumSize width="460" height="550"/>
-      <preferredSize width="460" height="550"/>
     </properties>
     <border type="none"/>
     <children>
-      <component id="f5271" class="javax.swing.JLabel">
+      <scrollpane id="bd49e">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties>
-          <text value="Name"/>
-        </properties>
-      </component>
-      <component id="5c950" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Type"/>
-        </properties>
-      </component>
-      <component id="af624" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Resource Group"/>
-        </properties>
-      </component>
-      <component id="a7f31" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Subscription Id"/>
-        </properties>
-      </component>
-      <component id="acbf4" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Region"/>
-        </properties>
-      </component>
-      <component id="53e61" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Host Name"/>
-        </properties>
-      </component>
-      <component id="fd0f1" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="SSL Port"/>
-        </properties>
-      </component>
-      <component id="2a15f" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Non-SSL Port(6379) Enabled"/>
-        </properties>
-      </component>
-      <component id="24afb" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Redis Cache Version"/>
-        </properties>
-      </component>
-      <component id="d7ef1" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Primary Key"/>
-        </properties>
-      </component>
-      <component id="e8b1c" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Secondary Key"/>
-        </properties>
-      </component>
-      <component id="aa623" class="javax.swing.JTextField" binding="txtNameValue">
-        <constraints>
-          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="8ed1a" layout-manager="GridBagLayout">
+            <constraints/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="f5271" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0" ipadx="20" ipady="20"/>
+                </constraints>
+                <properties>
+                  <labelFor value="aa623"/>
+                  <text value="Name"/>
+                </properties>
+              </component>
+              <component id="aa623" class="javax.swing.JTextField" binding="txtNameValue">
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                  <gridbag weightx="1.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <caretColor color="-12828863"/>
+                  <editable value="false"/>
+                  <focusCycleRoot value="false"/>
+                  <opaque value="true"/>
+                  <text value="&lt;Loading...&gt;"/>
+                </properties>
+              </component>
+              <component id="5c950" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0" ipadx="20" ipady="20"/>
+                </constraints>
+                <properties>
+                  <labelFor value="68386"/>
+                  <text value="Type"/>
+                </properties>
+              </component>
+              <component id="68386" class="javax.swing.JTextField" binding="txtTypeValue">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                  <gridbag weightx="1.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <editable value="false"/>
+                  <text value="&lt;Loading...&gt;"/>
+                </properties>
+              </component>
+              <component id="af624" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0" ipadx="20" ipady="20"/>
+                </constraints>
+                <properties>
+                  <labelFor value="dffff"/>
+                  <text value="Resource Group"/>
+                </properties>
+              </component>
+              <component id="dffff" class="javax.swing.JTextField" binding="txtResGrpValue">
+                <constraints>
+                  <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                  <gridbag weightx="1.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <editable value="false"/>
+                  <text value="&lt;Loading...&gt;"/>
+                </properties>
+              </component>
+              <component id="a7f31" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0" ipadx="20" ipady="20"/>
+                </constraints>
+                <properties>
+                  <labelFor value="ff86c"/>
+                  <text value="Subscription Id"/>
+                </properties>
+              </component>
+              <component id="ff86c" class="javax.swing.JTextField" binding="txtSubscriptionValue">
+                <constraints>
+                  <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                  <gridbag weightx="1.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <editable value="false"/>
+                  <text value="&lt;Loading...&gt;"/>
+                </properties>
+              </component>
+              <component id="acbf4" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0" ipadx="20" ipady="20"/>
+                </constraints>
+                <properties>
+                  <labelFor value="54847"/>
+                  <text value="Region"/>
+                </properties>
+              </component>
+              <component id="54847" class="javax.swing.JTextField" binding="txtRegionValue">
+                <constraints>
+                  <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                  <gridbag weightx="1.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <editable value="false"/>
+                  <text value="&lt;Loading...&gt;"/>
+                </properties>
+              </component>
+              <component id="53e61" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0" ipadx="20" ipady="20"/>
+                </constraints>
+                <properties>
+                  <labelFor value="c130"/>
+                  <text value="Host Name"/>
+                </properties>
+              </component>
+              <component id="c130" class="javax.swing.JTextField" binding="txtHostNameValue">
+                <constraints>
+                  <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                  <gridbag weightx="1.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <editable value="false"/>
+                  <text value="&lt;Loading...&gt;"/>
+                </properties>
+              </component>
+              <component id="fd0f1" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0" ipadx="20" ipady="20"/>
+                </constraints>
+                <properties>
+                  <labelFor value="4c56b"/>
+                  <text value="SSL Port"/>
+                </properties>
+              </component>
+              <component id="4c56b" class="javax.swing.JTextField" binding="txtSslPortValue">
+                <constraints>
+                  <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                  <gridbag weightx="1.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <editable value="false"/>
+                  <text value="&lt;Loading...&gt;"/>
+                </properties>
+              </component>
+              <component id="2a15f" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0" ipadx="20" ipady="20"/>
+                </constraints>
+                <properties>
+                  <labelFor value="5de7b"/>
+                  <text value="Non-SSL Port(6379) Enabled"/>
+                </properties>
+              </component>
+              <component id="5de7b" class="javax.swing.JTextField" binding="txtNonSslPortValue">
+                <constraints>
+                  <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                  <gridbag weightx="1.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <editable value="false"/>
+                  <opaque value="true"/>
+                  <text value="&lt;Loading...&gt;"/>
+                </properties>
+              </component>
+              <component id="24afb" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0" ipadx="20" ipady="20"/>
+                </constraints>
+                <properties>
+                  <labelFor value="b87d2"/>
+                  <text value="Redis Cache Version"/>
+                </properties>
+              </component>
+              <component id="b87d2" class="javax.swing.JTextField" binding="txtVersionValue">
+                <constraints>
+                  <grid row="8" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                  <gridbag weightx="1.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <editable value="false"/>
+                  <opaque value="true"/>
+                  <text value="&lt;Loading...&gt;"/>
+                </properties>
+              </component>
+              <component id="d7ef1" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0" ipadx="20" ipady="20"/>
+                </constraints>
+                <properties>
+                  <text value="Primary Key"/>
+                </properties>
+              </component>
+              <component id="15f44" class="javax.swing.JButton" binding="btnPrimaryKey">
+                <constraints>
+                  <grid row="9" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="1.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <enabled value="false"/>
+                  <margin top="0" left="0" bottom="0" right="0"/>
+                  <text value="Copy to Clipboard"/>
+                </properties>
+              </component>
+              <component id="e8b1c" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="1.0" ipadx="20" ipady="20"/>
+                </constraints>
+                <properties>
+                  <text value="Secondary Key"/>
+                </properties>
+              </component>
+              <component id="de9ad" class="javax.swing.JButton" binding="btnSecondaryKey">
+                <constraints>
+                  <grid row="10" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="1.0" weighty="1.0"/>
+                </constraints>
+                <properties>
+                  <enabled value="false"/>
+                  <margin top="0" left="0" bottom="0" right="0"/>
+                  <text value="Copy to Clipboard"/>
+                </properties>
+              </component>
+            </children>
           </grid>
-        </constraints>
-        <properties>
-          <caretColor color="-12828863"/>
-          <editable value="false"/>
-          <focusCycleRoot value="false"/>
-          <opaque value="true"/>
-          <text value="&lt;Loading...&gt;"/>
-        </properties>
-      </component>
-      <component id="68386" class="javax.swing.JTextField" binding="txtTypeValue">
-        <constraints>
-          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
-        </constraints>
-        <properties>
-          <editable value="false"/>
-          <text value="&lt;Loading...&gt;"/>
-        </properties>
-      </component>
-      <component id="dffff" class="javax.swing.JTextField" binding="txtResGrpValue">
-        <constraints>
-          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
-        </constraints>
-        <properties>
-          <editable value="false"/>
-          <text value="&lt;Loading...&gt;"/>
-        </properties>
-      </component>
-      <component id="ff86c" class="javax.swing.JTextField" binding="txtSubscriptionValue">
-        <constraints>
-          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
-        </constraints>
-        <properties>
-          <editable value="false"/>
-          <text value="&lt;Loading...&gt;"/>
-        </properties>
-      </component>
-      <component id="54847" class="javax.swing.JTextField" binding="txtRegionValue">
-        <constraints>
-          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
-        </constraints>
-        <properties>
-          <editable value="false"/>
-          <text value="&lt;Loading...&gt;"/>
-        </properties>
-      </component>
-      <component id="c130" class="javax.swing.JTextField" binding="txtHostNameValue">
-        <constraints>
-          <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
-        </constraints>
-        <properties>
-          <editable value="false"/>
-          <text value="&lt;Loading...&gt;"/>
-        </properties>
-      </component>
-      <component id="4c56b" class="javax.swing.JTextField" binding="txtSslPortValue">
-        <constraints>
-          <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
-        </constraints>
-        <properties>
-          <editable value="false"/>
-          <text value="&lt;Loading...&gt;"/>
-        </properties>
-      </component>
-      <component id="5de7b" class="javax.swing.JTextField" binding="txtNonSslPortValue">
-        <constraints>
-          <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
-        </constraints>
-        <properties>
-          <editable value="false"/>
-          <opaque value="true"/>
-          <text value="&lt;Loading...&gt;"/>
-        </properties>
-      </component>
-      <component id="b87d2" class="javax.swing.JTextField" binding="txtVersionValue">
-        <constraints>
-          <grid row="8" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
-        </constraints>
-        <properties>
-          <editable value="false"/>
-          <opaque value="true"/>
-          <text value="&lt;Loading...&gt;"/>
-        </properties>
-      </component>
-      <component id="15f44" class="javax.swing.JButton" binding="btnPrimaryKey">
-        <constraints>
-          <grid row="9" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <enabled value="false"/>
-          <margin top="0" left="0" bottom="0" right="0"/>
-          <text value="Copy to Clipboard"/>
-        </properties>
-      </component>
-      <component id="de9ad" class="javax.swing.JButton" binding="btnSecondaryKey">
-        <constraints>
-          <grid row="10" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <enabled value="false"/>
-          <margin top="0" left="0" bottom="0" right="0"/>
-          <text value="Copy to Clipboard"/>
-        </properties>
-      </component>
-      <vspacer id="d1ddb">
-        <constraints>
-          <grid row="11" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-        </constraints>
-      </vspacer>
-      <hspacer id="6b82">
-        <constraints>
-          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-      </hspacer>
+        </children>
+      </scrollpane>
     </children>
   </grid>
 </form>
