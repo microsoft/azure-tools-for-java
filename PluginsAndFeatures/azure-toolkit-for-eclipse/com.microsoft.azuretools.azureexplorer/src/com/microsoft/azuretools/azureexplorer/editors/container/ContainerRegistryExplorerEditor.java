@@ -35,6 +35,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -61,7 +62,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class ContainerRegistryExplorerEditor extends EditorPart implements ContainerRegistryPropertyMvpView {
-
 
     private static final String INSIGHT_NAME = "AzurePlugin.Eclipse.Editor.ContainerRegistryExplorerEditor";
 
@@ -91,6 +91,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
 
     private static final int PROGRESS_BAR_HEIGHT = 3;
     private static final String REFRESH_ICON_PATH = "icons/refresh_16.png";
+    private static final String REFRESH_DISABLE_ICON_PATH = "icons/refresh_16_disable.png";
 
     private String password = "";
     private String password2 = "";
@@ -138,9 +139,14 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
     private ToolBar tagRefreshToolBar;
     private ToolItem tltmRefreshTag;
 
+    private final Image imgRefreshEnable;
+    private final Image imgRefreshDisable;
+
     public ContainerRegistryExplorerEditor() {
         this.containerExplorerPresenter = new ContainerRegistryPropertyViewPresenter<ContainerRegistryExplorerEditor>();
         this.containerExplorerPresenter.onAttachView(this);
+        imgRefreshEnable = Activator.getImageDescriptor(REFRESH_ICON_PATH).createImage();
+        imgRefreshDisable = Activator.getImageDescriptor(REFRESH_DISABLE_ICON_PATH).createImage();
     }
 
     @Override
@@ -152,7 +158,6 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
 
         panelHolder = new Composite(scrolledComposite, SWT.NONE);
         GridLayout glPanelHolder = new GridLayout(1, false);
-        glPanelHolder.marginWidth = 0;
         glPanelHolder.marginHeight = 0;
         glPanelHolder.verticalSpacing = 0;
         glPanelHolder.horizontalSpacing = 0;
@@ -301,7 +306,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         repoRefreshToolBar = new ToolBar(cmpoRepo, SWT.FLAT | SWT.RIGHT);
 
         tltmRefreshRepo = new ToolItem(repoRefreshToolBar, SWT.NONE);
-        tltmRefreshRepo.setImage(Activator.getImageDescriptor(REFRESH_ICON_PATH).createImage());
+        tltmRefreshRepo.setImage(imgRefreshEnable);
         tltmRefreshRepo.setToolTipText(TLTM_REFRESH);
         tltmRefreshRepo.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmRefreshRepo", null) {
             @Override
@@ -367,7 +372,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         tagRefreshToolBar = new ToolBar(cmpoTag, SWT.FLAT | SWT.RIGHT);
 
         tltmRefreshTag = new ToolItem(tagRefreshToolBar, SWT.NONE);
-        tltmRefreshTag.setImage(Activator.getImageDescriptor(REFRESH_ICON_PATH).createImage());
+        tltmRefreshTag.setImage(imgRefreshEnable);
         tltmRefreshTag.setToolTipText(TLTM_REFRESH);
         tltmRefreshTag.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmRefreshTag", null) {
             @Override
@@ -573,6 +578,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         updateAdminUserBtn(isAdminEnabled);
         lstRepo.setEnabled(true);
         tltmRefreshRepo.setEnabled(true);
+        tltmRefreshRepo.setImage(imgRefreshEnable);
         progressBar.setVisible(false);
         if (containerExplorerPresenter.hasNextRepoPage()) {
             tltmRepoNextPage.setEnabled(true);
@@ -585,6 +591,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
             return;
         }
         tltmRefreshTag.setEnabled(true);
+        tltmRefreshTag.setImage(imgRefreshEnable);
         if (containerExplorerPresenter.hasNextTagPage()) {
             tltmTagNextPage.setEnabled(true);
         }
@@ -605,10 +612,12 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         }
         lstRepo.setEnabled(false);
         tltmRefreshRepo.setEnabled(false);
+        tltmRefreshRepo.setImage(imgRefreshDisable);
         tltmRepoPreviousPage.setEnabled(false);
         tltmRepoNextPage.setEnabled(false);
         lstTag.setEnabled(false);
         tltmRefreshTag.setEnabled(false);
+        tltmRefreshTag.setImage(imgRefreshDisable);
         tltmTagPreviousPage.setEnabled(false);
         tltmTagNextPage.setEnabled(false);
         progressBar.setVisible(true);
