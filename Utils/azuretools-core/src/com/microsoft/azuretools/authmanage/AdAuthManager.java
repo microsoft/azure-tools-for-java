@@ -71,7 +71,6 @@ public class AdAuthManager {
         cleanCache();
         String commonTid = "common";
         AuthContext ac = createContext(commonTid, null); 
-        //AuthResult result = ac.acquireToken(AzureEnvironment.AZURE.resourceManagerEndpoint(), true, null, false);
         AuthResult result = ac.acquireToken(env.managementEndpoint(), true, null, false);
         String userId = result.getUserId();
         boolean isDisplayable = result.isUserIdDisplayble();
@@ -122,7 +121,7 @@ public class AdAuthManager {
 
     public String getAccountEmail() { return adAuthDetails.getAccountEmail(); }
 
-    private AuthContext createContext(@NotNull final String tid, final UUID corrId) throws IOException{
+    private AuthContext createContext(@NotNull final String tid, final UUID corrId) throws IOException {
     	String authority = null;
     	String endpoint = env.activeDirectoryEndpoint();
     	if (StringUtils.isNullOrEmpty(endpoint)) {

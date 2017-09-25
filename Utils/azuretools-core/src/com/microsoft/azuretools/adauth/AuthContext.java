@@ -102,44 +102,41 @@ public class AuthContext {
             return getTokenWithAuthCode(code, resource);
         } else {
             AuthResult result = null;
-            try {
-                result = acquireTokenFromCache(resource, userId);
-            } catch (Exception e) {
-                e.printStackTrace();
-                log.log(Level.SEVERE, e.getMessage(), e);
-            }
+            result = acquireTokenFromCache(resource, userId);
             if (result != null) {
                 return result;
+            } else {
+                throw new AuthException(AuthError.UnknownUser);
             }
-            String code = acquireAuthCode(resource, userDisplayableId);
-            return getTokenWithAuthCode(code, resource);
         }
     }
 
     private String acquireAuthCode(@NotNull final String resource, String userDisplayableId) throws AuthException {
+        AuthCode code = null;
         try {
             AuthCodeInteractiveHandler handler = new AuthCodeInteractiveHandler(this.authenticationAuthority,
                     this.clientId, this.webUi, this.redirectUrl, resource, userDisplayableId);
             String response = handler.acquireAuthCode(this.correlationId);
-            AuthCode code = parseAuthorizeResponse(response, this.correlationId);
-            log.log(Level.FINEST, "==> authorization code: " + code.getCode());
-            
-            if (code.getStatus() == AuthorizationStatus.Success) {
-                return code.getCode();
-            } else {
-                if (code.getErrorSubcode().compareToIgnoreCase("cancel") == 0) {
-                    throw new AuthException("Canceled by user");
-                }
-                
-                String message = code.getError()
-                        + (code.getErrorDescription() == null ? "" : ": ")
-                        + code.getErrorDescription();
-                log.log(Level.SEVERE, message);
-                throw new AuthException(message);
-            }
+            code = parseAuthorizeResponse(response, this.correlationId);
         } catch (Exception e) {
             log.log(Level.SEVERE, e.getMessage(), e);
             throw new AuthException(e.getMessage(), e);
+        }
+
+        log.log(Level.FINEST, "==> authorization code: " + code.getCode());
+            
+        if (code.getStatus() == AuthorizationStatus.Success) {
+            return code.getCode();
+        } else {
+            if (code.getErrorSubcode().compareToIgnoreCase("cancel") == 0) {
+                throw new AuthException(AuthError.AuthenticationCanceled);
+            }
+
+            String message = code.getError()
+                    + (code.getErrorDescription() == null ? "" : ": ")
+                    + code.getErrorDescription();
+            log.log(Level.SEVERE, message);
+            throw new AuthException(code.getError(), code.getErrorDescription());
         }
     }
     
@@ -159,13 +156,9 @@ public class AuthContext {
         requestParameters.put(OAuthParameter.GrantType, OAuthGrantType.AuthorizationCode);
         requestParameters.put(OAuthParameter.Code, code);
         requestParameters.put(OAuthParameter.RedirectUri, redirectUrl);
-        try {
-            AuthResult result = sendRequest(requestParameters);
-            driver.createAddEntry(result, resource);
-            return result;
-        } catch (Exception e) {
-            throw new AuthException(e.getMessage(), e);
-        }
+        AuthResult result = sendRequest(requestParameters);
+        driver.createAddEntry(result, resource);
+        return result;
     }
     
     private void initDriver() {
@@ -179,41 +172,41 @@ public class AuthContext {
                 requestParameters.put(OAuthParameter.ClientId, clientId);
                 requestParameters.put(OAuthParameter.GrantType, OAuthGrantType.RefreshToken);
                 requestParameters.put(OAuthParameter.RefreshToken, refreshToken);
-                try {
-                    return sendRequest(requestParameters);
-                } catch (Exception e) {
-                    throw new AuthException(e.getMessage(), e);
-                }
+                return sendRequest(requestParameters);
             }
         };
     }
 
-    private AuthResult sendRequest(final Map<String, String> requestParameters) throws Exception {
+    private AuthResult sendRequest(final Map<String, String> requestParameters) throws AuthException {
         CallState callState = new CallState(correlationId);
+        TokenResponse tokenResponse = null;
         try {
             authenticationAuthority.doInstanceDiscovery();
-            TokenResponse tokenResponse =
+            tokenResponse =
                     HttpHelper.sendPostRequestAndDeserializeJsonResponse(authenticationAuthority.getTokenUri(),
                             requestParameters, callState, TokenResponse.class);
-            if (tokenResponse != null && tokenResponse.error != null) {
-                String message = tokenResponse.error + tokenResponse.errorDescription;
-                log.log(Level.SEVERE, message);
-                throw new Exception(message);
-            } else if (tokenResponse != null && tokenResponse.accessToken != null) {
-                IdToken idToken = parseIdToken(tokenResponse.idToken);
-                UserInfo userInfo = UserInfo.createFromIdTokens(idToken);
-                AuthResult result = new AuthResult(tokenResponse.tokenType,
-                        tokenResponse.accessToken, tokenResponse.refreshToken,
-                        tokenResponse.expiresIn, userInfo, tokenResponse.resource);
-                return result;
-            } else {
-                String message = AuthError.Unknown + AuthErrorMessage.Unknown;
-                log.log(Level.SEVERE, message);
-                throw new Exception(message);
-            }
         } catch (Exception e) {
             log.log(Level.SEVERE, e.getMessage(), e);
-            throw e;
+            throw new AuthException(e.getMessage(), e);
+        }
+
+        if (tokenResponse != null && tokenResponse.accessToken != null) {
+            IdToken idToken = parseIdToken(tokenResponse.idToken);
+            UserInfo userInfo = null;
+            if (null != idToken) {
+                userInfo = UserInfo.createFromIdTokens(idToken);
+            }
+            return new AuthResult(tokenResponse.tokenType,
+                    tokenResponse.accessToken, tokenResponse.refreshToken,
+                    tokenResponse.expiresIn, userInfo, tokenResponse.resource);
+        } else if (tokenResponse != null && tokenResponse.error != null) {
+            String message = tokenResponse.error + tokenResponse.errorDescription;
+            log.log(Level.SEVERE, message);
+            throw new AuthException(tokenResponse.error, tokenResponse.errorDescription);
+        } else {
+            String message = AuthError.Unknown + AuthErrorMessage.Unknown;
+            log.log(Level.SEVERE, message);
+            throw new AuthException(AuthError.Unknown, AuthErrorMessage.Unknown);
         }
     }
     
@@ -260,22 +253,30 @@ public class AuthContext {
                         AuthErrorMessage.AuthorizationServerInvalidResponse);
             }
         }
+
+        if (result == null) {
+            throw new UnsupportedEncodingException("Input is invalid");
+        }
         return result;
     }
 
     // TODO: use JWTParser.parse(idToken).getJWTClaimsSet()
-    private static IdToken parseIdToken(String idToken) throws Exception {
+    private static IdToken parseIdToken(String idToken) {
         IdToken idTokenBody = null;
-        if (!StringUtils.isNullOrWhiteSpace(idToken)) {
-            log.log(Level.FINEST, "idToken: " + idToken);
-            String[] idTokenSegments = idToken.split("\\.");
-    
-            // If Id token format is invalid, we silently ignore the id token
-            if (idTokenSegments.length == 2) {
-                byte[] decoded = Base64.decodeBase64(idTokenSegments[1]);
-                log.log(Level.FINEST, "==> decoded idToken: " + new String(decoded));
-                idTokenBody = JsonHelper.deserialize(IdToken.class, new String(decoded));
+        try {
+            if (!StringUtils.isNullOrWhiteSpace(idToken)) {
+                log.log(Level.FINEST, "idToken: " + idToken);
+                String[] idTokenSegments = idToken.split("\\.");
+
+                // If Id token format is invalid, we silently ignore the id token
+                if (idTokenSegments.length == 2) {
+                    byte[] decoded = Base64.decodeBase64(idTokenSegments[1]);
+                    log.log(Level.FINEST, "==> decoded idToken: " + new String(decoded));
+                    idTokenBody = JsonHelper.deserialize(IdToken.class, new String(decoded));
+                }
             }
+        } catch (Exception e) {
+            log.log(Level.SEVERE, e.getMessage(), e);
         }
         return idTokenBody;
     }

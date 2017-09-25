@@ -35,6 +35,7 @@ abstract class CacheDriver {
     private static final Logger log = Logger.getLogger(CacheDriver.class.getName());
     private static final long EXPIREBUFFER = 300000; //in milliseconds
     private static final String DUPLICATETOKEN = "More than one token matches the criteria. The result is ambiguous.";
+    private static final String FAILREFRSH = "Fail to refresh the token";
 
     private final String authority;
     private final String clientId;
@@ -111,7 +112,7 @@ abstract class CacheDriver {
         AuthResult result = getTokenWithRefreshToken(refreshToken, resource);
 
         if (null == result) {
-            throw new AuthException("Fail to refresh the token");
+            throw new AuthException(FAILREFRSH);
         }
 
         return createAddEntry(result, resource, info);
@@ -122,7 +123,7 @@ abstract class CacheDriver {
         AuthResult result = getTokenWithRefreshToken(refreshToken, null);
 
         if (null == result) {
-            throw new AuthException("Fail to refresh the token");
+            throw new AuthException(FAILREFRSH);
         }
 
         return createAddEntry(result, resource, info);

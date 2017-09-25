@@ -22,7 +22,8 @@
 
 package com.microsoft.azuretools.adauth;
 
-import java.io.UnsupportedEncodingException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -31,11 +32,11 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import java.io.UnsupportedEncodingException;
 
 class AuthCodeInteractiveHandler {
-    final static Logger log = Logger.getLogger(AuthCodeInteractiveHandler.class.getName());
-    public final static String LOGIN = "login";
+    private static final  Logger log = Logger.getLogger(AuthCodeInteractiveHandler.class.getName());
+    private static final String LOGIN = "login";
     
     private final URI redirectUri;
     private final String clientId;
@@ -46,7 +47,7 @@ class AuthCodeInteractiveHandler {
     
     AuthCodeInteractiveHandler(@NotNull final AuthenticationAuthority authenticator, @NotNull String clientId,
             @NotNull IWebUi webUi, @NotNull final String redirectUri, @NotNull final String resource,
-            final String userDisplayableId) throws Exception{
+            final String userDisplayableId) throws Exception {
         this.authenticator = authenticator;
         this.clientId = clientId;
         try {
@@ -61,14 +62,15 @@ class AuthCodeInteractiveHandler {
         this.resource = resource;
         this.userDisplayableId = userDisplayableId;
         log.log(Level.FINEST, String.format(
-                "\n=== AcquireTokenInteractiveHandler params:\n\tresource: %s\n\twebUi: %s\n\tdisplabableId: %s\n\tauthority: %s"
-                , this.resource
-                , this.webUi.getClass().getName()
-                , this.userDisplayableId
-                , this.authenticator.getAuthority()));
+                "\n=== AcquireTokenInteractiveHandler params:"
+                        + "\n\tresource: %s\n\twebUi: %s\n\tdisplabableId: %s\n\tauthority: %s",
+                this.resource,
+                this.webUi.getClass().getName(),
+                this.userDisplayableId,
+                this.authenticator.getAuthority()));
     }
      
-    String acquireAuthCode(UUID correlationId) throws AuthException{
+    String acquireAuthCode(UUID correlationId) throws AuthException {
         if (null == webUi) {
             return null;
         }
@@ -78,7 +80,7 @@ class AuthCodeInteractiveHandler {
             URI authorizationUri = this.createAuthorizationUri(correlationId);
             log.log(Level.FINEST, "Starting web ui...");
             String resultUri = webUi.authenticate(authorizationUri, redirectUri);
-            if(resultUri == null) {
+            if (resultUri == null) {
                 String message = "Interactive sign in is unsuccessful or canceled.";
                 log.log(Level.SEVERE, message);
                 throw new AuthException(message);
@@ -97,14 +99,13 @@ class AuthCodeInteractiveHandler {
     }
 
     private Map<String, String> createAuthorizationRequest(UUID correlationId) {
-        String loginHint = userDisplayableId;
         Map<String, String> authorizationRequestParameters = new HashMap<>();
         authorizationRequestParameters.put(OAuthParameter.Resource, this.resource);
         authorizationRequestParameters.put(OAuthParameter.ClientId, this.clientId);
         authorizationRequestParameters.put(OAuthParameter.ResponseType, OAuthResponseType.Code);
         authorizationRequestParameters.put(OAuthParameter.RedirectUri, redirectUri.toString());
-        if (!StringUtils.isNullOrEmpty(loginHint)) {
-            authorizationRequestParameters.put(OAuthParameter.LoginHint, loginHint);
+        if (!StringUtils.isNullOrEmpty(userDisplayableId)) {
+            authorizationRequestParameters.put(OAuthParameter.LoginHint, userDisplayableId);
         }
         
         if (correlationId != null) {
@@ -116,5 +117,4 @@ class AuthCodeInteractiveHandler {
 
         return authorizationRequestParameters;
     }
-
 }

@@ -241,4 +241,8 @@ class AuthError {
     /// Duplicate query parameter in extraQueryParameters
     /// </summary>
     public static final String DuplicateQueryParameter = "duplicate_query_parameter";
+
+    public static final String InvalidGrant = "invalid_grant";
+
+    public static final String InteractionRequired = "interaction_required";
 }
