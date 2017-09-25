@@ -55,8 +55,6 @@ public class HDInsightScalaPageTwo extends NewJavaProjectWizardPageTwo {
 			if (parent == null) { 
 				parent = (HDInsightsScalaProjectWizard) this.getWizard();
 			}
-
-			parent.canFinish = true;
 		} catch (OperationCanceledException | NoSuchMethodException | SecurityException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException ex) {
 			throw new InterruptedException();

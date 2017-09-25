@@ -41,6 +41,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
+import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 
 import com.microsoft.azure.hdinsight.projects.SparkVersion;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -182,6 +183,18 @@ public class CreateProjectUtil {
 		System.arraycopy(entries, 0, newEntries, 0, entries.length);
 		
 		javaProject.setRawClasspath(newEntries, new NullProgressMonitor());
+	}
+	
+	public static boolean checkHDInsightProjectNature(NewJavaProjectWizardPageTwo pageTwo) {
+		if (pageTwo != null && pageTwo.getJavaProject() != null && pageTwo.getJavaProject().getProject() != null) {
+			try {
+				return pageTwo.getJavaProject().getProject().hasNature(HDInsightProjectNature.NATURE_ID);
+			} catch (CoreException e) {
+				Activator.getDefault().log("Fail to get project nature", e);
+			}
+		}
+		
+		return false;
 	}
 
 	private static boolean addExclusiontoClassPath(IClasspathEntry newEntry, IClasspathEntry[] entries) {

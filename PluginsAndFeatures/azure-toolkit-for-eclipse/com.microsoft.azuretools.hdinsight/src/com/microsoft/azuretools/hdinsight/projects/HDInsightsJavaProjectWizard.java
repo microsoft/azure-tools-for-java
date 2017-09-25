@@ -71,7 +71,6 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 	public HDInsightJavaPageTwo pageTwo;
 	
 	private String id;
-	private boolean canFinish = false;
 	
 	public HDInsightsJavaProjectWizard() {
 			this(new HDInsightJavaPageOne());
@@ -79,8 +78,6 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 	
 	public HDInsightsJavaProjectWizard(HDInsightJavaPageOne page1) {
 		this(page1, new HDInsightJavaPageTwo(page1));
-		
-		canFinish = false;
 	}
 	
 	public HDInsightsJavaProjectWizard(HDInsightJavaPageOne page1, HDInsightJavaPageTwo page2) {
@@ -92,7 +89,7 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 	
 	@Override
 	public boolean canFinish() {
-		return canFinish & super.canFinish();
+		return CreateProjectUtil.checkHDInsightProjectNature(pageTwo) & super.canFinish();
 	}
 
 	@Override
@@ -264,9 +261,6 @@ public class HDInsightsJavaProjectWizard extends JavaProjectWizard implements IE
 	            addMoreSourcetoClassPath();
 	            
 	            HDInsightsJavaProjectWizard parent = (HDInsightsJavaProjectWizard)getWizard();
-	            if (parent != null) {
-	            	parent.canFinish = true;
-	            }
 	        } catch (OperationCanceledException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
 	            throw new InterruptedException();
 	        } finally {

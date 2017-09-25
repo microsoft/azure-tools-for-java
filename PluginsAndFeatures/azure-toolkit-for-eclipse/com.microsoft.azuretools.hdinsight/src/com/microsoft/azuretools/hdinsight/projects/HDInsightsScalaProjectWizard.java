@@ -45,8 +45,6 @@ import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.hdinsight.Activator;
 
 public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements IExecutableExtension {
-	public static boolean canFinish = false;
-	
 	private SparkVersion sparkVersion;
 	private boolean isUsingMaven = true;
 	private String id;
@@ -71,7 +69,6 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 
 	public HDInsightsScalaProjectWizard(NewJavaProjectWizardPageOne page1, NewJavaProjectWizardPageTwo page2) {
 		super(page1, page2);
-		canFinish = false;
 		hdInsightScalaPageOne = page1;
 		hdInsightScalaPageTwo = page2;
 		setWindowTitle("New HDInsight Scala Project");
@@ -151,7 +148,7 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 	
 	@Override
 	public boolean canFinish() {
-		return canFinish && super.canFinish();
+		return CreateProjectUtil.checkHDInsightProjectNature(hdInsightScalaPageTwo) && super.canFinish();
 	}
 
 	@Override
