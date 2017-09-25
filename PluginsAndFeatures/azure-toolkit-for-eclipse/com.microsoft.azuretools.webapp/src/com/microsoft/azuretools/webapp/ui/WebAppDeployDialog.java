@@ -448,9 +448,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             for (ResourceGroup rg : srgMap.get(sd)) {
                 if (rgaspMap.get(rg) != null) {
                     for (AppServicePlan asp : rgaspMap.get(rg)) {
-                        if (rgaspMap.get(rg) != null) {
-                            aspMap.put(asp.id(), new WebAppUtils.AspDetails(asp, rg));
-                        }
+                        aspMap.put(asp.id(), new WebAppUtils.AspDetails(asp, rg));
                     }
                 }
             }
@@ -458,14 +456,11 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             for (ResourceGroup rg : srgMap.get(sd)) {
                 if (rgwaMap.get(rg) != null) {
                     for (WebApp wa : rgwaMap.get(rg)) {
-                        if (wa.operatingSystem().equals(OperatingSystem.WINDOWS)) {
+                        if (wa.operatingSystem().equals(OperatingSystem.WINDOWS) && wa.javaVersion() != JavaVersion.OFF
+                                && aspMap.get(wa.appServicePlanId()) != null) {
                             TableItem item = new TableItem(table, SWT.NULL);
-                            if (wa.javaVersion() != JavaVersion.OFF) {
-                                item.setText(new String[] { wa.name(), wa.javaVersion().toString(),
-                                        wa.javaContainer() + " " + wa.javaContainerVersion(), wa.resourceGroupName() });
-                            } else {
-                                item.setText(new String[] { wa.name(), "Off", "N/A", wa.resourceGroupName() });
-                            }
+                            item.setText(new String[] { wa.name(), wa.javaVersion().toString(),
+                                    wa.javaContainer() + " " + wa.javaContainerVersion(), wa.resourceGroupName() });
 
                             WebAppDetails webAppDetails = new WebAppDetails();
                             webAppDetails.webApp = wa;
