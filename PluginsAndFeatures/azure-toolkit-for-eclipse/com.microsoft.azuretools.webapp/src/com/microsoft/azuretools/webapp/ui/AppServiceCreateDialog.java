@@ -77,6 +77,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -92,6 +93,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
+
+    private static final String WEB_CONFIG_PACKAGE_PATH = "/webapp/web.config";
 
     // validation error string constants
     private static final String SELECT_WEB_CONTAINER = "Select a valid web container.";
@@ -791,6 +794,15 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                     }
                     try {
                         webApp = AzureWebAppMvpModel.getInstance().createWebApp(model);
+                        if (webApp != null && packaging.equals(WebAppUtils.TYPE_JAR)) {
+                            webApp.stop();
+                            try (InputStream webConfigInput =
+                                    WebAppUtils.class.getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
+                                WebAppUtils.uploadWebConfig(webApp, webConfigInput,
+                                        new UpdateProgressIndicator(monitor));
+                            }
+                            webApp.start();
+                        }
                         monitor.setTaskName(UPDATING_AZURE_LOCAL_CACHE);
                         AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));
                         Display.getDefault().asyncExec(new Runnable() {

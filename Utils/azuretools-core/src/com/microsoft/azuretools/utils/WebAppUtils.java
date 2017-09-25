@@ -58,7 +58,6 @@ public class WebAppUtils {
     public static final String TYPE_WAR = "war";
     public static final String TYPE_JAR = "jar";
 
-    private static final String WEB_CONFIG_PACKAGE_PATH = "/webapp/web.config";
     private static final String ftpRootPath = "/site/wwwroot/";
     private static final String ftpWebAppsPath = ftpRootPath + "webapps/";
     private static String webConfigFilename = "web.config";
