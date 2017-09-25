@@ -183,6 +183,12 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         disableWidgets(true, true);
     }
 
+    @Override
+    public void onErrorWithException(String message, Exception ex) {
+        ContainerRegistryPropertyMvpView.super.onErrorWithException(message, ex);
+        this.enableWidgets();
+    }
+
     private void createUIComponents() {
         DefaultTableModel repoModel = new DefaultTableModel() {
             @Override
