@@ -69,7 +69,7 @@ public class SettingPanel {
 
     public SettingPanel(Project project) {
         this.project = project;
-
+        $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         // Artifact to build
         isCbArtifactInited = false;
         cbArtifact.addActionListener(e -> {
@@ -208,4 +208,10 @@ public class SettingPanel {
     public void disposeEditor() {
         containerSettingPanel.disposeEditor();
     }
+
+    private void createUIComponents() {
+        containerSettingPanel = new ContainerSettingPanel(this.project);
+    }
+
+    private void $$$setupUI$$$(){}
 }

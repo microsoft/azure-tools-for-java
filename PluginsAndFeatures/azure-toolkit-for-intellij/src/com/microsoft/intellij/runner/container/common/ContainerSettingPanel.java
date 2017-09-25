@@ -24,6 +24,7 @@ package com.microsoft.intellij.runner.container.common;
 
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -61,10 +62,13 @@ public class ContainerSettingPanel implements ContainerSettingView {
     private static final String SELECT_REGISTRY = "<Select Container Registry>";
     private static final String LOADING = "<Loading...>";
 
+    private final Project project;
+
     /**
      * Constructor.
      */
-    public ContainerSettingPanel() {
+    public ContainerSettingPanel(Project project) {
+        this.project = project;
         presenter = new ContainerSettingPresenter<>();
         presenter.onAttachView(this);
 
@@ -79,7 +83,7 @@ public class ContainerSettingPanel implements ContainerSettingView {
                             false /*chooseJarContents*/,
                             false /*chooseMultiple*/
                     ),
-                    null,
+                    this.project,
                     Utils.isEmptyString(path) ? null : LocalFileSystem.getInstance().findFileByPath(path)
             );
             if (file != null) {
