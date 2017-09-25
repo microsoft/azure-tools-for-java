@@ -440,34 +440,41 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         table.removeAll();
 
         for (SubscriptionDetail sd : srgMap.keySet()) {
-            if (!sd.isSelected())
+            if (!sd.isSelected() || srgMap.get(sd) == null) {
                 continue;
+            }
 
             Map<String, WebAppUtils.AspDetails> aspMap = new HashMap<>();
             for (ResourceGroup rg : srgMap.get(sd)) {
-                for (AppServicePlan asp : rgaspMap.get(rg)) {
-                    aspMap.put(asp.id(), new WebAppUtils.AspDetails(asp, rg));
+                if (rgaspMap.get(rg) != null) {
+                    for (AppServicePlan asp : rgaspMap.get(rg)) {
+                        if (rgaspMap.get(rg) != null) {
+                            aspMap.put(asp.id(), new WebAppUtils.AspDetails(asp, rg));
+                        }
+                    }
                 }
             }
 
             for (ResourceGroup rg : srgMap.get(sd)) {
-                for (WebApp wa : rgwaMap.get(rg)) {
-                    if (wa.operatingSystem().equals(OperatingSystem.WINDOWS)) {
-                        TableItem item = new TableItem(table, SWT.NULL);
-                        if (wa.javaVersion() != JavaVersion.OFF) {
-                            item.setText(new String[] { wa.name(), wa.javaVersion().toString(),
-                                    wa.javaContainer() + " " + wa.javaContainerVersion(), wa.resourceGroupName() });
-                        } else {
-                            item.setText(new String[] { wa.name(), "Off", "N/A", wa.resourceGroupName() });
-                        }
+                if (rgwaMap.get(rg) != null) {
+                    for (WebApp wa : rgwaMap.get(rg)) {
+                        if (wa.operatingSystem().equals(OperatingSystem.WINDOWS)) {
+                            TableItem item = new TableItem(table, SWT.NULL);
+                            if (wa.javaVersion() != JavaVersion.OFF) {
+                                item.setText(new String[] { wa.name(), wa.javaVersion().toString(),
+                                        wa.javaContainer() + " " + wa.javaContainerVersion(), wa.resourceGroupName() });
+                            } else {
+                                item.setText(new String[] { wa.name(), "Off", "N/A", wa.resourceGroupName() });
+                            }
 
-                        WebAppDetails webAppDetails = new WebAppDetails();
-                        webAppDetails.webApp = wa;
-                        webAppDetails.subscriptionDetail = sd;
-                        webAppDetails.resourceGroup = rg;
-                        webAppDetails.appServicePlan = aspMap.get(wa.appServicePlanId()).getAsp();
-                        webAppDetails.appServicePlanResourceGroup = aspMap.get(wa.appServicePlanId()).getRg();
-                        webAppDetailsMap.put(wa.name(), webAppDetails);
+                            WebAppDetails webAppDetails = new WebAppDetails();
+                            webAppDetails.webApp = wa;
+                            webAppDetails.subscriptionDetail = sd;
+                            webAppDetails.resourceGroup = rg;
+                            webAppDetails.appServicePlan = aspMap.get(wa.appServicePlanId()).getAsp();
+                            webAppDetails.appServicePlanResourceGroup = aspMap.get(wa.appServicePlanId()).getRg();
+                            webAppDetailsMap.put(wa.name(), webAppDetails);
+                        }
                     }
                 }
             }
