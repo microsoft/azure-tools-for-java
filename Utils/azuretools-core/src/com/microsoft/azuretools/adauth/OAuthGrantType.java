@@ -22,7 +22,7 @@
 
 package com.microsoft.azuretools.adauth;
 
-public class OAuthGrantType {
+class OAuthGrantType {
     public final static String AuthorizationCode = "authorization_code";
     public final static String RefreshToken = "refresh_token";
     public final static String ClientCredentials = "client_credentials";

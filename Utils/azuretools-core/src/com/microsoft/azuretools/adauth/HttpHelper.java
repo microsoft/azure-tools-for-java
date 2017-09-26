@@ -35,7 +35,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class HttpHelper {
+class HttpHelper {
     final static Logger log = Logger.getLogger(HttpHelper.class.getName());
 
     public static <T> T sendPostRequestAndDeserializeJsonResponse(final String uri,

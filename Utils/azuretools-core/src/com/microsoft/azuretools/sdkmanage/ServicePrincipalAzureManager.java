@@ -29,7 +29,6 @@ import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
-import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManagerPersist;
@@ -170,7 +169,7 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     public String getManagementURI() throws IOException {
         initATCIfNeeded();
         // default to global cloud
-        return atc.environment() == null ? Constants.resourceARM : atc.environment().resourceManagerEndpoint();
+        return atc.environment() == null ? AzureEnvironment.AZURE.resourceManagerEndpoint() : atc.environment().resourceManagerEndpoint();
     }
 
     @Override

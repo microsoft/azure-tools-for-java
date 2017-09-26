@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.authmanage;
 
+import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azuretools.authmanage.interact.IUIFactory;
 
 /**
@@ -39,6 +40,10 @@ public class CommonSettings {
         CommonSettings.uiFactory = uiFactory;
     }
 
+    public static AzureEnvironment getAdEnvironment() {
+    	return AzureEnvironment.AZURE;
+    } 
+    
     public static String USER_AGENT = "Azure Toolkit";
     /**
      * Need this as a static method when we call this class directly from Eclipse or IntelliJ plugin to know plugin version

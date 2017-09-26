@@ -25,14 +25,17 @@ package com.microsoft.azuretools.adauth;
 import java.io.IOException;
 
 public class AuthException extends IOException {
-	
     private static final long serialVersionUID = 1L;
 
     public AuthException(String error) {
-        super(error );
+        super(error);
     }
     
-    AuthException(String error, String errorDescription) {
-    	super(error + ": " + errorDescription);
+    public AuthException(Throwable cause) {
+        super(cause);
+    }
+    
+    AuthException(String message, Throwable cause) {
+    	super(message, cause);
     }
 }
