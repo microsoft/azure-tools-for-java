@@ -43,14 +43,17 @@ import com.microsoft.azure.management.containerregistry.implementation.RegistryL
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.runner.container.utils.DockerUtil;
+import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyViewPresenter;
 
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -63,13 +66,17 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ContainerRegistryPropertyView extends BaseEditor implements ContainerRegistryPropertyMvpView {
 
     public static final String ID = ContainerRegistryPropertyView.class.getName();
+    private static final String INSIGHT_NAME = "AzurePlugin.IntelliJ.Editor.ContainerRegistryExplorer";
     private final ContainerRegistryPropertyViewPresenter<ContainerRegistryPropertyView> containerPropertyPresenter;
 
     private static final String REFRESH = "Refresh";
@@ -166,11 +173,20 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
 
         menu = new JPopupMenu();
         JMenuItem menuItem = new JMenuItem(PULL_IMAGE);
-        menuItem.addActionListener(e -> {
-            pullImage(subscriptionId, registryId, currentRepo, currentTag);
+        menuItem.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "menuItem", null) {
+            @Override
+            protected void actionPerformedFunc(ActionEvent e) {
+                pullImage(subscriptionId, registryId, currentRepo, currentTag);
+            }
         });
         menu.add(menuItem);
         disableWidgets(true, true);
+    }
+
+    @Override
+    public void onErrorWithException(String message, Exception ex) {
+        ContainerRegistryPropertyMvpView.super.onErrorWithException(message, ex);
+        this.enableWidgets();
     }
 
     private void createUIComponents() {
@@ -493,10 +509,12 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                     Notification notification = new Notification(DISPLAY_ID, PULL_IMAGE, message,
                             NotificationType.INFORMATION);
                     Notifications.Bus.notify(notification);
+                    sendTelemetry(true, subscriptionId, null);
                 } catch (Exception e) {
                     Notification notification = new Notification(DISPLAY_ID, PULL_IMAGE,
                             e.getMessage(), NotificationType.ERROR);
                     Notifications.Bus.notify(notification);
+                    sendTelemetry(false, subscriptionId, e.getMessage());
                 }
             }
         });
@@ -505,5 +523,15 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     private void cleanTableData(DefaultTableModel model) {
         model.getDataVector().clear();
         model.fireTableDataChanged();
+    }
+
+    private void sendTelemetry(boolean success, @NotNull String subscriptionId, @Nullable String errorMsg) {
+        Map<String, String> map = new HashMap<>();
+        map.put("SubscriptionId", subscriptionId);
+        map.put("Success", String.valueOf(success));
+        if (!success) {
+            map.put("ErrorMsg", errorMsg);
+        }
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "ACR", PULL_IMAGE, map);
     }
 }

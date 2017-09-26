@@ -439,6 +439,12 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         });
         disableWidgets(true, true);
     }
+    
+    @Override
+    public void onErrorWithException(String message, Exception ex) {
+        ContainerRegistryPropertyMvpView.super.onErrorWithException(message, ex);
+        this.enableWidgets();
+    }
 
     @Override
     public void onReadProperty(String sid, String id) {
