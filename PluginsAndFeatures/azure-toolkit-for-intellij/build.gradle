@@ -75,6 +75,7 @@ repositories {
 
 configurations {
     compile.exclude module:'slf4j-api'
+    testCompile.exclude module:'htmlunit'
     cucumberRuntime {
         extendsFrom testRuntime
     }
@@ -95,7 +96,19 @@ dependencies {
     testCompile 'info.cukes:cucumber-java:1.2.5'
     testCompile 'org.mockito:mockito-core:2.7.22'
     testCompile 'org.assertj:assertj-swing-junit:3.5.0'
+
+    testCompile 'com.github.tomakehurst:wiremock:2.8.0'
+    testCompile 'org.powermock:powermock-module-junit4:1.7.0RC4'
+    testCompile 'org.powermock:powermock-api-mockito2:1.7.0RC4'
+    testCompile 'javax.servlet:javax.servlet-api:3.1.0'
 }
+
+test {
+    testLogging.showStandardStreams = true
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+} 
 
 task cucumberPackJar(type: Jar) {
     appendix = 'pathing'
