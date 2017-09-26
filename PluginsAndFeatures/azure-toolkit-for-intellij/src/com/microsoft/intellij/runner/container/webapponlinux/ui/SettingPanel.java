@@ -144,9 +144,10 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
      */
 
     public SettingPanel(Project project) {
+        this.project = project;
         webAppOnLinuxDeployPresenter = new WebAppOnLinuxDeployPresenter<>();
         webAppOnLinuxDeployPresenter.onAttachView(this);
-        this.project = project;
+        $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
 
         // set create/update panel visible
         updatePanelVisibility();
@@ -559,7 +560,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     }
 
     private void createUIComponents() {
-        System.out.println(" createUIComponents");
+        containerSettingPanel = new ContainerSettingPanel(project);
         // create table of Web App on Linux
         DefaultTableModel tableModel = new DefaultTableModel() {
             @Override
@@ -739,4 +740,6 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         // TODO: blocked by SDK, API cannot list Linux ASP now.
         webAppOnLinuxDeployPresenter.onLoadAppServicePlan(sid);
     }
+
+    private void $$$setupUI$$$(){}
 }
