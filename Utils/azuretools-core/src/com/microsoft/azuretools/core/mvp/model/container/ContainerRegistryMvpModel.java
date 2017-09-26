@@ -32,6 +32,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 
 import java.io.IOException;
@@ -42,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ContainerRegistryMvpModel {
 
-    private final Map<String, List<Registry>> subscriptionIdToRegistryMap;
+    private final Map<String, List<ResourceEx<Registry>>> subscriptionIdToRegistryMap;
 
     private static final String CANNOT_GET_REGISTRY = "Cannot get Registry with resource Id: ";
     private static final String CANNOT_GET_CREDENTIAL = "Cannot get credential.";
@@ -63,25 +64,28 @@ public class ContainerRegistryMvpModel {
     /**
      * Get Registry instances mapped by Subscription id.
      */
-    public Map<String, List<Registry>> getContainerRegistryMap(boolean force) throws IOException {
+    public List<ResourceEx<Registry>> listContainerRegistries(boolean force) {
+        List<ResourceEx<Registry>> registryList = new ArrayList<>();
         List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
         for (Subscription sub : subscriptions) {
-            listRegistryBySubscriptionId(sub.subscriptionId(), force);
+            registryList.addAll(listRegistryBySubscriptionId(sub.subscriptionId(), force));
         }
-        return subscriptionIdToRegistryMap;
+        return registryList;
     }
 
     /**
      * Get Registry by subscription id.
      */
-    public List<Registry> listRegistryBySubscriptionId(@NotNull String sid, boolean force) {
+    public List<ResourceEx<Registry>> listRegistryBySubscriptionId(@NotNull String sid, boolean force) {
         if (!force && subscriptionIdToRegistryMap.containsKey(sid)) {
             return subscriptionIdToRegistryMap.get(sid);
         }
-        List<Registry> registryList = new ArrayList<>();
+        List<ResourceEx<Registry>> registryList = new ArrayList<>();
         try {
             Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-            registryList.addAll(azure.containerRegistries().list());
+            for (Registry registry: azure.containerRegistries().list()) {
+                registryList.add(new ResourceEx<>(registry, sid));
+            }
             subscriptionIdToRegistryMap.put(sid, registryList);
         } catch (IOException e) {
             e.printStackTrace();

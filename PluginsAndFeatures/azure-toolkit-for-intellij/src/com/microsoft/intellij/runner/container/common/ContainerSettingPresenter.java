@@ -23,6 +23,7 @@
 package com.microsoft.intellij.runner.container.common;
 
 import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -31,7 +32,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import rx.Observable;
 
@@ -45,13 +45,11 @@ public class ContainerSettingPresenter<V extends ContainerSettingView> extends M
     public void onListRegistries() {
         Observable.fromCallable(() -> {
             List<Registry> registries = new ArrayList<>();
-            Map<String, List<Registry>> registryMap = ContainerRegistryMvpModel.getInstance()
-                    .getContainerRegistryMap(true /*force*/);
-            for (String key : registryMap.keySet()) {
-                for (Registry registry : registryMap.get(key)) {
-                    if (registry.adminUserEnabled()) {
-                        registries.add(registry);
-                    }
+            List<ResourceEx<Registry>> registryList = ContainerRegistryMvpModel.getInstance()
+                    .listContainerRegistries(true /*force*/);
+            for (ResourceEx<Registry> registry : registryList) {
+                if (registry.getResource().adminUserEnabled()) {
+                    registries.add(registry.getResource());
                 }
             }
             return registries;

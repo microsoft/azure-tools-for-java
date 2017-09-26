@@ -24,7 +24,6 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -52,11 +51,12 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
     /**
      * Constructor of the node for an ACR resource.
      */
-    public ContainerRegistryNode(Node parent, String subscriptionId, NodeContent content) {
-        super(subscriptionId + content.getName(), content.getName(),
+    public ContainerRegistryNode(ContainerRegistryModule parent, String subscriptionId, String registryId, String
+            registryName) {
+        super(subscriptionId + registryName, registryName,
                 parent, ICON_PATH, true /*delayActionLoading*/);
         this.subscriptionId = subscriptionId;
-        this.resourceId = content.getId();
+        this.resourceId = registryId;
         loadActions();
     }
 
