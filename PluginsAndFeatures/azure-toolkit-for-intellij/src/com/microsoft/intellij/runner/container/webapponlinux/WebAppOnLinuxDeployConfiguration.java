@@ -151,9 +151,6 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
         if (Utils.isEmptyString(setting.getImageNameWithTag())) {
             throw new ConfigurationException(MISSING_IMAGE_WITH_TAG);
         }
-        if (!setting.getImageNameWithTag().startsWith(setting.getServerUrl() + "/")) {
-            throw new ConfigurationException(String.format(INVALID_IMAGE_WITH_TAG, setting.getServerUrl()));
-        }
         // web app
         if (deployModel.isCreatingNewWebAppOnLinux()) {
             if (Utils.isEmptyString(deployModel.getWebAppName())) {

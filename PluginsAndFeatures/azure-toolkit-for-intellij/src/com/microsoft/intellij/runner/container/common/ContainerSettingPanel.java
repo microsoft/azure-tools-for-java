@@ -42,6 +42,8 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.event.ItemEvent;
 import java.util.List;
 
@@ -58,6 +60,7 @@ public class ContainerSettingPanel implements ContainerSettingView {
     private JPanel pnlRoot;
     private JTextField txtStartupFile;
     private JLabel lblStartupFile;
+    private JLabel lblServerUrl;
 
     private static final String SELECT_REGISTRY = "<Select Container Registry>";
     private static final String LOADING = "<Loading...>";
@@ -120,6 +123,21 @@ public class ContainerSettingPanel implements ContainerSettingView {
         });
 
         cbContainerRegistry.addItem(LOADING);
+
+        txtServerUrl.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                lblServerUrl.setText(txtServerUrl.getText() + "/");
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                lblServerUrl.setText(txtServerUrl.getText() + "/");
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                lblServerUrl.setText(txtServerUrl.getText() + "/");
+            }
+        });
     }
 
     public String getServerUrl() {
@@ -208,7 +226,7 @@ public class ContainerSettingPanel implements ContainerSettingView {
         txtServerUrl.setText(setting.getServerUrl());
         txtUserName.setText(setting.getUsername());
         passwordField.setText(setting.getPassword());
-        txtImageTag.setText(setting.getServerUrl() + "/");
+        txtImageTag.setText(setting.getImageNameWithTag());
         txtImageTag.requestFocus();
     }
 

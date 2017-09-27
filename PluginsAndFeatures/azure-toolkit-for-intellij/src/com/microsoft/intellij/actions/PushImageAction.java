@@ -33,14 +33,12 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType;
 import com.microsoft.intellij.runner.container.utils.Constant;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 

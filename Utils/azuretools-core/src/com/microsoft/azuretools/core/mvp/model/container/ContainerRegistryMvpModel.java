@@ -48,6 +48,7 @@ public class ContainerRegistryMvpModel {
     private static final String CANNOT_GET_REGISTRY = "Cannot get Registry with resource Id: ";
     private static final String CANNOT_GET_CREDENTIAL = "Cannot get credential.";
     private static final String ADMIN_USER_NOT_ENABLED = "Admin user is not enabled.";
+    private static final String IMAGE_TAG = "image:tag";
 
     private ContainerRegistryMvpModel() {
         subscriptionIdToRegistryMap = new ConcurrentHashMap<>();
@@ -109,7 +110,7 @@ public class ContainerRegistryMvpModel {
         if (Utils.isEmptyString(username) || passwords == null || passwords.size() == 0) {
             throw new Exception(CANNOT_GET_CREDENTIAL);
         }
-        return new PrivateRegistryImageSetting(registry.loginServerUrl(), username, passwords.get(0).value(), null,
+        return new PrivateRegistryImageSetting(registry.loginServerUrl(), username, passwords.get(0).value(), IMAGE_TAG,
                 null);
     }
 

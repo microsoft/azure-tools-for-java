@@ -44,7 +44,7 @@ if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2017.1
 fi
 
-./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Pintellij_version=IC-2017.1 -Pdep_plugins=org.intellij.scala:2017.1.15
+./gradlew clean buildPlugin test --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Pintellij_version=IC-2017.1 -Pdep_plugins=org.intellij.scala:2017.1.15
 
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2017.1.zip
 
@@ -52,7 +52,7 @@ cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-too
 if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2017.2
 fi
-./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s
+./gradlew clean buildPlugin test --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2017.2.zip
 
 echo "ALL BUILD SUCCESSFUL"
