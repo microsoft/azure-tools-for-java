@@ -155,12 +155,7 @@ public class WebAppRunState implements RunProfileState {
                 webApp -> {
                     processHandler.notifyComplete();
                     if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
-                        try {
-                            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
-                                    null));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,null));
                     }
                     updateConfigurationDataModel(webApp);
                     AzureWebAppMvpModel.getInstance().listWebApps(true /*force*/);

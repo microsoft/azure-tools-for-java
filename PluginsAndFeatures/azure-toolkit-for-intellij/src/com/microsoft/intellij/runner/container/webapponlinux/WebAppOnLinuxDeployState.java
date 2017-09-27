@@ -106,11 +106,11 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
 
                     // build image
                     PrivateRegistryImageSetting acrInfo = deployModel.getPrivateRegistryImageSetting();
-                    String imageNameWithTag = acrInfo.getServerUrl() + "/" + acrInfo.getImageNameWithTag();
-                    processHandler.setText(String.format("Building image ...  [%s]", imageNameWithTag));
+                    processHandler.setText(String.format("Building image ...  [%s]",
+                            acrInfo.getImageNameWithTag()));
                     DockerClient docker = DefaultDockerClient.fromEnv().build();
                     DockerUtil.buildImage(docker,
-                            imageNameWithTag,
+                            acrInfo.getImageNameWithTag(),
                             targetDockerfile.getParent(),
                             targetDockerfile.getFileName().toString(),
                             new DockerProgressHandler(processHandler)
@@ -119,7 +119,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                     // push to ACR
                     processHandler.setText(String.format("Pushing to ACR ... [%s] ", acrInfo.getServerUrl()));
                     DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
-                            imageNameWithTag, new DockerProgressHandler(processHandler));
+                            acrInfo.getImageNameWithTag(), new DockerProgressHandler(processHandler));
 
                     // deploy
                     if (deployModel.isCreatingNewWebAppOnLinux()) {
@@ -155,6 +155,9 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                     AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
                     processHandler.setText("Job done");
                     processHandler.notifyProcessTerminated(0);
+                    if (deployModel.isCreatingNewWebAppOnLinux() && AzureUIRefreshCore.listeners != null) {
+                        AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,null));
+                    }
                     sendTelemetry(true, null);
                 },
                 (err) -> {

@@ -170,7 +170,6 @@ public class AzureWebAppMvpModel {
         PricingTier pricingTier = new PricingTier(model.getPricingSkuTier(), model.getPricingSkuSize());
 
         WebApp.DefinitionStages.Blank webAppDefinition = azure.webApps().define(model.getWebAppName());
-        String imageTag = getImageTag(pr);
         if (model.isCreatingNewAppServicePlan()) {
             // new asp
             AppServicePlan.DefinitionStages.WithCreate asp;
@@ -186,7 +185,7 @@ public class AzureWebAppMvpModel {
                         .withRegion(Region.findByLabelOrName(model.getLocationName()))
                         .withNewResourceGroup(model.getResourceGroupName())
                         .withNewLinuxPlan(asp)
-                        .withPrivateRegistryImage(imageTag, pr.getServerUrl())
+                        .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
                         .withStartUpCommand(pr.getStartupFile()).create();
             } else {
@@ -201,7 +200,7 @@ public class AzureWebAppMvpModel {
                         .withRegion(Region.findByLabelOrName(model.getLocationName()))
                         .withExistingResourceGroup(model.getResourceGroupName())
                         .withNewLinuxPlan(asp)
-                        .withPrivateRegistryImage(imageTag, pr.getServerUrl())
+                        .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
                         .withStartUpCommand(pr.getStartupFile()).create();
             }
@@ -213,7 +212,7 @@ public class AzureWebAppMvpModel {
                 app = webAppDefinition
                         .withExistingLinuxPlan(asp)
                         .withNewResourceGroup(model.getResourceGroupName())
-                        .withPrivateRegistryImage(imageTag, pr.getServerUrl())
+                        .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
                         .withStartUpCommand(pr.getStartupFile()).create();
             } else {
@@ -221,7 +220,7 @@ public class AzureWebAppMvpModel {
                 app = webAppDefinition
                         .withExistingLinuxPlan(asp)
                         .withExistingResourceGroup(model.getResourceGroupName())
-                        .withPrivateRegistryImage(imageTag, pr.getServerUrl())
+                        .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
                         .withStartUpCommand(pr.getStartupFile()).create();
             }
@@ -243,8 +242,7 @@ public class AzureWebAppMvpModel {
         clearTags(app);
         if (imageSetting instanceof PrivateRegistryImageSetting) {
             PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
-            String imageTag = getImageTag(pr);
-            app.update().withPrivateRegistryImage(imageTag, pr.getServerUrl())
+            app.update().withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
                     .withCredentials(pr.getUsername(), pr.getPassword())
                     .withStartUpCommand(pr.getStartupFile()).apply();
         } else {
@@ -396,15 +394,6 @@ public class AzureWebAppMvpModel {
 
     private static final class SingletonHolder {
         private static final AzureWebAppMvpModel INSTANCE = new AzureWebAppMvpModel();
-    }
-
-    private String getImageTag(PrivateRegistryImageSetting setting) {
-        String imageTag = setting.getImageNameWithTag();
-        String serverUrl = setting.getServerUrl();
-        if (!imageTag.contains(serverUrl)) {
-            return serverUrl + "/" + imageTag;
-        }
-        return imageTag;
     }
 
     /**

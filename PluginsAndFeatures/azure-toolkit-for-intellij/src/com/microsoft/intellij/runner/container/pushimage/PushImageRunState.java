@@ -100,11 +100,10 @@ public class PushImageRunState implements RunProfileState {
 
                     // build image
                     PrivateRegistryImageSetting acrInfo = dataModel.getPrivateRegistryImageSetting();
-                    String imageNameWithTag = acrInfo.getServerUrl() + "/" + acrInfo.getImageNameWithTag();
-                    processHandler.setText(String.format("Building image ...  [%s]", imageNameWithTag));
+                    processHandler.setText(String.format("Building image ...  [%s]", acrInfo.getImageNameWithTag()));
                     DockerClient docker = DefaultDockerClient.fromEnv().build();
                     DockerUtil.buildImage(docker,
-                            imageNameWithTag,
+                            acrInfo.getImageNameWithTag(),
                             targetDockerfile.getParent(),
                             targetDockerfile.getFileName().toString(),
                             new DockerProgressHandler(processHandler)
@@ -113,7 +112,7 @@ public class PushImageRunState implements RunProfileState {
                     // push to ACR
                     processHandler.setText(String.format("Pushing to ACR ... [%s] ", acrInfo.getServerUrl()));
                     DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
-                            imageNameWithTag,
+                            acrInfo.getImageNameWithTag(),
                             new DockerProgressHandler(processHandler)
                     );
 
