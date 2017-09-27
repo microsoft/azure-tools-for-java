@@ -44,7 +44,13 @@ public class PrivateRegistryImageSetting extends ImageSetting {
         return serverUrl;
     }
 
+    /**
+     * remove all the tailing slash and set server URL.
+     */
     public void setServerUrl(String serverUrl) {
+        if (serverUrl != null) {
+            serverUrl = serverUrl.replaceAll("/+$", "");
+        }
         this.serverUrl = serverUrl;
     }
 
@@ -66,6 +72,9 @@ public class PrivateRegistryImageSetting extends ImageSetting {
 
     @Override
     public String getImageNameWithTag() {
-        return this.serverUrl + "/" + super.getImageNameWithTag();
+        if (this.serverUrl != null && super.getImageNameWithTag() != null) {
+            return this.serverUrl + "/" + super.getImageNameWithTag();
+        }
+        return super.getImageNameWithTag();
     }
 }

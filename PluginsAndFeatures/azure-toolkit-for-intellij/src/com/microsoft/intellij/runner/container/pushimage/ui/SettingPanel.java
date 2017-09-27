@@ -191,11 +191,7 @@ public class SettingPanel {
         }
 
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
-
-        containerSettingPanel.setServerUrl(acrInfo.getServerUrl());
-        containerSettingPanel.setUserName(acrInfo.getUsername());
-        containerSettingPanel.setPasswordField(acrInfo.getPassword());
-        containerSettingPanel.setImageTag(acrInfo.getImageNameWithTag());
+        containerSettingPanel.setTxtFields(acrInfo);
         if (Utils.isEmptyString(conf.getDockerFilePath())) {
             containerSettingPanel.setDockerPath(DockerUtil.getDefaultDockerFilePathIfExist(project));
         } else {

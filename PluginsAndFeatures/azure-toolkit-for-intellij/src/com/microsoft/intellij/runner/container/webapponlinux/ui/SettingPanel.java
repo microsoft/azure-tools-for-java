@@ -490,11 +490,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             containerSettingPanel.setDockerPath(conf.getDockerFilePath());
         }
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
-        containerSettingPanel.setServerUrl(acrInfo.getServerUrl());
-        containerSettingPanel.setUserName(acrInfo.getUsername());
-        containerSettingPanel.setPasswordField(acrInfo.getPassword());
-        containerSettingPanel.setImageTag(acrInfo.getImageNameWithTag());
-        containerSettingPanel.setStartupFile(acrInfo.getStartupFile());
+        containerSettingPanel.setTxtFields(acrInfo);
 
         // cache for table/combo selection
         defaultSubscriptionId = conf.getSubscriptionId();
