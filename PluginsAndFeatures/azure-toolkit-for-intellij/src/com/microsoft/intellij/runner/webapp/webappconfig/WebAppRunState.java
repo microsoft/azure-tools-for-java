@@ -86,6 +86,7 @@ public class WebAppRunState implements RunProfileState {
     private static final String ROOT_PATH = BASE_PATH + "ROOT";
     private static final String CONTAINER_ROOT_PATH = WEB_APP_BASE_PATH + "ROOT";
 
+    private static final int SLEEP_TIME = 5000;
     private static final int UPLOADING_MAX_TRY = 3;
 
     private final Project project;
@@ -116,6 +117,9 @@ public class WebAppRunState implements RunProfileState {
             }
             WebApp webApp = getWebAppAccordingToConfiguration();
 
+            processHandler.setText(STOP_WEB_APP);
+            webApp.stop();
+
             processHandler.setText(GETTING_DEPLOYMENT_CREDENTIAL);
             PublishingProfile profile = webApp.getPublishingProfile();
 
@@ -125,9 +129,6 @@ public class WebAppRunState implements RunProfileState {
             int indexOfDot = webAppSettingModel.getTargetName().lastIndexOf(".");
             String fileName = webAppSettingModel.getTargetName().substring(0, indexOfDot);
             String fileType = webAppSettingModel.getTargetName().substring(indexOfDot + 1);
-
-            processHandler.setText(STOP_WEB_APP);
-            webApp.stop();
 
             int webConfigUploadCount = uploadWebConfigFile(ftp, fileType);
             telemetryMap.put("webConfigCount", String.valueOf(webConfigUploadCount));
@@ -230,6 +231,11 @@ public class WebAppRunState implements RunProfileState {
         boolean success = false;
         int count = 0;
         while (!success && ++count < UPLOADING_MAX_TRY) {
+            try {
+                Thread.sleep(SLEEP_TIME);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             success = ftp.storeFile(path, stream);
         }
         if (!success) {
