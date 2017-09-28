@@ -176,7 +176,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         menuItem.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "menuItem", null) {
             @Override
             protected void actionPerformedFunc(ActionEvent e) {
-                pullImage(subscriptionId, registryId, currentRepo, currentTag);
+                pullImage();
             }
         });
         menu.add(menuItem);
@@ -479,18 +479,19 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         }
     }
 
-    private void pullImage(String sid, String id, String repo, String tag) {
+    private void pullImage() {
         ProgressManager.getInstance().run(new Task.Backgroundable(null, PULL_IMAGE, true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
-                    if (Utils.isEmptyString(repo) || Utils.isEmptyString(tag)) {
+                    if (Utils.isEmptyString(currentRepo) || Utils.isEmptyString(currentTag)) {
                         throw new Exception(REPO_TAG_NOT_AVAILABLE);
                     }
-                    final Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
+                    final Registry registry = ContainerRegistryMvpModel.getInstance()
+                            .getContainerRegistry(subscriptionId, registryId);
                     final PrivateRegistryImageSetting setting = ContainerRegistryMvpModel.getInstance()
                             .createImageSettingWithRegistry(registry);
-                    final String image = String.format("%s:%s", repo, tag);
+                    final String image = String.format("%s:%s", currentRepo, currentTag);
                     final String fullImageTagName = String.format("%s/%s", registry.loginServerUrl(), image);
                     DockerClient docker = DefaultDockerClient.fromEnv().build();
                     DockerUtil.pullImage(docker, registry.loginServerUrl(), setting.getUsername(),

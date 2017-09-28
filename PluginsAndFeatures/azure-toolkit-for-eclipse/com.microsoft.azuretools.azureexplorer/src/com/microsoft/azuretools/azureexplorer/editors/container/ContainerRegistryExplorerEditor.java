@@ -428,10 +428,10 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         pullImage.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "menuItem", null) {
             @Override
             protected void handleEventFunc(Event event) {
-                pullImage(subscriptionId, registryId, currentRepo, currentTag);
+                pullImage();
             }
         });
-        pullImage.setText("Pull Image");
+        pullImage.setText(PULL_IMAGE);
         lstTag.setMenu(popupMenu);
         lstTag.addListener(SWT.MenuDetect, new Listener() {
             @Override
@@ -693,27 +693,28 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         }
     }
 
-    private void pullImage(String sid, String id, String repo, String tag) {
+    private void pullImage() {
         Job job = new Job(PULL_IMAGE) {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 monitor.beginTask(PULL_IMAGE, IProgressMonitor.UNKNOWN);
                 String deploymentName = UUID.randomUUID().toString();
                 try {
-                    if (Utils.isEmptyString(repo) || Utils.isEmptyString(tag)) {
+                    if (Utils.isEmptyString(currentRepo) || Utils.isEmptyString(currentTag)) {
                         throw new Exception(REPO_TAG_NOT_AVAILABLE);
                     }
-                    String jobDescription = String.format("Pulling: %s:%s", repo, tag);
+                    final String image = String.format("%s:%s", currentRepo, currentTag);
+                    String jobDescription = String.format("Pulling: %s", image);
                     AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(deploymentName,
                             jobDescription);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, "", 5,
                             "Getting Registry...");
-                    final Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
+                    final Registry registry = ContainerRegistryMvpModel.getInstance()
+                            .getContainerRegistry(subscriptionId, registryId);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, "", 5,
                             "Getting Credential...");
                     final PrivateRegistryImageSetting setting = ContainerRegistryMvpModel.getInstance()
                             .createImageSettingWithRegistry(registry);
-                    final String image = String.format("%s:%s", repo, tag);
                     final String fullImageTagName = String.format("%s/%s", registry.loginServerUrl(), image);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, "", 10,
                             "Pulling image...");
