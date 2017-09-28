@@ -42,6 +42,7 @@ import com.microsoft.azure.management.containerregistry.RegistryPassword;
 import com.microsoft.azure.management.containerregistry.implementation.RegistryListCredentials;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.helpers.base.BaseEditor;
@@ -89,7 +90,6 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     private static final String TABLE_EMPTY_MESSAGE = "No available items.";
     private static final String ADMIN_NOT_ENABLED = "Admin user is not enabled.";
     private static final String PULL_IMAGE = "Pull Image";
-    private static final String CANNOT_GET_REGISTRY_CREDENTIALS = "Cannot get Registry Credentials";
     private static final String DISPLAY_ID = "Azure Plugin";
     private static final String IMAGE_PULL_SUCCESS = "%s is successfully pulled.";
     private static final String REPO_TAG_NOT_AVAILABLE = "Cannot get Current repository and tag";
@@ -487,25 +487,15 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                     if (Utils.isEmptyString(repo) || Utils.isEmptyString(tag)) {
                         throw new Exception(REPO_TAG_NOT_AVAILABLE);
                     }
-                    final String image = String.format("%s:%s", repo, tag);
                     final Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
-                    if (!registry.adminUserEnabled()) {
-                        throw new Exception(ADMIN_NOT_ENABLED);
-                    }
-                    final RegistryListCredentials credentials = registry.listCredentials();
-                    if (credentials == null) {
-                        throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
-                    }
-                    String username = credentials.username();
-                    final List<RegistryPassword> passwords = credentials.passwords();
-                    if (Utils.isEmptyString(username) || passwords == null || passwords.size() == 0) {
-                        throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
-                    }
-                    DockerClient docker = DefaultDockerClient.fromEnv().build();
+                    final PrivateRegistryImageSetting setting = ContainerRegistryMvpModel.getInstance()
+                            .createImageSettingWithRegistry(registry);
+                    final String image = String.format("%s:%s", repo, tag);
                     final String fullImageTagName = String.format("%s/%s", registry.loginServerUrl(), image);
-                    DockerUtil.pullImage(docker, registry.loginServerUrl(), username, passwords.get(0).value(),
-                            fullImageTagName);
-                    String message = String.format(IMAGE_PULL_SUCCESS, fullImageTagName);
+                    DockerClient docker = DefaultDockerClient.fromEnv().build();
+                    DockerUtil.pullImage(docker, registry.loginServerUrl(), setting.getUsername(),
+                            setting.getPassword(), fullImageTagName);
+                    String message = String.format(IMAGE_PULL_SUCCESS, setting.getImageNameWithTag());
                     Notification notification = new Notification(DISPLAY_ID, PULL_IMAGE, message,
                             NotificationType.INFORMATION);
                     Notifications.Bus.notify(notification);

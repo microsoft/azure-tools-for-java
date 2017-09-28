@@ -145,7 +145,6 @@ public class DockerUtil {
         } else {
             throw new DockerException("serverUrl and imageName mismatch.");
         }
-
     }
 
     /**

@@ -86,7 +86,7 @@ public class WebAppRunState implements RunProfileState {
     private static final String ROOT_PATH = BASE_PATH + "ROOT";
     private static final String CONTAINER_ROOT_PATH = WEB_APP_BASE_PATH + "ROOT";
 
-    private static final int SLEEP_TIME = 5000;
+    private static final int SLEEP_TIME = 5000; // milliseconds
     private static final int UPLOADING_MAX_TRY = 3;
 
     private final Project project;

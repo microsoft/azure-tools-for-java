@@ -22,15 +22,27 @@
 
 package com.microsoft.azuretools.azureexplorer.editors.container;
 
+import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.core.components.AzureListenerWrapper;
+import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
+import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyViewPresenter;
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DockerClient;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -44,6 +56,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
@@ -59,7 +74,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class ContainerRegistryExplorerEditor extends EditorPart implements ContainerRegistryPropertyMvpView {
 
@@ -88,6 +106,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
     private static final String BTN_ENABLE = "Enable";
     private static final String LOADING = "<Loading...>";
     private static final String COPY_TO_CLIPBOARD = "<a>Copy to Clipboard</a>";
+    private static final String PULL_IMAGE = "Pull Image";
+    private static final String REPO_TAG_NOT_AVAILABLE = "Cannot get Current repository and tag";
 
     private static final int PROGRESS_BAR_HEIGHT = 3;
     private static final String REFRESH_ICON_PATH = "icons/refresh_16.png";
@@ -98,6 +118,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
     private String registryId;
     private String subscriptionId;
     private String currentRepo;
+    private String currentTag;
 
     private ScrolledComposite scrolledComposite;
     private Composite panelHolder;
@@ -116,6 +137,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
     private Composite compAdminUserBtn;
     private Button btnEnable;
     private Button btnDisable;
+    private Menu popupMenu;
 
     private boolean isAdminEnabled;
 
@@ -387,6 +409,39 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
 
         lstTag = new org.eclipse.swt.widgets.List(cmpoTag, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         lstTag.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+        lstTag.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "lstTag", null) {
+            @Override
+            protected void handleEventFunc(Event event) {
+                int index = lstTag.getSelectionIndex();
+                if (index < 0 || index >= lstTag.getItemCount()) {
+                    return;
+                }
+                String selectedTag = lstTag.getItem(index);
+                if (Utils.isEmptyString(selectedTag) || selectedTag.equals(currentTag)) {
+                    return;
+                }
+                currentTag = selectedTag;
+            }
+        });
+        popupMenu = new Menu(lstTag);
+        MenuItem pullImage = new MenuItem(popupMenu, SWT.NONE);
+        pullImage.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "menuItem", null) {
+            @Override
+            protected void handleEventFunc(Event event) {
+                pullImage(subscriptionId, registryId, currentRepo, currentTag);
+            }
+        });
+        pullImage.setText("Pull Image");
+        lstTag.setMenu(popupMenu);
+        lstTag.addListener(SWT.MenuDetect, new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                int index = lstTag.getSelectionIndex();
+                if (index == -1) {
+                    event.doit = false;
+                }
+            }
+        });
 
         tagToolBar = new ToolBar(cmpoTag, SWT.FLAT | SWT.RIGHT);
         tagToolBar.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
@@ -439,7 +494,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         });
         disableWidgets(true, true);
     }
-    
+
     @Override
     public void onErrorWithException(String message, Exception ex) {
         ContainerRegistryPropertyMvpView.super.onErrorWithException(message, ex);
@@ -636,5 +691,57 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
                 widget.add(item);
             }
         }
+    }
+
+    private void pullImage(String sid, String id, String repo, String tag) {
+        Job job = new Job(PULL_IMAGE) {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                monitor.beginTask(PULL_IMAGE, IProgressMonitor.UNKNOWN);
+                String deploymentName = UUID.randomUUID().toString();
+                try {
+                    if (Utils.isEmptyString(repo) || Utils.isEmptyString(tag)) {
+                        throw new Exception(REPO_TAG_NOT_AVAILABLE);
+                    }
+                    String jobDescription = String.format("Pulling: %s:%s", repo, tag);
+                    AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(deploymentName,
+                            jobDescription);
+                    AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, "", 5,
+                            "Getting Registry...");
+                    final Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
+                    AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, "", 5,
+                            "Getting Credential...");
+                    final PrivateRegistryImageSetting setting = ContainerRegistryMvpModel.getInstance()
+                            .createImageSettingWithRegistry(registry);
+                    final String image = String.format("%s:%s", repo, tag);
+                    final String fullImageTagName = String.format("%s/%s", registry.loginServerUrl(), image);
+                    AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, "", 10,
+                            "Pulling image...");
+                    DockerClient docker = DefaultDockerClient.fromEnv().build();
+                    DockerUtil.pullImage(docker, registry.loginServerUrl(), setting.getUsername(),
+                            setting.getPassword(), fullImageTagName);
+                    AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, 100, "Finish.");
+                    sendTelemetry(true, subscriptionId, null);
+                } catch (Exception ex) {
+                    monitor.done();
+                    AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1, ex.getMessage());
+                    sendTelemetry(false, subscriptionId, ex.getMessage());
+                    return Status.CANCEL_STATUS;
+                }
+                monitor.done();
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
+    }
+
+    private void sendTelemetry(boolean success, @NotNull String subscriptionId, @Nullable String errorMsg) {
+        Map<String, String> map = new HashMap<>();
+        map.put("SubscriptionId", subscriptionId);
+        map.put("Success", String.valueOf(success));
+        if (!success) {
+            map.put("ErrorMsg", errorMsg);
+        }
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "ACR", PULL_IMAGE, map);
     }
 }

@@ -110,6 +110,21 @@ public class DockerUtil {
     }
 
     /**
+     * Pull image from a private registry.
+     */
+    public static void pullImage(DockerClient dockerClient, String registryUrl, String registryUsername,
+                                 String registryPassword, String targetImageName)
+            throws DockerException, InterruptedException {
+        final RegistryAuth registryAuth = RegistryAuth.builder().username(registryUsername).password(registryPassword)
+                .build();
+        if (targetImageName.startsWith(registryUrl)) {
+            dockerClient.pull(targetImageName, registryAuth);
+        } else {
+            throw new DockerException("serverUrl and imageName mismatch.");
+        }
+    }
+
+    /**
      * create container with specified ImageName:TagName.
      */
     @NotNull
