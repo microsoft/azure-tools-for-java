@@ -22,7 +22,7 @@
 
 package com.microsoft.azuretools.adauth;
 
-class AuthError {
+public class AuthError {
     /// <summary>
     /// Unknown error.
     /// </summary>
