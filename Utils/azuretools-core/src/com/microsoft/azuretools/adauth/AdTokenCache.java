@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class AdTokenCache {
+final class AdTokenCache {
     private final Map<TokenCacheKey, AdTokenCacheEntry> tokenCacheDictionary;
 
-    public static AdTokenCache getInstance() {
+    static AdTokenCache getInstance() {
         return SingletonHandler.INSTANCE;
     }
 
@@ -40,7 +40,7 @@ public final class AdTokenCache {
      * add an entry to cache.
      * @param entry AdTokenCacheEntry.
      */
-    public void add(@NotNull AdTokenCacheEntry entry) {
+    void add(@NotNull AdTokenCacheEntry entry) {
         TokenCacheKey key = createKeyFromEntry(entry);
         if (key != null) {
             tokenCacheDictionary.put(key, entry);
@@ -51,7 +51,7 @@ public final class AdTokenCache {
      * add multiple entries to cache.
      * @param entries List of AdTokenCacheEntry.
      */
-    public void addMultiple(@NotNull final List<AdTokenCacheEntry> entries) {
+    void addMultiple(@NotNull final List<AdTokenCacheEntry> entries) {
         for (AdTokenCacheEntry entry : entries) {
             if (entry != null) {
                 add(entry);
@@ -66,7 +66,7 @@ public final class AdTokenCache {
      * @param result AuthResult.
      * @return TokenCacheKey.
      */
-    public TokenCacheKey createKey(final String authority,
+    TokenCacheKey createKey(final String authority,
                                    final String clientId, @NotNull final AuthResult result) {
         String userId = result.getUserId();
         String resource = result.getResource();
@@ -77,7 +77,7 @@ public final class AdTokenCache {
      * remove the entry from cache.
      * @param entry AdTokenCacheEntry to be removed.
      */
-    public void remove(@NotNull final AdTokenCacheEntry entry) {
+    void remove(@NotNull final AdTokenCacheEntry entry) {
         TokenCacheKey key = createKeyFromEntry(entry);
         if (null == key) {
             return;
@@ -88,7 +88,7 @@ public final class AdTokenCache {
     /**
      * clear the cache.
      */
-    public void clear() {
+    void clear() {
         this.tokenCacheDictionary.clear();
     }
 
@@ -96,7 +96,7 @@ public final class AdTokenCache {
      * remove multiple entries.
      * @param entries List of AdTokenCacheEntry to be removed.
      */
-    public void removeMultiple(@NotNull final List<AdTokenCacheEntry> entries) {
+    void removeMultiple(@NotNull final List<AdTokenCacheEntry> entries) {
         for (AdTokenCacheEntry entry : entries) {
             if (entry != null) {
                 remove(entry);
@@ -110,7 +110,7 @@ public final class AdTokenCache {
      * @param isMrrt Boolean.
      * @return List of AdTokenCacheEntry.
      */
-    public List<AdTokenCacheEntry> query(@NotNull final TokenCacheKey key, final Boolean isMrrt) {
+    List<AdTokenCacheEntry> query(@NotNull final TokenCacheKey key, final Boolean isMrrt) {
         List<AdTokenCacheEntry> entryList = new ArrayList<AdTokenCacheEntry>();
         tokenCacheDictionary.forEach((k, v) -> {
             if (null != v && v.getAuthResult() != null) {
@@ -141,7 +141,7 @@ public final class AdTokenCache {
         private static final AdTokenCache INSTANCE = new AdTokenCache();
     }
 
-    public static class TokenCacheKey {
+    static class TokenCacheKey {
         private final String authority;
         private final String resource;
         private final String clientId;

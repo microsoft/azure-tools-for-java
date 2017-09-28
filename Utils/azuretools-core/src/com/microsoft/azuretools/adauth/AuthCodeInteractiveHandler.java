@@ -37,6 +37,8 @@ import java.io.UnsupportedEncodingException;
 class AuthCodeInteractiveHandler {
     private static final  Logger log = Logger.getLogger(AuthCodeInteractiveHandler.class.getName());
     private static final String LOGIN = "login";
+    private static final String ERROR_NOWEBUI = "webUi not set";
+    private static final String ERROR_GETCODE = "Interactive sign in is unsuccessful or canceled";
     
     private final URI redirectUri;
     private final String clientId;
@@ -55,7 +57,7 @@ class AuthCodeInteractiveHandler {
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
-        if (this.redirectUri.getFragment() != null && !this.redirectUri.getFragment().isEmpty()) {
+        if (StringUtils.isNullOrEmpty(this.redirectUri.getFragment())) {
             throw new IllegalArgumentException("redirectUri: " + AuthErrorMessage.RedirectUriContainsFragment);
         }
         this.webUi = webUi;
@@ -72,25 +74,25 @@ class AuthCodeInteractiveHandler {
      
     String acquireAuthCode(UUID correlationId) throws AuthException {
         if (null == webUi) {
-            return null;
+            throw new AuthException(ERROR_NOWEBUI);
         }
-        
+
+        String resultUri = null;
         try {
             log.log(Level.FINEST, "acquireAuthorization...");
             URI authorizationUri = this.createAuthorizationUri(correlationId);
             log.log(Level.FINEST, "Starting web ui...");
-            String resultUri = webUi.authenticate(authorizationUri, redirectUri);
-            if (resultUri == null) {
-                String message = "Interactive sign in is unsuccessful or canceled.";
-                log.log(Level.SEVERE, message);
-                throw new AuthException(message);
-            }
-            return resultUri;
-
+            resultUri = webUi.authenticate(authorizationUri, redirectUri);
         } catch (UnsupportedEncodingException | URISyntaxException ex) {
             log.log(Level.SEVERE, "acquireAuthorization@AcquireTokenInteractiveHandler: " + ex);
             throw new AuthException(ex.getMessage(), ex);
         }
+
+        if (resultUri == null) {
+            log.log(Level.SEVERE, ERROR_GETCODE);
+            throw new AuthException(ERROR_GETCODE);
+        }
+        return resultUri;
     }    
 
     private URI createAuthorizationUri(UUID correlationId) throws UnsupportedEncodingException, URISyntaxException {

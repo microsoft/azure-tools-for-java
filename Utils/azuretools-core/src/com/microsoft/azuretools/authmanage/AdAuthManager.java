@@ -26,7 +26,11 @@ import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.Constants;
-import com.microsoft.azuretools.adauth.*;
+import com.microsoft.azuretools.adauth.AuthContext;
+import com.microsoft.azuretools.adauth.AuthResult;
+import com.microsoft.azuretools.adauth.IWebUi;
+import com.microsoft.azuretools.adauth.PromptBehavior;
+import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.models.AdAuthDetails;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
@@ -40,14 +44,19 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 public class AdAuthManager {
-    private final static Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
     private IWebUi webUi;
     private AzureEnvironment env;
     private AdAuthDetails adAuthDetails;
     private static AdAuthManager instance = null;
 
+    /**
+     * Get the AdAuthManager singleton instance.
+     * @return AdAuthManager singleton instance.
+     * @throws IOException thrown when there is exception.
+     */
     public static AdAuthManager getInstance() throws IOException {
-        if( instance == null) {
+        if (instance == null) {
             instance = new AdAuthManager();
         }
         return instance;
@@ -57,12 +66,25 @@ public class AdAuthManager {
         return getAccessToken(tid, env.resourceManagerEndpoint(), PromptBehavior.Auto);
     }
 
+    /**
+     * Get access token.
+     * @param tid String, tenant id.
+     * @param resource String, resource url.
+     * @param promptBehavior PromptBehavior, prompt enum.
+     * @return String access token.
+     * @throws IOException thrown when fail to get access token.
+     */
     public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
         AuthContext ac = createContext(tid, null);
         AuthResult result = ac.acquireToken(resource, false, adAuthDetails.getAccountEmail(), false);
         return result.getAccessToken();
     }
 
+    /**
+     * Sign in azure account.
+     * @return AuthResult, auth result.
+     * @throws IOException thrown when failed to get auth result.
+     */
     public AuthResult signIn() throws IOException {
 
         // build token cache for azure and graph api
@@ -76,7 +98,7 @@ public class AdAuthManager {
         boolean isDisplayable = result.isUserIdDisplayble();
 
         Map<String, List<String>> tidToSidsMap = new HashMap<>();
-//        List<Tenant> tenants = AccessTokenAzureManager.authTid(commonTid).tenants().list();
+
         List<Tenant> tenants = AccessTokenAzureManager.getTenants(commonTid);
         for (Tenant t : tenants) {
             String tid = t.tenantId();
@@ -108,38 +130,41 @@ public class AdAuthManager {
         return adAuthDetails.getTidToSidsMap();
     }
 
+    /**
+     * Sign out azure account.
+     */
     public void signOut() {
         cleanCache();
         adAuthDetails.setAccountEmail(null);
         adAuthDetails.setTidToSidsMap(null);
-//        saveSettings();
     }
 
     public boolean isSignedIn() {
         return adAuthDetails.getAccountEmail() != null;
     }
 
-    public String getAccountEmail() { return adAuthDetails.getAccountEmail(); }
+    public String getAccountEmail() {
+        return adAuthDetails.getAccountEmail();
+    }
 
     private AuthContext createContext(@NotNull final String tid, final UUID corrId) throws IOException {
-    	String authority = null;
-    	String endpoint = env.activeDirectoryEndpoint();
-    	if (StringUtils.isNullOrEmpty(endpoint)) {
-    		throw new IOException("Azure authority endpoint is empty");
-    	}
-    	
-    	if (endpoint.endsWith("/")) {
-    		authority = endpoint + tid;
-    	} else {
-    		authority = endpoint + "/" + tid;
-    	}
+        String authority = null;
+        String endpoint = env.activeDirectoryEndpoint();
+        if (StringUtils.isNullOrEmpty(endpoint)) {
+            throw new IOException("Azure authority endpoint is empty");
+        }
+        if (endpoint.endsWith("/")) {
+            authority = endpoint + tid;
+        } else {
+            authority = endpoint + "/" + tid;
+        }
         return new AuthContext(authority, Constants.clientId, Constants.redirectUri,
                 this.webUi, true, corrId);
     }
     
     // logout
     private void cleanCache() {
-        AdTokenCache.getInstance().clear();
+        AuthContext.cleanTokenCache();
     }
 
     private AdAuthManager() throws IOException {
@@ -147,7 +172,7 @@ public class AdAuthManager {
         webUi = CommonSettings.getUiFactory().getWebUi();
         env = CommonSettings.getAdEnvironment();
         if (env == null) {
-        	throw new IOException("Azure environment is not setup");
+            throw new IOException("Azure environment is not setup");
         }
     }
 }

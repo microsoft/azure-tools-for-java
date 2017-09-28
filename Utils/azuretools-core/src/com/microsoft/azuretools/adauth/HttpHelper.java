@@ -85,7 +85,7 @@ class HttpHelper {
 
             TokenResponse r = JsonHelper.deserialize(TokenResponse.class, err.toString());
             if (r.error.equals("invalid_grant"))
-                throw new AuthException(message);
+                throw new AuthException(AuthError.InvalidGrant, message);
             else
                 throw new IOException(message);
         }

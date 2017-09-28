@@ -51,6 +51,10 @@ public class AuthContext {
     private final boolean validateAuthority;
     private CacheDriver driver;
 
+    public static void cleanTokenCache() {
+        AdTokenCache.getInstance().clear();
+    }
+
     /**
      * AuthContext to acquire token.
      * @param authority String not null.

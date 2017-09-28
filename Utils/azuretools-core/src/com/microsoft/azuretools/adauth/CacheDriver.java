@@ -36,6 +36,8 @@ abstract class CacheDriver {
     private static final long EXPIREBUFFER = 300000; //in milliseconds
     private static final String DUPLICATETOKEN = "More than one token matches the criteria. The result is ambiguous.";
     private static final String FAILREFRSH = "Fail to refresh the token";
+    private static final String NOAUTHRESULT = "Null auth result in cache entry";
+    private static final String NOREFRESHTOKEN = "Null refresh token in auth result";
 
     private final String authority;
     private final String clientId;
@@ -82,13 +84,16 @@ abstract class CacheDriver {
                                                       @NotNull final TokenCacheKey key) throws AuthException {
         AdTokenCacheEntry entry = result.cacheEntry;
         if (entry == null || entry.getAuthResult() == null) {
-            throw new AuthException("Null auth result in cache entry");
+            if (null != entry) {
+                AdTokenCache.getInstance().remove(entry);
+            }
+            throw new AuthException(NOAUTHRESULT);
         }
       
         AuthResult authResult = entry.getAuthResult();
         if (StringUtils.isNullOrEmpty(authResult.getRefreshToken())) {
             AdTokenCache.getInstance().remove(entry);
-            throw new AuthException("Null refresh token in auth result");
+            throw new AuthException(NOREFRESHTOKEN);
         }
         
         String refreshToken = authResult.getRefreshToken();
