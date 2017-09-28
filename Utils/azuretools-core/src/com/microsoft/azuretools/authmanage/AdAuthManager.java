@@ -87,6 +87,8 @@ public class AdAuthManager {
             if (AuthError.InvalidGrant.equalsIgnoreCase(e.getError())
                     || AuthError.InteractionRequired.equalsIgnoreCase(e.getError())) {
                 throw new IOException(AUTHORIZATIONREQUIRED, e);
+            } else {
+                throw e;
             }
         }
         return result.getAccessToken();
