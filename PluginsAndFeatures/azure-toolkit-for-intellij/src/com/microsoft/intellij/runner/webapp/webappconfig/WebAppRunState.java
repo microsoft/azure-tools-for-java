@@ -226,6 +226,10 @@ public class WebAppRunState implements RunProfileState {
         }
     }
 
+    /**
+     * when upload file to FTP, the plugin will retry 3 times in case of unexpected errors.
+     * For each try, the method will wait 5 seconds.
+     */
     private int uploadFileToFtp(@NotNull FTPClient ftp, @NotNull String path,
                                  @NotNull InputStream stream) throws IOException {
         boolean success = false;
