@@ -27,6 +27,8 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.adauth.AuthContext;
+import com.microsoft.azuretools.adauth.AuthError;
+import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.adauth.AuthResult;
 import com.microsoft.azuretools.adauth.IWebUi;
 import com.microsoft.azuretools.adauth.PromptBehavior;
@@ -49,6 +51,8 @@ public class AdAuthManager {
     private AzureEnvironment env;
     private AdAuthDetails adAuthDetails;
     private static AdAuthManager instance = null;
+
+    private static final String AUTHORIZATIONREQUIRED = "Authorization is required, please sign out and sign in again";
 
     /**
      * Get the AdAuthManager singleton instance.
@@ -76,7 +80,15 @@ public class AdAuthManager {
      */
     public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
         AuthContext ac = createContext(tid, null);
-        AuthResult result = ac.acquireToken(resource, false, adAuthDetails.getAccountEmail(), false);
+        AuthResult result = null;
+        try {
+            result = ac.acquireToken(resource, false, adAuthDetails.getAccountEmail(), false);
+        } catch (AuthException e) {
+            if (AuthError.InvalidGrant.equalsIgnoreCase(e.getError())
+                    || AuthError.InteractionRequired.equalsIgnoreCase(e.getError())) {
+                throw new IOException(AUTHORIZATIONREQUIRED, e);
+            }
+        }
         return result.getAccessToken();
     }
 
