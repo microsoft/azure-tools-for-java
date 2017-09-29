@@ -54,13 +54,17 @@ public class PushImageRunConfiguration extends RunConfigurationBase {
     private static final String MISSING_PASSWORD = "Please specify Password.";
     private static final String MISSING_IMAGE_WITH_TAG = "Please specify Image and Tag.";
     private static final String INVALID_DOCKER_FILE = "Please specify a valid docker file.";
-    private static final String INVALID_IMAGE_WITH_TAG = "Image and Tag should start with '%s/'";
+    private static final String INVALID_IMAGE_WITH_TAG = "Image and Tag name is invalid";
     private static final String INVALID_ARTIFACT_FILE = "The artifact name %s is invalid. "
             + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
             + "and the digits '0' through '9', '.', '-' and '_'.";
     private static final String MISSING_MODEL = "Configuration data model not initialized.";
     private static final String ARTIFACT_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
     private static final String DOMAIN_NAME_REGEX = "^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$";
+    private static final String REPO_COMPONENTS_REGEX = "[a-z0-9]+(?:[._-][a-z0-9]+)*";
+    private static final String TAG_REGEX = "^[\\w]+[\\w.-]*$";
+    private static final int TAG_LENGTH = 128;
+    private static final int REPO_LENGTH = 255;
 
     private final PushImageRunModel dataModel;
     private boolean firstTimeCreated = true;
@@ -122,6 +126,33 @@ public class PushImageRunConfiguration extends RunConfigurationBase {
         }
         if (Utils.isEmptyString(setting.getImageNameWithTag())) {
             throw new ConfigurationException(MISSING_IMAGE_WITH_TAG);
+        }
+        String serverUrl = setting.getServerUrl() + "/";
+        String imageTag = "";
+        int index = setting.getImageNameWithTag().indexOf(serverUrl);
+        if (index >= 0) {
+            imageTag = setting.getImageNameWithTag().substring(index + serverUrl.length());
+        }
+        // check image and tag length and format
+        final String[] repoAndTag = imageTag.split(":");
+        if (imageTag.endsWith(":") || repoAndTag.length != 2 || repoAndTag[0].length() < 1
+                || repoAndTag[0].length() + serverUrl.length() > REPO_LENGTH || repoAndTag[1].length() < 1
+                || repoAndTag[1].length() > TAG_LENGTH) {
+            throw new ConfigurationException(INVALID_IMAGE_WITH_TAG);
+        }
+        // check repo
+        if (repoAndTag[0].endsWith("/")) {
+            throw new ConfigurationException(INVALID_IMAGE_WITH_TAG);
+        }
+        final String[] repoComponents = repoAndTag[0].split("/");
+        for (String component : repoComponents) {
+            if (!component.matches(REPO_COMPONENTS_REGEX)) {
+                throw new ConfigurationException(INVALID_IMAGE_WITH_TAG);
+            }
+        }
+        // check tag
+        if (!repoAndTag[1].matches(TAG_REGEX)) {
+            throw new ConfigurationException(INVALID_IMAGE_WITH_TAG);
         }
         // target package
         if (Utils.isEmptyString(dataModel.getTargetName())) {
