@@ -40,6 +40,8 @@ import com.microsoft.azuretools.core.utils.ProgressDialog;
 import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.webapp.Activator;
 
@@ -811,6 +813,10 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                                 AppServiceCreateDialog.super.okPressed();
                             };
                         });
+                        if (AzureUIRefreshCore.listeners != null) {
+                            AzureUIRefreshCore.execute(
+                                    new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
+                        }
                     } catch (Exception ex) {
                         ex.printStackTrace();
                         LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));

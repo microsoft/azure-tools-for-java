@@ -64,6 +64,7 @@ public class WebAppUtils {
     private static final String NO_TARGET_FILE = "Cannot find target file: %s.";
     private static final String ROOT = "ROOT";
     private static final int FTP_MAX_TRY = 3;
+    private static final int SLEEP_TIME = 5000; // milliseconds
 
     @NotNull
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
@@ -110,30 +111,24 @@ public class WebAppUtils {
             input = new FileInputStream(artifactPath);
             int indexOfDot = artifactPath.lastIndexOf(".");
             String fileType = artifactPath.substring(indexOfDot + 1);
-            boolean success = false;
-            while (!success && ++uploadingTryCount <= FTP_MAX_TRY) {
-                switch (fileType) {
-                    case TYPE_WAR:
-                        if (toRoot) {
-                            WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + ROOT, indicator);
-                            ftp.deleteFile(ftpWebAppsPath + ROOT + "." + TYPE_WAR);
-                            success = ftp.storeFile(ftpWebAppsPath + ROOT + "." + TYPE_WAR, input);
-                        } else {
-                            WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + artifactName, indicator);
-                            ftp.deleteFile(artifactName + "." + TYPE_WAR);
-                            success = ftp.storeFile(ftpWebAppsPath + artifactName + "." + TYPE_WAR, input);
-                        }
-                        break;
-                    case TYPE_JAR:
-                        success = ftp.storeFile(ftpRootPath + ROOT + "." + TYPE_JAR, input);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            if (!success) {
-                int rc = ftp.getReplyCode();
-                throw new IOException("FTP client can't store the artifact, reply code: " + rc);
+
+            switch (fileType) {
+                case TYPE_WAR:
+                    if (toRoot) {
+                        WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + ROOT, indicator);
+                        ftp.deleteFile(ftpWebAppsPath + ROOT + "." + TYPE_WAR);
+                        uploadingTryCount = uploadFileToFtp(ftp, ftpWebAppsPath + ROOT + "." + TYPE_WAR, input, indicator);
+                    } else {
+                        WebAppUtils.removeFtpDirectory(ftp, ftpWebAppsPath + artifactName, indicator);
+                        ftp.deleteFile(artifactName + "." + TYPE_WAR);
+                        uploadingTryCount = uploadFileToFtp(ftp, ftpWebAppsPath + artifactName + "." + TYPE_WAR, input, indicator);
+                    }
+                    break;
+                case TYPE_JAR:
+                    uploadingTryCount = uploadFileToFtp(ftp, ftpRootPath + ROOT + "." + TYPE_JAR, input, indicator);
+                    break;
+                default:
+                    break;
             }
             if (indicator != null) indicator.setText("Logging out of FTP server...");
             ftp.logout();
@@ -297,14 +292,14 @@ public class WebAppUtils {
     public static void uploadWebConfig(WebApp webApp, InputStream fileStream, IProgressIndicator indicator) throws IOException {
         FTPClient ftp = null;
         try {
-            PublishingProfile pp = webApp.getPublishingProfile();
-            ftp = getFtpConnection(pp);
-
             if(indicator != null) indicator.setText("Stopping the service...");
             webApp.stop();
 
+            PublishingProfile pp = webApp.getPublishingProfile();
+            ftp = getFtpConnection(pp);
+
             if(indicator != null) indicator.setText("Uploading " + webConfigFilename + "...");
-            ftp.storeFile(ftpRootPath + webConfigFilename, fileStream);
+            uploadFileToFtp(ftp, ftpRootPath + webConfigFilename, fileStream, indicator);
 
             if(indicator != null) indicator.setText("Starting the service...");
             webApp.start();
@@ -313,6 +308,27 @@ public class WebAppUtils {
                 ftp.disconnect();
             }
         }
+    }
+
+    private static int uploadFileToFtp(FTPClient ftp, String path, InputStream stream, IProgressIndicator indicator) throws IOException {
+        boolean success = false;
+        int count = 0;
+        while (!success && ++count < FTP_MAX_TRY) {
+            try {
+                Thread.sleep(SLEEP_TIME);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            success = ftp.storeFile(path, stream);
+        }
+        if (!success) {
+            int rc = ftp.getReplyCode();
+            throw new IOException("FTP client can't store the artifact, reply code: " + rc);
+        }
+        if (indicator != null) {
+            indicator.setText("Uploading successfully...");
+        }
+        return count;
     }
 
     public static class WebAppDetails {
