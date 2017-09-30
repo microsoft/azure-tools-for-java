@@ -170,8 +170,7 @@ public class ContainerSettingPanel implements ContainerSettingView {
         txtServerUrl.setText(acrInfo.getServerUrl());
         txtUserName.setText(acrInfo.getUsername());
         passwordField.setText(acrInfo.getPassword());
-        txtImageTag.setText(getImageTagWithoutServerUrl(acrInfo.getImageNameWithTag(), acrInfo
-                .getServerUrl()));
+        txtImageTag.setText(acrInfo.getImageNameWithTag());
         txtStartupFile.setText(acrInfo.getStartupFile());
     }
 
@@ -217,25 +216,12 @@ public class ContainerSettingPanel implements ContainerSettingView {
         txtServerUrl.setText(setting.getServerUrl());
         txtUserName.setText(setting.getUsername());
         passwordField.setText(setting.getPassword());
-        txtImageTag.setText(getImageTagWithoutServerUrl(setting.getImageNameWithTag(), setting
-                .getServerUrl()));
+        txtImageTag.setText(setting.getImageNameWithTag());
         txtImageTag.requestFocus();
     }
 
     @Override
     public void disposeEditor() {
         presenter.onDetachView();
-    }
-
-    private String getImageTagWithoutServerUrl(String imageTag, String serverUrl) {
-        if (imageTag == null || serverUrl == null) {
-            return imageTag;
-        }
-        serverUrl += "/";
-        int index = imageTag.indexOf(serverUrl);
-        if (index >= 0) {
-            return imageTag.substring(index + serverUrl.length());
-        }
-        return imageTag;
     }
 }

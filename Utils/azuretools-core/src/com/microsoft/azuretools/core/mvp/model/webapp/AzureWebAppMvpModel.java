@@ -185,7 +185,7 @@ public class AzureWebAppMvpModel {
                         .withRegion(Region.findByLabelOrName(model.getLocationName()))
                         .withNewResourceGroup(model.getResourceGroupName())
                         .withNewLinuxPlan(asp)
-                        .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
+                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
                         .withStartUpCommand(pr.getStartupFile()).create();
             } else {
@@ -200,7 +200,7 @@ public class AzureWebAppMvpModel {
                         .withRegion(Region.findByLabelOrName(model.getLocationName()))
                         .withExistingResourceGroup(model.getResourceGroupName())
                         .withNewLinuxPlan(asp)
-                        .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
+                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
                         .withStartUpCommand(pr.getStartupFile()).create();
             }
@@ -212,7 +212,7 @@ public class AzureWebAppMvpModel {
                 app = webAppDefinition
                         .withExistingLinuxPlan(asp)
                         .withNewResourceGroup(model.getResourceGroupName())
-                        .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
+                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
                         .withStartUpCommand(pr.getStartupFile()).create();
             } else {
@@ -220,7 +220,7 @@ public class AzureWebAppMvpModel {
                 app = webAppDefinition
                         .withExistingLinuxPlan(asp)
                         .withExistingResourceGroup(model.getResourceGroupName())
-                        .withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
+                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
                         .withCredentials(pr.getUsername(), pr.getPassword())
                         .withStartUpCommand(pr.getStartupFile()).create();
             }
@@ -242,7 +242,7 @@ public class AzureWebAppMvpModel {
         clearTags(app);
         if (imageSetting instanceof PrivateRegistryImageSetting) {
             PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
-            app.update().withPrivateRegistryImage(pr.getImageNameWithTag(), pr.getServerUrl())
+            app.update().withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
                     .withCredentials(pr.getUsername(), pr.getPassword())
                     .withStartUpCommand(pr.getStartupFile()).apply();
         } else {

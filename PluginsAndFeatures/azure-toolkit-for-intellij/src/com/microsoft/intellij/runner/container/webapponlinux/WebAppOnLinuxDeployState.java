@@ -107,10 +107,10 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                     // build image
                     PrivateRegistryImageSetting acrInfo = deployModel.getPrivateRegistryImageSetting();
                     processHandler.setText(String.format("Building image ...  [%s]",
-                            acrInfo.getImageNameWithTag()));
+                            acrInfo.getImageTagWithServerUrl()));
                     DockerClient docker = DefaultDockerClient.fromEnv().build();
                     DockerUtil.buildImage(docker,
-                            acrInfo.getImageNameWithTag(),
+                            acrInfo.getImageTagWithServerUrl(),
                             targetDockerfile.getParent(),
                             targetDockerfile.getFileName().toString(),
                             new DockerProgressHandler(processHandler)
@@ -119,7 +119,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
                     // push to ACR
                     processHandler.setText(String.format("Pushing to ACR ... [%s] ", acrInfo.getServerUrl()));
                     DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
-                            acrInfo.getImageNameWithTag(), new DockerProgressHandler(processHandler));
+                            acrInfo.getImageTagWithServerUrl(), new DockerProgressHandler(processHandler));
 
                     // deploy
                     if (deployModel.isCreatingNewWebAppOnLinux()) {

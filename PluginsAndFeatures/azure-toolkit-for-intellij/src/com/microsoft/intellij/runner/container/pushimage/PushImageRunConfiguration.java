@@ -131,7 +131,7 @@ public class PushImageRunConfiguration extends RunConfigurationBase {
         if (Utils.isEmptyString(setting.getPassword())) {
             throw new ConfigurationException(MISSING_PASSWORD);
         }
-        String imageTag = setting.getImageNameWithTag();
+        String imageTag = setting.getImageTagWithServerUrl();
         if (Utils.isEmptyString(imageTag)) {
             throw new ConfigurationException(MISSING_IMAGE_WITH_TAG);
         }

@@ -69,11 +69,10 @@ public class PrivateRegistryImageSetting extends ImageSetting {
         this.password = password;
     }
 
-    @Override
-    public String getImageNameWithTag() {
+    public String getImageTagWithServerUrl() {
         if (this.serverUrl != null && super.getImageNameWithTag() != null) {
             return this.serverUrl + "/" + super.getImageNameWithTag();
         }
-        return super.getImageNameWithTag();
+        return "";
     }
 }
