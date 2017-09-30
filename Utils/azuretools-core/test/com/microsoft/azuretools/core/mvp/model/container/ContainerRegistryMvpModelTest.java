@@ -23,16 +23,22 @@
 
 package com.microsoft.azuretools.core.mvp.model.container;
 
+import com.microsoft.azure.Page;
+import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.implementation.AppServiceManager;
 import com.microsoft.azure.management.containerregistry.Registries;
 import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.management.containerregistry.RegistryPassword;
+import com.microsoft.azure.management.containerregistry.implementation.RegistryListCredentials;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-
+import com.microsoft.rest.RestException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,13 +48,19 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
@@ -85,7 +97,10 @@ public class ContainerRegistryMvpModelTest {
     private Registries registriesMock;
 
     @Mock
-    private Registry registryMock;
+    private Registry registryMock1;
+
+    @Mock
+    private Registry registryMock2;
 
     @Mock
     private Azure azureMockWithoutRegistries;
@@ -105,7 +120,7 @@ public class ContainerRegistryMvpModelTest {
         when(authMethodManagerMock.getAzureManager()).thenReturn(azureManagerMock);
         when(azureManagerMock.getSubscriptionManager()).thenReturn(subscriptionManagerMock);
         when(azureMock.containerRegistries()).thenReturn(registriesMock);
-        when(registriesMock.getById(MOCK_REGISTRY_ID)).thenReturn(registryMock);
+        when(registriesMock.getById(MOCK_REGISTRY_ID)).thenReturn(registryMock1);
         when(AzureMvpModel.getInstance()).thenReturn(mvpModel);
         containerRegistryMvpModel = ContainerRegistryMvpModel.getInstance();
     }
@@ -122,9 +137,123 @@ public class ContainerRegistryMvpModelTest {
     }
 
     @Test
+    public void testListRegistryBySubscriptionId() {
+        List<Registry> storedList = new PagedList<Registry>() {
+            @Override
+            public Page<Registry> nextPage(String nextPageLink) throws RestException, IOException {
+                return null;
+            }
+        };
+        storedList.add(registryMock1);
+        storedList.add(registryMock2);
+        when(registriesMock.list()).thenReturn((PagedList<Registry>)storedList);
+
+        List<ResourceEx<Registry>> registryList = containerRegistryMvpModel.listRegistryBySubscriptionId(MOCK_SUBSCRIPTION_ID, false);
+        assertEquals(2, registryList.size());
+        verify(registriesMock, times(1)).list();
+        reset(registriesMock);
+
+        containerRegistryMvpModel.listRegistryBySubscriptionId(MOCK_SUBSCRIPTION_ID, false);
+        verify(registriesMock, times(0)).list();
+
+        when(registriesMock.list()).thenReturn((PagedList<Registry>)storedList);
+        containerRegistryMvpModel.listRegistryBySubscriptionId(MOCK_SUBSCRIPTION_ID, true);
+        verify(registriesMock, times(1)).list();
+    }
+
+    @Test
+    public void testListContainerRegistries() throws IOException {
+        List<Subscription> subscriptions = new ArrayList<Subscription>();
+        Subscription sub1 = mock(Subscription.class); when(sub1.subscriptionId()).thenReturn("1");
+        Subscription sub2 = mock(Subscription.class); when(sub2.subscriptionId()).thenReturn("2");
+        Subscription sub3 = mock(Subscription.class); when(sub3.subscriptionId()).thenReturn("3");
+        when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);
+
+        ContainerRegistryMvpModel mockModel = spy(containerRegistryMvpModel);
+        when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
+        when(registriesMock.list()).thenReturn(new PagedList<Registry>() {
+            @Override
+            public Page<Registry> nextPage(String nextPageLink) throws RestException, IOException {
+                return null;
+            }
+        });
+
+        mockModel.listContainerRegistries(false);
+        verify(mockModel, times(0)).listRegistryBySubscriptionId(anyString(), eq(false));
+
+        subscriptions.add(sub1);
+        subscriptions.add(sub2);
+        subscriptions.add(sub3);
+        mockModel.listContainerRegistries(false);
+        verify(mockModel, times(3)).listRegistryBySubscriptionId(anyString(), eq(false));
+        reset(mockModel);
+
+        mockModel.listContainerRegistries(true);
+        verify(mockModel, times(3)).listRegistryBySubscriptionId(anyString(), eq(true));
+    }
+
+    @Test(expected = Exception.class)
+    public void testCreateImageSettingWithRegistryWhenAdminOff() throws Exception {
+        when(registryMock1.adminUserEnabled()).thenReturn(false);
+        containerRegistryMvpModel.createImageSettingWithRegistry(registryMock1);
+    }
+
+    @Test(expected = Exception.class)
+    public void testCreateImageSettingWithRegistryWhenCredentialIsNull() throws Exception {
+        when(registryMock1.adminUserEnabled()).thenReturn(true);
+        when(registryMock1.listCredentials()).thenReturn(null);
+        containerRegistryMvpModel.createImageSettingWithRegistry(registryMock1);
+    }
+
+    @Test(expected = Exception.class)
+    public void testCreateImageSettingWithRegistryWhenUserNameIsEmpty() throws Exception {
+        when(registryMock1.adminUserEnabled()).thenReturn(true);
+        RegistryListCredentials credentials = mock(RegistryListCredentials.class);
+        when(registryMock1.listCredentials()).thenReturn(credentials);
+        when(credentials.username()).thenReturn("");
+        containerRegistryMvpModel.createImageSettingWithRegistry(registryMock1);
+    }
+
+    @Test(expected = Exception.class)
+    public void testCreateImageSettingWithRegistryWhenPasswordIsNull() throws Exception {
+        when(registryMock1.adminUserEnabled()).thenReturn(true);
+        RegistryListCredentials credentials = mock(RegistryListCredentials.class);
+        when(registryMock1.listCredentials()).thenReturn(credentials);
+        when(credentials.passwords()).thenReturn(null);
+        containerRegistryMvpModel.createImageSettingWithRegistry(registryMock1);
+    }
+
+    @Test(expected = Exception.class)
+    public void testCreateImageSettingWithRegistryWhenPasswordIsEmpty() throws Exception {
+        when(registryMock1.adminUserEnabled()).thenReturn(true);
+        RegistryListCredentials credentials = mock(RegistryListCredentials.class);
+        when(registryMock1.listCredentials()).thenReturn(credentials);
+        List<RegistryPassword> passwords = new ArrayList<>();
+        when(credentials.passwords()).thenReturn(passwords);
+        containerRegistryMvpModel.createImageSettingWithRegistry(registryMock1);
+    }
+
+    @Test
+    public void testCreateImageSettingWithRegistry() throws Exception {
+        when(registryMock1.adminUserEnabled()).thenReturn(true);
+        RegistryListCredentials credentials = mock(RegistryListCredentials.class);
+        when(registryMock1.listCredentials()).thenReturn(credentials);
+        when(registryMock1.loginServerUrl()).thenReturn("url");
+        when(credentials.username()).thenReturn("Alice");
+        List<RegistryPassword> passwords = new ArrayList<>();
+        passwords.add(new RegistryPassword().withValue("111"));
+        when(credentials.passwords()).thenReturn(passwords);
+        PrivateRegistryImageSetting setting = containerRegistryMvpModel.createImageSettingWithRegistry(registryMock1);
+        assertEquals(setting.getUsername(), "Alice");
+        assertEquals(setting.getPassword(), "111");
+        assertEquals(setting.getServerUrl(), "url");
+        assertEquals(setting.getImageNameWithTag(), "image:tag");
+    }
+
+    @Test
     public void testGetContainerRegistry() throws Exception {
         Registry registry = containerRegistryMvpModel.getContainerRegistry(MOCK_SUBSCRIPTION_ID, MOCK_REGISTRY_ID);
-        assertEquals(registryMock, registry);
+        assertEquals(registryMock1, registry);
     }
 
     @Test(expected = Exception.class)
@@ -137,21 +266,20 @@ public class ContainerRegistryMvpModelTest {
         Registry.Update update = mock(Registry.Update.class);
         Registry.Update with = mock(Registry.Update.class);
         Registry.Update without = mock(Registry.Update.class);
-        when(registryMock.update()).thenReturn(update);
+        when(registryMock1.update()).thenReturn(update);
         when(update.withRegistryNameAsAdminUser()).thenReturn(with);
         when(update.withoutRegistryNameAsAdminUser()).thenReturn(without);
 
         Registry registry;
         registry = containerRegistryMvpModel.setAdminUserEnabled(MOCK_SUBSCRIPTION_ID, MOCK_REGISTRY_ID, true);
         verify(with, times(1)).apply();
-        assertEquals(registryMock, registry);
+        assertEquals(registryMock1, registry);
 
         registry = containerRegistryMvpModel.setAdminUserEnabled(MOCK_SUBSCRIPTION_ID, MOCK_REGISTRY_ID, false);
         verify(without, times(1)).apply();
-        assertEquals(registryMock, registry);
+        assertEquals(registryMock1, registry);
 
         registry = containerRegistryMvpModel.setAdminUserEnabled(MOCK_SUBSCRIPTION_ID_WITHOUT_REGISTRIES, MOCK_REGISTRY_ID, true);
         assertEquals(null, registry);
     }
-
 }
