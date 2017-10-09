@@ -22,9 +22,9 @@ package com.microsoft.azuretools.hdinsight.projects;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 
 public class MavenPluginUtil {
-	// http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=1774116
-	private static final String m2ePluginMarketplaceURL = "https://go.microsoft.com/fwlink/?linkid=857947";
-	private static final String m2ePluginSymbolicName = "org.eclipse.m2e.core";
+	// Forward link is not allowed here
+	private static final String m2ePluginMarketplaceURL = "http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=1774116";
+	private static final String m2ePluginSymbolicName = "org.eclipse.m2e.lifecyclemapping.defaults";
 	
 	public static boolean checkMavenPluginInstallation() {
 		return PluginUtil.checkPlugInInstallation(m2ePluginSymbolicName);

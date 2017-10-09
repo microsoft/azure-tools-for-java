@@ -23,6 +23,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -269,6 +271,14 @@ public class SparkLibraryOptionsPanel extends Composite {
 		comboBoxUseMaven.setEnabled(toEnable);
 		
 		if (toEnable && MavenPluginUtil.checkMavenPluginInstallation() != true) {
+		    if (parentPage != null) {
+		    	IWizard wizard = parentPage.getWizard();
+		    	parentPage.getShell().close();
+		    	if (wizard != null) {
+		    		wizard.performCancel();
+		    	}
+		    }
+		    
 			MavenPluginUtil.installMavenPlugin();
 		}
 	}
