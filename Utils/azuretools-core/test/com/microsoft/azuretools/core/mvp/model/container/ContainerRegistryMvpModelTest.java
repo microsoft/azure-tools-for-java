@@ -30,6 +30,7 @@ import com.microsoft.azure.management.appservice.implementation.AppServiceManage
 import com.microsoft.azure.management.containerregistry.Registries;
 import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azure.management.containerregistry.RegistryPassword;
+import com.microsoft.azure.management.containerregistry.implementation.RegistryInner;
 import com.microsoft.azure.management.containerregistry.implementation.RegistryListCredentials;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -266,7 +267,9 @@ public class ContainerRegistryMvpModelTest {
         Registry.Update update = mock(Registry.Update.class);
         Registry.Update with = mock(Registry.Update.class);
         Registry.Update without = mock(Registry.Update.class);
+        RegistryInner innerMock = mock(RegistryInner.class);
         when(registryMock1.update()).thenReturn(update);
+        when(registryMock1.inner()).thenReturn(innerMock);
         when(update.withRegistryNameAsAdminUser()).thenReturn(with);
         when(update.withoutRegistryNameAsAdminUser()).thenReturn(without);
 
