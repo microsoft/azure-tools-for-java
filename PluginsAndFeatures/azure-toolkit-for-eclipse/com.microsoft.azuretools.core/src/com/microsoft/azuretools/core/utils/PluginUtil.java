@@ -529,6 +529,29 @@ public class PluginUtil {
 		return bundles != null && bundles.length >= 0;
 	}
 	
+	/**
+	 * @param targetVersion: Target minimum Java version
+	 * @return Return true if Java version is higher than target. By default return true since only Java 1.7 is required
+	 */
+	public static boolean isJavaVersionHigherThanTarget(double targetVersion) {
+		try {
+			String javaVersion = System.getProperty("java.version");
+			int index = javaVersion.indexOf('.', javaVersion.indexOf('.') + 1);
+			if (index > 0) {
+				javaVersion = javaVersion.substring(0, index);
+				Float version = Float.valueOf(javaVersion);
+				if (version.floatValue() >= targetVersion) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		} catch (Exception e) {
+		}
+		
+		return true;
+	}
+	
 	private static void forceInstallPluginUsingP2(String pluginGroupID) {
 		URI repoURI = getEclipseP2Repository();
 		ProvisioningUI provisioningUI = ProvisioningUI.getDefaultUI();
