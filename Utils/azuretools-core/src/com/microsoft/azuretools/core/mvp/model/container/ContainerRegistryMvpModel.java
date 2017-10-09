@@ -140,6 +140,7 @@ public class ContainerRegistryMvpModel {
         if (registries != null) {
             Registry registry = registries.getById(id);
             if (registry != null) {
+                clearTags(registry);
                 if (enabled) {
                     registry.update().withRegistryNameAsAdminUser().apply();
                 } else {
@@ -150,6 +151,13 @@ public class ContainerRegistryMvpModel {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Work Around: see {@link com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel#clearTags(Object)}.
+     */
+    private void clearTags(@NotNull final Registry registry) {
+        registry.inner().withTags(null);
     }
 
     private void clearRegistryMap() {
