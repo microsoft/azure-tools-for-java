@@ -15,6 +15,7 @@ Azure Toolkits for Java is an open-source project that helps Java developers eas
 * [Get Started Tutorial](https://docs.microsoft.com/en-us/azure/app-service-web/app-service-web-intellij-create-hello-world-web-app)
 * [Home Page of Azure Toolkit for IntelliJ](https://docs.microsoft.com/en-us/java/azure/intellij/azure-toolkit-for-intellij)
 * [Java Developer Center on Azure](https://docs.microsoft.com/en-us/java/azure/)
+* [Get Started for HDInsight](https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-apache-spark-intellij-tool-plugin)
 
 ## Azure Toolkit for Eclipse
 
@@ -28,6 +29,7 @@ Azure Toolkits for Java is an open-source project that helps Java developers eas
 * [Get Started Tutorial](https://docs.microsoft.com/azure/app-service-web/app-service-web-eclipse-create-hello-world-web-app)
 * [Home Page of Azure Toolkit for Eclipse](https://docs.microsoft.com/en-us/java/azure/eclipse/azure-toolkit-for-eclipse)
 * [Java Developer Center on Azure](https://docs.microsoft.com/en-us/java/azure/)
+* [Get Started for HDInsight](https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-apache-spark-eclipse-tool-plugin)
 
 ## Disclaimer
 *azure-tools-for-java uses JxBrowser http://www.teamdev.com/jxbrowser, which is a proprietary software. The use of JxBrowser is governed by JxBrowser Product Licence Agreement http://www.teamdev.com/jxbrowser-licence-agreement. If you would like to use JxBrowser in your development, please contact TeamDev.*
