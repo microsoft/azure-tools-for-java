@@ -57,7 +57,7 @@ class AuthCodeInteractiveHandler {
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
-        if (StringUtils.isNullOrEmpty(this.redirectUri.getFragment())) {
+        if (!StringUtils.isNullOrEmpty(this.redirectUri.getFragment())) {
             throw new IllegalArgumentException("redirectUri: " + AuthErrorMessage.RedirectUriContainsFragment);
         }
         this.webUi = webUi;
