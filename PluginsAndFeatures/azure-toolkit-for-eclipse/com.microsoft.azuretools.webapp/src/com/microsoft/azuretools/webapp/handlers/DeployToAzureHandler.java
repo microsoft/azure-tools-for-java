@@ -53,6 +53,7 @@ public class DeployToAzureHandler extends AzureAbstractHandler {
             }
         } else {
             MessageDialog.openInformation(shell, TITLE, NO_PROJECT_ERR);
+            return null;
         }
         try {
             if (MavenUtils.isMavenProject(project)) {
