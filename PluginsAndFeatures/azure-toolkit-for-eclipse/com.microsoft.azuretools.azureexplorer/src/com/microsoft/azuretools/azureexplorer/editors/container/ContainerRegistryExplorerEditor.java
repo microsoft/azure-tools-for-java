@@ -185,9 +185,6 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         glPanelHolder.horizontalSpacing = 0;
         panelHolder.setLayout(glPanelHolder);
 
-        setScrolledCompositeContent();
-        setChildrenTransparent(panelHolder);
-
         progressBar = new ProgressBar(panelHolder, SWT.HORIZONTAL | SWT.INDETERMINATE);
         GridData gdProgressBar = new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1);
         gdProgressBar.heightHint = PROGRESS_BAR_HEIGHT;
@@ -493,6 +490,10 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
             }
         });
         disableWidgets(true, true);
+
+        setScrolledCompositeContent();
+        setChildrenTransparent(panelHolder);
+        setChildrenTransparent(container);
     }
 
     @Override
