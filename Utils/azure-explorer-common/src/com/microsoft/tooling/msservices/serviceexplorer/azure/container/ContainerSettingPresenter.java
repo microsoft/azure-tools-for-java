@@ -20,20 +20,18 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.container.common;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
 import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-
-import org.jetbrains.annotations.NotNull;
+import rx.Observable;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import rx.Observable;
 
 public class ContainerSettingPresenter<V extends ContainerSettingView> extends MvpPresenter<V> {
 

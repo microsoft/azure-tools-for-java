@@ -20,13 +20,12 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.container.common;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
 import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
