@@ -33,6 +33,8 @@ import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 
+import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerSettingPresenter;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerSettingView;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.DefaultComboBoxModel;

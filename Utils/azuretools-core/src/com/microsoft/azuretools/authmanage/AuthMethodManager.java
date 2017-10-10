@@ -48,8 +48,10 @@ import java.util.logging.Logger;
 
 public class AuthMethodManager {
     private final static Logger LOGGER = Logger.getLogger(AuthMethodManager.class.getName());
-    private static final String CANNOT_GET_AZURE_MANAGER = "Cannot get Azure Manager.";
-    private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure by subscription ID.";
+    private static final String CANNOT_GET_AZURE_MANAGER = "Cannot get Azure Manager. "
+            + "Please check if you have already signed in.";
+    private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure with Subscription ID: %s. "
+            + "Please check if you have already signed in with this Subscription.";
     private static AuthMethodManager instance = null;
     private AuthMethodDetails authMethodDetails = null;
     private AzureManager azureManager;
@@ -73,7 +75,7 @@ public class AuthMethodManager {
         }
         Azure azure = azureManager.getAzure(sid);
         if (azure == null) {
-            throw new IOException(CANNOT_GET_AZURE_BY_SID);
+            throw new IOException(String.format(CANNOT_GET_AZURE_BY_SID, sid));
         }
         return azure;
     }
