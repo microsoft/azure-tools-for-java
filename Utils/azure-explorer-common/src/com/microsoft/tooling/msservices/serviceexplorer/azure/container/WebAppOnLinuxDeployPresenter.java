@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.container.webapponlinux.ui;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;

@@ -50,6 +50,9 @@ import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
+import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployPresenter;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployView;
+
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
 
