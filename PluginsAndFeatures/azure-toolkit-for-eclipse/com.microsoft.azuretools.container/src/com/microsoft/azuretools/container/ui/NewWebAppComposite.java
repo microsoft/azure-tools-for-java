@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Button;
 
 public class NewWebAppComposite extends Composite {
-    private Text txtAppName;
+    Text txtAppName;
     Text txtAppServicePlanName;
     Combo cbLocation;
     Combo cbPricingTier;

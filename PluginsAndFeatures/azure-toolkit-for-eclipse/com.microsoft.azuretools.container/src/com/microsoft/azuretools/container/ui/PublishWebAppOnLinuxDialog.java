@@ -25,6 +25,7 @@ import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployView;
 
@@ -47,7 +48,143 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
     @Override
     protected void okPressed() {
         // TODO: validation & execution
+        boolean validated = true;
+        if (!validated) {
+            return;
+        }
+        execute();
         super.okPressed();
+    }
+
+    private void execute() {
+        WebAppOnLinuxDeployModel model = new WebAppOnLinuxDeployModel();
+        // set web app info
+        if (rdoExistingWebApp.getSelection()) {
+            // existing web app
+            model.setCreatingNewWebAppOnLinux(false);
+            ResourceEx<WebApp> selectedWebApp = getSelectedWebApp();
+            if (selectedWebApp != null) {
+                model.setWebAppId(selectedWebApp.getResource().id());
+                model.setWebAppName(selectedWebApp.getResource().name());
+                model.setSubscriptionId(selectedWebApp.getSubscriptionId());
+                model.setResourceGroupName(selectedWebApp.getResource().resourceGroupName());
+            } else {
+                model.setWebAppId(null);
+                model.setWebAppName(null);
+                model.setSubscriptionId(null);
+                model.setResourceGroupName(null);
+            }
+        } else if (rdoNewWebApp.getSelection()) {
+            // create new web app
+            model.setCreatingNewWebAppOnLinux(true);
+            model.setWebAppId("");
+            model.setWebAppName(cpNew.txtAppName.getText());
+            Subscription selectedSubscription = getSelectedSubscription();
+            if (selectedSubscription != null) {
+                model.setSubscriptionId(selectedSubscription.subscriptionId());
+            }
+
+            // resource group
+            if (cpNew.rdoExistingResourceGroup.getSelection()) {
+                // existing RG
+                model.setCreatingNewResourceGroup(false);
+                ResourceGroup selectedRg = getSelectedResourceGroup();
+                if (selectedRg != null) {
+                    model.setResourceGroupName(selectedRg.name());
+                } else {
+                    model.setResourceGroupName(null);
+                }
+            } else if (cpNew.rdoNewResourceGroup.getSelection()) {
+                // new RG
+                model.setCreatingNewResourceGroup(true);
+                model.setResourceGroupName(cpNew.txtNewResourceGroupName.getText());
+            }
+
+            // app service plan
+            if (cpNew.rdoNewAppServicePlan.getSelection()) {
+                model.setCreatingNewAppServicePlan(true);
+                model.setAppServicePlanName(cpNew.txtAppServicePlanName.getText());
+                Location selectedLocation = getSelectedLocation();
+                if (selectedLocation != null) {
+                    model.setLocationName(selectedLocation.region().name());
+                } else {
+                    model.setLocationName(null);
+                }
+
+                PricingTier selectedPricingTier = getSelectedPricingTier();
+                if (selectedPricingTier != null) {
+                    model.setPricingSkuTier(selectedPricingTier.toSkuDescription().tier());
+                    model.setPricingSkuSize(selectedPricingTier.toSkuDescription().size());
+                } else {
+                    model.setPricingSkuTier(null);
+                    model.setPricingSkuSize(null);
+                }
+            } else if (cpNew.rdoExistingAppServicePlan.getSelection()) {
+                model.setCreatingNewAppServicePlan(false);
+                AppServicePlan selectedAsp = getSelectedAppServicePlan();
+                if (selectedAsp != null) {
+                    model.setAppServicePlanId(selectedAsp.id());
+                } else {
+                    model.setAppServicePlanId(null);
+                }
+            }
+        }
+
+        // TODO
+    }
+
+    private ResourceEx<WebApp> getSelectedWebApp() {
+        ResourceEx<WebApp> selectedWebApp = null;
+        int index = cpExisting.tblWebApps.getSelectionIndex();
+        if (webAppList != null && index >= 0 && index < webAppList.size()) {
+            selectedWebApp = webAppList.get(index);
+        }
+        return selectedWebApp;
+    }
+
+    private AppServicePlan getSelectedAppServicePlan() {
+        AppServicePlan asp = null;
+        int index = cpNew.cbExistingAppServicePlan.getSelectionIndex();
+        if (appServicePlanList != null && index >= 0 && index < appServicePlanList.size()) {
+            asp = appServicePlanList.get(index);
+        }
+        return asp;
+    }
+
+    private PricingTier getSelectedPricingTier() {
+        PricingTier pt = null;
+        int index = cpNew.cbPricingTier.getSelectionIndex();
+        if (pricingTierList != null && index >= 0 && index < pricingTierList.size()) {
+            pt = pricingTierList.get(index);
+        }
+        return pt;
+    }
+
+    private Location getSelectedLocation() {
+        Location loc = null;
+        int locIndex = cpNew.cbLocation.getSelectionIndex();
+        if (locationList != null && locIndex >= 0 && locIndex < locationList.size()) {
+            loc = locationList.get(locIndex);
+        }
+        return loc;
+    }
+
+    private ResourceGroup getSelectedResourceGroup() {
+        ResourceGroup rg = null;
+        int rgIndex = cpNew.cbExistingResourceGroup.getSelectionIndex();
+        if (resourceGroupList != null && rgIndex >= 0 && rgIndex < resourceGroupList.size()) {
+            rg = resourceGroupList.get(rgIndex);
+        }
+        return rg;
+    }
+
+    private Subscription getSelectedSubscription() {
+        Subscription sub = null;
+        int subsIndex = cpNew.cbSubscription.getSelectionIndex();
+        if (subscriptionList != null && subsIndex >= 0 && subsIndex < subscriptionList.size()) {
+            sub = subscriptionList.get(subsIndex);
+        }
+        return sub;
     }
 
     @Override
@@ -168,13 +305,12 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
     }
 
     private void onAppServicePlanSelection() {
-        int index = cpNew.cbExistingAppServicePlan.getSelectionIndex();
-        if (index >= 0 && index < appServicePlanList.size()) {
-            AppServicePlan asp = appServicePlanList.get(index);
-            if (asp != null) {
-                cpNew.lblLocationValue.setText(asp.regionName());
-                cpNew.lblPricingTierValue.setText(asp.pricingTier().toString());
-            }
+        cpNew.lblLocationValue.setText("N/A");
+        cpNew.lblPricingTierValue.setText("N/A");
+        AppServicePlan asp = getSelectedAppServicePlan();
+        if (asp != null) {
+            cpNew.lblLocationValue.setText(asp.regionName());
+            cpNew.lblPricingTierValue.setText(asp.pricingTier().toString());
         }
     }
 
@@ -182,17 +318,10 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
         cpNew.cbExistingAppServicePlan.removeAll();
         cpNew.lblLocationValue.setText("");
         cpNew.lblPricingTierValue.setText("");
-        Subscription sub = null;
-        int subsIndex = cpNew.cbSubscription.getSelectionIndex();
-        if (subsIndex >= 0 && subsIndex < subscriptionList.size()) {
-            sub = subscriptionList.get(subsIndex);
-        }
-        ResourceGroup rg = null;
-        int rgIndex = cpNew.cbExistingResourceGroup.getSelectionIndex();
-        if (rgIndex >= 0 && rgIndex < resourceGroupList.size()) {
-            rg = resourceGroupList.get(rgIndex);
-        }
+        Subscription sub = getSelectedSubscription();
+        ResourceGroup rg = getSelectedResourceGroup();
         if (sub != null && rg != null) {
+         // TODO: a minor bug here, if rg is null, related labels should be set to "N/A"
             webAppOnLinuxDeployPresenter.onLoadAppServicePlan(sub.subscriptionId(), rg.name());
         }
 
@@ -201,13 +330,10 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
     private void onSubscriptionSelection() {
         cpNew.cbExistingResourceGroup.removeAll();
         cpNew.cbLocation.removeAll();
-        int selectedIndex = cpNew.cbSubscription.getSelectionIndex();
-        if (selectedIndex >= 0 && selectedIndex < subscriptionList.size()) {
-            Subscription sb = subscriptionList.get(selectedIndex);
-            if (sb != null) {
-                webAppOnLinuxDeployPresenter.onLoadResourceGroup(sb.subscriptionId());
-                webAppOnLinuxDeployPresenter.onLoadLocationList(sb.subscriptionId());
-            }
+        Subscription sb = getSelectedSubscription();
+        if (sb != null) {
+            webAppOnLinuxDeployPresenter.onLoadResourceGroup(sb.subscriptionId());
+            webAppOnLinuxDeployPresenter.onLoadLocationList(sb.subscriptionId());
         }
     }
 
@@ -217,7 +343,8 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
         webAppOnLinuxDeployPresenter.onLoadAppList();
         // load subscriptions
         webAppOnLinuxDeployPresenter.onLoadSubscriptionList();
-
+        // load pricing tiers
+        webAppOnLinuxDeployPresenter.onLoadPricingTierList();
     }
 
     /**
@@ -257,8 +384,8 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
         }
         if (cpNew.cbExistingAppServicePlan.getItemCount() > 0) {
             cpNew.cbExistingAppServicePlan.select(0);
-            onAppServicePlanSelection();
         }
+        onAppServicePlanSelection();
     }
 
     @Override
@@ -294,8 +421,8 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
         }
         if (cpNew.cbExistingResourceGroup.getItemCount() > 0) {
             cpNew.cbExistingResourceGroup.select(0);
-            onResourceGroupSelection();
         }
+        onResourceGroupSelection();
     }
 
     @Override
@@ -307,8 +434,8 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
         }
         if (cpNew.cbSubscription.getItemCount() > 0) {
             cpNew.cbSubscription.select(0);
-            onSubscriptionSelection();
         }
+        onSubscriptionSelection();
     }
 
     @Override
