@@ -1,21 +1,21 @@
 package com.microsoft.azuretools.container.ui;
 
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 
-public class WebAppTableComposite extends Composite {
+class WebAppTableComposite extends Composite {
     Table tblWebApps;
     Button btnRefresh;
 
     /**
      * Create the composite.
-     * 
+     *
      * @param parent
      * @param style
      */
@@ -35,15 +35,15 @@ public class WebAppTableComposite extends Composite {
         tblWebApps.setHeaderVisible(true);
 
         TableColumn tableColumn = new TableColumn(tblWebApps, SWT.LEFT);
-        tableColumn.setWidth(200);
+        tableColumn.setWidth(250);
         tableColumn.setText("Name");
 
         TableColumn tableColumn_1 = new TableColumn(tblWebApps, SWT.LEFT);
-        tableColumn_1.setWidth(275);
+        tableColumn_1.setWidth(250);
         tableColumn_1.setText("Resource group");
 
         btnRefresh = new Button(composite_1, SWT.NONE);
-        btnRefresh.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
+        btnRefresh.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, false, true, 1, 1));
         btnRefresh.addListener(SWT.Selection, event -> onBtnNewSelection());
         btnRefresh.setText("Refresh");
 

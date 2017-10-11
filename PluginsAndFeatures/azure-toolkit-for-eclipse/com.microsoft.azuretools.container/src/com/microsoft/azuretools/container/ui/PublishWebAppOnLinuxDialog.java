@@ -12,19 +12,18 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.ExpandBar;
-import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.ExpandBar;
+import org.eclipse.swt.widgets.ExpandItem;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TableItem;
 
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.PricingTier;
@@ -40,6 +39,7 @@ import com.microsoft.azuretools.container.Constant;
 import com.microsoft.azuretools.container.DockerProgressHandler;
 import com.microsoft.azuretools.container.InvalidDataException;
 import com.microsoft.azuretools.container.utils.DockerUtil;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
@@ -55,7 +55,7 @@ import com.spotify.docker.client.DockerClient;
 
 import rx.Observable;
 
-public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAppOnLinuxDeployView {
+public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper implements WebAppOnLinuxDeployView {
 
     private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
     private static final String MISSING_SERVER_URL = "Please specify a valid Server URL.";
@@ -109,7 +109,7 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
 
     /**
      * Create the dialog.
-     * 
+     *
      * @param parentShell
      */
     public PublishWebAppOnLinuxDialog(Shell parentShell, String basePath, String targetPath) {
@@ -133,23 +133,19 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
 
     @Override
     protected void okPressed() {
-        boolean validated = false;
-        loadDataModel();
+        apply();
         try {
             validation();
-            validated = true;
-        } catch (InvalidDataException e) {
-            this.onErrorWithException("Validation Failure", e);
-        }
-        if (validated) {
             execute();
             super.okPressed();
+        } catch (InvalidDataException e) {
+            this.onErrorWithException("Validation Failure", e);
         }
     }
 
     /**
      * Create contents of the dialog.
-     * 
+     *
      * @param parent
      */
     @Override
@@ -173,7 +169,7 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
 
         webappHolder = new ExpandItem(expandBar, SWT.NONE);
         webappHolder.setExpanded(true);
-        webappHolder.setText("Web App On Linux");
+        webappHolder.setText("Web App for Container");
 
         cpWebApp = new Composite(expandBar, SWT.NONE);
         webappHolder.setControl(cpWebApp);
@@ -227,7 +223,7 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
 
     /**
      * Create contents of the button bar.
-     * 
+     *
      * @param parent
      */
     @Override
@@ -241,10 +237,10 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
      */
     @Override
     protected Point getInitialSize() {
-        return new Point(689, 742);
+        return new Point(600, 800);
     }
 
-    private void loadDataModel() {
+    private void apply() {
         // TODO:
         model.setDockerFilePath(Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME)
                 .toString() /* cpAcr.getDockerPath() */);
@@ -254,7 +250,7 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
                         System.getenv("AcrPassword"), // cpAcr.getPassword(),
                         "eclipse:latest", // cpAcr.getImageTag(),
                         "" // cpAcr.getStartupFile()
-                ));
+                        ));
         // set target
         model.setTargetPath(targetPath);
         model.setTargetName(Paths.get(targetPath).getFileName().toString());

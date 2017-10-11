@@ -22,6 +22,18 @@
 
 package com.microsoft.azuretools.container.utils;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.container.Constant;
@@ -37,18 +49,6 @@ import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.RegistryAuth;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 public class DockerUtil {
     /**
@@ -87,9 +87,9 @@ public class DockerUtil {
     /**
      * buildImage.
      */
-    public static String buildImage(DockerClient docker, String imageNameWithTag, Path dockerDirectory,
-            String dockerFile, ProgressHandler progressHandler)
-            throws DockerException, InterruptedException, IOException {
+    public static String buildImage(@NotNull DockerClient docker, @NotNull String imageNameWithTag,
+            @NotNull Path dockerDirectory, @NotNull String dockerFile, ProgressHandler progressHandler)
+                    throws DockerException, InterruptedException, IOException {
         String imageId = docker.build(dockerDirectory, imageNameWithTag, dockerFile, progressHandler);
         return imageId == null ? null : imageNameWithTag;
     }
