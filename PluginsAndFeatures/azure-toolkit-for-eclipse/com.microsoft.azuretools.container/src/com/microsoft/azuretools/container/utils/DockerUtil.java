@@ -87,10 +87,10 @@ public class DockerUtil {
     /**
      * buildImage.
      */
-    public static String buildImage(@NotNull DockerClient docker, @NotNull String imageNameWithTag,
-            @NotNull Path dockerDirectory, ProgressHandler progressHandler)
+    public static String buildImage(DockerClient docker, String imageNameWithTag, Path dockerDirectory,
+            String dockerFile, ProgressHandler progressHandler)
             throws DockerException, InterruptedException, IOException {
-        String imageId = docker.build(dockerDirectory, imageNameWithTag, progressHandler);
+        String imageId = docker.build(dockerDirectory, imageNameWithTag, dockerFile, progressHandler);
         return imageId == null ? null : imageNameWithTag;
     }
 
@@ -113,8 +113,7 @@ public class DockerUtil {
      * Pull image from a private registry.
      */
     public static void pullImage(DockerClient dockerClient, String registryUrl, String registryUsername,
-                                 String registryPassword, String targetImageName)
-            throws DockerException, InterruptedException {
+            String registryPassword, String targetImageName) throws DockerException, InterruptedException {
         final RegistryAuth registryAuth = RegistryAuth.builder().username(registryUsername).password(registryPassword)
                 .build();
         if (targetImageName.startsWith(registryUrl)) {
