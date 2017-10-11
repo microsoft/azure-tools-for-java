@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -152,7 +153,9 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
      */
     public void onLoadAppServicePlan(String sid, String rg) {
         Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance()
-                .listAppServicePlanBySubscriptionIdAndResourceGroupName(sid, rg))
+                .listAppServicePlanBySubscriptionIdAndResourceGroupName(sid, rg).stream()
+                .filter(asp-> OperatingSystem.LINUX.equals(asp.operatingSystem()))
+                .collect(Collectors.toList()))
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {
