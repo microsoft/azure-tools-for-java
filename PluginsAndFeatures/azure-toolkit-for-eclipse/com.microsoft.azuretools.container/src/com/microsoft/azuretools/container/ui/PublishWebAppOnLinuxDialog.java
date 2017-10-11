@@ -154,6 +154,7 @@ public class PublishWebAppOnLinuxDialog extends TitleAreaDialog implements WebAp
      */
     @Override
     protected Control createDialogArea(Composite parent) {
+        setTitle("Run on Web App (Linux)");
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
         container.setLayout(new GridLayout(1, false));
