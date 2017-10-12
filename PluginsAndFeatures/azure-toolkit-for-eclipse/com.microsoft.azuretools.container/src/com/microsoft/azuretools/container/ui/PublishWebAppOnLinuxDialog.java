@@ -139,7 +139,6 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     public PublishWebAppOnLinuxDialog(Shell parentShell, String basePath, String targetPath) {
         super(parentShell);
         setShellStyle(SWT.RESIZE | SWT.TITLE);
-        this.setTitle("TBD");
         this.basePath = basePath;
         this.targetPath = targetPath;
         model = new WebAppOnLinuxDeployModel();
@@ -177,6 +176,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     @Override
     protected Control createDialogArea(Composite parent) {
         setTitle("Run on Web App (Linux)");
+        setMessage("Message TBD");
         Composite area = (Composite) super.createDialogArea(parent);
 
         expandBar = new ExpandBar(area, SWT.V_SCROLL);
