@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.container.ui;
 
-import java.awt.Color;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
