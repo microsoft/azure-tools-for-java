@@ -59,6 +59,7 @@ import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.Constant;
 import com.microsoft.azuretools.container.DockerProgressHandler;
 import com.microsoft.azuretools.container.InvalidDataException;
+import com.microsoft.azuretools.container.ui.common.ContainerSettingComposite;
 import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
@@ -125,9 +126,10 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     private NewWebAppComposite cpNew;
     private Composite cpWebApp;
     private ExpandItem webappHolder;
-    private Composite cpAcr;
+    private ContainerSettingComposite cpAcr;
     private String targetPath;
     private ExpandBar expandBar;
+    private ExpandItem acrHolder;
 
     /**
      * Create the dialog.
@@ -181,11 +183,11 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         gd_expandBar.minimumWidth = 600;
         expandBar.setLayoutData(gd_expandBar);
 
-        ExpandItem acrHolder = new ExpandItem(expandBar, SWT.NONE);
+        acrHolder = new ExpandItem(expandBar, SWT.NONE);
         acrHolder.setExpanded(true);
         acrHolder.setText("Azure Container Registry");
 
-        cpAcr = new Composite(expandBar, SWT.NONE);
+        cpAcr = new ContainerSettingComposite(expandBar, SWT.NONE, basePath);
         acrHolder.setControl(cpAcr);
         acrHolder.setHeight(acrHolder.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 
@@ -199,7 +201,6 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
 
         Composite cpRadioGroup = new Composite(cpWebApp, SWT.NONE);
         cpRadioGroup.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true, 1, 1));
-        //        cpRadioGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         cpRadioGroup.setLayout(new GridLayout(2, false));
 
         rdoExistingWebApp = new Button(cpRadioGroup, SWT.RADIO);
@@ -240,6 +241,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         // refresh button
         cpExisting.btnRefresh.addListener(SWT.Selection, event -> onBtnRefreshSelection());
 
+        cpAcr.addTxtServerUrlModifyListener(event -> onTxtServerUrlModification());
         initialize();
         return area;
     }
@@ -391,8 +393,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         final String[] repoComponents = repoAndTag[0].split("/");
         for (String component : repoComponents) {
             if (!component.matches(REPO_COMPONENTS_REGEX)) {
-                throw new InvalidDataException(
-                        String.format(REPO_COMPONENT_INVALID, component, REPO_COMPONENTS_REGEX));
+                throw new InvalidDataException(String.format(REPO_COMPONENT_INVALID, component, REPO_COMPONENTS_REGEX));
             }
         }
         // check when contains tag
@@ -591,6 +592,19 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     }
 
     // Event listeners
+    private void webAppRadioGroupLogic() {
+        cpExisting.setVisible(rdoExistingWebApp.getSelection());
+        ((GridData) cpExisting.getLayoutData()).exclude = !rdoExistingWebApp.getSelection();
+        cpNew.setVisible(rdoNewWebApp.getSelection());
+        ((GridData) cpNew.getLayoutData()).exclude = !rdoNewWebApp.getSelection();
+        // resize expandItem
+        webappHolder.setHeight(webappHolder.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+        ((GridData) expandBar.getLayoutData()).widthHint = acrHolder.getControl().computeSize(SWT.DEFAULT,
+                SWT.DEFAULT).x;
+        // resize the whole shell
+        this.getShell().pack();
+    }
+
     private void aspRadioGroupLogic() {
         cpNew.cbExistingAppServicePlan.setEnabled(cpNew.rdoExistingAppServicePlan.getSelection());
 
@@ -642,7 +656,17 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         }
     }
 
+    private void onTxtServerUrlModification() {
+        // calculate size of expandbar
+        ((GridData) expandBar.getLayoutData()).widthHint = acrHolder.getControl().computeSize(SWT.DEFAULT,
+                SWT.DEFAULT).x;
+        // resize the whole shell
+        this.getShell().pack();
+    }
+
     private void initialize() {
+        // load ACRs
+        cpAcr.onListRegistries();
         // load webapps
         cpExisting.btnRefresh.setEnabled(false);
         webAppOnLinuxDeployPresenter.onLoadAppList();
@@ -650,17 +674,6 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         webAppOnLinuxDeployPresenter.onLoadSubscriptionList();
         // load pricing tiers
         webAppOnLinuxDeployPresenter.onLoadPricingTierList();
-    }
-
-    private void webAppRadioGroupLogic() {
-        cpExisting.setVisible(rdoExistingWebApp.getSelection());
-        ((GridData) cpExisting.getLayoutData()).exclude = !rdoExistingWebApp.getSelection();
-        cpNew.setVisible(rdoNewWebApp.getSelection());
-        ((GridData) cpNew.getLayoutData()).exclude = !rdoNewWebApp.getSelection();
-        // resize expandItem
-        webappHolder.setHeight(webappHolder.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-        // resize the whole shell
-        this.getShell().pack();
     }
 
     // Implementation of WebAppOnLinuxDeployView
