@@ -1,3 +1,25 @@
+/**
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.azuretools.container.ui.common;
 
 import java.nio.file.Paths;
@@ -5,7 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -59,59 +83,61 @@ public final class ContainerSettingComposite extends Composite implements Contai
         projectBasePath = basePath;
         registryCache = new ArrayList<>();
 
-        setLayout(new GridLayout(3, false));
+        setLayout(new FillLayout(SWT.HORIZONTAL));
 
-        Label lblContainerRegistry = new Label(this, SWT.NONE);
+        Composite container = new Composite(this, SWT.NONE);
+        container.setLayout(new GridLayout(3, false));
+
+        Label lblContainerRegistry = new Label(container, SWT.NONE);
         lblContainerRegistry.setText(LABEL_CONTAINER_REGISTRY);
 
-        cbContainerRegistry = new Combo(this, SWT.NONE);
+        cbContainerRegistry = new Combo(container, SWT.READ_ONLY);
         cbContainerRegistry.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
 
-        Label lblServerUrl = new Label(this, SWT.NONE);
+        Label lblServerUrl = new Label(container, SWT.NONE);
         lblServerUrl.setText(LABEL_SERVER_URL);
 
-        txtServerUrl = new Text(this, SWT.BORDER);
+        txtServerUrl = new Text(container, SWT.BORDER);
         txtServerUrl.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 2, 1));
 
-        Label lblUserName = new Label(this, SWT.NONE);
+        Label lblUserName = new Label(container, SWT.NONE);
         lblUserName.setText(LABEL_USER_NAME);
 
-        txtUserName = new Text(this, SWT.BORDER);
+        txtUserName = new Text(container, SWT.BORDER);
         txtUserName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
 
-        Label lblPassword = new Label(this, SWT.NONE);
+        Label lblPassword = new Label(container, SWT.NONE);
         lblPassword.setText(LABEL_PASSWORD);
 
-        txtPassword = new Text(this, SWT.BORDER | SWT.PASSWORD);
+        txtPassword = new Text(container, SWT.BORDER | SWT.PASSWORD);
         txtPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
 
-        Label lblImageAndTag = new Label(this, SWT.NONE);
+        Label lblImageAndTag = new Label(container, SWT.NONE);
         lblImageAndTag.setText(LABEL_IMAGE_AND_TAG);
 
-        Label lblTagPrefix = new Label(this, SWT.NONE);
-        lblTagPrefix.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        Label lblTagPrefix = new Label(container, SWT.NONE);
+        lblTagPrefix.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblTagPrefix.setText(LABEL_TAG_PREFIX);
 
-        txtImageTag = new Text(this, SWT.BORDER);
+        txtImageTag = new Text(container, SWT.BORDER);
         txtImageTag.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        lblStartupFile = new Label(this, SWT.NONE);
+        lblStartupFile = new Label(container, SWT.NONE);
         lblStartupFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblStartupFile.setText(LABEL_STARTUP_FILE);
 
-        txtStartupFile = new Text(this, SWT.BORDER);
+        txtStartupFile = new Text(container, SWT.BORDER);
         txtStartupFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
 
         cbContainerRegistry.addListener(SWT.Selection, new Listener() {
             @Override
             public void handleEvent(Event event) {
                 int index = cbContainerRegistry.getSelectionIndex();
-                String selectedItem = cbContainerRegistry.getItem(index);
-                if (selectedItem != null && (selectedItem.equals(LOADING) || selectedItem.equals(SELECT_REGISTRY))) {
+                if (index == 0) {
                     enableWidgets();
                     return;
                 }
-                if (registryCache != null || index >= 1 || index < registryCache.size()) {
+                if (registryCache != null && index >= 1 && index < registryCache.size()) {
                     disableWidgets();
                     Registry registry = registryCache.get(index);
                     presenter.onGetRegistryCredential(registry);
@@ -121,21 +147,23 @@ public final class ContainerSettingComposite extends Composite implements Contai
 
         txtServerUrl.addListener(SWT.Modify, new Listener() {
             @Override
-            public void handleEvent(Event arg0) {
+            public void handleEvent(Event event) {
                 lblTagPrefix.setText(txtServerUrl.getText() + "/");
                 adjustParentSize();
             }
         });
-    }
 
-    @Override
-    protected void checkSubclass() {
-        // Disable the check that prevents subclassing of SWT components
+        this.getShell().addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent arg0) {
+                presenter.onDetachView();
+            }
+
+        });
     }
 
     @Override
     public void disposeEditor() {
-        presenter.onDetachView();
     }
 
     @Override
@@ -215,8 +243,7 @@ public final class ContainerSettingComposite extends Composite implements Contai
     }
 
     private void adjustParentSize() {
-        this.getParent().layout(true, true);
-        final Point newSize = this.getParent().getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-        this.getParent().getShell().setSize(newSize);
+        this.getShell().layout(true, true);
+        this.getShell().pack(true);
     }
 }
