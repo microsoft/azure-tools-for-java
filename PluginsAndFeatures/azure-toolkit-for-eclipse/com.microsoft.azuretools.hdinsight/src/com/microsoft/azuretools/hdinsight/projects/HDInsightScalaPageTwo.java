@@ -61,8 +61,7 @@ public class HDInsightScalaPageTwo extends NewJavaProjectWizardPageTwo {
 			
 			if (hasConfiguredScalaClasspathContainer == false) {
 				hasConfiguredScalaClasspathContainer = true;
-				Display.getDefault().syncExec(new Runnable() {
-				    public void run() {
+				Display.getDefault().syncExec(() -> {
 						IJavaProject javaProject = getJavaProject();
 						IClasspathEntry[] entries = null;
 						try {
@@ -83,13 +82,12 @@ public class HDInsightScalaPageTwo extends NewJavaProjectWizardPageTwo {
 								if (created != null) {
 									entries[scalaClasspathContainerEntryIndex] = created;
 								}
+								
+								javaProject.setRawClasspath(entries, new NullProgressMonitor());								
 							}
-							
-							javaProject.setRawClasspath(entries, new NullProgressMonitor());
-						} catch (JavaModelException e) {
+						} catch (JavaModelException ignore) {
 							
 						}
-				    }
 				});
 			}
 		} catch (OperationCanceledException | NoSuchMethodException | SecurityException | IllegalAccessException
