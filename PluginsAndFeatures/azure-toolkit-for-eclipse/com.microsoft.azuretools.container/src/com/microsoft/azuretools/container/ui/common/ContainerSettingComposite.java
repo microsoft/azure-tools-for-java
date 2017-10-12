@@ -29,7 +29,7 @@ import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -83,50 +83,47 @@ public final class ContainerSettingComposite extends Composite implements Contai
         projectBasePath = basePath;
         registryCache = new ArrayList<>();
 
-        setLayout(new FillLayout(SWT.HORIZONTAL));
+        setLayout(new GridLayout(3, false));
 
-        Composite container = new Composite(this, SWT.NONE);
-        container.setLayout(new GridLayout(3, false));
-
-        Label lblContainerRegistry = new Label(container, SWT.NONE);
+        Label lblContainerRegistry = new Label(this, SWT.NONE);
         lblContainerRegistry.setText(LABEL_CONTAINER_REGISTRY);
 
-        cbContainerRegistry = new Combo(container, SWT.READ_ONLY);
+        cbContainerRegistry = new Combo(this, SWT.READ_ONLY);
         cbContainerRegistry.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
 
-        Label lblServerUrl = new Label(container, SWT.NONE);
+        Label lblServerUrl = new Label(this, SWT.NONE);
         lblServerUrl.setText(LABEL_SERVER_URL);
 
-        txtServerUrl = new Text(container, SWT.BORDER);
+        txtServerUrl = new Text(this, SWT.BORDER);
         txtServerUrl.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 2, 1));
 
-        Label lblUserName = new Label(container, SWT.NONE);
+        Label lblUserName = new Label(this, SWT.NONE);
         lblUserName.setText(LABEL_USER_NAME);
 
-        txtUserName = new Text(container, SWT.BORDER);
+        txtUserName = new Text(this, SWT.BORDER);
         txtUserName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
 
-        Label lblPassword = new Label(container, SWT.NONE);
+        Label lblPassword = new Label(this, SWT.NONE);
         lblPassword.setText(LABEL_PASSWORD);
 
-        txtPassword = new Text(container, SWT.BORDER | SWT.PASSWORD);
+        txtPassword = new Text(this, SWT.BORDER | SWT.PASSWORD);
         txtPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
 
-        Label lblImageAndTag = new Label(container, SWT.NONE);
+        Label lblImageAndTag = new Label(this, SWT.NONE);
         lblImageAndTag.setText(LABEL_IMAGE_AND_TAG);
 
-        Label lblTagPrefix = new Label(container, SWT.NONE);
+        Label lblTagPrefix = new Label(this, SWT.NONE);
         lblTagPrefix.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblTagPrefix.setText(LABEL_TAG_PREFIX);
 
-        txtImageTag = new Text(container, SWT.BORDER);
+        txtImageTag = new Text(this, SWT.BORDER);
         txtImageTag.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        lblStartupFile = new Label(container, SWT.NONE);
+        lblStartupFile = new Label(this, SWT.NONE);
         lblStartupFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblStartupFile.setText(LABEL_STARTUP_FILE);
 
-        txtStartupFile = new Text(container, SWT.BORDER);
+        txtStartupFile = new Text(this, SWT.BORDER);
         txtStartupFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
 
         cbContainerRegistry.addListener(SWT.Selection, new Listener() {
@@ -158,8 +155,11 @@ public final class ContainerSettingComposite extends Composite implements Contai
             public void widgetDisposed(DisposeEvent arg0) {
                 presenter.onDetachView();
             }
-
         });
+    }
+
+    public void addTxtServerUrlModifyListener(ModifyListener modifyListner) {
+        txtServerUrl.addModifyListener(modifyListner);
     }
 
     @Override
@@ -243,7 +243,7 @@ public final class ContainerSettingComposite extends Composite implements Contai
     }
 
     private void adjustParentSize() {
-        this.getShell().layout(true, true);
-        this.getShell().pack(true);
+        this.layout(true, true);
+        this.pack(true);
     }
 }
