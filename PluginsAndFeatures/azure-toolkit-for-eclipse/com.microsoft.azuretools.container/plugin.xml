@@ -4,11 +4,13 @@
   <extension point="org.eclipse.ui.commands">
     <command id="com.microsoft.azuretools.container.commands.dockerize" name="Add Docker Support" categoryId="com.microsoft.ui.dropdown.category"></command>
     <command id="com.microsoft.azuretools.container.commands.dockerrun" name="Docker Run" categoryId="com.microsoft.ui.dropdown.category"></command>
+    <command id="com.microsoft.azuretools.container.commands.pushimage" name="Push Image" categoryId="com.microsoft.ui.dropdown.category"></command>
     <command id="com.microsoft.azuretools.container.commands.publishwebapp" name="Publish to Web App for Containers..." categoryId="com.microsoft.ui.dropdown.category"></command>
   </extension>
   <extension point="org.eclipse.ui.handlers">
     <handler commandId="com.microsoft.azuretools.container.commands.dockerize" class="com.microsoft.azuretools.container.handlers.DockerizeHandler"></handler>
     <handler commandId="com.microsoft.azuretools.container.commands.dockerrun" class="com.microsoft.azuretools.container.handlers.DockerRunHandler"></handler>
+    <handler commandId="com.microsoft.azuretools.container.commands.pushimage" class="com.microsoft.azuretools.container.handlers.PushImageHandler"></handler>
     <handler commandId="com.microsoft.azuretools.container.commands.publishwebapp" class="com.microsoft.azuretools.container.handlers.PublishHandler"></handler>
   </extension>
   <extension point="org.eclipse.ui.menus">
@@ -38,6 +40,19 @@
                             <test property="com.microsoft.azuretools.container.testers.isDockerized"/>
                         </adapt>
                     </iterate> 
+                </with>
+            </visibleWhen>
+        </command>
+        <command name="pushimage" commandId="com.microsoft.azuretools.container.commands.pushimage">
+            <visibleWhen checkEnabled="false">
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate>
+                        <adapt type="org.eclipse.core.resources.IProject">
+                            <test property="com.microsoft.ui.webapp.property.isSupportedProj"/>
+                            <test property="com.microsoft.azuretools.container.testers.isDockerized"/>
+                        </adapt>
+                    </iterate>
                 </with>
             </visibleWhen>
         </command>
@@ -84,5 +99,6 @@
     <image commandId="com.microsoft.azuretools.container.commands.publishwebapp" icon="icons/PublishWebAppOnLinux_16.png"></image>
     <image commandId="com.microsoft.azuretools.container.commands.dockerrun" icon="icons/DockerRun_16.png"></image>
     <image commandId="com.microsoft.azuretools.container.commands.dockerize" icon="icons/Dockerize_16.png"></image>
+    <image commandId="com.microsoft.azuretools.container.commands.pushimage" icon="icons/PushImage_16.png"></image>
   </extension>
 </plugin>

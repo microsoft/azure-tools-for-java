@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.container.pushimage;
+package com.microsoft.azuretools.core.mvp.model.container.pojo;
 
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 
