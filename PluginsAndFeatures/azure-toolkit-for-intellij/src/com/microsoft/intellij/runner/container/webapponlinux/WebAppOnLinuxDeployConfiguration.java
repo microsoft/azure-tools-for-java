@@ -56,7 +56,7 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     private static final String MISSING_USERNAME = "Please specify Username.";
     private static final String MISSING_PASSWORD = "Please specify Password.";
     private static final String MISSING_IMAGE_WITH_TAG = "Please specify Image and Tag.";
-    private static final String MISSING_WEB_APP = "Please specify Web App on Linux.";
+    private static final String MISSING_WEB_APP = "Please specify Web App for Containers.";
     private static final String MISSING_SUBSCRIPTION = "Please specify Subscription.";
     private static final String MISSING_RESOURCE_GROUP = "Please specify Resource Group.";
     private static final String MISSING_APP_SERVICE_PLAN = "Please specify App Service Plan.";

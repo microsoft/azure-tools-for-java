@@ -46,9 +46,9 @@ import java.util.Set;
 import rx.Observable;
 
 public class StepTwoPagePresenter<V extends StepTwoPageView> extends MvpPresenter<V> {
-    private static final String TEXT_LISTING_AEB_APP_ON_LINUX = "List Web App on Linux";
-    private static final String TEXT_DEPLOYING_TO_NEW_WEB_APP = "Deploy to new Web App on Linux";
-    private static final String TEXT_DEPLOYING_TO_EXISTING_WEB_APP = "Deploy to existing Web App on Linux";
+    private static final String TEXT_LISTING_AEB_APP_ON_LINUX = "List Web App for Containers";
+    private static final String TEXT_DEPLOYING_TO_NEW_WEB_APP = "Deploy to new Web App for Containers";
+    private static final String TEXT_DEPLOYING_TO_EXISTING_WEB_APP = "Deploy to existing Web App for Containers";
     private final List<SubscriptionDetail> binderSubscriptionDetails = new ArrayList<SubscriptionDetail>();
     private final List<ResourceGroup> binderResourceGroup = new ArrayList<ResourceGroup>();
     private final List<SiteInner> binderWebAppOnLinux = new ArrayList<>();

@@ -96,7 +96,7 @@ public class WebAppOnLinuxUtil {
                 return updateApp(webapp, pr, imageName);
             }
         }
-        throw new IOException("Cannot find such Web App on Linux in subscriptions.");
+        throw new IOException("Cannot find such Web App for Containers in subscriptions.");
     }
 
     /**
@@ -161,7 +161,7 @@ public class WebAppOnLinuxUtil {
             }
         }
         if (app == null) {
-            throw new IOException("Fail to create Web App on Linux.");
+            throw new IOException("Fail to create Web App for Containers.");
         } else {
             return app;
         }

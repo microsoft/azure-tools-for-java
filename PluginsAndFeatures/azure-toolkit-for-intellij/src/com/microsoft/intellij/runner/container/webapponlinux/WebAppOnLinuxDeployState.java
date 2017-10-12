@@ -187,7 +187,7 @@ public class WebAppOnLinuxDeployState implements RunProfileState {
             map.put("ErrorMsg", errorMsg);
         }
 
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "Webapp (Linux)", "Deploy", map);
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "Web App for Containers", "Deploy", map);
     }
 
     private void updateConfigurationDataModel(WebApp app) {

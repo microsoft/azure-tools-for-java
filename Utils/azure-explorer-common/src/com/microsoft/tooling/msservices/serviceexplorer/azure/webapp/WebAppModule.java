@@ -43,7 +43,7 @@ public class WebAppModule extends AzureRefreshableNode {
             removeDirectChildNode(node);
         } catch (IOException e) {
             DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Web App ",
-                    e, "Azure Services Explorer - Error Deleting Web App on Linux", false, true);
+                    e, "Azure Services Explorer - Error Deleting Web App for Containers", false, true);
         }
     }
 

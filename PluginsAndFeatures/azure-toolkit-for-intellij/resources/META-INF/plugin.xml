@@ -169,7 +169,7 @@
             icon="/icons/PushImage_16.png">
     </action>
     <action id="Actions.WebAppOnLinux" class="com.microsoft.intellij.actions.WebAppOnLinuxAction"
-            text="Run on Web App (Linux)" description="Run on Web App (Linux)"
+            text="Run on Web App for Containers" description="Run on Web App for Containers"
             icon="/icons/PublishWebAppOnLinux_16.png">
     </action>
 

@@ -84,14 +84,14 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private static final String TABLE_HEAD_WEB_APP_NAME = "Name";
     private static final String TABLE_HEAD_RESOURCE_GROUP = "Resource Group";
     private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
-    private static final String TABLE_EMPTY_MESSAGE = "No available Web App on Linux.";
+    private static final String TABLE_EMPTY_MESSAGE = "No available Web App for Containers.";
     private static final String APP_NAME_PREFIX = "webapp-linux";
     private static final String RESOURCE_GROUP_NAME_PREFIX = "rg-web-linux";
     private static final String APP_SERVICE_PLAN_NAME_PREFIX = "appsp-linux-";
     private static final String TITLE_RESOURCE_GROUP = "Resource Group";
     private static final String TITLE_APP_SERVICE_PLAN = "App Service Plan";
     private static final String TITLE_ACR = "Azure Container Registry";
-    private static final String TITLE_WEB_APP = "Web App on Linux";
+    private static final String TITLE_WEB_APP = "Web App for Containers";
 
     private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
     private final Project project;
@@ -290,7 +290,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 fileType = MavenRunTaskUtil.getFileType(targetName);
             }
             map.put("FileType", fileType);
-            AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, "Run On Web App (Linux)",
+            AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, "Run On Web App for Containers",
                     "Open", map);
             return true;
         }).subscribeOn(Schedulers.io()).subscribe(

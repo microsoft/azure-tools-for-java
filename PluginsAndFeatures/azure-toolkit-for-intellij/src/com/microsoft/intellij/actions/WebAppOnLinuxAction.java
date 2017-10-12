@@ -45,7 +45,7 @@ import java.util.List;
 
 public class WebAppOnLinuxAction extends AzureAnAction {
 
-    private static final String DIALOG_TITLE = "Run on Web App (Linux)";
+    private static final String DIALOG_TITLE = "Run on Web App for Containers";
 
     private final AzureDockerSupportConfigurationType configType;
 

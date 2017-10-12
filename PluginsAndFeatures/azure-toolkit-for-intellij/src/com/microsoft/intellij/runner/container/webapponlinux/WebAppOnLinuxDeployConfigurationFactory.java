@@ -33,7 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.Icon;
 
 public class WebAppOnLinuxDeployConfigurationFactory extends ConfigurationFactory {
-    private static final String FACTORY_NAME = "Web App (Linux)";
+    private static final String FACTORY_NAME = "Web App for Containers";
     private static final String ICON_PATH = "/icons/PublishWebAppOnLinux_16.png";
 
     public WebAppOnLinuxDeployConfigurationFactory(AzureDockerSupportConfigurationType configurationType) {

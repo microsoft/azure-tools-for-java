@@ -61,9 +61,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 
 public class StepTwoPage extends AzureWizardPage implements StepTwoPageView, PublishWizardPageView {
-    private static final String MESSAGE_DEPLOY_SUCCESS = "Web App on Linux successfully deployed.";
+    private static final String MESSAGE_DEPLOY_SUCCESS = "Web App for Containers successfully deployed.";
     private static final String TEXT_DESCRIPTION = "Select existing or create new Web App to deploy";
-    private static final String TEXT_TITLE = "Deploy to Azure Web App on Linux";
+    private static final String TEXT_TITLE = "Deploy to Azure Web App for Containers";
     private static final String TEXT_BUTTON_REFRESH = "Refresh List";
     private static final String TEXT_TAB_UPDATE = "Use Existing";
     private static final String TEXT_TAB_CREATE = "Create New";
