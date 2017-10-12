@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.container.ui;
 
+import java.awt.Color;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -139,6 +140,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     public PublishWebAppOnLinuxDialog(Shell parentShell, String basePath, String targetPath) {
         super(parentShell);
         setShellStyle(SWT.RESIZE | SWT.TITLE);
+        this.setTitle("TBD");
         this.basePath = basePath;
         this.targetPath = targetPath;
         model = new WebAppOnLinuxDeployModel();
@@ -181,7 +183,9 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         expandBar = new ExpandBar(area, SWT.V_SCROLL);
         GridData gd_expandBar = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1);
         gd_expandBar.minimumWidth = 600;
+
         expandBar.setLayoutData(gd_expandBar);
+        expandBar.setBackground(area.getBackground());
 
         acrHolder = new ExpandItem(expandBar, SWT.NONE);
         acrHolder.setExpanded(true);
@@ -216,7 +220,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         cpNew = new NewWebAppComposite(cpWebApp, SWT.NONE);
         cpNew.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
 
-        webAppRadioGroupLogic();
+        updateWebAppHolderWidget();
         resourceGroupRadioGroupLogic();
         aspRadioGroupLogic();
 
@@ -255,6 +259,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+        getShell().pack();
     }
 
     /**
@@ -275,7 +280,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
                         System.getenv("AcrPassword"), // cpAcr.getPassword(),
                         "eclipse:latest", // cpAcr.getImageTag(),
                         "" // cpAcr.getStartupFile()
-                        ));
+                ));
         // set target
         model.setTargetPath(targetPath);
         model.setTargetName(Paths.get(targetPath).getFileName().toString());
@@ -591,8 +596,20 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         return sub;
     }
 
-    // Event listeners
-    private void webAppRadioGroupLogic() {
+    // helpers
+    private void initialize() {
+        // load ACRs
+        cpAcr.onListRegistries();
+        // load webapps
+        cpExisting.btnRefresh.setEnabled(false);
+        webAppOnLinuxDeployPresenter.onLoadAppList();
+        // load subscriptions
+        webAppOnLinuxDeployPresenter.onLoadSubscriptionList();
+        // load pricing tiers
+        webAppOnLinuxDeployPresenter.onLoadPricingTierList();
+    }
+
+    private void updateWebAppHolderWidget() {
         cpExisting.setVisible(rdoExistingWebApp.getSelection());
         ((GridData) cpExisting.getLayoutData()).exclude = !rdoExistingWebApp.getSelection();
         cpNew.setVisible(rdoNewWebApp.getSelection());
@@ -601,8 +618,14 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         webappHolder.setHeight(webappHolder.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
         ((GridData) expandBar.getLayoutData()).widthHint = acrHolder.getControl().computeSize(SWT.DEFAULT,
                 SWT.DEFAULT).x;
+        getShell().layout();
+    }
+
+    // Event listeners
+    private void webAppRadioGroupLogic() {
+        updateWebAppHolderWidget();
         // resize the whole shell
-        this.getShell().pack();
+        getShell().pack();
     }
 
     private void aspRadioGroupLogic() {
@@ -661,19 +684,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         ((GridData) expandBar.getLayoutData()).widthHint = acrHolder.getControl().computeSize(SWT.DEFAULT,
                 SWT.DEFAULT).x;
         // resize the whole shell
-        this.getShell().pack();
-    }
-
-    private void initialize() {
-        // load ACRs
-        cpAcr.onListRegistries();
-        // load webapps
-        cpExisting.btnRefresh.setEnabled(false);
-        webAppOnLinuxDeployPresenter.onLoadAppList();
-        // load subscriptions
-        webAppOnLinuxDeployPresenter.onLoadSubscriptionList();
-        // load pricing tiers
-        webAppOnLinuxDeployPresenter.onLoadPricingTierList();
+        getShell().pack();
     }
 
     // Implementation of WebAppOnLinuxDeployView
