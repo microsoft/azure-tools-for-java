@@ -16,7 +16,6 @@ import com.microsoft.azuretools.container.ui.PushImageDialog;
 import com.microsoft.azuretools.container.utils.ConfigFileUtil;
 import com.microsoft.azuretools.container.utils.WarUtil;
 import com.microsoft.azuretools.core.actions.MavenExecuteAction;
-import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -35,7 +34,7 @@ public class PushImageHandler extends AzureAbstractHandler {
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
         window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
         project = PluginUtil.getSelectedProject();
-        if (project == null || !SignInCommandHandler.doSignIn(window.getShell())) {
+        if (project == null) {
             return null;
         }
         basePath = project.getLocation().toString();
@@ -46,8 +45,7 @@ public class PushImageHandler extends AzureAbstractHandler {
             if (MavenUtils.isMavenProject(project)) {
                 destinationPath = MavenUtils.getTargetPath(project);
                 MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
-                IContainer container;
-                container = MavenUtils.getPomFile(project).getParent();
+                IContainer container = MavenUtils.getPomFile(project).getParent();
                 action.launch(container, () -> {
                     buildAndRun();
                     return null;

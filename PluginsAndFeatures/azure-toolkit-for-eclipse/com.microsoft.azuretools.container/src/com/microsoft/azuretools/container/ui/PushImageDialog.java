@@ -167,10 +167,10 @@ public class PushImageDialog extends TitleAreaDialog {
         try {
             validate();
             execute();
-        } catch (Exception e) {
+            super.okPressed();
+        } catch (InvalidDataException e) {
             showErrorMessage("Error", e.getMessage());
         }
-        super.okPressed();
     }
 
     private void apply() {
