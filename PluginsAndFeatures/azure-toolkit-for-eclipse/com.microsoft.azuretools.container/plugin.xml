@@ -56,6 +56,21 @@
         </command>
       </menu>
     </menuContribution>
+    <menuContribution locationURI="menu:com.microsoft.ui.dropdown.toolbar.command">
+      <command commandId="com.microsoft.azuretools.container.commands.publishwebapp" style="push">
+        <visibleWhen checkEnabled="false">
+          <with variable="selection">
+            <count value="1"/> 
+            <iterate>
+              <adapt type="org.eclipse.core.resources.IProject">
+                <test property="com.microsoft.ui.webapp.property.isSupportedProj"/>
+                <test property="com.microsoft.azuretools.container.testers.isDockerized"/>
+              </adapt>
+            </iterate> 
+          </with>
+        </visibleWhen>
+      </command>
+    </menuContribution>
   </extension>
   <extension point="org.eclipse.core.expressions.definitions">
     <definition id="when.is.dockerized">
