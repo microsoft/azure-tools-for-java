@@ -145,6 +145,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
             ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
             String imageNameWithTag = DockerUtil.buildImage(docker, Constant.DEFAULT_IMAGE_NAME_WITH_TAG,
                     Paths.get(project.getLocation().toString(), Constant.DOCKERFILE_FOLDER),
+                    Constant.DOCKERFILE_NAME,
                     new DockerProgressHandler());
             ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageNameWithTag));
 

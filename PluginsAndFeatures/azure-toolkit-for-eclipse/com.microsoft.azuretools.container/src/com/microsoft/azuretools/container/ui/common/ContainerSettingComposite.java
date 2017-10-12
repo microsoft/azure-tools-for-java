@@ -146,7 +146,7 @@ public final class ContainerSettingComposite extends Composite implements Contai
             @Override
             public void handleEvent(Event event) {
                 lblTagPrefix.setText(txtServerUrl.getText() + "/");
-                adjustParentSize();
+                layout();
             }
         });
 
@@ -158,8 +158,8 @@ public final class ContainerSettingComposite extends Composite implements Contai
         });
     }
 
-    public void addTxtServerUrlModifyListener(ModifyListener modifyListner) {
-        txtServerUrl.addModifyListener(modifyListner);
+    public void addTxtServerUrlModifyListener(ModifyListener modifyListener) {
+        txtServerUrl.addModifyListener(modifyListener);
     }
 
     @Override
@@ -186,7 +186,7 @@ public final class ContainerSettingComposite extends Composite implements Contai
         }
         cbContainerRegistry.select(0);
         registryCache.addAll(registryList);
-        adjustParentSize();
+        layout();
     }
 
     @Override
@@ -240,10 +240,5 @@ public final class ContainerSettingComposite extends Composite implements Contai
         txtServerUrl.setEnabled(true);
         txtUserName.setEnabled(true);
         txtPassword.setEnabled(true);
-    }
-
-    private void adjustParentSize() {
-        this.layout(true, true);
-        this.pack(true);
     }
 }
