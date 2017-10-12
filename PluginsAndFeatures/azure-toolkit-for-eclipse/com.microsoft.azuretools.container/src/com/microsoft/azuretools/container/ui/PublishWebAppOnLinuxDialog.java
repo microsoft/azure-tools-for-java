@@ -36,7 +36,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -128,6 +127,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     private ExpandItem webappHolder;
     private Composite cpAcr;
     private String targetPath;
+    private ExpandBar expandBar;
 
     /**
      * Create the dialog.
@@ -136,6 +136,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
      */
     public PublishWebAppOnLinuxDialog(Shell parentShell, String basePath, String targetPath) {
         super(parentShell);
+        setShellStyle(SWT.RESIZE | SWT.TITLE);
         this.basePath = basePath;
         this.targetPath = targetPath;
         model = new WebAppOnLinuxDeployModel();
@@ -174,12 +175,11 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     protected Control createDialogArea(Composite parent) {
         setTitle("Run on Web App (Linux)");
         Composite area = (Composite) super.createDialogArea(parent);
-        Composite container = new Composite(area, SWT.NONE);
-        container.setLayout(new GridLayout(1, false));
-        container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        ExpandBar expandBar = new ExpandBar(container, SWT.NONE);
-        expandBar.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        expandBar = new ExpandBar(area, SWT.V_SCROLL);
+        GridData gd_expandBar = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1);
+        gd_expandBar.minimumWidth = 600;
+        expandBar.setLayoutData(gd_expandBar);
 
         ExpandItem acrHolder = new ExpandItem(expandBar, SWT.NONE);
         acrHolder.setExpanded(true);
@@ -198,7 +198,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         cpWebApp.setLayout(new GridLayout(1, false));
 
         Composite cpRadioGroup = new Composite(cpWebApp, SWT.NONE);
-        cpRadioGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        cpRadioGroup.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true, 1, 1));
+        //        cpRadioGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         cpRadioGroup.setLayout(new GridLayout(2, false));
 
         rdoExistingWebApp = new Button(cpRadioGroup, SWT.RADIO);
@@ -209,11 +210,10 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         rdoNewWebApp.setText("Create New");
 
         cpExisting = new WebAppTableComposite(cpWebApp, SWT.NONE);
-        cpExisting.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-        cpExisting.setLayout(new FillLayout(SWT.HORIZONTAL));
+        cpExisting.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
 
         cpNew = new NewWebAppComposite(cpWebApp, SWT.NONE);
-        cpNew.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+        cpNew.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
 
         webAppRadioGroupLogic();
         resourceGroupRadioGroupLogic();
@@ -239,6 +239,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
 
         // refresh button
         cpExisting.btnRefresh.addListener(SWT.Selection, event -> onBtnRefreshSelection());
+
         initialize();
         return area;
     }
@@ -656,8 +657,10 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         ((GridData) cpExisting.getLayoutData()).exclude = !rdoExistingWebApp.getSelection();
         cpNew.setVisible(rdoNewWebApp.getSelection());
         ((GridData) cpNew.getLayoutData()).exclude = !rdoNewWebApp.getSelection();
-        cpWebApp.layout();
+        // resize expandItem
         webappHolder.setHeight(webappHolder.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+        // resize the whole shell
+        this.getShell().pack();
     }
 
     // Implementation of WebAppOnLinuxDeployView

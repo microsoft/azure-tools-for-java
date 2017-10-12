@@ -23,7 +23,6 @@
 package com.microsoft.azuretools.container.ui;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -43,16 +42,13 @@ class WebAppTableComposite extends Composite {
      */
     public WebAppTableComposite(Composite parent, int style) {
         super(parent, style);
-        setLayout(new FillLayout(SWT.HORIZONTAL));
+        setLayout(new GridLayout(2, false));
 
-        Composite composite_1 = new Composite(this, SWT.NONE);
-        composite_1.setLayout(new GridLayout(2, false));
-
-        tblWebApps = new Table(composite_1, SWT.BORDER | SWT.FULL_SELECTION);
+        tblWebApps = new Table(this, SWT.BORDER | SWT.FULL_SELECTION);
         GridData gd_tblWebApps = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gd_tblWebApps.minimumHeight = 200;
-        gd_tblWebApps.widthHint = 331;
         tblWebApps.setLayoutData(gd_tblWebApps);
+        tblWebApps.setSize(517, 200);
         tblWebApps.setLinesVisible(true);
         tblWebApps.setHeaderVisible(true);
 
@@ -64,8 +60,9 @@ class WebAppTableComposite extends Composite {
         tableColumn_1.setWidth(250);
         tableColumn_1.setText("Resource group");
 
-        btnRefresh = new Button(composite_1, SWT.NONE);
-        btnRefresh.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, false, true, 1, 1));
+        btnRefresh = new Button(this, SWT.NONE);
+        btnRefresh.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, true, 1, 1));
+        btnRefresh.setSize(73, 28);
         btnRefresh.addListener(SWT.Selection, event -> onBtnNewSelection());
         btnRefresh.setText("Refresh");
 
