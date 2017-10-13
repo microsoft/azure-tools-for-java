@@ -536,17 +536,25 @@ public class PluginUtil {
 	public static boolean isJavaVersionHigherThanTarget(double targetVersion) {
 		try {
 			String javaVersion = System.getProperty("java.version");
-			int index = javaVersion.indexOf('.', javaVersion.indexOf('.') + 1);
-			if (index > 0) {
-				javaVersion = javaVersion.substring(0, index);
-				Float version = Float.valueOf(javaVersion);
-				if (version.floatValue() >= targetVersion) {
-					return true;
-				} else {
+			Float version = new Float(99);
+			if (javaVersion.contains(".") || javaVersion.contains("_")) {
+				String[] toParse = javaVersion.split("\\.");
+			
+				if (toParse.length >= 2) {
+					version = Float.valueOf(toParse[0] + "." + toParse[1]);
+					
+					if (version.floatValue() < targetVersion) {
+						return false;
+					}
+				}
+			} else {
+				version = Float.valueOf(javaVersion);
+				
+				if (version.floatValue() < targetVersion) {
 					return false;
 				}
 			}
-		} catch (Exception e) {
+		} catch (Exception ignore) {
 		}
 		
 		return true;
