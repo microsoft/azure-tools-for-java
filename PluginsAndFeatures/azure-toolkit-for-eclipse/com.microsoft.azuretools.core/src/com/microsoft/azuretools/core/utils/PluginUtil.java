@@ -543,12 +543,12 @@ public class PluginUtil {
 				if (toParse.length >= 2) {
 					version = Float.valueOf(toParse[0] + "." + toParse[1]);
 					
-					 return version.floatValue() < targetVersion;
+					 return version.floatValue() >= targetVersion;
 				}
 			} else {
 				version = Float.valueOf(javaVersion);
 				
-				return version.floatValue() < targetVersion;
+				return version.floatValue() >= targetVersion;
 			}
 		} catch (Exception ignore) {
 		}
