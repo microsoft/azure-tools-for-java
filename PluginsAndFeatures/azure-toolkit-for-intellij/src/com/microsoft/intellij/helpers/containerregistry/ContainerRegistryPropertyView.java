@@ -496,7 +496,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                     DockerClient docker = DefaultDockerClient.fromEnv().build();
                     DockerUtil.pullImage(docker, registry.loginServerUrl(), setting.getUsername(),
                             setting.getPassword(), fullImageTagName);
-                    String message = String.format(IMAGE_PULL_SUCCESS, setting.getImageNameWithTag());
+                    String message = String.format(IMAGE_PULL_SUCCESS, fullImageTagName);
                     Notification notification = new Notification(DISPLAY_ID, PULL_IMAGE, message,
                             NotificationType.INFORMATION);
                     Notifications.Bus.notify(notification);
