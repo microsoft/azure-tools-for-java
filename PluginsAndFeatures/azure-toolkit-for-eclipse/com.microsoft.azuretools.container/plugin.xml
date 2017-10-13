@@ -5,13 +5,13 @@
     <command id="com.microsoft.azuretools.container.commands.dockerize" name="Add Docker Support" categoryId="com.microsoft.ui.dropdown.category"></command>
     <command id="com.microsoft.azuretools.container.commands.dockerrun" name="Docker Run" categoryId="com.microsoft.ui.dropdown.category"></command>
     <command id="com.microsoft.azuretools.container.commands.pushimage" name="Push Image" categoryId="com.microsoft.ui.dropdown.category"></command>
-    <command id="com.microsoft.azuretools.container.commands.publishwebapp" name="Publish to Web App for Containers..." categoryId="com.microsoft.ui.dropdown.category"></command>
+    <command id="com.microsoft.azuretools.container.commands.publishwebappcontainers" name="Publish to Web App for Containers..." categoryId="com.microsoft.ui.dropdown.category"></command>
   </extension>
   <extension point="org.eclipse.ui.handlers">
     <handler commandId="com.microsoft.azuretools.container.commands.dockerize" class="com.microsoft.azuretools.container.handlers.DockerizeHandler"></handler>
     <handler commandId="com.microsoft.azuretools.container.commands.dockerrun" class="com.microsoft.azuretools.container.handlers.DockerRunHandler"></handler>
     <handler commandId="com.microsoft.azuretools.container.commands.pushimage" class="com.microsoft.azuretools.container.handlers.PushImageHandler"></handler>
-    <handler commandId="com.microsoft.azuretools.container.commands.publishwebapp" class="com.microsoft.azuretools.container.handlers.PublishHandler"></handler>
+    <handler commandId="com.microsoft.azuretools.container.commands.publishwebappcontainers" class="com.microsoft.azuretools.container.handlers.PublishHandler"></handler>
   </extension>
   <extension point="org.eclipse.ui.menus">
     <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
@@ -56,7 +56,7 @@
                 </with>
             </visibleWhen>
         </command>
-        <command name="publishwebapp" commandId="com.microsoft.azuretools.container.commands.publishwebapp">
+        <command name="publishwebappcontainers" commandId="com.microsoft.azuretools.container.commands.publishwebappcontainers">
             <visibleWhen checkEnabled="false">
                 <with variable="selection">
                     <count value="1"/> 
@@ -72,7 +72,7 @@
       </menu>
     </menuContribution>
     <menuContribution locationURI="menu:com.microsoft.ui.dropdown.toolbar.command">
-      <command commandId="com.microsoft.azuretools.container.commands.publishwebapp" style="push">
+      <command commandId="com.microsoft.azuretools.container.commands.publishwebappcontainers" style="push">
         <visibleWhen checkEnabled="false">
           <with variable="selection">
             <count value="1"/> 
@@ -96,7 +96,7 @@
     <propertyTester class="com.microsoft.azuretools.container.testers.DockerizedTester" id="com.microsoft.azuretools.container.testers.DockerizedTester" namespace="com.microsoft.azuretools.container.testers" properties="isDockerized" type="java.lang.Object"></propertyTester>
   </extension>
   <extension point="org.eclipse.ui.commandImages">
-    <image commandId="com.microsoft.azuretools.container.commands.publishwebapp" icon="icons/PublishWebAppOnLinux_16.png"></image>
+    <image commandId="com.microsoft.azuretools.container.commands.publishwebappcontainers" icon="icons/PublishWebAppOnLinux_16.png"></image>
     <image commandId="com.microsoft.azuretools.container.commands.dockerrun" icon="icons/DockerRun_16.png"></image>
     <image commandId="com.microsoft.azuretools.container.commands.dockerize" icon="icons/Dockerize_16.png"></image>
     <image commandId="com.microsoft.azuretools.container.commands.pushimage" icon="icons/PushImage_16.png"></image>
