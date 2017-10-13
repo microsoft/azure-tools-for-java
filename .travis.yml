@@ -17,4 +17,4 @@ before_install:
 - chmod +x ./gradlew
 - chmod +x ./BuildDevint
 script:
-- ./BuildDevint -q
+- travis_wait ./BuildDevint -q
