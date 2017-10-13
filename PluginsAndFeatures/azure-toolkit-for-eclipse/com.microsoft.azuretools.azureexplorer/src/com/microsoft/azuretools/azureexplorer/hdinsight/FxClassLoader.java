@@ -48,7 +48,7 @@ public class FxClassLoader {
 	
 	public static void loadJavaFxForJobView(Composite composite, String url) {
 		if(!isJavaFxLoaded) {
-			if (!PluginUtil.isJavaVersionHigherThanTarget(1.7)) {
+			if (!PluginUtil.isJavaVersionHigherThanTarget(1.7f)) {
 				PluginUtil.forceInstallPluginUsingMarketPlaceAsync(efxclipsePluginSymbolicName, efxclipseMarketplaceURL);
 			}
 			
