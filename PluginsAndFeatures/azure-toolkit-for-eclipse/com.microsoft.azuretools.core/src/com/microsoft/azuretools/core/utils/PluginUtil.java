@@ -533,7 +533,7 @@ public class PluginUtil {
 	 * @param targetVersion: Target minimum Java version
 	 * @return Return true if Java version is higher than target. By default return true since only Java 1.7 is required
 	 */
-	public static boolean isJavaVersionHigherThanTarget(double targetVersion) {
+	public static boolean isJavaVersionHigherThanTarget(float targetVersion) {
 		try {
 			String javaVersion = System.getProperty("java.version");
 			Float version = new Float(99);
@@ -543,16 +543,12 @@ public class PluginUtil {
 				if (toParse.length >= 2) {
 					version = Float.valueOf(toParse[0] + "." + toParse[1]);
 					
-					if (version.floatValue() < targetVersion) {
-						return false;
-					}
+					 return version.floatValue() < targetVersion;
 				}
 			} else {
 				version = Float.valueOf(javaVersion);
 				
-				if (version.floatValue() < targetVersion) {
-					return false;
-				}
+				return version.floatValue() < targetVersion;
 			}
 		} catch (Exception ignore) {
 		}
