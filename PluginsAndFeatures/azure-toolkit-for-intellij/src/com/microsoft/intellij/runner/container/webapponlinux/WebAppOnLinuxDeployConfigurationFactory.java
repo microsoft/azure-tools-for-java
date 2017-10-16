@@ -43,7 +43,8 @@ public class WebAppOnLinuxDeployConfigurationFactory extends ConfigurationFactor
     @NotNull
     @Override
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-        return new WebAppOnLinuxDeployConfiguration(project, this, null);
+        return new WebAppOnLinuxDeployConfiguration(project, this, String.format("%s: %s", FACTORY_NAME, project
+                .getName()));
     }
 
     @Override

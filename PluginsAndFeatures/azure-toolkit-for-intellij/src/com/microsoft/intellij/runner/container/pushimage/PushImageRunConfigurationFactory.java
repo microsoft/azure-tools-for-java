@@ -43,7 +43,7 @@ public class PushImageRunConfigurationFactory extends ConfigurationFactory {
     @NotNull
     @Override
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-        return new PushImageRunConfiguration(project, this, null);
+        return new PushImageRunConfiguration(project, this, String.format("%s: %s", FACTORY_NAME, project.getName()));
     }
 
     @Override
