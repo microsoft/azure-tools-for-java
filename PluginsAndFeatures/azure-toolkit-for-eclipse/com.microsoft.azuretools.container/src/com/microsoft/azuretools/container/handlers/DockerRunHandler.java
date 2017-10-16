@@ -46,8 +46,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.handlers.HandlerUtil;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -64,7 +62,6 @@ import rx.Observable;
 public class DockerRunHandler extends AzureAbstractHandler {
 
     private static final String MAVEN_GOALS = "package";
-    private IWorkbenchWindow window;
     private IProject project;
     private String basePath;
     private DockerClient docker;
@@ -72,7 +69,6 @@ public class DockerRunHandler extends AzureAbstractHandler {
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
-        window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
         project = PluginUtil.getSelectedProject();
         try {
             if (project == null) {
@@ -93,7 +89,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
             // Stop running container
             String runningContainerId = DockerRuntime.getInstance().getRunningContainerId();
             if (DockerUtil.containerExists(docker, runningContainerId)) {
-                boolean stop = MessageDialog.openConfirm(window.getShell(), "Confirmation",
+                boolean stop = MessageDialog.openConfirm(PluginUtil.getParentShell(), "Confirmation",
                         Constant.MESSAGE_CONFIRM_STOP_CONTAINER);
                 if (stop) {
                     DockerRuntime.getInstance().cleanRuningContainer();

@@ -48,8 +48,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.handlers.HandlerUtil;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
@@ -64,7 +62,6 @@ import rx.Observable;
 public class PublishHandler extends AzureAbstractHandler {
 
     private static final String MAVEN_GOALS = "package";
-    private IWorkbenchWindow window;
     private IProject project;
     private String destinationPath;
     private String basePath;
@@ -72,9 +69,8 @@ public class PublishHandler extends AzureAbstractHandler {
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
-        window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
         project = PluginUtil.getSelectedProject();
-        if (project == null || !SignInCommandHandler.doSignIn(window.getShell())) {
+        if (project == null || !SignInCommandHandler.doSignIn(PluginUtil.getParentShell())) {
             return null;
         }
         basePath = project.getLocation().toString();
@@ -135,7 +131,7 @@ public class PublishHandler extends AzureAbstractHandler {
         }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(ret -> {
             DefaultLoader.getIdeHelper().invokeAndWait(() -> {
                 PublishWizard pw = new PublishWizard();
-                WizardDialog pwd = new PublishWizardDialog(window.getShell(), pw);
+                WizardDialog pwd = new PublishWizardDialog(PluginUtil.getParentShell(), pw);
                 if (pwd.open() == Window.OK) {
                     ConsoleLogger.info(String.format("URL: http://%s.azurewebsites.net/",
                             DockerRuntime.getInstance().getLatestWebAppName()));
@@ -156,7 +152,7 @@ public class PublishHandler extends AzureAbstractHandler {
                     .toString();
 
             DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                MessageDialog.openError(window.getShell(), "Error on building image", String
+                MessageDialog.openError(PluginUtil.getParentShell(), "Error on building image", String
                         .format(Constant.ERROR_BUILDING_IMAGE, dockerHost, dockerFileRelativePath, err.getMessage()));
             });
             sendTelemetryOnException(event, err);
