@@ -19,13 +19,16 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.BuildPathsBlock;
+import org.eclipse.jdt.ui.wizards.BuildPathDialogAccess;
 import org.eclipse.jdt.ui.wizards.JavaCapabilityConfigurationPage;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
+import org.eclipse.swt.widgets.Display;
 import org.scalaide.core.SdtConstants;
 
 public class HDInsightScalaPageTwo extends NewJavaProjectWizardPageTwo {
 	private HDInsightsScalaProjectWizard parent = null;
+	private boolean hasConfiguredScalaClasspathContainer = false;
 	public HDInsightScalaPageTwo(HDInsightScalaPageOne hdInsightScalaPageOne) {
 		super(hdInsightScalaPageOne);
 	}
@@ -54,6 +57,38 @@ public class HDInsightScalaPageTwo extends NewJavaProjectWizardPageTwo {
 			
 			if (parent == null) { 
 				parent = (HDInsightsScalaProjectWizard) this.getWizard();
+			}
+			
+			if (hasConfiguredScalaClasspathContainer == false) {
+				hasConfiguredScalaClasspathContainer = true;
+				Display.getDefault().syncExec(() -> {
+						IJavaProject javaProject = getJavaProject();
+						IClasspathEntry[] entries = null;
+						try {
+							entries = javaProject.getRawClasspath();
+							IClasspathEntry scalaClasspathContainerEntry = null;
+							int scalaClasspathContainerEntryIndex = -1;
+							for (int i = 0; i < entries.length; i++) {
+								String entryName = entries[i].getPath().toPortableString().toLowerCase();
+								if (entryName != null && entryName.contains(parent.scalaClasspathContainerId.toLowerCase())) {
+									scalaClasspathContainerEntry = entries[i];
+									scalaClasspathContainerEntryIndex = i;
+									break;
+								}
+							}
+							
+							if (scalaClasspathContainerEntry != null) {
+								IClasspathEntry created = BuildPathDialogAccess.configureContainerEntry(getShell(), scalaClasspathContainerEntry, javaProject, entries);
+								if (created != null) {
+									entries[scalaClasspathContainerEntryIndex] = created;
+								}
+								
+								javaProject.setRawClasspath(entries, new NullProgressMonitor());								
+							}
+						} catch (JavaModelException ignore) {
+							
+						}
+				});
 			}
 		} catch (OperationCanceledException | NoSuchMethodException | SecurityException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException ex) {

@@ -50,7 +50,7 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 	private String id;
 	public static NewJavaProjectWizardPageOne hdInsightScalaPageOne;
 	public NewJavaProjectWizardPageTwo hdInsightScalaPageTwo;
-	
+	public static final String scalaClasspathContainerId = "org.scala-ide.sdt.launching.SCALA_CONTAINER";
 	
 	public HDInsightsScalaProjectWizard() {
 		this(
