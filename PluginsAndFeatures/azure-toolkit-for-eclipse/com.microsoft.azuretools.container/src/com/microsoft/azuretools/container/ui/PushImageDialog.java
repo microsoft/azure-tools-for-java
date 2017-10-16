@@ -42,12 +42,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
+import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.Constant;
 import com.microsoft.azuretools.container.DockerProgressHandler;
-import com.microsoft.azuretools.container.InvalidDataException;
 import com.microsoft.azuretools.container.ui.common.ContainerSettingComposite;
 import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.PushImageRunModel;
@@ -168,7 +168,7 @@ public class PushImageDialog extends TitleAreaDialog {
             validate();
             execute();
             super.okPressed();
-        } catch (InvalidDataException e) {
+        } catch (InvalidFormDataException e) {
             showErrorMessage("Error", e.getMessage());
         }
     }
@@ -186,64 +186,64 @@ public class PushImageDialog extends TitleAreaDialog {
         model.setTargetName(Paths.get(targetPath).getFileName().toString());
     }
 
-    private void validate() throws InvalidDataException {
+    private void validate() throws InvalidFormDataException {
         if (model == null) {
-            throw new InvalidDataException(MISSING_MODEL);
+            throw new InvalidFormDataException(MISSING_MODEL);
         }
         if (Utils.isEmptyString(model.getDockerFilePath()) || !Paths.get(model.getDockerFilePath()).toFile().exists()) {
-            throw new InvalidDataException(INVALID_DOCKER_FILE);
+            throw new InvalidFormDataException(INVALID_DOCKER_FILE);
         }
         // acr
         PrivateRegistryImageSetting setting = model.getPrivateRegistryImageSetting();
         if (Utils.isEmptyString(setting.getServerUrl()) || !setting.getServerUrl().matches(DOMAIN_NAME_REGEX)) {
-            throw new InvalidDataException(MISSING_SERVER_URL);
+            throw new InvalidFormDataException(MISSING_SERVER_URL);
         }
         if (Utils.isEmptyString(setting.getUsername())) {
-            throw new InvalidDataException(MISSING_USERNAME);
+            throw new InvalidFormDataException(MISSING_USERNAME);
         }
         if (Utils.isEmptyString(setting.getPassword())) {
-            throw new InvalidDataException(MISSING_PASSWORD);
+            throw new InvalidFormDataException(MISSING_PASSWORD);
         }
         String imageTag = setting.getImageTagWithServerUrl();
         if (Utils.isEmptyString(imageTag)) {
-            throw new InvalidDataException(MISSING_IMAGE_WITH_TAG);
+            throw new InvalidFormDataException(MISSING_IMAGE_WITH_TAG);
         }
         if (imageTag.endsWith(":")) {
-            throw new InvalidDataException(CANNOT_END_WITH_COLON);
+            throw new InvalidFormDataException(CANNOT_END_WITH_COLON);
         }
         final String[] repoAndTag = imageTag.split(":");
 
         // check repository first
         if (repoAndTag[0].length() < 1 || repoAndTag[0].length() > REPO_LENGTH) {
-            throw new InvalidDataException(REPO_LENGTH_INVALID);
+            throw new InvalidFormDataException(REPO_LENGTH_INVALID);
         }
         if (repoAndTag[0].endsWith("/")) {
-            throw new InvalidDataException(CANNOT_END_WITH_SLASH);
+            throw new InvalidFormDataException(CANNOT_END_WITH_SLASH);
         }
         final String[] repoComponents = repoAndTag[0].split("/");
         for (String component : repoComponents) {
             if (!component.matches(REPO_COMPONENTS_REGEX)) {
-                throw new InvalidDataException(String.format(REPO_COMPONENT_INVALID, component, REPO_COMPONENTS_REGEX));
+                throw new InvalidFormDataException(String.format(REPO_COMPONENT_INVALID, component, REPO_COMPONENTS_REGEX));
             }
         }
         // check when contains tag
         if (repoAndTag.length == 2) {
             if (repoAndTag[1].length() > TAG_LENGTH) {
-                throw new InvalidDataException(TAG_LENGTH_INVALID);
+                throw new InvalidFormDataException(TAG_LENGTH_INVALID);
             }
             if (!repoAndTag[1].matches(TAG_REGEX)) {
-                throw new InvalidDataException(String.format(TAG_INVALID, repoAndTag[1], TAG_REGEX));
+                throw new InvalidFormDataException(String.format(TAG_INVALID, repoAndTag[1], TAG_REGEX));
             }
         }
         if (repoAndTag.length > 2) {
-            throw new InvalidDataException(INVALID_IMAGE_WITH_TAG);
+            throw new InvalidFormDataException(INVALID_IMAGE_WITH_TAG);
         }
         // target package
         if (Utils.isEmptyString(model.getTargetName())) {
-            throw new InvalidDataException(MISSING_ARTIFACT);
+            throw new InvalidFormDataException(MISSING_ARTIFACT);
         }
         if (!model.getTargetName().matches(ARTIFACT_NAME_REGEX)) {
-            throw new InvalidDataException(String.format(INVALID_ARTIFACT_FILE, model.getTargetName()));
+            throw new InvalidFormDataException(String.format(INVALID_ARTIFACT_FILE, model.getTargetName()));
         }
     }
 
