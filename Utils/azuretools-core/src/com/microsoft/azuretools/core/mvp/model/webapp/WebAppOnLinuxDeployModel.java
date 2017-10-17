@@ -41,9 +41,27 @@ public class WebAppOnLinuxDeployModel {
     private String targetName;
     private String dockerFilePath;
 
-
     public WebAppOnLinuxDeployModel() {
         privateRegistryImageSetting = new PrivateRegistryImageSetting();
+    }
+
+    public WebAppOnLinuxDeployModel(WebAppOnLinuxDeployModel model) {
+        privateRegistryImageSetting = new PrivateRegistryImageSetting(model.privateRegistryImageSetting);
+        this.setCreatingNewWebAppOnLinux(model.creatingNewWebAppOnLinux);
+        this.setWebAppId(model.webAppId);
+        this.setWebAppName(model.webAppName);
+        this.setSubscriptionId(model.subscriptionId);
+        this.setResourceGroupName(model.resourceGroupName);
+        this.setCreatingNewResourceGroup(model.creatingNewResourceGroup);
+        this.setLocationName(model.locationName);
+        this.setPricingSkuTier(model.pricingSkuTier);
+        this.setPricingSkuSize(model.pricingSkuSize);
+        this.setCreatingNewAppServicePlan(model.creatingNewAppServicePlan);
+        this.setAppServicePlanId(model.appServicePlanId);
+        this.setAppServicePlanName(model.appServicePlanName);
+        this.setTargetPath(model.targetPath);
+        this.setTargetName(model.targetName);
+        this.setDockerFilePath(model.dockerFilePath);
     }
 
     public String getWebAppId() {
@@ -149,19 +167,19 @@ public class WebAppOnLinuxDeployModel {
     public void setAppServicePlanName(String appServicePlanName) {
         this.appServicePlanName = appServicePlanName;
     }
-    
+
     public void setTargetPath(String targetPath) {
         this.targetPath = targetPath;
     }
-    
+
     public String getTargetPath() {
         return this.targetPath;
     }
-    
+
     public void setTargetName(String targetName) {
         this.targetName = targetName;
     }
-    
+
     public String getTargetName() {
         return this.targetName;
     }

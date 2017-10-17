@@ -74,7 +74,7 @@ public class PushImageRunConfiguration extends RunConfigurationBase {
     private static final int TAG_LENGTH = 128;
     private static final int REPO_LENGTH = 255;
 
-    private final PushImageRunModel dataModel;
+    private PushImageRunModel dataModel;
     private boolean firstTimeCreated = true;
 
     protected PushImageRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
@@ -84,6 +84,13 @@ public class PushImageRunConfiguration extends RunConfigurationBase {
 
     public PushImageRunModel getDataModel() {
         return dataModel;
+    }
+
+    @Override
+    public RunConfiguration clone() {
+        PushImageRunConfiguration clone = (PushImageRunConfiguration) super.clone();
+        clone.dataModel = new PushImageRunModel(dataModel);
+        return clone;
     }
 
     @Override

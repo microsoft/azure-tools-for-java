@@ -31,6 +31,13 @@ public class PrivateRegistryImageSetting extends ImageSetting {
     public PrivateRegistryImageSetting() {
     }
 
+    public PrivateRegistryImageSetting(PrivateRegistryImageSetting setting) {
+        super(setting);
+        this.setServerUrl(setting.serverUrl);
+        this.setUsername(setting.username);
+        this.setPassword(setting.password);
+    }
+
     public PrivateRegistryImageSetting(String serverUrl, String username, String password, String imageNameWithTag,
                                        String startupFile) {
         super(imageNameWithTag, startupFile);

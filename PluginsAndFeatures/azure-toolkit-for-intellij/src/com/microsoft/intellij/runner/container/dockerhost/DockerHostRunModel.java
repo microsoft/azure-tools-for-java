@@ -44,15 +44,19 @@ public class DockerHostRunModel {
         try {
             dockerHost = DefaultDockerClient.fromEnv().uri().toString();
         } catch (DockerCertificateException e) {
-            dockerHost = "";
+            // do nothing
         }
-        dockerCertPath = "";
-        tlsEnabled = false;
-        DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
-        String date = df.format(new Date());
-        imageName = String.format("%s-%s", "localimage", date);
-        tagName = "latest";
-        dockerFilePath = "";
+    }
+
+    public DockerHostRunModel(DockerHostRunModel model) {
+        this.setDockerHost(model.dockerHost);
+        this.setDockerCertPath(model.dockerCertPath);
+        this.setTlsEnabled(model.tlsEnabled);
+        this.setImageName(model.imageName);
+        this.setTagName(model.tagName);
+        this.setTargetPath(model.targetPath);
+        this.setTargetName(model.targetName);
+        this.setDockerFilePath(model.dockerFilePath);
     }
 
     public String getDockerHost() {

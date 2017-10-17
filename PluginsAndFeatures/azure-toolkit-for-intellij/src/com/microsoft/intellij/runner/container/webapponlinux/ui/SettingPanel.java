@@ -87,7 +87,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private static final String TABLE_EMPTY_MESSAGE = "No available Web App for Containers.";
     private static final String APP_NAME_PREFIX = "webapp-linux";
     private static final String RESOURCE_GROUP_NAME_PREFIX = "rg-web-linux";
-    private static final String APP_SERVICE_PLAN_NAME_PREFIX = "appsp-linux-";
+    private static final String APP_SERVICE_PLAN_NAME_PREFIX = "appsp-linux";
     private static final String TITLE_RESOURCE_GROUP = "Resource Group";
     private static final String TITLE_APP_SERVICE_PLAN = "App Service Plan";
     private static final String TITLE_ACR = "Azure Container Registry";

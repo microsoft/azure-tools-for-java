@@ -25,10 +25,20 @@ package com.microsoft.azuretools.core.mvp.model.container.pojo;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 
 public class PushImageRunModel {
-    private PrivateRegistryImageSetting privateRegistryImageSetting = new PrivateRegistryImageSetting();
+    private PrivateRegistryImageSetting privateRegistryImageSetting;
     private String targetPath;
     private String targetName;
     private String dockerFilePath;
+
+    public PushImageRunModel() {
+        privateRegistryImageSetting = new PrivateRegistryImageSetting();
+    }
+    public PushImageRunModel(PushImageRunModel model) {
+        this.privateRegistryImageSetting = new PrivateRegistryImageSetting(model.privateRegistryImageSetting);
+        this.setTargetName(model.targetName);
+        this.setTargetPath(model.targetPath);
+        this.setDockerFilePath(model.dockerFilePath);
+    }
 
     public PrivateRegistryImageSetting getPrivateRegistryImageSetting() {
         return privateRegistryImageSetting;

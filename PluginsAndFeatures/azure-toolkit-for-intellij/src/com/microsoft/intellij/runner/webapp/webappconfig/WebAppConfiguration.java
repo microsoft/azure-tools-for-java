@@ -67,13 +67,20 @@ public class WebAppConfiguration extends RunConfigurationBase {
             + "the digits '0' through '9', '.', '-' and '_'.";
 
     private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
-    private final WebAppSettingModel webAppSettingModel;
+    private WebAppSettingModel webAppSettingModel;
     private boolean firstTimeCreated = true;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory) {
         super(project, factory, String.format("%s:%s", WebAppConfigurationType.getInstance().getDisplayName(),
                 project.getName()));
         webAppSettingModel = new WebAppSettingModel();
+    }
+
+    @Override
+    public RunConfiguration clone() {
+        WebAppConfiguration clone = (WebAppConfiguration) super.clone();
+        clone.webAppSettingModel = new WebAppSettingModel(webAppSettingModel);
+        return clone;
     }
 
     public boolean isFirstTimeCreated() {

@@ -52,11 +52,6 @@ public class DockerHostRunConfigurationFactory extends ConfigurationFactory {
     }
 
     @Override
-    public RunConfiguration createConfiguration(String name, RunConfiguration template) {
-        return new DockerHostRunConfiguration(template.getProject(), this, name);
-    }
-
-    @Override
     public Icon getIcon() {
         return PluginUtil.getIcon(ICON_PATH);
     }
