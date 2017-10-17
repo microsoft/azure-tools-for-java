@@ -82,13 +82,20 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     private static final int TAG_LENGTH = 128;
     private static final int REPO_LENGTH = 255;
 
-    private final WebAppOnLinuxDeployModel deployModel;
+    private WebAppOnLinuxDeployModel deployModel;
     private boolean firstTimeCreated = true;
 
     protected WebAppOnLinuxDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String
             name) {
         super(project, factory, name);
         deployModel = new WebAppOnLinuxDeployModel();
+    }
+
+    @Override
+    public WebAppOnLinuxDeployConfiguration clone() {
+        WebAppOnLinuxDeployConfiguration clone = (WebAppOnLinuxDeployConfiguration) super.clone();
+        clone.deployModel = new WebAppOnLinuxDeployModel(deployModel);
+        return clone;
     }
 
     public boolean isFirstTimeCreated() {

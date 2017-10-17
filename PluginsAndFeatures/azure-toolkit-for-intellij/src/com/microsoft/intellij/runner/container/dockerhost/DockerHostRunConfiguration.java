@@ -57,12 +57,19 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
     private static final String INVALID_DOCKER_FILE = "Please specify a valid docker file.";
     private static final String INVALID_CERT_PATH = "Please specify a valid certificate path.";
     private static final String MISSING_IMAGE_NAME = "Please specify a valid image name.";
-    private final DockerHostRunModel dockerHostRunModel;
+    private DockerHostRunModel dockerHostRunModel;
     private boolean firstTimeCreated = true;
 
     protected DockerHostRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
         dockerHostRunModel = new DockerHostRunModel();
+    }
+
+    @Override
+    public RunConfiguration clone() {
+        DockerHostRunConfiguration clone = (DockerHostRunConfiguration) super.clone();
+        clone.dockerHostRunModel = new DockerHostRunModel(dockerHostRunModel);
+        return clone;
     }
 
     public DockerHostRunModel getDockerHostRunModel() {

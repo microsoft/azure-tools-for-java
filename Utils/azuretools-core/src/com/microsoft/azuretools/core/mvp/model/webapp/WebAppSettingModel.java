@@ -49,6 +49,28 @@ public class WebAppSettingModel {
     private String pricing = "";
     private JavaVersion jdkVersion = JavaVersion.JAVA_8_NEWEST;
 
+    public WebAppSettingModel() {
+    }
+
+    public WebAppSettingModel(WebAppSettingModel model) {
+        this.setCreatingNew(model.creatingNew);
+        this.setSubscriptionId(model.subscriptionId);
+        this.setWebAppId(model.webAppId);
+        this.setTargetPath(model.targetPath);
+        this.setTargetName(model.targetName);
+        this.setDeployToRoot(model.deployToRoot);
+        this.setWebAppName(model.webAppName);
+        this.setWebContainer(model.webContainer);
+        this.setCreatingResGrp(model.creatingResGrp);
+        this.setResourceGroup(model.resourceGroup);
+        this.setCreatingAppServicePlan(model.creatingAppServicePlan);
+        this.setAppServicePlanName(model.appServicePlanName);
+        this.setAppServicePlanId(model.appServicePlanId);
+        this.setRegion(model.region);
+        this.setPricing(model.pricing);
+        this.setJdkVersion(model.jdkVersion);
+    }
+
     public String getWebAppId() {
         return webAppId;
     }

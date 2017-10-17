@@ -29,6 +29,11 @@ public abstract class ImageSetting {
 
     public ImageSetting() {
     }
+    
+    public ImageSetting(ImageSetting setting) {
+        this.setImageNameWithTag(setting.imageNameWithTag);
+        this.setStartupFile(setting.startupFile);
+    }
 
     public ImageSetting(String imageNameWithTag, String startupFile) {
         this.imageNameWithTag = imageNameWithTag;
