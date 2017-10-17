@@ -28,7 +28,7 @@ public class Constant {
     public static final String DOCKERFILE_FOLDER = ".";
     public static final String DOCKERFILE_NAME = "Dockerfile";
     public static final String TOMCAT_SERVICE_PORT = "8080";
-    public static final String DEFAULT_IMAGE_NAME_WITH_TAG= "localimage:latest";
+    public static final String DEFAULT_IMAGE_NAME_WITH_TAG = "localimage:latest";
     public static final String MESSAGE_INSTRUCTION = "(Set the DOCKER_HOST environment variable to connect elsewhere."
             + "Set the DOCKER_CERT_PATH variable to connect TLS-enabled daemon.)";
     public static final String MESSAGE_INSTRUCTION_DEPRECATED = "Please make sure following environment variables are"
@@ -41,16 +41,14 @@ public class Constant {
             + "with exception:\n%s";
     public static final String ERROR_RUNNING_DOCKER = "Error occurred in Docker Run, with exception:\n%s";
     public static final String DOCKERFILE_CONTENT_TOMCAT = "FROM tomcat:8.5-jre8\r\n"
-            + "RUN rm -fr /usr/local/tomcat/webapps/ROOT\r\n"
-            + "COPY %s /usr/local/tomcat/webapps/ROOT.war\r\n";
-    public static final String DOCKERFILE_CONTENT_SPRING = "FROM openjdk:8-jdk-alpine\r\n"
-            + "VOLUME /tmp\r\n"
-            + "EXPOSE 8080\r\n"
-            + "COPY %s app.jar\r\n"
+            + "RUN rm -fr /usr/local/tomcat/webapps/ROOT\r\n" + "COPY %s /usr/local/tomcat/webapps/ROOT.war\r\n";
+    public static final String DOCKERFILE_CONTENT_SPRING = "FROM openjdk:8-jdk-alpine\r\n" + "VOLUME /tmp\r\n"
+            + "EXPOSE 8080\r\n" + "COPY %s app.jar\r\n"
             + "ENTRYPOINT java -Djava.security.egd=file:/dev/./urandom -jar /app.jar";
     public static final String ERROR_NO_SELECTED_PROJECT = "Can't detect an active project";
     public static final String MESSAGE_EXPORTING_PROJECT = "Packaging project into artifact: %s";
     public static final String MESSAGE_BUILDING_IMAGE = "Building Image ...";
+    public static final String MESSAGE_PACKAGING_PROJECT = "Packaging project ...";
     public static final String MESSAGE_IMAGE_INFO = "Image name: %s";
     public static final String MESSAGE_CREATING_CONTAINER = "Creating container ...";
     public static final String MESSAGE_CONTAINER_INFO = "Container Id: %s";

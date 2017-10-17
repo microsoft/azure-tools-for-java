@@ -29,10 +29,11 @@ import org.eclipse.jst.j2ee.internal.web.archive.operations.WebComponentExportDa
 import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 
+@SuppressWarnings("restriction")
 public class WarUtil {
     /**
      * export.
-     * 
+     *
      * @param project
      * @param destinationPath
      * @throws Exception

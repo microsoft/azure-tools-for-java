@@ -175,8 +175,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
      */
     @Override
     protected Control createDialogArea(Composite parent) {
-        setTitle("Run on Web App (Linux)");
-        setMessage("Message TBD");
+        setTitle("Run on Web App for Containers");
+        setMessage("Message TBD"); // TODO: specify the message.
         Composite area = (Composite) super.createDialogArea(parent);
 
         expandBar = new ExpandBar(area, SWT.V_SCROLL);
@@ -190,7 +190,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         acrHolder.setExpanded(true);
         acrHolder.setText("Azure Container Registry");
 
-        cpAcr = new ContainerSettingComposite(expandBar, SWT.NONE, basePath);
+        cpAcr = new ContainerSettingComposite(expandBar, SWT.BORDER, basePath);
         acrHolder.setControl(cpAcr);
         acrHolder.setHeight(acrHolder.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 
@@ -198,7 +198,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         webappHolder.setExpanded(true);
         webappHolder.setText("Web App for Container");
 
-        cpWebApp = new Composite(expandBar, SWT.NONE);
+        cpWebApp = new Composite(expandBar, SWT.BORDER);
         webappHolder.setControl(cpWebApp);
         cpWebApp.setLayout(new GridLayout(1, false));
 
@@ -244,7 +244,10 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         // refresh button
         cpExisting.btnRefresh.addListener(SWT.Selection, event -> onBtnRefreshSelection());
 
+        // ACR composite serverUrl text change listener
         cpAcr.addTxtServerUrlModifyListener(event -> onTxtServerUrlModification());
+
+        // TODO: adjust shell size when clicking expandBar
         initialize();
         return area;
     }
@@ -270,16 +273,10 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     }
 
     private void apply() {
-        // TODO:
-        model.setDockerFilePath(Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME)
-                .toString() /* cpAcr.getDockerPath() */);
+        model.setDockerFilePath(cpAcr.getDockerPath());
         // set ACR info
-        model.setPrivateRegistryImageSetting(
-                new PrivateRegistryImageSetting(System.getenv("AcrServerUrl"), System.getenv("AcrUsername"), // cpAcr.getUserName(),
-                        System.getenv("AcrPassword"), // cpAcr.getPassword(),
-                        "eclipse:latest", // cpAcr.getImageTag(),
-                        "" // cpAcr.getStartupFile()
-                        ));
+        model.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(cpAcr.getServerUrl(), cpAcr.getUserName(),
+                cpAcr.getPassword(), cpAcr.getImageTag(), cpAcr.getStartupFile()));
         // set target
         model.setTargetPath(targetPath);
         model.setTargetName(Paths.get(targetPath).getFileName().toString());
@@ -397,7 +394,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         final String[] repoComponents = repoAndTag[0].split("/");
         for (String component : repoComponents) {
             if (!component.matches(REPO_COMPONENTS_REGEX)) {
-                throw new InvalidFormDataException(String.format(REPO_COMPONENT_INVALID, component, REPO_COMPONENTS_REGEX));
+                throw new InvalidFormDataException(
+                        String.format(REPO_COMPONENT_INVALID, component, REPO_COMPONENTS_REGEX));
             }
         }
         // check when contains tag

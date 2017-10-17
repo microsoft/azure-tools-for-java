@@ -22,42 +22,23 @@
 
 package com.microsoft.azuretools.container.handlers;
 
-import com.microsoft.azuretools.container.ConsoleLogger;
-import com.microsoft.azuretools.container.Constant;
-import com.microsoft.azuretools.container.DockerProgressHandler;
-import com.microsoft.azuretools.container.DockerRuntime;
-import com.microsoft.azuretools.container.ui.wizard.publish.PublishWizard;
-import com.microsoft.azuretools.container.ui.wizard.publish.PublishWizardDialog;
-import com.microsoft.azuretools.container.utils.ConfigFileUtil;
-import com.microsoft.azuretools.container.utils.DockerUtil;
-import com.microsoft.azuretools.container.utils.WarUtil;
-import com.microsoft.azuretools.core.actions.MavenExecuteAction;
-import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
-import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
-import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
-import com.microsoft.azuretools.core.utils.MavenUtils;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.utils.WebAppUtils;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.spotify.docker.client.DockerClient;
+import java.nio.file.Paths;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.window.Window;
-import org.eclipse.jface.wizard.WizardDialog;
 
-import java.io.FileNotFoundException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import rx.Observable;
+import com.microsoft.azuretools.container.ConsoleLogger;
+import com.microsoft.azuretools.container.Constant;
+import com.microsoft.azuretools.container.ui.PublishWebAppOnLinuxDialog;
+import com.microsoft.azuretools.container.utils.WarUtil;
+import com.microsoft.azuretools.core.actions.MavenExecuteAction;
+import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
+import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
+import com.microsoft.azuretools.core.utils.MavenUtils;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 public class PublishHandler extends AzureAbstractHandler {
 
@@ -65,7 +46,6 @@ public class PublishHandler extends AzureAbstractHandler {
     private IProject project;
     private String destinationPath;
     private String basePath;
-    private Properties props;
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
@@ -74,13 +54,11 @@ public class PublishHandler extends AzureAbstractHandler {
             return null;
         }
         basePath = project.getLocation().toString();
-        props = ConfigFileUtil.loadConfig(project);
-        DockerRuntime.getInstance().loadFromProps(props);
 
         try {
-            ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
             if (MavenUtils.isMavenProject(project)) {
                 destinationPath = MavenUtils.getTargetPath(project);
+                ConsoleLogger.info(String.format(Constant.MESSAGE_PACKAGING_PROJECT, destinationPath));
                 MavenExecuteAction action = new MavenExecuteAction(MAVEN_GOALS);
                 IContainer container;
                 container = MavenUtils.getPomFile(project).getParent();
@@ -91,6 +69,7 @@ public class PublishHandler extends AzureAbstractHandler {
             } else {
                 destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war")
                         .normalize().toString();
+                ConsoleLogger.info(String.format(Constant.MESSAGE_PACKAGING_PROJECT, destinationPath));
                 WarUtil.export(project, destinationPath);
                 buildAndRun(event);
             }
@@ -103,59 +82,10 @@ public class PublishHandler extends AzureAbstractHandler {
     }
 
     private void buildAndRun(ExecutionEvent event) {
-        Observable.fromCallable(() -> {
-            DockerClient docker = DockerRuntime.getInstance().getDockerBuilder().build();
-
-            // validate dockerfile
-            Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
-            ConsoleLogger.info(String.format("Validating dockerfile ... [%s]", targetDockerfile));
-            if (!targetDockerfile.toFile().exists()) {
-                throw new FileNotFoundException("Dockerfile not found.");
-            }
-            // replace placeholder if exists
-            String content = new String(Files.readAllBytes(targetDockerfile));
-            content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
-                    Paths.get(basePath).toUri().relativize(Paths.get(destinationPath).toUri()).getPath());
-            Files.write(targetDockerfile, content.getBytes());
-
-            // build image based on WAR file
-            ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
-            String imageNameWithTag = DockerUtil.buildImage(docker, Constant.DEFAULT_IMAGE_NAME_WITH_TAG,
-                    Paths.get(project.getLocation().toString(), Constant.DOCKERFILE_FOLDER),
-                    Constant.DOCKERFILE_NAME,
-                    new DockerProgressHandler());
-            ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageNameWithTag));
-
-            DockerRuntime.getInstance().setLatestImageName(imageNameWithTag);
-            return null;
-        }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(ret -> {
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                PublishWizard pw = new PublishWizard();
-                WizardDialog pwd = new PublishWizardDialog(PluginUtil.getParentShell(), pw);
-                if (pwd.open() == Window.OK) {
-                    ConsoleLogger.info(String.format("URL: http://%s.azurewebsites.net/",
-                            DockerRuntime.getInstance().getLatestWebAppName()));
-                    ConfigFileUtil.saveConfig(project, DockerRuntime.getInstance().saveToProps(props));
-                }
-            });
-
-            Map<String, String> extraInfo = new HashMap<>();
-            try {
-                boolean isJar = MavenUtils.isMavenProject(this.project) && MavenUtils.getPackaging(this.project).equals(WebAppUtils.TYPE_JAR);
-                extraInfo.put("FileType", isJar?"jar":"war");
-            } catch (Exception e) {}
-            sendTelemetryOnSuccess(event, extraInfo);
-        }, err -> {
-            String dockerHost = DockerRuntime.getInstance().getDockerBuilder().uri().toString();
-            String dockerFileRelativePath = Paths.get(basePath).getParent().toUri()
-                    .relativize(Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME).toUri())
-                    .toString();
-
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                MessageDialog.openError(PluginUtil.getParentShell(), "Error on building image", String
-                        .format(Constant.ERROR_BUILDING_IMAGE, dockerHost, dockerFileRelativePath, err.getMessage()));
-            });
-            sendTelemetryOnException(event, err);
+        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+            PublishWebAppOnLinuxDialog dialog = new PublishWebAppOnLinuxDialog(PluginUtil.getParentShell(), basePath,
+                    destinationPath);
+            dialog.open();
         });
     }
 }

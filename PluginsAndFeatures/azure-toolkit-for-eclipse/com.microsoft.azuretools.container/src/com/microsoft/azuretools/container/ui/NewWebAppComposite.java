@@ -84,12 +84,13 @@ class NewWebAppComposite extends Composite {
 
         ExpandBar expandBar = new ExpandBar(this, SWT.NONE);
         expandBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        expandBar.setBackground(parent.getBackground());
 
         resourceGroupHolder = new ExpandItem(expandBar, SWT.NONE);
         resourceGroupHolder.setExpanded(true);
         resourceGroupHolder.setText("Resource Group");
 
-        Composite composite = new Composite(expandBar, SWT.NONE);
+        Composite composite = new Composite(expandBar, SWT.BORDER);
         resourceGroupHolder.setControl(composite);
         composite.setLayout(new GridLayout(2, false));
 
@@ -107,7 +108,7 @@ class NewWebAppComposite extends Composite {
         appServicePlanHolder.setExpanded(true);
         appServicePlanHolder.setText("App Service Plan");
 
-        Composite composite_1 = new Composite(expandBar, SWT.NONE);
+        Composite composite_1 = new Composite(expandBar, SWT.BORDER);
         appServicePlanHolder.setControl(composite_1);
         composite_1.setLayout(new GridLayout(2, false));
 

@@ -1,9 +1,14 @@
 package com.microsoft.azuretools.container.handlers;
 
+import java.nio.file.Paths;
+
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
+
 import com.microsoft.azuretools.container.Constant;
-import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.ui.PushImageDialog;
-import com.microsoft.azuretools.container.utils.ConfigFileUtil;
 import com.microsoft.azuretools.container.utils.WarUtil;
 import com.microsoft.azuretools.core.actions.MavenExecuteAction;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
@@ -11,21 +16,12 @@ import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IProject;
-
-import java.nio.file.Paths;
-import java.util.Properties;
-
 public class PushImageHandler extends AzureAbstractHandler {
 
     private static final String MAVEN_GOALS = "package";
     private IProject project;
     private String destinationPath;
     private String basePath;
-    private Properties props;
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
@@ -34,8 +30,6 @@ public class PushImageHandler extends AzureAbstractHandler {
             return null;
         }
         basePath = project.getLocation().toString();
-        props = ConfigFileUtil.loadConfig(project);
-        DockerRuntime.getInstance().loadFromProps(props);
 
         try {
             if (MavenUtils.isMavenProject(project)) {
@@ -61,7 +55,8 @@ public class PushImageHandler extends AzureAbstractHandler {
 
     private void buildAndRun() {
         DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-            PushImageDialog pushImageDialog = new PushImageDialog(PluginUtil.getParentShell(), basePath, destinationPath);
+            PushImageDialog pushImageDialog = new PushImageDialog(PluginUtil.getParentShell(), basePath,
+                    destinationPath);
             pushImageDialog.open();
         });
     }
