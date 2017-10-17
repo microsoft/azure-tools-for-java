@@ -439,8 +439,8 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     @Override
     protected void okPressed() {
         try {
-            RedisCacheUtil.doValidate(azureManager, currentSub, dnsNameValue, selectedLocationValue,
-                    selectedResGrpValue, selectedPriceTierValue);
+            RedisCacheUtil.doValidate(currentSub, dnsNameValue, selectedLocationValue,
+                    newResGrp, selectedResGrpValue, selectedPriceTierValue);
         } catch (InvalidFormDataException e) {
             MessageDialog.openError(getShell(), "Form Validation Error", e.getMessage());
             return;

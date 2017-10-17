@@ -24,11 +24,12 @@ import java.util.LinkedHashMap;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.redis.RedisCache;
+import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.RedisCacheCreator;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 
 public final class RedisCacheUtil {
 
@@ -82,7 +83,7 @@ public final class RedisCacheUtil {
         return skus;
     }
 
-    public static void doValidate(AzureManager azureManager, SubscriptionDetail currentSub, String dnsNameValue, String selectedRegionValue, String selectedResGrpValue, String selectedPriceTierValue) throws InvalidFormDataException {
+    public static void doValidate(SubscriptionDetail currentSub, String dnsNameValue, String selectedRegionValue, boolean newResGrp, String selectedResGrpValue, String selectedPriceTierValue) throws InvalidFormDataException {
         if (currentSub == null) {
             throw new InvalidFormDataException(REQUIRE_SUBSCRIPTION);
         }
@@ -99,11 +100,20 @@ public final class RedisCacheUtil {
             throw new InvalidFormDataException(REQUIRE_PRICE_TIER);
         }
         try {
-            for (RedisCache existingRedisCache : azureManager.getAzure(currentSub.getSubscriptionId()).redisCaches().list()) {
+            Azure azure = AuthMethodManager.getInstance().getAzureClient(currentSub.getSubscriptionId());
+            for (RedisCache existingRedisCache : azure.redisCaches().list()) {
                 if (existingRedisCache.name().equals(dnsNameValue)) {
                     throw new InvalidFormDataException("The name " + dnsNameValue + " is not available");
                 }
             }
+            if (newResGrp) {
+                for (ResourceGroup resGrp : azure.resourceGroups().list()) {
+                    if (resGrp.name().equals(selectedResGrpValue)) {
+                        throw new InvalidFormDataException("The resource group " + selectedResGrpValue + " is not available");
+                    }
+                }
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
