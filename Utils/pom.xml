@@ -95,7 +95,7 @@
 	                </dependency>
                 </dependencies>
                 <configuration>
-                    <configLocation>google_checks.xml</configLocation>
+                    <configLocation>checkstyle.xml</configLocation>
                 </configuration>
             </plugin>
             <plugin>

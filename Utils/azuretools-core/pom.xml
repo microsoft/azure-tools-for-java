@@ -31,7 +31,6 @@
         <artifactId>utils</artifactId>
         <version>3.0.10</version>
     </parent>
-    <groupId>com.microsoft.azuretools</groupId>
     <artifactId>azuretools-core</artifactId>
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>

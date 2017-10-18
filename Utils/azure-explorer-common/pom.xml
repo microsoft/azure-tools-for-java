@@ -7,7 +7,6 @@
         <artifactId>utils</artifactId>
         <version>3.0.10</version>
     </parent>
-    <groupId>com.microsoft.azuretools</groupId>
     <artifactId>azure-explorer-common</artifactId>
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
@@ -102,7 +101,6 @@
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
-            <version>0.1.54</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>

@@ -8,8 +8,17 @@
     <artifactId>parent</artifactId>
     <version>3.0.10-SNAPSHOT</version>
   </parent>
-  <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
   <artifactId>com.microsoft.applicationinsights.ui</artifactId>
   <version>1.0.3-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
+    <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

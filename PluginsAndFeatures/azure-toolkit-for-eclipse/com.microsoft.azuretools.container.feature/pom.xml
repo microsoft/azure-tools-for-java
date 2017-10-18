@@ -8,7 +8,6 @@
         <artifactId>parent</artifactId>
         <version>3.0.10-SNAPSHOT</version>
     </parent>
-    <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
     <artifactId>com.microsoft.azuretools.container.feature</artifactId>
     <packaging>eclipse-feature</packaging>
 </project>

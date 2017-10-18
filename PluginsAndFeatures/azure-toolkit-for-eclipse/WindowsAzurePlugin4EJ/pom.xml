@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-	<relativePath>../pom.xml</relativePath>
+    <relativePath>../pom.xml</relativePath>
     <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
     <artifactId>parent</artifactId>
     <version>3.0.10-SNAPSHOT</version>
   </parent>
-  <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
   <artifactId>WindowsAzurePlugin4EJ</artifactId>
-  <version>3.0.10-SNAPSHOT</version>
   <packaging>eclipse-repository</packaging>
-  
   <properties>
-	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho-version>0.25.0</tycho-version>
   </properties>
-  
+
   <build>
     <plugins>
       <plugin>
@@ -40,5 +38,5 @@
         </executions>
       </plugin>
     </plugins>
-  </build> 
+  </build>
 </project>

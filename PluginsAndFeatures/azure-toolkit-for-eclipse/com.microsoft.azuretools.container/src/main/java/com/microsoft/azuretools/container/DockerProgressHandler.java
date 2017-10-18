@@ -43,11 +43,13 @@ public class DockerProgressHandler implements ProgressHandler {
         if (message.error() != null) {
             ConsoleLogger.info(message.error());
             throw new DockerException(message.error());
+
         }
         String id = message.id();
         if (id != null) {
             if (layerMap.containsKey(id) && layerMap.get(id).equals(message.toString())) {
                 return; // ignore duplicate message
+
             }
             layerMap.put(id, message.toString());
         } else {
