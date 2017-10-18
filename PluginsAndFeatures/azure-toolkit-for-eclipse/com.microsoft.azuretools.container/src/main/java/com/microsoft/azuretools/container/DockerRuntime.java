@@ -22,12 +22,13 @@
 
 package com.microsoft.azuretools.container;
 
-import com.spotify.docker.client.DefaultDockerClient.Builder;
+import java.util.Properties;
+
 import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DefaultDockerClient.Builder;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
-import java.util.Properties;
 
 public class DockerRuntime {
     private static final DockerRuntime INSTANCE = new DockerRuntime();
@@ -41,7 +42,7 @@ public class DockerRuntime {
     private String registryPassword = null;
     private String latestWebAppName = null;
     private String latestArtifactName = null;
-    
+
     public synchronized String getLatestArtifactName() {
         return latestArtifactName;
     }
@@ -108,10 +109,6 @@ public class DockerRuntime {
 
     /**
      * setRunningContainerId.
-     * 
-     * @param runningContainerId
-     * @throws DockerException
-     * @throws InterruptedException
      */
     public synchronized void setRunningContainerId(String runningContainerId)
             throws DockerException, InterruptedException {
@@ -133,9 +130,6 @@ public class DockerRuntime {
 
     /**
      * clean running container.
-     * 
-     * @throws DockerException
-     * @throws InterruptedException
      */
     public synchronized void cleanRuningContainer() throws DockerException, InterruptedException {
         if (runningContainerId != null) {
@@ -149,9 +143,6 @@ public class DockerRuntime {
 
     /**
      * saveToProps.
-     * 
-     * @param props
-     * @return
      */
     public Properties saveToProps(Properties props) {
         if (registryUrl != null) {
@@ -171,8 +162,6 @@ public class DockerRuntime {
 
     /**
      * loadFromProps.
-     * 
-     * @param props
      */
     public void loadFromProps(Properties props) {
         registryUrl = props.getProperty("registryUrl");

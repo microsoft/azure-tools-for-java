@@ -72,8 +72,6 @@ public final class ContainerSettingComposite extends Composite implements Contai
 
     /**
      * Create the composite.
-     * @param parent
-     * @param style
      */
     public ContainerSettingComposite(Composite parent, int style, String basePath) {
         super(parent, style);

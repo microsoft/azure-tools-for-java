@@ -22,8 +22,6 @@
 
 package com.microsoft.azuretools.container;
 
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -36,6 +34,8 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
+
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 public class ConsoleLogger {
     final MessageConsole console;
@@ -81,7 +81,7 @@ public class ConsoleLogger {
         }
         // no console found, so create a new one
         MessageConsole myConsole = new MessageConsole(name, null);
-        conMan.addConsoles(new IConsole[] { myConsole });
+        conMan.addConsoles(new IConsole[] {myConsole});
         return myConsole;
     }
 

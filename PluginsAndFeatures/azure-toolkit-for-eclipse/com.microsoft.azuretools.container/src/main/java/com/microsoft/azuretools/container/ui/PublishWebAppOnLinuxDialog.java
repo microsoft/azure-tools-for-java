@@ -133,8 +133,6 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
 
     /**
      * Create the dialog.
-     *
-     * @param parentShell
      */
     public PublishWebAppOnLinuxDialog(Shell parentShell, String basePath, String targetPath) {
         super(parentShell);
@@ -170,8 +168,6 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
 
     /**
      * Create contents of the dialog.
-     *
-     * @param parent
      */
     @Override
     protected Control createDialogArea(Composite parent) {
@@ -180,10 +176,10 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         Composite area = (Composite) super.createDialogArea(parent);
 
         expandBar = new ExpandBar(area, SWT.V_SCROLL);
-        GridData gd_expandBar = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1);
-        gd_expandBar.minimumWidth = 600;
+        GridData gdExpandBar = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1);
+        gdExpandBar.minimumWidth = 600;
 
-        expandBar.setLayoutData(gd_expandBar);
+        expandBar.setLayoutData(gdExpandBar);
         expandBar.setBackground(area.getBackground());
 
         acrHolder = new ExpandItem(expandBar, SWT.NONE);
@@ -254,8 +250,6 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
 
     /**
      * Create contents of the button bar.
-     *
-     * @param parent
      */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
@@ -761,7 +755,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
             for (ResourceEx<WebApp> resource : webAppList) {
                 WebApp app = resource.getResource();
                 TableItem it = new TableItem(cpExisting.tblWebApps, SWT.NULL);
-                it.setText(new String[] { app.name(), app.resourceGroupName() });
+                it.setText(new String[] {app.name(), app.resourceGroupName()});
             }
         }
     }

@@ -33,10 +33,6 @@ import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 public class WarUtil {
     /**
      * export.
-     *
-     * @param project
-     * @param destinationPath
-     * @throws Exception
      */
     public static void export(IProject project, String destinationPath) throws Exception {
         String projectName = project.getName();

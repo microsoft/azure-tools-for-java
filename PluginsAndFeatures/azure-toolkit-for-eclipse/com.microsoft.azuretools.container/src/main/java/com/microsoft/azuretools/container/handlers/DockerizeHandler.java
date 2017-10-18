@@ -22,14 +22,7 @@
 
 package com.microsoft.azuretools.container.handlers;
 
-import com.microsoft.azuretools.container.ConsoleLogger;
-import com.microsoft.azuretools.container.Constant;
-import com.microsoft.azuretools.container.DockerRuntime;
-import com.microsoft.azuretools.container.utils.DockerUtil;
-import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
-import com.microsoft.azuretools.core.utils.MavenUtils;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.spotify.docker.client.DefaultDockerClient.Builder;
+import java.nio.file.Paths;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -43,7 +36,14 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
-import java.nio.file.Paths;
+import com.microsoft.azuretools.container.ConsoleLogger;
+import com.microsoft.azuretools.container.Constant;
+import com.microsoft.azuretools.container.DockerRuntime;
+import com.microsoft.azuretools.container.utils.DockerUtil;
+import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
+import com.microsoft.azuretools.core.utils.MavenUtils;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.spotify.docker.client.DefaultDockerClient.Builder;
 
 public class DockerizeHandler extends AzureAbstractHandler {
 

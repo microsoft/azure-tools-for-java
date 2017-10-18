@@ -95,8 +95,6 @@ public class PushImageDialog extends TitleAreaDialog {
 
     /**
      * Create the dialog.
-     *
-     * @param parentShell
      */
     public PushImageDialog(Shell parentShell, String basePath, String targetPath) {
         super(parentShell);
@@ -107,8 +105,6 @@ public class PushImageDialog extends TitleAreaDialog {
 
     /**
      * Create contents of the dialog.
-     *
-     * @param parent
      */
     @Override
     protected Control createDialogArea(Composite parent) {
@@ -133,8 +129,6 @@ public class PushImageDialog extends TitleAreaDialog {
 
     /**
      * Create contents of the button bar.
-     *
-     * @param parent
      */
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
@@ -223,7 +217,8 @@ public class PushImageDialog extends TitleAreaDialog {
         final String[] repoComponents = repoAndTag[0].split("/");
         for (String component : repoComponents) {
             if (!component.matches(REPO_COMPONENTS_REGEX)) {
-                throw new InvalidFormDataException(String.format(REPO_COMPONENT_INVALID, component, REPO_COMPONENTS_REGEX));
+                throw new InvalidFormDataException(
+                        String.format(REPO_COMPONENT_INVALID, component, REPO_COMPONENTS_REGEX));
             }
         }
         // check when contains tag

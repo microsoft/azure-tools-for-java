@@ -22,13 +22,13 @@
 
 package com.microsoft.azuretools.container.testers;
 
-import com.microsoft.azuretools.container.Constant;
-import com.microsoft.azuretools.core.utils.PluginUtil;
+import java.nio.file.Paths;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IProject;
 
-import java.nio.file.Paths;
+import com.microsoft.azuretools.container.Constant;
+import com.microsoft.azuretools.core.utils.PluginUtil;
 
 public class DockerizedTester extends PropertyTester {
 

@@ -53,9 +53,6 @@ class NewWebAppComposite extends Composite {
 
     /**
      * Create the composite.
-     *
-     * @param parent
-     * @param style
      */
     public NewWebAppComposite(Composite parent, int style) {
         super(parent, style);
@@ -108,51 +105,51 @@ class NewWebAppComposite extends Composite {
         appServicePlanHolder.setExpanded(true);
         appServicePlanHolder.setText("App Service Plan");
 
-        Composite composite_1 = new Composite(expandBar, SWT.BORDER);
-        appServicePlanHolder.setControl(composite_1);
-        composite_1.setLayout(new GridLayout(2, false));
+        Composite composite1 = new Composite(expandBar, SWT.BORDER);
+        appServicePlanHolder.setControl(composite1);
+        composite1.setLayout(new GridLayout(2, false));
 
-        rdoExistingAppServicePlan = new Button(composite_1, SWT.RADIO);
+        rdoExistingAppServicePlan = new Button(composite1, SWT.RADIO);
         rdoExistingAppServicePlan.setSelection(true);
         rdoExistingAppServicePlan.setText("Use Existing");
 
-        cbExistingAppServicePlan = new Combo(composite_1, SWT.READ_ONLY);
+        cbExistingAppServicePlan = new Combo(composite1, SWT.READ_ONLY);
         cbExistingAppServicePlan.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        Label lblLocation = new Label(composite_1, SWT.NONE);
+        Label lblLocation = new Label(composite1, SWT.NONE);
         lblLocation.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblLocation.setText("Location");
 
-        lblLocationValue = new Label(composite_1, SWT.NONE);
+        lblLocationValue = new Label(composite1, SWT.NONE);
         lblLocationValue.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblLocationValue.setText("N/A");
 
-        Label lblPricingTier = new Label(composite_1, SWT.NONE);
+        Label lblPricingTier = new Label(composite1, SWT.NONE);
         lblPricingTier.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblPricingTier.setText("Pricing Tier");
 
-        lblPricingTierValue = new Label(composite_1, SWT.NONE);
+        lblPricingTierValue = new Label(composite1, SWT.NONE);
         lblPricingTierValue.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblPricingTierValue.setText("N/A");
 
-        rdoNewAppServicePlan = new Button(composite_1, SWT.RADIO);
+        rdoNewAppServicePlan = new Button(composite1, SWT.RADIO);
         rdoNewAppServicePlan.setText("Create New");
 
-        txtAppServicePlanName = new Text(composite_1, SWT.BORDER);
+        txtAppServicePlanName = new Text(composite1, SWT.BORDER);
         txtAppServicePlanName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        Label lblNewLabel_2 = new Label(composite_1, SWT.NONE);
-        lblNewLabel_2.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        lblNewLabel_2.setText("Location");
+        Label lblNewLabel2 = new Label(composite1, SWT.NONE);
+        lblNewLabel2.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        lblNewLabel2.setText("Location");
 
-        cbLocation = new Combo(composite_1, SWT.READ_ONLY);
+        cbLocation = new Combo(composite1, SWT.READ_ONLY);
         cbLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        Label lblNewLabel_3 = new Label(composite_1, SWT.NONE);
-        lblNewLabel_3.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        lblNewLabel_3.setText("Pricing Tier");
+        Label lblNewLabel3 = new Label(composite1, SWT.NONE);
+        lblNewLabel3.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        lblNewLabel3.setText("Pricing Tier");
 
-        cbPricingTier = new Combo(composite_1, SWT.READ_ONLY);
+        cbPricingTier = new Combo(composite1, SWT.READ_ONLY);
         cbPricingTier.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         txtNewResourceGroupName = new Text(composite, SWT.BORDER);

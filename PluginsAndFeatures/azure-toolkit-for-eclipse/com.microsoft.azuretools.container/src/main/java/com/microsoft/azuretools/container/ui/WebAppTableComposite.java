@@ -36,18 +36,15 @@ class WebAppTableComposite extends Composite {
 
     /**
      * Create the composite.
-     *
-     * @param parent
-     * @param style
      */
     public WebAppTableComposite(Composite parent, int style) {
         super(parent, style);
         setLayout(new GridLayout(2, false));
 
         tblWebApps = new Table(this, SWT.BORDER | SWT.FULL_SELECTION);
-        GridData gd_tblWebApps = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_tblWebApps.minimumHeight = 200;
-        tblWebApps.setLayoutData(gd_tblWebApps);
+        GridData gdTblWebApps = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gdTblWebApps.minimumHeight = 200;
+        tblWebApps.setLayoutData(gdTblWebApps);
         tblWebApps.setSize(517, 200);
         tblWebApps.setLinesVisible(true);
         tblWebApps.setHeaderVisible(true);
@@ -56,9 +53,9 @@ class WebAppTableComposite extends Composite {
         tableColumn.setWidth(250);
         tableColumn.setText("Name");
 
-        TableColumn tableColumn_1 = new TableColumn(tblWebApps, SWT.LEFT);
-        tableColumn_1.setWidth(250);
-        tableColumn_1.setText("Resource group");
+        TableColumn tableColumn1 = new TableColumn(tblWebApps, SWT.LEFT);
+        tableColumn1.setWidth(250);
+        tableColumn1.setText("Resource group");
 
         btnRefresh = new Button(this, SWT.NONE);
         btnRefresh.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, true, 1, 1));

@@ -22,6 +22,22 @@
 
 package com.microsoft.azuretools.container.handlers;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.dialogs.MessageDialog;
+
 import com.google.common.collect.ImmutableList;
 import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.Constant;
@@ -40,22 +56,6 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.Container.PortMapping;
-
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.dialogs.MessageDialog;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 
 import rx.Observable;
 
@@ -140,8 +140,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
             // build image based on WAR file
             ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
             String imageNameWithTag = DockerUtil.buildImage(docker, Constant.DEFAULT_IMAGE_NAME_WITH_TAG,
-                    Paths.get(project.getLocation().toString(), Constant.DOCKERFILE_FOLDER),
-                    Constant.DOCKERFILE_NAME,
+                    Paths.get(project.getLocation().toString(), Constant.DOCKERFILE_FOLDER), Constant.DOCKERFILE_NAME,
                     new DockerProgressHandler());
             ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageNameWithTag));
 
@@ -159,10 +158,12 @@ public class DockerRunHandler extends AzureAbstractHandler {
 
             String hostname = new URI(docker.getHost()).getHost();
             ImmutableList<PortMapping> ports = container.ports();
-            String publicPort = ports == null ? null
-                    : String.valueOf(ports.stream()
-                            .filter(m -> Constant.TOMCAT_SERVICE_PORT.equals(String.valueOf(m.privatePort())))
-                            .findFirst().get().publicPort());
+            String publicPort = null;
+            if (ports != null) {
+                publicPort = String.valueOf(
+                        ports.stream().filter(m -> Constant.TOMCAT_SERVICE_PORT.equals(String.valueOf(m.privatePort())))
+                                .findFirst().get().publicPort());
+            }
 
             ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_STARTED,
                     (hostname != null ? hostname : "localhost") + (publicPort != null ? ":" + publicPort : "")));
@@ -171,9 +172,12 @@ public class DockerRunHandler extends AzureAbstractHandler {
             Map<String, String> extraInfo = new HashMap<>();
             extraInfo.put("ProjectName", ret);
             try {
-                boolean isJar = MavenUtils.isMavenProject(this.project) && MavenUtils.getPackaging(this.project).equals(WebAppUtils.TYPE_JAR);
-                extraInfo.put("FileType", isJar?"jar":"war");
-            } catch (Exception e) {}
+                boolean isJar = MavenUtils.isMavenProject(this.project)
+                        && MavenUtils.getPackaging(this.project).equals(WebAppUtils.TYPE_JAR);
+                extraInfo.put("FileType", isJar ? "jar" : "war");
+            } catch (Exception e) {
+                // ignore it
+            }
             sendTelemetryOnSuccess(event, extraInfo);
         }, e -> {
             sendTelemetryOnException(event, e);

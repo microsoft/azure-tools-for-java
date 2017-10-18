@@ -36,9 +36,6 @@ public class ConfigFileUtil {
 
     /**
      * load config.
-     * 
-     * @param project
-     * @return
      */
     public static Properties loadConfig(IProject project) {
         Properties prop = new Properties();
@@ -56,9 +53,6 @@ public class ConfigFileUtil {
 
     /**
      * save config.
-     * 
-     * @param project
-     * @param prop
      */
     public static void saveConfig(IProject project, Properties prop) {
         IFile file = project.getFile(configFileName);
