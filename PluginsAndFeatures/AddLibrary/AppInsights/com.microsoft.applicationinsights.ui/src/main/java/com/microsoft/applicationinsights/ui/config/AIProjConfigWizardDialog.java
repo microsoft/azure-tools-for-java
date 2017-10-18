@@ -1,21 +1,23 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
- * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.microsoft.applicationinsights.ui.config;
@@ -67,15 +69,15 @@ import com.microsoft.applicationinsights.preference.ApplicationInsightsPreferenc
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
 import com.microsoft.applicationinsights.ui.activator.Activator;
 import com.microsoft.applicationinsights.util.AILibraryUtil;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.applicationinsights.AILibraryHandler;
 import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsPreferences;
 import com.microsoft.azuretools.core.applicationinsights.ApplicationInsightsResourceRegistryEclipse;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 
 public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
     private Button aiCheck;
@@ -91,6 +93,19 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
     String depDirLoc;
     String aiConfRelDirLoc;
 
+    /**
+     * This class acts as a filter to accept jar files only.
+     */
+    class SDKJarsFilter implements FilenameFilter {
+        @Override
+        public boolean accept(File dir, String name) {
+            return (name.endsWith(".jar") && name.indexOf(Messages.src) == -1);
+        }
+    }
+
+    /**
+     * AIProjConfigWizardDialog.
+     */
     public AIProjConfigWizardDialog(Shell parentShell) {
         super(parentShell);
         setHelpAvailable(false);
@@ -111,12 +126,10 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
                 aiConfRelDirLoc = Messages.aiConfRelDirLoc;
             }
             if (proj.getFile(webxmlPath).exists()) {
-                handler.parseWebXmlPath(proj.getFile(webxmlPath)
-                        .getLocation().toOSString());
+                handler.parseWebXmlPath(proj.getFile(webxmlPath).getLocation().toOSString());
             }
             if (proj.getFile(aiXMLPath).exists()) {
-                handler.parseAIConfXmlPath(proj.getFile(aiXMLPath)
-                        .getLocation().toOSString());
+                handler.parseAIConfXmlPath(proj.getFile(aiXMLPath).getLocation().toOSString());
             }
         } catch (Exception e) {
             // just log and ignore
@@ -124,6 +137,7 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
         }
     }
 
+    @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(Messages.aiConfigWiz);
@@ -134,23 +148,24 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
         }
     }
 
+    @Override
     protected Control createDialogArea(Composite parent) {
         setTitle(Messages.aiTxt);
         setMessage(Messages.aiMsg);
-        Composite container = new Composite(parent, SWT.NONE);
         GridLayout gridLayout = new GridLayout();
         gridLayout.numColumns = 4;
         GridData gridData = new GridData();
         gridLayout.marginBottom = 30;
         gridData.widthHint = 620;
         gridData.verticalIndent = 10;
+        Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(gridLayout);
         container.setLayoutData(gridData);
 
         createAICheckButton(container);
         createAIControl(container);
         createLinks(container);
-        
+
         setData();
 
         if (isEdit()) {
@@ -165,7 +180,7 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
 
         return super.createDialogArea(parent);
     }
-    
+
     private void setData() {
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
@@ -175,16 +190,16 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
             }
             List<SubscriptionDetail> subList = azureManager.getSubscriptionManager().getSubscriptionDetails();
             if (subList.size() > 0 && !ApplicationInsightsPreferences.isLoaded()) {
-//				if (manager.authenticated()) {
-                    // authenticated using AD. Proceed for updating application insights registry.
-                    ApplicationInsightsResourceRegistryEclipse.updateApplicationInsightsResourceRegistry(subList);
-//				} else {
-                    // imported publish settings file. just show manually added list from preferences
-                    // Neither clear subscription list nor show sign in dialog as user may just want to add key manually.
-//					ApplicationInsightsResourceRegistryEclipse.keeepManuallyAddedList();
-//				}
+                // if (manager.authenticated()) {
+                // authenticated using AD. Proceed for updating application insights registry.
+                ApplicationInsightsResourceRegistryEclipse.updateApplicationInsightsResourceRegistry(subList);
+                // } else {
+                // imported publish settings file. just show manually added list from preferences
+                // Neither clear subscription list nor show sign in dialog as user may just want to add key manually.
+                // ApplicationInsightsResourceRegistryEclipse.keeepManuallyAddedList();
+                // }
             }
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             Activator.getDefault().log(ex.getMessage(), ex);
         }
         comboInstrumentationKey.removeAll();
@@ -207,11 +222,9 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
             comboInstrumentationKey.setText(array[index]);
         } else {
             /*
-             * User has specifically removed single entry or all entries from the registry,
-             * which we added during eclipse start up
-             * hence it does not make sense to put an entry again. Just leave as it is.
-             * If registry is non empty, then value will be set to 1st entry.
-             * If registry is empty, then combo box will be empty.
+             * User has specifically removed single entry or all entries from the registry, which we added during
+             * eclipse start up hence it does not make sense to put an entry again. Just leave as it is. If registry is
+             * non empty, then value will be set to 1st entry. If registry is empty, then combo box will be empty.
              */
         }
         comboInstrumentationKey.setEnabled(true);
@@ -225,7 +238,7 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
             return false;
         }
     }
-    
+
     private void createAICheckButton(Composite container) {
         aiCheck = new Button(container, SWT.CHECK);
         GridData gridData = new GridData();
@@ -258,8 +271,6 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
 
     /**
      * Creates the cache name component.
-     * 
-     * @param container
      */
     private void createAIControl(Composite container) {
         lblInstrumentationKey = new Label(container, SWT.LEFT);
@@ -276,7 +287,7 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
         gridData.grabExcessHorizontalSpace = true;
         gridData.horizontalAlignment = SWT.FILL;
         comboInstrumentationKey.setLayoutData(gridData);
-        
+
         // InstrumentationKey Link
         lnkInstrumentationKey = new Link(container, SWT.RIGHT);
         gridData = new GridData();
@@ -288,12 +299,10 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 String oldName = comboInstrumentationKey.getText();
-                int btnSelected = PluginUtil.openPropertyPageDialog(
-                        Messages.aiID, Messages.aiTxt,
+                int btnSelected = PluginUtil.openPropertyPageDialog(Messages.aiID, Messages.aiTxt,
                         new ApplicationInsightsPreferencePage());
                 setData();
-                List<String> list = Arrays.asList(
-                        ApplicationInsightsResourceRegistry.getResourcesNamesToDisplay());
+                List<String> list = Arrays.asList(ApplicationInsightsResourceRegistry.getResourcesNamesToDisplay());
                 // check user has not removed all entries from registry.
                 if (list.size() > 0) {
                     if (btnSelected == Window.OK) {
@@ -311,7 +320,7 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
             }
         });
     }
-        
+
     private void createLinks(Composite container) {
         // Privacy Link
         lnkAIPrivacy = new Link(container, SWT.RIGHT);
@@ -325,16 +334,12 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 try {
-                    PlatformUI.getWorkbench().getBrowserSupport().
-                    getExternalBrowser().openURL(new URL(event.text));
-                }
-                catch (Exception ex) {
+                    PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(event.text));
+                } catch (Exception ex) {
                     /*
-                     * only logging the error in log file
-                     * not showing anything to end user
+                     * only logging the error in log file not showing anything to end user
                      */
-                    Activator.getDefault().log(
-                            Messages.lnkAIPrivacy, ex);
+                    Activator.getDefault().log(Messages.lnkAIPrivacy, ex);
                 }
             }
         });
@@ -347,8 +352,7 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
         // validate
         if (aiCheck.getSelection() && (comboInstrumentationKey.getText() == null
                 || comboInstrumentationKey.getText().trim().length() == 0)) {
-            MessageDialog.openError(getShell(), Messages.aiErrTitle,
-                    Messages.aiInstrumentationKeyNull);
+            MessageDialog.openError(getShell(), Messages.aiErrTitle, Messages.aiInstrumentationKeyNull);
             okToProceed = false;
         } else if (aiCheck.getSelection() == false) {
             // disable if exists
@@ -362,9 +366,9 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
             }
         } else {
             try {
-                IJavaProject iJavaProject = JavaCore.create(proj);
-                createAIConfiguration(iJavaProject);
-                configureAzureSDK(iJavaProject);
+                IJavaProject ijavaProject = JavaCore.create(proj);
+                createAIConfiguration(ijavaProject);
+                configureAzureSDK(ijavaProject);
             } catch (Exception e) {
                 MessageDialog.openError(getShell(), Messages.aiErrTitle,
                         Messages.aiConfigError + e.getLocalizedMessage());
@@ -388,46 +392,35 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
         handler.save();
     }
 
-    private void handleWebXML(IProject proj, AILibraryHandler handler)
-            throws Exception {
+    private void handleWebXML(IProject proj, AILibraryHandler handler) throws Exception {
         if (proj.getFile(webxmlPath).exists()) {
-            handler.parseWebXmlPath(proj.getFile(webxmlPath)
-                    .getLocation().toOSString());
+            handler.parseWebXmlPath(proj.getFile(webxmlPath).getLocation().toOSString());
             handler.setAIFilterConfig();
         } else { // create web.xml
-            boolean choice = MessageDialog.openQuestion(this.getShell(),
-                    Messages.depDescTtl, Messages.depDescMsg);
+            boolean choice = MessageDialog.openQuestion(this.getShell(), Messages.depDescTtl, Messages.depDescMsg);
             if (choice) {
-                String path = AILibraryUtil.createFileIfNotExists(
-                        Messages.depFileName, depDirLoc,
-                        Messages.resFileLoc);
+                String path = AILibraryUtil.createFileIfNotExists(Messages.depFileName, depDirLoc, Messages.resFileLoc);
                 handler.parseWebXmlPath(path);
             } else {
-                throw new Exception(
-                        ": Application Insights cannot be configured without creating web.xml ");
+                throw new Exception(": Application Insights cannot be configured without creating web.xml ");
             }
         }
     }
 
-    private void handleAppInsightsXML(IProject proj, AILibraryHandler handler)
-            throws Exception {
+    private void handleAppInsightsXML(IProject proj, AILibraryHandler handler) throws Exception {
         if (proj.getFile(aiXMLPath).exists()) {
-            handler.parseAIConfXmlPath(proj.getFile(aiXMLPath)
-                    .getLocation().toOSString());
+            handler.parseAIConfXmlPath(proj.getFile(aiXMLPath).getLocation().toOSString());
             handler.disableAIFilterConfiguration(false);
         } else { // create ApplicationInsights.xml
-            String path = AILibraryUtil.createFileIfNotExists(
-                    Messages.aiConfFileName, aiConfRelDirLoc,
+            String path = AILibraryUtil.createFileIfNotExists(Messages.aiConfFileName, aiConfRelDirLoc,
                     Messages.aiConfResFileLoc);
             handler.parseAIConfXmlPath(path);
         }
 
-        if (comboInstrumentationKey.getText() != null
-                && comboInstrumentationKey.getText().length() > 0) {
+        if (comboInstrumentationKey.getText() != null && comboInstrumentationKey.getText().length() > 0) {
             int index = comboInstrumentationKey.getSelectionIndex();
             if (index >= 0) {
-                handler.setAIInstrumentationKey(
-                        ApplicationInsightsResourceRegistry.getKeyAsPerIndex(index));
+                handler.setAIInstrumentationKey(ApplicationInsightsResourceRegistry.getKeyAsPerIndex(index));
             }
         }
     }
@@ -448,8 +441,8 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
             resource = (IResource) element;
             selProject = resource.getProject();
         } else if (element instanceof IJavaProject) {
-            IJavaProject proj = ((IJavaElement) element).getJavaProject();
-            selProject = proj.getProject();
+            IJavaProject ijavaProj = ((IJavaElement) element).getJavaProject();
+            selProject = ijavaProj.getProject();
         }
         return selProject;
     }
@@ -458,32 +451,26 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
         try {
             IClasspathEntry[] classpath = proj.getRawClasspath();
 
-            for (IClasspathEntry iClasspathEntry : classpath) {
-                final IPath containerPath = iClasspathEntry.getPath();
+            for (IClasspathEntry iclasspathEntry : classpath) {
+                final IPath containerPath = iclasspathEntry.getPath();
                 if (containerPath.toString().contains(Messages.azureSDKcontainerID)) {
                     return;
-                } 
+                }
             }
-            
-            List<IClasspathEntry> list = new ArrayList<IClasspathEntry>(
-                    java.util.Arrays.asList(classpath));
+
+            List<IClasspathEntry> list = new ArrayList<IClasspathEntry>(java.util.Arrays.asList(classpath));
             IClasspathAttribute[] attr = new IClasspathAttribute[1];
-            attr[0] = JavaCore.newClasspathAttribute(Messages.jstDep,
-                    "/WEB-INF/lib");
+            attr[0] = JavaCore.newClasspathAttribute(Messages.jstDep, "/WEB-INF/lib");
             IClasspathEntry jarEntry = JavaCore.newContainerEntry(
-                    new Path(Messages.azureSDKcontainerID)
-                            .append(getLatestSDKVersion()), null, attr,
-                    false);
+                    new Path(Messages.azureSDKcontainerID).append(getLatestSDKVersion()), null, attr, false);
             list.add(jarEntry);
-            IClasspathEntry[] newClasspath = (IClasspathEntry[]) list
-                    .toArray(new IClasspathEntry[0]);
+            IClasspathEntry[] newClasspath = list.toArray(new IClasspathEntry[0]);
             proj.setRawClasspath(newClasspath, null);
             // Azure SDK configured - application insights configured for the first time for specific project
             Bundle bundle = Activator.getDefault().getBundle();
             if (bundle != null) {
                 PluginUtil.showBusy(true, getShell());
-                AppInsightsClient.create("Application Insights",
-                        bundle.getVersion().toString());
+                AppInsightsClient.create("Application Insights", bundle.getVersion().toString());
                 PluginUtil.showBusy(false, getShell());
             }
         } catch (Exception e) {
@@ -491,24 +478,24 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
         }
     }
 
-    public IClasspathEntry[] getClasspathEntriesOfAzureLibabries(
-            IPath containerPath) {
+    /**
+     * getClasspathEntriesOfAzureLibabries.
+     */
+    public IClasspathEntry[] getClasspathEntriesOfAzureLibabries(IPath containerPath) {
         Bundle bundle = Platform.getBundle(Messages.sdkID);
         // Search the available SDKs
         Bundle[] bundles = Platform.getBundles(Messages.sdkID, null);
         List<IClasspathEntry> listEntries = new ArrayList<IClasspathEntry>();
         if (bundles != null) {
             for (Bundle bundle2 : bundles) {
-                if (bundle2.getVersion().toString()
-                        .startsWith(containerPath.segment(1))) {
+                if (bundle2.getVersion().toString().startsWith(containerPath.segment(1))) {
                     bundle = bundle2;
                     break;
                 }
             }
 
             // Get the SDK jar.
-            URL sdkJar = FileLocator.find(bundle, new Path(
-                    Messages.sdkJar), null);
+            URL sdkJar = FileLocator.find(bundle, new Path(Messages.sdkJar), null);
             URL resSdkJar = null;
             try {
                 if (sdkJar != null) {
@@ -517,31 +504,26 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
                 }
                 if (resSdkJar == null) {
                     /*
-                     * if sdk jar is not present then create an place holder for
-                     * sdk jar so that it would be shown as missing file
+                     * if sdk jar is not present then create an place holder for sdk jar so that it would be shown as
+                     * missing file
                      */
                     URL bundleLoc = new URL(bundle.getLocation());
                     StringBuffer strBfr = new StringBuffer(bundleLoc.getPath());
-                    strBfr.append(File.separator)
-                            .append(Messages.sdkJar);
+                    strBfr.append(File.separator).append(Messages.sdkJar);
                     URL jarLoc = new URL(strBfr.toString());
-                    IPath jarPath = new Path(FileLocator.resolve(jarLoc)
-                            .getPath());
+                    IPath jarPath = new Path(FileLocator.resolve(jarLoc).getPath());
                     File jarFile = jarPath.toFile();
-                    listEntries.add(JavaCore.newLibraryEntry(
-                            new Path(jarFile.getAbsolutePath()), null, null,
-                            null, null, true));
+                    listEntries.add(JavaCore.newLibraryEntry(new Path(jarFile.getAbsolutePath()), null, null, null,
+                            null, true));
                 } else {
                     File directory = new File(resSdkJar.getPath());
                     // create the library entry for sdk jar
-                    listEntries.add(JavaCore.newLibraryEntry(
-                            new Path(directory.getAbsolutePath()), null, null,
-                            null, null, true));
+                    listEntries.add(JavaCore.newLibraryEntry(new Path(directory.getAbsolutePath()), null, null, null,
+                            null, true));
                     FilenameFilter sdkJarsFilter = new SDKJarsFilter();
                     File[] jars = new File(directory.getParent()).listFiles(sdkJarsFilter);
                     for (int i = 0; i < jars.length; i++) {
-                        listEntries.add(JavaCore.newLibraryEntry(new Path(
-                                jars[i].getAbsolutePath()), null, null, null,
+                        listEntries.add(JavaCore.newLibraryEntry(new Path(jars[i].getAbsolutePath()), null, null, null,
                                 null, true));
                     }
                 }
@@ -560,20 +542,9 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
         Bundle bundle = Platform.getBundle(Messages.sdkID);
         String version = "";
         if (bundle != null) {
-            version = String.format("%s.%s.%s",
-                    Integer.toString(bundle.getVersion().getMajor()),
-                    Integer.toString(bundle.getVersion().getMinor()),
-                    Integer.toString(bundle.getVersion().getMicro()));
+            version = String.format("%s.%s.%s", Integer.toString(bundle.getVersion().getMajor()),
+                    Integer.toString(bundle.getVersion().getMinor()), Integer.toString(bundle.getVersion().getMicro()));
         }
         return version;
-    }
-}
-
-/**
- * This class acts as a filter to accept jar files only.
- */
-class SDKJarsFilter implements FilenameFilter {
-    public boolean accept(File dir, String name) {
-        return (name.endsWith(".jar") && name.indexOf(Messages.src) == -1);
     }
 }

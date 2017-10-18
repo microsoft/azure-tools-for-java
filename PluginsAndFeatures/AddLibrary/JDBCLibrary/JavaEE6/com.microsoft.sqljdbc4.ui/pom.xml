@@ -12,14 +12,4 @@
   <artifactId>com.microsoft.sqljdbc4.ui</artifactId>
   <version>6.1.0.jre8</version>
   <packaging>eclipse-plugin</packaging>
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <!-- <skip>true</skip> -->
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>
