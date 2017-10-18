@@ -18,6 +18,13 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.0.10]</h3>
+      <ul>
+        <li>Support pushing docker image of the project to Azure Container Registry.</li>
+        <li>Support Navigating Azure Container Registry in Azure Explorer.</li>
+        <li>Support Pulling image from Azure Container Registry in Azure Explorer.</li>
+        <li>Fixed some bugs.</li>
+      </ul>
       <h3>[3.0.9]</h3>
       <ul>
         <li>Fixed "Unexpected token" error when using Run on Web App (Linux). (<a href="https://github.com/Microsoft/azure-tools-for-java/issues/1014">#1014</a>)</li>
