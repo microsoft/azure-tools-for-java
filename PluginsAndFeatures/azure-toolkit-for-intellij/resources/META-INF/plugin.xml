@@ -21,8 +21,8 @@
       <h3>[3.0.10]</h3>
       <ul>
         <li>Support pushing docker image of the project to Azure Container Registry.</li>
-        <li>Support Navigating Azure Container Registry in Azure Explorer.</li>
-        <li>Support Pulling image from Azure Container Registry in Azure Explorer.</li>
+        <li>Support navigating Azure Container Registry in Azure Explorer.</li>
+        <li>Support pulling image from Azure Container Registry in Azure Explorer.</li>
         <li>Fixed some bugs.</li>
       </ul>
       <h3>[3.0.9]</h3>
