@@ -179,9 +179,7 @@ public class DockerRunHandler extends AzureAbstractHandler {
                 // ignore it
             }
             sendTelemetryOnSuccess(event, extraInfo);
-        }, e -> {
-            sendTelemetryOnException(event, e);
-        });
+        }, e -> sendTelemetryOnException(event, e));
 
     }
 

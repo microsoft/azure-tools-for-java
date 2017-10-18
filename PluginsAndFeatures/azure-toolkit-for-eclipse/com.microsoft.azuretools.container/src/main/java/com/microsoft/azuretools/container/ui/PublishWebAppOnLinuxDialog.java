@@ -243,7 +243,8 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         // ACR composite serverUrl text change listener
         cpAcr.addTxtServerUrlModifyListener(event -> onTxtServerUrlModification());
 
-        // TODO: adjust shell size when clicking expandBar
+        // adjust shell size when clicking expandBar
+        expandBar.addListener(SWT.MouseUp, event -> adjustShellSize());
         initialize();
         return area;
     }
@@ -498,19 +499,21 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
                 }
             }
             return null;
-        }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(ret -> {
-            ConsoleLogger.info("Updating cache ... ");
-            AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
-            ConsoleLogger.info("Job done");
-            if (model.isCreatingNewWebAppOnLinux() && AzureUIRefreshCore.listeners != null) {
-                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
-            }
-            sendTelemetry(true, null);
-        }, err -> {
-            err.printStackTrace();
-            ConsoleLogger.error(err.getMessage());
-            sendTelemetry(false, err.getMessage());
-        });
+        }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
+            ret -> {
+                ConsoleLogger.info("Updating cache ... ");
+                AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
+                ConsoleLogger.info("Job done");
+                if (model.isCreatingNewWebAppOnLinux() && AzureUIRefreshCore.listeners != null) {
+                    AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
+                }
+                sendTelemetry(true, null);
+            },
+            err -> {
+                err.printStackTrace();
+                ConsoleLogger.error(err.getMessage());
+                sendTelemetry(false, err.getMessage());
+            });
     }
 
     private void sendTelemetry(boolean success, @Nullable String errorMsg) {
@@ -612,11 +615,15 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         getShell().layout();
     }
 
-    // Event listeners
-    private void webAppRadioGroupLogic() {
+    private void adjustShellSize() {
         updateWebAppHolderWidget();
         // resize the whole shell
         getShell().pack();
+    }
+
+    // Event listeners
+    private void webAppRadioGroupLogic() {
+        adjustShellSize();
     }
 
     private void aspRadioGroupLogic() {

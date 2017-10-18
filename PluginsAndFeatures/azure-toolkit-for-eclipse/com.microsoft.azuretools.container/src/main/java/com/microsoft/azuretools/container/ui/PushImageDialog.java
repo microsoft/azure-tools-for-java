@@ -278,14 +278,17 @@ public class PushImageDialog extends TitleAreaDialog {
                     acrInfo.getImageTagWithServerUrl(), new DockerProgressHandler());
 
             return null;
-        }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe((props) -> {
-            ConsoleLogger.info("pushed.");
-            sendTelemetry(true, null);
-        }, (err) -> {
-            err.printStackTrace();
-            ConsoleLogger.error(err.getMessage());
-            sendTelemetry(false, err.getMessage());
-        });
+        }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
+            props -> {
+                ConsoleLogger.info("pushed.");
+                sendTelemetry(true, null);
+            },
+            err -> {
+                err.printStackTrace();
+                ConsoleLogger.error(err.getMessage());
+                sendTelemetry(false, err.getMessage());
+            }
+        );
     }
 
     // TODO: refactor later

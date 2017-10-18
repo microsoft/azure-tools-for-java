@@ -95,6 +95,7 @@ fabric.properties
 # Eclipse workspace files
 .metadata/
 .recommenders/
+.checkstyle
 
 # Build tmp folder
 .repository
