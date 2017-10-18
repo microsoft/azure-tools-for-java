@@ -50,6 +50,7 @@ class NewWebAppComposite extends Composite {
     Button rdoNewResourceGroup;
     private ExpandItem appServicePlanHolder;
     private ExpandItem resourceGroupHolder;
+    ExpandBar expandBar;
 
     /**
      * Create the composite.
@@ -79,7 +80,7 @@ class NewWebAppComposite extends Composite {
         cbSubscription = new Combo(cpCommonInfo, SWT.NONE | SWT.READ_ONLY);
         cbSubscription.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
-        ExpandBar expandBar = new ExpandBar(this, SWT.NONE);
+        expandBar = new ExpandBar(this, SWT.NONE);
         expandBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         expandBar.setBackground(parent.getBackground());
 

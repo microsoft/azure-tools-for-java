@@ -245,6 +245,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
 
         // adjust shell size when clicking expandBar
         expandBar.addListener(SWT.MouseUp, event -> adjustShellSize());
+        cpNew.expandBar.addListener(SWT.MouseUp, event -> adjustShellSize());
         initialize();
         return area;
     }
