@@ -10,14 +10,4 @@
   </parent>
   <artifactId>com.microsoft.azuretools.wasdkjava.ui</artifactId>
   <packaging>eclipse-plugin</packaging>
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>

@@ -1,22 +1,25 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
- * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
+
 package com.microsoft.azuretools.wasdkjava.ui.classpath;
 
 import java.io.File;
@@ -53,15 +56,16 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
 
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.wasdkjava.ui.Activator;
+
 /**
  * Classpath container page.
  *
  */
 public class ClasspathContainerPage extends WizardPage
-    implements IClasspathContainerPage, IClasspathContainerPageExtension {
+        implements IClasspathContainerPage, IClasspathContainerPageExtension {
 
     private IPath entry;
     private Combo combo;
@@ -76,9 +80,9 @@ public class ClasspathContainerPage extends WizardPage
      */
     public ClasspathContainerPage() {
         super(Messages.title);
-        //set title for page
+        // set title for page
         setTitle(Messages.title);
-        //set description for page
+        // set description for page
         setDescription(Messages.desc);
         entry = new Path(Messages.containerID);
     }
@@ -94,38 +98,36 @@ public class ClasspathContainerPage extends WizardPage
         GridLayout gridLayout = new GridLayout(2, false);
         container.setLayout(gridLayout);
 
-        //Label for version
+        // Label for version
         Label lblVersion = new Label(container, SWT.None);
         lblVersion.setText(Messages.lblVersion);
-        //Combo to hold the versions
+        // Combo to hold the versions
         combo = new Combo(container, SWT.READ_ONLY);
         combo.addSelectionListener(new ComboSelectionListener());
-        //get bundles for the sdk
-        Bundle[] bundles = Platform.getBundles(Messages.sdkID,
-                null);
+        // get bundles for the sdk
+        Bundle[] bundles = Platform.getBundles(Messages.sdkID, null);
         if (bundles == null || bundles.length == 0) {
-            //if bundles is null set an error msg
+            // if bundles is null set an error msg
             setErrorMessage(Messages.libNotAvail);
             finishVal = false;
         } else {
             try {
-                //populate the combo box with available versions of sdk
+                // populate the combo box with available versions of sdk
                 populateComboBox(bundles);
                 Bundle bundle = bundles[combo.getSelectionIndex()];
 
                 if (bundle == null) {
                     finishVal = false;
-                    //if bundle is null set an error msg
+                    // if bundle is null set an error msg
                     setErrorMessage(Messages.verNotAvail);
                 } else {
-                    //locate sdk jar in bundle
-                    URL url = FileLocator.find(bundle,
-                            new Path(Messages.sdkJar), null);
+                    // locate sdk jar in bundle
+                    URL url = FileLocator.find(bundle, new Path(Messages.sdkJar), null);
                     if (url == null) {
                         finishVal = false;
                         setErrorMessage(Messages.verNotAvail);
                     } else {
-                        //if jar is found then resolve url and get the location
+                        // if jar is found then resolve url and get the location
                         url = FileLocator.resolve(url);
                         File loc = new File(url.getPath());
                         libLocation = loc.getAbsolutePath();
@@ -133,19 +135,19 @@ public class ClasspathContainerPage extends WizardPage
                     }
                 }
             } catch (Exception e) {
-                //if exception is thrown set an error msg.
+                // if exception is thrown set an error msg.
                 setErrorMessage(Messages.verNotAvail);
                 finishVal = false;
             }
         }
-        //label for location
+        // label for location
         Label lblLoc = new Label(container, SWT.None);
         GridData gridData = new GridData();
         gridData.verticalSpan = 4;
         gridData.verticalAlignment = GridData.BEGINNING;
         lblLoc.setLayoutData(gridData);
         lblLoc.setText(Messages.lblLocation);
-        //label to hold the sdk jar path
+        // label to hold the sdk jar path
         location = new Label(container, SWT.WRAP);
         gridData = new GridData();
         gridData.verticalSpan = 4;
@@ -161,19 +163,16 @@ public class ClasspathContainerPage extends WizardPage
 
     /**
      * Populates the combo with available versions of sdk.
-     *
-     * @param bundles
      */
     private void populateComboBox(Bundle[] bundles) {
-        //iterate over bundles and add an entry to combo
+        // iterate over bundles and add an entry to combo
         for (Bundle bundle : bundles) {
-            combo.add(String.format(Messages.version1,
-                    Integer.toString(bundle.getVersion().getMajor()),
+            combo.add(String.format(Messages.version1, Integer.toString(bundle.getVersion().getMajor()),
                     Integer.toString(bundle.getVersion().getMinor()),
                     Integer.toString(bundle.getVersion().getMicro())));
         }
-        //if current version can not be determined
-        //then set the first entry as selected.
+        // if current version can not be determined
+        // then set the first entry as selected.
         if (curVersion == null || curVersion.isEmpty()) {
             combo.select(0);
         } else {
@@ -191,25 +190,23 @@ public class ClasspathContainerPage extends WizardPage
     @Override
     public boolean finish() {
         if (finishVal) {
-            //append the version to sdk container id.
+            // append the version to sdk container id.
             entry = entry.append(getSelVersion());
             /*
-             * Save state of Deployment Assembly check box
-             * every time, as user may say immediate edit more than once.
+             * Save state of Deployment Assembly check box every time, as user may say immediate edit more than once.
              */
             Activator.setDeploymentAssemblyState(depCheck.getSelection());
             if (isEdit()) {
-            	// edit scenario.
-            	configureClasspathEntries();
+                // edit scenario.
+                configureClasspathEntries();
             } else {
-            	// Azure libraries getting added for the first time for specific project
-            	Bundle bundle = Activator.getDefault().getBundle();
-            	if (bundle != null) {
-            		PluginUtil.showBusy(true, getShell());
-            		AppInsightsClient.create("Azure Libraries",
-            				bundle.getVersion().toString());
-            		PluginUtil.showBusy(false, getShell());
-            	}
+                // Azure libraries getting added for the first time for specific project
+                Bundle bundle = Activator.getDefault().getBundle();
+                if (bundle != null) {
+                    PluginUtil.showBusy(true, getShell());
+                    AppInsightsClient.create("Azure Libraries", bundle.getVersion().toString());
+                    PluginUtil.showBusy(false, getShell());
+                }
             }
         }
         return finishVal;
@@ -226,10 +223,8 @@ public class ClasspathContainerPage extends WizardPage
         String version = "";
         if (bundles != null) {
             bundle = bundles[combo.getSelectionIndex()];
-            version = String.format("%s.%s.%s",
-                    Integer.toString(bundle.getVersion().getMajor()),
-                    Integer.toString(bundle.getVersion().getMinor()),
-                    Integer.toString(bundle.getVersion().getMicro()));
+            version = String.format("%s.%s.%s", Integer.toString(bundle.getVersion().getMajor()),
+                    Integer.toString(bundle.getVersion().getMinor()), Integer.toString(bundle.getVersion().getMicro()));
         }
         return version;
     }
@@ -238,14 +233,11 @@ public class ClasspathContainerPage extends WizardPage
     public IClasspathEntry getSelection() {
         IClasspathEntry classPathEntry = null;
         if (depCheck.getSelection()) {
-        	IClasspathAttribute[] attr =
-        			new IClasspathAttribute[1];
-        	attr[0] = JavaCore.newClasspathAttribute(
-        			Messages.jstDep, "/WEB-INF/lib");
-        	classPathEntry = JavaCore.newContainerEntry(entry,
-        			null, attr, true);
+            IClasspathAttribute[] attr = new IClasspathAttribute[1];
+            attr[0] = JavaCore.newClasspathAttribute(Messages.jstDep, "/WEB-INF/lib");
+            classPathEntry = JavaCore.newContainerEntry(entry, null, attr, true);
         } else {
-            classPathEntry =  JavaCore.newContainerEntry(entry);
+            classPathEntry = JavaCore.newContainerEntry(entry);
         }
         return classPathEntry;
     }
@@ -272,21 +264,19 @@ public class ClasspathContainerPage extends WizardPage
         public void widgetSelected(SelectionEvent arg0) {
             if (arg0.getSource() instanceof Combo) {
                 try {
-                    Bundle[] bundles = Platform.getBundles(
-                            Messages.sdkID, null);
+                    Bundle[] bundles = Platform.getBundles(Messages.sdkID, null);
 
                     Bundle bundle = bundles[combo.getSelectionIndex()];
-                    //locate the sdk jar in bundle
-                    URL url = FileLocator.find(bundle,
-                            new Path(Messages.sdkJar), null);
-                    //if sdk jar not found then set an error msg
+                    // locate the sdk jar in bundle
+                    URL url = FileLocator.find(bundle, new Path(Messages.sdkJar), null);
+                    // if sdk jar not found then set an error msg
                     if (url == null) {
                         libLocation = Messages.notFound;
                         location.setText(libLocation);
                         setErrorMessage(Messages.verNotAvail);
                         finishVal = false;
                     } else {
-                        //if jar is found then resolve url and get the location
+                        // if jar is found then resolve url and get the location
                         url = FileLocator.resolve(url);
                         File loc = new File(url.getPath());
                         libLocation = loc.getAbsolutePath();
@@ -304,12 +294,10 @@ public class ClasspathContainerPage extends WizardPage
     }
 
     /**
-     * Method creates Include in the project deployment assembly
-     * check box.
-     * @param container
+     * Method creates Include in the project deployment assembly check box.
      */
     private void createDepCheckBox(Composite container) {
-    	boolean containerIdPresent = false;
+        boolean containerIdPresent = false;
         depCheck = new Button(container, SWT.CHECK);
         GridData gridData = new GridData();
         gridData.grabExcessHorizontalSpace = true;
@@ -320,65 +308,57 @@ public class ClasspathContainerPage extends WizardPage
         depCheck.setText(Messages.depChkBox);
         depCheck.setLayoutData(gridData);
         if (isEdit()) {
-        	// Edit library scenario
+            // Edit library scenario
             try {
                 IJavaProject proj1 = JavaCore.create(getSelectedProject());
                 // Iterate over class path entries.
                 for (int i = 0; i < proj1.getRawClasspath().length; i++) {
-                	/*
-                	 * check if class path contains
-                	 * our library's container Id
-                	 * If contains then it's not
-                	 * a case of immediate edit
-                	 */
-                    if (proj1.getRawClasspath()[i].toString().
-                    		contains(Messages.containerID)) {
-                    	containerIdPresent = true;
-                        for (int j = 0; j < proj1.getRawClasspath()[i].
-                        		getExtraAttributes().length; j++) {
-                            if (proj1.getRawClasspath()[i].
-                            		getExtraAttributes()[j].getName().
-                            		equalsIgnoreCase(Messages.jstDep)) {
+                    /*
+                     * check if class path contains our library's container Id If contains then it's not a case of
+                     * immediate edit
+                     */
+                    if (proj1.getRawClasspath()[i].toString().contains(Messages.containerID)) {
+                        containerIdPresent = true;
+                        for (int j = 0; j < proj1.getRawClasspath()[i].getExtraAttributes().length; j++) {
+                            if (proj1.getRawClasspath()[i].getExtraAttributes()[j].getName()
+                                    .equalsIgnoreCase(Messages.jstDep)) {
                                 depCheck.setSelection(true);
                                 break;
                             }
                             depCheck.setSelection(false);
                         }
-                        if (proj1.getRawClasspath()[i].
-                        		getExtraAttributes().length == 0) {
+                        if (proj1.getRawClasspath()[i].getExtraAttributes().length == 0) {
                             depCheck.setSelection(false);
                         }
                     }
                 }
                 /*
-                 * If contains then it's not a case of immediate edit
-                 * retrieve state of deployment assembly check box
+                 * If contains then it's not a case of immediate edit retrieve state of deployment assembly check box
                  * which was saved when user clicks on Finish button.
                  */
                 if (!containerIdPresent) {
-                	depCheck.setSelection(Activator.
-                			geteploymentAssemblyState());
+                    depCheck.setSelection(Activator.geteploymentAssemblyState());
                 }
             } catch (Exception e) {
                 Activator.getDefault().log(e.getMessage(), e);
             }
 
         } else {
-        	// Add library scenario
-        	depCheck.setSelection(true);
+            // Add library scenario
+            depCheck.setSelection(true);
         }
     }
 
     /**
-     * @return current window is edit or not
+     * @return current window is edit or not.
      */
     private boolean isEdit() {
-        return getWizard().getWindowTitle().
-        		equals(Messages.edtLbrTtl);
+        return getWizard().getWindowTitle().equals(Messages.edtLbrTtl);
     }
 
     /**
-     * This method returns currently selected project in workspace.
+     * returns currently selected project in workspace.
+     *
      * @return IProject
      */
     private IProject getSelectedProject() {
@@ -390,8 +370,7 @@ public class ClasspathContainerPage extends WizardPage
         IResource resource;
         IProject selProject = null;
         if (selection instanceof IStructuredSelection) {
-            IStructuredSelection structuredSel =
-            		(IStructuredSelection) selection;
+            IStructuredSelection structuredSel = (IStructuredSelection) selection;
             element = structuredSel.getFirstElement();
         }
         if (element instanceof IProject) {
@@ -418,14 +397,10 @@ public class ClasspathContainerPage extends WizardPage
                 if (entries[i].toString().contains(Messages.containerID)) {
                     if (depCheck.getSelection()) {
                         IClasspathAttribute[] attr = new IClasspathAttribute[1];
-                        attr[0] = JavaCore.newClasspathAttribute(
-                        		Messages.jstDep,
-                        		"/WEB-INF/lib");
-                        newentries[i] =
-                        		JavaCore.newContainerEntry(entry,
-                        				null, attr, true);
+                        attr[0] = JavaCore.newClasspathAttribute(Messages.jstDep, "/WEB-INF/lib");
+                        newentries[i] = JavaCore.newContainerEntry(entry, null, attr, true);
                     } else {
-                    newentries[i] =  JavaCore.newContainerEntry(entry);
+                        newentries[i] = JavaCore.newContainerEntry(entry);
                     }
                 } else {
                     newentries[i] = entries[i];
@@ -433,7 +408,7 @@ public class ClasspathContainerPage extends WizardPage
             }
             proj1.setRawClasspath(newentries, null);
         } catch (Exception e) {
-             Activator.getDefault().log(e.getMessage(), e);
+            Activator.getDefault().log(e.getMessage(), e);
         }
     }
 }
