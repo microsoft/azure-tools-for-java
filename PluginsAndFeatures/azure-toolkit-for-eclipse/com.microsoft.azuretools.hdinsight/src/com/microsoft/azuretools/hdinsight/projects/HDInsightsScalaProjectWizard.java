@@ -56,7 +56,8 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 		this(
 				PluginUtil.forceInstallPluginUsingMarketPlaceAsync(
 						PluginUtil.scalaPluginSymbolicName, 
-						PluginUtil.scalaPluginMarketplaceURL),
+						PluginUtil.scalaPluginMarketplaceURL,
+						PluginUtil.scalaPluginManualInstallURL),
 				setFocusToInstallationWindow(),
 				hdInsightScalaPageOne = createHDInsightScalaPageOne(),
 				createHDInsightScalaPageTwo(hdInsightScalaPageOne)
