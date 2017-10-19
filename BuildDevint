@@ -2,8 +2,7 @@
 
 set -e
 
-SCRIPT=$(readlink -f "$0")
-SCRIPTPATH=$(dirname "$SCRIPT")
+SCRIPTPATH=$(pwd -P)
 cd $SCRIPTPATH
 
 MAVEN_QUIET=""
