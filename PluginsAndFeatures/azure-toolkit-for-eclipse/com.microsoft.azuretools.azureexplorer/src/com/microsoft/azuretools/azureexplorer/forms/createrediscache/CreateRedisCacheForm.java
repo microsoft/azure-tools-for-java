@@ -1,24 +1,25 @@
 /**
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azuretools.azureexplorer.forms.createrediscache;
 
 import java.io.IOException;
@@ -387,24 +388,24 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         DefaultLoader.getIdeHelper().runInBackground(null,
                 MessageHandler.getResourceString(resourceBundle, LOADING_LOCATION_AND_GRPS), false, true,
                 MessageHandler.getResourceString(resourceBundle, LOADING_LOCATION_AND_GRPS), new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    AzureModelController.updateSubscriptionMaps(null);
-                    DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            fillLocationsAndResourceGrps(currentSub);
-                            cbLocations.setEnabled(true);
-                            loaded = true;
-                            validateFields();
+                    @Override
+                    public void run() {
+                        try {
+                            AzureModelController.updateSubscriptionMaps(null);
+                            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    fillLocationsAndResourceGrps(currentSub);
+                                    cbLocations.setEnabled(true);
+                                    loaded = true;
+                                    validateFields();
+                                }
+                            });
+                        } catch (Exception ex) {
+                            LOG.log(MessageHandler.getCommonStr(LOAD_LOCATION_AND_RESOURCE_ERROR), ex);
                         }
-                    });
-                } catch (Exception ex) {
-                    LOG.log(MessageHandler.getCommonStr(LOAD_LOCATION_AND_RESOURCE_ERROR), ex);
-                }
-            }
-        });
+                    }
+                });
 
         return area;
     }
@@ -439,8 +440,16 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     @Override
     protected void okPressed() {
         try {
-            RedisCacheUtil.doValidate(azureManager, currentSub, dnsNameValue, selectedLocationValue,
-                    selectedResGrpValue, selectedPriceTierValue);
+            RedisCacheUtil.doValidate(currentSub, dnsNameValue, selectedLocationValue, selectedResGrpValue,
+                    selectedPriceTierValue);
+            if (newResGrp) {
+                for (String resGrp : sortedGroups) {
+                    if (selectedResGrpValue.equals(resGrp)) {
+                        throw new InvalidFormDataException(
+                                "The resource group " + selectedResGrpValue + " is not available");
+                    }
+                }
+            }
         } catch (InvalidFormDataException e) {
             MessageDialog.openError(getShell(), "Form Validation Error", e.getMessage());
             return;
@@ -518,8 +527,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
     }
 
     private void validateFields() {
-        boolean dnsValid = !Utils.isEmptyString(dnsNameValue)
-                && dnsNameValue.length() <= REDIS_CACHE_MAX_NAME_LENGTH
+        boolean dnsValid = !Utils.isEmptyString(dnsNameValue) && dnsNameValue.length() <= REDIS_CACHE_MAX_NAME_LENGTH
                 && dnsNameValue.matches(DNS_NAME_REGEX);
         if (dnsValid) {
             decoratorDnsName.hide();
@@ -571,16 +579,16 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
                     String.format(MessageHandler.getResourceString(resourceBundle, CREATING_INDICATOR_FORMAT),
                             ((ProcessorBase) processor).DNSName()),
                     new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        processor.waitForCompletion("PRODUCE");
-                    } catch (InterruptedException ex) {
-                        LOG.log(String.format(MessageHandler.getResourceString(resourceBundle,
-                                CREATING_ERROR_INDICATOR_FORMAT), dnsNameValue), ex);
-                    }
-                }
-            });
+                        @Override
+                        public void run() {
+                            try {
+                                processor.waitForCompletion("PRODUCE");
+                            } catch (InterruptedException ex) {
+                                LOG.log(String.format(MessageHandler.getResourceString(resourceBundle,
+                                        CREATING_ERROR_INDICATOR_FORMAT), dnsNameValue), ex);
+                            }
+                        }
+                    });
             // consume
             processor.process().notifyCompletion();
             return null;
