@@ -46,7 +46,7 @@ public class HDInsightScalaHelpDlg extends Dialog {
 	}
 	
 	protected void okPressed() {
-		PluginUtil.forceInstallPluginUsingMarketPlaceAsync(PluginUtil.scalaPluginSymbolicName, PluginUtil.scalaPluginMarketplaceURL);
+		PluginUtil.forceInstallPluginUsingMarketPlaceAsync(PluginUtil.scalaPluginSymbolicName, PluginUtil.scalaPluginMarketplaceURL, PluginUtil.scalaPluginManualInstallURL);
 		
 		super.okPressed();
 	}
