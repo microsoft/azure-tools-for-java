@@ -64,6 +64,7 @@
         <configuration>
           <configLocation>checkstyle.xml</configLocation>
         </configuration>
+        <!--
         <executions>
           <execution>
             <id>validate</id>
@@ -73,6 +74,7 @@
             </goals>
           </execution>
         </executions>
+        -->
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
