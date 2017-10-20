@@ -43,6 +43,8 @@ public class ContainerExplorerMvpModel {
     private static final String INVALID_URL = "The request URL is NULL.";
     private static final String BODY = "body";
     private static final String LINK_HEADER = "link";
+    private static final String RESPONSE_FAIL_MSG = "Unexpected response %s. please make sure the admin user is " +
+            "enabled and try again";
 
     private final OkHttpClient sharedClient = new OkHttpClient();
 
@@ -60,8 +62,9 @@ public class ContainerExplorerMvpModel {
     /**
      * list repositories under the given private registry.
      */
-    public Map<String, String> listRepositories(@NotNull String serverUrl, @NotNull String username, @NotNull String password,
-                                   @Nullable Map<String, String> query) throws Exception {
+    public Map<String, String> listRepositories(@NotNull String serverUrl, @NotNull String username,
+                                                @NotNull String password, @Nullable Map<String, String> query)
+            throws Exception {
         OkHttpClient client = createRestClient(username, password);
         HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
                 .scheme(URL_PREFIX)
@@ -79,7 +82,7 @@ public class ContainerExplorerMvpModel {
      * list tags under the given repository.
      */
     public Map<String, String> listTags(@NotNull String serverUrl, @NotNull String username, @NotNull String password,
-                                 @NotNull String repo, @Nullable Map<String, String> query) throws Exception {
+                                        @NotNull String repo, @Nullable Map<String, String> query) throws Exception {
         OkHttpClient client = createRestClient(username, password);
         HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
                 .scheme(URL_PREFIX)
@@ -106,7 +109,7 @@ public class ContainerExplorerMvpModel {
                 responseMap.put(LINK_HEADER, response.header(LINK_HEADER));
                 return responseMap;
             } else {
-                throw new Exception(response.message());
+                throw new Exception(String.format(RESPONSE_FAIL_MSG, response));
             }
         }
     }
@@ -116,6 +119,9 @@ public class ContainerExplorerMvpModel {
         return sharedClient.newBuilder()
                 .authenticator((route, response) -> {
                     String credential = Credentials.basic(username, password);
+                    if (credential.equals(response.request().header(HEADER_AUTH))) {
+                        return null;
+                    }
                     return response.request().newBuilder().header(HEADER_AUTH, credential).build();
                 })
                 .build();
