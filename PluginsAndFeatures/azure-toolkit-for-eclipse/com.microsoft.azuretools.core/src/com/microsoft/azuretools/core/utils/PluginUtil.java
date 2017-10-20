@@ -504,9 +504,9 @@ public class PluginUtil {
 	public static boolean forceInstallPluginUsingMarketplace(String pluginSymbolicName, String marketplaceURL, String manualInstallURL) {
 		boolean isTargetInstalled = checkPlugInInstallation(pluginSymbolicName);
 		String manualInstallMessage = " You can also manually install using <a>" + manualInstallURL + "</a>!"; 
-		//if (isTargetInstalled) {
-		//	return true;
-		//}
+		if (isTargetInstalled) {
+			return true;
+		}
 			
 		boolean isMarketplacePluginInstalled = checkPlugInInstallation(marketplacePluginSymbolicName);
 		if (!isMarketplacePluginInstalled) {
