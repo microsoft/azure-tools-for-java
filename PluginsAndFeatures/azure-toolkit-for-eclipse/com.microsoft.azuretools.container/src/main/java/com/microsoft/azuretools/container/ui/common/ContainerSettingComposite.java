@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.container.ui.common;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,16 +31,17 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.container.Constant;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerSettingPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerSettingView;
@@ -69,6 +69,9 @@ public final class ContainerSettingComposite extends Composite implements Contai
     private Text txtStartupFile;
     private Label lblStartupFile;
     private Combo cbContainerRegistry;
+    private Label lblDockerFile;
+    private Text txtDockerFile;
+    private Button btnDockerFileSelector;
 
     /**
      * Create the composite.
@@ -81,31 +84,40 @@ public final class ContainerSettingComposite extends Composite implements Contai
         projectBasePath = basePath;
         registryCache = new ArrayList<>();
 
-        setLayout(new GridLayout(3, false));
+        setLayout(new GridLayout(4, false));
+
+        lblDockerFile = new Label(this, SWT.NONE);
+        lblDockerFile.setText("Docker File");
+
+        txtDockerFile = new Text(this, SWT.BORDER);
+        txtDockerFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+
+        btnDockerFileSelector = new Button(this, SWT.NONE);
+        btnDockerFileSelector.setText("...");
 
         Label lblContainerRegistry = new Label(this, SWT.NONE);
         lblContainerRegistry.setText(LABEL_CONTAINER_REGISTRY);
 
         cbContainerRegistry = new Combo(this, SWT.READ_ONLY);
-        cbContainerRegistry.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+        cbContainerRegistry.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 3, 1));
 
         Label lblServerUrl = new Label(this, SWT.NONE);
         lblServerUrl.setText(LABEL_SERVER_URL);
 
         txtServerUrl = new Text(this, SWT.BORDER);
-        txtServerUrl.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 2, 1));
+        txtServerUrl.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 3, 1));
 
         Label lblUserName = new Label(this, SWT.NONE);
         lblUserName.setText(LABEL_USER_NAME);
 
         txtUserName = new Text(this, SWT.BORDER);
-        txtUserName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+        txtUserName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 3, 1));
 
         Label lblPassword = new Label(this, SWT.NONE);
         lblPassword.setText(LABEL_PASSWORD);
 
         txtPassword = new Text(this, SWT.BORDER | SWT.PASSWORD);
-        txtPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+        txtPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 3, 1));
 
         Label lblImageAndTag = new Label(this, SWT.NONE);
         lblImageAndTag.setText(LABEL_IMAGE_AND_TAG);
@@ -115,14 +127,14 @@ public final class ContainerSettingComposite extends Composite implements Contai
         lblTagPrefix.setText(LABEL_TAG_PREFIX);
 
         txtImageTag = new Text(this, SWT.BORDER);
-        txtImageTag.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        txtImageTag.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
         lblStartupFile = new Label(this, SWT.NONE);
         lblStartupFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblStartupFile.setText(LABEL_STARTUP_FILE);
 
         txtStartupFile = new Text(this, SWT.BORDER);
-        txtStartupFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+        txtStartupFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 3, 1));
 
         cbContainerRegistry.addListener(SWT.Selection, new Listener() {
             @Override
@@ -152,6 +164,20 @@ public final class ContainerSettingComposite extends Composite implements Contai
             @Override
             public void widgetDisposed(DisposeEvent arg0) {
                 presenter.onDetachView();
+            }
+        });
+
+        btnDockerFileSelector.addListener(SWT.Selection, event -> {
+            FileDialog fileDialog = new FileDialog(parent.getShell(), SWT.SINGLE);
+
+            fileDialog.setFilterPath(projectBasePath);
+            fileDialog.setFilterExtensions(new String[] {"*.*"});
+            fileDialog.setFilterNames(new String[] {"Any"});
+
+            String firstFile = fileDialog.open();
+
+            if (firstFile != null) {
+                txtDockerFile.setText(firstFile);
             }
         });
     }
@@ -221,7 +247,7 @@ public final class ContainerSettingComposite extends Composite implements Contai
     }
 
     public String getDockerPath() {
-        return Paths.get(projectBasePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME).toString();
+        return txtDockerFile.getText();
     }
 
     public String getStartupFile() {

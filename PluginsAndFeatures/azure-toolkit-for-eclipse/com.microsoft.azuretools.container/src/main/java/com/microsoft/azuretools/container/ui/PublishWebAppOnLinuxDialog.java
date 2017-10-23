@@ -357,7 +357,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         } catch (IOException e) {
             throw new InvalidFormDataException(NEED_SIGN_IN);
         }
-        if (Utils.isEmptyString(model.getDockerFilePath()) || !Paths.get(model.getDockerFilePath()).toFile().exists()) {
+        if (Utils.isEmptyString(model.getDockerFilePath()) || !Paths.get(model.getDockerFilePath()).toFile().isFile()) {
             throw new InvalidFormDataException(INVALID_DOCKER_FILE);
         }
         // acr

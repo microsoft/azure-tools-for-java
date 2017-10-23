@@ -184,7 +184,7 @@ public class PushImageDialog extends TitleAreaDialog {
         if (model == null) {
             throw new InvalidFormDataException(MISSING_MODEL);
         }
-        if (Utils.isEmptyString(model.getDockerFilePath()) || !Paths.get(model.getDockerFilePath()).toFile().exists()) {
+        if (Utils.isEmptyString(model.getDockerFilePath()) || !Paths.get(model.getDockerFilePath()).toFile().isFile()) {
             throw new InvalidFormDataException(INVALID_DOCKER_FILE);
         }
         // acr
