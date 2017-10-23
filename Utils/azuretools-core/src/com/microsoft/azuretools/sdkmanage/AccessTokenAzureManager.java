@@ -144,7 +144,7 @@ public class AccessTokenAzureManager extends AzureManagerBase {
             public String doAuthenticate(String authorization, String resource, String scope) {
             try {
             	// TODO: check usage
-                return AdAuthManager.getInstance().getAccessToken(tid, Constants.resourceVault, PromptBehavior.Auto);
+                return AdAuthManager.getInstance().getAccessToken(tid, resource, PromptBehavior.Auto);
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }

@@ -122,7 +122,7 @@ public class AdAuthManager {
             ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable);
             ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable);
             // TODO: remove later
-            ac1.acquireToken(Constants.resourceVault, false, userId, isDisplayable);
+          //  ac1.acquireToken(Constants.resourceVault, false, userId, isDisplayable);
             List<String> sids = new LinkedList<>();
             for (Subscription s : AccessTokenAzureManager.getSubscriptions(tid)) {
                 sids.add(s.subscriptionId());

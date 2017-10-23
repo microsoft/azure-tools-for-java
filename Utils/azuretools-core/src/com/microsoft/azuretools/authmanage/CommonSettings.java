@@ -22,10 +22,17 @@
 
 package com.microsoft.azuretools.authmanage;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azuretools.authmanage.interact.IUIFactory;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import net.minidev.json.JSONObject;
 
+import java.io.File;
+import java.io.FileReader;
+import java.nio.file.Paths;
 import java.util.Map;
 
 /**
@@ -35,8 +42,38 @@ public class CommonSettings {
     public static String settingsBaseDir = null;
     public static final String authMethodDetailsFileName = "AuthMethodDetails.json";
 
+    private static final String AADPROVIDERFILENAME = "AadProvider.json";
+    private static final String ENVNAMEKEY = "EnvironmentName";
     private static IUIFactory uiFactory;
     private static Environment ENV = Environment.GLOBAL;
+
+    public static String getSettingsBaseDir() {
+        return settingsBaseDir;
+    }
+
+    public static void setUpEnvironment(@NotNull String baseDir) {
+        settingsBaseDir = baseDir;
+        String aadProfilderFile = Paths.get(CommonSettings.settingsBaseDir, AADPROVIDERFILENAME).toString();
+        File f = new File(aadProfilderFile);
+        if (!f.exists() || f.isDirectory()) {
+            return;
+        }
+
+        try (FileReader fileReader = new FileReader(aadProfilderFile)) {
+            JsonParser parser = new JsonParser();
+            JsonElement jsonTree = parser.parse(fileReader);
+            if (jsonTree.isJsonObject()) {
+                JsonObject jsonObject = jsonTree.getAsJsonObject();
+                JsonElement envElement = jsonObject.get(ENVNAMEKEY);
+                String envName = (envElement != null ? envElement.getAsString() : null);
+                if (null != envName){
+                    setEnvironment(envName, null);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     public static IUIFactory getUiFactory() {
         return uiFactory;
     }
@@ -46,21 +83,11 @@ public class CommonSettings {
 
     public static AzureEnvironment getAdEnvironment() {
     	return ENV.getAzureEnvironment();
-    } 
-
-    public static void setEnvironment(@NotNull String env, Map<String, String> endPointMap) {
-        // TODO: endPointMap currently is not used. Leave it in the api in case there is later change.
-        try {
-            ENV = Environment.valueOf(env.toUpperCase());
-        } catch (Exception e) {
-            ENV = Environment.GLOBAL;
-        }
     }
 
     public static Environment getEnvironmentEnum() {
         return ENV;
     }
-
 
     public static String USER_AGENT = "Azure Toolkit";
     /**
@@ -68,5 +95,14 @@ public class CommonSettings {
      */
     public static void setUserAgent(String userAgent) {
         USER_AGENT = userAgent;
+    }
+
+    private static void setEnvironment(@NotNull String env, Map<String, String> endPointMap) {
+        // TODO: endPointMap currently is not used. Leave it in the api in case there is later change.
+        try {
+            ENV = Environment.valueOf(env.toUpperCase());
+        } catch (Exception e) {
+            ENV = Environment.GLOBAL;
+        }
     }
 }
