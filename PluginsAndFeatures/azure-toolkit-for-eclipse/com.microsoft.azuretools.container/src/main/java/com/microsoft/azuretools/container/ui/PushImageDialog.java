@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.container.ui;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -184,7 +185,12 @@ public class PushImageDialog extends TitleAreaDialog {
         if (model == null) {
             throw new InvalidFormDataException(MISSING_MODEL);
         }
-        if (Utils.isEmptyString(model.getDockerFilePath()) || !Paths.get(model.getDockerFilePath()).toFile().isFile()) {
+        // docker file
+        if (Utils.isEmptyString(model.getDockerFilePath())) {
+            throw new InvalidFormDataException(INVALID_DOCKER_FILE);
+        }
+        File dockerFile = Paths.get(model.getDockerFilePath()).toFile();
+        if (!dockerFile.exists() || !dockerFile.isFile()) {
             throw new InvalidFormDataException(INVALID_DOCKER_FILE);
         }
         // acr

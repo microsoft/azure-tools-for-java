@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.container.ui;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -357,7 +358,12 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         } catch (IOException e) {
             throw new InvalidFormDataException(NEED_SIGN_IN);
         }
-        if (Utils.isEmptyString(model.getDockerFilePath()) || !Paths.get(model.getDockerFilePath()).toFile().isFile()) {
+        // docker file
+        if (Utils.isEmptyString(model.getDockerFilePath())) {
+            throw new InvalidFormDataException(INVALID_DOCKER_FILE);
+        }
+        File dockerFile = Paths.get(model.getDockerFilePath()).toFile();
+        if (!dockerFile.exists() || !dockerFile.isFile()) {
             throw new InvalidFormDataException(INVALID_DOCKER_FILE);
         }
         // acr
