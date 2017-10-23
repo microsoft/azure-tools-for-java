@@ -30,6 +30,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManagerPersist;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;

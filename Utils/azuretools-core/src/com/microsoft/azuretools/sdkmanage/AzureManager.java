@@ -26,6 +26,7 @@ import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.utils.Pair;
 
@@ -33,13 +34,6 @@ import java.io.IOException;
 import java.util.List;
 
 public interface AzureManager {
-    public static enum Environment {
-        GLOBAL,
-        CHINA,
-        GERMAN,
-        US_GOVERNMENT
-    }
-    
     Azure getAzure(String sid) throws IOException;
     List<Subscription> getSubscriptions() throws IOException;
     List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() throws IOException;

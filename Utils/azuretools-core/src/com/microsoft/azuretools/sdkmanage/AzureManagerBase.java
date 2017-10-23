@@ -24,6 +24,7 @@ package com.microsoft.azuretools.sdkmanage;
 
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azuretools.authmanage.Environment;
 
 import java.util.HashMap;
 import java.util.Map;

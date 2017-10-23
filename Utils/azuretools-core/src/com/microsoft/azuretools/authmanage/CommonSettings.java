@@ -24,6 +24,9 @@ package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azuretools.authmanage.interact.IUIFactory;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+
+import java.util.Map;
 
 /**
  * Created by shch on 10/10/2016.
@@ -33,6 +36,7 @@ public class CommonSettings {
     public static final String authMethodDetailsFileName = "AuthMethodDetails.json";
 
     private static IUIFactory uiFactory;
+    private static Environment ENV = Environment.GLOBAL;
     public static IUIFactory getUiFactory() {
         return uiFactory;
     }
@@ -41,9 +45,23 @@ public class CommonSettings {
     }
 
     public static AzureEnvironment getAdEnvironment() {
-    	return AzureEnvironment.AZURE;
+    	return ENV.getAzureEnvironment();
     } 
-    
+
+    public static void setEnvironment(@NotNull String env, Map<String, String> endPointMap) {
+        // TODO: endPointMap currently is not used. Leave it in the api in case there is later change.
+        try {
+            ENV = Environment.valueOf(env.toUpperCase());
+        } catch (Exception e) {
+            ENV = Environment.GLOBAL;
+        }
+    }
+
+    public static Environment getEnvironmentEnum() {
+        return ENV;
+    }
+
+
     public static String USER_AGENT = "Azure Toolkit";
     /**
      * Need this as a static method when we call this class directly from Eclipse or IntelliJ plugin to know plugin version
