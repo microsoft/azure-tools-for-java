@@ -33,7 +33,6 @@ import java.util.Map;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -51,6 +50,7 @@ import com.microsoft.azuretools.container.Constant;
 import com.microsoft.azuretools.container.DockerProgressHandler;
 import com.microsoft.azuretools.container.ui.common.ContainerSettingComposite;
 import com.microsoft.azuretools.container.utils.DockerUtil;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.PushImageRunModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
@@ -60,7 +60,7 @@ import com.spotify.docker.client.DockerClient;
 
 import rx.Observable;
 
-public class PushImageDialog extends TitleAreaDialog {
+public class PushImageDialog extends AzureTitleAreaDialogWrapper {
 
     private final PushImageRunModel model;
     private final String basePath;
