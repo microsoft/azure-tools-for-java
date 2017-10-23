@@ -55,7 +55,7 @@ public class CommonSettings {
         settingsBaseDir = baseDir;
         String aadProfilderFile = Paths.get(CommonSettings.settingsBaseDir, AAD_PROVIDER_FILENAME).toString();
         File f = new File(aadProfilderFile);
-        if (!f.exists() || f.isDirectory()) {
+        if (!f.exists() || !f.isFile()) {
             return;
         }
 
