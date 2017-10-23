@@ -38,6 +38,7 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -57,29 +58,29 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
     private static final String INVALID_DOCKER_FILE = "Please specify a valid docker file.";
     private static final String INVALID_CERT_PATH = "Please specify a valid certificate path.";
     private static final String MISSING_IMAGE_NAME = "Please specify a valid image name.";
-    private final DockerHostRunModel dockerHostRunModel;
+    private final DockerHostRunSetting dataModel;
     private boolean firstTimeCreated = true;
 
     protected DockerHostRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
-        dockerHostRunModel = new DockerHostRunModel();
+        dataModel = new DockerHostRunSetting();
     }
 
-    public DockerHostRunModel getDockerHostRunModel() {
-        return dockerHostRunModel;
+    public DockerHostRunSetting getDataModel() {
+        return dataModel;
     }
 
     @Override
     public void readExternal(Element element) throws InvalidDataException {
         super.readExternal(element);
         firstTimeCreated = Comparing.equal(element.getAttributeValue("default"), "true");
-        XmlSerializer.deserializeInto(dockerHostRunModel, element);
+        XmlSerializer.deserializeInto(dataModel, element);
     }
 
     @Override
     public void writeExternal(Element element) throws WriteExternalException {
         super.writeExternal(element);
-        XmlSerializer.serializeInto(dockerHostRunModel, element);
+        XmlSerializer.serializeInto(dataModel, element);
     }
 
     @NotNull
@@ -98,30 +99,30 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
      */
     public void validate() throws ConfigurationException {
         // TODO: add more
-        if (dockerHostRunModel == null) {
+        if (dataModel == null) {
             throw new ConfigurationException(MISSING_MODEL);
         }
         // docker host
-        if (Utils.isEmptyString(dockerHostRunModel.getDockerHost())) {
+        if (Utils.isEmptyString(dataModel.getDockerHost())) {
             throw new ConfigurationException(INVALID_DOCKER_HOST);
         }
-        if (Utils.isEmptyString(dockerHostRunModel.getDockerFilePath())
-                || !Paths.get(dockerHostRunModel.getDockerFilePath()).toFile().exists()) {
+        if (Utils.isEmptyString(dataModel.getDockerFilePath())
+                || !Paths.get(dataModel.getDockerFilePath()).toFile().exists()) {
             throw new ConfigurationException(INVALID_DOCKER_FILE);
         }
-        if (dockerHostRunModel.isTlsEnabled() && Utils.isEmptyString(dockerHostRunModel.getDockerCertPath())) {
+        if (dataModel.isTlsEnabled() && Utils.isEmptyString(dataModel.getDockerCertPath())) {
             throw new ConfigurationException(INVALID_CERT_PATH);
         }
-        if (Utils.isEmptyString(dockerHostRunModel.getImageName())) {
+        if (Utils.isEmptyString(dataModel.getImageName())) {
             throw new ConfigurationException(MISSING_IMAGE_NAME);
         }
 
         // target package
-        if (Utils.isEmptyString(dockerHostRunModel.getTargetName())) {
+        if (Utils.isEmptyString(dataModel.getTargetName())) {
             throw new ConfigurationException(MISSING_ARTIFACT);
         }
-        if (!dockerHostRunModel.getTargetName().matches(ARTIFACT_NAME_REGEX)) {
-            throw new ConfigurationException(String.format(INVALID_WAR_FILE, dockerHostRunModel.getTargetName()));
+        if (!dataModel.getTargetName().matches(ARTIFACT_NAME_REGEX)) {
+            throw new ConfigurationException(String.format(INVALID_WAR_FILE, dataModel.getTargetName()));
         }
     }
 
@@ -129,7 +130,7 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
     @Override
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment)
             throws ExecutionException {
-        return new DockerHostRunState(getProject(), dockerHostRunModel);
+        return new DockerHostRunState(getProject(), dataModel);
     }
 
     public boolean isFirstTimeCreated() {
@@ -141,66 +142,66 @@ public class DockerHostRunConfiguration extends RunConfigurationBase {
     }
 
     public String getDockerHost() {
-        return dockerHostRunModel.getDockerHost();
+        return dataModel.getDockerHost();
     }
 
     public void setDockerHost(String dockerHost) {
-        dockerHostRunModel.setDockerHost(dockerHost);
+        dataModel.setDockerHost(dockerHost);
     }
 
     public String getDockerCertPath() {
-        return dockerHostRunModel.getDockerCertPath();
+        return dataModel.getDockerCertPath();
     }
 
     public void setDockerCertPath(String dockerCertPath) {
-        dockerHostRunModel.setDockerCertPath(dockerCertPath);
+        dataModel.setDockerCertPath(dockerCertPath);
     }
 
     public String getDockerFilePath() {
-        return dockerHostRunModel.getDockerFilePath();
+        return dataModel.getDockerFilePath();
     }
 
     public void setDockerFilePath(String dockerFilePath) {
-        dockerHostRunModel.setDockerFilePath(dockerFilePath);
+        dataModel.setDockerFilePath(dockerFilePath);
     }
 
     public boolean isTlsEnabled() {
-        return dockerHostRunModel.isTlsEnabled();
+        return dataModel.isTlsEnabled();
     }
 
     public void setTlsEnabled(boolean tlsEnabled) {
-        dockerHostRunModel.setTlsEnabled(tlsEnabled);
+        dataModel.setTlsEnabled(tlsEnabled);
     }
 
     public String getImageName() {
-        return dockerHostRunModel.getImageName();
+        return dataModel.getImageName();
     }
 
     public void setImageName(String imageName) {
-        dockerHostRunModel.setImageName(imageName);
+        dataModel.setImageName(imageName);
     }
 
     public String getTagName() {
-        return dockerHostRunModel.getTagName();
+        return dataModel.getTagName();
     }
 
     public void setTagName(String tagName) {
-        dockerHostRunModel.setTagName(tagName);
+        dataModel.setTagName(tagName);
     }
 
     public String getTargetPath() {
-        return dockerHostRunModel.getTargetPath();
+        return dataModel.getTargetPath();
     }
 
     public void setTargetPath(String targetPath) {
-        dockerHostRunModel.setTargetPath(targetPath);
+        dataModel.setTargetPath(targetPath);
     }
 
     public String getTargetName() {
-        return dockerHostRunModel.getTargetName();
+        return dataModel.getTargetName();
     }
 
     public void setTargetName(String targetName) {
-        dockerHostRunModel.setTargetName(targetName);
+        dataModel.setTargetName(targetName);
     }
 }
