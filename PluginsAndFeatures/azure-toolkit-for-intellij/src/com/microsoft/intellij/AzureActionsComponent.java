@@ -124,7 +124,7 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
             if (!Files.exists(dirPath)) {
                 Files.createDirectory(dirPath);
             }
-            CommonSettings.settingsBaseDir = dirPath.toString();
+            CommonSettings.setUpEnvironment(dirPath.toString());
             initLoggerFileHandler();
         } catch (IOException ex) {
             LOG.error("initAuthManage()", ex);
@@ -147,7 +147,7 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
 
     private void initLoggerFileHandler() {
         try {
-            String loggerFilePath = Paths.get(CommonSettings.settingsBaseDir, "corelibs.log").toString();
+            String loggerFilePath = Paths.get(CommonSettings.getSettingsBaseDir(), "corelibs.log").toString();
             System.out.println("Logger path:" + loggerFilePath);
             logFileHandler = new FileHandler(loggerFilePath, false);
             java.util.logging.Logger l = java.util.logging.Logger.getLogger("");
