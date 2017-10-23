@@ -42,8 +42,8 @@ public class CommonSettings {
     public static String settingsBaseDir = null;
     public static final String authMethodDetailsFileName = "AuthMethodDetails.json";
 
-    private static final String AADPROVIDERFILENAME = "AadProvider.json";
-    private static final String ENVNAMEKEY = "EnvironmentName";
+    private static final String AAD_PROVIDER_FILENAME = "AadProvider.json";
+    private static final String ENV_NAME_KEY = "EnvironmentName";
     private static IUIFactory uiFactory;
     private static Environment ENV = Environment.GLOBAL;
 
@@ -53,7 +53,7 @@ public class CommonSettings {
 
     public static void setUpEnvironment(@NotNull String baseDir) {
         settingsBaseDir = baseDir;
-        String aadProfilderFile = Paths.get(CommonSettings.settingsBaseDir, AADPROVIDERFILENAME).toString();
+        String aadProfilderFile = Paths.get(CommonSettings.settingsBaseDir, AAD_PROVIDER_FILENAME).toString();
         File f = new File(aadProfilderFile);
         if (!f.exists() || f.isDirectory()) {
             return;
@@ -64,7 +64,7 @@ public class CommonSettings {
             JsonElement jsonTree = parser.parse(fileReader);
             if (jsonTree.isJsonObject()) {
                 JsonObject jsonObject = jsonTree.getAsJsonObject();
-                JsonElement envElement = jsonObject.get(ENVNAMEKEY);
+                JsonElement envElement = jsonObject.get(ENV_NAME_KEY);
                 String envName = (envElement != null ? envElement.getAsString() : null);
                 if (null != envName){
                     setEnvironment(envName, null);
