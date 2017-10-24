@@ -24,6 +24,7 @@ package com.microsoft.azuretools.container.ui;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,25 +45,29 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import com.google.common.collect.ImmutableList;
 import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.Constant;
+import com.microsoft.azuretools.container.DockerProgressHandler;
+import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.ui.common.FileSelector;
+import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.messages.Container;
+import com.spotify.docker.client.messages.Container.PortMapping;
 
 import rx.Observable;
 
 public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
 
     private final String basePath;
-    private final String targetPath;
 
     // TODO: move to util
     private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
@@ -85,21 +90,25 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     private static final int TAG_LENGTH = 128;
     private static final int REPO_LENGTH = 255;
 
-    private DockerHostRunSetting model;
+    private DockerHostRunSetting dataModel;
     private Text txtDockerHost;
     private Text txtImageName;
     private Text txtTagName;
     private Button btnTlsEnabled;
     private FileSelector dockerFileSelector;
     private FileSelector certPathSelector;
+    private Label lblCertPath;
 
     /**
      * Create the dialog.
      */
     public DockerRunDialog(Shell parentShell, String basePath, String targetPath) {
         super(parentShell);
+        setShellStyle(SWT.RESIZE | SWT.TITLE);
         this.basePath = basePath;
-        this.targetPath = targetPath;
+        dataModel = new DockerHostRunSetting();
+        dataModel.setTargetPath(targetPath);
+        dataModel.setTargetName(FilenameUtils.getName(targetPath));
     }
 
     /**
@@ -129,9 +138,10 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
         txtDockerHost.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
 
         btnTlsEnabled = new Button(composite, SWT.CHECK);
+        btnTlsEnabled.addListener(SWT.Selection, event -> onBtnTlsEnabledSelection());
         btnTlsEnabled.setText("Enable TLS");
 
-        Label lblCertPath = new Label(composite, SWT.NONE);
+        lblCertPath = new Label(composite, SWT.NONE);
         lblCertPath.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblCertPath.setText("Cert Path");
 
@@ -151,10 +161,25 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
 
         txtTagName = new Text(composite, SWT.BORDER);
         txtTagName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        setTitle("TBD");
+        setTitle("Run on Docker Host");
         setMessage("TBD");
 
+        initialize();
         return area;
+    }
+
+    private void initialize() {
+        updateCertPathVisibility();
+
+    }
+
+    private void onBtnTlsEnabledSelection() {
+        updateCertPathVisibility();
+    }
+
+    private void updateCertPathVisibility() {
+        lblCertPath.setVisible(btnTlsEnabled.getSelection());
+        certPathSelector.setVisible(btnTlsEnabled.getSelection());
     }
 
     /**
@@ -198,40 +223,39 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void apply() {
-        model.setTlsEnabled(btnTlsEnabled.getSelection());
-        model.setDockerFilePath(dockerFileSelector.getFilePath());
-        model.setDockerCertPath(certPathSelector.getFilePath());
-        model.setDockerHost(txtDockerHost.getText());
-        model.setImageName(txtImageName.getText());
-        model.setTagName(txtTagName.getText());
+        dataModel.setTlsEnabled(btnTlsEnabled.getSelection());
+        dataModel.setDockerFilePath(dockerFileSelector.getFilePath());
+        dataModel.setDockerCertPath(certPathSelector.getFilePath());
+        dataModel.setDockerHost(txtDockerHost.getText());
+        dataModel.setImageName(txtImageName.getText());
+        dataModel.setTagName(txtTagName.getText());
     }
 
-
     private void validate() throws InvalidFormDataException {
-        if (model == null) {
+        if (dataModel == null) {
             throw new InvalidFormDataException(MISSING_MODEL);
         }
         // docker file
-        if (Utils.isEmptyString(model.getDockerFilePath())) {
+        if (Utils.isEmptyString(dataModel.getDockerFilePath())) {
             throw new InvalidFormDataException(INVALID_DOCKER_FILE);
         }
-        File dockerFile = Paths.get(model.getDockerFilePath()).toFile();
+        File dockerFile = Paths.get(dataModel.getDockerFilePath()).toFile();
         if (!dockerFile.exists() || !dockerFile.isFile()) {
             throw new InvalidFormDataException(INVALID_DOCKER_FILE);
         }
         // cert path
-        if (model.isTlsEnabled()) {
-            if (Utils.isEmptyString(model.getDockerCertPath())) {
+        if (dataModel.isTlsEnabled()) {
+            if (Utils.isEmptyString(dataModel.getDockerCertPath())) {
                 throw new InvalidFormDataException(INVALID_CERT_PATH);
             }
-            File certPath = Paths.get(model.getDockerFilePath()).toFile();
+            File certPath = Paths.get(dataModel.getDockerCertPath()).toFile();
             if (!certPath.exists() || !certPath.isDirectory()) {
                 throw new InvalidFormDataException(INVALID_CERT_PATH);
             }
         }
 
-        String imageName = model.getImageName();
-        String tagName = model.getTagName();
+        String imageName = dataModel.getImageName();
+        String tagName = dataModel.getTagName();
         if (Utils.isEmptyString(imageName) || Utils.isEmptyString(tagName)) {
             throw new InvalidFormDataException(MISSING_IMAGE_WITH_TAG);
         }
@@ -259,11 +283,11 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
         }
 
         // target package
-        if (Utils.isEmptyString(model.getTargetName())) {
+        if (Utils.isEmptyString(dataModel.getTargetName())) {
             throw new InvalidFormDataException(MISSING_ARTIFACT);
         }
-        if (!model.getTargetName().matches(ARTIFACT_NAME_REGEX)) {
-            throw new InvalidFormDataException(String.format(INVALID_ARTIFACT_FILE, model.getTargetName()));
+        if (!dataModel.getTargetName().matches(ARTIFACT_NAME_REGEX)) {
+            throw new InvalidFormDataException(String.format(INVALID_ARTIFACT_FILE, dataModel.getTargetName()));
         }
     }
 
@@ -275,15 +299,16 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
                 throw new FileNotFoundException("Project base path is null.");
             }
             // locate artifact to specified location
-            String targetFilePath = model.getTargetPath();
+            String targetFilePath = dataModel.getTargetPath();
             ConsoleLogger.info(String.format("Locating artifact ... [%s]", targetFilePath));
 
             // validate dockerfile
-            Path targetDockerfile = Paths.get(model.getDockerFilePath());
+            Path targetDockerfile = Paths.get(dataModel.getDockerFilePath());
             ConsoleLogger.info(String.format("Validating dockerfile ... [%s]", targetDockerfile));
             if (!targetDockerfile.toFile().exists()) {
                 throw new FileNotFoundException("Dockerfile not found.");
             }
+
             // replace placeholder if exists
             String content = new String(Files.readAllBytes(targetDockerfile));
             content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
@@ -291,24 +316,48 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
             Files.write(targetDockerfile, content.getBytes());
 
             // build image
-            ConsoleLogger.info(String.format("Building image ...  [%s]", "image"));
-            DockerClient docker = DefaultDockerClient.fromEnv().build();
-            // TODO: build image
-            //          DockerUtil.buildImage(docker, acrInfo.getImageTagWithServerUrl(), targetDockerfile.getParent(),
-            //                    targetDockerfile.getFileName().toString(), new DockerProgressHandler());
+            String imageNameWithTag = String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName());
+            ConsoleLogger.info(String.format("Building image ...  [%s]", imageNameWithTag));
+            DockerClient docker = DockerUtil.getDockerClient(dataModel.getDockerHost(), dataModel.isTlsEnabled(),
+                    dataModel.getDockerCertPath());
+            DockerUtil.buildImage(docker, imageNameWithTag, targetDockerfile.getParent(),
+                    targetDockerfile.getFileName().toString(), new DockerProgressHandler());
 
-            // TODO: create container and start
+            // create a container
+            ConsoleLogger.info(Constant.MESSAGE_CREATING_CONTAINER);
+            String containerId = DockerUtil.createContainer(docker,
+                    String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()));
+            ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_INFO, containerId));
 
+            // start container
+            ConsoleLogger.info(Constant.MESSAGE_STARTING_CONTAINER);
+            Container container = DockerUtil.runContainer(docker, containerId);
+            DockerRuntime.getInstance().setRunningContainerId(basePath, container.id(), dataModel);
+
+            // props
+            String hostname = new URI(dataModel.getDockerHost()).getHost();
+            ImmutableList<PortMapping> ports = container.ports();
+            String publicPort = null;
+            if (ports != null) {
+                for (Container.PortMapping portMapping : ports) {
+                    if (Constant.TOMCAT_SERVICE_PORT.equals(String.valueOf(portMapping.privatePort()))) {
+                        publicPort = String.valueOf(portMapping.publicPort());
+                    }
+                }
+            }
+
+            ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_STARTED,
+                    (hostname != null ? hostname : "localhost") + (publicPort != null ? ":" + publicPort : "")));
             return null;
         }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
-            props -> {
-                ConsoleLogger.info("started.");
+            ret -> {
+                ConsoleLogger.info("Container started.");
                 sendTelemetry(true, null);
             },
-            err -> {
-                err.printStackTrace();
-                ConsoleLogger.error(err.getMessage());
-                sendTelemetry(false, err.getMessage());
+            e -> {
+                e.printStackTrace();
+                ConsoleLogger.error(e.getMessage());
+                sendTelemetry(false, e.getMessage());
             }
         );
     }
@@ -317,8 +366,8 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     private void sendTelemetry(boolean success, @Nullable String errorMsg) {
         Map<String, String> map = new HashMap<>();
         map.put("Success", String.valueOf(success));
-        if (null != model.getTargetName()) {
-            map.put("FileType", FilenameUtils.getExtension(model.getTargetName()));
+        if (null != dataModel.getTargetName()) {
+            map.put("FileType", FilenameUtils.getExtension(dataModel.getTargetName()));
         } else {
             map.put("FileType", "");
         }

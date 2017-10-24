@@ -38,12 +38,11 @@ import org.eclipse.ui.ide.IDE;
 
 import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.Constant;
-import com.microsoft.azuretools.container.DockerRuntime;
 import com.microsoft.azuretools.container.utils.DockerUtil;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.spotify.docker.client.DefaultDockerClient.Builder;
+import com.spotify.docker.client.DefaultDockerClient;
 
 public class DockerizeHandler extends AzureAbstractHandler {
 
@@ -79,10 +78,8 @@ public class DockerizeHandler extends AzureAbstractHandler {
             openFile(project.getFile(Paths.get(Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME).toString()));
             ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKERFILE_CREATED,
                     Paths.get(Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME).toString()));
-            Builder builder = DockerRuntime.getInstance().getDockerBuilder();
-            ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKER_HOST_INFO, builder.uri()));
             ConsoleLogger.info(Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK);
-            ConsoleLogger.info(Constant.MESSAGE_INSTRUCTION);
+            ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKER_HOST_INFO, DefaultDockerClient.fromEnv().uri()));
         } catch (Exception e) {
             e.printStackTrace();
             ConsoleLogger.error(String.format(Constant.ERROR_CREATING_DOCKERFILE, e.getMessage()));

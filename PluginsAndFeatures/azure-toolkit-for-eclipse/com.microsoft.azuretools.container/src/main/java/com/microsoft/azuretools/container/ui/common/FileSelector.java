@@ -53,21 +53,16 @@ public class FileSelector extends Composite {
 
         btnFileSelector.addListener(SWT.Selection, event -> {
             if (isDir) {
-
-                DirectoryDialog dirDialog = new DirectoryDialog(parent.getShell(), SWT.NONE);
+                DirectoryDialog dirDialog = new DirectoryDialog(parent.getShell(), SWT.OPEN);
+                dirDialog.setFilterPath(basePath);
                 String firstPath = dirDialog.open();
                 if (firstPath != null) {
                     txtFilePath.setText(firstPath);
                 }
             } else {
-                FileDialog fileDialog = new FileDialog(parent.getShell(), SWT.NONE);
-
-                //                fileDialog.setFilterPath(basePath);
-                //                fileDialog.setFilterExtensions(new String[] {"*.*"});
-                //                fileDialog.setFilterNames(new String[] {"Any"});
-
+                FileDialog fileDialog = new FileDialog(parent.getShell(), SWT.OPEN);
+                fileDialog.setFilterPath(basePath);
                 String firstFile = fileDialog.open();
-
                 if (firstFile != null) {
                     txtFilePath.setText(firstFile);
                 }

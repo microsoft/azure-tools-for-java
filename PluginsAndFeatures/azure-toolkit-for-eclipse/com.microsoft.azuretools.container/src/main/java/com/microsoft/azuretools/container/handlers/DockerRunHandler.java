@@ -22,15 +22,7 @@
 
 package com.microsoft.azuretools.container.handlers;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -38,33 +30,22 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.MessageDialog;
 
-import com.google.common.collect.ImmutableList;
 import com.microsoft.azuretools.container.ConsoleLogger;
 import com.microsoft.azuretools.container.Constant;
-import com.microsoft.azuretools.container.DockerProgressHandler;
 import com.microsoft.azuretools.container.DockerRuntime;
-import com.microsoft.azuretools.container.utils.DockerUtil;
+import com.microsoft.azuretools.container.ui.DockerRunDialog;
 import com.microsoft.azuretools.container.utils.WarUtil;
 import com.microsoft.azuretools.core.actions.MavenExecuteAction;
-import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.utils.WebAppUtils;
-import com.spotify.docker.client.DefaultDockerClient.Builder;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.Container;
-import com.spotify.docker.client.messages.Container.PortMapping;
-
-import rx.Observable;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 public class DockerRunHandler extends AzureAbstractHandler {
 
     private static final String MAVEN_GOALS = "package";
     private IProject project;
     private String basePath;
-    private DockerClient docker;
     private String destinationPath;
 
     @Override
@@ -81,18 +62,14 @@ public class DockerRunHandler extends AzureAbstractHandler {
                 destinationPath = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, project.getName() + ".war")
                         .normalize().toString();
             }
-            // Initialize docker client according to env DOCKER_HOST &
-            // DOCKER_CERT_PATH
-            ConsoleLogger.info(Constant.MESSAGE_DOCKER_CONNECTING);
-            Builder dockerBuilder = DockerRuntime.getInstance().getDockerBuilder();
-            docker = dockerBuilder.build();
+
             // Stop running container
-            String runningContainerId = DockerRuntime.getInstance().getRunningContainerId();
-            if (DockerUtil.containerExists(docker, runningContainerId)) {
+            String runningContainerId = DockerRuntime.getInstance().getRunningContainerId(basePath);
+            if (runningContainerId != null) {
                 boolean stop = MessageDialog.openConfirm(PluginUtil.getParentShell(), "Confirmation",
                         Constant.MESSAGE_CONFIRM_STOP_CONTAINER);
                 if (stop) {
-                    DockerRuntime.getInstance().cleanRuningContainer();
+                    DockerRuntime.getInstance().cleanRuningContainer(basePath);
                 } else {
                     return null;
                 }
@@ -121,66 +98,12 @@ public class DockerRunHandler extends AzureAbstractHandler {
         return null;
     }
 
-    private void buildAndRun(ExecutionEvent event)
-            throws IOException, DockerException, InterruptedException, URISyntaxException {
-        Observable.fromCallable(() -> {
-            // validate dockerfile
-            Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
-            ConsoleLogger.info(String.format("Validating dockerfile ... [%s]", targetDockerfile));
-            if (!targetDockerfile.toFile().exists()) {
-                throw new FileNotFoundException("Dockerfile not found.");
-            }
+    private void buildAndRun(ExecutionEvent event) {
 
-            // replace placeholder if exists
-            String content = new String(Files.readAllBytes(targetDockerfile));
-            content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
-                    Paths.get(basePath).toUri().relativize(Paths.get(destinationPath).toUri()).getPath());
-            Files.write(targetDockerfile, content.getBytes());
-
-            // build image based on WAR file
-            ConsoleLogger.info(Constant.MESSAGE_BUILDING_IMAGE);
-            String imageNameWithTag = DockerUtil.buildImage(docker, Constant.DEFAULT_IMAGE_NAME_WITH_TAG,
-                    Paths.get(project.getLocation().toString(), Constant.DOCKERFILE_FOLDER), Constant.DOCKERFILE_NAME,
-                    new DockerProgressHandler());
-            ConsoleLogger.info(String.format(Constant.MESSAGE_IMAGE_INFO, imageNameWithTag));
-
-            // create a container
-            String containerId = DockerUtil.createContainer(docker, imageNameWithTag);
-            ConsoleLogger.info(Constant.MESSAGE_CREATING_CONTAINER);
-            ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_INFO, containerId));
-
-            // start container
-            ConsoleLogger.info(Constant.MESSAGE_STARTING_CONTAINER);
-
-            Container container = DockerUtil.runContainer(docker, containerId);
-            DockerRuntime.getInstance().setRunningContainerId(container.id());
-            // props
-
-            String hostname = new URI(docker.getHost()).getHost();
-            ImmutableList<PortMapping> ports = container.ports();
-            String publicPort = null;
-            if (ports != null) {
-                publicPort = String.valueOf(
-                        ports.stream().filter(m -> Constant.TOMCAT_SERVICE_PORT.equals(String.valueOf(m.privatePort())))
-                                .findFirst().get().publicPort());
-            }
-
-            ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_STARTED,
-                    (hostname != null ? hostname : "localhost") + (publicPort != null ? ":" + publicPort : "")));
-            return project.getName();
-        }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(ret -> {
-            Map<String, String> extraInfo = new HashMap<>();
-            extraInfo.put("ProjectName", ret);
-            try {
-                boolean isJar = MavenUtils.isMavenProject(this.project)
-                        && MavenUtils.getPackaging(this.project).equals(WebAppUtils.TYPE_JAR);
-                extraInfo.put("FileType", isJar ? "jar" : "war");
-            } catch (Exception e) {
-                // ignore it
-            }
-            sendTelemetryOnSuccess(event, extraInfo);
-        }, e -> sendTelemetryOnException(event, e));
-
+        DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+            DockerRunDialog dialog = new DockerRunDialog(PluginUtil.getParentShell(), basePath, destinationPath);
+            dialog.open();
+        });
     }
 
 }

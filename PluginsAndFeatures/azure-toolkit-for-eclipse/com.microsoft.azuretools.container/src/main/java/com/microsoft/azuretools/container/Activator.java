@@ -63,7 +63,7 @@ public class Activator extends AbstractUIPlugin {
      */
     @Override
     public void stop(BundleContext context) throws Exception {
-        DockerRuntime.getInstance().cleanRuningContainer();
+        DockerRuntime.getInstance().cleanAllRuningContainer();
         plugin = null;
         super.stop(context);
     }
