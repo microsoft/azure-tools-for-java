@@ -76,7 +76,7 @@ public class Program {
                 if (!Files.exists(dirPath)) {
                     Files.createDirectory(dirPath);
                 }
-                CommonSettings.settingsBaseDir = dirPath.toString();
+                CommonSettings.setUpEnvironment(dirPath.toString());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -130,7 +130,7 @@ public class Program {
             if (!Files.exists(dirPath)) {
                 Files.createDirectory(dirPath);
             }
-            CommonSettings.settingsBaseDir = dirPath.toString();
+            CommonSettings.setUpEnvironment(dirPath.toString());
 
             // Setup uiFactory
             if (CommonSettings.getUiFactory() == null)
