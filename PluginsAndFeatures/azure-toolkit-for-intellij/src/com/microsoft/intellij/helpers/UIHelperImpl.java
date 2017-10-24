@@ -37,6 +37,7 @@ import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
 import com.microsoft.intellij.forms.OpenSSLFinderForm;
@@ -46,11 +47,13 @@ import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
 import com.microsoft.intellij.helpers.storage.*;
+import com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 
 import javax.swing.*;
 import java.awt.Desktop;
@@ -71,7 +74,8 @@ public class UIHelperImpl implements UIHelper {
             Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
 
     private static final String UNABLE_TO_OPEN_BROWSER = "Unable to open external web browser";
-
+    private static final String UNABLE_TO_OPEN_EDITOR_WINDOW = "Unable to open new editor window";
+    private static final String CANNOT_GET_FILE_EDITOR_MANAGER = "Cannot get FileEditorManager";
 
     @Override
     public void showException(@NotNull final String message,
@@ -290,12 +294,13 @@ public class UIHelperImpl implements UIHelper {
         String redisName = node.getName() != null ? node.getName() : RedisCacheNode.TYPE;
         String sid = node.getSubscriptionId();
         String resId = node.getResourceId();
-        if (sid == null || resId == null) {
+        if (isSubscriptionIdAndResourceIdEmpty(sid, resId)) {
             return;
         }
         Project project = (Project) node.getProject();
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         if (fileEditorManager == null) {
+            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
             return;
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, RedisCachePropertyViewProvider.TYPE, resId);
@@ -317,12 +322,13 @@ public class UIHelperImpl implements UIHelper {
         String redisName = redisCacheNode.getName() != null ? redisCacheNode.getName() : RedisCacheNode.TYPE;
         String sid = redisCacheNode.getSubscriptionId();
         String resId = redisCacheNode.getResourceId();
-        if (sid == null || resId == null) {
+        if (isSubscriptionIdAndResourceIdEmpty(sid, resId)) {
             return;
         }
         Project project = (Project) redisCacheNode.getProject();
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         if (fileEditorManager == null) {
+            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
             return;
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, RedisCacheExplorerProvider.TYPE, resId);
@@ -347,12 +353,13 @@ public class UIHelperImpl implements UIHelper {
         String registryName = node.getName() != null ? node.getName() : RedisCacheNode.TYPE;
         String sid = node.getSubscriptionId();
         String resId = node.getResourceId();
-        if (sid == null || resId == null) {
+        if (isSubscriptionIdAndResourceIdEmpty(sid, resId)) {
             return;
         }
         Project project = (Project) node.getProject();
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         if (fileEditorManager == null) {
+            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
             return;
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
@@ -368,6 +375,30 @@ public class UIHelperImpl implements UIHelper {
                 ((ContainerRegistryPropertyView) editor).onReadProperty(sid, resId);
             }
         }
+    }
+
+    @Override
+    public void openWebAppPropertyView(@NotNull WebAppNode webAppNode) {
+        String webAppName = webAppNode.getName();
+        String sid = webAppNode.getSubscriptionId();
+        String resId = webAppNode.getWebAppId();
+        if (isSubscriptionIdAndResourceIdEmpty(sid, resId)) {
+            return;
+        }
+        Project project = (Project) webAppNode.getProject();
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        if (fileEditorManager == null) {
+            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
+            return;
+        }
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
+                WebAppPropertyViewProvider.getType(), resId);
+        if (itemVirtualFile == null) {
+            String iconPath = webAppNode.getParent() == null ? webAppNode.getIconPath()
+                    : webAppNode.getParent().getIconPath();
+            itemVirtualFile = createVirtualFile(webAppName, WebAppPropertyViewProvider.getType(), iconPath, sid, resId);
+        }
+        fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
 
     @Nullable
@@ -461,6 +492,18 @@ public class UIHelperImpl implements UIHelper {
         itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
         itemVirtualFile.putUserData(RESOURCE_ID, resId);
         return itemVirtualFile;
+    }
+
+    private boolean isSubscriptionIdAndResourceIdEmpty(String sid, String resId) {
+        if (Utils.isEmptyString(sid)) {
+            showError("Cannot get Subscription ID", UNABLE_TO_OPEN_EDITOR_WINDOW);
+            return true;
+        }
+        if (Utils.isEmptyString(resId)) {
+            showError("Cannot get resource ID", UNABLE_TO_OPEN_EDITOR_WINDOW);
+            return true;
+        }
+        return false;
     }
 
     public static String readableFileSize(long size) {

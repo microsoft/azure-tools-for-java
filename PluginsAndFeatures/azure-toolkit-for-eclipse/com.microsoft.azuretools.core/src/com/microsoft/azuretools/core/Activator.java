@@ -157,7 +157,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             if (!Files.exists(dirPath)) {
             	Files.createDirectory(dirPath);
             }
-            CommonSettings.settingsBaseDir = dirPath.toString();
+            CommonSettings.setUpEnvironment(dirPath.toString());
             initAzureToolsCoreLibsLoggerFileHandler();
         } catch (IOException e) {
             e.printStackTrace();
@@ -167,7 +167,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
     private void initAzureToolsCoreLibsLoggerFileHandler() {
         try {
-            String loggerFilePath = Paths.get(CommonSettings.settingsBaseDir, "corelibs.log").toString();
+            String loggerFilePath = Paths.get(CommonSettings.getSettingsBaseDir(), "corelibs.log").toString();
             System.out.println("Logger path:" + loggerFilePath);
             logFileHandler = new FileHandler(loggerFilePath, false);
             java.util.logging.Logger l = java.util.logging.Logger.getLogger("");

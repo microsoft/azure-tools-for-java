@@ -22,8 +22,12 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -33,13 +37,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import rx.Observable;
-
 public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtualInterface {
     static final String STATUS_RUNNING = "Running";
     static final String STATUS_STOPPED = "Stopped";
@@ -48,6 +45,7 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
     private static final String ACTION_DELETE = "Delete";
     private static final String ACTION_RESTART = "Restart";
     private static final String ACTION_OPEN_IN_BROWSER = "Open In Browser";
+    private static final String ACTION_SHOW_PROPERTY = "Show properties";
     private static final String WEB_RUN_ICON = "WebAppRunning_16.png";
     private static final String WEB_STOP_ICON = "WebAppStopped_16.png";
     private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete Web App %s.\n"
@@ -58,18 +56,20 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
     protected String webAppName;
     protected String runState;
     protected String webAppId;
+    protected String hostName;
     protected Map<String, String> propertyMap;
 
     /**
      * Constructor.
      */
-    public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName, String
-            runState, Map<String, String> propertyMap) {
+    public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
+            String runState, String hostName, Map<String, String> propertyMap) {
         super(webAppId, webAppName, parent, STATUS_RUNNING.equals(runState) ? WEB_RUN_ICON : WEB_STOP_ICON, true);
         this.subscriptionId = subscriptionId;
         this.webAppId = webAppId;
         this.webAppName = webAppName;
         this.runState = runState;
+        this.hostName = hostName;
         this.propertyMap = propertyMap;
         loadActions();
     }
@@ -114,8 +114,15 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
         addAction(ACTION_OPEN_IN_BROWSER, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                String appServiceLink = String.format("http://%s.azurewebsites.net", getWebAppName());
+                String appServiceLink = "http://" + hostName;
                 DefaultLoader.getUIHelper().openInBrowser(appServiceLink);
+            }
+        });
+
+        addAction(ACTION_SHOW_PROPERTY, null, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
             }
         });
 

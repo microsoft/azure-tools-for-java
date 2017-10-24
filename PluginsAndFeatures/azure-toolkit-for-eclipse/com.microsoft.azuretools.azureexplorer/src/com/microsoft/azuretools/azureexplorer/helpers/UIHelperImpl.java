@@ -19,6 +19,25 @@
  */
 package com.microsoft.azuretools.azureexplorer.helpers;
 
+import java.io.File;
+import java.net.URL;
+import java.text.DecimalFormat;
+import java.util.Map;
+
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -42,25 +61,7 @@ import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
-
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorDescriptor;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-
-import java.io.File;
-import java.net.URL;
-import java.text.DecimalFormat;
-import java.util.Map;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 
 public class UIHelperImpl implements UIHelper {
     private Map<Class<? extends StorageServiceTreeItem>, String> type2Editor = ImmutableMap.of(BlobContainer.class, "com.microsoft.azuretools.azureexplorer.editors.BlobExplorerFileEditor",
@@ -357,5 +358,11 @@ public class UIHelperImpl implements UIHelper {
         } catch (PartInitException e) {
             showException(UNABLE_TO_GET_PROPERTY, e, UNABLE_TO_GET_PROPERTY, false, false);
         }
+    }
+
+    @Override
+    public void openWebAppPropertyView(WebAppNode node) {
+        // TODO Auto-generated method stub
+
     }
 }

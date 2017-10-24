@@ -99,7 +99,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
 
     public static synchronized void deleteSubscriptions(String subscriptionsDetailsFileName) throws IOException {
         System.out.println("cleaning " + subscriptionsDetailsFileName + " file");
-        FileStorage fs = new FileStorage(subscriptionsDetailsFileName, CommonSettings.settingsBaseDir);
+        FileStorage fs = new FileStorage(subscriptionsDetailsFileName, CommonSettings.getSettingsBaseDir());
         fs.cleanFile();
     }
 
@@ -108,7 +108,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
 
         //subscriptionDetails.clear();
         FileStorage subscriptionsDetailsFileStorage = new FileStorage(subscriptionsDetailsFileName,
-                CommonSettings.settingsBaseDir);
+                CommonSettings.getSettingsBaseDir());
         byte[] data = subscriptionsDetailsFileStorage.read();
         String json = new String(data, StandardCharsets.UTF_8);
         if (json.isEmpty()) {
@@ -128,7 +128,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         System.out.println("SubscriptionManagerPersist.saveSubscriptions()");
         String sd = JsonHelper.serialize(sdl);
         FileStorage subscriptionsDetailsFileStorage = new FileStorage(subscriptionsDetailsFileName,
-                CommonSettings.settingsBaseDir);
+                CommonSettings.getSettingsBaseDir());
         subscriptionsDetailsFileStorage.write(sd.getBytes(StandardCharsets.UTF_8));
     }
 

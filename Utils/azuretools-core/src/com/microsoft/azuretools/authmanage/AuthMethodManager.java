@@ -177,7 +177,7 @@ public class AuthMethodManager {
 
     private void loadSettings() throws IOException {
         System.out.println("loading authMethodDetails...");
-        FileStorage fs = new FileStorage(CommonSettings.authMethodDetailsFileName, CommonSettings.settingsBaseDir);
+        FileStorage fs = new FileStorage(CommonSettings.authMethodDetailsFileName, CommonSettings.getSettingsBaseDir());
         byte[] data = fs.read();
         String json = new String(data);
         if (json.isEmpty()) {
@@ -191,7 +191,7 @@ public class AuthMethodManager {
     private void saveSettings() throws IOException {
         System.out.println("saving authMethodDetails...");
         String sd = JsonHelper.serialize(authMethodDetails);
-        FileStorage fs = new FileStorage(CommonSettings.authMethodDetailsFileName, CommonSettings.settingsBaseDir);
+        FileStorage fs = new FileStorage(CommonSettings.authMethodDetailsFileName, CommonSettings.getSettingsBaseDir());
         fs.write(sd.getBytes(Charset.forName("utf-8")));
     }
 }

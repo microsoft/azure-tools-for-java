@@ -91,6 +91,7 @@
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider"/>
     <toolWindow
           anchor="left"
           factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"
