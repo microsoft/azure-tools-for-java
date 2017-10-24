@@ -36,6 +36,7 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.runner.RunProcessHandler;
@@ -60,12 +61,12 @@ import java.util.Map;
 import rx.Observable;
 
 public class DockerHostRunState implements RunProfileState {
-    private final DockerHostRunModel dataModel;
+    private final DockerHostRunSetting dataModel;
     private final Project project;
 
 
-    public DockerHostRunState(Project project, DockerHostRunModel dockerHostRunModel) {
-        this.dataModel = dockerHostRunModel;
+    public DockerHostRunState(Project project, DockerHostRunSetting dataModel) {
+        this.dataModel = dataModel;
         this.project = project;
     }
 

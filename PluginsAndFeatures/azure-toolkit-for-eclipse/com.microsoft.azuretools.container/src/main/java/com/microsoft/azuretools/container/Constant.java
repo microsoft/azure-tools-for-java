@@ -57,7 +57,7 @@ public class Constant {
     public static final String ERROR_STARTING_CONTAINER = "Fail to start Container #id=%s";
     public static final String MESSAGE_ADD_DOCKER_SUPPORT_OK = "Successfully added docker support!";
     public static final String MESSAGE_ADDING_DOCKER_SUPPORT = "Adding docker support ...";
-    public static final String MESSAGE_DOCKER_HOST_INFO = "Current docker host: %s";
+    public static final String MESSAGE_DOCKER_HOST_INFO = "Default docker host: %s";
     public static final String MESSAGE_EXECUTE_DOCKER_RUN = "Executing Docker Run...";
     public static final String ERROR_BUILDING_IMAGE = "Fail to build image. Please verify docker host connection "
             + "and Dockerfile.\n\nDockerHost: \t%s\nDockerfile: \t%s\n\nError Message:\n%s";

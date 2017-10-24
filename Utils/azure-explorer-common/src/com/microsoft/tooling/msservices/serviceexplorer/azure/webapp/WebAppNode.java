@@ -56,18 +56,20 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
     protected String webAppName;
     protected String runState;
     protected String webAppId;
+    protected String hostName;
     protected Map<String, String> propertyMap;
 
     /**
      * Constructor.
      */
-    public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName, String
-            runState, Map<String, String> propertyMap) {
+    public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
+            String runState, String hostName, Map<String, String> propertyMap) {
         super(webAppId, webAppName, parent, STATUS_RUNNING.equals(runState) ? WEB_RUN_ICON : WEB_STOP_ICON, true);
         this.subscriptionId = subscriptionId;
         this.webAppId = webAppId;
         this.webAppName = webAppName;
         this.runState = runState;
+        this.hostName = hostName;
         this.propertyMap = propertyMap;
         loadActions();
     }
@@ -112,7 +114,7 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
         addAction(ACTION_OPEN_IN_BROWSER, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                String appServiceLink = String.format("http://%s.azurewebsites.net", getWebAppName());
+                String appServiceLink = "http://" + hostName;
                 DefaultLoader.getUIHelper().openInBrowser(appServiceLink);
             }
         });

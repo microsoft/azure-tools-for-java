@@ -1,14 +1,14 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 
 public class WebAppModulePresenter<V extends WebAppModule> extends MvpPresenter<WebAppModule> {
     public static void onStartWebApp(String sid, String id) throws IOException {
@@ -42,6 +42,7 @@ public class WebAppModulePresenter<V extends WebAppModule> extends MvpPresenter<
                 app.getResource().id(),
                 app.getResource().name(),
                 app.getResource().state(),
+                app.getResource().defaultHostName(),
                 new HashMap<String, String>() {
                     {
                         put("regionName", app.getResource().regionName());

@@ -38,6 +38,8 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.runner.container.dockerhost.DockerHostRunConfiguration;
 import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.exceptions.DockerCertificateException;
 
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -48,6 +50,9 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +65,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class SettingPanel {
+    private static final String IMAGE_NAME_PREFIX = "localimage";
+    private static final String DEFAULT_TAG_NAME = "latest";
+
     private final Project project;
     private JTextField textDockerHost;
     private JCheckBox comboTlsEnabled;
@@ -184,7 +192,24 @@ public class SettingPanel {
 
         if (!MavenRunTaskUtil.isMavenProject(project)) {
             List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
-            setupArtifactCombo(artifacts, conf.getDockerHostRunModel().getTargetPath());
+            setupArtifactCombo(artifacts, conf.getDataModel().getTargetPath());
+        }
+
+        // default value for new resources
+        DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
+        String date = df.format(new Date());
+        if (Utils.isEmptyString(textImageName.getText())) {
+            textImageName.setText(String.format("%s-%s", IMAGE_NAME_PREFIX, date));
+        }
+        if (Utils.isEmptyString(textTagName.getText())) {
+            textTagName.setText(DEFAULT_TAG_NAME);
+        }
+        if (Utils.isEmptyString(textDockerHost.getText())) {
+            try {
+                textDockerHost.setText(DefaultDockerClient.fromEnv().uri().toString());
+            } catch (DockerCertificateException e) {
+                e.printStackTrace();
+            }
         }
         sendTelemetry(conf.getTargetName());
     }

@@ -20,16 +20,9 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.container.dockerhost;
+package com.microsoft.azuretools.core.mvp.model.container.pojo;
 
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-public class DockerHostRunModel {
+public class DockerHostRunSetting {
     private String dockerHost;
     private String dockerCertPath;
     private boolean tlsEnabled;
@@ -40,19 +33,7 @@ public class DockerHostRunModel {
     private String targetName;
     private String dockerFilePath;
 
-    public DockerHostRunModel() {
-        try {
-            dockerHost = DefaultDockerClient.fromEnv().uri().toString();
-        } catch (DockerCertificateException e) {
-            dockerHost = "";
-        }
-        dockerCertPath = "";
-        tlsEnabled = false;
-        DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
-        String date = df.format(new Date());
-        imageName = String.format("%s-%s", "localimage", date);
-        tagName = "latest";
-        dockerFilePath = "";
+    public DockerHostRunSetting() {
     }
 
     public String getDockerHost() {

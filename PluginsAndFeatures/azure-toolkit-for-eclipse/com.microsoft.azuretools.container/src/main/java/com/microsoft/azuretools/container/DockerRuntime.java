@@ -22,151 +22,84 @@
 
 package com.microsoft.azuretools.container;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DefaultDockerClient.Builder;
+import com.microsoft.azuretools.container.utils.DockerUtil;
+import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
 
 public class DockerRuntime {
     private static final DockerRuntime INSTANCE = new DockerRuntime();
-    private String runningContainerId = null;
-    private Builder dockerBuilder = null;
-
-    private String latestImageName = null;
-
-    private String registryUrl = null;
-    private String registryUsername = null;
-    private String registryPassword = null;
-    private String latestWebAppName = null;
-    private String latestArtifactName = null;
-
-    public synchronized String getLatestArtifactName() {
-        return latestArtifactName;
-    }
-
-    public synchronized void setLatestArtifactName(String latestArtifactName) {
-        this.latestArtifactName = latestArtifactName;
-    }
-
-    public synchronized String getLatestWebAppName() {
-        return latestWebAppName;
-    }
-
-    public synchronized void setLatestWebAppName(String latestWebAppName) {
-        this.latestWebAppName = latestWebAppName;
-    }
-
-    public synchronized String getLatestImageName() {
-        return latestImageName;
-    }
-
-    public synchronized void setLatestImageName(String latestImageName) {
-        this.latestImageName = latestImageName;
-    }
-
-    public synchronized String getRegistryUrl() {
-        return registryUrl;
-    }
-
-    public synchronized void setRegistryUrl(String registryUrl) {
-        this.registryUrl = registryUrl;
-    }
-
-    public synchronized String getRegistryUsername() {
-        return registryUsername;
-    }
-
-    public synchronized void setRegistryUsername(String registryUsername) {
-        this.registryUsername = registryUsername;
-    }
-
-    public synchronized String getRegistryPassword() {
-        return registryPassword;
-    }
-
-    public synchronized void setRegistryPassword(String registryPassword) {
-        this.registryPassword = registryPassword;
-    }
+    private static final String CONTAINER_ID_KEY = "ContainerId";
+    private static final String DOCKER_HOST_RUN_SETTING_KEY = "DockerHostRunSetting";
+    // project basePath as key
+    private Map<String, Map<String, Object>> containerSettingMap = new ConcurrentHashMap<>();
 
     private DockerRuntime() {
-        try {
-            dockerBuilder = DefaultDockerClient.fromEnv();
-        } catch (DockerCertificateException e) {
-            e.printStackTrace();
-        }
     }
 
     public static DockerRuntime getInstance() {
         return INSTANCE;
     }
 
-    public synchronized String getRunningContainerId() {
-        return runningContainerId;
+    /**
+     * getRunningContainerId.
+     *
+     * @param key
+     *            basePath of project as key
+     */
+    public synchronized String getRunningContainerId(String key) {
+        if (containerSettingMap.containsKey(key)) {
+            return (String) containerSettingMap.get(key).get(CONTAINER_ID_KEY);
+        } else {
+            return null;
+        }
     }
 
     /**
      * setRunningContainerId.
      */
-    public synchronized void setRunningContainerId(String runningContainerId)
-            throws DockerException, InterruptedException {
-        // return if current running container is not clean.
-        if (this.runningContainerId != null) {
-            DockerClient docker = dockerBuilder.build();
-            long count = docker.listContainers().stream().filter(item -> item.id().equals(this.runningContainerId))
-                    .count();
-            if (count > 0) {
-                return;
-            }
-        }
-        this.runningContainerId = runningContainerId;
-    }
-
-    public synchronized Builder getDockerBuilder() {
-        return dockerBuilder;
+    public synchronized void setRunningContainerId(String key, String runningContainerId, DockerHostRunSetting model)
+            throws DockerException, InterruptedException, DockerCertificateException {
+        cleanRuningContainer(key);
+        HashMap<String, Object> value = new HashMap<>();
+        value.put(CONTAINER_ID_KEY, runningContainerId);
+        value.put(DOCKER_HOST_RUN_SETTING_KEY, model);
+        containerSettingMap.put(key, value);
     }
 
     /**
      * clean running container.
      */
-    public synchronized void cleanRuningContainer() throws DockerException, InterruptedException {
-        if (runningContainerId != null) {
-            DockerClient docker = dockerBuilder.build();
+    public synchronized void cleanRuningContainer(String key)
+            throws DockerCertificateException, DockerException, InterruptedException {
+        if (containerSettingMap.containsKey(key)) {
+            String runningContainerId = (String) containerSettingMap.get(key).get(CONTAINER_ID_KEY);
+            DockerHostRunSetting dataModel = (DockerHostRunSetting) containerSettingMap.get(key)
+                    .get(DOCKER_HOST_RUN_SETTING_KEY);
+            DockerClient docker = DockerUtil.getDockerClient(dataModel.getDockerHost(), dataModel.isTlsEnabled(),
+                    dataModel.getDockerCertPath());
             docker.stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
             docker.removeContainer(runningContainerId);
-            runningContainerId = null;
         }
-        return;
+        containerSettingMap.remove(key);
     }
 
     /**
-     * saveToProps.
+     * cleanAllRuningContainer.
      */
-    public Properties saveToProps(Properties props) {
-        if (registryUrl != null) {
-            props.setProperty("registryUrl", registryUrl);
+    public void cleanAllRuningContainer() {
+        for (String key : containerSettingMap.keySet()) {
+            try {
+                cleanRuningContainer(key);
+            } catch (DockerCertificateException | DockerException | InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-        if (registryUsername != null) {
-            props.setProperty("registryUsername", registryUsername);
-        }
-        if (registryPassword != null) {
-            props.setProperty("registryPassword", registryPassword);
-        }
-        if (latestWebAppName != null) {
-            props.setProperty("latestWebAppName", latestWebAppName);
-        }
-        return props;
-    }
-
-    /**
-     * loadFromProps.
-     */
-    public void loadFromProps(Properties props) {
-        registryUrl = props.getProperty("registryUrl");
-        registryUsername = props.getProperty("registryUsername");
-        registryPassword = props.getProperty("registryPassword");
-        latestWebAppName = props.getProperty("latestWebAppName");
+        containerSettingMap.clear();
     }
 }
