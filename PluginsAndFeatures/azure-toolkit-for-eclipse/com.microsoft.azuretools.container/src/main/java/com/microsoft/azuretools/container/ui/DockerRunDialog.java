@@ -28,6 +28,9 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,7 +62,9 @@ import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.Container.PortMapping;
 
@@ -89,6 +94,8 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     private static final String TAG_REGEX = "^[\\w]+[\\w.-]*$";
     private static final int TAG_LENGTH = 128;
     private static final int REPO_LENGTH = 255;
+    private static final String IMAGE_NAME_PREFIX = "localimage";
+    private static final String DEFAULT_TAG_NAME = "latest";
 
     private DockerHostRunSetting dataModel;
     private Text txtDockerHost;
@@ -164,13 +171,27 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
         setTitle("Run on Docker Host");
         setMessage("TBD");
 
-        initialize();
+        reset();
         return area;
     }
 
-    private void initialize() {
+    private void reset() {
+        if (Utils.isEmptyString(txtDockerHost.getText())) {
+            try {
+                txtDockerHost.setText(DefaultDockerClient.fromEnv().uri().toString());
+            } catch (DockerCertificateException e) {
+                e.printStackTrace();
+            }
+        }
+        DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
+        String date = df.format(new Date());
+        if (Utils.isEmptyString(txtImageName.getText())) {
+            txtImageName.setText(String.format("%s-%s", IMAGE_NAME_PREFIX, date));
+        }
+        if (Utils.isEmptyString(txtTagName.getText())) {
+            txtTagName.setText(DEFAULT_TAG_NAME);
+        }
         updateCertPathVisibility();
-
     }
 
     private void onBtnTlsEnabledSelection() {
