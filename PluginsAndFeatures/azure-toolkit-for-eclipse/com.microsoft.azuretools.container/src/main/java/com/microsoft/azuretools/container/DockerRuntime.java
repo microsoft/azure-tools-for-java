@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.container;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,9 +34,10 @@ import com.spotify.docker.client.exceptions.DockerException;
 
 public class DockerRuntime {
     private static final DockerRuntime INSTANCE = new DockerRuntime();
+    private static final String CONTAINER_ID_KEY = "ContainerId";
+    private static final String DOCKER_HOST_RUN_SETTING_KEY = "DockerHostRunSetting";
     // project basePath as key
-    private Map<String, DockerHostRunSetting> dockerSettingMap = new ConcurrentHashMap<>();
-    private Map<String, String> containerIdMap = new ConcurrentHashMap<>();
+    private Map<String, Map<String, Object>> containerSettingMap = new ConcurrentHashMap<>();
 
     private DockerRuntime() {
     }
@@ -44,8 +46,18 @@ public class DockerRuntime {
         return INSTANCE;
     }
 
+    /**
+     * getRunningContainerId.
+     *
+     * @param key
+     *            basePath of project as key
+     */
     public synchronized String getRunningContainerId(String key) {
-        return containerIdMap.get(key);
+        if (containerSettingMap.containsKey(key)) {
+            return (String) containerSettingMap.get(key).get(CONTAINER_ID_KEY);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -54,8 +66,10 @@ public class DockerRuntime {
     public synchronized void setRunningContainerId(String key, String runningContainerId, DockerHostRunSetting model)
             throws DockerException, InterruptedException, DockerCertificateException {
         cleanRuningContainer(key);
-        containerIdMap.put(key, runningContainerId);
-        dockerSettingMap.put(key, model);
+        HashMap<String, Object> value = new HashMap<>();
+        value.put(CONTAINER_ID_KEY, runningContainerId);
+        value.put(DOCKER_HOST_RUN_SETTING_KEY, model);
+        containerSettingMap.put(key, value);
     }
 
     /**
@@ -63,30 +77,29 @@ public class DockerRuntime {
      */
     public synchronized void cleanRuningContainer(String key)
             throws DockerCertificateException, DockerException, InterruptedException {
-        if (containerIdMap.containsKey(key) && dockerSettingMap.containsKey(key)) {
-            String runningContainerId = containerIdMap.get(key);
-            DockerHostRunSetting dataModel = dockerSettingMap.get(key);
+        if (containerSettingMap.containsKey(key)) {
+            String runningContainerId = (String) containerSettingMap.get(key).get(CONTAINER_ID_KEY);
+            DockerHostRunSetting dataModel = (DockerHostRunSetting) containerSettingMap.get(key)
+                    .get(DOCKER_HOST_RUN_SETTING_KEY);
             DockerClient docker = DockerUtil.getDockerClient(dataModel.getDockerHost(), dataModel.isTlsEnabled(),
                     dataModel.getDockerCertPath());
             docker.stopContainer(runningContainerId, Constant.TIMEOUT_STOP_CONTAINER);
             docker.removeContainer(runningContainerId);
         }
-        containerIdMap.remove(key);
-        dockerSettingMap.remove(key);
+        containerSettingMap.remove(key);
     }
 
     /**
      * cleanAllRuningContainer.
      */
     public void cleanAllRuningContainer() {
-        for (String key : containerIdMap.keySet()) {
+        for (String key : containerSettingMap.keySet()) {
             try {
                 cleanRuningContainer(key);
             } catch (DockerCertificateException | DockerException | InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        containerIdMap.clear();
-        dockerSettingMap.clear();
+        containerSettingMap.clear();
     }
 }
