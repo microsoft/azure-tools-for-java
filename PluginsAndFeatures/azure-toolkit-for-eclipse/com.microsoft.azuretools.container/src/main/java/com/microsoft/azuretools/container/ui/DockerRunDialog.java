@@ -124,7 +124,6 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite area = (Composite) super.createDialogArea(parent);
-        area.setLayout(new GridLayout(1, false));
 
         Composite composite = new Composite(area, SWT.NONE);
         composite.setLayout(new GridLayout(5, false));
