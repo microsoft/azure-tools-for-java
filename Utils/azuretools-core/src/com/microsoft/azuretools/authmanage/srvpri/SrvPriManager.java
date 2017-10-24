@@ -22,7 +22,9 @@
 
 package com.microsoft.azuretools.authmanage.srvpri;
 
+import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.srvpri.entities.AuthenticationError;
 import com.microsoft.azuretools.authmanage.srvpri.report.FileListener;
 import com.microsoft.azuretools.authmanage.srvpri.report.IListener;
@@ -195,9 +197,12 @@ public class SrvPriManager {
             }
             prop.setProperty("client", appId.toString());
             prop.setProperty("key", appPassword);
-            prop.setProperty("managementURI", "https://management.core.windows.net/");
-            prop.setProperty("baseURL", "https://management.azure.com/");
-            prop.setProperty("authURL", "https://login.windows.net/");
+
+            AzureEnvironment azureEnv = CommonSettings.getAdEnvironment();
+            prop.setProperty("managementURI", azureEnv.managementEndpoint());
+            prop.setProperty("baseURL", azureEnv.resourceManagerEndpoint());
+            prop.setProperty("authURL", azureEnv.activeDirectoryEndpoint());
+            prop.setProperty("graphURL", azureEnv.graphEndpoint());
 
             prop.store(writer, null);
         } finally {
