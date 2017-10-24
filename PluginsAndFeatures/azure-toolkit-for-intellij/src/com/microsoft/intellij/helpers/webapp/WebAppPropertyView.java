@@ -65,6 +65,6 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
 
     @Override
     public void dispose() {
-
+        presenter.onDetachView();
     }
 }
