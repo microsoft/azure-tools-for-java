@@ -99,6 +99,7 @@ public class PushImageDialog extends AzureTitleAreaDialogWrapper {
      */
     public PushImageDialog(Shell parentShell, String basePath, String targetPath) {
         super(parentShell);
+        setShellStyle(SWT.RESIZE | SWT.TITLE);
         this.basePath = basePath;
         this.targetPath = targetPath;
         model = new PushImageRunModel();
