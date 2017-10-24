@@ -181,24 +181,7 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     
     @Override
     public String getStorageEndpointSuffix() {
-        try {
-            String managementURI = getManagementURI();
-            if (managementURI.endsWith("/")) {
-                managementURI = managementURI.substring(0, managementURI.length() - 1);
-            }
-            if (AzureEnvironment.AZURE.resourceManagerEndpoint().equals(managementURI)) {
-                return AzureEnvironment.AZURE.storageEndpointSuffix();
-            } else if (AzureEnvironment.AZURE_CHINA.resourceManagerEndpoint().equals(managementURI)) {
-                return AzureEnvironment.AZURE_CHINA.storageEndpointSuffix();
-            } else if (AzureEnvironment.AZURE_GERMANY.resourceManagerEndpoint().equals(managementURI)) {
-                return AzureEnvironment.AZURE_GERMANY.storageEndpointSuffix();
-            } else if (AzureEnvironment.AZURE_US_GOVERNMENT.resourceManagerEndpoint().equals(managementURI)) {
-                return AzureEnvironment.AZURE_US_GOVERNMENT.storageEndpointSuffix();
-            }
-            return AzureEnvironment.AZURE.storageEndpointSuffix();
-        } catch (IOException ex) {
-            return AzureEnvironment.AZURE.storageEndpointSuffix();
-        }
+    	return getEnvironment().getAzureEnvironment().storageEndpointSuffix();
     }
 
     private void initATCIfNeeded() throws IOException {
