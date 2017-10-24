@@ -21,6 +21,8 @@
  */
 package com.microsoft.tooling.msservices.helpers;
 
+import java.io.File;
+
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -29,18 +31,16 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
-
-import java.io.File;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 
 public interface UIHelper {
     void showException(@NotNull String message,
-                       Throwable ex,
-                       @NotNull String title,
-                       boolean appendEx,
-                       boolean suggestDetail);
+            Throwable ex,
+            @NotNull String title,
+            boolean appendEx,
+            boolean suggestDetail);
 
     void showError(@NotNull String message, @NotNull String title);
 
@@ -63,19 +63,21 @@ public interface UIHelper {
     void refreshTable(@NotNull Object projectObject, @NotNull StorageAccount storageAccount, @NotNull Table table);
 
     String promptForOpenSSLPath();
-    
+
     void openRedisPropertyView(@NotNull RedisCacheNode node);
-    
+
     void openRedisExplorer(@NotNull RedisCacheNode node);
-    
+
     void openInBrowser(String link);
 
     void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node);
 
+    void openWebAppPropertyView(@NotNull WebAppNode node);
+
     @Nullable
     <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,
-                                                            @NotNull String accountName,
-                                                            @NotNull T item);
+            @NotNull String accountName,
+            @NotNull T item);
 
     boolean isDarkTheme();
 }

@@ -37,6 +37,7 @@ import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
 import com.microsoft.intellij.forms.OpenSSLFinderForm;
@@ -46,11 +47,13 @@ import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
 import com.microsoft.intellij.helpers.storage.*;
+import com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 
 import javax.swing.*;
 import java.awt.Desktop;
@@ -368,6 +371,29 @@ public class UIHelperImpl implements UIHelper {
                 ((ContainerRegistryPropertyView) editor).onReadProperty(sid, resId);
             }
         }
+    }
+
+    @Override
+    public void openWebAppPropertyView(@NotNull WebAppNode webAppNode) {
+        String webAppName = webAppNode.getName();
+        String sid = webAppNode.getSubscriptionId();
+        String resId = webAppNode.getWebAppId();
+        if (Utils.isEmptyString(sid) || Utils.isEmptyString(resId)) {
+            return;
+        }
+        Project project = (Project) webAppNode.getProject();
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        if (fileEditorManager == null) {
+            return;
+        }
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
+                WebAppPropertyViewProvider.getType(), resId);
+        if (itemVirtualFile == null) {
+            String iconPath = webAppNode.getParent() == null ? webAppNode.getIconPath()
+                    : webAppNode.getParent().getIconPath();
+            itemVirtualFile = createVirtualFile(webAppName, WebAppPropertyViewProvider.getType(), iconPath, sid, resId);
+        }
+        fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
 
     @Nullable
