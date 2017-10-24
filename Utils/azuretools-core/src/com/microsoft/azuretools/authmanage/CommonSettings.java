@@ -39,9 +39,9 @@ import java.util.Map;
  * Created by shch on 10/10/2016.
  */
 public class CommonSettings {
-    public static String settingsBaseDir = null;
     public static final String authMethodDetailsFileName = "AuthMethodDetails.json";
 
+    private static String settingsBaseDir = null;
     private static final String AAD_PROVIDER_FILENAME = "AadProvider.json";
     private static final String ENV_NAME_KEY = "EnvironmentName";
     private static IUIFactory uiFactory;
