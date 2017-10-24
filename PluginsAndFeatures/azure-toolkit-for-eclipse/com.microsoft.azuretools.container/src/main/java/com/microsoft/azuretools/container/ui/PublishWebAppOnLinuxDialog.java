@@ -159,7 +159,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     protected void okPressed() {
         apply();
         try {
-            validation();
+            validate();
             execute();
             super.okPressed();
         } catch (InvalidFormDataException e) {
@@ -350,7 +350,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         }
     }
 
-    private void validation() throws InvalidFormDataException {
+    private void validate() throws InvalidFormDataException {
         try {
             if (!AuthMethodManager.getInstance().isSignedIn()) {
                 throw new InvalidFormDataException(NEED_SIGN_IN);
