@@ -70,7 +70,6 @@ public final class ContainerSettingComposite extends Composite implements Contai
     private Label lblStartupFile;
     private Combo cbContainerRegistry;
     private Label lblDockerFile;
-    private Composite composite;
     private FileSelector dockerFileSelector;
 
     /**
@@ -89,7 +88,7 @@ public final class ContainerSettingComposite extends Composite implements Contai
         lblDockerFile = new Label(this, SWT.NONE);
         lblDockerFile.setText(LABEL_DOCKER_FILE);
 
-        dockerFileSelector = new FileSelector(this, SWT.NONE, false, "...", null);
+        dockerFileSelector = new FileSelector(this, SWT.NONE, false, SELECT_DOCKER_FILE, projectBasePath);
         dockerFileSelector.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
         Label lblContainerRegistry = new Label(this, SWT.NONE);
