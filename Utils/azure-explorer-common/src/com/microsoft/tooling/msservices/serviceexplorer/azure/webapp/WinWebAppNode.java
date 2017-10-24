@@ -26,8 +26,8 @@ import java.util.Map;
 
 public class WinWebAppNode extends WebAppNode {
 
-    public WinWebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName, String
-            runState, Map<String, String> propertyMap) {
-        super(parent, subscriptionId, webAppId, webAppName, runState, propertyMap);
+    public WinWebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
+            String runState, String hostName, Map<String, String> propertyMap) {
+        super(parent, subscriptionId, webAppId, webAppName, runState, hostName, propertyMap);
     }
 }
