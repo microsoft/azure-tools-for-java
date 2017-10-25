@@ -43,6 +43,7 @@ import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyMvpView;
@@ -92,7 +93,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     /**
      * Initialize the Web App Property View and return it.
      */
-    public static WebAppPropertyView initialize(@NotNull String sid, @NotNull String resId) {
+    public static WebAppPropertyView create(@NotNull String sid, @NotNull String resId) {
         WebAppPropertyView view = new WebAppPropertyView(sid, resId);
         view.onLoadWebAppProperty();
         return view;
@@ -197,7 +198,8 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         txtContainerVersion.setBackground(null);
     }
 
-    private void $$$setupUI$$$() { }
+    private void $$$setupUI$$$() {
+    }
 
     @Override
     public void onLoadWebAppProperty() {
@@ -206,38 +208,56 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
 
     @Override
     public void showProperty(WebAppProperty webAppProperty) {
-        txtResourceGroup.setText(webAppProperty.getGroupName());
-        txtStatus.setText(webAppProperty.getStatus());
-        txtLocation.setText(webAppProperty.getRegionName());
-        txtSubscription.setText(webAppProperty.getSubscriptionId());
-        txtAppServicePlan.setText(webAppProperty.getAppServicePlan());
-        txtUrl.setText("http://" + webAppProperty.getUrl());
-        txtPricingTier.setText(webAppProperty.getPricingTier());
-        switch (webAppProperty.getOperatingSystem()) {
-            case WINDOWS:
-                txtJavaVersion.setText(webAppProperty.getJavaVersion());
-                txtContainer.setText(webAppProperty.getContainer());
-                txtContainerVersion.setText(webAppProperty.getContainerVersion());
-                break;
-            case LINUX:
-                txtJavaVersion.setVisible(false);
-                txtContainer.setVisible(false);
-                txtContainerVersion.setVisible(false);
-                lblJavaVersion.setVisible(false);
-                lblContainer.setVisible(false);
-                lblContainerVersion.setVisible(false);
-                break;
-            default:
-                break;
+        txtResourceGroup.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_RESOURCE_GRP) == null ? ""
+                : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_RESOURCE_GRP));
+        txtStatus.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_STATUS) == null ? ""
+                : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_STATUS));
+        txtLocation.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_LOCATION) == null ? ""
+                : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_LOCATION));
+        txtSubscription.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_SUB_ID) == null ? ""
+                : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_SUB_ID));
+        txtAppServicePlan.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PLAN) == null ? ""
+                : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PLAN));
+        txtUrl.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_URL) == null ? ""
+                : "http://" + webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_URL));
+        txtPricingTier.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PRICING) == null ? ""
+                : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PRICING));
+        Object os = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_OPERATING_SYS);
+        if (os != null && os instanceof OperatingSystem) {
+            switch ((OperatingSystem) os) {
+                case WINDOWS:
+                    txtJavaVersion.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION) == null
+                            ? "" : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION));
+                    txtContainer.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER) == null
+                            ? "" : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER));
+                    txtContainerVersion.setText(webAppProperty
+                            .getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER_VERSION) == null ? ""
+                            : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER_VERSION));
+                    break;
+                case LINUX:
+                    txtJavaVersion.setVisible(false);
+                    txtContainer.setVisible(false);
+                    txtContainerVersion.setVisible(false);
+                    lblJavaVersion.setVisible(false);
+                    lblContainer.setVisible(false);
+                    lblContainerVersion.setVisible(false);
+                    break;
+                default:
+                    break;
+            }
         }
+
 
         DefaultTableModel model = (DefaultTableModel) tblAppSetting.getModel();
         model.getDataVector().clear();
         cachedAppSettings.clear();
-        Map<String, String> appSettings = webAppProperty.getAppSettings();
-        for (String key : appSettings.keySet()) {
-            model.addRow(new String[]{key, appSettings.get(key)});
-            cachedAppSettings.put(key, appSettings.get(key));
+        Object appSettingsObj = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_APP_SETTING);
+        if (appSettingsObj != null && appSettingsObj instanceof Map) {
+            Map<String, String> appSettings = (Map<String, String>) appSettingsObj;
+            for (String key : appSettings.keySet()) {
+                model.addRow(new String[]{key, appSettings.get(key)});
+                cachedAppSettings.put(key, appSettings.get(key));
+            }
         }
         pnlOverview.revalidate();
     }
