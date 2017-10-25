@@ -69,9 +69,12 @@ public class WebAppPropertyViewPresenter<V extends WebAppPropertyMvpView> extend
         propertyMap.put(KEY_PLAN, plan.name());
         propertyMap.put(KEY_URL, app.defaultHostName());
         propertyMap.put(KEY_PRICING, plan.pricingTier().toString());
-        propertyMap.put(KEY_JAVA_VERSION, app.javaVersion().toString());
-        propertyMap.put(KEY_JAVA_CONTAINER, app.javaContainer());
-        propertyMap.put(KEY_JAVA_CONTAINER_VERSION, app.javaContainerVersion());
+        String javaVersion = app.javaVersion().toString();
+        if (!javaVersion.equals("null")) {
+            propertyMap.put(KEY_JAVA_VERSION, app.javaVersion().toString());
+            propertyMap.put(KEY_JAVA_CONTAINER, app.javaContainer());
+            propertyMap.put(KEY_JAVA_CONTAINER_VERSION, app.javaContainerVersion());
+        }
         propertyMap.put(KEY_OPERATING_SYS, app.operatingSystem());
         propertyMap.put(KEY_APP_SETTING, appSettingsMap);
 
