@@ -37,6 +37,7 @@ import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
+import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -58,6 +59,9 @@ public class SettingPanel {
     private JLabel lblArtifact;
     private JPanel pnlArtifact;
     private ContainerSettingPanel containerSettingPanel;
+    private JPanel pnlMavenProject;
+    private JLabel lblMavenProject;
+    private JComboBox cbMavenProject;
     private Artifact lastSelectedArtifact;
     private boolean isCbArtifactInited;
 
@@ -97,6 +101,15 @@ public class SettingPanel {
                     setIcon(artifact.getArtifactType().getIcon());
                     setText(artifact.getName());
                 }
+            }
+        });
+
+        cbMavenProject.addActionListener(e -> {
+            MavenProject selectedMavenProject = (MavenProject) cbMavenProject.getSelectedItem();
+            if (selectedMavenProject != null) {
+                containerSettingPanel.setDockerPath(
+                        DockerUtil.getDefaultDockerFilePathIfExist(selectedMavenProject.getDirectory())
+                );
             }
         });
 
@@ -154,7 +167,7 @@ public class SettingPanel {
                         + MavenConstants.TYPE_WAR);
             }
         } else {
-            MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
+            MavenProject mavenProject = (MavenProject) cbMavenProject.getSelectedItem();
             if (mavenProject != null) {
                 pushImageRunConfiguration.setTargetPath(MavenRunTaskUtil.getTargetPath(mavenProject));
                 pushImageRunConfiguration.setTargetName(MavenRunTaskUtil.getTargetName(mavenProject));
@@ -179,6 +192,20 @@ public class SettingPanel {
         isCbArtifactInited = true;
     }
 
+    private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetPath) {
+        cbMavenProject.removeAllItems();
+        if (null != mvnprjs) {
+            for (MavenProject prj : mvnprjs) {
+                cbMavenProject.addItem(prj);
+                if (MavenRunTaskUtil.getTargetPath(prj).equals(targetPath)) {
+                    cbMavenProject.setSelectedItem(prj);
+                }
+            }
+        }
+        cbMavenProject.setVisible(true);
+        lblMavenProject.setVisible(true);
+    }
+
     /**
      * Function triggered in constructing the panel.
      *
@@ -188,12 +215,18 @@ public class SettingPanel {
         if (!MavenRunTaskUtil.isMavenProject(project)) {
             List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
             setupArtifactCombo(artifacts, conf.getTargetPath());
+        } else {
+            List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
+            setupMavenProjectCombo(mavenProjects, conf.getTargetPath());
         }
 
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
         containerSettingPanel.setTxtFields(acrInfo);
         if (Utils.isEmptyString(conf.getDockerFilePath())) {
-            containerSettingPanel.setDockerPath(DockerUtil.getDefaultDockerFilePathIfExist(project));
+            MavenProject prj = (MavenProject) cbMavenProject.getSelectedItem();
+            if (prj != null) {
+                containerSettingPanel.setDockerPath(DockerUtil.getDefaultDockerFilePathIfExist(prj.getDirectory()));
+            }
         } else {
             containerSettingPanel.setDockerPath(conf.getDockerFilePath());
         }

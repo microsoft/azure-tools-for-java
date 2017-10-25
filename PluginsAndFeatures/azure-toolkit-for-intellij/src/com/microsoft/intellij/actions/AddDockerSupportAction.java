@@ -105,7 +105,7 @@ public class AddDockerSupportAction extends AzureAnAction {
         // print instructions
         String notificationContent = "";
         notificationContent += String.format(Constant.MESSAGE_DOCKERFILE_CREATED,
-                Paths.get(Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME)) + "\n";
+                Paths.get(pomXmlBasePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME).normalize()) + "\n";
         notificationContent += String.format(Constant.MESSAGE_DOCKER_HOST_INFO, defaultDockerHost) + "\n";
         notificationContent += Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK + "\n";
         notificationContent += Constant.MESSAGE_INSTRUCTION + "\n";

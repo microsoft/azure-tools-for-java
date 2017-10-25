@@ -33,7 +33,9 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType;
@@ -50,22 +52,25 @@ public class PushImageAction extends AzureAnAction {
 
     @Override
     public void onActionPerformed(AnActionEvent event) {
-        Project project = event.getProject();
-        if (project == null) {
+        Module module = DataKeys.MODULE.getData(event.getDataContext());
+        if (module == null) {
             notifyError(Constant.ERROR_NO_SELECTED_PROJECT);
             return;
         }
-        ApplicationManager.getApplication().invokeLater(() -> runConfiguration(project));
+        Project project = module.getProject();
+        ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
     }
 
     @SuppressWarnings({"deprecation", "Duplicates"})
-    private void runConfiguration(Project project) {
+    private void runConfiguration(Module module) {
+        Project project = module.getProject();
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = configType.getPushImageRunConfigurationFactory();
         RunnerAndConfigurationSettings settings = manager.findConfigurationByName(
-                String.format("%s: %s", factory.getName(), project.getName()));
+                String.format("%s: %s:%s", factory.getName(), project.getName(), module.getName()));
         if (settings == null) {
-            settings = manager.createConfiguration(String.format("%s: %s", factory.getName(), project.getName()),
+            settings = manager.createConfiguration(
+                    String.format("%s: %s:%s", factory.getName(), project.getName(), module.getName()),
                     factory);
         }
         if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {

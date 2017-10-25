@@ -187,4 +187,14 @@ public class DockerUtil {
         }
         return "";
     }
+
+    public static String getDefaultDockerFilePathIfExist(String basePath) {
+        if (!Utils.isEmptyString(basePath)) {
+            Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_NAME);
+            if (targetDockerfile != null && targetDockerfile.toFile().exists()) {
+                return targetDockerfile.toString();
+            }
+        }
+        return "";
+    }
 }
