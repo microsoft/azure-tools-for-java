@@ -33,6 +33,9 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.management.resources.fluentcore.utils.ResourceNamer;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.Environment;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -169,6 +172,7 @@ public class AzureDockerVMOps {
       PublicIPAddress publicIp = nicIPConfiguration.getPublicIPAddress();
       Network vnet = nicIPConfiguration.getNetwork();
       AzureDockerVM dockerVM = new AzureDockerVM();
+
       dockerVM.name = vm.name();
       // TODO: Azure cloud bug; the resource group name in the id's for the VM's when retrieving as a list is capitalized!
       dockerVM.resourceGroupName = vm.resourceGroupName().toLowerCase();
@@ -178,11 +182,21 @@ public class AzureDockerVMOps {
       if (publicIp != null) {
         dockerVM.publicIpName = publicIp.name();
         dockerVM.publicIp = publicIp.ipAddress();
+        
+        // TODO: since this feature will be removed later, just fix it here for mooncake.
+        String dnsSuffix = ".cloudapp.azure.com";
+        try {
+	        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+	        if (azureManager != null && azureManager.getEnvironment().equals(Environment.CHINA)) {
+	        	dnsSuffix = ".cloudapp.chinacloudapi.cn";
+	        }
+        } catch(Exception e){}
+        
         dockerVM.dnsName = (publicIp.fqdn() != null && !publicIp.fqdn().isEmpty()) ?
             publicIp.fqdn() :
             (publicIp.ipAddress() != null && !publicIp.ipAddress().isEmpty()) ?
                 publicIp.ipAddress() :
-                dockerVM.name + "." + dockerVM.region + ".cloudapp.azure.com";
+                dockerVM.name + "." + dockerVM.region + dnsSuffix;
       } else {
         dockerVM.publicIpName = "NA";
         dockerVM.publicIp = "";

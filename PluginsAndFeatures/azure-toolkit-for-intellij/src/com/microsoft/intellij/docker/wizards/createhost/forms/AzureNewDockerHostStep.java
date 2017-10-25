@@ -37,6 +37,9 @@ import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.VirtualMachineSize;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.Environment;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
 import com.microsoft.intellij.docker.wizards.createhost.AzureNewDockerWizardModel;
@@ -618,7 +621,15 @@ public class AzureNewDockerHostStep extends AzureNewDockerWizardStep implements 
       return info;
     }
     newHost.hostVM.region = preferredLocation;
-    newHost.hostVM.dnsName = String.format("%s.%s.cloudapp.azure.com", newHost.hostVM.name, newHost.hostVM.region);
+    String dnsSuffixFormat = "%s.%s.cloudapp.azure.com";
+    // TODO: since this feature will be removed later, just fix it here for mooncake.
+    try {
+      AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+      if (azureManager != null && azureManager.getEnvironment().equals(Environment.CHINA)) {
+        dnsSuffixFormat = "%s.%s.cloudapp.chinacloudapi.cn";
+      }
+    } catch (Exception e) {}
+    newHost.hostVM.dnsName = String.format(dnsSuffixFormat, newHost.hostVM.name, newHost.hostVM.region);
     newHost.apiUrl = newHost.hostVM.dnsName;
 
     return null;
