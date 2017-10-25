@@ -29,6 +29,7 @@ import com.intellij.openapi.fileEditor.FileEditorPolicy;
 import com.intellij.openapi.fileEditor.FileEditorProvider;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.intellij.helpers.UIHelperImpl;
 
 public class WebAppPropertyViewProvider implements FileEditorProvider {
 
@@ -42,8 +43,9 @@ public class WebAppPropertyViewProvider implements FileEditorProvider {
     @NotNull
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        WebAppPropertyView webAppPropertyView = WebAppPropertyView.initialize();
-        return webAppPropertyView;
+        String sid = virtualFile.getUserData(UIHelperImpl.SUBSCRIPTION_ID);
+        String id = virtualFile.getUserData(UIHelperImpl.RESOURCE_ID);
+        return WebAppPropertyView.initialize(sid, id);
     }
 
     @NotNull
