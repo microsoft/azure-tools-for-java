@@ -37,10 +37,17 @@ import javax.swing.table.DefaultTableModel;
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationDisplayType;
+import com.intellij.notification.NotificationGroup;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
+import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.OperatingSystem;
@@ -58,6 +65,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     private final String resId;
     private Map<String, String> cachedAppSettings;
     private Map<String, String> editedAppSettings;
+    private final NotificationGroup nodificationGrp;
 
     private static final String PNL_OVERVIEW = "Overview";
     private static final String PNL_APP_SETTING = "App Settings";
@@ -81,7 +89,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     private JTextField txtLocation;
     private JTextField txtSubscription;
     private JTextField txtAppServicePlan;
-    private JTextField txtUrl;
+    private HyperlinkLabel lnkUrl;
     private JTextField txtPricingTier;
     private JTextField txtJavaVersion;
     private JTextField txtContainer;
@@ -90,6 +98,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     private JLabel lblContainer;
     private JLabel lblContainerVersion;
     private JBTable tblAppSetting;
+    private DefaultTableModel tableModel;
     private AnActionButton btnAdd;
     private AnActionButton btnRemove;
     private AnActionButton btnEdit;
@@ -108,6 +117,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         this.resId = resId;
         cachedAppSettings = new HashMap<>();
         editedAppSettings = new HashMap<>();
+        nodificationGrp = new NotificationGroup("Azure Plugin", NotificationDisplayType.BALLOON, true);
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.presenter = new WebAppPropertyViewPresenter<>();
         this.presenter.onAttachView(this);
@@ -123,6 +133,22 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         appSettingDecorator.setContentComponent(pnlAppSettings);
         appSettingDecorator.setOn(true);
 
+        btnDiscard.addActionListener(e -> {
+            editedAppSettings.clear();
+            tableModel.getDataVector().removeAllElements();
+            for (String key : cachedAppSettings.keySet()) {
+                tableModel.addRow(new String[]{key, cachedAppSettings.get(key)});
+            }
+            editedAppSettings.putAll(cachedAppSettings);
+            updateSaveAndDiscardBtnStatus();
+        });
+
+        btnSave.addActionListener(e -> {
+            setBtnEnableStatus(false);
+            presenter.onUpdateWebAppProperty(sid, resId, editedAppSettings);
+        });
+
+        lnkUrl.setHyperlinkText("<Loading...>");
         setTextFieldStyle();
     }
 
@@ -144,7 +170,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     }
 
     private void createUIComponents() {
-        DefaultTableModel tableModel = new DefaultTableModel();
+        tableModel = new DefaultTableModel();
         tableModel.addColumn(TABLE_HEADER_KEY);
         tableModel.addColumn(TABLE_HEADER_VALUE);
 
@@ -156,20 +182,19 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
             if ("tableCellEditor".equals(evt.getPropertyName())) {
                 if (!tblAppSetting.isEditing()) {
                     editedAppSettings.clear();
-                    DefaultTableModel model = ((DefaultTableModel) tblAppSetting.getModel());
                     int row = 0;
-                    while (row < tblAppSetting.getRowCount()) {
-                        Object keyObj = model.getValueAt(row, 0);
+                    while (row < tableModel.getRowCount()) {
+                        Object keyObj = tableModel.getValueAt(row, 0);
                         String key = "";
                         String value = "";
                         if (keyObj != null) {
                             key = (String) keyObj;
                         }
                         if (key.isEmpty() || editedAppSettings.containsKey(key)) {
-                            model.removeRow(row);
+                            tableModel.removeRow(row);
                             continue;
                         }
-                        Object valueObj = model.getValueAt(row, 1);
+                        Object valueObj = tableModel.getValueAt(row, 1);
                         if (valueObj != null) {
                             value = (String) valueObj;
                         }
@@ -187,11 +212,10 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         btnAdd = new AnActionButton(BUTTON_ADD, AllIcons.General.Add) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-                DefaultTableModel model = ((DefaultTableModel) tblAppSetting.getModel());
                 if (tblAppSetting.isEditing()) {
                     tblAppSetting.getCellEditor().stopCellEditing();
                 }
-                model.addRow(new String[]{"", ""});
+                tableModel.addRow(new String[]{"", ""});
                 tblAppSetting.editCellAt(tblAppSetting.getRowCount() - 1, 0);
             }
         };
@@ -203,9 +227,8 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
                 if (selectedRow == -1) {
                     return;
                 }
-                DefaultTableModel model = ((DefaultTableModel) tblAppSetting.getModel());
-                editedAppSettings.remove(model.getValueAt(selectedRow, 0));
-                model.removeRow(selectedRow);
+                editedAppSettings.remove(tableModel.getValueAt(selectedRow, 0));
+                tableModel.removeRow(selectedRow);
                 updateSaveAndDiscardBtnStatus();
             }
         };
@@ -227,49 +250,6 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         pnlAppSettings = tableToolbarDecorator.createPanel();
     }
 
-    private void updateSaveAndDiscardBtnStatus() {
-        if (!editedAppSettings.equals(cachedAppSettings)) {
-            btnDiscard.setEnabled(true);
-            btnSave.setEnabled(true);
-        } else {
-            btnDiscard.setEnabled(false);
-            btnSave.setEnabled(false);
-        }
-    }
-
-    private void updateTableActionBtnStatus(boolean isEditing) {
-        btnAdd.setEnabled(!isEditing);
-        btnRemove.setEnabled(!isEditing);
-        btnEdit.setEnabled(!isEditing);
-    }
-
-    private void setTextFieldStyle() {
-        txtResourceGroup.setBorder(BorderFactory.createEmptyBorder());
-        txtStatus.setBorder(BorderFactory.createEmptyBorder());
-        txtLocation.setBorder(BorderFactory.createEmptyBorder());
-        txtSubscription.setBorder(BorderFactory.createEmptyBorder());
-        txtAppServicePlan.setBorder(BorderFactory.createEmptyBorder());
-        txtUrl.setBorder(BorderFactory.createEmptyBorder());
-        txtPricingTier.setBorder(BorderFactory.createEmptyBorder());
-        txtJavaVersion.setBorder(BorderFactory.createEmptyBorder());
-        txtContainer.setBorder(BorderFactory.createEmptyBorder());
-        txtContainerVersion.setBorder(BorderFactory.createEmptyBorder());
-
-        txtResourceGroup.setBackground(null);
-        txtStatus.setBackground(null);
-        txtLocation.setBackground(null);
-        txtSubscription.setBackground(null);
-        txtAppServicePlan.setBackground(null);
-        txtUrl.setBackground(null);
-        txtPricingTier.setBackground(null);
-        txtJavaVersion.setBackground(null);
-        txtContainer.setBackground(null);
-        txtContainerVersion.setBackground(null);
-    }
-
-    private void $$$setupUI$$$() {
-    }
-
     @Override
     public void onLoadWebAppProperty() {
         presenter.onLoadWebAppProperty(this.sid, this.resId);
@@ -287,8 +267,13 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
                 : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_SUB_ID));
         txtAppServicePlan.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PLAN) == null ? TXT_NA
                 : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PLAN));
-        txtUrl.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_URL) == null ? TXT_NA
-                : "http://" + webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_URL));
+        Object url = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_URL);
+        if (url == null) {
+            lnkUrl.setHyperlinkText(TXT_NA);
+        } else {
+            lnkUrl.setHyperlinkText("http://" + url);
+            lnkUrl.setHyperlinkTarget("http://" + url);
+        }
         txtPricingTier.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PRICING) == null ? TXT_NA
                 : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PRICING));
         Object os = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_OPERATING_SYS);
@@ -322,18 +307,78 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
             }
         }
 
-
-        DefaultTableModel model = (DefaultTableModel) tblAppSetting.getModel();
-        model.getDataVector().clear();
+        tableModel.getDataVector().clear();
         cachedAppSettings.clear();
         Object appSettingsObj = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_APP_SETTING);
         if (appSettingsObj != null && appSettingsObj instanceof Map) {
             Map<String, String> appSettings = (Map<String, String>) appSettingsObj;
             for (String key : appSettings.keySet()) {
-                model.addRow(new String[]{key, appSettings.get(key)});
+                tableModel.addRow(new String[]{key, appSettings.get(key)});
                 cachedAppSettings.put(key, appSettings.get(key));
             }
         }
         pnlOverview.revalidate();
+    }
+
+    @Override
+    public void updatePropertyCallback(boolean isSuccess) {
+        setBtnEnableStatus(true);
+        if (isSuccess) {
+            cachedAppSettings.clear();
+            cachedAppSettings.putAll(editedAppSettings);
+            updateSaveAndDiscardBtnStatus();
+            nodificationGrp.createNotification("Property update successfully", NotificationType.INFORMATION)
+                    .notify(null);
+        }
+    }
+
+    private void setBtnEnableStatus(boolean enabled) {
+        btnSave.setEnabled(enabled);
+        btnDiscard.setEnabled(enabled);
+        btnAdd.setEnabled(enabled);
+        btnRemove.setEnabled(enabled);
+        btnEdit.setEnabled(enabled);
+        tblAppSetting.setEnabled(enabled);
+    }
+
+    private void updateSaveAndDiscardBtnStatus() {
+        if (Comparing.equal(editedAppSettings, cachedAppSettings)) {
+            btnDiscard.setEnabled(false);
+            btnSave.setEnabled(false);
+        } else {
+            btnDiscard.setEnabled(true);
+            btnSave.setEnabled(true);
+        }
+    }
+
+    private void updateTableActionBtnStatus(boolean isEditing) {
+        btnAdd.setEnabled(!isEditing);
+        btnRemove.setEnabled(!isEditing);
+        btnEdit.setEnabled(!isEditing);
+    }
+
+    private void setTextFieldStyle() {
+        txtResourceGroup.setBorder(BorderFactory.createEmptyBorder());
+        txtStatus.setBorder(BorderFactory.createEmptyBorder());
+        txtLocation.setBorder(BorderFactory.createEmptyBorder());
+        txtSubscription.setBorder(BorderFactory.createEmptyBorder());
+        txtAppServicePlan.setBorder(BorderFactory.createEmptyBorder());
+        txtPricingTier.setBorder(BorderFactory.createEmptyBorder());
+        txtJavaVersion.setBorder(BorderFactory.createEmptyBorder());
+        txtContainer.setBorder(BorderFactory.createEmptyBorder());
+        txtContainerVersion.setBorder(BorderFactory.createEmptyBorder());
+
+        txtResourceGroup.setBackground(null);
+        txtStatus.setBackground(null);
+        txtLocation.setBackground(null);
+        txtSubscription.setBackground(null);
+        txtAppServicePlan.setBackground(null);
+        txtPricingTier.setBackground(null);
+        txtJavaVersion.setBackground(null);
+        txtContainer.setBackground(null);
+        txtContainerVersion.setBackground(null);
+    }
+
+    private void $$$setupUI$$$() {
     }
 }

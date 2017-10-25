@@ -50,6 +50,25 @@ public class WebAppPropertyViewPresenter<V extends WebAppPropertyMvpView> extend
                 }), e -> errorHandler(CANNOT_GET_WEB_APP_PROPERTY, (Exception) e));
     }
 
+    public void onUpdateWebAppProperty(@NotNull String sid, @NotNull String resId, @NotNull Map<String, String> appSettings) {
+        Observable.fromCallable(() -> {
+            AzureWebAppMvpModel.getInstance().updateWebAppSettings(sid, resId, appSettings);
+            return true;
+        }).subscribeOn(getSchedulerProvider().io())
+                .subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().updatePropertyCallback(true);
+                }), e -> {
+                    errorHandler(CANNOT_GET_WEB_APP_PROPERTY, (Exception) e);
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().updatePropertyCallback(false);
+                });
+    }
+
     private WebAppProperty generateProperty(WebApp app, AppServicePlan plan) {
         Map<String, String> appSettingsMap = new HashMap<>();
         Map<String, AppSetting> appSetting = app.appSettings();

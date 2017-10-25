@@ -152,17 +152,14 @@
                               <text value="URL"/>
                             </properties>
                           </component>
-                          <component id="b722d" class="javax.swing.JTextField" binding="txtUrl">
+                          <component id="b722d" class="com.intellij.ui.HyperlinkLabel" binding="lnkUrl">
                             <constraints>
                               <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                                 <preferred-size width="150" height="-1"/>
                               </grid>
                               <gridbag top="0" left="10" bottom="0" right="0" weightx="0.0" weighty="0.0"/>
                             </constraints>
-                            <properties>
-                              <editable value="false"/>
-                              <text value="&lt;Loading...&gt;"/>
-                            </properties>
+                            <properties/>
                           </component>
                           <component id="a1432" class="javax.swing.JLabel">
                             <constraints>
