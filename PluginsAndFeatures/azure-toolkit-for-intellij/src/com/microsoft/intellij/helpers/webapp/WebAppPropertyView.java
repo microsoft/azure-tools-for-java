@@ -22,8 +22,6 @@
 
 package com.microsoft.intellij.helpers.webapp;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,6 +66,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     private static final String BUTTON_ADD = "Add";
     private static final String TABLE_HEADER_VALUE = "Value";
     private static final String TABLE_HEADER_KEY = "Key";
+    private static final String TXT_NA = "N/A";
 
     private JPanel pnlMain;
     private JButton btnGetPublishFile;
@@ -91,6 +90,9 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     private JLabel lblContainer;
     private JLabel lblContainerVersion;
     private JBTable tblAppSetting;
+    private AnActionButton btnAdd;
+    private AnActionButton btnRemove;
+    private AnActionButton btnEdit;
 
     /**
      * Initialize the Web App Property View and return it.
@@ -150,38 +152,39 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         tblAppSetting.setRowSelectionAllowed(true);
         tblAppSetting.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        tblAppSetting.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("tableCellEditor".equals(evt.getPropertyName())) {
-                    if (!tblAppSetting.isEditing()) {
-                        editedAppSettings.clear();
-                        DefaultTableModel model = ((DefaultTableModel) tblAppSetting.getModel());
-                        for (int row = 0; row < model.getRowCount(); row++) {
-                            Object keyObj = model.getValueAt(row, 0);
-                            String key = "";
-                            String value = "";
-                            if (keyObj != null) {
-                                key = (String) keyObj;
-                            }
-                            if (key.isEmpty() || editedAppSettings.containsKey(key)) {
-                                model.removeRow(row);
-                                model.fireTableDataChanged();
-                                continue;
-                            }
-                            Object valueObj = model.getValueAt(row, 1);
-                            if (valueObj != null) {
-                                value = (String) valueObj;
-                            }
-                            editedAppSettings.put(key, value);
+        tblAppSetting.addPropertyChangeListener(evt -> {
+            if ("tableCellEditor".equals(evt.getPropertyName())) {
+                if (!tblAppSetting.isEditing()) {
+                    editedAppSettings.clear();
+                    DefaultTableModel model = ((DefaultTableModel) tblAppSetting.getModel());
+                    int row = 0;
+                    while (row < tblAppSetting.getRowCount()) {
+                        Object keyObj = model.getValueAt(row, 0);
+                        String key = "";
+                        String value = "";
+                        if (keyObj != null) {
+                            key = (String) keyObj;
                         }
-                        updateButtonStatus();
+                        if (key.isEmpty() || editedAppSettings.containsKey(key)) {
+                            model.removeRow(row);
+                            continue;
+                        }
+                        Object valueObj = model.getValueAt(row, 1);
+                        if (valueObj != null) {
+                            value = (String) valueObj;
+                        }
+                        editedAppSettings.put(key, value);
+                        ++row;
                     }
+                    updateSaveAndDiscardBtnStatus();
+                    updateTableActionBtnStatus(false);
+                } else {
+                    updateTableActionBtnStatus(true);
                 }
             }
         });
 
-        AnActionButton btnAdd = new AnActionButton(BUTTON_ADD, AllIcons.General.Add) {
+        btnAdd = new AnActionButton(BUTTON_ADD, AllIcons.General.Add) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 DefaultTableModel model = ((DefaultTableModel) tblAppSetting.getModel());
@@ -189,12 +192,11 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
                     tblAppSetting.getCellEditor().stopCellEditing();
                 }
                 model.addRow(new String[]{"", ""});
-                model.fireTableDataChanged();
                 tblAppSetting.editCellAt(tblAppSetting.getRowCount() - 1, 0);
             }
         };
 
-        AnActionButton btnRemove = new AnActionButton(BUTTON_REMOVE, AllIcons.General.Remove) {
+        btnRemove = new AnActionButton(BUTTON_REMOVE, AllIcons.General.Remove) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 int selectedRow = tblAppSetting.getSelectedRow();
@@ -204,12 +206,11 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
                 DefaultTableModel model = ((DefaultTableModel) tblAppSetting.getModel());
                 editedAppSettings.remove(model.getValueAt(selectedRow, 0));
                 model.removeRow(selectedRow);
-                model.fireTableDataChanged();
-                updateButtonStatus();
+                updateSaveAndDiscardBtnStatus();
             }
         };
 
-        AnActionButton btnEdit = new AnActionButton(BUTTON_EDIT, AllIcons.Actions.Edit) {
+        btnEdit = new AnActionButton(BUTTON_EDIT, AllIcons.Actions.Edit) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 int selectedRow = tblAppSetting.getSelectedRow();
@@ -226,7 +227,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         pnlAppSettings = tableToolbarDecorator.createPanel();
     }
 
-    private void updateButtonStatus() {
+    private void updateSaveAndDiscardBtnStatus() {
         if (!editedAppSettings.equals(cachedAppSettings)) {
             btnDiscard.setEnabled(true);
             btnSave.setEnabled(true);
@@ -234,6 +235,12 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
             btnDiscard.setEnabled(false);
             btnSave.setEnabled(false);
         }
+    }
+
+    private void updateTableActionBtnStatus(boolean isEditing) {
+        btnAdd.setEnabled(!isEditing);
+        btnRemove.setEnabled(!isEditing);
+        btnEdit.setEnabled(!isEditing);
     }
 
     private void setTextFieldStyle() {
@@ -270,30 +277,30 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
 
     @Override
     public void showProperty(WebAppProperty webAppProperty) {
-        txtResourceGroup.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_RESOURCE_GRP) == null ? ""
+        txtResourceGroup.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_RESOURCE_GRP) == null ? TXT_NA
                 : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_RESOURCE_GRP));
-        txtStatus.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_STATUS) == null ? ""
+        txtStatus.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_STATUS) == null ? TXT_NA
                 : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_STATUS));
-        txtLocation.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_LOCATION) == null ? ""
+        txtLocation.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_LOCATION) == null ? TXT_NA
                 : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_LOCATION));
-        txtSubscription.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_SUB_ID) == null ? ""
+        txtSubscription.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_SUB_ID) == null ? TXT_NA
                 : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_SUB_ID));
-        txtAppServicePlan.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PLAN) == null ? ""
+        txtAppServicePlan.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PLAN) == null ? TXT_NA
                 : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PLAN));
-        txtUrl.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_URL) == null ? ""
+        txtUrl.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_URL) == null ? TXT_NA
                 : "http://" + webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_URL));
-        txtPricingTier.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PRICING) == null ? ""
+        txtPricingTier.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PRICING) == null ? TXT_NA
                 : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PRICING));
         Object os = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_OPERATING_SYS);
         if (os != null && os instanceof OperatingSystem) {
             switch ((OperatingSystem) os) {
                 case WINDOWS:
                     txtJavaVersion.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION) == null
-                            ? "" : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION));
+                            ? TXT_NA : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION));
                     txtContainer.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER) == null
-                            ? "" : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER));
+                            ? TXT_NA : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER));
                     txtContainerVersion.setText(webAppProperty
-                            .getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER_VERSION) == null ? ""
+                            .getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER_VERSION) == null ? TXT_NA
                             : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER_VERSION));
                     txtJavaVersion.setVisible(true);
                     txtContainer.setVisible(true);
