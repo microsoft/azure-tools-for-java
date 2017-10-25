@@ -22,6 +22,8 @@
 
 package com.microsoft.intellij.helpers.webapp;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -148,30 +150,90 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         tblAppSetting.setRowSelectionAllowed(true);
         tblAppSetting.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+        tblAppSetting.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("tableCellEditor".equals(evt.getPropertyName())) {
+                    if (!tblAppSetting.isEditing()) {
+                        editedAppSettings.clear();
+                        DefaultTableModel model = ((DefaultTableModel) tblAppSetting.getModel());
+                        for (int row = 0; row < model.getRowCount(); row++) {
+                            Object keyObj = model.getValueAt(row, 0);
+                            String key = "";
+                            String value = "";
+                            if (keyObj != null) {
+                                key = (String) keyObj;
+                            }
+                            if (key.isEmpty() || editedAppSettings.containsKey(key)) {
+                                model.removeRow(row);
+                                model.fireTableDataChanged();
+                                continue;
+                            }
+                            Object valueObj = model.getValueAt(row, 1);
+                            if (valueObj != null) {
+                                value = (String) valueObj;
+                            }
+                            editedAppSettings.put(key, value);
+                        }
+                        updateButtonStatus();
+                    }
+                }
+            }
+        });
+
         AnActionButton btnAdd = new AnActionButton(BUTTON_ADD, AllIcons.General.Add) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-
+                DefaultTableModel model = ((DefaultTableModel) tblAppSetting.getModel());
+                if (tblAppSetting.isEditing()) {
+                    tblAppSetting.getCellEditor().stopCellEditing();
+                }
+                model.addRow(new String[]{"", ""});
+                model.fireTableDataChanged();
+                tblAppSetting.editCellAt(tblAppSetting.getRowCount() - 1, 0);
             }
         };
 
         AnActionButton btnRemove = new AnActionButton(BUTTON_REMOVE, AllIcons.General.Remove) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-
+                int selectedRow = tblAppSetting.getSelectedRow();
+                if (selectedRow == -1) {
+                    return;
+                }
+                DefaultTableModel model = ((DefaultTableModel) tblAppSetting.getModel());
+                editedAppSettings.remove(model.getValueAt(selectedRow, 0));
+                model.removeRow(selectedRow);
+                model.fireTableDataChanged();
+                updateButtonStatus();
             }
         };
 
         AnActionButton btnEdit = new AnActionButton(BUTTON_EDIT, AllIcons.Actions.Edit) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-
+                int selectedRow = tblAppSetting.getSelectedRow();
+                int selectedCol = tblAppSetting.getSelectedColumn();
+                if (selectedRow == -1 || selectedCol == -1) {
+                    return;
+                }
+                tblAppSetting.editCellAt(selectedRow, selectedCol);
             }
         };
 
         ToolbarDecorator tableToolbarDecorator = ToolbarDecorator.createDecorator(tblAppSetting)
                 .addExtraActions(btnAdd, btnRemove, btnEdit).setToolbarPosition(ActionToolbarPosition.RIGHT);
         pnlAppSettings = tableToolbarDecorator.createPanel();
+    }
+
+    private void updateButtonStatus() {
+        if (!editedAppSettings.equals(cachedAppSettings)) {
+            btnDiscard.setEnabled(true);
+            btnSave.setEnabled(true);
+        } else {
+            btnDiscard.setEnabled(false);
+            btnSave.setEnabled(false);
+        }
     }
 
     private void setTextFieldStyle() {
@@ -233,6 +295,12 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
                     txtContainerVersion.setText(webAppProperty
                             .getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER_VERSION) == null ? ""
                             : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER_VERSION));
+                    txtJavaVersion.setVisible(true);
+                    txtContainer.setVisible(true);
+                    txtContainerVersion.setVisible(true);
+                    lblJavaVersion.setVisible(true);
+                    lblContainer.setVisible(true);
+                    lblContainerVersion.setVisible(true);
                     break;
                 case LINUX:
                     txtJavaVersion.setVisible(false);

@@ -43,6 +43,7 @@
                       <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
+                      <enabled value="false"/>
                       <icon value="actions/cancel.png"/>
                       <text value="Discard"/>
                     </properties>
@@ -52,6 +53,7 @@
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
+                      <enabled value="false"/>
                       <icon value="runConfigurations/saveTempConfig.png"/>
                       <text value="Save"/>
                     </properties>
@@ -92,7 +94,7 @@
                               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                                 <preferred-size width="150" height="-1"/>
                               </grid>
-                              <gridbag top="3" left="10" bottom="3" right="10" weightx="0.0" weighty="0.0"/>
+                              <gridbag top="2" left="10" bottom="2" right="10" weightx="0.0" weighty="0.0"/>
                             </constraints>
                             <properties>
                               <editable value="false"/>
@@ -134,7 +136,7 @@
                               <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                                 <preferred-size width="150" height="-1"/>
                               </grid>
-                              <gridbag top="3" left="10" bottom="3" right="10" weightx="0.0" weighty="0.0"/>
+                              <gridbag top="2" left="10" bottom="2" right="10" weightx="0.0" weighty="0.0"/>
                             </constraints>
                             <properties>
                               <editable value="false"/>
@@ -176,7 +178,7 @@
                               <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                                 <preferred-size width="150" height="-1"/>
                               </grid>
-                              <gridbag top="3" left="10" bottom="3" right="10" weightx="0.0" weighty="0.0"/>
+                              <gridbag top="2" left="10" bottom="2" right="10" weightx="0.0" weighty="0.0"/>
                             </constraints>
                             <properties>
                               <editable value="false"/>
@@ -218,7 +220,7 @@
                               <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                                 <preferred-size width="150" height="-1"/>
                               </grid>
-                              <gridbag top="3" left="10" bottom="3" right="10" weightx="0.0" weighty="0.0"/>
+                              <gridbag top="2" left="10" bottom="2" right="10" weightx="0.0" weighty="0.0"/>
                             </constraints>
                             <properties>
                               <editable value="false"/>
@@ -232,6 +234,7 @@
                             </constraints>
                             <properties>
                               <text value="Java Version"/>
+                              <visible value="false"/>
                             </properties>
                           </component>
                           <component id="d83f9" class="javax.swing.JTextField" binding="txtJavaVersion">
@@ -239,11 +242,12 @@
                               <grid row="4" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                                 <preferred-size width="150" height="-1"/>
                               </grid>
-                              <gridbag top="3" left="10" bottom="3" right="0" weightx="0.0" weighty="0.0"/>
+                              <gridbag top="2" left="10" bottom="2" right="0" weightx="0.0" weighty="0.0"/>
                             </constraints>
                             <properties>
                               <editable value="false"/>
                               <text value="&lt;Loading...&gt;"/>
+                              <visible value="false"/>
                             </properties>
                           </component>
                           <component id="2dc6a" class="javax.swing.JLabel" binding="lblContainer">
@@ -253,6 +257,7 @@
                             </constraints>
                             <properties>
                               <text value="Web Container"/>
+                              <visible value="false"/>
                             </properties>
                           </component>
                           <component id="4269d" class="javax.swing.JTextField" binding="txtContainer">
@@ -260,11 +265,12 @@
                               <grid row="5" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                                 <preferred-size width="150" height="-1"/>
                               </grid>
-                              <gridbag top="3" left="10" bottom="3" right="0" weightx="0.0" weighty="0.0"/>
+                              <gridbag top="2" left="10" bottom="2" right="0" weightx="0.0" weighty="0.0"/>
                             </constraints>
                             <properties>
                               <editable value="false"/>
                               <text value="&lt;Loading...&gt;"/>
+                              <visible value="false"/>
                             </properties>
                           </component>
                           <component id="b07cb" class="javax.swing.JLabel" binding="lblContainerVersion">
@@ -274,6 +280,7 @@
                             </constraints>
                             <properties>
                               <text value="Container Version"/>
+                              <visible value="false"/>
                             </properties>
                           </component>
                           <component id="29e07" class="javax.swing.JTextField" binding="txtContainerVersion">
@@ -281,11 +288,12 @@
                               <grid row="6" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                                 <preferred-size width="150" height="-1"/>
                               </grid>
-                              <gridbag top="3" left="10" bottom="3" right="0" weightx="0.0" weighty="0.0"/>
+                              <gridbag top="2" left="10" bottom="2" right="0" weightx="0.0" weighty="0.0"/>
                             </constraints>
                             <properties>
                               <editable value="false"/>
                               <text value="&lt;Loading...&gt;"/>
+                              <visible value="false"/>
                             </properties>
                           </component>
                         </children>
