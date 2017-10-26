@@ -168,9 +168,22 @@ public class DockerUtil {
         }
     }
 
-    public static boolean containerExists(@NotNull DockerClient docker, @NotNull String containerId)
-            throws DockerException, InterruptedException {
-        long count = docker.listContainers().stream().filter(item -> item.id().equals(containerId)).count();
-        return (count > 0);
+    /**
+     * check if the default docker file exists.
+     * If yes, return the path as a String.
+     * Else return an empty String.
+     */
+    public static String getDefaultDockerFilePathIfExist(String basePath) {
+        try {
+            if (!Utils.isEmptyString(basePath)) {
+                Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_NAME);
+                if (targetDockerfile != null && targetDockerfile.toFile().exists()) {
+                    return targetDockerfile.toString();
+                }
+            }
+        } catch (RuntimeException ignored) {
+            // ignore it
+        }
+        return "";
     }
 }

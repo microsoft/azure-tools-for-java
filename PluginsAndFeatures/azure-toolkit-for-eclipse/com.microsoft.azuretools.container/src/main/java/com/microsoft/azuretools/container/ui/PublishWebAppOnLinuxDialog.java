@@ -247,7 +247,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
         // adjust shell size when clicking expandBar
         expandBar.addListener(SWT.MouseUp, event -> adjustShellSize());
         cpNew.expandBar.addListener(SWT.MouseUp, event -> adjustShellSize());
-        initialize();
+        reset();
         return area;
     }
 
@@ -270,7 +270,7 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     }
 
     private void apply() {
-        model.setDockerFilePath(cpAcr.getDockerPath());
+        model.setDockerFilePath(cpAcr.getDockerfilePath());
         // set ACR info
         model.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(cpAcr.getServerUrl(), cpAcr.getUserName(),
                 cpAcr.getPassword(), cpAcr.getImageTag(), cpAcr.getStartupFile()));
@@ -598,7 +598,10 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     }
 
     // helpers
-    private void initialize() {
+    private void reset() {
+        // set default Dockerfile path
+        String defaultDockerFilePath = DockerUtil.getDefaultDockerFilePathIfExist(basePath);
+        cpAcr.setDockerfilePath(defaultDockerFilePath);
         // load ACRs
         cpAcr.onListRegistries();
         // load webapps

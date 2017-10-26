@@ -125,8 +125,17 @@ public class PushImageDialog extends AzureTitleAreaDialogWrapper {
         setTitle("Push Image");
         setMessage("Configure the container registry you want to push to.");
 
-        containerSettingComposite.onListRegistries();
+        reset();
         return area;
+    }
+
+    private void reset() {
+        // set default Dockerfile path
+        String defaultDockerFilePath = DockerUtil.getDefaultDockerFilePathIfExist(basePath);
+        containerSettingComposite.setDockerfilePath(defaultDockerFilePath);
+
+        // list registries
+        containerSettingComposite.onListRegistries();
     }
 
     /**
@@ -170,7 +179,7 @@ public class PushImageDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void apply() {
-        model.setDockerFilePath(containerSettingComposite.getDockerPath());
+        model.setDockerFilePath(containerSettingComposite.getDockerfilePath());
         // set ACR info
         model.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(
                 containerSettingComposite.getServerUrl().replaceFirst("^https?://", "").replaceFirst("/$", ""),

@@ -72,6 +72,10 @@ public class FileSelector extends Composite {
 
     }
 
+    public void setFilePath(String filePath) {
+        txtFilePath.setText(filePath);
+    }
+
     public String getFilePath() {
         return txtFilePath.getText();
     }

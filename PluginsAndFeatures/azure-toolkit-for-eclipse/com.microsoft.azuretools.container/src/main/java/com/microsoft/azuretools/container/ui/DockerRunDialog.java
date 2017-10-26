@@ -96,6 +96,7 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     private static final int REPO_LENGTH = 255;
     private static final String IMAGE_NAME_PREFIX = "localimage";
     private static final String DEFAULT_TAG_NAME = "latest";
+    private static final String SELECT_DOCKER_FILE = "...";
 
     private DockerHostRunSetting dataModel;
     private Text txtDockerHost;
@@ -133,7 +134,7 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
         lblDockerFile.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblDockerFile.setText("Docker File");
 
-        dockerFileSelector = new FileSelector(composite, SWT.NONE, false, "...", null);
+        dockerFileSelector = new FileSelector(composite, SWT.NONE, false, SELECT_DOCKER_FILE, basePath);
         dockerFileSelector.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
 
         Label lblDockerHost = new Label(composite, SWT.NONE);
@@ -175,6 +176,7 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void reset() {
+        // set default dockerHost value
         if (Utils.isEmptyString(txtDockerHost.getText())) {
             try {
                 txtDockerHost.setText(DefaultDockerClient.fromEnv().uri().toString());
@@ -182,6 +184,11 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
                 e.printStackTrace();
             }
         }
+        // set default Dockerfile path
+        String defaultDockerFilePath = DockerUtil.getDefaultDockerFilePathIfExist(basePath);
+        dockerFileSelector.setFilePath(defaultDockerFilePath);
+
+        // set default image and tag
         DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
         String date = df.format(new Date());
         if (Utils.isEmptyString(txtImageName.getText())) {
@@ -190,6 +197,7 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
         if (Utils.isEmptyString(txtTagName.getText())) {
             txtTagName.setText(DEFAULT_TAG_NAME);
         }
+
         updateCertPathVisibility();
     }
 

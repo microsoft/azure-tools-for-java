@@ -212,6 +212,10 @@ public final class ContainerSettingComposite extends Composite implements Contai
         this.getParent().pack();
     }
 
+    public void setDockerfilePath(String filePath) {
+        dockerFileSelector.setFilePath(filePath);
+    }
+
     public String getServerUrl() {
         return txtServerUrl.getText();
     }
@@ -228,7 +232,7 @@ public final class ContainerSettingComposite extends Composite implements Contai
         return txtImageTag.getText();
     }
 
-    public String getDockerPath() {
+    public String getDockerfilePath() {
         return dockerFileSelector.getFilePath();
     }
 
