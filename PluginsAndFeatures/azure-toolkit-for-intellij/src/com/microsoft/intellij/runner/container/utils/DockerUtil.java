@@ -173,7 +173,7 @@ public class DockerUtil {
     }
 
     /**
-     * check if the default docker file exists
+     * check if the default docker file exists.
      * If yes, return the path as a String.
      * Else return an empty String.
      */

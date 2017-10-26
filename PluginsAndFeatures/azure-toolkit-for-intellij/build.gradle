@@ -36,7 +36,7 @@ apply plugin: 'findbugs'
 
 checkstyle {
     toolVersion = '7.7'
-    configFile = new File('config/checkstyle/google_checks.xml')
+    configFile = new File('config/checkstyle/checkstyle.xml')
     showViolations = false
 }
 
