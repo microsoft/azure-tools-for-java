@@ -365,14 +365,9 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         // set target
         //noinspection Duplicates
         if (lastSelectedArtifact != null) {
-            webAppOnLinuxDeployConfiguration.setTargetPath(lastSelectedArtifact.getOutputFilePath());
-            Path p = Paths.get(webAppOnLinuxDeployConfiguration.getTargetPath());
-            if (null != p) {
-                webAppOnLinuxDeployConfiguration.setTargetName(p.getFileName().toString());
-            } else {
-                webAppOnLinuxDeployConfiguration.setTargetName(lastSelectedArtifact.getName() + "."
-                        + MavenConstants.TYPE_WAR);
-            }
+            String targetPath = lastSelectedArtifact.getOutputFilePath();
+            webAppOnLinuxDeployConfiguration.setTargetPath(targetPath);
+            webAppOnLinuxDeployConfiguration.setTargetName(Paths.get(targetPath).getFileName().toString());
         } else {
             MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
             if (mavenProject != null) {

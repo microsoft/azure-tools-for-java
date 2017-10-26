@@ -233,14 +233,9 @@ public class SettingPanel {
         }
         // set target
         if (lastSelectedArtifact != null) {
-            conf.setTargetPath(lastSelectedArtifact.getOutputFilePath());
-            Path p = Paths.get(conf.getTargetPath());
-            if (null != p) {
-                conf.setTargetName(p.getFileName().toString());
-            } else {
-                // TODO: get package type according to artifact
-                conf.setTargetName(lastSelectedArtifact.getName() + "." + MavenConstants.TYPE_WAR);
-            }
+            String targetPath = lastSelectedArtifact.getOutputFilePath();
+            conf.setTargetPath(targetPath);
+            conf.setTargetName(Paths.get(targetPath).getFileName().toString());
         } else {
             MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
             if (mavenProject != null) {

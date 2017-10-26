@@ -169,14 +169,9 @@ public class SettingPanel {
 
         // set target
         if (lastSelectedArtifact != null) {
-            pushImageRunConfiguration.setTargetPath(lastSelectedArtifact.getOutputFilePath());
-            Path p = Paths.get(pushImageRunConfiguration.getTargetPath());
-            if (null != p) {
-                pushImageRunConfiguration.setTargetName(p.getFileName().toString());
-            } else {
-                pushImageRunConfiguration.setTargetName(lastSelectedArtifact.getName() + "."
-                        + MavenConstants.TYPE_WAR);
-            }
+            String targetPath = lastSelectedArtifact.getOutputFilePath();
+            pushImageRunConfiguration.setTargetPath(targetPath);
+            pushImageRunConfiguration.setTargetName(Paths.get(targetPath).getFileName().toString());
         } else {
             MavenProject mavenProject = (MavenProject) cbMavenProject.getSelectedItem();
             if (mavenProject != null) {
