@@ -7,4 +7,6 @@ public interface WebAppPropertyMvpView extends MvpView {
     public void onLoadWebAppProperty();
 
     public void showProperty(WebAppProperty property);
+
+    public void updatePropertyCallback(boolean isSuccess);
 }

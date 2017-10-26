@@ -23,6 +23,14 @@
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
@@ -36,14 +44,6 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.utils.WebAppUtils;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 public class AzureWebAppMvpModel {
 
@@ -250,6 +250,12 @@ public class AzureWebAppMvpModel {
         }
         startWebApp(sid, webAppId);
         return app;
+    }
+
+    public void updateWebAppSettings(String sid, String webAppId, Map<String, String> appSettings) throws Exception {
+        WebApp app = getWebAppById(sid, webAppId);
+        clearTags(app);
+        app.update().withAppSettings(appSettings).apply();
     }
 
     public void deleteWebAppOnLinux(String sid, String appid) throws IOException {
