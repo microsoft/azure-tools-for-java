@@ -169,7 +169,7 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
         txtTagName = new Text(composite, SWT.BORDER);
         txtTagName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         setTitle("Run on Docker Host");
-        setMessage("TBD"); // TOOD
+        setMessage(""); // TOOD: specify the message.
 
         reset();
         return area;

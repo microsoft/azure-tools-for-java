@@ -35,7 +35,7 @@ public class Constant {
             + " correctly set:\nDOCKER_HOST (default value: localhost:2375)\nDOCKER_CERT_PATH ";
     public static final String MESSAGE_DOCKERFILE_CREATED = "Docker file created at: %s";
     public static final String MESSAGE_CONFIRM_STOP_CONTAINER = "Running container detected. We will stop and remove "
-            + "it.\n Continue?";
+            + "it.\n Would you like to continue?";
     public static final String MESSAGE_DOCKER_CONNECTING = "Connecting to docker daemon ... ";
     public static final String ERROR_CREATING_DOCKERFILE = "Error occurred in generating Dockerfile, "
             + "with exception:\n%s";
