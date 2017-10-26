@@ -96,8 +96,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private static final String DEFAULT_PLAN_NAME = "appsp-";
     private static final String DEFAULT_RGP_NAME = "rg-webapp-";
     private static final String WEB_CONFIG_URL_FORMAT = "https://%s/dev/wwwroot/web.config";
-    private static final String JAR_FILE_DEPLOY_HINT = "Please check the web.config file used to deploy this JAR " +
-            "executable.";
+    private static final String NON_WAR_FILE_DEPLOY_HINT = "Please check the web.config file used to deploy this" +
+            " non-WAR executable.";
     // presenter
     private final WebAppDeployViewPresenter<WebAppSettingPanel> webAppDeployViewPresenter;
     private final Project project;
@@ -333,7 +333,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         javaDecorator.setContentComponent(pnlJava);
         javaDecorator.setOn(true);
 
-        lblJarDeployHint.setHyperlinkText(JAR_FILE_DEPLOY_HINT);
+        lblJarDeployHint.setHyperlinkText(NON_WAR_FILE_DEPLOY_HINT);
     }
 
     /**
