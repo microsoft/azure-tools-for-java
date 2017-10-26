@@ -22,6 +22,8 @@
 
 package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
+import icons.MavenIcons;
+
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -55,6 +57,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOn
 
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
+import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.awt.event.ItemEvent;
 import java.nio.file.Path;
@@ -137,6 +140,9 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private JPanel pnlAcrHolder;
     private JPanel pnlWebAppHolder;
     private ContainerSettingPanel containerSettingPanel;
+    private JPanel pnlMavenProject;
+    private JLabel lblMavenProject;
+    private JComboBox<MavenProject> cbMavenProject;
     private Artifact lastSelectedArtifact;
     private boolean isCbArtifactInited;
 
@@ -247,6 +253,25 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 if (artifact != null) {
                     setIcon(artifact.getArtifactType().getIcon());
                     setText(artifact.getName());
+                }
+            }
+        });
+
+        cbMavenProject.addActionListener(e -> {
+            MavenProject selectedMavenProject = (MavenProject) cbMavenProject.getSelectedItem();
+            if (selectedMavenProject != null) {
+                containerSettingPanel.setDockerPath(
+                        DockerUtil.getDefaultDockerFilePathIfExist(selectedMavenProject.getDirectory())
+                );
+            }
+        });
+
+        cbMavenProject.setRenderer(new ListCellRendererWrapper<MavenProject>() {
+            @Override
+            public void customize(JList jList, MavenProject mavenProject, int i, boolean b, boolean b1) {
+                if (mavenProject != null) {
+                    setIcon(MavenIcons.MavenProject);
+                    setText(mavenProject.toString());
                 }
             }
         });
@@ -374,7 +399,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                         + MavenConstants.TYPE_WAR);
             }
         } else {
-            MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
+            MavenProject mavenProject = (MavenProject) cbMavenProject.getSelectedItem();
             if (mavenProject != null) {
                 webAppOnLinuxDeployConfiguration.setTargetPath(MavenRunTaskUtil.getTargetPath(mavenProject));
                 webAppOnLinuxDeployConfiguration.setTargetName(MavenRunTaskUtil.getTargetName(mavenProject));
@@ -476,6 +501,21 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         isCbArtifactInited = true;
     }
 
+    @SuppressWarnings("Duplicates")
+    private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetPath) {
+        cbMavenProject.removeAllItems();
+        if (null != mvnprjs) {
+            for (MavenProject prj : mvnprjs) {
+                cbMavenProject.addItem(prj);
+                if (MavenRunTaskUtil.getTargetPath(prj).equals(targetPath)) {
+                    cbMavenProject.setSelectedItem(prj);
+                }
+            }
+        }
+        cbMavenProject.setVisible(true);
+        lblMavenProject.setVisible(true);
+    }
+
     /**
      * Function triggered in constructing the panel.
      *
@@ -485,13 +525,16 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         if (!MavenRunTaskUtil.isMavenProject(project)) {
             List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
             setupArtifactCombo(artifacts, conf.getTargetPath());
+        } else {
+            List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
+            setupMavenProjectCombo(mavenProjects, conf.getTargetPath());
         }
 
-        if (Utils.isEmptyString(conf.getDockerFilePath())) {
-            containerSettingPanel.setDockerPath(DockerUtil.getDefaultDockerFilePathIfExist(project.getBasePath())); //TODO: module
-        } else {
+        // load dockerFile path from existing configuration.
+        if (!Utils.isEmptyString(conf.getDockerFilePath())) {
             containerSettingPanel.setDockerPath(conf.getDockerFilePath());
         }
+
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
         containerSettingPanel.setTxtFields(acrInfo);
 
