@@ -173,28 +173,19 @@ public class DockerUtil {
     }
 
     /**
-     * check if the default docker file exists (in project base path).
+     * check if the default docker file exists
      * If yes, return the path as a String.
      * Else return an empty String.
      */
-    public static String getDefaultDockerFilePathIfExist(Project project) {
-        String basePath = project.getBasePath();
-        if (!Utils.isEmptyString(basePath)) {
-            Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_NAME);
-            if (targetDockerfile != null && targetDockerfile.toFile().exists()) {
-                return targetDockerfile.toString();
-            }
-        }
-        return "";
-    }
-
     public static String getDefaultDockerFilePathIfExist(String basePath) {
-        if (!Utils.isEmptyString(basePath)) {
-            Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_NAME);
-            if (targetDockerfile != null && targetDockerfile.toFile().exists()) {
-                return targetDockerfile.toString();
+        try{
+            if (!Utils.isEmptyString(basePath)) {
+                Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_NAME);
+                if (targetDockerfile != null && targetDockerfile.toFile().exists()) {
+                    return targetDockerfile.toString();
+                }
             }
-        }
+        } catch (RuntimeException ignored) {}
         return "";
     }
 }

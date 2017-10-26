@@ -488,7 +488,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         }
 
         if (Utils.isEmptyString(conf.getDockerFilePath())) {
-            containerSettingPanel.setDockerPath(DockerUtil.getDefaultDockerFilePathIfExist(project));
+            containerSettingPanel.setDockerPath(DockerUtil.getDefaultDockerFilePathIfExist(project.getBasePath())); //TODO: module
         } else {
             containerSettingPanel.setDockerPath(conf.getDockerFilePath());
         }

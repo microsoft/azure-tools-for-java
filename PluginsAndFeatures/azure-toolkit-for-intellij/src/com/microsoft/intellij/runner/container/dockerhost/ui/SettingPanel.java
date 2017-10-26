@@ -182,7 +182,7 @@ public class SettingPanel {
         comboTlsEnabled.setSelected(conf.isTlsEnabled());
         dockerCertPathTextField.setText(conf.getDockerCertPath());
         if (Utils.isEmptyString(conf.getDockerFilePath())) {
-            dockerFilePathTextField.setText(DockerUtil.getDefaultDockerFilePathIfExist(project));
+            dockerFilePathTextField.setText(DockerUtil.getDefaultDockerFilePathIfExist(project.getBasePath())); //TODO:module
         } else {
             dockerFilePathTextField.setText(conf.getDockerFilePath());
         }
