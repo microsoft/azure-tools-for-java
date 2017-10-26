@@ -134,13 +134,11 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         appSettingDecorator.setOn(true);
 
         btnDiscard.addActionListener(e -> {
-            editedAppSettings.clear();
+            updateMapStatus(editedAppSettings, cachedAppSettings);
             tableModel.getDataVector().removeAllElements();
-            for (String key : cachedAppSettings.keySet()) {
-                tableModel.addRow(new String[]{key, cachedAppSettings.get(key)});
+            for (String key : editedAppSettings.keySet()) {
+                tableModel.addRow(new String[]{key, editedAppSettings.get(key)});
             }
-            editedAppSettings.putAll(cachedAppSettings);
-            updateSaveAndDiscardBtnStatus();
         });
 
         btnSave.addActionListener(e -> {
@@ -307,7 +305,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
             }
         }
 
-        tableModel.getDataVector().clear();
+        tableModel.getDataVector().removeAllElements();
         cachedAppSettings.clear();
         Object appSettingsObj = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_APP_SETTING);
         if (appSettingsObj != null && appSettingsObj instanceof Map) {
@@ -317,6 +315,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
                 cachedAppSettings.put(key, appSettings.get(key));
             }
         }
+        updateMapStatus(editedAppSettings, cachedAppSettings);
         pnlOverview.revalidate();
     }
 
@@ -324,12 +323,16 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     public void updatePropertyCallback(boolean isSuccess) {
         setBtnEnableStatus(true);
         if (isSuccess) {
-            cachedAppSettings.clear();
-            cachedAppSettings.putAll(editedAppSettings);
-            updateSaveAndDiscardBtnStatus();
+            updateMapStatus(cachedAppSettings, editedAppSettings);
             nodificationGrp.createNotification("Property update successfully", NotificationType.INFORMATION)
                     .notify(null);
         }
+    }
+
+    private void updateMapStatus(Map<String, String> to, Map<String, String> from) {
+        to.clear();
+        to.putAll(from);
+        updateSaveAndDiscardBtnStatus();
     }
 
     private void setBtnEnableStatus(boolean enabled) {
