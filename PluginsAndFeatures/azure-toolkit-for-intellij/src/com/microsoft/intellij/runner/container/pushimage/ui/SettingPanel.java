@@ -22,6 +22,8 @@
 
 package com.microsoft.intellij.runner.container.pushimage.ui;
 
+import icons.MavenIcons;
+
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
@@ -90,7 +92,6 @@ public class SettingPanel {
                     }
                 }
                 lastSelectedArtifact = selectedArtifact;
-
             }
         });
 
@@ -110,6 +111,16 @@ public class SettingPanel {
                 containerSettingPanel.setDockerPath(
                         DockerUtil.getDefaultDockerFilePathIfExist(selectedMavenProject.getDirectory())
                 );
+            }
+        });
+
+        cbMavenProject.setRenderer(new ListCellRendererWrapper<MavenProject>() {
+            @Override
+            public void customize(JList jList, MavenProject mavenProject, int i, boolean b, boolean b1) {
+                if (mavenProject != null) {
+                    setIcon(MavenIcons.MavenProject);
+                    setText(mavenProject.toString());
+                }
             }
         });
 
@@ -222,12 +233,9 @@ public class SettingPanel {
 
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
         containerSettingPanel.setTxtFields(acrInfo);
-        if (Utils.isEmptyString(conf.getDockerFilePath())) {
-            MavenProject prj = (MavenProject) cbMavenProject.getSelectedItem();
-            if (prj != null) {
-                containerSettingPanel.setDockerPath(DockerUtil.getDefaultDockerFilePathIfExist(prj.getDirectory()));
-            }
-        } else {
+
+        // load dockerFile path from existing configuration.
+        if (!Utils.isEmptyString(conf.getDockerFilePath())) {
             containerSettingPanel.setDockerPath(conf.getDockerFilePath());
         }
         containerSettingPanel.onListRegistries();
