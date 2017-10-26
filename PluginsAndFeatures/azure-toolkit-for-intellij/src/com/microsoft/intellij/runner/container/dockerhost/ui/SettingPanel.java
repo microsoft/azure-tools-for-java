@@ -22,6 +22,8 @@
 
 package com.microsoft.intellij.runner.container.dockerhost.ui;
 
+import icons.MavenIcons;
+
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
@@ -43,6 +45,8 @@ import com.spotify.docker.client.exceptions.DockerCertificateException;
 
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
+import org.jetbrains.idea.maven.project.MavenProjectsManager;
+
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -80,6 +84,9 @@ public class SettingPanel {
     private JPanel rootPanel;
     private JPanel pnlDockerCertPath;
     private TextFieldWithBrowseButton dockerFilePathTextField;
+    private JPanel pnlMavenProject;
+    private JLabel lblMavenProject;
+    private JComboBox cbMavenProject;
 
     private Artifact lastSelectedArtifact;
     private boolean isCbArtifactInited;
@@ -143,6 +150,25 @@ public class SettingPanel {
             }
         });
 
+        cbMavenProject.addActionListener(e -> {
+            MavenProject selectedMavenProject = (MavenProject) cbMavenProject.getSelectedItem();
+            if (selectedMavenProject != null) {
+                dockerFilePathTextField.setText(
+                        DockerUtil.getDefaultDockerFilePathIfExist(selectedMavenProject.getDirectory())
+                );
+            }
+        });
+
+        cbMavenProject.setRenderer(new ListCellRendererWrapper<MavenProject>() {
+            @Override
+            public void customize(JList jList, MavenProject mavenProject, int i, boolean b, boolean b1) {
+                if (mavenProject != null) {
+                    setIcon(MavenIcons.MavenProject);
+                    setText(mavenProject.toString());
+                }
+            }
+        });
+
         telemetrySent = false;
     }
 
@@ -181,11 +207,6 @@ public class SettingPanel {
         textDockerHost.setText(conf.getDockerHost());
         comboTlsEnabled.setSelected(conf.isTlsEnabled());
         dockerCertPathTextField.setText(conf.getDockerCertPath());
-        if (Utils.isEmptyString(conf.getDockerFilePath())) {
-            dockerFilePathTextField.setText(DockerUtil.getDefaultDockerFilePathIfExist(project.getBasePath())); //TODO:module
-        } else {
-            dockerFilePathTextField.setText(conf.getDockerFilePath());
-        }
         textImageName.setText(conf.getImageName());
         textTagName.setText(conf.getTagName());
         updateComponentEnabledState();
@@ -193,6 +214,13 @@ public class SettingPanel {
         if (!MavenRunTaskUtil.isMavenProject(project)) {
             List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
             setupArtifactCombo(artifacts, conf.getDataModel().getTargetPath());
+        } else {
+            List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
+            setupMavenProjectCombo(mavenProjects, conf.getTargetPath());
+        }
+        // load dockerFile path from existing configuration.
+        if (!Utils.isEmptyString(conf.getDockerFilePath())) {
+            dockerFilePathTextField.setText(conf.getDockerFilePath());
         }
 
         // default value for new resources
@@ -212,6 +240,21 @@ public class SettingPanel {
             }
         }
         sendTelemetry(conf.getTargetName());
+    }
+
+    @SuppressWarnings("Duplicates")
+    private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetPath) {
+        cbMavenProject.removeAllItems();
+        if (null != mvnprjs) {
+            for (MavenProject prj : mvnprjs) {
+                cbMavenProject.addItem(prj);
+                if (MavenRunTaskUtil.getTargetPath(prj).equals(targetPath)) {
+                    cbMavenProject.setSelectedItem(prj);
+                }
+            }
+        }
+        cbMavenProject.setVisible(true);
+        lblMavenProject.setVisible(true);
     }
 
     /**
@@ -242,7 +285,7 @@ public class SettingPanel {
                 conf.setTargetName(lastSelectedArtifact.getName() + "." + MavenConstants.TYPE_WAR);
             }
         } else {
-            MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
+            MavenProject mavenProject = (MavenProject) cbMavenProject.getSelectedItem();
             if (mavenProject != null) {
                 conf.setTargetPath(MavenRunTaskUtil.getTargetPath(mavenProject));
                 conf.setTargetName(MavenRunTaskUtil.getTargetName(mavenProject));
