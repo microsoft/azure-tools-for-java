@@ -28,7 +28,9 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
@@ -45,26 +47,32 @@ import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 
 public class AddDockerSupportAction extends AzureAnAction {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private static final String NOTIFICATION_TITLE = "Add Docker Support";
-    private Project project;
+    private Module module;
+    String pomXmlBasePath;
 
     @Override
     public void onActionPerformed(AnActionEvent anActionEvent) {
-        project = DataKeys.PROJECT.getData(anActionEvent.getDataContext());
-        if (project == null || project.getBasePath() == null) {
+        module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
+        if (module == null) {
             notifyError(Constant.ERROR_NO_SELECTED_PROJECT);
             return;
         }
+        pomXmlBasePath = Paths.get(module.getModuleFilePath()).getParent().toString();
         String artifactRelativePath = Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER;
         String dockerFileContent = Constant.DOCKERFILE_CONTENT_TOMCAT;
-        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getRootProjects();
-        if (mavenProjects.size() > 0) {
-            MavenProject mvnPrj = mavenProjects.get(0); // TODO: be more elegant
+        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(module.getProject()).getProjects();
+        Optional<MavenProject> res = mavenProjects.stream().filter(mvnprj ->
+                Comparing.equal(Paths.get(mvnprj.getDirectory()).normalize(), Paths.get(pomXmlBasePath).normalize())
+        ).findFirst();
+        if (res.isPresent()) {
+            MavenProject mvnPrj = res.get();
             String artifactName = mvnPrj.getFinalName() + "." + mvnPrj.getPackaging();
-            artifactRelativePath = Paths.get(project.getBasePath()).toUri()
+            artifactRelativePath = Paths.get(pomXmlBasePath).toUri()
                     .relativize(Paths.get(mvnPrj.getBuildDirectory(), artifactName).toUri())
                     .getPath();
             // pre-define dockerfile content according to artifact type
@@ -78,14 +86,14 @@ public class AddDockerSupportAction extends AzureAnAction {
         }
         try {
             // create docker file
-            DockerUtil.createDockerFile(project.getBasePath(), Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME,
+            DockerUtil.createDockerFile(pomXmlBasePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME,
                     String.format(dockerFileContent, artifactRelativePath));
             VirtualFileManager.getInstance().asyncRefresh(() -> {
                         VirtualFile virtualDockerFile = LocalFileSystem.getInstance().findFileByPath(Paths.get(
-                                project.getBasePath(), Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME
+                                pomXmlBasePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME
                         ).toString());
                         if (virtualDockerFile != null) {
-                            new OpenFileDescriptor(project, virtualDockerFile).navigate(true);
+                            new OpenFileDescriptor(module.getProject(), virtualDockerFile).navigate(true);
                         }
                     }
             );
@@ -114,10 +122,10 @@ public class AddDockerSupportAction extends AzureAnAction {
 
     @Override
     public void update(AnActionEvent event) {
-        project = DataKeys.PROJECT.getData(event.getDataContext());
+        module = DataKeys.MODULE.getData(event.getDataContext());
         boolean dockerFileExists = false;
-        if (project != null) {
-            String basePath = project.getBasePath();
+        if (module != null) {
+            String basePath = Paths.get(module.getModuleFilePath()).getParent().toString();
             dockerFileExists = basePath != null && Paths.get(basePath, Constant.DOCKERFILE_FOLDER,
                     Constant.DOCKERFILE_NAME).toFile().exists();
         }
