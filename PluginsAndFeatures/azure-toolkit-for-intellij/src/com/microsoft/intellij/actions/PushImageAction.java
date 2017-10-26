@@ -57,7 +57,6 @@ public class PushImageAction extends AzureAnAction {
             notifyError(Constant.ERROR_NO_SELECTED_PROJECT);
             return;
         }
-        Project project = module.getProject();
         ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
     }
 
