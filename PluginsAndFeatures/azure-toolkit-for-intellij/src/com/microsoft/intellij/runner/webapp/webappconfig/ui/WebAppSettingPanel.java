@@ -376,8 +376,9 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     }
 
     /**
-     * Shared implementation of
-     * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#resetEditorFrom(Object)}.
+     * Function triggered in constructing the panel.
+     *
+     * @param webAppConfiguration configuration instance
      */
     public void reset(@NotNull WebAppConfiguration webAppConfiguration) {
         if (!MavenRunTaskUtil.isMavenProject(project)) {
@@ -433,8 +434,9 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     }
 
     /**
-     * Shared implementation of
-     * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#applyEditorTo(Object)}.
+     * Function triggered by any content change events.
+     *
+     * @param webAppConfiguration configuration instance
      */
     public void apply(@NotNull WebAppConfiguration webAppConfiguration) {
         // Get output file full path and file name

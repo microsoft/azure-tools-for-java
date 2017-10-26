@@ -203,6 +203,7 @@ public class SettingPanel {
         isCbArtifactInited = true;
     }
 
+    @SuppressWarnings("Duplicates")
     private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetPath) {
         cbMavenProject.removeAllItems();
         if (null != mvnprjs) {
