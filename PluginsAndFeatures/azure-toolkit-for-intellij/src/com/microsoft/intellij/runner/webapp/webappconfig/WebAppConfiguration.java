@@ -70,9 +70,8 @@ public class WebAppConfiguration extends RunConfigurationBase {
     private final WebAppSettingModel webAppSettingModel;
     private boolean firstTimeCreated = true;
 
-    public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory) {
-        super(project, factory, String.format("%s:%s", WebAppConfigurationType.getInstance().getDisplayName(),
-                project.getName()));
+    public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
+        super(project, factory, name);
         webAppSettingModel = new WebAppSettingModel();
     }
 

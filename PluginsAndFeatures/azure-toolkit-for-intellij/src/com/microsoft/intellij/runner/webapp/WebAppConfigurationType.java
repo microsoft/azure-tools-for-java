@@ -66,4 +66,8 @@ public class WebAppConfigurationType implements ConfigurationType {
     public ConfigurationFactory[] getConfigurationFactories() {
         return new ConfigurationFactory[]{new WebAppConfigurationFactory(this)};
     }
+
+    public WebAppConfigurationFactory getWebAppConfigurationFactory() {
+        return new WebAppConfigurationFactory(this);
+    }
 }

@@ -22,6 +22,8 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig.ui;
 
+import icons.MavenIcons;
+
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -54,6 +56,7 @@ import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
+import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -145,6 +148,10 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JPanel pnlJava;
     private JLabel lblWebContainer;
     private HyperlinkLabel lblJarDeployHint;
+    private JPanel pnlArtifact;
+    private JPanel pnlMavenProject;
+    private JLabel lblMavenProject;
+    private JComboBox<MavenProject> cbMavenProject;
     private JBTable table;
     private AnActionButton btnRefresh;
 
@@ -273,6 +280,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             }
         });
 
+        // Artifact
         cbArtifact.addActionListener(e -> {
             final Artifact selectArtifact = (Artifact) cbArtifact.getSelectedItem();
             if (!Comparing.equal(lastSelectedArtifact, selectArtifact)) {
@@ -296,6 +304,16 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                 if (artifact != null) {
                     setIcon(artifact.getArtifactType().getIcon());
                     setText(artifact.getName());
+                }
+            }
+        });
+
+        cbMavenProject.setRenderer(new ListCellRendererWrapper<MavenProject>() {
+            @Override
+            public void customize(JList jList, MavenProject mavenProject, int i, boolean b, boolean b1) {
+                if (mavenProject != null) {
+                    setIcon(MavenIcons.MavenProject);
+                    setText(mavenProject.toString());
                 }
             }
         });
@@ -342,15 +360,34 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         return pnlRoot;
     }
 
+    @SuppressWarnings("Duplicates")
+    private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetPath) {
+        cbMavenProject.removeAllItems();
+        if (null != mvnprjs) {
+            for (MavenProject prj : mvnprjs) {
+                cbMavenProject.addItem(prj);
+                if (MavenRunTaskUtil.getTargetPath(prj).equals(targetPath)) {
+                    cbMavenProject.setSelectedItem(prj);
+                }
+            }
+        }
+        cbMavenProject.setVisible(true);
+        lblMavenProject.setVisible(true);
+    }
+
     /**
      * Shared implementation of
      * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#resetEditorFrom(Object)}.
      */
-    public void resetEditorFrom(@NotNull WebAppConfiguration webAppConfiguration) {
+    public void reset(@NotNull WebAppConfiguration webAppConfiguration) {
         if (!MavenRunTaskUtil.isMavenProject(project)) {
             List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
             setupArtifactCombo(artifacts);
+        } else {
+            List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
+            setupMavenProjectCombo(mavenProjects, webAppConfiguration.getTargetPath());
         }
+
         // Default values
         DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
         String date = df.format(new Date());
@@ -399,7 +436,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
      * Shared implementation of
      * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#applyEditorTo(Object)}.
      */
-    public void applyEditorTo(@NotNull WebAppConfiguration webAppConfiguration) {
+    public void apply(@NotNull WebAppConfiguration webAppConfiguration) {
         // Get output file full path and file name
         if (isArtifact && lastSelectedArtifact != null) {
             webAppConfiguration.setTargetPath(lastSelectedArtifact.getOutputFilePath());
@@ -411,7 +448,7 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
                         + "." + lastSelectedArtifact.getArtifactType().getId());
             }
         } else {
-            MavenProject mavenProject = MavenRunTaskUtil.getMavenProject(project);
+            MavenProject mavenProject = (MavenProject) cbMavenProject.getSelectedItem();
             if (mavenProject != null) {
                 webAppConfiguration.setTargetPath(MavenRunTaskUtil.getTargetPath(mavenProject));
                 webAppConfiguration.setTargetName(MavenRunTaskUtil.getTargetName(mavenProject));

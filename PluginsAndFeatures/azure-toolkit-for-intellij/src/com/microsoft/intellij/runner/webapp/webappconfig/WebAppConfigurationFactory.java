@@ -29,6 +29,7 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 public class WebAppConfigurationFactory extends ConfigurationFactory {
+    private static final String FACTORY_NAME = "Azure Web App";
 
     public WebAppConfigurationFactory(@NotNull ConfigurationType type) {
         super(type);
@@ -37,11 +38,16 @@ public class WebAppConfigurationFactory extends ConfigurationFactory {
     @NotNull
     @Override
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-        return new WebAppConfiguration(project, this);
+        return new WebAppConfiguration(project, this, project.getName());
     }
 
     @Override
     public RunConfiguration createConfiguration(String name, RunConfiguration template) {
-        return new WebAppConfiguration(template.getProject(), this);
+        return new WebAppConfiguration(template.getProject(), this, name);
+    }
+
+    @Override
+    public String getName() {
+        return FACTORY_NAME;
     }
 }

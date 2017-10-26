@@ -58,12 +58,12 @@ public class WebAppSettingEditor extends SettingsEditor<WebAppConfiguration> {
             }
         }
         webAppConfiguration.setFirstTimeCreated(false);
-        mainPanel.resetEditorFrom(webAppConfiguration);
+        mainPanel.reset(webAppConfiguration);
     }
 
     @Override
     protected void applyEditorTo(@NotNull WebAppConfiguration webAppConfiguration) throws ConfigurationException {
-        mainPanel.applyEditorTo(webAppConfiguration);
+        mainPanel.apply(webAppConfiguration);
         webAppConfiguration.validate();
     }
 
