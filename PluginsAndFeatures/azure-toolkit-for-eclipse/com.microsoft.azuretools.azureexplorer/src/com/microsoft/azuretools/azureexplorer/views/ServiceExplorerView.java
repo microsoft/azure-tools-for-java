@@ -328,7 +328,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                     if (node.hasNodeActions()) {
                         for (final NodeAction nodeAction : node.getNodeActions()) {
                             // TODO: remove this after web app property in Eclipse is finished
-                            if (node instanceof WebAppNode && "Show properties".equals(nodeAction.getName())) {
+                            if (node instanceof WebAppNode && "Show Properties".equals(nodeAction.getName())) {
                                 continue;
                             }
                             ImageDescriptor imageDescriptor = nodeAction.getIconPath() != null ? Activator.getImageDescriptor("icons/" + nodeAction.getIconPath()) : null;

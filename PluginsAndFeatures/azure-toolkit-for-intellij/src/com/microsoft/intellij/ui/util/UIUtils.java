@@ -25,11 +25,16 @@ package com.microsoft.intellij.ui.util;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.StatusBar;
 import com.intellij.util.Consumer;
+
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -135,5 +140,16 @@ public class UIUtils {
         public String toString() {
             return key;
         }
+    }
+
+    /**
+     * Show a balloon styled notification at the bottom of the IDE.
+     */
+    public static void showNotification(@NotNull StatusBar statusBar, String message, MessageType type) {
+        JBPopupFactory.getInstance()
+                .createHtmlTextBalloonBuilder(message, type, null /*hyperlinkListener*/)
+                .setFadeoutTime(10 * 1000) // fade out after 10 seconds
+                .createBalloon()
+                .showInCenterOf(statusBar.getComponent());
     }
 }

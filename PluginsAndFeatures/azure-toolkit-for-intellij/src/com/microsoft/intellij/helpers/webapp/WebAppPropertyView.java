@@ -43,7 +43,6 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
@@ -56,6 +55,7 @@ import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
 import com.microsoft.intellij.helpers.base.BaseEditor;
+import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
 
@@ -348,25 +348,17 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         setBtnEnableStatus(true);
         if (isSuccess) {
             updateMapStatus(cachedAppSettings, editedAppSettings);
-            showNotification(NOTIFY_PROPERTY_UPDATE_SUCCESS, MessageType.INFO);
+            UIUtils.showNotification(statusBar, NOTIFY_PROPERTY_UPDATE_SUCCESS, MessageType.INFO);
         }
     }
 
     @Override
     public void showGetPublishingProfileResult(boolean isSuccess) {
         if (isSuccess) {
-            showNotification(NOTIFY_PROFILE_GET_SUCCESS, MessageType.INFO);
+            UIUtils.showNotification(statusBar, NOTIFY_PROFILE_GET_SUCCESS, MessageType.INFO);
         } else {
-            showNotification(NOTIFY_PROFILE_GET_FAIL, MessageType.ERROR);
+            UIUtils.showNotification(statusBar, NOTIFY_PROFILE_GET_FAIL, MessageType.ERROR);
         }
-    }
-
-    private void showNotification(String message, MessageType type) {
-        JBPopupFactory.getInstance()
-                .createHtmlTextBalloonBuilder(message, type, null /*hyperlinkListener*/)
-                .setFadeoutTime(10 * 1000) // fade out after 10 seconds
-                .createBalloon()
-                .showInCenterOf(statusBar.getComponent());
     }
 
     private void updateMapStatus(Map<String, String> to, Map<String, String> from) {

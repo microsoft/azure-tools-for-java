@@ -24,22 +24,22 @@ package com.microsoft.intellij.helpers.containerregistry;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.util.Comparing;
+import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.management.containerregistry.Registry;
-import com.microsoft.azure.management.containerregistry.RegistryPassword;
-import com.microsoft.azure.management.containerregistry.implementation.RegistryListCredentials;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
@@ -48,11 +48,13 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
+import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyViewPresenter;
 
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,6 +69,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -79,6 +82,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     public static final String ID = ContainerRegistryPropertyView.class.getName();
     private static final String INSIGHT_NAME = "AzurePlugin.IntelliJ.Editor.ContainerRegistryExplorer";
     private final ContainerRegistryPropertyViewPresenter<ContainerRegistryPropertyView> containerPropertyPresenter;
+    private final StatusBar statusBar;
 
     private static final String REFRESH = "Refresh";
     private static final String PREVIOUS_PAGE = "Previous page";
@@ -134,9 +138,10 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     /**
      * Constructor of ACR property view.
      */
-    public ContainerRegistryPropertyView() {
+    public ContainerRegistryPropertyView(@NotNull Project project) {
         this.containerPropertyPresenter = new ContainerRegistryPropertyViewPresenter<>();
         this.containerPropertyPresenter.onAttachView(this);
+        statusBar = WindowManager.getInstance().getStatusBar(project);
 
         disableTxtBoard();
         makeTxtOpaque();
@@ -497,14 +502,10 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
                     DockerUtil.pullImage(docker, registry.loginServerUrl(), setting.getUsername(),
                             setting.getPassword(), fullImageTagName);
                     String message = String.format(IMAGE_PULL_SUCCESS, fullImageTagName);
-                    Notification notification = new Notification(DISPLAY_ID, PULL_IMAGE, message,
-                            NotificationType.INFORMATION);
-                    Notifications.Bus.notify(notification);
+                    UIUtils.showNotification(statusBar, message, MessageType.INFO);
                     sendTelemetry(true, subscriptionId, null);
                 } catch (Exception e) {
-                    Notification notification = new Notification(DISPLAY_ID, PULL_IMAGE,
-                            e.getMessage(), NotificationType.ERROR);
-                    Notifications.Bus.notify(notification);
+                    UIUtils.showNotification(statusBar, e.getMessage(), MessageType.ERROR);
                     sendTelemetry(false, subscriptionId, e.getMessage());
                 }
             }

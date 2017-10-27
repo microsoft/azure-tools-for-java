@@ -22,6 +22,9 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
@@ -32,9 +35,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class RedisCacheNode extends Node implements TelemetryProperties {
 
@@ -52,8 +52,8 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
 
     // action names
     private static final String DELETE_ACTION = "Delete";
-    private static final String SHOW_PROPERTY_ACTION = "Show properties";
-    private static final String OPEN_IN_BROWSER_ACTION = "Open in browser";
+    private static final String SHOW_PROPERTY_ACTION = "Show Properties";
+    private static final String OPEN_IN_BROWSER_ACTION = "Open in Browser";
     private static final String OPEN_EXPLORER = "Open Redis Explorer";
 
     // string format
