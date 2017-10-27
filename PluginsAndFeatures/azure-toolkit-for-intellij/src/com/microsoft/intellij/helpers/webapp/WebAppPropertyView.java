@@ -37,11 +37,9 @@ import javax.swing.table.DefaultTableModel;
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationDisplayType;
 import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.util.Comparing;
@@ -65,7 +63,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     private final String resId;
     private Map<String, String> cachedAppSettings;
     private Map<String, String> editedAppSettings;
-    private final NotificationGroup nodificationGrp;
+    private final NotificationGroup notificationGrp;
 
     private static final String PNL_OVERVIEW = "Overview";
     private static final String PNL_APP_SETTING = "App Settings";
@@ -117,7 +115,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         this.resId = resId;
         cachedAppSettings = new HashMap<>();
         editedAppSettings = new HashMap<>();
-        nodificationGrp = new NotificationGroup("Azure Plugin", NotificationDisplayType.BALLOON, true);
+        notificationGrp = new NotificationGroup("Azure Plugin", NotificationDisplayType.BALLOON, true);
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.presenter = new WebAppPropertyViewPresenter<>();
         this.presenter.onAttachView(this);
@@ -317,6 +315,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         }
         updateMapStatus(editedAppSettings, cachedAppSettings);
         pnlOverview.revalidate();
+        pnlAppSettings.revalidate();
     }
 
     @Override
@@ -324,7 +323,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         setBtnEnableStatus(true);
         if (isSuccess) {
             updateMapStatus(cachedAppSettings, editedAppSettings);
-            nodificationGrp.createNotification("Property update successfully", NotificationType.INFORMATION)
+            notificationGrp.createNotification("Property update successfully", NotificationType.INFORMATION)
                     .notify(null);
         }
     }
