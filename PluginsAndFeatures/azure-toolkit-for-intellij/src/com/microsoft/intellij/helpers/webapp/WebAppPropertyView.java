@@ -42,7 +42,10 @@ import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.util.Comparing;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
@@ -61,8 +64,8 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     private final WebAppPropertyViewPresenter<WebAppPropertyView> presenter;
     private final String sid;
     private final String resId;
-    private Map<String, String> cachedAppSettings;
-    private Map<String, String> editedAppSettings;
+    private final Map<String, String> cachedAppSettings;
+    private final Map<String, String> editedAppSettings;
     private final NotificationGroup notificationGrp;
 
     private static final String PNL_OVERVIEW = "Overview";
@@ -130,6 +133,22 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
                 false /*adjustWindow*/);
         appSettingDecorator.setContentComponent(pnlAppSettings);
         appSettingDecorator.setOn(true);
+
+        btnGetPublishFile.addActionListener(e -> {
+            FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(
+                    false /*chooseFiles*/,
+                    true /*chooseFolders*/,
+                    false /*chooseJars*/,
+                    false /*chooseJarsAsFiles*/,
+                    false /*chooseJarContents*/,
+                    false /*chooseMultiple*/
+            );
+            fileChooserDescriptor.setTitle("Choose Where You Want to Save the Publishing Profile.");
+            final VirtualFile file = FileChooser.chooseFile(fileChooserDescriptor, null, null);
+            if (file != null) {
+                presenter.onGetPublishingProfileXmlWithSecrets(sid, resId, file.getPath());
+            }
+        });
 
         btnDiscard.addActionListener(e -> {
             updateMapStatus(editedAppSettings, cachedAppSettings);
@@ -319,11 +338,22 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     }
 
     @Override
-    public void updatePropertyCallback(boolean isSuccess) {
+    public void showPropertyUpdateResult(boolean isSuccess) {
         setBtnEnableStatus(true);
         if (isSuccess) {
             updateMapStatus(cachedAppSettings, editedAppSettings);
-            notificationGrp.createNotification("Property update successfully", NotificationType.INFORMATION)
+            notificationGrp.createNotification("Property update successfully.", NotificationType.INFORMATION)
+                    .notify(null);
+        }
+    }
+
+    @Override
+    public void showGetPublishingProfileResult(boolean isSuccess) {
+        if (isSuccess) {
+            notificationGrp.createNotification("Get Publishing Profile successfully.", NotificationType.INFORMATION)
+                    .notify(null);
+        } else {
+            notificationGrp.createNotification("Failed to get Publishing Profile.", NotificationType.ERROR)
                     .notify(null);
         }
     }

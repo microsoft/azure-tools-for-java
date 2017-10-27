@@ -8,5 +8,7 @@ public interface WebAppPropertyMvpView extends MvpView {
 
     public void showProperty(WebAppProperty property);
 
-    public void updatePropertyCallback(boolean isSuccess);
+    public void showPropertyUpdateResult(boolean isSuccess);
+
+    public void showGetPublishingProfileResult(boolean isSuccess);
 }

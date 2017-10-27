@@ -23,7 +23,12 @@
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +42,7 @@ import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebContainer;
+import com.microsoft.azure.management.appservice.implementation.CsmPublishingProfileOptionsInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -388,6 +394,36 @@ public class AzureWebAppMvpModel {
             ret.addAll(wal);
         }
         return ret;
+    }
+
+    public boolean getPublishingProfileXmlWithSecrets(String sid, String webAppId, String filePath) throws Exception {
+        WebApp app = getWebAppById(sid ,webAppId);
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        try {
+            inputStream = app.manager().inner().webApps()
+                    .listPublishingProfileXmlWithSecrets(app.resourceGroupName(), app.name(), new CsmPublishingProfileOptionsInner());
+            File file = new File(Paths.get(filePath, app.name() + "_" + System.currentTimeMillis() + ".PublishSettings").toString());
+            file.createNewFile();
+            outputStream = new FileOutputStream(file);
+            byte[] buffer = new byte[1024];
+            int read = 0;
+            while ((read = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, read);
+            }
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            if (outputStream != null) {
+                outputStream.flush();
+                outputStream.close();
+            }
+        }
     }
 
     public void cleanWebApps() {
