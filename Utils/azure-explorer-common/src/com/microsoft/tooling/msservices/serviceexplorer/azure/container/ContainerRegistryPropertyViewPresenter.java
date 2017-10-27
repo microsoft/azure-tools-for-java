@@ -22,6 +22,11 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
 import com.google.gson.Gson;
 import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azure.management.containerregistry.RegistryPassword;
@@ -33,14 +38,10 @@ import com.microsoft.azuretools.core.mvp.model.container.ContainerExplorerMvpMod
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.Catalog;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.Tag;
+import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
 
 import okhttp3.HttpUrl;
 import rx.Observable;
@@ -58,7 +59,6 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
     private static final String PAGE_SIZE = "30";
     private static final String KEY_LAST = "last";
     private static final String KEY_PAGE_SIZE = "n";
-    private static final String CANNOT_GET_REGISTRY_CREDENTIALS = "Cannot get Registry Credentials";
     private static final String HEADER_LINK = "link";
     private static final String FAKE_URL = "http://a";
     private final Stack<String> repoStack = new Stack<>();
@@ -138,18 +138,11 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
         resetTagStack();
         Observable.fromCallable(() -> {
             Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
-            final RegistryListCredentials credentials = registry.listCredentials();
-            if (credentials == null) {
-                throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
-            }
-            String username = credentials.username();
-            final List<RegistryPassword> passwords = credentials.passwords();
-            if (Utils.isEmptyString(username) || passwords == null || passwords.size() == 0) {
-                throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
-            }
+            PrivateRegistryImageSetting setting = ContainerRegistryMvpModel.getInstance()
+                    .createImageSettingWithRegistry(registry);
             Map<String, String> query = buildQueryMap(isNextPage, repoStack, nextRepo);
             Map<String, String> responseMap = ContainerExplorerMvpModel.getInstance().listRepositories(registry
-                    .loginServerUrl(), username, passwords.get(0).value(), query);
+                    .loginServerUrl(), setting.getUsername(), setting.getPassword(), query);
             updatePaginationInfo(isNextPage, Type.REPO, responseMap.get(HEADER_LINK));
             Gson gson = new Gson();
             Catalog catalog = gson.fromJson(responseMap.get(BODY), Catalog.class);
@@ -174,18 +167,11 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
         resetTagStack();
         Observable.fromCallable(() -> {
             Registry registry = ContainerRegistryMvpModel.getInstance().getContainerRegistry(sid, id);
-            final RegistryListCredentials credentials = registry.listCredentials();
-            if (credentials == null) {
-                throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
-            }
-            String username = credentials.username();
-            final List<RegistryPassword> passwords = credentials.passwords();
-            if (Utils.isEmptyString(username) || passwords == null || passwords.size() == 0) {
-                throw new Exception(CANNOT_GET_REGISTRY_CREDENTIALS);
-            }
+            PrivateRegistryImageSetting setting = ContainerRegistryMvpModel.getInstance()
+                    .createImageSettingWithRegistry(registry);
             Map<String, String> query = buildQueryMap(isNextPage, tagStack, nextTag);
             Map<String, String> responseMap = ContainerExplorerMvpModel.getInstance().listTags(registry
-                    .loginServerUrl(), username, passwords.get(0).value(), repo, query);
+                    .loginServerUrl(), setting.getUsername(), setting.getPassword(), repo, query);
             updatePaginationInfo(isNextPage, Type.TAG, responseMap.get(HEADER_LINK));
             Gson gson = new Gson();
             Tag tag = gson.fromJson(responseMap.get(BODY), Tag.class);
