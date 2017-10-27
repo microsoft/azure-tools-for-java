@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
+
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
@@ -398,31 +400,17 @@ public class AzureWebAppMvpModel {
 
     public boolean getPublishingProfileXmlWithSecrets(String sid, String webAppId, String filePath) throws Exception {
         WebApp app = getWebAppById(sid ,webAppId);
-        InputStream inputStream = null;
-        OutputStream outputStream = null;
-        try {
-            inputStream = app.manager().inner().webApps()
-                    .listPublishingProfileXmlWithSecrets(app.resourceGroupName(), app.name(), new CsmPublishingProfileOptionsInner());
-            File file = new File(Paths.get(filePath, app.name() + "_" + System.currentTimeMillis() + ".PublishSettings").toString());
-            file.createNewFile();
-            outputStream = new FileOutputStream(file);
-            byte[] buffer = new byte[1024];
-            int read = 0;
-            while ((read = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, read);
-            }
+        File file = new File(Paths.get(filePath, app.name() + "_" + System.currentTimeMillis() + ".PublishSettings").toString());
+        file.createNewFile();
+        try (InputStream inputStream = app.manager().inner().webApps()
+                .listPublishingProfileXmlWithSecrets(app.resourceGroupName(), app.name(), new CsmPublishingProfileOptionsInner());
+                OutputStream outputStream = new FileOutputStream(file);
+        ) {
+            IOUtils.copy(inputStream, outputStream);
             return true;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
-        } finally {
-            if (inputStream != null) {
-                inputStream.close();
-            }
-            if (outputStream != null) {
-                outputStream.flush();
-                outputStream.close();
-            }
         }
     }
 

@@ -76,6 +76,10 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     private static final String TABLE_HEADER_VALUE = "Value";
     private static final String TABLE_HEADER_KEY = "Key";
     private static final String TXT_NA = "N/A";
+    private static final String FILE_SELECTOR_TITLE = "Choose Where You Want to Save the Publishing Profile.";
+    private static final String NOTIFY_PROPERTY_UPDATE_SUCCESS = "Property update successfully.";
+    private static final String NOTIFY_PROFILE_GET_SUCCESS = "Get Publishing Profile successfully.";
+    private static final String NOTIFY_PROFILE_GET_FAIL = "Failed to get Publishing Profile.";
 
     private JPanel pnlMain;
     private JButton btnGetPublishFile;
@@ -143,7 +147,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
                     false /*chooseJarContents*/,
                     false /*chooseMultiple*/
             );
-            fileChooserDescriptor.setTitle("Choose Where You Want to Save the Publishing Profile.");
+            fileChooserDescriptor.setTitle(FILE_SELECTOR_TITLE);
             final VirtualFile file = FileChooser.chooseFile(fileChooserDescriptor, null, null);
             if (file != null) {
                 presenter.onGetPublishingProfileXmlWithSecrets(sid, resId, file.getPath());
@@ -342,7 +346,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         setBtnEnableStatus(true);
         if (isSuccess) {
             updateMapStatus(cachedAppSettings, editedAppSettings);
-            notificationGrp.createNotification("Property update successfully.", NotificationType.INFORMATION)
+            notificationGrp.createNotification(NOTIFY_PROPERTY_UPDATE_SUCCESS, NotificationType.INFORMATION)
                     .notify(null);
         }
     }
@@ -350,10 +354,10 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     @Override
     public void showGetPublishingProfileResult(boolean isSuccess) {
         if (isSuccess) {
-            notificationGrp.createNotification("Get Publishing Profile successfully.", NotificationType.INFORMATION)
+            notificationGrp.createNotification(NOTIFY_PROFILE_GET_SUCCESS, NotificationType.INFORMATION)
                     .notify(null);
         } else {
-            notificationGrp.createNotification("Failed to get Publishing Profile.", NotificationType.ERROR)
+            notificationGrp.createNotification(NOTIFY_PROFILE_GET_FAIL, NotificationType.ERROR)
                     .notify(null);
         }
     }
