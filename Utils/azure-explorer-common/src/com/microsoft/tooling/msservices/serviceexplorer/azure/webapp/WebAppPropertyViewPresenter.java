@@ -50,7 +50,8 @@ public class WebAppPropertyViewPresenter<V extends WebAppPropertyMvpView> extend
                 }), e -> errorHandler(CANNOT_GET_WEB_APP_PROPERTY, (Exception) e));
     }
 
-    public void onUpdateWebAppProperty(@NotNull String sid, @NotNull String resId, @NotNull Map<String, String> appSettings) {
+    public void onUpdateWebAppProperty(@NotNull String sid, @NotNull String resId,
+            @NotNull Map<String, String> appSettings) {
         Observable.fromCallable(() -> {
             AzureWebAppMvpModel.getInstance().updateWebAppSettings(sid, resId, appSettings);
             return true;
@@ -59,14 +60,32 @@ public class WebAppPropertyViewPresenter<V extends WebAppPropertyMvpView> extend
                     if (isViewDetached()) {
                         return;
                     }
-                    getMvpView().updatePropertyCallback(true);
+                    getMvpView().showPropertyUpdateResult(true);
                 }), e -> {
                     errorHandler(CANNOT_GET_WEB_APP_PROPERTY, (Exception) e);
                     if (isViewDetached()) {
                         return;
                     }
-                    getMvpView().updatePropertyCallback(false);
+                    getMvpView().showPropertyUpdateResult(false);
                 });
+    }
+
+    public void onGetPublishingProfileXmlWithSecrets(@NotNull String sid, @NotNull String webAppId,
+            @NotNull String filePath) {
+        Observable.fromCallable(() -> {
+            return AzureWebAppMvpModel.getInstance().getPublishingProfileXmlWithSecrets(sid, webAppId, filePath);
+        }).subscribeOn(getSchedulerProvider().io()).subscribe(res -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+            if (isViewDetached()) {
+                return;
+            }
+            getMvpView().showGetPublishingProfileResult(res);
+        }), e -> {
+            errorHandler(CANNOT_GET_WEB_APP_PROPERTY, (Exception) e);
+            if (isViewDetached()) {
+                return;
+            }
+            getMvpView().showGetPublishingProfileResult(false);
+        });
     }
 
     private WebAppProperty generateProperty(WebApp app, AppServicePlan plan) {
