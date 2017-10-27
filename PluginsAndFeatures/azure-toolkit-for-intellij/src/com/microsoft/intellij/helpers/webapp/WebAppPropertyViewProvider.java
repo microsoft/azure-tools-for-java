@@ -45,7 +45,7 @@ public class WebAppPropertyViewProvider implements FileEditorProvider {
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         String sid = virtualFile.getUserData(UIHelperImpl.SUBSCRIPTION_ID);
         String id = virtualFile.getUserData(UIHelperImpl.RESOURCE_ID);
-        return WebAppPropertyView.create(sid, id);
+        return WebAppPropertyView.create(project, sid, id);
     }
 
     @NotNull

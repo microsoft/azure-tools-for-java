@@ -37,15 +37,17 @@ import javax.swing.table.DefaultTableModel;
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.notification.NotificationDisplayType;
-import com.intellij.notification.NotificationGroup;
-import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.MessageType;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
@@ -66,7 +68,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     private final String resId;
     private final Map<String, String> cachedAppSettings;
     private final Map<String, String> editedAppSettings;
-    private final NotificationGroup notificationGrp;
+    private final StatusBar statusBar;
 
     private static final String PNL_OVERVIEW = "Overview";
     private static final String PNL_APP_SETTING = "App Settings";
@@ -111,18 +113,18 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     /**
      * Initialize the Web App Property View and return it.
      */
-    public static WebAppPropertyView create(@NotNull String sid, @NotNull String resId) {
-        WebAppPropertyView view = new WebAppPropertyView(sid, resId);
+    public static WebAppPropertyView create(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
+        WebAppPropertyView view = new WebAppPropertyView(project, sid, resId);
         view.onLoadWebAppProperty();
         return view;
     }
 
-    private WebAppPropertyView(@NotNull String sid, @NotNull String resId) {
+    private WebAppPropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
         this.sid = sid;
         this.resId = resId;
         cachedAppSettings = new HashMap<>();
         editedAppSettings = new HashMap<>();
-        notificationGrp = new NotificationGroup("Azure Plugin", NotificationDisplayType.BALLOON, true);
+        statusBar = WindowManager.getInstance().getStatusBar(project);
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.presenter = new WebAppPropertyViewPresenter<>();
         this.presenter.onAttachView(this);
@@ -346,20 +348,25 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         setBtnEnableStatus(true);
         if (isSuccess) {
             updateMapStatus(cachedAppSettings, editedAppSettings);
-            notificationGrp.createNotification(NOTIFY_PROPERTY_UPDATE_SUCCESS, NotificationType.INFORMATION)
-                    .notify(null);
+            showNotification(NOTIFY_PROPERTY_UPDATE_SUCCESS, MessageType.INFO);
         }
     }
 
     @Override
     public void showGetPublishingProfileResult(boolean isSuccess) {
         if (isSuccess) {
-            notificationGrp.createNotification(NOTIFY_PROFILE_GET_SUCCESS, NotificationType.INFORMATION)
-                    .notify(null);
+            showNotification(NOTIFY_PROFILE_GET_SUCCESS, MessageType.INFO);
         } else {
-            notificationGrp.createNotification(NOTIFY_PROFILE_GET_FAIL, NotificationType.ERROR)
-                    .notify(null);
+            showNotification(NOTIFY_PROFILE_GET_FAIL, MessageType.ERROR);
         }
+    }
+
+    private void showNotification(String message, MessageType type) {
+        JBPopupFactory.getInstance()
+                .createHtmlTextBalloonBuilder(message, type, null /*hyperlinkListener*/)
+                .setFadeoutTime(10 * 1000) // fade out after 10 seconds
+                .createBalloon()
+                .showInCenterOf(statusBar.getComponent());
     }
 
     private void updateMapStatus(Map<String, String> to, Map<String, String> from) {
