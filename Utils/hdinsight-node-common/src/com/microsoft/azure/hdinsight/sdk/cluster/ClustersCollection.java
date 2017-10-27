@@ -21,16 +21,16 @@
  */
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
-public class ComponentVersion {
-    /*
-        This is a walking around to fix getting spark version problem.
-        'spark', 'Spark', 'SPARK' can be expected in different kind of HDInsight REST API response.
-     */
-    private String spark;
-    private String Spark;
-    private String SPARK;
+import java.util.List;
 
-    public String getSpark() {
-        return this.spark != null ? this.spark : (this.SPARK != null ? this.SPARK : this.Spark);
+class ClustersCollection {
+    private List<ClusterRawInfo> value;
+
+    public List<ClusterRawInfo> getValue() {
+        return value;
+    }
+
+    public void setValue(List<ClusterRawInfo> value) {
+        this.value = value;
     }
 }

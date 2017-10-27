@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.sdk.storage;
 
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 
 public class HDStorageAccount extends ClientStorageAccount implements IHDIStorageAccount {
@@ -30,10 +31,10 @@ public class HDStorageAccount extends ClientStorageAccount implements IHDIStorag
     private String defaultContainer;
     private IClusterDetail clusterDetail;
 
-    public HDStorageAccount(IClusterDetail clusterDetail, String name, String key, boolean isDefault, String defaultContainer) {
-        super(name.replace(".blob.core.windows.net", ""));
+    public HDStorageAccount(IClusterDetail clusterDetail, String fullStorageBlobName, String key, boolean isDefault, String defaultContainer) {
+        super(getStorageShortName(fullStorageBlobName));
         this.setPrimaryKey(key);
-        this.fullStorageBlobName = name;
+        this.fullStorageBlobName = fullStorageBlobName;
         this.isDefaultStorageAccount = isDefault;
         this.defaultContainer = defaultContainer;
         this.clusterDetail = clusterDetail;
@@ -69,5 +70,13 @@ public class HDStorageAccount extends ClientStorageAccount implements IHDIStorag
 
     public String getDefaultContainer() {
         return defaultContainer;
+    }
+
+    private static String getStorageShortName(@NotNull final String fullStorageBlobName) {
+        // only lowercase letters and numbers exist in a valid storage short name
+        // so we can get the storage short name from storage full name by splitting directly
+        // For example:
+        //      full name: 'teststorage.blob.core.windows.net', so short name should be 'teststorage'
+        return fullStorageBlobName.split("\\.")[0];
     }
 }

@@ -25,18 +25,24 @@ import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.BlobContainerPermissions;
+import com.microsoft.azure.storage.blob.BlobContainerProperties;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.util.*;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class StorageAccountNode extends RefreshableNode implements TelemetryProperties {
     private static final String STORAGE_ACCOUNT_MODULE_ID = StorageAccountNode.class.getName();
@@ -52,17 +58,52 @@ public class StorageAccountNode extends RefreshableNode implements TelemetryProp
         load(false);
     }
 
+    private Stream<BlobContainer> getBlobContainers(String connectionString) throws AzureCmdException {
+        CloudStorageAccount cloudStorageAccount;
+        try {
+            cloudStorageAccount = CloudStorageAccount.parse(connectionString);
+        } catch (URISyntaxException | InvalidKeyException e) {
+            throw new AzureCmdException(e.getMessage());
+        }
+
+        Iterable<CloudBlobContainer> containers = cloudStorageAccount.createCloudBlobClient().listContainers();
+        return StreamSupport.stream(containers.spliterator(), false).map((container) -> {
+            BlobContainerPermissions permissions = null ;
+            String access = null;
+            try {
+                permissions = container.downloadPermissions();
+            } catch (StorageException e) {
+                // ignore the exception
+                // We need not to know the permission since the HDInsight cluster itself do have 'write' access to storage
+            }
+            if (permissions != null) {
+                access = permissions.getPublicAccess().toString();
+            }
+            String name = container.getName();
+            String eTag = null;
+
+            String uri = container.getUri().toString();
+            Calendar lastModified = new GregorianCalendar();
+            BlobContainerProperties properties = container.getProperties();
+
+            if (properties != null) {
+                eTag = properties.getEtag();
+                lastModified.setTime(properties.getLastModified());
+            }
+            return new BlobContainer(name, uri, eTag, lastModified, access);
+        });
+    }
+
     @Override
     protected void refreshItems()
             throws AzureCmdException {
-        //TelemetryManager.postEvent(TelemetryCommon.HDInsightExplorerStorageAccountExpand, null, null);
         if(storageAccount.getAccountType() == StorageAccountTypeEnum.BLOB) {
             HDStorageAccount blobStorageAccount = (HDStorageAccount)storageAccount;
             String defaultContainer = blobStorageAccount.getDefaultContainer();
-            List<BlobContainer> containerList = StorageClientSDKManager.getManager().getBlobContainers(((HDStorageAccount) storageAccount).getConnectionString());
-            for (BlobContainer blobContainer : containerList) {
+            final String connectionString = ((HDStorageAccount) storageAccount).getConnectionString();
+            getBlobContainers(connectionString).forEach(blobContainer -> {
                 addChildNode(new BlobContainerNode(this, blobStorageAccount, blobContainer, !StringHelper.isNullOrWhiteSpace(defaultContainer) && defaultContainer.equals(blobContainer.getName())));
-            }
+            });
         } else if(storageAccount.getAccountType() == StorageAccountTypeEnum.ADLS) {
             // TODO adls support
         }
