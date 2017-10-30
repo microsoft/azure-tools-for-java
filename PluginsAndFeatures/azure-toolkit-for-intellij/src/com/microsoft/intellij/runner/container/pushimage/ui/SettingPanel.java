@@ -222,6 +222,7 @@ public class SettingPanel {
         if (!MavenRunTaskUtil.isMavenProject(project)) {
             List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
             setupArtifactCombo(artifacts, conf.getTargetPath());
+            containerSettingPanel.setDockerPath(DockerUtil.getDefaultDockerFilePathIfExist(project.getBasePath()));
         } else {
             List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
             setupMavenProjectCombo(mavenProjects, conf.getTargetPath());
