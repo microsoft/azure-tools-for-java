@@ -12,8 +12,9 @@ import org.eclipse.swt.widgets.Shell;
 public class MessageDialogWithLink extends MessageDialog {
 
 	public MessageDialogWithLink(Shell parentShell, String dialogTitle, Image dialogTitleImage, String dialogMessage, String messageWithLink,
-			int dialogImageType, int defaultIndex, String okLabel) {
-		super(parentShell, dialogTitle, dialogTitleImage, dialogMessage, dialogImageType, defaultIndex, okLabel);
+			int dialogImageType, int defaultIndex, String... okLabel) {
+		super(parentShell, dialogTitle, dialogTitleImage, dialogMessage, dialogImageType, okLabel, defaultIndex);
+		
 		this.messageWithLink = messageWithLink;
 	}
 
