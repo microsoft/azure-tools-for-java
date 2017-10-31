@@ -32,11 +32,14 @@ import java.net.Socket;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 public class Utils {
 
@@ -230,4 +233,64 @@ public class Utils {
         }
         return true;
     }
+
+    // Algorithm from com.intellij.openapi.util.Comparing
+    public static <T> boolean equal(@Nullable T arg1, @Nullable T arg2) {
+        if (arg1 == arg2) return true;
+        if (arg1 == null || arg2 == null) {
+          return false;
+        }
+        if (arg1 instanceof Object[] && arg2 instanceof Object[]) {
+          Object[] arr1 = (Object[])arg1;
+          Object[] arr2 = (Object[])arg2;
+          return Arrays.equals(arr1, arr2);
+        }
+        if (arg1 instanceof CharSequence && arg2 instanceof CharSequence) {
+          return equal((CharSequence)arg1, (CharSequence)arg2);
+        }
+        return arg1.equals(arg2);
+      }
+
+      public static <T> boolean equal(@Nullable T[] arr1, @Nullable T[] arr2) {
+        if (arr1 == null || arr2 == null) {
+          return arr1 == arr2;
+        }
+        return Arrays.equals(arr1, arr2);
+      }
+
+      public static boolean equal(@Nullable String arg1, @Nullable String arg2) {
+        return arg1 == null ? arg2 == null : arg1.equals(arg2);
+      }
+
+      public static boolean equal(@Nullable CharSequence s1, @Nullable CharSequence s2) {
+        if (s1 == s2) return true;
+        if (s1 == null || s2 == null) return false;
+
+        // Algorithm from String.regionMatches()
+
+        if (s1.length() != s2.length()) return false;
+        int to = 0;
+        int po = 0;
+        int len = s1.length();
+
+        while (len-- > 0) {
+          char c1 = s1.charAt(to++);
+          char c2 = s2.charAt(po++);
+          if (c1 == c2) {
+            continue;
+          }
+          return false;
+        }
+
+        return true;
+      }
+
+      public static boolean equal(@Nullable String arg1, @Nullable String arg2, boolean caseSensitive) {
+        if (arg1 == null || arg2 == null) {
+          return arg1 == arg2;
+        }
+        else {
+          return caseSensitive ? arg1.equals(arg2) : arg1.equalsIgnoreCase(arg2);
+        }
+      }
 }
