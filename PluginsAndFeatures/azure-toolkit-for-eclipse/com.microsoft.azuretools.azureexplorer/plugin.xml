@@ -73,7 +73,7 @@
        </editor>
        <editor
              class="com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor"
-             icon="icons/acr.png"
+             icon="icons/WebApp_16.png"
              id="com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor"
              name="WebApp Properties">
        </editor>

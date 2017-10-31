@@ -32,141 +32,135 @@ import java.net.Socket;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-
 public class Utils {
 
     private static final Integer RES_GRP_MAX_NAME_LENGTH = 90;
     private static final String RES_GRP_REGEX = "^[A-Za-z0-9().\\-_]+(?<!\\.)$";
 
-	public static String replaceLastSubString(String location, String find,
-			String replaceWith) {
-		if (location == null || location.isEmpty())
-			return location;
+    public static String replaceLastSubString(String location, String find, String replaceWith) {
+        if (location == null || location.isEmpty())
+            return location;
 
-		int lastIndex = location.lastIndexOf(find);
+        int lastIndex = location.lastIndexOf(find);
 
-		if (lastIndex < 0)
-			return location;
+        if (lastIndex < 0)
+            return location;
 
-		String end = location.substring(lastIndex).replaceFirst(find,
-				replaceWith);
-		return location.substring(0, lastIndex) + end;
-	}
+        String end = location.substring(lastIndex).replaceFirst(find, replaceWith);
+        return location.substring(0, lastIndex) + end;
+    }
 
-	public static String getDefaultCNName() {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-		Date now = new Date();
-		return "Self Signed Certificate " + dateFormat.format(now);
-	}
+    public static String getDefaultCNName() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date now = new Date();
+        return "Self Signed Certificate " + dateFormat.format(now);
+    }
 
-	/**
-	 * This method is used for invoking native commands.
-	 *
-	 * @param command
-	 *            :- command to invoke.
-	 * @param ignoreErrorStream
-	 *            : Boolean which controls whether to throw exception or not
-	 *            based on error stream.
-	 * @return result :- depending on the method invocation.
-	 * @throws Exception
-	 * @throws IOException
-	 */
-	public static String cmdInvocation(String[] command,
-			boolean ignoreErrorStream) throws Exception, IOException {
-		String result = "";
-		String error = "";
-		InputStream inputStream = null;
-		InputStream errorStream = null;
-		BufferedReader br = null;
-		BufferedReader ebr = null;
-		try {
-			Process process = new ProcessBuilder(command).start();
-			;
-			inputStream = process.getInputStream();
-			errorStream = process.getErrorStream();
-			br = new BufferedReader(new InputStreamReader(inputStream));
-			result = br.readLine();
-			process.waitFor();
-			ebr = new BufferedReader(new InputStreamReader(errorStream));
-			error = ebr.readLine();
-			if (error != null && (!error.equals(""))) {
-				// To do - Log error message
+    /**
+     * This method is used for invoking native commands.
+     *
+     * @param command
+     *            :- command to invoke.
+     * @param ignoreErrorStream
+     *            : Boolean which controls whether to throw exception or not based on error stream.
+     * @return result :- depending on the method invocation.
+     * @throws Exception
+     * @throws IOException
+     */
+    public static String cmdInvocation(String[] command, boolean ignoreErrorStream) throws Exception, IOException {
+        String result = "";
+        String error = "";
+        InputStream inputStream = null;
+        InputStream errorStream = null;
+        BufferedReader br = null;
+        BufferedReader ebr = null;
+        try {
+            Process process = new ProcessBuilder(command).start();
+            ;
+            inputStream = process.getInputStream();
+            errorStream = process.getErrorStream();
+            br = new BufferedReader(new InputStreamReader(inputStream));
+            result = br.readLine();
+            process.waitFor();
+            ebr = new BufferedReader(new InputStreamReader(errorStream));
+            error = ebr.readLine();
+            if (error != null && (!error.equals(""))) {
+                // To do - Log error message
 
-				if (!ignoreErrorStream) {
-					throw new Exception(error, null);
-				}
-			}
-		} catch (Exception e) {
-			throw new Exception("Exception occurred while invoking command", e);
-		} finally {
-			if (inputStream != null) {
-				inputStream.close();
-			}
-			if (errorStream != null) {
-				errorStream.close();
-			}
-			if (br != null) {
-				br.close();
-			}
-			if (ebr != null) {
-				ebr.close();
-			}
-		}
-		return result;
-	}
+                if (!ignoreErrorStream) {
+                    throw new Exception(error, null);
+                }
+            }
+        } catch (Exception e) {
+            throw new Exception("Exception occurred while invoking command", e);
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            if (errorStream != null) {
+                errorStream.close();
+            }
+            if (br != null) {
+                br.close();
+            }
+            if (ebr != null) {
+                ebr.close();
+            }
+        }
+        return result;
+    }
 
-	public static boolean isPortAvailable(int port) throws Exception {
-		Socket s = null;
-		try {
-			s = new Socket("localhost", port);
-			// something is using the port and has responded
-			// port not available
-			return false;
-		} catch (IOException e) {
-			return true;
-		} finally {
-			if(s != null){
-				try {
-					s.close();
-					Thread.sleep(3000);
-				} catch (Exception e) {
-					throw new Exception(e.getMessage());
-				}
-			}
-		}
-	}
+    public static boolean isPortAvailable(int port) throws Exception {
+        Socket s = null;
+        try {
+            s = new Socket("localhost", port);
+            // something is using the port and has responded
+            // port not available
+            return false;
+        } catch (IOException e) {
+            return true;
+        } finally {
+            if (s != null) {
+                try {
+                    s.close();
+                    Thread.sleep(3000);
+                } catch (Exception e) {
+                    throw new Exception(e.getMessage());
+                }
+            }
+        }
+    }
 
-	public static List<String> getJarEntries(String jarName, String entryName) throws IOException {
-		List<String> files = new ArrayList<String>();
-		System.out.println("entryName = " + entryName);
-		JarURLConnection urlConnection = (JarURLConnection) new URL("jar:file:" + jarName + "!/" + entryName).openConnection();
-//        URLConnection urlConnection = originUrl.openConnection();
-		JarFile jarFile = urlConnection.getJarFile();
-		Enumeration<JarEntry> entries = jarFile.entries();
+    public static List<String> getJarEntries(String jarName, String entryName) throws IOException {
+        List<String> files = new ArrayList<String>();
+        System.out.println("entryName = " + entryName);
+        JarURLConnection urlConnection = (JarURLConnection) new URL("jar:file:" + jarName + "!/" + entryName)
+                .openConnection();
+        // URLConnection urlConnection = originUrl.openConnection();
+        JarFile jarFile = urlConnection.getJarFile();
+        Enumeration<JarEntry> entries = jarFile.entries();
 
-		while (entries.hasMoreElements()) {
-			JarEntry entry = entries.nextElement();
-			if (entry.getName().startsWith(urlConnection.getEntryName())) {
-				if (!entry.isDirectory()) {
-					files.add(entry.getName());
-				}
-			}
-		}
-		return files;
-	}
+        while (entries.hasMoreElements()) {
+            JarEntry entry = entries.nextElement();
+            if (entry.getName().startsWith(urlConnection.getEntryName())) {
+                if (!entry.isDirectory()) {
+                    files.add(entry.getName());
+                }
+            }
+        }
+        return files;
+    }
 
-	/*
-	 * when there is version upgrade, if the existed version >= 3.x, then respect the recorded telemetry preference;
-	 * Otherwise, overwrite it to "true";
-	 */
+    /*
+     * when there is version upgrade, if the existed version >= 3.x, then respect the recorded telemetry preference;
+     * Otherwise, overwrite it to "true";
+     */
     public static boolean whetherUpdateTelemetryPref(String recordedVersion) {
         if (recordedVersion == null || recordedVersion.isEmpty()) {
             return true;
@@ -180,9 +174,7 @@ public class Utils {
     }
 
     /*
-    return negative: v1 < v2
-    return 0; v1 = v2
-    return positive: v1 > v2
+     * return negative: v1 < v2 return 0; v1 = v2 return positive: v1 > v2
      */
     public static int compareVersion(String version1, String version2) {
         if ((version1 == null || version1.isEmpty()) && (version2 == null || version2.isEmpty())) {
@@ -225,7 +217,7 @@ public class Utils {
         }
         Clipboard clipboard = toolKit.getSystemClipboard();
         clipboard.setContents(stringSelection, null);
-	}
+    }
 
     public static boolean isResGrpNameValid(String name) {
         if (null == name || name.length() > RES_GRP_MAX_NAME_LENGTH || !name.matches(RES_GRP_REGEX)) {
@@ -233,64 +225,4 @@ public class Utils {
         }
         return true;
     }
-
-    // Algorithm from com.intellij.openapi.util.Comparing
-    public static <T> boolean equal(@Nullable T arg1, @Nullable T arg2) {
-        if (arg1 == arg2) return true;
-        if (arg1 == null || arg2 == null) {
-          return false;
-        }
-        if (arg1 instanceof Object[] && arg2 instanceof Object[]) {
-          Object[] arr1 = (Object[])arg1;
-          Object[] arr2 = (Object[])arg2;
-          return Arrays.equals(arr1, arr2);
-        }
-        if (arg1 instanceof CharSequence && arg2 instanceof CharSequence) {
-          return equal((CharSequence)arg1, (CharSequence)arg2);
-        }
-        return arg1.equals(arg2);
-      }
-
-      public static <T> boolean equal(@Nullable T[] arr1, @Nullable T[] arr2) {
-        if (arr1 == null || arr2 == null) {
-          return arr1 == arr2;
-        }
-        return Arrays.equals(arr1, arr2);
-      }
-
-      public static boolean equal(@Nullable String arg1, @Nullable String arg2) {
-        return arg1 == null ? arg2 == null : arg1.equals(arg2);
-      }
-
-      public static boolean equal(@Nullable CharSequence s1, @Nullable CharSequence s2) {
-        if (s1 == s2) return true;
-        if (s1 == null || s2 == null) return false;
-
-        // Algorithm from String.regionMatches()
-
-        if (s1.length() != s2.length()) return false;
-        int to = 0;
-        int po = 0;
-        int len = s1.length();
-
-        while (len-- > 0) {
-          char c1 = s1.charAt(to++);
-          char c2 = s2.charAt(po++);
-          if (c1 == c2) {
-            continue;
-          }
-          return false;
-        }
-
-        return true;
-      }
-
-      public static boolean equal(@Nullable String arg1, @Nullable String arg2, boolean caseSensitive) {
-        if (arg1 == null || arg2 == null) {
-          return arg1 == arg2;
-        }
-        else {
-          return caseSensitive ? arg1.equals(arg2) : arg1.equalsIgnoreCase(arg2);
-        }
-      }
 }

@@ -52,7 +52,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
@@ -116,7 +115,6 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         ScrolledComposite scrolledComposite = new ScrolledComposite(cpRoot,
                 SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-        scrolledComposite.setSize(297, 471);
         scrolledComposite.setExpandHorizontal(true);
         scrolledComposite.setExpandVertical(true);
 
@@ -445,7 +443,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
     }
 
     private void updateSaveAndDiscardBtnStatus() {
-        if (Utils.equal(editedAppSettings, cachedAppSettings)) {
+        if (mapEquals(editedAppSettings, cachedAppSettings)) {
             btnDiscard.setEnabled(false);
             btnSave.setEnabled(false);
         } else {
@@ -453,6 +451,16 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
             btnSave.setEnabled(true);
         }
     }
+
+
+    private boolean mapEquals(Map<String, String> arg1, Map<String, String> arg2) {
+        if (arg1 == arg2) return true;
+        if (arg1 == null || arg2 == null) {
+          return false;
+        }
+        return arg1.equals(arg2);
+    }
+
 
     @Override
     public void showPropertyUpdateResult(boolean isSuccess) {
