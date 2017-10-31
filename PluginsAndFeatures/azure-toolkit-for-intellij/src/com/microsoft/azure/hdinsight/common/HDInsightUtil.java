@@ -31,17 +31,17 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.ToolWindowKey;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 import com.microsoft.intellij.common.CommonConst;
+import org.jetbrains.annotations.NotNull;
 import rx.subjects.ReplaySubject;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Optional;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
 
@@ -50,7 +50,13 @@ public class HDInsightUtil {
     private static final int TELEMETRY_MESSAGE_MAX_LEN = 50;
 
     // The replay subject for the message showed in HDInsight tool window
-    private static ReplaySubject<SimpleImmutableEntry<MessageInfoType, String>> toolWindowMessageSubject;
+    // The replay subject will replay all notifications before the initialization is done
+    // The replay buffer size is 1MB.
+    private static ReplaySubject<SimpleImmutableEntry<MessageInfoType, String>> toolWindowMessageSubject = ReplaySubject.create(1024 * 1024);
+
+    public static ReplaySubject<SimpleImmutableEntry<MessageInfoType, String>> getToolWindowMessageSubject() {
+        return toolWindowMessageSubject;
+    }
 
     public static void setHDInsightRootModule(@NotNull AzureModule azureModule) {
         HDInsightRootModuleImpl hdInsightRootModule =  new HDInsightRootModuleImpl(azureModule);
@@ -74,28 +80,16 @@ public class HDInsightUtil {
         }
     }
 
-    public static void setJobRunningStatus(boolean isRun) {
-        Project project = (Project)DefaultLoader.getIdeHelper().getCurrentProject();
-        setJobRunningStatus(project, isRun);
+    public static void setJobRunningStatus(@NotNull Project project, boolean isRun) {
+        HDInsightUtil.getJobStatusManager(project).ifPresent(jobStatusManager -> jobStatusManager.setJobRunningState(isRun));
     }
 
-    public static void setJobRunningStatus(@Nullable Project project, boolean isRun) {
-        if(project != null) {
-            JobStatusManager jobStatusManager = getJobStatusManager(project);
-            if(jobStatusManager != null) {
-                jobStatusManager.setJobRunningState(isRun);
-            }
-        }
-    }
-
-    @Nullable
-    public static JobStatusManager getJobStatusManager(@NotNull Project project) {
+    public static Optional<JobStatusManager> getJobStatusManager(@NotNull Project project) {
         ToolWindowKey key = new ToolWindowKey(project, CommonConst.SPARK_SUBMISSION_WINDOW_ID);
-        if(PluginUtil.isContainsToolWindowKey(key)){
-            return ((SparkSubmissionToolWindowProcessor)PluginUtil.getToolWindowManager(key)).getJobStatusManager();
-        } else {
-            return null;
-        }
+
+        return Optional.ofNullable(PluginUtil.getToolWindowManager(key))
+                       .map(SparkSubmissionToolWindowProcessor.class::cast)
+                       .map(SparkSubmissionToolWindowProcessor::getJobStatusManager);
     }
 
     protected static void initializeToolWindowProcessorWithSubscribe(
@@ -129,9 +123,6 @@ public class HDInsightUtil {
             SparkSubmissionToolWindowProcessor sparkSubmissionToolWindowProcessor = new SparkSubmissionToolWindowProcessor(toolWindow);
             PluginUtil.registerToolWindowManager(key, sparkSubmissionToolWindowProcessor);
 
-            // The replay subject will replay all notifications before the initialization is done
-            // The replay buffer size is 1MB.
-            toolWindowMessageSubject = ReplaySubject.create(1024 * 1024);
 
             // make sure tool window process initialize on swing dispatch
             if(ApplicationManager.getApplication().isDispatchThread()) {

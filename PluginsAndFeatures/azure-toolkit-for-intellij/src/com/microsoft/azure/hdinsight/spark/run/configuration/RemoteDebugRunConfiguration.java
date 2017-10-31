@@ -21,16 +21,19 @@
  */
 package com.microsoft.azure.hdinsight.spark.run.configuration;
 
+import com.intellij.execution.CommonJavaRunConfigurationParameters;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction;
+import com.intellij.execution.scratch.JavaScratchConfiguration;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobSubmissionState;
@@ -43,33 +46,39 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunConfigurationModule>
-                                         implements RunConfigurationWithSuppressedDefaultRunAction{
-
-    private SparkSubmitModel submitModel;
+{
+    @NotNull
+    private SparkBatchJobConfigurableModel jobModel;
 
     public RemoteDebugRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, @NotNull RunConfigurationModule configurationModule, String name) {
         super(name, configurationModule, factory);
 
-        this.submitModel = new SparkSubmitModel(project);
+        this.jobModel = new SparkBatchJobConfigurableModel(project);
     }
 
     @Override
     public void readExternal(Element rootElement) throws InvalidDataException {
         super.readExternal(rootElement);
 
-        this.submitModel = SparkSubmitModel.factoryFromElement(this.submitModel.getProject(), rootElement);
+        jobModel.applyFromElement(rootElement);
     }
 
     @Override
     public void writeExternal(Element rootElement) throws WriteExternalException {
         super.writeExternal(rootElement);
 
-        Element remoteDebugSettingsElement = this.submitModel.exportToElement();
-        rootElement.addContent(remoteDebugSettingsElement);
+        Element jobConfigElement = jobModel.exportToElement();
+        rootElement.addContent(jobConfigElement);
     }
 
+    @NotNull
+    public SparkBatchJobConfigurableModel getModel() {
+        return jobModel;
+    }
+
+    @NotNull
     public SparkSubmitModel getSubmitModel() {
-        return submitModel;
+        return getModel().getSubmitModel();
     }
 
     @NotNull
@@ -86,9 +95,7 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
     @Nullable
     @Override
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) throws ExecutionException {
-        return new SparkBatchJobSubmissionState(
-                getProject(),
-                getSubmitModel());
+        return new SparkBatchJobSubmissionState(getProject(), jobModel);
     }
 
     @Override
@@ -96,13 +103,7 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
         return new ArrayList<>();
     }
 
-    public void apply(SparkSubmissionContentPanel submissionPanel) {
-        this.submitModel.setSubmissionParameters(submissionPanel.constructSubmissionParameter());
-        this.submitModel.setAdvancedConfigModel(submissionPanel.getSubmitModel().getAdvancedConfigModel());
-    }
-
     public void setAsNew() {
-        this.submitModel.setAdvancedConfigModel(null);
     }
 }
 

@@ -24,7 +24,6 @@
 package com.microsoft.azure.hdinsight.spark.run;
 
 import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.runners.DefaultProgramRunner;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
@@ -41,7 +40,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner {
 
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-        return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) && profile instanceof RemoteDebugRunConfiguration;
+        return SparkBatchJobRunExecutor.EXECUTOR_ID.equals(executorId) && profile instanceof RemoteDebugRunConfiguration;
     }
 
     public void submitJob(SparkSubmitModel submitModel) {

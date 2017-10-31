@@ -18,7 +18,7 @@ public final class JavaSparkPi {
     public static void main(String[] args) throws Exception {
         // use this line if you want to run your application in the cluster
         // SparkConf sparkConf = new SparkConf().setAppName("JavaSparkPi");
-        SparkConf sparkConf = new SparkConf().setAppName("JavaSparkPi").setMaster("local[2]");
+        SparkConf sparkConf = new SparkConf().setAppName("JavaSparkPi");
         JavaSparkContext jsc = new JavaSparkContext(sparkConf);
 
         int slices = (args.length == 1) ? Integer.parseInt(args[0]) : 2;

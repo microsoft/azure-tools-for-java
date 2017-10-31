@@ -25,24 +25,7 @@ package com.microsoft.azure.hdinsight.spark.common;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-public interface ISparkBatchDebugJob {
-    /**
-     * Create a batch Spark job with driver debugging enabled
-     *
-     * @return the current instance for chain calling
-     * @throws IOException the exceptions for networking connection issues related
-     * @throws DebugParameterDefinedException the exception for debug option already defined in Spark submission parameter
-     */
-    public ISparkBatchDebugJob createBatchSparkJobWithDriverDebugging() throws IOException, DebugParameterDefinedException;
-
-    /**
-     * Kill the batch job specified by ID
-     *
-     * @return the current instance for chain calling
-     * @throws IOException exceptions for networking connection issues related
-     */
-    public ISparkBatchDebugJob killBatchJob() throws IOException;
-
+public interface ISparkBatchDebugJob extends ISparkBatchJob {
     /**
      * Get Spark Batch job driver debugging port number
      *
@@ -51,11 +34,4 @@ public interface ISparkBatchDebugJob {
      */
     public int getSparkDriverDebuggingPort() throws IOException;
 
-    /**
-     * Get Spark batch job driver host by ID
-     *
-     * @return Spark driver node host
-     * @throws IOException exceptions for the driver host not found
-     */
-    public String getSparkDriverHost() throws IOException, URISyntaxException;
 }

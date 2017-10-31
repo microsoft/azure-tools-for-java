@@ -66,14 +66,12 @@ public class MavenProjectGenerator {
 
     private void createDirectories(String root) throws IOException {
         switch (this.templatesType) {
-            case JavaLocalSample:
             case Java:
                 VfsUtil.createDirectories(root + "/src/main/java/sample");
                 VfsUtil.createDirectories(root + "/src/main/resources");
                 VfsUtil.createDirectories(root + "/src/test/java");
                 break;
             case Scala:
-            case ScalaLocalSample:
             case ScalaClusterSample:
                 VfsUtil.createDirectories(root + "/src/main/scala/sample");
                 VfsUtil.createDirectories(root + "/src/main/resources");
@@ -111,27 +109,42 @@ public class MavenProjectGenerator {
 
     private void copySamples(String root) throws Exception {
         switch (this.templatesType) {
-            case JavaLocalSample:
+            case ScalaClusterSample:
                 ProjectSampleUtil.copyFileToPath(new String[]{
                         "/hdinsight/templates/java/JavaSparkPi.java"
                 }, root + "/src/main/java/sample");
-                break;
-            case ScalaClusterSample:
+
                 ProjectSampleUtil.copyFileToPath(new String[]{
                         "/hdinsight/templates/scala/scala_cluster_run/SparkCore_WasbIOTest.scala",
                         "/hdinsight/templates/scala/scala_cluster_run/SparkStreaming_HdfsWordCount.scala",
                         "/hdinsight/templates/scala/scala_cluster_run/SparkSQL_RDDRelation.scala"
                 }, root + "/src/main/scala/sample");
-                break;
-            case ScalaLocalSample:
+
                 ProjectSampleUtil.copyFileToPath(new String[]{
                         "/hdinsight/templates/scala/scala_local_run/LogQuery.scala",
                         "/hdinsight/templates/scala/scala_local_run/SparkML_RankingMetricsExample.scala"
                 }, root + "/src/main/scala/sample");
 
                 ProjectSampleUtil.copyFileToPath(new String[]{
-                        "/hdinsight/templates/scala/scala_local_run/data/sample_movielens_data.txt"
-                }, root + "/data");
+                        "/hdinsight/templates/scala/scala_local_run/data/data/sample_movielens_data.txt"
+                }, root + "/data/__default__/data/");
+
+                ProjectSampleUtil.copyFileToPath(new String[]{
+                        "/hdinsight/templates/scala/scala_local_run/data/HdiSamples/HdiSamples/FoodInspectionData/README"
+                }, root + "/data/__default__/HdiSamples/HdiSamples/FoodInspectionData/");
+
+                ProjectSampleUtil.copyFileToPath(new String[]{
+                        "/hdinsight/templates/scala/scala_local_run/data/HdiSamples/HdiSamples/SensorSampleData/hvac/HVAC.csv"
+                }, root + "/data/__default__/HdiSamples/HdiSamples/SensorSampleData/hvac/");
+
+                // Falling through
+            case Scala:
+            case Java:
+                new File(root, "data/__default__/user/current/").mkdirs();
+
+                ProjectSampleUtil.copyFileToPath(new String[]{
+                        "/hdinsight/templates/log4j.properties"
+                }, root + "/src/main/resources");
                 break;
         }
     }

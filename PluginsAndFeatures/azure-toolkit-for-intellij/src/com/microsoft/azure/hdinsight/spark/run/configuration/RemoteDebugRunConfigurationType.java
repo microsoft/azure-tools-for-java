@@ -33,9 +33,9 @@ import javax.swing.*;
 
 public class RemoteDebugRunConfigurationType implements ConfigurationType {
 
-    private static final String DISPLAY_NAME = "Submit Spark Job";
-    private static final String ID = "SubmitSparkJob_Run_Configuration";
-    private static final String DESCRIPTION = "Submit Spark Job Run Configuration Type";
+    private static final String DISPLAY_NAME = "Azure HDInsight Spark Job";
+    private static final String ID = "SubmitSparkJob_Configuration";
+    private static final String DESCRIPTION = "Azure HDInsight Spark Job Configuration Type";
 
     @Override
     public String getDisplayName() {

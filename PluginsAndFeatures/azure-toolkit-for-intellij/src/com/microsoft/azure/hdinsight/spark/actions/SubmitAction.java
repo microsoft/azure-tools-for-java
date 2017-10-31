@@ -38,6 +38,7 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 
 import java.util.HashSet;
+import java.util.Optional;
 
 public class SubmitAction extends AnAction {
     private static final HashSet<Project> isActionPerformedSet = new HashSet<>();
@@ -75,8 +76,9 @@ public class SubmitAction extends AnAction {
 
         if(this.checkActionVisible(event.getProject())) {
             presentation.setVisible(true);
-            JobStatusManager manager = HDInsightUtil.getJobStatusManager(module.getProject());
-            presentation.setEnabled(!isActionPerformedSet.contains(module.getProject()) && (manager == null || !manager.isJobRunning()));
+            Optional<JobStatusManager> manager = HDInsightUtil.getJobStatusManager(module.getProject());
+            presentation.setEnabled(!isActionPerformedSet.contains(module.getProject()) &&
+                    !manager.map(JobStatusManager::isJobRunning).orElse(false));
         } else {
             presentation.setEnabledAndVisible(false);
         }

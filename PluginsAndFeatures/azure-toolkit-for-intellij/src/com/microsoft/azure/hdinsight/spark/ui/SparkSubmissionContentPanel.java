@@ -23,24 +23,25 @@ package com.microsoft.azure.hdinsight.spark.ui;
 
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.FixedSizeButton;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.packaging.impl.elements.ManifestFileUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
-import com.microsoft.azure.hdinsight.common.*;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.spark.common.*;
+import com.microsoft.azure.hdinsight.common.CallBack;
+import com.microsoft.azure.hdinsight.common.DarkThemeManager;
+import com.microsoft.azure.hdinsight.common.StreamUtil;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckResult;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitHelper;
+import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel;
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveRenderer;
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveTableModel;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rx.subjects.BehaviorSubject;
 
 import javax.swing.*;
@@ -51,63 +52,22 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class SparkSubmissionContentPanel extends JPanel{
-    public SparkSubmissionContentPanel(@NotNull Project project, @Nullable CallBack updateCallBack){
-        this.submitModel = new SparkSubmitModel(project);
+    public SparkSubmissionContentPanel(@Nullable CallBack updateCallBack){
         this.updateCallBack = updateCallBack;
 
-        initialize();
-    }
+        initializeComponents();
 
-    public SparkSubmissionContentPanel(SparkSubmitModel submitModel, @Nullable CallBack updateCallBack){
-        this.submitModel = submitModel;
-        this.updateCallBack = updateCallBack;
+        addContainerListener(new ContainerAdapter() {
+            @Override
+            public void componentRemoved(ContainerEvent e) {
+                cleanUp();
 
-        initialize();
-    }
-
-    public SparkSubmissionParameter constructSubmissionParameter() {
-        IClusterDetail selectedClusterDetail = submitModel.getSelectedClusterDetail();
-        Object selectedItem = selectedArtifactComboBox.getSelectedItem();
-        String selectedArtifactName = selectedItem == null ? "" : selectedItem.toString();
-
-        String className = mainClassTextField.getText().trim();
-        String commandLine = commandLineTextField.getText().trim();
-        String localArtifactPath = selectedArtifactTextField.getText();
-        String selectedClusterName = selectedClusterDetail != null ? selectedClusterDetail.getName() : "";
-
-        java.util.List<String> referencedFileList = new ArrayList<>();
-        for (String singleReferencedFile : referencedFilesTextField.getText().split(";")) {
-            singleReferencedFile = singleReferencedFile.trim();
-            if (!StringHelper.isNullOrWhiteSpace(singleReferencedFile)) {
-                referencedFileList.add(singleReferencedFile);
+                super.componentRemoved(e);
             }
-        }
-
-        java.util.List<String> uploadedFilePathList = new ArrayList<>();
-        for (String singleReferencedJars : referencedJarsTextField.getText().split(";")) {
-            singleReferencedJars = singleReferencedJars.trim();
-            if (!StringHelper.isNullOrWhiteSpace(singleReferencedJars)) {
-                uploadedFilePathList.add(singleReferencedJars);
-            }
-        }
-
-        java.util.List<String> argsList = new ArrayList<>();
-        for (String singleArs : commandLine.split(" ")) {
-            if (!StringHelper.isNullOrWhiteSpace(singleArs)) {
-                argsList.add(singleArs.trim());
-            }
-        }
-
-        Map<String, Object> jobConfigMap = submitModel.getJobConfigMap();
-
-        return new SparkSubmissionParameter(selectedClusterName, localArtifactRadioButton.isSelected(),
-                selectedArtifactName, localArtifactPath, null, className, referencedFileList, uploadedFilePathList, argsList, jobConfigMap);
+        });
     }
 
     public boolean haveErrorMessage() {
@@ -124,42 +84,39 @@ public class SparkSubmissionContentPanel extends JPanel{
 
     private CallBack updateCallBack;
 
-    public SparkSubmitModel getSubmitModel() {
-        return submitModel;
-    }
-
-    private SparkSubmitModel submitModel;
     private final int margin = 10;
     private static final String REFRESH_BUTTON_PATH = "/icons/refresh.png";
 
+    @NotNull
     private ComboboxWithBrowseButton clustersListComboBox;
-    private ComboBox selectedArtifactComboBox;
+    @NotNull
+    private ComboBox<String> selectedArtifactComboBox;
+    @NotNull
     private TextFieldWithBrowseButton selectedArtifactTextField;
+    @NotNull
     private TextFieldWithBrowseButton mainClassTextField;
+    @NotNull
     private JBTable jobConfigurationTable;
+    @NotNull
     private JTextField commandLineTextField;
+    @NotNull
     private JTextField referencedJarsTextField;
+    @NotNull
     private JTextField referencedFilesTextField;
+    @NotNull
     private JRadioButton intelliJArtifactRadioButton;
+    @NotNull
     private JRadioButton localArtifactRadioButton;
+    @NotNull
     private final JLabel[] errorMessageLabels = new JLabel[5];
+    @NotNull
     private SparkSubmissionAdvancedConfigDialog advancedConfigDialog;
+    @NotNull
     private JButton advancedConfigButton= new JButton("Advanced configuration");
+    @NotNull
+    FixedSizeButton loadJobConfigurationFixedSizeButton;
 
     private BehaviorSubject<String> clusterSelectedSubject = BehaviorSubject.create();
-
-    /**
-     * Apply the parameters in new SubmitModel
-     *
-     * @param newSubmitModel the new submit model to apply
-     */
-    public void apply(SparkSubmitModel newSubmitModel) {
-        SparkSubmissionParameter parameter = newSubmitModel.getSubmissionParameter();
-        SubmissionTableModel tableModel = (SubmissionTableModel) jobConfigurationTable.getModel();
-
-        loadParameter(parameter);
-        tableModel.loadJobConfigMap(parameter.getJobConfig());
-    }
 
     private enum ErrorMessageLabelTag {
         ClusterName,
@@ -167,37 +124,6 @@ public class SparkSubmissionContentPanel extends JPanel{
         LocalArtifact,
         MainClass,
         JobConfiguration;
-    }
-
-
-    private void initialize() {
-        initializeComponents();
-        initializeModel();
-        updateTableColumn();
-        loadParameter(submitModel.getSubmissionParameter());
-
-        addContainerListener(new ContainerAdapter() {
-            @Override
-            public void componentRemoved(ContainerEvent e) {
-                cleanUp();
-
-                super.componentRemoved(e);
-            }
-        });
-    }
-
-    private void loadParameter(SparkSubmissionParameter parameter) {
-        if (parameter != null) {
-            if (parameter.isLocalArtifact()) {
-                localArtifactRadioButton.setSelected(true);
-            }
-
-            selectedArtifactTextField.setText(parameter.getLocalArtifactPath());
-            mainClassTextField.setText(parameter.getMainClassName());
-            commandLineTextField.setText(StringHelper.join(" ", parameter.getArgs()));
-            referencedJarsTextField.setText(StringHelper.join(";", parameter.getReferencedJars()));
-            referencedFilesTextField.setText(StringHelper.join(";", parameter.getReferencedFiles()));
-        }
     }
 
     private void initializeComponents(){
@@ -219,40 +145,7 @@ public class SparkSubmissionContentPanel extends JPanel{
         addAdvancedConfigLineItem();
     }
 
-    private void initializeModel() {
-        clustersListComboBox.getButton().setEnabled(false);
-
-        DefaultLoader.getIdeHelper().executeOnPooledThread(() -> {
-            Project project = submitModel.getProject();
-
-            HDInsightUtil.showInfoOnSubmissionMessageWindow(submitModel.getProject(), "List spark clusters ...", true);
-            List<IClusterDetail> cachedClusters = ClusterManagerEx.getInstance().getClusterDetailsWithoutAsync(true);
-
-            if (!ClusterManagerEx.getInstance().isSelectedSubscriptionExist()) {
-                HDInsightUtil.showWarningMessageOnSubmissionMessageWindow(project, "No selected subscription(s), Please go to HDInsight Explorer to sign in....");
-            }
-            if (ClusterManagerEx.getInstance().isListClusterSuccess()) {
-                HDInsightUtil.showInfoOnSubmissionMessageWindow(project, "List spark clusters successfully");
-            } else {
-                HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, "Error : Failed to list spark clusters.");
-            }
-            if (ClusterManagerEx.getInstance().isLIstAdditionalClusterSuccess()) {
-                HDInsightUtil.showInfoOnSubmissionMessageWindow(project, "List additional spark clusters successfully");
-            } else {
-                HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, "Error: Failed to list additional cluster");
-            }
-
-            submitModel.setClusterComboBoxModel(cachedClusters);
-            clustersListComboBox.getComboBox().setModel(submitModel.getClusterComboBoxModel());
-            clustersListComboBox.getButton().setEnabled(true);
-            clusterSelectedSubject.onNext((String) clustersListComboBox.getComboBox().getSelectedItem());
-        });
-
-        selectedArtifactComboBox.setModel(submitModel.getArtifactComboBoxModel());
-        jobConfigurationTable.setModel(submitModel.getTableModel());
-    }
-
-    private void updateTableColumn() {
+    void updateTableColumn() {
         TableColumn hidden = jobConfigurationTable.getColumnModel().getColumn(InteractiveTableModel.HIDDEN_INDEX);
         hidden.setMinWidth(2);
         hidden.setPreferredWidth(2);
@@ -265,6 +158,69 @@ public class SparkSubmissionContentPanel extends JPanel{
         if (updateCallBack != null) {
             updateCallBack.run();
         }
+    }
+
+    @NotNull
+    ComboBox<String> getSelectedArtifactComboBox() {
+        return selectedArtifactComboBox;
+    }
+
+    @NotNull
+    JBTable getJobConfigurationTable() {
+        return jobConfigurationTable;
+    }
+
+    @NotNull
+    ComboboxWithBrowseButton getClustersListComboBox() {
+        return clustersListComboBox;
+    }
+
+    @NotNull
+    JRadioButton getLocalArtifactRadioButton() {
+        return localArtifactRadioButton;
+    }
+
+    @NotNull
+    TextFieldWithBrowseButton getSelectedArtifactTextField() {
+        return selectedArtifactTextField;
+    }
+
+    @NotNull
+    TextFieldWithBrowseButton getMainClassTextField() {
+        return mainClassTextField;
+    }
+
+    @NotNull
+    JTextField getCommandLineTextField() {
+        return commandLineTextField;
+    }
+
+    @NotNull
+    JTextField getReferencedJarsTextField() {
+        return referencedJarsTextField;
+    }
+
+    @NotNull
+    JTextField getReferencedFilesTextField() {
+        return referencedFilesTextField;
+    }
+
+    @NotNull
+    SparkSubmissionAdvancedConfigDialog getAdvancedConfigDialog() {
+        return advancedConfigDialog;
+    }
+
+    @NotNull
+    BehaviorSubject<String> getClusterSelectedSubject() {
+        return clusterSelectedSubject;
+    }
+
+    void setClustersListRefreshEnabled(boolean enabled) {
+        clustersListComboBox.getButton().setEnabled(enabled);
+    }
+
+    void addClusterListRefreshActionListener(ActionListener actionListener) {
+        clustersListComboBox.getButton().addActionListener(actionListener);
     }
 
     private void addSparkClustersLineItem() {
@@ -285,16 +241,6 @@ public class SparkSubmissionContentPanel extends JPanel{
         clustersListComboBox = new ComboboxWithBrowseButton();
         clustersListComboBox.setButtonIcon(StreamUtil.getImageResourceFile(REFRESH_BUTTON_PATH));
         clustersListComboBox.getButton().setToolTipText("Refresh");
-        clustersListComboBox.getButton().addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Cursor cursor = getCursor();
-                setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                List<IClusterDetail> clusterDetails = ClusterManagerEx.getInstance().getClusterDetails();
-                setCursor(cursor);
-                submitModel.setClusterComboBoxModel(clusterDetails);
-            }
-        });
         clustersListComboBox.getComboBox().setToolTipText("The HDInsight Spark cluster you want to submit your application to. Only Linux cluster is supported.");
         clustersListComboBox.getComboBox().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -338,7 +284,7 @@ public class SparkSubmissionContentPanel extends JPanel{
         JLabel artifactSelectLabel = new JLabel("Select an Artifact to submit");
         artifactSelectLabel.setToolTipText(tipInfo);
 
-        selectedArtifactComboBox = new ComboBox();
+        selectedArtifactComboBox = new ComboBox<>();
         selectedArtifactComboBox.setToolTipText(tipInfo);
 
         errorMessageLabels[ErrorMessageLabelTag.SystemArtifact.ordinal()] = new JLabel("Artifact should not be null!");
@@ -495,7 +441,6 @@ public class SparkSubmissionContentPanel extends JPanel{
 
         mainClassTextField = new TextFieldWithBrowseButton();
         mainClassTextField.setToolTipText("Application's java/spark main class");
-        ManifestFileUtil.setupMainClassField(submitModel.getProject(), mainClassTextField);
 
         add(mainClassTextField,
                 new GridBagConstraints(1, displayLayoutCurrentRow,
@@ -530,6 +475,14 @@ public class SparkSubmissionContentPanel extends JPanel{
                         1, 0,
                         GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
                         new Insets(0, margin, 0, margin), 0, 0));
+    }
+
+    void addJobConfigurationLoadButtonActionListener(ActionListener actionListener) {
+        loadJobConfigurationFixedSizeButton.addActionListener(actionListener);
+    }
+
+    void addAdvancedConfigurationButtonActionListener(ActionListener actionListener) {
+        advancedConfigButton.addActionListener(actionListener);
     }
 
     private void addConfigurationLineItem() {
@@ -576,7 +529,7 @@ public class SparkSubmissionContentPanel extends JPanel{
 
         JButton loadJobConfigurationButton = new JButton("...");
         loadJobConfigurationButton.setPreferredSize(selectedArtifactTextField.getButton().getPreferredSize());
-        FixedSizeButton loadJobConfigurationFixedSizeButton = new FixedSizeButton(loadJobConfigurationButton);
+        loadJobConfigurationFixedSizeButton = new FixedSizeButton(loadJobConfigurationButton);
 
         add(loadJobConfigurationFixedSizeButton,
                 new GridBagConstraints(2, displayLayoutCurrentRow,
@@ -585,26 +538,6 @@ public class SparkSubmissionContentPanel extends JPanel{
                         GridBagConstraints.NORTHEAST, GridBagConstraints.NONE,
                         new Insets(margin, margin / 2, 0, margin), 0, 0));
         loadJobConfigurationFixedSizeButton.setToolTipText("Load Spark config from property file");
-
-        loadJobConfigurationFixedSizeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true,
-                        false,
-                        false,
-                        false,
-                        false,
-                        false);
-
-                fileChooserDescriptor.setTitle("Select Spark property file");
-
-                VirtualFile chooseFile = FileChooser.chooseFile(fileChooserDescriptor, null, null);
-                if (chooseFile != null) {
-                    submitModel.loadJobConfigMapFromPropertyFile(chooseFile.getCanonicalPath());
-                }
-            }
-        });
-
 
         errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()] = new JLabel();
         errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()].setForeground(DarkThemeManager.getInstance().getErrorMessageColor());
@@ -677,22 +610,7 @@ public class SparkSubmissionContentPanel extends JPanel{
                         GridBagConstraints.SOUTHEAST, GridBagConstraints.NONE,
                         new Insets(margin, margin, 0, 0), 0, 0));
 
-        advancedConfigButton.addActionListener(e -> {
-            // Read the current panel setting into current model
-            SparkSubmitModel currentModel = new SparkSubmitModel(submitModel.getProject(), constructSubmissionParameter());
-
-            advancedConfigDialog = new SparkSubmissionAdvancedConfigDialog(
-                    currentModel,
-                    submitModel.getAdvancedConfigModel(),
-                    () -> {
-                        if (null != advancedConfigDialog){
-                            submitModel.setAdvancedConfigModel(advancedConfigDialog.getAdvancedConfigModel());
-                        }
-                    }
-            );
-            advancedConfigDialog.setModal(true);
-            advancedConfigDialog.setVisible(true);
-        });
+        advancedConfigDialog = new SparkSubmissionAdvancedConfigDialog();
     }
 
     private void addReferencedFilesLineItem() {

@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.common;
 public enum MessageInfoType {
     Error,
     Info,
+    Log,
     Warning,
     Hyperlink,
     HyperlinkWithText
