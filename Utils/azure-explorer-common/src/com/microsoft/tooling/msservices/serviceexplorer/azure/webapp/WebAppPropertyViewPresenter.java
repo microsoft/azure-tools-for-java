@@ -1,7 +1,9 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
@@ -51,9 +53,15 @@ public class WebAppPropertyViewPresenter<V extends WebAppPropertyMvpView> extend
     }
 
     public void onUpdateWebAppProperty(@NotNull String sid, @NotNull String resId,
-            @NotNull Map<String, String> appSettings) {
+            @NotNull Map<String, String> cacheSettings, @NotNull Map<String, String> editedSettings) {
         Observable.fromCallable(() -> {
-            AzureWebAppMvpModel.getInstance().updateWebAppSettings(sid, resId, appSettings);
+            Set<String> toRemove = new HashSet<>();
+            for (String key : cacheSettings.keySet()) {
+                if (!editedSettings.containsKey(key)) {
+                    toRemove.add(key);
+                }
+            }
+            AzureWebAppMvpModel.getInstance().updateWebAppSettings(sid, resId, editedSettings, toRemove);
             return true;
         }).subscribeOn(getSchedulerProvider().io())
                 .subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {

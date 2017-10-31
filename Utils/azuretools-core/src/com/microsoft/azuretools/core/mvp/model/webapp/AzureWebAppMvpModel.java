@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -260,10 +261,16 @@ public class AzureWebAppMvpModel {
         return app;
     }
 
-    public void updateWebAppSettings(String sid, String webAppId, Map<String, String> appSettings) throws Exception {
+    public void updateWebAppSettings(String sid, String webAppId, Map<String, String> toUpdate, Set<String> toRemove)
+            throws Exception {
         WebApp app = getWebAppById(sid, webAppId);
         clearTags(app);
-        app.update().withAppSettings(appSettings).apply();
+        com.microsoft.azure.management.appservice.WebAppBase.Update<WebApp> update = app.update()
+                .withAppSettings(toUpdate);
+        for (String key : toRemove) {
+            update = update.withoutAppSetting(key);
+        }
+        update.apply();
     }
 
     public void deleteWebAppOnLinux(String sid, String appid) throws IOException {

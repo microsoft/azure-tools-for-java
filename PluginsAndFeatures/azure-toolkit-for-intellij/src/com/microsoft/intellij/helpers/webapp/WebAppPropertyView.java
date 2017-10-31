@@ -166,7 +166,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
 
         btnSave.addActionListener(e -> {
             setBtnEnableStatus(false);
-            presenter.onUpdateWebAppProperty(sid, resId, editedAppSettings);
+            presenter.onUpdateWebAppProperty(sid, resId, cachedAppSettings, editedAppSettings);
         });
 
         lnkUrl.setHyperlinkText("<Loading...>");
