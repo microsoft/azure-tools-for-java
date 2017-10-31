@@ -78,6 +78,8 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     private static final String TABLE_HEADER_VALUE = "Value";
     private static final String TABLE_HEADER_KEY = "Key";
     private static final String TXT_NA = "N/A";
+    private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
+    private static final String TABLE_EMPTY_MESSAGE = "No available settings.";
     private static final String FILE_SELECTOR_TITLE = "Choose Where You Want to Save the Publishing Profile.";
     private static final String NOTIFY_PROPERTY_UPDATE_SUCCESS = "Property update successfully.";
     private static final String NOTIFY_PROFILE_GET_SUCCESS = "Get Publishing Profile successfully.";
@@ -198,6 +200,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
         tblAppSetting = new JBTable(tableModel);
         tblAppSetting.setRowSelectionAllowed(true);
         tblAppSetting.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tblAppSetting.getEmptyText().setText(TABLE_LOADING_MESSAGE);
 
         tblAppSetting.addPropertyChangeListener(evt -> {
             if ("tableCellEditor".equals(evt.getPropertyName())) {
@@ -330,6 +333,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
 
         tableModel.getDataVector().removeAllElements();
         cachedAppSettings.clear();
+        tblAppSetting.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
         Object appSettingsObj = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_APP_SETTING);
         if (appSettingsObj != null && appSettingsObj instanceof Map) {
             Map<String, String> appSettings = (Map<String, String>) appSettingsObj;
