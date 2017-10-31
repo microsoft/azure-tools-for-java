@@ -209,8 +209,6 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         txtSubscription.setEditable(false);
         txtSubscription.setText(TXT_LOADING);
         txtSubscription.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        new Label(cpOverview, SWT.NONE);
-        new Label(cpOverview, SWT.NONE);
 
         cpExtraInfo = new Composite(composite, SWT.NONE);
         cpExtraInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
