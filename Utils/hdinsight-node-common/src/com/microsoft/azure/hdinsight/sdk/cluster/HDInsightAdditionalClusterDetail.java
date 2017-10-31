@@ -29,6 +29,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 public class HDInsightAdditionalClusterDetail implements IClusterDetail {
 
@@ -57,6 +58,14 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail {
     @Override
     public String getName() {
         return clusterName;
+    }
+
+    @Override
+    public String getTitle() {
+        return Optional.ofNullable(getSparkVersion())
+                .filter(ver -> !ver.trim().isEmpty())
+                .map(ver -> getName() + "(Spark: " + ver + ")")
+                .orElse(getName());
     }
 
     @Override

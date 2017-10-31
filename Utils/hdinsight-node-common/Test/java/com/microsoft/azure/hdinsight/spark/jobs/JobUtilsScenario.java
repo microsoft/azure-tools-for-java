@@ -65,7 +65,7 @@ public class JobUtilsScenario {
                     }
                 });
 
-        sleep((logs.size() + 1) * 1000);
+        sleep((logs.size() + 2) * 1000);
 
         sub.unsubscribe();
 

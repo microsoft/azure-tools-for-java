@@ -28,7 +28,6 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.compiler.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
-import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.artifacts.ArtifactUtil;
 import com.intellij.packaging.impl.compiler.ArtifactCompileScope;
@@ -36,33 +35,33 @@ import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.hdinsight.common.JobStatusManager;
+import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.common.NotSupportExecption;
+import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveTableModel;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.JDomWriter;
 import org.apache.commons.lang.StringUtils;
 import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.Text;
+import org.jetbrains.annotations.NotNull;
+import rx.Observer;
 import rx.Single;
 
 import javax.swing.*;
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel.SUBMISSION_CONTENT_SSH_CERT;
@@ -87,14 +86,18 @@ public class SparkSubmitModel {
 
     private static Map<Project, SparkSubmissionParameter> submissionParameterMap = new HashMap<>();
 
+    @NotNull
     private final Project project;
 
     private List<IClusterDetail> cachedClusterDetails;
     private Map<String, IClusterDetail> mapClusterNameToClusterDetail = new HashMap<>();
     private Map<String, Artifact> artifactHashMap = new HashMap<>();
 
+    // The parameters of UI settings
+    @NotNull
     private SparkSubmissionParameter submissionParameter;
 
+    @NotNull
     private SparkSubmitAdvancedConfigModel advancedConfigModel;
 
     private DefaultComboBoxModel<String> clusterComboBoxModel;
@@ -107,15 +110,28 @@ public class SparkSubmitModel {
 
 
     public SparkSubmitModel(@NotNull Project project) {
-        this(project, submissionParameterMap.get(project));
+        this(project,
+             Optional.ofNullable(submissionParameterMap.get(project))
+                     .orElseGet(() -> new SparkSubmissionParameter(
+                             "",
+                             false,
+                             "",
+                             "",
+                             "",
+                             "",
+                             new ArrayList<>(),
+                             new ArrayList<>(),
+                             new ArrayList<>(),
+                             new HashMap<>())));
     }
 
     public SparkSubmitModel(@NotNull Project project, @NotNull SparkSubmissionParameter submissionParameter) {
-        this.cachedClusterDetails = new ArrayList();
+        this.cachedClusterDetails = new ArrayList<>();
         this.project = project;
 
         this.clusterComboBoxModel = new DefaultComboBoxModel<>();
         this.artifactComboBoxModel = new DefaultComboBoxModel<>();
+        this.advancedConfigModel = new SparkSubmitAdvancedConfigModel();
         this.submissionParameter = submissionParameter;
 
         final List<Artifact> artifacts = ArtifactUtil.getArtifactWithOutputPaths(project);
@@ -128,7 +144,7 @@ public class SparkSubmitModel {
             }
         }
 
-        int index = submissionParameter != null ? artifactComboBoxModel.getIndexOf(submissionParameter.getArtifactName()) : -1;
+        int index = artifactComboBoxModel.getIndexOf(submissionParameter.getArtifactName());
         if (index != -1) {
             artifactComboBoxModel.setSelectedItem(submissionParameter.getArtifactName());
         }
@@ -136,31 +152,45 @@ public class SparkSubmitModel {
         initializeTableModel(tableModel);
     }
 
+    @NotNull
     public SparkSubmissionParameter getSubmissionParameter() {
         return submissionParameter;
     }
 
-    public void setSubmissionParameters(SparkSubmissionParameter submissionParameters){
+    public void setSubmissionParameters(@NotNull SparkSubmissionParameter submissionParameters){
         this.submissionParameter = submissionParameters;
         submissionParameterMap.put(project, submissionParameter);
     }
 
+    @NotNull
     public SparkSubmitAdvancedConfigModel getAdvancedConfigModel() { return advancedConfigModel; }
 
-    public void setAdvancedConfigModel(SparkSubmitAdvancedConfigModel advancedConfigModel) {
+    public void setAdvancedConfigModel(@NotNull SparkSubmitAdvancedConfigModel advancedConfigModel) {
         this.advancedConfigModel = advancedConfigModel;
     }
 
-    @NotNull
-    public IClusterDetail getSelectedClusterDetail() {
-        return mapClusterNameToClusterDetail.get((String) clusterComboBoxModel.getSelectedItem());
+    public Optional<IClusterDetail> getSelectedClusterDetail() {
+        return Optional.ofNullable(mapClusterNameToClusterDetail.get(clusterComboBoxModel.getSelectedItem()));
     }
 
-    public DefaultComboBoxModel getClusterComboBoxModel() {
+    public void setCachedClusterDetailsWithTitleMapping(List<IClusterDetail> cachedClusterDetails) {
+        this.cachedClusterDetails = cachedClusterDetails;
+
+        mapClusterNameToClusterDetail.clear();
+        cachedClusterDetails.forEach(clusterDetail -> mapClusterNameToClusterDetail.put(clusterDetail.getTitle(), clusterDetail));
+    }
+
+    @NotNull
+    public List<IClusterDetail> getCachedClusterDetails() {
+        return cachedClusterDetails;
+    }
+
+    @NotNull
+    public DefaultComboBoxModel<String> getClusterComboBoxModel() {
         return clusterComboBoxModel;
     }
 
-    public DefaultComboBoxModel getArtifactComboBoxModel() {
+    public DefaultComboBoxModel<String> getArtifactComboBoxModel() {
         return artifactComboBoxModel;
     }
 
@@ -168,38 +198,21 @@ public class SparkSubmitModel {
         return submissionParameter.isLocalArtifact();
     }
 
+    public Artifact getArtifact() {
+        return  artifactHashMap.get(getSubmissionParameter().getArtifactName());
+    }
+
+    @NotNull
     public Project getProject() {
         return project;
     }
 
-    public InteractiveTableModel getTableModel() {
+    public SubmissionTableModel getTableModel() {
         return tableModel;
     }
 
-    public void setClusterComboBoxModel(List<IClusterDetail> cachedClusterDetails) {
-        this.cachedClusterDetails = cachedClusterDetails;
-
-        clusterComboBoxModel.removeAllElements();
-        mapClusterNameToClusterDetail.clear();
-
-        for (IClusterDetail clusterDetail : cachedClusterDetails) {
-            String title = getCluserTitle(clusterDetail);
-            mapClusterNameToClusterDetail.put(title, clusterDetail);
-            clusterComboBoxModel.addElement(title);
-        }
-
-        int index = -1;
-        if(submissionParameter != null) {
-            String title = getCluserTitle(submissionParameter.getClusterName());
-            index = clusterComboBoxModel.getIndexOf(title);
-            if (index != -1) {
-                clusterComboBoxModel.setSelectedItem(getCluserTitle(submissionParameter.getClusterName()));
-            }
-        }
-    }
-
     public void action(@NotNull SparkSubmissionParameter submissionParameter) {
-        HDInsightUtil.getJobStatusManager(project).setJobRunningState(true);
+        HDInsightUtil.getJobStatusManager(project).ifPresent(jobStatusManager -> jobStatusManager.setJobRunningState(true));
 
         setSubmissionParameters(submissionParameter);
 
@@ -230,7 +243,8 @@ public class SparkSubmitModel {
                                 AppInsightsClient.create(HDInsightBundle.message("SparkProjectCompileFailed"), null, postEventProperty);
 
                                 showCompilerErrorMessage(compileContext);
-                                HDInsightUtil.getJobStatusManager(project).setJobRunningState(false);
+                                HDInsightUtil.getJobStatusManager(project).ifPresent(jobStatusManager ->
+                                        jobStatusManager.setJobRunningState(false));
                             } else {
                                 postEventProperty.put("IsSubmitSucceed", "true");
                                 postEventProperty.put("SubmitFailedReason", "CompileSuccess");
@@ -247,7 +261,7 @@ public class SparkSubmitModel {
     }
 
     public Single<Artifact> buildArtifactObservable(@NotNull String artifactName) {
-        Optional<JobStatusManager> jsmOpt = Optional.ofNullable(HDInsightUtil.getJobStatusManager(project));
+        Optional<JobStatusManager> jsmOpt = HDInsightUtil.getJobStatusManager(project);
 
         return Single.fromEmitter(em -> {
             jsmOpt.ifPresent((jsm) -> jsm.setJobRunningState(true));
@@ -314,32 +328,16 @@ public class SparkSubmitModel {
         }
     }
 
-    private String getCluserTitle(@NotNull IClusterDetail clusterDetail) {
-        String sparkVersion = clusterDetail.getSparkVersion();
-        return sparkVersion == null ? clusterDetail.getName() : StringHelper.concat(clusterDetail.getName(), "(Spark: ", sparkVersion, ")");
-    }
-    private String getCluserTitle(@NotNull String clusterName) {
-        for(IClusterDetail clusterDetail : cachedClusterDetails) {
-            if(clusterDetail.getName().equals(clusterName)) {
-                return getCluserTitle(clusterDetail);
-            }
-        }
-        return "unknown";
-    }
-
-    public void uploadFileToCluster(@NotNull final IClusterDetail selectedClusterDetail, @NotNull final String selectedArtifactName) throws Exception{
+    public Optional<String> getArtifactPath(@NotNull String selectedArtifactName) {
         String buildJarPath = submissionParameter.isLocalArtifact() ?
                 submissionParameter.getLocalArtifactPath() : ((artifactHashMap.get(selectedArtifactName).getOutputFilePath()));
 
-        String filePath = selectedClusterDetail.isEmulator() ?
-                SparkSubmitHelper.uploadFileToEmulator(project, selectedClusterDetail, buildJarPath) :
-                SparkSubmitHelper.uploadFileToHDFS(project, selectedClusterDetail, buildJarPath);
-        submissionParameter.setFilePath(filePath);
+        return Optional.ofNullable(buildJarPath);
     }
 
     private void tryToCreateBatchSparkJob(@NotNull final IClusterDetail selectedClusterDetail) throws HDIException,IOException {
         SparkBatchSubmission.getInstance().setCredentialsProvider(selectedClusterDetail.getHttpUserName(), selectedClusterDetail.getHttpPassword());
-        HttpResponse response = SparkBatchSubmission.getInstance().createBatchSparkJob(SparkSubmitHelper.getLivyConnectionURL(selectedClusterDetail), submissionParameter);
+        HttpResponse response = SparkBatchSubmission.getInstance().createBatchSparkJob(JobUtils.getLivyConnectionURL(selectedClusterDetail), submissionParameter);
 
         if (response.getCode() == 201 || response.getCode() == 200) {
             HDInsightUtil.showInfoOnSubmissionMessageWindow(project, "Info : Submit to spark cluster successfully.");
@@ -388,16 +386,16 @@ public class SparkSubmitModel {
 
         try {
             SparkBatchRemoteDebugJob debugJob = SparkBatchRemoteDebugJob.factory(
-                    SparkSubmitHelper.getLivyConnectionURL(selectedClusterDetail),
+                    JobUtils.getLivyConnectionURL(selectedClusterDetail),
                     submissionParameter,
                     SparkBatchSubmission.getInstance());
 
-            debugJob.createBatchSparkJobWithDriverDebugging();
+            debugJob.createBatchJob();
 
             return debugJob;
         } catch (URISyntaxException ex) {
             throw new HDIException(
-                    "Bad Livy Connection URL " + SparkSubmitHelper.getLivyConnectionURL(selectedClusterDetail),
+                    "Bad Livy Connection URL " + JobUtils.getLivyConnectionURL(selectedClusterDetail),
                     ex);
         } catch (IOException ex) {
             HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(
@@ -429,7 +427,7 @@ public class SparkSubmitModel {
         }
     }
 
-    private IClusterDetail getClusterConfiguration(@NotNull final IClusterDetail selectedClusterDetail, @NotNull final boolean isFirstSubmit) {
+    private IClusterDetail getClusterConfiguration(@NotNull final IClusterDetail selectedClusterDetail, final boolean isFirstSubmit) {
         try {
             if (!selectedClusterDetail.isConfigInfoAvailable()) {
                 selectedClusterDetail.getConfigurationInfo();
@@ -474,7 +472,12 @@ public class SparkSubmitModel {
                 }
 
                 try {
-                    uploadFileToCluster(selectedClusterDetail, selectedArtifactName);
+                    String jobArtifactUri = JobUtils.uploadFileToCluster(selectedClusterDetail,
+                                                 getArtifactPath(selectedArtifactName)
+                                                         .orElseThrow(() -> new SparkJobException("Can't find jar path to upload")),
+                                                 HDInsightUtil.getToolWindowMessageSubject());
+
+                    submissionParameter.setFilePath(jobArtifactUri);
                     tryToCreateBatchSparkJob(selectedClusterDetail);
                 } catch (Exception exception) {
                     showFailedSubmitErrorMessage(exception);
@@ -492,7 +495,8 @@ public class SparkSubmitModel {
                         writeJobLogToLocal();
                     }
 
-                    HDInsightUtil.getJobStatusManager(project).setJobRunningState(false);
+                    HDInsightUtil.getJobStatusManager(project).ifPresent(jobStatusManager ->
+                            jobStatusManager.setJobRunningState(false));
                 }
             }
         });
@@ -524,10 +528,8 @@ public class SparkSubmitModel {
         return tableModel.getJobConfigMap();
     }
 
-    public void loadJobConfigMapFromPropertyFile(String propertyFilePath) { tableModel.loadJobConfigMapFromPropertyFile(propertyFilePath);}
-
     private void initializeTableModel(final InteractiveTableModel tableModel) {
-        if (submissionParameter == null) {
+        if (submissionParameter.getJobConfig().isEmpty()) {
             for (int i = 0; i < SparkSubmissionParameter.defaultParameters.length; ++i) {
                 tableModel.addRow(SparkSubmissionParameter.defaultParameters[i].first(), "");
             }
@@ -574,10 +576,6 @@ public class SparkSubmitModel {
         Element submitModelElement = new Element(SUBMISSION_CONTENT_NAME);
 
         SparkSubmissionParameter submissionParameter = getSubmissionParameter();
-
-        if (submissionParameter == null) {
-            return submitModelElement;
-        }
 
         submitModelElement.setAttribute(
                 SUBMISSION_ATTRIBUTE_CLUSTER_NAME, submissionParameter.getClusterName());
@@ -628,7 +626,7 @@ public class SparkSubmitModel {
         submitModelElement.addContent(refFilesElement);
 
         SparkSubmitAdvancedConfigModel advConfModel = getAdvancedConfigModel();
-        if (advConfModel != null && advConfModel.enableRemoteDebug) {
+        if (advConfModel.enableRemoteDebug) {
             submitModelElement.addContent(advConfModel.exportToElement());
         }
 
@@ -641,7 +639,7 @@ public class SparkSubmitModel {
         Attribute falseValueAttribute = new Attribute("False", "false");
         Element emptyElement = new Element("Empty");
 
-        return Optional.ofNullable(rootElement.getChild(SUBMISSION_CONTENT_NAME)).map(element -> {
+        return Optional.of(rootElement).filter(elem -> elem.getName().equals(SUBMISSION_CONTENT_NAME)).map(element -> {
             SubmissionTableModel tableModel = new SubmissionTableModel(
                     new String[]{"Key", "Value", ""});
 
@@ -684,6 +682,6 @@ public class SparkSubmitModel {
                     .ifPresent(newSubmitModel::setAdvancedConfigModel);
 
             return newSubmitModel;
-        }).orElseThrow(() -> new InvalidDataException("Bad submission parameters"));
+        }).orElseGet(() -> new SparkSubmitModel(project));
     }
 }

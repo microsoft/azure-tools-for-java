@@ -46,12 +46,8 @@ public class HDInsightProjectTemplate implements ProjectTemplate {
                 return "Spark on HDInsight (Java)";
             case Scala:
                 return "Spark on HDInsight (Scala)";
-            case JavaLocalSample:
-                return "Spark on HDInsight Local Run Sample (Java)";
-            case ScalaLocalSample:
-                return "Spark on HDInsight Local Run Sample (Scala)";
             case ScalaClusterSample:
-                return "Spark on HDInsight Cluster Run Sample (Scala)";
+                return "Spark on HDInsight Sample (Scala)";
             default:
                 return "HDInsight Tools";
         }
@@ -64,12 +60,8 @@ public class HDInsightProjectTemplate implements ProjectTemplate {
             case Java:
             case Scala:
                 return "HDInsight Spark blank module.";
-            case JavaLocalSample:
-                return "HDInsight Spark samples written in Java; This code sample should be executed locally.";
-            case ScalaLocalSample:
-                return "HDInsight Spark samples written in Scala; This code sample should be executed locally.";
             case ScalaClusterSample:
-                return "HDInsight Spark samples written in Scala; This code sample should be submitted to HDInsight cluster.";
+                return "HDInsight Spark samples written in Scala.";
             default:
                 return "HDInsight Tools";
         }
@@ -79,10 +71,8 @@ public class HDInsightProjectTemplate implements ProjectTemplate {
     public Icon getIcon() {
         switch (this.templateType) {
             case Java:
-            case JavaLocalSample:
                 return StreamUtil.getImageResourceFile(CommonConst.JavaProjectIconPath);
             case Scala:
-            case ScalaLocalSample:
             case ScalaClusterSample:
                 return StreamUtil.getImageResourceFile(CommonConst.ScalaProjectIconPath);
             default:

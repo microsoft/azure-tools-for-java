@@ -39,6 +39,8 @@ public interface IClusterDetail {
 
     String getName();
 
+    String getTitle();
+
     String getState();
 
     String getLocation();

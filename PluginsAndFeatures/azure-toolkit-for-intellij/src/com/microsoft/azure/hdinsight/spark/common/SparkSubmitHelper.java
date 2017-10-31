@@ -24,17 +24,26 @@ package com.microsoft.azure.hdinsight.spark.common;
 import com.google.common.base.Joiner;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.intellij.openapi.compiler.CompilationException;
+import com.intellij.openapi.compiler.CompileScope;
+import com.intellij.openapi.compiler.CompilerManager;
+import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.project.Project;
+import com.intellij.packaging.artifacts.Artifact;
+import com.intellij.packaging.impl.compiler.ArtifactCompileScope;
+import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.jcraft.jsch.*;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
+import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
-import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
+import com.microsoft.azure.hdinsight.sdk.common.NotSupportExecption;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
@@ -45,6 +54,7 @@ import com.microsoft.tooling.msservices.helpers.CallableSingleArg;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
+import rx.Single;
 
 import java.io.*;
 import java.net.URL;
@@ -127,7 +137,7 @@ public class SparkSubmitHelper {
                 }
 
                 from_index = printoutJobLog(project, id, from_index, clusterDetail);
-                HttpResponse statusHttpResponse = SparkBatchSubmission.getInstance().getBatchSparkJobStatus(getLivyConnectionURL(clusterDetail), id);
+                HttpResponse statusHttpResponse = SparkBatchSubmission.getInstance().getBatchSparkJobStatus(JobUtils.getLivyConnectionURL(clusterDetail), id);
 
                 SparkSubmitResponse status = new Gson().fromJson(statusHttpResponse.getMessage(), new TypeToken<SparkSubmitResponse>() {
                 }.getType());
@@ -192,98 +202,30 @@ public class SparkSubmitHelper {
         }
     }
 
-    public String sftpFileToEmulator(Project project, String localFile, String folderPath, IClusterDetail clusterDetail) throws  IOException,HDIException, JSchException, SftpException {
-        EmulatorClusterDetail emulatorClusterDetail = (EmulatorClusterDetail) clusterDetail;
-        final File file = new File(localFile);
-        try (FileInputStream fileInputStream = new FileInputStream(file)) {
-            try (BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
-                String sshEndpoint = emulatorClusterDetail.getSSHEndpoint();
-                URL url = new URL(sshEndpoint);
-                String host = url.getHost();
-                int port = url.getPort();
-
-                JSch jsch = new JSch();
-                Session session = jsch.getSession(emulatorClusterDetail.getHttpUserName(), host, port);
-                session.setPassword(emulatorClusterDetail.getHttpPassword());
-
-                java.util.Properties config = new java.util.Properties();
-                config.put("StrictHostKeyChecking", "no");
-                session.setConfig(config);
-
-                session.connect();
-                ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
-                channel.connect();
-
-                String[] folders = folderPath.split( "/" );
-                for ( String folder : folders ) {
-                    if (folder.length() > 0) {
-                        try {
-                            channel.cd(folder);
-                        } catch (SftpException e) {
-                            channel.mkdir(folder);
-                            channel.cd(folder);
-                        }
-                    }
-                }
-
-                channel.put(bufferedInputStream, file.getName());
-                channel.disconnect();
-                session.disconnect();
-                return file.getName();
+    public Single<Artifact> buildArtifact(Project project, boolean isPrebuiltArtifact, Artifact artifact) {
+        return Single.create(ob -> {
+            if (isPrebuiltArtifact) {
+                ob.onError(new NotSupportExecption());
+                return;
             }
-        }
-    }
 
-    public String uploadFileToHDFS(Project project, String localFile, IHDIStorageAccount storageAccount, String defaultContainerName, String uploadFolderPath)
-            throws Exception {
-        final File file = new File(localFile);
-        if(storageAccount.getAccountType() == StorageAccountTypeEnum.BLOB) {
-            try (FileInputStream fileInputStream = new FileInputStream(file)) {
-                try (BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
-                    final CallableSingleArg<Void, Long> callable = new CallableSingleArg<Void, Long>() {
-                        @Override
-                        public Void call(Long uploadedBytes) throws Exception {
-                            double progress = ((double) uploadedBytes) / file.length();
-                            return null;
-                        }
-                    };
+            final Set<Artifact> artifacts = Collections.singleton(artifact);
+            ArtifactsWorkspaceSettings.getInstance(project).setArtifactsToBuild(artifacts);
 
-                    HDStorageAccount blobStorageAccount = (HDStorageAccount) storageAccount;
-                    BlobContainer defaultContainer = getSparkClusterDefaultContainer(blobStorageAccount, defaultContainerName);
-                    String path = String.format("SparkSubmission/%s/%s", uploadFolderPath, file.getName());
-                    String uploadedPath = String.format("wasb://%s@%s/%s", defaultContainerName, blobStorageAccount.getFullStorageBlobName(), path);
-
-                    HDInsightUtil.showInfoOnSubmissionMessageWindow(project,
-                            String.format("Info : Begin uploading file %s to Azure Blob Storage Account %s ...", localFile, uploadedPath));
-
-                    StorageClientSDKManager.getManager().uploadBlobFileContent(
-                            blobStorageAccount.getConnectionString(),
-                            defaultContainer,
-                            path,
-                            bufferedInputStream,
-                            callable,
-                            1024 * 1024,
-                            file.length());
-
-                    HDInsightUtil.showInfoOnSubmissionMessageWindow(project, String.format("Info : Submit file to azure blob '%s' successfully.", uploadedPath));
-                    return uploadedPath;
+            final CompileScope scope = ArtifactCompileScope.createArtifactsScope(project, artifacts, true);
+            // Make is an async work
+            CompilerManager.getInstance(project).make(scope, (aborted, errors, warnings, compileContext) -> {
+                if (aborted || errors != 0) {
+                    ob.onError(new CompilationException(Arrays.toString(compileContext.getMessages(CompilerMessageCategory.ERROR))));
+                } else {
+                    ob.onSuccess(artifact);
                 }
-            }
-        } else if(storageAccount.getAccountType() == StorageAccountTypeEnum.ADLS) {
-            String uploadPath = String.format("adl://%s.azuredatalakestore.net%s%s", storageAccount.getName(), storageAccount.getDefaultContainerOrRootPath(), "SparkSubmission");
-            HDInsightUtil.showInfoOnSubmissionMessageWindow(project,
-                    String.format("Info : Begin uploading file %s to Azure Datalake store %s ...", localFile, uploadPath));
-            String uploadedPath = StreamUtil.uploadArtifactToADLS(file, storageAccount, uploadFolderPath);
-            HDInsightUtil.showInfoOnSubmissionMessageWindow(project,
-                    String.format("Info : Submit file to Azure Datalake store '%s' successfully.", uploadedPath));
-            return uploadedPath;
-        } else {
-            throw new UnsupportedOperationException("unknown storage account type");
-        }
+            });
+        });
     }
 
     private int printoutJobLog(Project project, int id, int from_index, IClusterDetail clusterDetail) throws IOException {
-        HttpResponse httpResponse = SparkBatchSubmission.getInstance().getBatchJobFullLog( getLivyConnectionURL(clusterDetail), id);
+        HttpResponse httpResponse = SparkBatchSubmission.getInstance().getBatchJobFullLog(JobUtils.getLivyConnectionURL(clusterDetail), id);
         sparkJobLog = new Gson().fromJson(httpResponse.getMessage(), new TypeToken<SparkJobLog>() {
         }.getType());
 
@@ -311,17 +253,6 @@ public class SparkSubmitHelper {
         return sparkJobLog.getTotal();
     }
 
-    private BlobContainer getSparkClusterDefaultContainer(ClientStorageAccount storageAccount, String dealtContainerName) throws AzureCmdException {
-        List<BlobContainer> containerList = StorageClientSDKManager.getManager().getBlobContainers(storageAccount.getConnectionString());
-        for (BlobContainer container : containerList) {
-            if (container.getName().toLowerCase().equals(dealtContainerName.toLowerCase())) {
-                return container;
-            }
-        }
-
-        return null;
-    }
-
     private int getIntervalTime(int times) {
         int interval = MIN_INTERVAL_TIME + times * INC_TIME;
         return interval > MAX_INTERVAL_TIME ? MAX_INTERVAL_TIME : interval;
@@ -337,31 +268,6 @@ public class SparkSubmitHelper {
         return null;
     }
 
-    public static String uploadFileToEmulator(@NotNull Project project, @NotNull IClusterDetail selectedClusterDetail, @NotNull String buildJarPath) throws Exception {
-        HDInsightUtil.showInfoOnSubmissionMessageWindow(project, String.format("Info : Get target jar from %s.", buildJarPath));
-        String uniqueFolderId = UUID.randomUUID().toString();
-        String folderPath = String.format("../opt/livy/SparkSubmission/%s", uniqueFolderId);
-        return String.format("/opt/livy/SparkSubmission/%s/%s", uniqueFolderId, SparkSubmitHelper.getInstance().sftpFileToEmulator(project, buildJarPath, folderPath, selectedClusterDetail));
-    }
-
-    public static String uploadFileToHDFS(@NotNull Project project, @NotNull IClusterDetail selectedClusterDetail, @NotNull String buildJarPath) throws Exception {
-
-        HDInsightUtil.showInfoOnSubmissionMessageWindow(project, String.format("Info : Get target jar from %s.", buildJarPath));
-        final String uploadShortPath = getFormatPathByDate();
-        return SparkSubmitHelper.getInstance().uploadFileToHDFS(project, buildJarPath,
-                selectedClusterDetail.getStorageAccount(), selectedClusterDetail.getStorageAccount().getDefaultContainerOrRootPath(), uploadShortPath);
-    }
-
-    private static String getFormatPathByDate() {
-        int year = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.YEAR);
-        int month = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.MONTH) + 1;
-        int day = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.DAY_OF_MONTH);
-
-        String uniqueFolderId = UUID.randomUUID().toString();
-
-        return String.format("%04d/%02d/%02d/%s", year, month, day, uniqueFolderId);
-    }
-
     public static boolean isLocalArtifactPath(String path) {
         if (StringHelper.isNullOrWhiteSpace(path)) {
             return false;
@@ -373,14 +279,6 @@ public class SparkSubmitHelper {
 
         return path.endsWith(".jar");
 
-    }
-
-    public static String getLivyConnectionURL(IClusterDetail clusterDetail) {
-        if(clusterDetail.isEmulator()){
-            return clusterDetail.getConnectionUrl() + "/batches";
-        }
-
-        return clusterDetail.getConnectionUrl() + "/livy/batches";
     }
 
     public static final String HELP_LINK = "http://go.microsoft.com/fwlink/?LinkID=722349&clcid=0x409";

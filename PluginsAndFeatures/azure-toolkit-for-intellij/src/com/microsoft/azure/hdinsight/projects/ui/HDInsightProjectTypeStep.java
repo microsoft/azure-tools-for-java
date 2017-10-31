@@ -99,10 +99,8 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
         HDInsightProjectTemplate template = (HDInsightProjectTemplate) this.templateList.getSelectedTemplate();
         switch (template.getTemplateType()) {
             case Java:
-            case JavaLocalSample:
                 return true;
             case Scala:
-            case ScalaLocalSample:
             case ScalaClusterSample:
                 return this.scalaPluginInstalled;
             default:
@@ -120,7 +118,6 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
         HDInsightProjectTemplate template = (HDInsightProjectTemplate) this.templateList.getSelectedTemplate();
         switch (template.getTemplateType()) {
             case Java:
-            case JavaLocalSample:
                 this.externalSystemsComboBox.setEnabled(false);
                 break;
             default:
@@ -133,7 +130,6 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
         switch (template.getTemplateType()) {
             case Scala:
             case ScalaClusterSample:
-            case ScalaLocalSample:
                 if (!this.scalaPluginInstalled) {
                     showScalaPluginInstallDialog();
                 }

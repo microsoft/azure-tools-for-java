@@ -91,6 +91,7 @@ dependencies {
     compile 'com.microsoft.azuretools:azure-explorer-common:3.0.10'
     compile 'com.microsoft.azuretools:hdinsight-node-common:3.0.10'
     compile 'com.spotify:docker-client:8.6.2'
+
     testCompile 'junit:junit:4.12'
     testCompile 'info.cukes:cucumber-junit:1.2.5'
     testCompile 'info.cukes:cucumber-java:1.2.5'

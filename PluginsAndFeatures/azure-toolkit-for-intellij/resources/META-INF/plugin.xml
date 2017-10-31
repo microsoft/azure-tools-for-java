@@ -107,9 +107,12 @@
         canCloseContents="false"
         icon="/icons/SparkSubmissionToolWindow.png"/>
 
+    <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />
+    <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />
     <configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType"/>
     <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>
+    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
     <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
   </extensions>
@@ -179,6 +182,10 @@
     <action id="Actions.WebAppOnLinux" class="com.microsoft.intellij.actions.WebAppOnLinuxAction"
             text="Run on Web App for Containers" description="Run on Web App for Containers"
             icon="/icons/PublishWebAppOnLinux_16.png">
+    </action>
+    <action id="Actions.SparkJobDisconnect" class="com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction"
+            text="Disconnect" description="Disconnect the log view from remote Spark Job"
+            icon="/icons/SparkJobDisconnect.png">
     </action>
 
     <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/azure.png" popup="true"

@@ -87,7 +87,7 @@ public class SparkBatchRemoteDebugJobScenario {
                     parameter,
                     submissionMock);
 
-            debugJobMock.createBatchSparkJobWithDriverDebugging();
+            debugJobMock.createBatchJob();
         } catch (Exception e) {
             caught = e;
         }

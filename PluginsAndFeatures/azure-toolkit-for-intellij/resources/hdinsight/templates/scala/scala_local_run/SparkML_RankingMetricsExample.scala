@@ -27,13 +27,13 @@ import org.apache.spark.sql.SQLContext
 
 object SparkML_RankingMetricsExample  {
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("RankingMetricsExample").setMaster("local[2]")
+    val conf = new SparkConf().setAppName("RankingMetricsExample")
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     import sqlContext.implicits._
     // $example on$
     // Read in the ratings data
-    val ratings = sc.textFile("data/sample_movielens_data.txt").map { line =>
+    val ratings = sc.textFile("/data/sample_movielens_data.txt").map { line =>
       val fields = line.split("::")
       Rating(fields(0).toInt, fields(1).toInt, fields(2).toDouble - 2.5)
     }.cache()
