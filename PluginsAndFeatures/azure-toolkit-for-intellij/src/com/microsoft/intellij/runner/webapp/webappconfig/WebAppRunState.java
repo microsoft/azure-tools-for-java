@@ -22,26 +22,18 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
-import com.intellij.execution.DefaultExecutionResult;
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.ExecutionResult;
-import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.RunProfileState;
-import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.process.ProcessOutputTypes;
-import com.intellij.execution.runners.ProgramRunner;
-import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
-import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 
 import com.microsoft.intellij.util.MavenRunTaskUtil;
@@ -54,14 +46,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.jetbrains.idea.maven.model.MavenConstants;
 
-import rx.Observable;
-
-public class WebAppRunState implements RunProfileState {
+public class WebAppRunState extends AzureRunProfileState<WebApp> implements RunProfileState {
 
     private static final String CREATE_WEBAPP = "Creating new Web App...";
     private static final String CREATE_FAILED = "Failed to create Web App. Error: %s ...";
@@ -89,89 +78,93 @@ public class WebAppRunState implements RunProfileState {
     private static final int SLEEP_TIME = 5000; // milliseconds
     private static final int UPLOADING_MAX_TRY = 3;
 
-    private final Project project;
     private final WebAppSettingModel webAppSettingModel;
-    private final RunProcessHandler processHandler;
-
     /**
      * Place to execute the Web App deployment task.
      */
     public WebAppRunState(Project project, WebAppSettingModel webAppSettingModel) {
-        this.project = project;
+        super(project);
         this.webAppSettingModel = webAppSettingModel;
-        this.processHandler = new RunProcessHandler();
     }
 
     @Nullable
     @Override
-    public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) throws ExecutionException {
-        processHandler.addDefaultListener();
-        ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
-        processHandler.startNotify();
-        consoleView.attachToProcess(processHandler);
-        Map<String, String> telemetryMap = new HashMap<>();
-        Observable.fromCallable(() -> {
-            File file = new File(webAppSettingModel.getTargetPath());
-            if (!file.exists()) {
-                throw new FileNotFoundException(String.format(NO_TARGET_FILE, webAppSettingModel.getTargetPath()));
-            }
-            WebApp webApp = getWebAppAccordingToConfiguration();
+    public WebApp executeSteps(@NotNull RunProcessHandler processHandler
+            , @NotNull Map<String, String> telemetryMap) throws Exception {
+        File file = new File(webAppSettingModel.getTargetPath());
+        if (!file.exists()) {
+            throw new FileNotFoundException(String.format(NO_TARGET_FILE, webAppSettingModel.getTargetPath()));
+        }
+        WebApp webApp = getWebAppAccordingToConfiguration(processHandler);
 
-            processHandler.setText(STOP_WEB_APP);
-            webApp.stop();
+        processHandler.setText(STOP_WEB_APP);
+        webApp.stop();
 
-            processHandler.setText(GETTING_DEPLOYMENT_CREDENTIAL);
-            PublishingProfile profile = webApp.getPublishingProfile();
+        processHandler.setText(GETTING_DEPLOYMENT_CREDENTIAL);
+        PublishingProfile profile = webApp.getPublishingProfile();
 
-            processHandler.setText(CONNECTING_FTP);
-            FTPClient ftp = WebAppUtils.getFtpConnection(profile);
+        processHandler.setText(CONNECTING_FTP);
+        FTPClient ftp = WebAppUtils.getFtpConnection(profile);
 
-            int indexOfDot = webAppSettingModel.getTargetName().lastIndexOf(".");
-            String fileName = webAppSettingModel.getTargetName().substring(0, indexOfDot);
-            String fileType = webAppSettingModel.getTargetName().substring(indexOfDot + 1);
+        int indexOfDot = webAppSettingModel.getTargetName().lastIndexOf(".");
+        String fileName = webAppSettingModel.getTargetName().substring(0, indexOfDot);
+        String fileType = webAppSettingModel.getTargetName().substring(indexOfDot + 1);
 
-            int webConfigUploadCount = uploadWebConfigFile(ftp, fileType);
-            telemetryMap.put("webConfigCount", String.valueOf(webConfigUploadCount));
+        int webConfigUploadCount = uploadWebConfigFile(ftp, fileType, processHandler);
+        telemetryMap.put("webConfigCount", String.valueOf(webConfigUploadCount));
 
-            try (FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath())) {
-                int artifactUploadCount = uploadArtifact(input, webApp, ftp, fileName, fileType);
-                telemetryMap.put("artifactUploadCount", String.valueOf(artifactUploadCount));
-            }
+        try (FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath())) {
+            int artifactUploadCount = uploadArtifact(input, webApp, ftp, fileName, fileType, processHandler);
+            telemetryMap.put("artifactUploadCount", String.valueOf(artifactUploadCount));
+        }
 
-            processHandler.setText(START_WEB_APP);
-            webApp.start();
+        processHandler.setText(START_WEB_APP);
+        webApp.start();
 
-            processHandler.setText(LOGGING_OUT);
-            ftp.logout();
-            if (ftp.isConnected()) {
-                ftp.disconnect();
-            }
+        processHandler.setText(LOGGING_OUT);
+        ftp.logout();
+        if (ftp.isConnected()) {
+            ftp.disconnect();
+        }
 
-            String url = getUrl(webApp, fileName, fileType);
-            processHandler.setText(DEPLOY_SUCCESSFUL);
-            processHandler.setText("URL: " + url);
-            return webApp;
+        String url = getUrl(webApp, fileName, fileType);
+        processHandler.setText(DEPLOY_SUCCESSFUL);
+        processHandler.setText("URL: " + url);
+        return webApp;
+    }
 
-        }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
-                webApp -> {
-                    processHandler.notifyComplete();
-                    if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
-                        AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,null));
-                    }
-                    updateConfigurationDataModel(webApp);
-                    AzureWebAppMvpModel.getInstance().listWebApps(true /*force*/);
-                    sendTelemetry(telemetryMap, true /*success*/, null /*errorMsg*/);
-                }, err -> {
-                    processHandler.println(err.getMessage(), ProcessOutputTypes.STDERR);
-                    processHandler.notifyComplete();
-                    sendTelemetry(telemetryMap, false /*success*/, err.getMessage());
-                }
-        );
-        return new DefaultExecutionResult(consoleView, processHandler);
+    @Override
+    protected void onSuccess(WebApp result, @NotNull RunProcessHandler processHandler) {
+        processHandler.notifyComplete();
+        if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
+            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,null));
+        }
+        updateConfigurationDataModel(result);
+        AzureWebAppMvpModel.getInstance().listWebApps(true /*force*/);
+    }
+
+    @Override
+    protected void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler) {
+        processHandler.println(errMsg, ProcessOutputTypes.STDERR);
+        processHandler.notifyComplete();
+    }
+
+    @Override
+    protected String getDeployTarget() {
+        return "Webapp";
+    }
+
+    @Override
+    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap){
+        telemetryMap.put("SubscriptionId", webAppSettingModel.getSubscriptionId());
+        telemetryMap.put("CreateNewApp", String.valueOf(webAppSettingModel.isCreatingNew()));
+        telemetryMap.put("CreateNewSP", String.valueOf(webAppSettingModel.isCreatingAppServicePlan()));
+        telemetryMap.put("CreateNewRGP", String.valueOf(webAppSettingModel.isCreatingResGrp()));
+        telemetryMap.put("FileType", MavenRunTaskUtil.getFileType(webAppSettingModel.getTargetName()));
     }
 
     @NotNull
-    private WebApp getWebAppAccordingToConfiguration() throws Exception {
+    private WebApp getWebAppAccordingToConfiguration(@NotNull RunProcessHandler processHandler) throws Exception {
         WebApp webApp;
         if (webAppSettingModel.isCreatingNew()) {
             processHandler.setText(CREATE_WEBAPP);
@@ -192,35 +185,38 @@ public class WebAppRunState implements RunProfileState {
         return webApp;
     }
 
-    private int uploadWebConfigFile(@NotNull FTPClient ftp, @NotNull String fileType) throws IOException {
+    private int uploadWebConfigFile(@NotNull FTPClient ftp, @NotNull String fileType,
+                                    @NotNull RunProcessHandler processHandler) throws IOException {
         if (webAppSettingModel.isCreatingNew() && Comparing.equal(fileType, MavenConstants.TYPE_JAR)) {
             processHandler.setText(UPLOADING_WEB_CONFIG);
             try (InputStream webConfigInput = getClass()
                     .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
-                return uploadFileToFtp(ftp, WEB_CONFIG_FTP_PATH, webConfigInput);
+                return uploadFileToFtp(ftp, WEB_CONFIG_FTP_PATH, webConfigInput, processHandler);
             }
         }
         return 0;
     }
 
     private int uploadArtifact(@NotNull FileInputStream input, @NotNull WebApp webApp, @NotNull FTPClient ftp,
-                                @NotNull String fileName, @NotNull String fileType)
+                               @NotNull String fileName, @NotNull String fileType,
+                               @NotNull RunProcessHandler processHandler)
             throws IOException {
         switch (fileType) {
             case MavenConstants.TYPE_WAR:
                 if (webAppSettingModel.isDeployToRoot()) {
                     WebAppUtils.removeFtpDirectory(ftp, CONTAINER_ROOT_PATH, processHandler);
                     processHandler.setText(String.format(UPLOADING_ARTIFACT, CONTAINER_ROOT_PATH + "." + fileType));
-                    return uploadFileToFtp(ftp, CONTAINER_ROOT_PATH + "." + fileType, input);
+                    return uploadFileToFtp(ftp, CONTAINER_ROOT_PATH + "." + fileType, input, processHandler);
                 } else {
                     WebAppUtils.removeFtpDirectory(ftp, WEB_APP_BASE_PATH + fileName, processHandler);
                     processHandler.setText(String.format(UPLOADING_ARTIFACT,
                             WEB_APP_BASE_PATH + webAppSettingModel.getTargetName()));
-                    return uploadFileToFtp(ftp, WEB_APP_BASE_PATH + webAppSettingModel.getTargetName(), input);
+                    return uploadFileToFtp(ftp, WEB_APP_BASE_PATH + webAppSettingModel.getTargetName(),
+                            input, processHandler);
                 }
             case MavenConstants.TYPE_JAR:
                 processHandler.setText(String.format(UPLOADING_ARTIFACT, ROOT_PATH + "." + fileType));
-                return uploadFileToFtp(ftp, ROOT_PATH + "." + fileType, input);
+                return uploadFileToFtp(ftp, ROOT_PATH + "." + fileType, input, processHandler);
             default:
                 return 0;
         }
@@ -231,7 +227,7 @@ public class WebAppRunState implements RunProfileState {
      * For each try, the method will wait 5 seconds.
      */
     private int uploadFileToFtp(@NotNull FTPClient ftp, @NotNull String path,
-                                 @NotNull InputStream stream) throws IOException {
+                                 @NotNull InputStream stream, RunProcessHandler processHandler) throws IOException {
         boolean success = false;
         int count = 0;
         while (!success && ++count < UPLOADING_MAX_TRY) {
@@ -266,20 +262,5 @@ public class WebAppRunState implements RunProfileState {
         webAppSettingModel.setWebAppName("");
         webAppSettingModel.setResourceGroup("");
         webAppSettingModel.setAppServicePlanName("");
-    }
-
-    // TODO: refactor later
-    private void sendTelemetry(@NotNull Map<String, String> telemetryMap, boolean success, @Nullable String errorMsg) {
-        telemetryMap.put("SubscriptionId", webAppSettingModel.getSubscriptionId());
-        telemetryMap.put("CreateNewApp", String.valueOf(webAppSettingModel.isCreatingNew()));
-        telemetryMap.put("CreateNewSP", String.valueOf(webAppSettingModel.isCreatingAppServicePlan()));
-        telemetryMap.put("CreateNewRGP", String.valueOf(webAppSettingModel.isCreatingResGrp()));
-        telemetryMap.put("FileType", MavenRunTaskUtil.getFileType(webAppSettingModel.getTargetName()));
-        telemetryMap.put("Success", String.valueOf(success));
-        if (!success) {
-            telemetryMap.put("ErrorMsg", errorMsg);
-        }
-
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "Webapp", "Deploy", telemetryMap);
     }
 }

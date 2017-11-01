@@ -96,8 +96,7 @@ public abstract class AzureSettingPanel <T extends AzureRunConfigurationBase> {
         return targetName;
     }
 
-    protected void artifactActionPeformed(@NotNull JComboBox<Artifact> cbArtifact) {
-        final Artifact selectArtifact = (Artifact) cbArtifact.getSelectedItem();
+    protected void artifactActionPeformed(Artifact selectArtifact) {
         JPanel pnlRoot = getMainPanel();
         if (!Comparing.equal(lastSelectedArtifact, selectArtifact)) {
             if (lastSelectedArtifact != null && isCbArtifactInited) {

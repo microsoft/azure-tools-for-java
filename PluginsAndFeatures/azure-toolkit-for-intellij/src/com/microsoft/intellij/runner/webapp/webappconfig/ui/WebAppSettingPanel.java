@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig.ui;
 
+import com.microsoft.intellij.runner.AzureSettingPanel;
 import icons.MavenIcons;
 
 import com.intellij.icons.AllIcons;
@@ -30,7 +31,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
@@ -48,7 +48,6 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
@@ -56,17 +55,12 @@ import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.swing.ButtonGroup;
@@ -80,10 +74,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
-import rx.Observable;
-import rx.schedulers.Schedulers;
-
-public class WebAppSettingPanel implements WebAppDeployMvpView {
+public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> implements WebAppDeployMvpView {
 
     // const
     private static final String RESOURCE_GROUP = "Resource Group";
@@ -100,7 +91,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
             " non-WAR executable.";
     // presenter
     private final WebAppDeployViewPresenter<WebAppSettingPanel> webAppDeployViewPresenter;
-    private final Project project;
     private final WebAppConfiguration webAppConfiguration;
     // cache variable
     private ResourceEx<WebApp> selectedWebApp = null;
@@ -109,9 +99,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private String lastSelectedResGrp;
     private String lastSelectedLocation;
     private String lastSelectedPriceTier;
-    private Artifact lastSelectedArtifact;
-    private boolean isArtifact;
-    private boolean telemetrySent;
 
     //widgets
     private JPanel pnlRoot;
@@ -154,14 +141,11 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
     private JComboBox<MavenProject> cbMavenProject;
     private JBTable table;
     private AnActionButton btnRefresh;
-
-    private boolean isCbArtifactInited;
-
     /**
      * The setting panel for web app deployment run configuration.
      */
     public WebAppSettingPanel(Project project, @NotNull WebAppConfiguration webAppConfiguration) {
-        this.project = project;
+        super(project);
         this.webAppConfiguration = webAppConfiguration;
         this.webAppDeployViewPresenter = new WebAppDeployViewPresenter<>();
         this.webAppDeployViewPresenter.onAttachView(this);
@@ -282,21 +266,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
 
         // Artifact
         cbArtifact.addActionListener(e -> {
-            final Artifact selectArtifact = (Artifact) cbArtifact.getSelectedItem();
-            if (!Comparing.equal(lastSelectedArtifact, selectArtifact)) {
-                if (lastSelectedArtifact != null && isCbArtifactInited) {
-                    BuildArtifactsBeforeRunTaskProvider
-                            .setBuildArtifactBeforeRunOption(pnlRoot, project, lastSelectedArtifact, false);
-                }
-                if (selectArtifact != null && isCbArtifactInited) {
-                    BuildArtifactsBeforeRunTaskProvider
-                            .setBuildArtifactBeforeRunOption(pnlRoot, project, selectArtifact, true);
-                }
-                lastSelectedArtifact = selectArtifact;
-            }
+            artifactActionPeformed((Artifact) cbArtifact.getSelectedItem());
         });
-
-        isCbArtifactInited = false;
 
         cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
             @Override
@@ -336,59 +307,50 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         lblJarDeployHint.setHyperlinkText(NON_WAR_FILE_DEPLOY_HINT);
     }
 
-    /**
-     * Set the artifacts into the combo box.
-     */
-    private void setupArtifactCombo(List<Artifact> artifacts) {
-        isCbArtifactInited = false;
-        cbArtifact.removeAllItems();
-        if (null != artifacts) {
-            for (Artifact artifact : artifacts) {
-                cbArtifact.addItem(artifact);
-                if (Comparing.equal(artifact.getOutputFilePath(), webAppConfiguration.getTargetPath())) {
-                    cbArtifact.setSelectedItem(artifact);
-                }
-            }
-        }
-        cbArtifact.setVisible(true);
-        lblArtifact.setVisible(true);
-        isArtifact = true;
-        isCbArtifactInited = true;
+    @Override
+    @NotNull
+    public String getPanelName() {
+        return  "Run On Web App";
     }
 
+    @Override
+    @NotNull
     public JPanel getMainPanel() {
         return pnlRoot;
     }
 
-    @SuppressWarnings("Duplicates")
-    private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetPath) {
-        cbMavenProject.removeAllItems();
-        if (null != mvnprjs) {
-            for (MavenProject prj : mvnprjs) {
-                cbMavenProject.addItem(prj);
-                if (MavenRunTaskUtil.getTargetPath(prj).equals(targetPath)) {
-                    cbMavenProject.setSelectedItem(prj);
-                }
-            }
-        }
-        cbMavenProject.setVisible(true);
-        lblMavenProject.setVisible(true);
+    @Override
+    @NotNull
+    protected JComboBox<Artifact> getCbArtifact() {
+        return cbArtifact;
     }
+
+    @Override
+    @NotNull
+    protected JLabel getLblArtifact() {
+        return lblArtifact;
+    }
+
+    @Override
+    @NotNull
+    protected JComboBox<MavenProject> getCbMavenProject() {
+        return cbMavenProject;
+    }
+
+    @Override
+    @NotNull
+    protected JLabel getLblMavenProject() {
+        return lblMavenProject;
+    }
+
 
     /**
      * Function triggered in constructing the panel.
      *
      * @param webAppConfiguration configuration instance
      */
-    public void reset(@NotNull WebAppConfiguration webAppConfiguration) {
-        if (!MavenRunTaskUtil.isMavenProject(project)) {
-            List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
-            setupArtifactCombo(artifacts);
-        } else {
-            List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
-            setupMavenProjectCombo(mavenProjects, webAppConfiguration.getTargetPath());
-        }
-
+    @Override
+    public void resetFromConfig(@NotNull WebAppConfiguration webAppConfiguration) {
         // Default values
         DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
         String date = df.format(new Date());
@@ -430,7 +392,6 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
         this.webAppDeployViewPresenter.onLoadSubscription();
         this.webAppDeployViewPresenter.onLoadPricingTier();
         this.webAppDeployViewPresenter.onLoadJavaVersions();
-        sendTelemetry(webAppConfiguration.getSubscriptionId());
     }
 
     /**
@@ -438,19 +399,10 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
      *
      * @param webAppConfiguration configuration instance
      */
+    @Override
     public void apply(@NotNull WebAppConfiguration webAppConfiguration) {
-        // Get output file full path and file name
-        if (isArtifact && lastSelectedArtifact != null) {
-            String targetPath = lastSelectedArtifact.getOutputFilePath();
-            webAppConfiguration.setTargetPath(targetPath);
-            webAppConfiguration.setTargetName(Paths.get(targetPath).getFileName().toString());
-        } else {
-            MavenProject mavenProject = (MavenProject) cbMavenProject.getSelectedItem();
-            if (mavenProject != null) {
-                webAppConfiguration.setTargetPath(MavenRunTaskUtil.getTargetPath(mavenProject));
-                webAppConfiguration.setTargetName(MavenRunTaskUtil.getTargetName(mavenProject));
-            }
-        }
+        webAppConfiguration.setTargetPath(getTargetPath());
+        webAppConfiguration.setTargetName(getTargetName());
 
         String fileType = MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName());
         if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)) {
@@ -722,28 +674,8 @@ public class WebAppSettingPanel implements WebAppDeployMvpView {
      * Let the presenter release the view. Will be called by:
      * {@link com.microsoft.intellij.runner.webapp.webappconfig.WebAppSettingEditor#disposeEditor()}.
      */
+    @Override
     public void disposeEditor() {
         webAppDeployViewPresenter.onDetachView();
-    }
-
-    // TODO: refactor later
-    private void sendTelemetry(String subId) {
-        if (telemetrySent) {
-            return;
-        }
-        Observable.fromCallable(() -> {
-            Map<String, String> map = new HashMap<>();
-            map.put("SubscriptionId", subId);
-            map.put("FileType", MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName()));
-            AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog,
-                    "Run On Web App" /*objectName*/,
-                    "Open" /*action*/,
-                    map
-            );
-            return true;
-        }).subscribeOn(Schedulers.io()).subscribe(
-                (res) -> telemetrySent = true,
-                (err) -> telemetrySent = true
-        );
     }
 }

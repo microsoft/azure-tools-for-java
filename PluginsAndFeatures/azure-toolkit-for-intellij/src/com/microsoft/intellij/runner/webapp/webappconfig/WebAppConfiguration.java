@@ -26,30 +26,23 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunProfileState;
-import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Comparing;
-import com.intellij.openapi.util.InvalidDataException;
-import com.intellij.openapi.util.WriteExternalException;
-import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
-import com.microsoft.intellij.runner.webapp.WebAppConfigurationType;
+import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 
-import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
-public class WebAppConfiguration extends RunConfigurationBase {
+public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSettingModel> {
 
     // const string
     private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
@@ -68,42 +61,21 @@ public class WebAppConfiguration extends RunConfigurationBase {
 
     private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
     private final WebAppSettingModel webAppSettingModel;
-    private boolean firstTimeCreated = true;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
         webAppSettingModel = new WebAppSettingModel();
     }
 
-    public boolean isFirstTimeCreated() {
-        return firstTimeCreated;
-    }
-
-    public void setFirstTimeCreated(boolean firstTimeCreated) {
-        this.firstTimeCreated = firstTimeCreated;
+    @Override
+    public WebAppSettingModel getModel() {
+        return this.webAppSettingModel;
     }
 
     @NotNull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
         return new WebAppSettingEditor(getProject(), this);
-    }
-
-    @Override
-    public void readExternal(Element element) throws InvalidDataException {
-        super.readExternal(element);
-        firstTimeCreated = Comparing.equal(element.getAttributeValue("default"), "true");
-        XmlSerializer.deserializeInto(webAppSettingModel, element);
-    }
-
-    @Override
-    public void writeExternal(Element element) throws WriteExternalException {
-        super.writeExternal(element);
-        XmlSerializer.serializeInto(webAppSettingModel, element);
-    }
-
-    @Override
-    public void checkConfiguration() throws RuntimeConfigurationException {
     }
 
     @Nullable
@@ -113,6 +85,7 @@ public class WebAppConfiguration extends RunConfigurationBase {
         return new WebAppRunState(getProject(), this.webAppSettingModel);
     }
 
+    @Override
     public void validate() throws ConfigurationException {
         try {
             if (!AuthMethodManager.getInstance().isSignedIn()) {
@@ -170,6 +143,7 @@ public class WebAppConfiguration extends RunConfigurationBase {
         webAppSettingModel.setWebAppId(id);
     }
 
+    @Override
     public String getSubscriptionId() {
         return webAppSettingModel.getSubscriptionId();
     }
@@ -274,6 +248,7 @@ public class WebAppConfiguration extends RunConfigurationBase {
         webAppSettingModel.setJdkVersion(jdk);
     }
 
+    @Override
     public String getTargetPath() {
         return webAppSettingModel.getTargetPath();
     }
@@ -286,8 +261,8 @@ public class WebAppConfiguration extends RunConfigurationBase {
         webAppSettingModel.setTargetName(name);
     }
 
+    @Override
     public String getTargetName() {
         return webAppSettingModel.getTargetName();
     }
-
 }

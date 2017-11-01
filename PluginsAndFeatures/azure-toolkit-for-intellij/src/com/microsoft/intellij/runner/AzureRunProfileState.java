@@ -75,6 +75,7 @@ public abstract class AzureRunProfileState <T> implements RunProfileState {
     protected void updateTelemetryMap(@NotNull  Map<String, String> telemetryMap){}
 
     private void sendTelemetry(@NotNull Map<String, String> telemetryMap, boolean success, @Nullable String errorMsg) {
+        updateTelemetryMap(telemetryMap);
         telemetryMap.put("Success", String.valueOf(success));
         if (!success) {
             telemetryMap.put("ErrorMsg", errorMsg);
