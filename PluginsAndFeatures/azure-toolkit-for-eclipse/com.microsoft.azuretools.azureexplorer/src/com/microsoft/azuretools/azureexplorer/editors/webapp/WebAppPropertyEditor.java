@@ -330,7 +330,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
             updateTableActionBtnStatus(false);
             tblAppSettings.remove(seletedIndex);
             updateTableActionBtnStatus(true);
-            readTbleAppSettings();
+            readTblAppSettings();
             updateSaveAndDiscardBtnStatus();
         }
     }
@@ -391,7 +391,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
                 case SWT.FocusOut:
                     item.setText(column, text.getText());
                     text.dispose();
-                    readTbleAppSettings();
+                    readTblAppSettings();
                     updateSaveAndDiscardBtnStatus();
                     updateTableActionBtnStatus(true);
                     break;
@@ -403,7 +403,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
                         case SWT.TRAVERSE_ESCAPE:
                             text.dispose();
                             e.doit = false;
-                            readTbleAppSettings();
+                            readTblAppSettings();
                             updateSaveAndDiscardBtnStatus();
                             updateTableActionBtnStatus(true);
                         default:
@@ -582,7 +582,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         updateTableActionBtnStatus(true);
     }
 
-    private void readTbleAppSettings() {
+    private void readTblAppSettings() {
         editedAppSettings.clear();
         int row = 0;
         while (row < tblAppSettings.getItemCount()) {
