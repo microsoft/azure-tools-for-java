@@ -87,7 +87,7 @@
                             </constraints>
                             <properties>
                               <font style="1"/>
-                              <text value="Resource Group"/>
+                              <text value="Resource Group:"/>
                             </properties>
                           </component>
                           <component id="1885f" class="javax.swing.JTextField" binding="txtResourceGroup">
@@ -109,7 +109,7 @@
                             </constraints>
                             <properties>
                               <font style="1"/>
-                              <text value="App Service Plan"/>
+                              <text value="App Service Plan:"/>
                             </properties>
                           </component>
                           <component id="a17a3" class="javax.swing.JTextField" binding="txtAppServicePlan">
@@ -131,7 +131,7 @@
                             </constraints>
                             <properties>
                               <font style="1"/>
-                              <text value="Status"/>
+                              <text value="Status:"/>
                             </properties>
                           </component>
                           <component id="fbd48" class="javax.swing.JTextField" binding="txtStatus">
@@ -153,7 +153,7 @@
                             </constraints>
                             <properties>
                               <font style="1"/>
-                              <text value="URL"/>
+                              <text value="URL:"/>
                             </properties>
                           </component>
                           <component id="b722d" class="com.intellij.ui.HyperlinkLabel" binding="lnkUrl">
@@ -172,7 +172,7 @@
                             </constraints>
                             <properties>
                               <font style="1"/>
-                              <text value="Location"/>
+                              <text value="Location:"/>
                             </properties>
                           </component>
                           <component id="d97ca" class="javax.swing.JTextField" binding="txtLocation">
@@ -194,7 +194,7 @@
                             </constraints>
                             <properties>
                               <font style="1"/>
-                              <text value="Pricing Tier"/>
+                              <text value="Pricing Tier:"/>
                             </properties>
                           </component>
                           <component id="5e77e" class="javax.swing.JTextField" binding="txtPricingTier">
@@ -216,7 +216,7 @@
                             </constraints>
                             <properties>
                               <font style="1"/>
-                              <text value="Subscription ID"/>
+                              <text value="Subscription ID:"/>
                             </properties>
                           </component>
                           <component id="2a5bb" class="javax.swing.JTextField" binding="txtSubscription">
