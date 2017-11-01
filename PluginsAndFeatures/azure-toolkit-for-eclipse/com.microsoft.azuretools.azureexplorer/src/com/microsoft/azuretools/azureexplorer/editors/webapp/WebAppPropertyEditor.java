@@ -22,13 +22,17 @@
 
 package com.microsoft.azuretools.azureexplorer.editors.webapp;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.program.Program;
@@ -36,8 +40,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -45,6 +51,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchListener;
 import org.eclipse.ui.IWorkbenchPage;
@@ -63,6 +70,10 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
     private static final int PROGRESS_BAR_HEIGHT = 3;
     private static final String TXT_NA = "N/A";
     private static final String TXT_LOADING = "<Loading...>";
+    private static final String NOTIFY_PROFILE_GET_SUCCESS = "Get Publishing Profile successfully.";
+    private static final String NOTIFY_PROFILE_GET_FAIL = "Failed to get Publishing Profile.";
+    private static final String NOTIFY_PROPERTY_UPDATE_SUCCESS = "Property update successfully.";
+
     private final Map<String, String> cachedAppSettings;
     private final Map<String, String> editedAppSettings;
     private final WebAppPropertyViewPresenter<WebAppPropertyEditor> webAppPropertyViewPresenter;
@@ -88,6 +99,10 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
     private Composite cpOverview;
     private Composite cpExtraInfo;
     private ProgressBar progressBar;
+    private TableEditor editor;
+    private Button btnNewItem;
+    private Button btnDeleteItem;
+    private Button btnEditItem;
 
     /**
      * Constructor.
@@ -96,8 +111,8 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         this.webAppPropertyViewPresenter = new WebAppPropertyViewPresenter<WebAppPropertyEditor>();
         this.webAppPropertyViewPresenter.onAttachView(this);
 
-        cachedAppSettings = new HashMap<>();
-        editedAppSettings = new HashMap<>();
+        cachedAppSettings = new LinkedHashMap<>();
+        editedAppSettings = new LinkedHashMap<>();
     }
 
     @Override
@@ -136,20 +151,33 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
 
         btnGetPublishProfile = new Button(cpControlButtons, SWT.NONE);
         btnGetPublishProfile.setText("Get Publish Profile");
+        btnGetPublishProfile.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages
+                .IMG_ETOOL_PRINT_EDIT));
+        btnGetPublishProfile.addListener(SWT.Selection, event -> onBtnGetPublishProfileSelection());
+
 
         btnSave = new Button(cpControlButtons, SWT.NONE);
         GridData gdBtnSave = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gdBtnSave.widthHint = 50;
         btnSave.setLayoutData(gdBtnSave);
         btnSave.setText("Save");
         btnSave.setEnabled(false);
+        btnSave.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ETOOL_SAVE_EDIT));
+        btnSave.addListener(SWT.Selection, e -> {
+            setBtnEnableStatus(false);
+            webAppPropertyViewPresenter.onUpdateWebAppProperty(subscriptionId, webAppId, cachedAppSettings,
+                    editedAppSettings);
+        });
 
         btnDiscard = new Button(cpControlButtons, SWT.NONE);
         GridData gdBtnDiscard = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gdBtnDiscard.widthHint = 50;
         btnDiscard.setLayoutData(gdBtnDiscard);
         btnDiscard.setText("Discard");
         btnDiscard.setEnabled(false);
+        btnDiscard.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
+        btnDiscard.addListener(SWT.Selection, e -> {
+            updateMapStatus(editedAppSettings, cachedAppSettings);
+            resetTblAppSettings(editedAppSettings);
+        });
 
         cpOverview = new Composite(composite, SWT.NONE);
         cpOverview.setLayout(new GridLayout(4, false));
@@ -248,6 +276,11 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         tblAppSettings.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         tblAppSettings.setHeaderVisible(true);
         tblAppSettings.setLinesVisible(true);
+        tblAppSettings.addListener(SWT.MouseDoubleClick, event -> onTblAppSettingMouseDoubleClick(event));
+
+        editor = new TableEditor(tblAppSettings);
+        editor.horizontalAlignment = SWT.LEFT;
+        editor.grabHorizontal = true;
 
         TableColumn tblclmnKey = new TableColumn(tblAppSettings, SWT.NONE);
         tblclmnKey.setWidth(300);
@@ -261,26 +294,23 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         cpTableButtons.setLayout(new GridLayout(1, false));
         cpTableButtons.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
 
-        Button btnNewItem = new Button(cpTableButtons, SWT.NONE);
-        GridData gdBtnNewItem = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gdBtnNewItem.widthHint = 25;
-        btnNewItem.setLayoutData(gdBtnNewItem);
-        btnNewItem.setText("+");
+        btnNewItem = new Button(cpTableButtons, SWT.NONE);
+        btnNewItem.setToolTipText("New");
+        btnNewItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
         btnNewItem.setEnabled(false);
+        btnNewItem.addListener(SWT.Selection, event -> onBtnNewItemSelection());
 
-        Button btnDeleteItem = new Button(cpTableButtons, SWT.NONE);
-        GridData gdBtnDeleteItem = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gdBtnDeleteItem.widthHint = 25;
-        btnDeleteItem.setLayoutData(gdBtnDeleteItem);
-        btnDeleteItem.setText("-");
+        btnDeleteItem = new Button(cpTableButtons, SWT.NONE);
+        btnDeleteItem.setToolTipText("Delete");
+        btnDeleteItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
         btnDeleteItem.setEnabled(false);
+        btnDeleteItem.addListener(SWT.Selection, event -> onBtnDeleteItemSelection());
 
-        Button btnEditItem = new Button(cpTableButtons, SWT.NONE);
-        GridData gdBtnEditItem = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gdBtnEditItem.widthHint = 25;
-        btnEditItem.setLayoutData(gdBtnEditItem);
-        btnEditItem.setText("*");
+        btnEditItem = new Button(cpTableButtons, SWT.NONE);
+        btnEditItem.setToolTipText("Edit");
+        btnEditItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ETOOL_CLEAR));
         btnEditItem.setEnabled(false);
+        btnEditItem.addListener(SWT.Selection, event -> onBtnEditItemSelection());
 
         scrolledComposite.setContent(area);
         scrolledComposite.setMinSize(area.computeSize(SWT.DEFAULT, SWT.DEFAULT));
@@ -288,14 +318,123 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         setExtraInfoVisible(false);
         setChildrenTransparent(cpOverview);
         setChildrenTransparent(cpExtraInfo);
-        // event listener
-        btnGetPublishProfile.addListener(SWT.Selection, event -> onBtnGetPublishProfileSelection());
+    }
+
+    private void onBtnEditItemSelection() {
+        int seletedIndex = tblAppSettings.getSelectionIndex();
+        if (seletedIndex >= 0 && seletedIndex < tblAppSettings.getItemCount()) {
+            updateTableActionBtnStatus(false);
+            editingTableItem(tblAppSettings.getItem(seletedIndex), 1);
+        }
+    }
+
+    private void onBtnDeleteItemSelection() {
+        int seletedIndex = tblAppSettings.getSelectionIndex();
+        if (seletedIndex >= 0 && seletedIndex < tblAppSettings.getItemCount()) {
+            updateTableActionBtnStatus(false);
+            tblAppSettings.remove(seletedIndex);
+            updateTableActionBtnStatus(true);
+            readTbleAppSettings();
+            updateSaveAndDiscardBtnStatus();
+        }
+    }
+
+    private void onBtnNewItemSelection() {
+        updateTableActionBtnStatus(false);
+        TableItem item = new TableItem(tblAppSettings, SWT.NONE);
+        item.setText(new String[] {"<key>", "<value>"});
+        tblAppSettings.setSelection(item);
+        editingTableItem(item, 0);
+    }
+
+    private void setBtnEnableStatus(boolean enabled) {
+        progressBar.setVisible(!enabled);
+        btnGetPublishProfile.setEnabled(enabled);
+        btnSave.setEnabled(enabled);
+        btnDiscard.setEnabled(enabled);
+        btnNewItem.setEnabled(enabled);
+        btnEditItem.setEnabled(enabled);
+        btnDeleteItem.setEnabled(enabled);
+        tblAppSettings.setEnabled(enabled);
+        if (enabled) {
+            updateSaveAndDiscardBtnStatus();
+        }
+    }
+
+    private void onTblAppSettingMouseDoubleClick(Event event) {
+        updateTableActionBtnStatus(false);
+        Rectangle clientArea = tblAppSettings.getClientArea();
+        Point pt = new Point(event.x, event.y);
+        int index = tblAppSettings.getTopIndex();
+        while (index < tblAppSettings.getItemCount()) {
+            boolean visible = false;
+            final TableItem item = tblAppSettings.getItem(index);
+            for (int i = 0; i < tblAppSettings.getColumnCount(); i++) {
+                Rectangle rect = item.getBounds(i);
+                if (rect.contains(pt)) {
+                    editingTableItem(item, i);
+                    return;
+                }
+                if (!visible && rect.intersects(clientArea)) {
+                    visible = true;
+                }
+            }
+            if (!visible) {
+                updateTableActionBtnStatus(true);
+                return;
+            }
+            index++;
+        }
+        updateTableActionBtnStatus(true);
+    }
+
+    private void editingTableItem(TableItem item, int column) {
+        final Text text = new Text(tblAppSettings, SWT.NONE);
+        Listener textListener = e -> {
+            switch (e.type) {
+                case SWT.FocusOut:
+                    item.setText(column, text.getText());
+                    text.dispose();
+                    readTbleAppSettings();
+                    updateSaveAndDiscardBtnStatus();
+                    updateTableActionBtnStatus(true);
+                    break;
+                case SWT.Traverse:
+                    switch (e.detail) {
+                        case SWT.TRAVERSE_RETURN:
+                            item.setText(column, text.getText());
+                            // FALL THROUGH
+                        case SWT.TRAVERSE_ESCAPE:
+                            text.dispose();
+                            e.doit = false;
+                            readTbleAppSettings();
+                            updateSaveAndDiscardBtnStatus();
+                            updateTableActionBtnStatus(true);
+                        default:
+                    }
+                    break;
+                default:
+            }
+        };
+        text.addListener(SWT.FocusOut, textListener);
+        text.addListener(SWT.Traverse, textListener);
+        editor.setEditor(text, item, column);
+        text.setText(item.getText(column));
+        text.selectAll();
+        text.setFocus();
+    }
+
+    private void updateTableActionBtnStatus(boolean enabled) {
+        btnNewItem.setEnabled(enabled);
+        btnDeleteItem.setEnabled(enabled);
+        btnEditItem.setEnabled(enabled);
     }
 
     private void onBtnGetPublishProfileSelection() {
         DirectoryDialog dirDialog = new DirectoryDialog(btnGetPublishProfile.getShell(), SWT.OPEN);
         String firstPath = dirDialog.open();
         if (firstPath != null) {
+            setBtnEnableStatus(false);
             webAppPropertyViewPresenter.onGetPublishingProfileXmlWithSecrets(subscriptionId, webAppId, firstPath);
         }
     }
@@ -424,21 +563,43 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         }
 
         // fill table of AppSettings
-        tblAppSettings.removeAll();
         cachedAppSettings.clear();
         Object appSettingsObj = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_APP_SETTING);
         if (appSettingsObj != null && appSettingsObj instanceof Map) {
             Map<String, String> appSettings = (Map<String, String>) appSettingsObj;
             for (String key : appSettings.keySet()) {
-                TableItem item = new TableItem(tblAppSettings, SWT.NONE);
-                item.setText(new String[] {key, appSettings.get(key)});
                 cachedAppSettings.put(key, appSettings.get(key));
             }
         }
-
         updateMapStatus(editedAppSettings, cachedAppSettings);
+        resetTblAppSettings(cachedAppSettings);
         progressBar.setVisible(false);
         cpOverview.getParent().layout();
+    }
+
+    private void resetTblAppSettings(Map<String, String> map) {
+        tblAppSettings.removeAll();
+        for (String key : map.keySet()) {
+            TableItem item = new TableItem(tblAppSettings, SWT.NONE);
+            item.setText(new String[] {key, map.get(key)});
+        }
+        updateTableActionBtnStatus(true);
+    }
+
+    private void readTbleAppSettings() {
+        editedAppSettings.clear();
+        int row = 0;
+        while (row < tblAppSettings.getItemCount()) {
+            TableItem item = tblAppSettings.getItem(row);
+            String key = item.getText(0);
+            String value = item.getText(1);
+            if (key.isEmpty() || editedAppSettings.containsKey(key)) {
+                tblAppSettings.remove(row);
+                continue;
+            }
+            editedAppSettings.put(key, value);
+            ++row;
+        }
     }
 
     private void setExtraInfoVisible(boolean b) {
@@ -475,13 +636,24 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
 
     @Override
     public void showPropertyUpdateResult(boolean isSuccess) {
-        // TODO Auto-generated method stub
-
+        setBtnEnableStatus(true);
+        if (isSuccess) {
+            updateMapStatus(cachedAppSettings, editedAppSettings);
+            MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Success",
+                    NOTIFY_PROPERTY_UPDATE_SUCCESS);
+        }
     }
 
     @Override
     public void showGetPublishingProfileResult(boolean isSuccess) {
-        // TODO Auto-generated method stub
-
+        setBtnEnableStatus(true);
+        if (isSuccess) {
+            MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Success",
+                    NOTIFY_PROFILE_GET_SUCCESS);
+        } else {
+            MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Failure",
+                    NOTIFY_PROFILE_GET_FAIL);
+        }
     }
+
 }
