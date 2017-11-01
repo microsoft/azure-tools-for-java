@@ -22,7 +22,7 @@
 
 package com.microsoft.intellij.helpers.webapp;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
@@ -124,8 +124,8 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     private WebAppPropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
         this.sid = sid;
         this.resId = resId;
-        cachedAppSettings = new HashMap<>();
-        editedAppSettings = new HashMap<>();
+        cachedAppSettings = new LinkedHashMap<>();
+        editedAppSettings = new LinkedHashMap<>();
         statusBar = WindowManager.getInstance().getStatusBar(project);
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.presenter = new WebAppPropertyViewPresenter<>();
