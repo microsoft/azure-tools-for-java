@@ -157,8 +157,6 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
 
 
         btnSave = new Button(cpControlButtons, SWT.NONE);
-        GridData gdBtnSave = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        btnSave.setLayoutData(gdBtnSave);
         btnSave.setText("Save");
         btnSave.setEnabled(false);
         btnSave.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ETOOL_SAVE_EDIT));
@@ -169,8 +167,6 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         });
 
         btnDiscard = new Button(cpControlButtons, SWT.NONE);
-        GridData gdBtnDiscard = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        btnDiscard.setLayoutData(gdBtnDiscard);
         btnDiscard.setText("Discard");
         btnDiscard.setEnabled(false);
         btnDiscard.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
@@ -184,7 +180,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         cpOverview.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label lblResourceGroup = new Label(cpOverview, SWT.NONE);
-        lblResourceGroup.setText("Resource Group");
+        lblResourceGroup.setText("Resource Group:");
 
         txtResourceGroup = new Text(cpOverview, SWT.NONE);
         txtResourceGroup.setEditable(false);
@@ -192,7 +188,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         txtResourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label lblAppServicePlan = new Label(cpOverview, SWT.NONE);
-        lblAppServicePlan.setText("App Service Plan");
+        lblAppServicePlan.setText("App Service Plan:");
 
         txtAppServicePlan = new Text(cpOverview, SWT.NONE);
         txtAppServicePlan.setEditable(false);
@@ -200,7 +196,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         txtAppServicePlan.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label lblStatus = new Label(cpOverview, SWT.NONE);
-        lblStatus.setText("Status");
+        lblStatus.setText("Status:");
 
         txtStatus = new Text(cpOverview, SWT.NONE);
         txtStatus.setEditable(false);
@@ -208,7 +204,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         txtStatus.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label lblUrl = new Label(cpOverview, SWT.NONE);
-        lblUrl.setText("URL");
+        lblUrl.setText("URL:");
 
         lnkUrl = new Link(cpOverview, SWT.NONE);
         lnkUrl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -217,7 +213,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         lnkUrl.addListener(SWT.Selection, event -> Program.launch(event.text));
 
         Label lblLocation = new Label(cpOverview, SWT.NONE);
-        lblLocation.setText("Location");
+        lblLocation.setText("Location:");
 
         txtLocation = new Text(cpOverview, SWT.NONE);
         txtLocation.setEditable(false);
@@ -225,7 +221,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         txtLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label lblPricingTier = new Label(cpOverview, SWT.NONE);
-        lblPricingTier.setText("Pricing Tier");
+        lblPricingTier.setText("Pricing Tier:");
 
         txtPricingTier = new Text(cpOverview, SWT.NONE);
         txtPricingTier.setEditable(false);
@@ -233,7 +229,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         txtPricingTier.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label lblSubscription = new Label(cpOverview, SWT.NONE);
-        lblSubscription.setText("Subscription ID");
+        lblSubscription.setText("Subscription ID:");
 
         txtSubscription = new Text(cpOverview, SWT.NONE);
         txtSubscription.setEditable(false);
@@ -245,7 +241,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         cpExtraInfo.setLayout(new GridLayout(2, false));
 
         lblJavaVersion = new Label(cpExtraInfo, SWT.NONE);
-        lblJavaVersion.setText("Java Version");
+        lblJavaVersion.setText("Java Version:");
 
         txtJavaVersion = new Text(cpExtraInfo, SWT.NONE);
         txtJavaVersion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -253,7 +249,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         txtJavaVersion.setText(TXT_LOADING);
 
         lblContainer = new Label(cpExtraInfo, SWT.NONE);
-        lblContainer.setText("Web Container");
+        lblContainer.setText("Web Container:");
 
         txtContainer = new Text(cpExtraInfo, SWT.NONE);
         txtContainer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -261,7 +257,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         txtContainer.setText(TXT_LOADING);
 
         lblContainerVersion = new Label(cpExtraInfo, SWT.NONE);
-        lblContainerVersion.setText("Container Version");
+        lblContainerVersion.setText("Container Version:");
 
         txtContainerVersion = new Text(cpExtraInfo, SWT.NONE);
         txtContainerVersion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
