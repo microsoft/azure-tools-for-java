@@ -57,7 +57,7 @@ public abstract class AzureSettingPanel <T extends AzureRunConfigurationBase> {
     }
 
     public void reset(@NotNull T configuration) {
-        if (!MavenRunTaskUtil.isMavenProject(project)) {
+        if (!isMavenProject()) {
             List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
             setupArtifactCombo(artifacts, configuration.getTargetPath());
         } else {
@@ -67,6 +67,14 @@ public abstract class AzureSettingPanel <T extends AzureRunConfigurationBase> {
 
         resetFromConfig(configuration);
         sendTelemetry(configuration.getSubscriptionId(), configuration.getTargetName());
+    }
+
+    protected boolean isMavenProject() {
+        return MavenRunTaskUtil.isMavenProject(project);
+    }
+
+    protected String getProjectBasePath() {
+        return project.getBasePath();
     }
 
     protected String getTargetPath() {

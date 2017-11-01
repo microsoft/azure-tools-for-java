@@ -26,30 +26,25 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunProfileState;
-import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Comparing;
-import com.intellij.openapi.util.InvalidDataException;
-import com.intellij.openapi.util.WriteExternalException;
-import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
 
-import org.jdom.Element;
+import com.microsoft.intellij.runner.AzureRunConfigurationBase;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 
-public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
+public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<WebAppOnLinuxDeployModel> {
 
     private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
     private static final String MISSING_SERVER_URL = "Please specify a valid Server URL.";
@@ -83,7 +78,6 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     private static final int REPO_LENGTH = 255;
 
     private final WebAppOnLinuxDeployModel deployModel;
-    private boolean firstTimeCreated = true;
 
     protected WebAppOnLinuxDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String
             name) {
@@ -91,39 +85,16 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
         deployModel = new WebAppOnLinuxDeployModel();
     }
 
-    public boolean isFirstTimeCreated() {
-        return firstTimeCreated;
-    }
 
-    public void setFirstTimeCreated(boolean firstTimeCreated) {
-        this.firstTimeCreated = firstTimeCreated;
-    }
-
-    public WebAppOnLinuxDeployModel getDeployModel() {
-        return deployModel;
+    @Override
+    public WebAppOnLinuxDeployModel getModel() {
+        return this.deployModel;
     }
 
     @NotNull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
         return new WebAppOnLinuxDeploySettingsEditor(this.getProject());
-    }
-
-    @Override
-    public void checkConfiguration() throws RuntimeConfigurationException {
-    }
-
-    @Override
-    public void readExternal(Element element) throws InvalidDataException {
-        super.readExternal(element);
-        firstTimeCreated = Comparing.equal(element.getAttributeValue("default"), "true");
-        XmlSerializer.deserializeInto(deployModel, element);
-    }
-
-    @Override
-    public void writeExternal(Element element) throws WriteExternalException {
-        super.writeExternal(element);
-        XmlSerializer.serializeInto(deployModel, element);
     }
 
     @Nullable
@@ -136,6 +107,7 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
     /**
      * Configuration value Validation.
      */
+    @Override
     public void validate() throws ConfigurationException {
         try {
             if (!AuthMethodManager.getInstance().isSignedIn()) {
@@ -239,6 +211,7 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
         deployModel.setWebAppName(appName);
     }
 
+    @Override
     public String getSubscriptionId() {
         return deployModel.getSubscriptionId();
     }
@@ -343,6 +316,7 @@ public class WebAppOnLinuxDeployConfiguration extends RunConfigurationBase {
         deployModel.setTargetPath(targetPath);
     }
 
+    @Override
     public String getTargetName() {
         return deployModel.getTargetName();
     }

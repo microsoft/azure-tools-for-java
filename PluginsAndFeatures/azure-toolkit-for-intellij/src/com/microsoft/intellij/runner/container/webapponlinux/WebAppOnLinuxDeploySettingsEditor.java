@@ -27,6 +27,8 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
+import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.intellij.runner.AzureSettingsEditor;
 import com.microsoft.intellij.runner.container.webapponlinux.ui.SettingPanel;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
@@ -35,47 +37,16 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.JComponent;
 import java.util.List;
 
-public class WebAppOnLinuxDeploySettingsEditor extends SettingsEditor<WebAppOnLinuxDeployConfiguration> {
+public class WebAppOnLinuxDeploySettingsEditor extends AzureSettingsEditor<WebAppOnLinuxDeployConfiguration> {
     private final SettingPanel settingPanel;
-    private final Project project;
 
     public WebAppOnLinuxDeploySettingsEditor(Project project) {
-        this.project = project;
+        super(project);
         settingPanel = new SettingPanel(project);
     }
-
     @Override
-    protected void resetEditorFrom(@NotNull WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
-        if (webAppOnLinuxDeployConfiguration.isFirstTimeCreated()) {
-            if (MavenRunTaskUtil.isMavenProject(project)) {
-                MavenRunTaskUtil.addMavenPackageBeforeRunTask(webAppOnLinuxDeployConfiguration);
-            } else {
-                List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
-                if(null != artifacts && artifacts.size() > 0) {
-                    BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, webAppOnLinuxDeployConfiguration, artifacts.get(0));
-                }
-            }
-        }
-        webAppOnLinuxDeployConfiguration.setFirstTimeCreated(false);
-        settingPanel.reset(webAppOnLinuxDeployConfiguration);
-    }
-
-    @Override
-    protected void applyEditorTo(@NotNull WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) throws
-            ConfigurationException {
-        settingPanel.apply(webAppOnLinuxDeployConfiguration);
-        webAppOnLinuxDeployConfiguration.validate();
-    }
-
-    @Override
-    protected void disposeEditor() {
-        settingPanel.disposeEditor();
-        super.disposeEditor();
-    }
-
     @NotNull
-    @Override
-    protected JComponent createEditor() {
-        return settingPanel.getRootPanel();
+    protected AzureSettingPanel getPanel() {
+        return this.settingPanel;
     }
 }

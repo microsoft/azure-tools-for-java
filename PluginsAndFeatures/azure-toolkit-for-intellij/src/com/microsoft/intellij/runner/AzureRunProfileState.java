@@ -66,6 +66,7 @@ public abstract class AzureRunProfileState <T> implements RunProfileState {
                 this.sendTelemetry(telemetryMap, true, null);
             },
             (err) -> {
+                err.printStackTrace();
                 this.onFail(err.getMessage(), processHandler);
                 this.sendTelemetry(telemetryMap, false, err.getMessage());
             });

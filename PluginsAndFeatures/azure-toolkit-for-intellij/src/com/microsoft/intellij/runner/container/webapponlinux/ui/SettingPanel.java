@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
+import com.microsoft.intellij.runner.AzureSettingPanel;
 import icons.MavenIcons;
 
 import com.intellij.icons.AllIcons;
@@ -30,14 +31,12 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
@@ -46,28 +45,21 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.runner.container.common.ContainerSettingPanel;
 import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeployConfiguration;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployView;
 
-import org.jetbrains.idea.maven.model.MavenConstants;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.awt.event.ItemEvent;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.swing.JComboBox;
@@ -79,10 +71,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
-import rx.Observable;
-import rx.schedulers.Schedulers;
-
-public class SettingPanel implements WebAppOnLinuxDeployView {
+public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfiguration> implements WebAppOnLinuxDeployView {
     private static final String NOT_APPLICABLE = "N/A";
     private static final String TABLE_HEAD_WEB_APP_NAME = "Name";
     private static final String TABLE_HEAD_RESOURCE_GROUP = "Resource Group";
@@ -97,7 +86,6 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private static final String TITLE_WEB_APP = "Web App for Containers";
 
     private final WebAppOnLinuxDeployPresenter<SettingPanel> webAppOnLinuxDeployPresenter;
-    private final Project project;
     private JTextField textAppName;
     private JComboBox<Subscription> comboSubscription;
     private JComboBox<ResourceGroup> comboResourceGroup;
@@ -143,17 +131,13 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
     private JPanel pnlMavenProject;
     private JLabel lblMavenProject;
     private JComboBox<MavenProject> cbMavenProject;
-    private Artifact lastSelectedArtifact;
-    private boolean isCbArtifactInited;
-
-    private boolean telemetrySent;
 
     /**
      * Constructor.
      */
 
     public SettingPanel(Project project) {
-        this.project = project;
+        super(project);
         webAppOnLinuxDeployPresenter = new WebAppOnLinuxDeployPresenter<>();
         webAppOnLinuxDeployPresenter.onAttachView(this);
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
@@ -227,24 +211,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
             }
         });
 
-        // Artifact to build
-        isCbArtifactInited = false;
         cbArtifact.addActionListener(e -> {
-            final Artifact selectedArtifact = (Artifact) cbArtifact.getSelectedItem();
-            if (!Comparing.equal(lastSelectedArtifact, selectedArtifact)) {
-                if (isCbArtifactInited) {
-                    if (lastSelectedArtifact != null) {
-                        BuildArtifactsBeforeRunTaskProvider
-                                .setBuildArtifactBeforeRunOption(rootPanel, project, lastSelectedArtifact, false);
-                    }
-                    if (selectedArtifact != null) {
-                        BuildArtifactsBeforeRunTaskProvider
-                                .setBuildArtifactBeforeRunOption(rootPanel, project, selectedArtifact, true);
-                    }
-                }
-                lastSelectedArtifact = selectedArtifact;
-
-            }
+            artifactActionPeformed((Artifact) cbArtifact.getSelectedItem());
         });
 
         cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
@@ -299,29 +267,42 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
 
         containerSettingPanel.setStartupFileVisible(true);
         containerSettingPanel.onListRegistries();
-        telemetrySent = false;
     }
 
-    // TODO: refactor later
-    private void sendTelemetry(String subId, String targetName) {
-        if (telemetrySent) {
-            return;
-        }
-        Observable.fromCallable(() -> {
-            Map<String, String> map = new HashMap<>();
-            map.put("SubscriptionId", subId);
-            String fileType = "";
-            if (targetName != null) {
-                fileType = MavenRunTaskUtil.getFileType(targetName);
-            }
-            map.put("FileType", fileType);
-            AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, "Run On Web App for Containers",
-                    "Open", map);
-            return true;
-        }).subscribeOn(Schedulers.io()).subscribe(
-                (res) -> telemetrySent = true,
-                (err) -> telemetrySent = true
-        );
+    @Override
+    @NotNull
+    public String getPanelName() {
+        return "Run On Web App for Containers";
+    }
+
+    @Override
+    @NotNull
+    public JPanel getMainPanel() {
+        return rootPanel;
+    }
+
+    @Override
+    @NotNull
+    protected JComboBox<Artifact> getCbArtifact() {
+        return cbArtifact;
+    }
+
+    @Override
+    @NotNull
+    protected JLabel getLblArtifact() {
+        return lblArtifact;
+    }
+
+    @Override
+    @NotNull
+    protected JComboBox<MavenProject> getCbMavenProject() {
+        return cbMavenProject;
+    }
+
+    @Override
+    @NotNull
+    protected JLabel getLblMavenProject() {
+        return lblMavenProject;
     }
 
     private void onComboResourceGroupSelection(ItemEvent event) {
@@ -354,10 +335,6 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         cbPricing.setEnabled(rdoCreateAppServicePlan.isSelected());
     }
 
-    public JPanel getRootPanel() {
-        return rootPanel;
-    }
-
     private void onComboSubscriptionSelection(ItemEvent event) {
         if (event.getStateChange() != ItemEvent.SELECTED) {
             return;
@@ -376,6 +353,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
      *
      * @param webAppOnLinuxDeployConfiguration configuration instance
      */
+    @Override
     public void apply(WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
         webAppOnLinuxDeployConfiguration.setDockerFilePath(containerSettingPanel.getDockerPath());
         // set ACR info
@@ -387,19 +365,8 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
                 containerSettingPanel.getStartupFile()
         ));
 
-        // set target
-        //noinspection Duplicates
-        if (lastSelectedArtifact != null) {
-            String targetPath = lastSelectedArtifact.getOutputFilePath();
-            webAppOnLinuxDeployConfiguration.setTargetPath(targetPath);
-            webAppOnLinuxDeployConfiguration.setTargetName(Paths.get(targetPath).getFileName().toString());
-        } else {
-            MavenProject mavenProject = (MavenProject) cbMavenProject.getSelectedItem();
-            if (mavenProject != null) {
-                webAppOnLinuxDeployConfiguration.setTargetPath(MavenRunTaskUtil.getTargetPath(mavenProject));
-                webAppOnLinuxDeployConfiguration.setTargetName(MavenRunTaskUtil.getTargetName(mavenProject));
-            }
-        }
+        webAppOnLinuxDeployConfiguration.setTargetPath(getTargetPath());
+        webAppOnLinuxDeployConfiguration.setTargetName(getTargetName());
 
         // set web app info
         if (rdoUseExist.isSelected()) {
@@ -478,52 +445,15 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         }
     }
 
-
-    @SuppressWarnings("Duplicates")
-    private void setupArtifactCombo(List<Artifact> artifacts, String targetPath) {
-        isCbArtifactInited = false;
-        cbArtifact.removeAllItems();
-        if (null != artifacts) {
-            for (Artifact artifact : artifacts) {
-                cbArtifact.addItem(artifact);
-                if (null != targetPath && Comparing.equal(artifact.getOutputFilePath(), targetPath)) {
-                    cbArtifact.setSelectedItem(artifact);
-                }
-            }
-        }
-        cbArtifact.setVisible(true);
-        lblArtifact.setVisible(true);
-        isCbArtifactInited = true;
-    }
-
-    @SuppressWarnings("Duplicates")
-    private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetPath) {
-        cbMavenProject.removeAllItems();
-        if (null != mvnprjs) {
-            for (MavenProject prj : mvnprjs) {
-                cbMavenProject.addItem(prj);
-                if (MavenRunTaskUtil.getTargetPath(prj).equals(targetPath)) {
-                    cbMavenProject.setSelectedItem(prj);
-                }
-            }
-        }
-        cbMavenProject.setVisible(true);
-        lblMavenProject.setVisible(true);
-    }
-
     /**
      * Function triggered in constructing the panel.
      *
      * @param conf configuration instance
      */
-    public void reset(WebAppOnLinuxDeployConfiguration conf) {
-        if (!MavenRunTaskUtil.isMavenProject(project)) {
-            List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
-            setupArtifactCombo(artifacts, conf.getTargetPath());
-            containerSettingPanel.setDockerPath(DockerUtil.getDefaultDockerFilePathIfExist(project.getBasePath()));
-        } else {
-            List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
-            setupMavenProjectCombo(mavenProjects, conf.getTargetPath());
+    @Override
+    public void resetFromConfig(@NotNull WebAppOnLinuxDeployConfiguration conf) {
+        if (!isMavenProject()) {
+            containerSettingPanel.setDockerPath(DockerUtil.getDefaultDockerFilePathIfExist(getProjectBasePath()));
         }
 
         // load dockerFile path from existing configuration.
@@ -586,9 +516,6 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
         if (Utils.isEmptyString(txtCreateAppServicePlan.getText())) {
             txtCreateAppServicePlan.setText(String.format("%s-%s", APP_SERVICE_PLAN_NAME_PREFIX, date));
         }
-
-        sendTelemetry(conf.getSubscriptionId(), conf.getTargetName());
-
     }
 
     private void loadWebAppList() {
@@ -754,6 +681,7 @@ public class SettingPanel implements WebAppOnLinuxDeployView {
      * Let the presenter release the view. Will be called by:
      * {@link com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeploySettingsEditor#disposeEditor()}.
      */
+    @Override
     public void disposeEditor() {
         containerSettingPanel.disposeEditor();
         webAppOnLinuxDeployPresenter.onDetachView();

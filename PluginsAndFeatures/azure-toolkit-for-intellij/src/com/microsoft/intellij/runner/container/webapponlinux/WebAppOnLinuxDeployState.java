@@ -40,6 +40,7 @@ import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.container.utils.DockerProgressHandler;
@@ -61,133 +62,116 @@ import java.util.Map;
 
 import rx.Observable;
 
-public class WebAppOnLinuxDeployState implements RunProfileState {
+public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> implements RunProfileState {
     private final WebAppOnLinuxDeployModel deployModel;
-    private final Project project;
-
 
     public WebAppOnLinuxDeployState(Project project, WebAppOnLinuxDeployModel webAppOnLinuxDeployModel) {
+        super(project);
         this.deployModel = webAppOnLinuxDeployModel;
-        this.project = project;
     }
 
     @Override
-    public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) throws ExecutionException {
-        final RunProcessHandler processHandler = new RunProcessHandler();
-        processHandler.addDefaultListener();
-        ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
-        processHandler.startNotify();
-        consoleView.attachToProcess(processHandler);
-
-        Observable.fromCallable(
-                () -> {
-                    processHandler.setText("Starting job ...  ");
-                    String basePath = project.getBasePath();
-                    if (basePath == null) {
-                        processHandler.println("Project base path is null.", ProcessOutputTypes.STDERR);
-                        throw new FileNotFoundException("Project base path is null.");
-                    }
-                    // locate artifact to specified location
-                    String targetFilePath = deployModel.getTargetPath();
-                    processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
-
-                    // validate dockerfile
-                    Path targetDockerfile = Paths.get(deployModel.getDockerFilePath());
-                    processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
-                    if (!targetDockerfile.toFile().exists()) {
-                        throw new FileNotFoundException("Dockerfile not found.");
-                    }
-                    // replace placeholder if exists
-                    String content = new String(Files.readAllBytes(targetDockerfile));
-                    content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
-                            Paths.get(basePath).toUri().relativize(Paths.get(targetFilePath).toUri()).getPath()
-                    );
-                    Files.write(targetDockerfile, content.getBytes());
-
-                    // build image
-                    PrivateRegistryImageSetting acrInfo = deployModel.getPrivateRegistryImageSetting();
-                    processHandler.setText(String.format("Building image ...  [%s]",
-                            acrInfo.getImageTagWithServerUrl()));
-                    DockerClient docker = DefaultDockerClient.fromEnv().build();
-                    DockerUtil.buildImage(docker,
-                            acrInfo.getImageTagWithServerUrl(),
-                            targetDockerfile.getParent(),
-                            targetDockerfile.getFileName().toString(),
-                            new DockerProgressHandler(processHandler)
-                    );
-
-                    // push to ACR
-                    processHandler.setText(String.format("Pushing to ACR ... [%s] ", acrInfo.getServerUrl()));
-                    DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
-                            acrInfo.getImageTagWithServerUrl(), new DockerProgressHandler(processHandler));
-
-                    // deploy
-                    if (deployModel.isCreatingNewWebAppOnLinux()) {
-                        // create new WebApp
-                        processHandler.setText(String.format("Creating new WebApp ... [%s]",
-                                deployModel.getWebAppName()));
-                        WebApp app = AzureWebAppMvpModel.getInstance()
-                                .createWebAppOnLinux(deployModel);
-
-                        if (app != null && app.name() != null) {
-                            processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
-                            updateConfigurationDataModel(app);
-
-                            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
-                                    null));
-                        }
-                    } else {
-                        // update WebApp
-                        processHandler.setText(String.format("Updating WebApp ... [%s]",
-                                deployModel.getWebAppName()));
-                        WebApp app = AzureWebAppMvpModel.getInstance()
-                                .updateWebAppOnLinux(deployModel.getSubscriptionId(), deployModel.getWebAppId(),
-                                        acrInfo);
-                        if (app != null && app.name() != null) {
-                            processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
-                        }
-                    }
-                    return null;
-                }
-        ).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
-                (res) -> {
-                    processHandler.setText("Updating cache ... ");
-                    AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
-                    processHandler.setText("Job done");
-                    processHandler.notifyProcessTerminated(0);
-                    if (deployModel.isCreatingNewWebAppOnLinux() && AzureUIRefreshCore.listeners != null) {
-                        AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,null));
-                    }
-                    sendTelemetry(true, null);
-                },
-                (err) -> {
-                    err.printStackTrace();
-                    processHandler.println(err.getMessage(), ProcessOutputTypes.STDERR);
-                    processHandler.notifyProcessTerminated(0);
-                    sendTelemetry(false, err.getMessage());
-                }
-        );
-        return new DefaultExecutionResult(consoleView, processHandler);
+    protected String getDeployTarget() {
+        return "Web App for Containers";
     }
 
-    // TODO: refactor later
-    private void sendTelemetry(boolean success, @Nullable String errorMsg) {
-        Map<String, String> map = new HashMap<>();
-        map.put("SubscriptionId", deployModel.getSubscriptionId());
-        map.put("CreateNewApp", String.valueOf(deployModel.isCreatingNewWebAppOnLinux()));
-        map.put("CreateNewSP", String.valueOf(deployModel.isCreatingNewAppServicePlan()));
-        map.put("CreateNewRGP", String.valueOf(deployModel.isCreatingNewResourceGroup()));
-        map.put("Success", String.valueOf(success));
+    @Override
+    public WebApp executeSteps(@NotNull RunProcessHandler processHandler,
+                               @NotNull Map<String, String> telemetryMap) throws Exception {
+        processHandler.setText("Starting job ...  ");
+        String basePath = project.getBasePath();
+        if (basePath == null) {
+            processHandler.println("Project base path is null.", ProcessOutputTypes.STDERR);
+            throw new FileNotFoundException("Project base path is null.");
+        }
+        // locate artifact to specified location
+        String targetFilePath = deployModel.getTargetPath();
+        processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
+
+        // validate dockerfile
+        Path targetDockerfile = Paths.get(deployModel.getDockerFilePath());
+        processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
+        if (!targetDockerfile.toFile().exists()) {
+            throw new FileNotFoundException("Dockerfile not found.");
+        }
+        // replace placeholder if exists
+        String content = new String(Files.readAllBytes(targetDockerfile));
+        content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
+                Paths.get(basePath).toUri().relativize(Paths.get(targetFilePath).toUri()).getPath()
+        );
+        Files.write(targetDockerfile, content.getBytes());
+
+        // build image
+        PrivateRegistryImageSetting acrInfo = deployModel.getPrivateRegistryImageSetting();
+        processHandler.setText(String.format("Building image ...  [%s]",
+                acrInfo.getImageTagWithServerUrl()));
+        DockerClient docker = DefaultDockerClient.fromEnv().build();
+        DockerUtil.buildImage(docker,
+                acrInfo.getImageTagWithServerUrl(),
+                targetDockerfile.getParent(),
+                targetDockerfile.getFileName().toString(),
+                new DockerProgressHandler(processHandler)
+        );
+
+        // push to ACR
+        processHandler.setText(String.format("Pushing to ACR ... [%s] ", acrInfo.getServerUrl()));
+        DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
+                acrInfo.getImageTagWithServerUrl(), new DockerProgressHandler(processHandler));
+
+        // deploy
+        if (deployModel.isCreatingNewWebAppOnLinux()) {
+            // create new WebApp
+            processHandler.setText(String.format("Creating new WebApp ... [%s]",
+                    deployModel.getWebAppName()));
+            WebApp app = AzureWebAppMvpModel.getInstance().createWebAppOnLinux(deployModel);
+            if (app != null && app.name() != null) {
+                processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
+                updateConfigurationDataModel(app);
+
+                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
+                        null));
+            }
+        } else {
+            // update WebApp
+            processHandler.setText(String.format("Updating WebApp ... [%s]",
+                    deployModel.getWebAppName()));
+            WebApp app = AzureWebAppMvpModel.getInstance()
+                    .updateWebAppOnLinux(deployModel.getSubscriptionId(), deployModel.getWebAppId(), acrInfo);
+            if (app != null && app.name() != null) {
+                processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
+            }
+        }
+        return null;
+    }
+
+    @Override
+    protected void onSuccess(WebApp result, @NotNull RunProcessHandler processHandler) {
+        processHandler.setText("Updating cache ... ");
+        AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
+        processHandler.setText("Job done");
+        processHandler.notifyComplete();
+        if (deployModel.isCreatingNewWebAppOnLinux() && AzureUIRefreshCore.listeners != null) {
+            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,null));
+        }
+    }
+
+    @Override
+    protected void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler) {
+        processHandler.println(errMsg, ProcessOutputTypes.STDERR);
+        processHandler.notifyComplete();
+    }
+
+    @Override
+    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
+        telemetryMap.put("SubscriptionId", deployModel.getSubscriptionId());
+        telemetryMap.put("CreateNewApp", String.valueOf(deployModel.isCreatingNewWebAppOnLinux()));
+        telemetryMap.put("CreateNewSP", String.valueOf(deployModel.isCreatingNewAppServicePlan()));
+        telemetryMap.put("CreateNewRGP", String.valueOf(deployModel.isCreatingNewResourceGroup()));
         String fileType = "";
         if (null != deployModel.getTargetName()) {
             fileType = MavenRunTaskUtil.getFileType(deployModel.getTargetName());
         }
-        map.put("FileType", fileType);
-        if (!success) {
-            map.put("ErrorMsg", errorMsg);
-        }
-
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "Web App for Containers", "Deploy", map);
+        telemetryMap.put("FileType", fileType);
     }
 
     private void updateConfigurationDataModel(WebApp app) {
