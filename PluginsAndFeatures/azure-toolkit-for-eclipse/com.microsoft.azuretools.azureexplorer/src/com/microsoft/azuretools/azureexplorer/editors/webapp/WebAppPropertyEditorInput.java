@@ -26,12 +26,18 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 
-public class WebAppPropertyEditorInput implements IEditorInput{
+public class WebAppPropertyEditorInput implements IEditorInput {
 
     private String id;
     private String subscriptionId;
     private String webappName;
 
+    /**
+     * Constructor.
+     * @param sid   Subscription ID
+     * @param id    Resource ID
+     * @param name  Resource Name
+     */
     public WebAppPropertyEditorInput(String sid, String id, String name) {
         this.id = id;
         this.subscriptionId = sid;

@@ -31,6 +31,7 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -88,6 +89,9 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
     private Composite cpExtraInfo;
     private ProgressBar progressBar;
 
+    /**
+     * Constructor.
+     */
     public WebAppPropertyEditor() {
         this.webAppPropertyViewPresenter = new WebAppPropertyViewPresenter<WebAppPropertyEditor>();
         this.webAppPropertyViewPresenter.onAttachView(this);
@@ -99,41 +103,32 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
     @Override
     public void createPartControl(Composite parent) {
 
+        GridLayout glCpRoot = new GridLayout(1, false);
+        glCpRoot.marginWidth = 0;
+        glCpRoot.verticalSpacing = 0;
+        glCpRoot.horizontalSpacing = 0;
+        glCpRoot.marginHeight = 0;
         Composite cpRoot = new Composite(parent, SWT.NONE);
-        GridLayout gl_cpRoot = new GridLayout(1, false);
-        gl_cpRoot.marginWidth = 0;
-        gl_cpRoot.verticalSpacing = 0;
-        gl_cpRoot.horizontalSpacing = 0;
-        gl_cpRoot.marginHeight = 0;
-        cpRoot.setLayout(gl_cpRoot);
+        cpRoot.setLayout(glCpRoot);
 
         progressBar = new ProgressBar(cpRoot, SWT.INDETERMINATE);
         GridData gdProgressBar = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
         gdProgressBar.heightHint = PROGRESS_BAR_HEIGHT;
         progressBar.setLayoutData(gdProgressBar);
 
-        ScrolledComposite scrolledComposite = new ScrolledComposite(cpRoot,
-                SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        ScrolledComposite scrolledComposite = new ScrolledComposite(cpRoot, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         scrolledComposite.setExpandHorizontal(true);
         scrolledComposite.setExpandVertical(true);
 
         Composite area = new Composite(scrolledComposite, SWT.NONE);
-        GridLayout gl_area = new GridLayout(1, false);
-        gl_area.marginWidth = 0;
-        gl_area.verticalSpacing = 0;
-        gl_area.marginHeight = 0;
-        gl_area.horizontalSpacing = 0;
-        area.setLayout(gl_area);
+        GridLayout glArea = new GridLayout(1, false);
+        area.setLayout(glArea);
 
         Composite composite = new Composite(area, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-        GridLayout gl_composite = new GridLayout(1, false);
-        gl_composite.verticalSpacing = 10;
-        gl_composite.marginWidth = 0;
-        gl_composite.marginHeight = 2;
-        gl_composite.horizontalSpacing = 30;
-        composite.setLayout(gl_composite);
+        GridLayout glComposite = new GridLayout(1, false);
+        composite.setLayout(glComposite);
 
         Composite cpControlButtons = new Composite(composite, SWT.NONE);
         cpControlButtons.setLayout(new GridLayout(3, false));
@@ -143,10 +138,16 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         btnGetPublishProfile.setText("Get Publish Profile");
 
         btnSave = new Button(cpControlButtons, SWT.NONE);
+        GridData gdBtnSave = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdBtnSave.widthHint = 50;
+        btnSave.setLayoutData(gdBtnSave);
         btnSave.setText("Save");
         btnSave.setEnabled(false);
 
         btnDiscard = new Button(cpControlButtons, SWT.NONE);
+        GridData gdBtnDiscard = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdBtnDiscard.widthHint = 50;
+        btnDiscard.setLayoutData(gdBtnDiscard);
         btnDiscard.setText("Discard");
         btnDiscard.setEnabled(false);
 
@@ -157,7 +158,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         Label lblResourceGroup = new Label(cpOverview, SWT.NONE);
         lblResourceGroup.setText("Resource Group");
 
-        txtResourceGroup = new Text(cpOverview, SWT.BORDER);
+        txtResourceGroup = new Text(cpOverview, SWT.NONE);
         txtResourceGroup.setEditable(false);
         txtResourceGroup.setText(TXT_LOADING);
         txtResourceGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -165,7 +166,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         Label lblAppServicePlan = new Label(cpOverview, SWT.NONE);
         lblAppServicePlan.setText("App Service Plan");
 
-        txtAppServicePlan = new Text(cpOverview, SWT.BORDER);
+        txtAppServicePlan = new Text(cpOverview, SWT.NONE);
         txtAppServicePlan.setEditable(false);
         txtAppServicePlan.setText(TXT_LOADING);
         txtAppServicePlan.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -173,7 +174,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         Label lblStatus = new Label(cpOverview, SWT.NONE);
         lblStatus.setText("Status");
 
-        txtStatus = new Text(cpOverview, SWT.BORDER);
+        txtStatus = new Text(cpOverview, SWT.NONE);
         txtStatus.setEditable(false);
         txtStatus.setText(TXT_LOADING);
         txtStatus.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -184,12 +185,13 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         lnkUrl = new Link(cpOverview, SWT.NONE);
         lnkUrl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         lnkUrl.setText(TXT_LOADING);
-        // TODO: lnkUrl cannot open browser
+        // click to open browser
+        lnkUrl.addListener(SWT.Selection, event -> Program.launch(event.text));
 
         Label lblLocation = new Label(cpOverview, SWT.NONE);
         lblLocation.setText("Location");
 
-        txtLocation = new Text(cpOverview, SWT.BORDER);
+        txtLocation = new Text(cpOverview, SWT.NONE);
         txtLocation.setEditable(false);
         txtLocation.setText(TXT_LOADING);
         txtLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -197,7 +199,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         Label lblPricingTier = new Label(cpOverview, SWT.NONE);
         lblPricingTier.setText("Pricing Tier");
 
-        txtPricingTier = new Text(cpOverview, SWT.BORDER);
+        txtPricingTier = new Text(cpOverview, SWT.NONE);
         txtPricingTier.setEditable(false);
         txtPricingTier.setText(TXT_LOADING);
         txtPricingTier.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -205,10 +207,10 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         Label lblSubscription = new Label(cpOverview, SWT.NONE);
         lblSubscription.setText("Subscription ID");
 
-        txtSubscription = new Text(cpOverview, SWT.BORDER);
+        txtSubscription = new Text(cpOverview, SWT.NONE);
         txtSubscription.setEditable(false);
         txtSubscription.setText(TXT_LOADING);
-        txtSubscription.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        txtSubscription.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
 
         cpExtraInfo = new Composite(composite, SWT.NONE);
         cpExtraInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -217,7 +219,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         lblJavaVersion = new Label(cpExtraInfo, SWT.NONE);
         lblJavaVersion.setText("Java Version");
 
-        txtJavaVersion = new Text(cpExtraInfo, SWT.BORDER);
+        txtJavaVersion = new Text(cpExtraInfo, SWT.NONE);
         txtJavaVersion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         txtJavaVersion.setEditable(false);
         txtJavaVersion.setText(TXT_LOADING);
@@ -225,7 +227,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         lblContainer = new Label(cpExtraInfo, SWT.NONE);
         lblContainer.setText("Web Container");
 
-        txtContainer = new Text(cpExtraInfo, SWT.BORDER);
+        txtContainer = new Text(cpExtraInfo, SWT.NONE);
         txtContainer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         txtContainer.setEditable(false);
         txtContainer.setText(TXT_LOADING);
@@ -233,7 +235,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         lblContainerVersion = new Label(cpExtraInfo, SWT.NONE);
         lblContainerVersion.setText("Container Version");
 
-        txtContainerVersion = new Text(cpExtraInfo, SWT.BORDER);
+        txtContainerVersion = new Text(cpExtraInfo, SWT.NONE);
         txtContainerVersion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         txtContainerVersion.setEditable(false);
         txtContainerVersion.setText(TXT_LOADING);
@@ -260,14 +262,23 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         cpTableButtons.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
 
         Button btnNewItem = new Button(cpTableButtons, SWT.NONE);
+        GridData gdBtnNewItem = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdBtnNewItem.widthHint = 25;
+        btnNewItem.setLayoutData(gdBtnNewItem);
         btnNewItem.setText("+");
         btnNewItem.setEnabled(false);
 
         Button btnDeleteItem = new Button(cpTableButtons, SWT.NONE);
+        GridData gdBtnDeleteItem = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdBtnDeleteItem.widthHint = 25;
+        btnDeleteItem.setLayoutData(gdBtnDeleteItem);
         btnDeleteItem.setText("-");
         btnDeleteItem.setEnabled(false);
 
         Button btnEditItem = new Button(cpTableButtons, SWT.NONE);
+        GridData gdBtnEditItem = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdBtnEditItem.widthHint = 25;
+        btnEditItem.setLayoutData(gdBtnEditItem);
         btnEditItem.setText("*");
         btnEditItem.setEnabled(false);
 
@@ -390,23 +401,25 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         Object os = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_OPERATING_SYS);
         if (os != null && os instanceof OperatingSystem) {
             switch ((OperatingSystem) os) {
-            case WINDOWS:
-                txtJavaVersion.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION) == null
-                        ? TXT_NA : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION));
-                txtContainer.setText(
-                        webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER) == null ? TXT_NA
-                                : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER));
-                txtContainerVersion.setText(
-                        webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER_VERSION) == null ? TXT_NA
-                                : (String) webAppProperty
-                                        .getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER_VERSION));
-                setExtraInfoVisible(true);
-                break;
-            case LINUX:
-                setExtraInfoVisible(false);
-                break;
-            default:
-                break;
+                case WINDOWS:
+                    txtJavaVersion.setText(
+                            webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION) == null ? TXT_NA
+                                    : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION));
+                    txtContainer.setText(
+                            webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER) == null ? TXT_NA
+                                    : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER));
+                    txtContainerVersion.setText(
+                            webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER_VERSION) == null
+                                    ? TXT_NA
+                                    : (String) webAppProperty
+                                            .getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER_VERSION));
+                    setExtraInfoVisible(true);
+                    break;
+                case LINUX:
+                    setExtraInfoVisible(false);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -418,7 +431,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
             Map<String, String> appSettings = (Map<String, String>) appSettingsObj;
             for (String key : appSettings.keySet()) {
                 TableItem item = new TableItem(tblAppSettings, SWT.NONE);
-                item.setText(new String[] { key, appSettings.get(key) });
+                item.setText(new String[] {key, appSettings.get(key)});
                 cachedAppSettings.put(key, appSettings.get(key));
             }
         }
@@ -450,15 +463,15 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         }
     }
 
-
     private boolean mapEquals(Map<String, String> arg1, Map<String, String> arg2) {
-        if (arg1 == arg2) return true;
+        if (arg1 == arg2) {
+            return true;
+        }
         if (arg1 == null || arg2 == null) {
-          return false;
+            return false;
         }
         return arg1.equals(arg2);
     }
-
 
     @Override
     public void showPropertyUpdateResult(boolean isSuccess) {
