@@ -70,7 +70,6 @@ import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 
 public class ServiceExplorerView extends ViewPart implements PropertyChangeListener {
 
@@ -327,10 +326,6 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                     Node node = ((TreeNode) selection.getFirstElement()).node;
                     if (node.hasNodeActions()) {
                         for (final NodeAction nodeAction : node.getNodeActions()) {
-                            // TODO: remove this after web app property in Eclipse is finished
-                            if (node instanceof WebAppNode && "Show Properties".equals(nodeAction.getName())) {
-                                continue;
-                            }
                             ImageDescriptor imageDescriptor = nodeAction.getIconPath() != null ? Activator.getImageDescriptor("icons/" + nodeAction.getIconPath()) : null;
                             Action action = new Action(nodeAction.getName(), imageDescriptor) {
                                 @Override

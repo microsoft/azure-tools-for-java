@@ -48,6 +48,8 @@ import com.microsoft.azuretools.azureexplorer.editors.container.ContainerRegistr
 import com.microsoft.azuretools.azureexplorer.editors.container.ContainerRegistryExplorerEditorInput;
 import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditor;
 import com.microsoft.azuretools.azureexplorer.editors.rediscache.RedisExplorerEditorInput;
+import com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor;
+import com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditorInput;
 import com.microsoft.azuretools.azureexplorer.forms.OpenSSLFinderForm;
 import com.microsoft.azuretools.azureexplorer.views.RedisPropertyView;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -326,6 +328,7 @@ public class UIHelperImpl implements UIHelper {
             switch (type) {
                 case REDIS_EXPLORER:
                 case CONTAINER_EXPLORER:
+                case WEBAPP_EXPLORER:
                     page.openEditor(input, descriptor.getId());
                     break;
                 default:
@@ -362,7 +365,12 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openWebAppPropertyView(WebAppNode node) {
-        // TODO Auto-generated method stub
-
+        if (Utils.isEmptyString(node.getId())) {
+            return;
+        }
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        WebAppPropertyEditorInput input = new WebAppPropertyEditorInput(node.getSubscriptionId(), node.getId(), node.getName());
+        IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(WebAppPropertyEditor.ID);
+        openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
     }
 }
