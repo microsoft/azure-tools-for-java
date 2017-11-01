@@ -196,7 +196,7 @@
                             <properties>
                               <font style="1"/>
                               <text value="User Name:"/>
-                              <visible value="true"/>
+                              <visible value="false"/>
                             </properties>
                           </component>
                           <component id="f89b6" class="javax.swing.JLabel" binding="lblPrimaryPwd">
@@ -207,7 +207,7 @@
                             <properties>
                               <font style="1"/>
                               <text value="Password:"/>
-                              <visible value="true"/>
+                              <visible value="false"/>
                             </properties>
                           </component>
                           <component id="74f06" class="javax.swing.JLabel" binding="lblSecondaryPwd">
@@ -218,7 +218,7 @@
                             <properties>
                               <font style="1"/>
                               <text value="Password2:"/>
-                              <visible value="true"/>
+                              <visible value="false"/>
                             </properties>
                           </component>
                           <grid id="c51bd" layout-manager="BorderLayout" hgap="0" vgap="0">
@@ -255,7 +255,7 @@
                             <properties>
                               <editable value="false"/>
                               <text value="&lt;Loading...&gt;"/>
-                              <visible value="true"/>
+                              <visible value="false"/>
                             </properties>
                           </component>
                           <component id="2acc5" class="javax.swing.JButton" binding="btnPrimaryPassword">
@@ -266,7 +266,7 @@
                             <properties>
                               <enabled value="true"/>
                               <text value="Copy to Clipboard"/>
-                              <visible value="true"/>
+                              <visible value="false"/>
                             </properties>
                           </component>
                           <component id="189e9" class="javax.swing.JButton" binding="btnSecondaryPassword">
@@ -277,7 +277,7 @@
                             <properties>
                               <enabled value="true"/>
                               <text value="Copy to Clipboard"/>
-                              <visible value="true"/>
+                              <visible value="false"/>
                             </properties>
                           </component>
                         </children>
