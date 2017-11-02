@@ -81,7 +81,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
     private static final String TABLE_EMPTY_MESSAGE = "No available settings.";
     private static final String FILE_SELECTOR_TITLE = "Choose Where You Want to Save the Publish Profile.";
-    private static final String NOTIFY_PROPERTY_UPDATE_SUCCESS = "Properties update.";
+    private static final String NOTIFY_PROPERTY_UPDATE_SUCCESS = "Properties updated.";
     private static final String NOTIFY_PROFILE_GET_SUCCESS = "Publish Profile saved.";
     private static final String NOTIFY_PROFILE_GET_FAIL = "Failed to get Publish Profile.";
 
