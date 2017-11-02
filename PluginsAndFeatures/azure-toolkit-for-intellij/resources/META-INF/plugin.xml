@@ -153,7 +153,7 @@
             class="com.microsoft.intellij.actions.AzureCodeSamples"
             text="Azure Code Samples"
             description="Opens an Azure Code Samples page in your default browser"
-            icon="/icons/small/CodeSamples_16.png">
+            icon="/icons/CodeSamples_16.png">
     </action>
 
     <action id="Actions.SubmitSparkApplicationAction"
