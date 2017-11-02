@@ -60,6 +60,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azuretools.core.components.AzureListenerWrapper;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
@@ -154,26 +155,36 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         btnGetPublishProfile.setText("Get Publish Profile");
         btnGetPublishProfile.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages
                 .IMG_ETOOL_PRINT_EDIT));
-        btnGetPublishProfile.addListener(SWT.Selection, event -> onBtnGetPublishProfileSelection());
-
+        btnGetPublishProfile.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "btnGetPublishProfile", null) {
+            @Override
+            protected void handleEventFunc(Event event) {
+                onBtnGetPublishProfileSelection();
+            }
+        });
 
         btnSave = new Button(cpControlButtons, SWT.NONE);
         btnSave.setText("Save");
         btnSave.setEnabled(false);
         btnSave.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ETOOL_SAVE_EDIT));
-        btnSave.addListener(SWT.Selection, e -> {
-            setBtnEnableStatus(false);
-            webAppPropertyViewPresenter.onUpdateWebAppProperty(subscriptionId, webAppId, cachedAppSettings,
-                    editedAppSettings);
+        btnSave.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "btnSave", null) {
+            @Override
+            protected void handleEventFunc(Event event) {
+                setBtnEnableStatus(false);
+                webAppPropertyViewPresenter.onUpdateWebAppProperty(subscriptionId, webAppId, cachedAppSettings,
+                        editedAppSettings);
+            }
         });
 
         btnDiscard = new Button(cpControlButtons, SWT.NONE);
         btnDiscard.setText("Discard");
         btnDiscard.setEnabled(false);
         btnDiscard.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-        btnDiscard.addListener(SWT.Selection, e -> {
-            updateMapStatus(editedAppSettings, cachedAppSettings);
-            resetTblAppSettings(editedAppSettings);
+        btnDiscard.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "btnDiscard", null) {
+            @Override
+            protected void handleEventFunc(Event event) {
+                updateMapStatus(editedAppSettings, cachedAppSettings);
+                resetTblAppSettings(editedAppSettings);
+            }
         });
 
         cpOverview = new Composite(composite, SWT.NONE);
