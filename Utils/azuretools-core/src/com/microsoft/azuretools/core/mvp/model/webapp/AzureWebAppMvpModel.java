@@ -76,7 +76,7 @@ public class AzureWebAppMvpModel {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         WebApp app = azure.webApps().getById(id);
         if (app == null) {
-            throw new Exception(CANNOT_GET_WEB_APP_WITH_ID + id);
+            throw new Exception(CANNOT_GET_WEB_APP_WITH_ID + id); // TODO: specify the type of exception.
         }
         return app;
     }
@@ -167,7 +167,7 @@ public class AzureWebAppMvpModel {
     /**
      * API to create Web App on Linux.
      *
-     * @param model      parameters
+     * @param model parameters
      * @return instance of created WebApp
      * @throws IOException IOExceptions
      */
@@ -257,10 +257,21 @@ public class AzureWebAppMvpModel {
         } else {
             // TODO: other types of ImageSetting, e.g. Docker Hub
         }
+        // status-free restart.
+        stopWebApp(sid, webAppId);
         startWebApp(sid, webAppId);
         return app;
     }
 
+    /**
+     * Update app settings of webapp.
+     *
+     * @param sid      subscription id
+     * @param webAppId webapp id
+     * @param toUpdate entries to add/modify
+     * @param toRemove entries to remove
+     * @throws Exception exception
+     */
     public void updateWebAppSettings(String sid, String webAppId, Map<String, String> toUpdate, Set<String> toRemove)
             throws Exception {
         WebApp app = getWebAppById(sid, webAppId);
@@ -405,13 +416,24 @@ public class AzureWebAppMvpModel {
         return ret;
     }
 
+    /**
+     * Download publish profile.
+     *
+     * @param sid      subscription id
+     * @param webAppId webapp id
+     * @param filePath file path to save publish profile
+     * @return status indicating whether it is successful or not
+     * @throws Exception exception
+     */
     public boolean getPublishingProfileXmlWithSecrets(String sid, String webAppId, String filePath) throws Exception {
-        WebApp app = getWebAppById(sid ,webAppId);
-        File file = new File(Paths.get(filePath, app.name() + "_" + System.currentTimeMillis() + ".PublishSettings").toString());
+        WebApp app = getWebAppById(sid, webAppId);
+        File file = new File(Paths.get(filePath, app.name() + "_" + System.currentTimeMillis() + ".PublishSettings")
+                .toString());
         file.createNewFile();
         try (InputStream inputStream = app.manager().inner().webApps()
-                .listPublishingProfileXmlWithSecrets(app.resourceGroupName(), app.name(), new CsmPublishingProfileOptionsInner());
-                OutputStream outputStream = new FileOutputStream(file);
+                .listPublishingProfileXmlWithSecrets(app.resourceGroupName(), app.name(), new
+                        CsmPublishingProfileOptionsInner());
+             OutputStream outputStream = new FileOutputStream(file);
         ) {
             IOUtils.copy(inputStream, outputStream);
             return true;
@@ -429,10 +451,6 @@ public class AzureWebAppMvpModel {
         subscriptionIdToWebAppsOnLinuxMap.clear();
     }
 
-    private static final class SingletonHolder {
-        private static final AzureWebAppMvpModel INSTANCE = new AzureWebAppMvpModel();
-    }
-
     /**
      * Work Around:
      * When a web app is created from Azure Portal, there are hidden tags associated with the app.
@@ -442,5 +460,9 @@ public class AzureWebAppMvpModel {
      */
     private void clearTags(@NotNull final WebApp app) {
         app.inner().withTags(null);
+    }
+
+    private static final class SingletonHolder {
+        private static final AzureWebAppMvpModel INSTANCE = new AzureWebAppMvpModel();
     }
 }
