@@ -70,9 +70,10 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
     private static final int PROGRESS_BAR_HEIGHT = 3;
     private static final String TXT_NA = "N/A";
     private static final String TXT_LOADING = "<Loading...>";
-    private static final String NOTIFY_PROFILE_GET_SUCCESS = "Get Publishing Profile successfully.";
-    private static final String NOTIFY_PROFILE_GET_FAIL = "Failed to get Publishing Profile.";
-    private static final String NOTIFY_PROPERTY_UPDATE_SUCCESS = "Property update successfully.";
+    private static final String FILE_SELECTOR_TITLE = "Choose Where You Want to Save the Publish Profile.";
+    private static final String NOTIFY_PROFILE_GET_SUCCESS = "Publish Profile saved.";
+    private static final String NOTIFY_PROFILE_GET_FAIL = "Failed to get Publish Profile.";
+    private static final String NOTIFY_PROPERTY_UPDATE_SUCCESS = "Properties updated.";
 
     private final Map<String, String> cachedAppSettings;
     private final Map<String, String> editedAppSettings;
@@ -427,7 +428,8 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
     }
 
     private void onBtnGetPublishProfileSelection() {
-        DirectoryDialog dirDialog = new DirectoryDialog(btnGetPublishProfile.getShell(), SWT.OPEN);
+        DirectoryDialog dirDialog = new DirectoryDialog(btnGetPublishProfile.getShell(), SWT.SAVE);
+        dirDialog.setMessage(FILE_SELECTOR_TITLE);
         String firstPath = dirDialog.open();
         if (firstPath != null) {
             setBtnEnableStatus(false);
