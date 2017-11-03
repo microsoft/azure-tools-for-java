@@ -76,7 +76,9 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
                             .map((Set<PsiFile> t) -> t.stream()
                                     .map(PsiFile::getVirtualFile)
                                     .map(VirtualFile::getName)
-                                    .anyMatch(className -> className.equals("SparkContext.class") || className.equals("JavaSparkContext.class")))
+                                    .anyMatch(className -> className.equals("SparkContext.class") ||
+                                            className.equals("JavaSparkContext.class") ||
+                                            className.equals("SparkSession.class")))
                             .orElse(false);
                 })
                 .map(mcPair -> {
