@@ -47,10 +47,12 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.plugins.scala.runner.ScalaMainMethodUtil;
+import org.jetbrains.plugins.scala.lang.psi.api.statements.ScFunctionDefinition;
 import scala.Option;
 import scala.Tuple2;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Optional;
 import java.util.Set;
@@ -129,11 +131,41 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
     }
 
     private static Optional<SimpleImmutableEntry<PsiElement, PsiClass>> findScalaMainClass(PsiElement element) {
-        Option<Tuple2<PsiClass, PsiElement>> ceOption = ScalaMainMethodUtil.findMainClassAndSourceElem(element);
+        // TODO: Replace with the following code after IDEA 2018.1
+        // Option<Tuple2<PsiClass, PsiElement>> ceOption = ScalaMainMethodUtil.findMainClassAndSourceElem(element);
+        try {
+            // Added from IDEA 2017.2
+            Method findMainClassAndSourceElemMethod = Class
+                    .forName("org.jetbrains.plugins.scala.runner.ScalaMainMethodUtil")
+                    .getDeclaredMethod("findMainClassAndSourceElem", PsiElement.class);
 
-        return ceOption.isDefined() ?
-                Optional.of(new SimpleImmutableEntry<>(ceOption.get()._1(), ceOption.get()._1())) :
-                Optional.empty();
+            Option<Tuple2<PsiClass, PsiElement>> ceOption =
+                    (Option<Tuple2<PsiClass, PsiElement>>) findMainClassAndSourceElemMethod.invoke(null, element);
+
+            return ceOption.isDefined() ?
+                    Optional.of(new SimpleImmutableEntry<>(ceOption.get()._1(), ceOption.get()._1())) :
+                    Optional.empty();
+        } catch (NoSuchMethodException ignored) {
+            // Use old one for IDEA 2017.1
+            try {
+                Method findContainingMainMethod = Class
+                        .forName("org.jetbrains.plugins.scala.runner.ScalaMainMethodUtil")
+                        .getDeclaredMethod("findContainingMainMethod", PsiElement.class);
+
+                Option<ScFunctionDefinition> funDefOption =
+                        (Option<ScFunctionDefinition>) findContainingMainMethod.invoke(null, element);
+
+                return funDefOption.isDefined() ?
+                        Optional.of(new SimpleImmutableEntry<PsiElement, PsiClass>(
+                                funDefOption.get().containingClass(),
+                                funDefOption.get().containingClass())) :
+                        Optional.empty();
+            } catch (Exception ignore) {
+                return Optional.empty();
+            }
+        } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException ignored) {
+            return Optional.empty();
+        }
     }
 
     private static Optional<SimpleImmutableEntry<PsiElement, PsiClass>> getMainClassFromContext(ConfigurationContext context) {
