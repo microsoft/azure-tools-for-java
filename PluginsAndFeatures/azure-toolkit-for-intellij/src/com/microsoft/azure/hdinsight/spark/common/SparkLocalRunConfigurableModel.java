@@ -29,12 +29,19 @@ import com.intellij.util.xmlb.XmlSerializer;
 import com.intellij.util.xmlb.annotations.MapAnnotation;
 import com.intellij.util.xmlb.annotations.Tag;
 import com.intellij.util.xmlb.annotations.Transient;
+import org.apache.commons.lang3.SystemUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+
+import static com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunConfigurable.HADOOP_HOME_ENV;
+import static com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunConfigurable.WINUTILS_EXE_NAME;
 
 @Tag("spark-local-run-configurable-model")
 public class SparkLocalRunConfigurableModel implements CommonJavaRunConfigurationParameters {
@@ -68,7 +75,16 @@ public class SparkLocalRunConfigurableModel implements CommonJavaRunConfiguratio
     public SparkLocalRunConfigurableModel(@NotNull Project project) {
         this.project = project;
         this.setWorkingDirectory(PathUtil.getLocalPath(project.getBaseDir().getPath()));
-        this.dataRootDirectory = "";
+        this.setDataRootDirectory(Paths.get(this.getWorkingDirectory(), "data").toString());
+
+        if (SystemUtils.IS_OS_WINDOWS) {
+            Optional.ofNullable(System.getenv(HADOOP_HOME_ENV))
+                    .map(hadoopHome -> Paths.get(hadoopHome, "bin", WINUTILS_EXE_NAME).toString())
+                    .map(File::new)
+                    .filter(File::exists)
+                    .map(winUtilsFile -> winUtilsFile.getParentFile().getParent())
+                    .ifPresent(hadoopHome -> this.envs.put(HADOOP_HOME_ENV, hadoopHome));
+        }
     }
 
     @Transient
@@ -182,11 +198,11 @@ public class SparkLocalRunConfigurableModel implements CommonJavaRunConfiguratio
 
     @NotNull
     public String getDataRootDirectory() {
-        return dataRootDirectory;
+        return ExternalizablePath.localPathValue(dataRootDirectory);
     }
 
     public void setDataRootDirectory(@NotNull String dataRootDirectory) {
-        this.dataRootDirectory = dataRootDirectory;
+        this.dataRootDirectory = ExternalizablePath.urlValue(dataRootDirectory);
     }
 
     @Transient

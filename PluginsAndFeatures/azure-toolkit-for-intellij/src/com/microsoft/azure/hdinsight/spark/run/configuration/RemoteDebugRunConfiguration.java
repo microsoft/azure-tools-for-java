@@ -23,6 +23,7 @@ package com.microsoft.azure.hdinsight.spark.run.configuration;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
+import com.intellij.execution.JavaExecutionUtil;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.module.Module;
@@ -35,8 +36,6 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobSubmissionState;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunConfigurationModule>
 {
@@ -106,6 +106,15 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
     @Override
     public Collection<Module> getValidModules() {
         return new ArrayList<>();
+    }
+
+    @Nullable
+    @Override
+    public String suggestedName() {
+        return Optional.ofNullable(getModel().getLocalRunConfigurableModel().getRunClass())
+                .map(JavaExecutionUtil::getPresentableClassName)
+                .map(className -> "[Spark Job] " + className)
+                .orElse(null);
     }
 
     public void setAsNew() {

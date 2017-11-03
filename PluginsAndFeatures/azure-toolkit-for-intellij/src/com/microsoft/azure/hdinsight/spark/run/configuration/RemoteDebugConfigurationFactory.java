@@ -31,7 +31,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 public class RemoteDebugConfigurationFactory extends ConfigurationFactoryEx {
     private static final String NAME = "Submit Spark Job";
 
-    protected RemoteDebugConfigurationFactory(@NotNull ConfigurationType type) {
+    public RemoteDebugConfigurationFactory(@NotNull ConfigurationType type) {
         super(type);
     }
 

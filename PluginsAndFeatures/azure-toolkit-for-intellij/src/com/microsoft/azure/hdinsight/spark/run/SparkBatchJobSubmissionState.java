@@ -234,12 +234,14 @@ public class SparkBatchJobSubmissionState implements RunProfileState, RemoteStat
                         "--master local[" + (localRunConfigurableModel.isIsParallelExecution() ? 2 : 1) + "]");
 
         if (SystemUtils.IS_OS_WINDOWS) {
-            Optional.ofNullable(params.getEnv().get(SparkLocalRunConfigurable.HADOOP_HOME_ENV))
+            if (!Optional.ofNullable(params.getEnv().get(SparkLocalRunConfigurable.HADOOP_HOME_ENV))
                     .map(hadoopHome -> Paths.get(hadoopHome, "bin", SparkLocalRunConfigurable.WINUTILS_EXE_NAME).toString())
                     .map(File::new)
-                    .filter(File::exists)
-                    .orElseThrow(() -> new ExecutionException(
-                            "winutils.exe should be in %HADOOP_HOME%\\bin\\ directory for Windows platform."));
+                    .map(File::exists)
+                    .orElse(false)) {
+                throw new ExecutionException(
+                        "winutils.exe should be in %HADOOP_HOME%\\bin\\ directory for Windows platform.");
+            }
         }
 
         params.setMainClass(SparkLocalRunner.class.getCanonicalName());

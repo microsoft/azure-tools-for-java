@@ -21,8 +21,10 @@
  */
 package com.microsoft.azure.hdinsight.spark.run.configuration;
 
+import com.intellij.execution.application.ApplicationConfigurationType;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
+import com.intellij.execution.configurations.ConfigurationTypeUtil;
 import com.intellij.openapi.util.IconLoader;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
@@ -61,5 +63,10 @@ public class RemoteDebugRunConfigurationType implements ConfigurationType {
     @Override
     public ConfigurationFactory[] getConfigurationFactories() {
         return new ConfigurationFactory[]{ new RemoteDebugConfigurationFactory(this)};
+    }
+
+    @NotNull
+    public static RemoteDebugRunConfigurationType getInstance() {
+        return ConfigurationTypeUtil.findConfigurationType(RemoteDebugRunConfigurationType.class);
     }
 }
