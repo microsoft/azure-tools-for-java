@@ -23,6 +23,7 @@
 package com.microsoft.azuretools.container;
 
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -32,8 +33,12 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IConsoleView;
+import org.eclipse.ui.console.IHyperlink;
+import org.eclipse.ui.console.IPatternMatchListener;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
+import org.eclipse.ui.console.PatternMatchEvent;
+import org.eclipse.ui.console.TextConsole;
 
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
@@ -48,6 +53,54 @@ public class ConsoleLogger {
         err = console.newMessageStream();
         out.setColor(new Color(null, 0, 0, 0));
         err.setColor(new Color(null, 255, 0, 0));
+        console.addPatternMatchListener(new IPatternMatchListener() {
+            @Override
+            public void connect(TextConsole arg0) {
+            }
+
+            @Override
+            public void disconnect() {
+            }
+
+            @Override
+            public void matchFound(PatternMatchEvent event) {
+                try {
+                    String urlText = console.getDocument().get(event.getOffset(), event.getLength());
+                    IHyperlink hyperlink = new IHyperlink() {
+                        @Override
+                        public void linkActivated() {
+                            Program.launch(urlText);
+                        }
+
+                        @Override
+                        public void linkEntered() {
+                        }
+
+                        @Override
+                        public void linkExited() {
+                        }
+                    };
+                    console.addHyperlink(hyperlink, event.getOffset(), event.getLength());
+                } catch (Exception exception) {
+                    throw new RuntimeException(exception);
+                }
+            }
+
+            @Override
+            public int getCompilerFlags() {
+                return 0;
+            }
+
+            @Override
+            public String getLineQualifier() {
+                return null;
+            }
+
+            @Override
+            public String getPattern() {
+                return "https?://\\S+";
+            }
+        });
     }
 
     private static class LazyHolder {

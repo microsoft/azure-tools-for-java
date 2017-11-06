@@ -18,7 +18,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.views,
  org.eclipse.ui.workbench,
  org.eclipse.jdt.core,
- org.eclipse.ui.ide
+ org.eclipse.ui.ide,
+ org.eclipse.text
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
@@ -28,6 +29,7 @@ Bundle-ClassPath: .,
  target/lib/docker-client-8.6.2-shaded.jar
 Import-Package: com.microsoft.azuretools.core.actions,
  org.eclipse.core.expressions,
+ org.eclipse.jface.text.hyperlink,
  org.eclipse.jst.j2ee.datamodel.properties,
  org.eclipse.jst.j2ee.internal.web.archive.operations,
  org.eclipse.ui.console,
