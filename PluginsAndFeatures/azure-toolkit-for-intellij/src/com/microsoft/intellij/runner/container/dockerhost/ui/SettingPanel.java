@@ -149,11 +149,6 @@ public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration>{
         return rootPanel;
     }
 
-    // TODO: remove
-    public JPanel getRootPanel() {
-        return rootPanel;
-    }
-
     @Override
     @NotNull
     protected JComboBox<Artifact> getCbArtifact() {

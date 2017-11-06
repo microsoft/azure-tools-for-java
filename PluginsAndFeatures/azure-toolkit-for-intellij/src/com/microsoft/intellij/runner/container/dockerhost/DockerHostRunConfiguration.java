@@ -63,10 +63,6 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
     public DockerHostRunSetting getModel() {
         return dataModel;
     }
-    // TODO: remove
-    public DockerHostRunSetting getDataModel() {
-        return dataModel;
-    }
 
     @NotNull
     @Override

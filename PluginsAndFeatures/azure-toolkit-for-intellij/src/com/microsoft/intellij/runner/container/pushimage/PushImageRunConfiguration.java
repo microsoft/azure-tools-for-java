@@ -80,11 +80,6 @@ public class PushImageRunConfiguration extends AzureRunConfigurationBase<PushIma
         return dataModel;
     }
 
-    // TODO: remove
-    public PushImageRunModel getDataModel() {
-        return dataModel;
-    }
-
     @NotNull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {

@@ -130,11 +130,6 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
         return lblMavenProject;
     }
 
-    // TODO: remove
-    public JPanel getRootPanel() {
-        return rootPanel;
-    }
-
     /**
      * Function triggered by any content change events.
      */
