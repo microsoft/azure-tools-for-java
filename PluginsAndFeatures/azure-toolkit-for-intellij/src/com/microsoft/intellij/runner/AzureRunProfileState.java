@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner;
 
+import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
@@ -69,7 +70,7 @@ public abstract class AzureRunProfileState <T> implements RunProfileState {
                 this.onFail(err.getMessage(), processHandler);
                 this.sendTelemetry(telemetryMap, false, err.getMessage());
             });
-        return null;
+        return new DefaultExecutionResult(consoleView, processHandler);
     }
 
     protected void updateTelemetryMap(@NotNull  Map<String, String> telemetryMap){}
