@@ -308,6 +308,7 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
         deployModel.setAppServicePlanName(appServicePlanName);
     }
 
+    @Override
     public String getTargetPath() {
         return deployModel.getTargetPath();
     }

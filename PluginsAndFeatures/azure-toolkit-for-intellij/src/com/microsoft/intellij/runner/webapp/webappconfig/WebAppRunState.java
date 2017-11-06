@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
-import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
@@ -50,7 +49,7 @@ import java.util.Map;
 
 import org.jetbrains.idea.maven.model.MavenConstants;
 
-public class WebAppRunState extends AzureRunProfileState<WebApp> implements RunProfileState {
+public class WebAppRunState extends AzureRunProfileState<WebApp> {
 
     private static final String CREATE_WEBAPP = "Creating new Web App...";
     private static final String CREATE_FAILED = "Failed to create Web App. Error: %s ...";

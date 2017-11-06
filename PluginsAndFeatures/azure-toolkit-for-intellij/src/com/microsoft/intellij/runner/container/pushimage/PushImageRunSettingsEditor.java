@@ -22,64 +22,24 @@
 
 package com.microsoft.intellij.runner.container.pushimage;
 
-import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
+import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.intellij.runner.AzureSettingsEditor;
 import com.microsoft.intellij.runner.container.pushimage.ui.SettingPanel;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
-import javax.swing.JComponent;
-
-public class PushImageRunSettingsEditor extends SettingsEditor<PushImageRunConfiguration> {
-    private final Project project;
+public class PushImageRunSettingsEditor extends AzureSettingsEditor<PushImageRunConfiguration> {
     private final SettingPanel settingPanel;
 
     public PushImageRunSettingsEditor(Project project) {
-        this.project = project;
+        super(project);
         this.settingPanel = new SettingPanel(project);
     }
 
-    @SuppressWarnings("Duplicates")
     @Override
-    protected void resetEditorFrom(@NotNull PushImageRunConfiguration containerLocalRunConfiguration) {
-        if (containerLocalRunConfiguration.isFirstTimeCreated()) {
-            if (MavenRunTaskUtil.isMavenProject(project)) {
-                MavenRunTaskUtil.addMavenPackageBeforeRunTask(containerLocalRunConfiguration);
-            } else {
-                List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project); // is NotNull
-                if (artifacts.size() > 0) {
-                    BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project,
-                            containerLocalRunConfiguration, artifacts.get(0));
-                }
-            }
-        }
-        containerLocalRunConfiguration.setFirstTimeCreated(false);
-        settingPanel.reset(containerLocalRunConfiguration);
-    }
-
-
-    @Override
-    protected void applyEditorTo(@NotNull PushImageRunConfiguration containerLocalRunConfiguration) throws
-            ConfigurationException {
-        settingPanel.apply(containerLocalRunConfiguration);
-        containerLocalRunConfiguration.validate();
-    }
-
     @NotNull
-    @Override
-    protected JComponent createEditor() {
-        return settingPanel.getRootPanel();
-    }
-
-    @Override
-    protected void disposeEditor() {
-        settingPanel.disposeEditor();
-        super.disposeEditor();
+    protected AzureSettingPanel getPanel() {
+        return this.settingPanel;
     }
 }

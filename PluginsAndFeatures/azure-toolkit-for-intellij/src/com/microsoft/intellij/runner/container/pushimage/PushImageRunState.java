@@ -22,20 +22,11 @@
 
 package com.microsoft.intellij.runner.container.pushimage;
 
-import com.intellij.execution.DefaultExecutionResult;
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.ExecutionResult;
-import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.RunProfileState;
-import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.process.ProcessOutputTypes;
-import com.intellij.execution.runners.ProgramRunner;
-import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.PushImageRunModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
-import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.container.utils.DockerProgressHandler;
@@ -45,110 +36,93 @@ import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 
-import rx.Observable;
-
-public class PushImageRunState implements RunProfileState {
+public class PushImageRunState extends AzureRunProfileState<String> {
     private final PushImageRunModel dataModel;
-    private final Project project;
 
 
     public PushImageRunState(Project project, PushImageRunModel pushImageRunModel) {
+        super(project);
         this.dataModel = pushImageRunModel;
-        this.project = project;
     }
 
-    @Nullable
     @Override
-    public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) throws ExecutionException {
-        final RunProcessHandler processHandler = new RunProcessHandler();
-        ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
-        processHandler.startNotify();
-        consoleView.attachToProcess(processHandler);
-
-        Observable.fromCallable(
-                () -> {
-                    processHandler.setText("Starting job ...  ");
-                    String basePath = project.getBasePath();
-                    if (basePath == null) {
-                        processHandler.println("Project base path is null.", ProcessOutputTypes.STDERR);
-                        throw new FileNotFoundException("Project base path is null.");
-                    }
-                    // locate artifact to specified location
-                    String targetFilePath = dataModel.getTargetPath();
-                    processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
-
-                    // validate dockerfile
-                    Path targetDockerfile = Paths.get(dataModel.getDockerFilePath());
-                    processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
-                    if (!targetDockerfile.toFile().exists()) {
-                        throw new FileNotFoundException("Dockerfile not found.");
-                    }
-                    // replace placeholder if exists
-                    String content = new String(Files.readAllBytes(targetDockerfile));
-                    content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
-                            Paths.get(basePath).toUri().relativize(Paths.get(targetFilePath).toUri()).getPath()
-                    );
-                    Files.write(targetDockerfile, content.getBytes());
-
-                    // build image
-                    PrivateRegistryImageSetting acrInfo = dataModel.getPrivateRegistryImageSetting();
-                    processHandler.setText(String.format("Building image ...  [%s]", acrInfo.getImageTagWithServerUrl()));
-                    DockerClient docker = DefaultDockerClient.fromEnv().build();
-                    DockerUtil.buildImage(docker,
-                            acrInfo.getImageTagWithServerUrl(),
-                            targetDockerfile.getParent(),
-                            targetDockerfile.getFileName().toString(),
-                            new DockerProgressHandler(processHandler)
-                    );
-
-                    // push to ACR
-                    processHandler.setText(String.format("Pushing to ACR ... [%s] ", acrInfo.getServerUrl()));
-                    DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
-                            acrInfo.getImageTagWithServerUrl(),
-                            new DockerProgressHandler(processHandler)
-                    );
-
-                    return null;
-                }
-        ).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
-                (props) -> {
-                    processHandler.setText("pushed.");
-                    processHandler.notifyProcessTerminated(0);
-                    sendTelemetry(true, null);
-                },
-                (err) -> {
-                    err.printStackTrace();
-                    processHandler.println(err.getMessage(), ProcessOutputTypes.STDERR);
-                    processHandler.notifyProcessTerminated(0);
-                    sendTelemetry(false, err.getMessage());
-                }
-        );
-        return new DefaultExecutionResult(consoleView, processHandler);
+    protected String getDeployTarget() {
+        return "Container Registry";
     }
 
-    // TODO: refactor later
-    private void sendTelemetry(boolean success, @Nullable String errorMsg) {
-        Map<String, String> map = new HashMap<>();
-        map.put("Success", String.valueOf(success));
+    @Override
+    public String executeSteps(@NotNull RunProcessHandler processHandler,
+                               @NotNull Map<String, String> telemetryMap) throws Exception {
+        processHandler.setText("Starting job ...  ");
+        String basePath = project.getBasePath();
+        if (basePath == null) {
+            processHandler.println("Project base path is null.", ProcessOutputTypes.STDERR);
+            throw new FileNotFoundException("Project base path is null.");
+        }
+        // locate artifact to specified location
+        String targetFilePath = dataModel.getTargetPath();
+        processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
+
+        // validate dockerfile
+        Path targetDockerfile = Paths.get(dataModel.getDockerFilePath());
+        processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
+        if (!targetDockerfile.toFile().exists()) {
+            throw new FileNotFoundException("Dockerfile not found.");
+        }
+        // replace placeholder if exists
+        String content = new String(Files.readAllBytes(targetDockerfile));
+        content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
+                Paths.get(basePath).toUri().relativize(Paths.get(targetFilePath).toUri()).getPath()
+        );
+        Files.write(targetDockerfile, content.getBytes());
+
+        // build image
+        PrivateRegistryImageSetting acrInfo = dataModel.getPrivateRegistryImageSetting();
+        processHandler.setText(String.format("Building image ...  [%s]", acrInfo.getImageTagWithServerUrl()));
+        DockerClient docker = DefaultDockerClient.fromEnv().build();
+        String image = DockerUtil.buildImage(docker,
+                acrInfo.getImageTagWithServerUrl(),
+                targetDockerfile.getParent(),
+                targetDockerfile.getFileName().toString(),
+                new DockerProgressHandler(processHandler)
+        );
+
+        // push to ACR
+        processHandler.setText(String.format("Pushing to ACR ... [%s] ", acrInfo.getServerUrl()));
+        DockerUtil.pushImage(docker, acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
+                acrInfo.getImageTagWithServerUrl(),
+                new DockerProgressHandler(processHandler)
+        );
+
+        return image;
+    }
+
+    @Override
+    protected void onSuccess(String image, @NotNull RunProcessHandler processHandler) {
+        processHandler.setText("pushed.");
+        processHandler.notifyComplete();
+    }
+
+    @Override
+    protected void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler) {
+        processHandler.println(errMsg, ProcessOutputTypes.STDERR);
+        processHandler.notifyComplete();
+    }
+
+    @Override
+    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
         String fileName = dataModel.getTargetName();
         if (null != fileName) {
-            map.put("FileType", MavenRunTaskUtil.getFileType(fileName));
+            telemetryMap.put("FileType", MavenRunTaskUtil.getFileType(fileName));
         } else {
-            map.put("FileType", "");
+            telemetryMap.put("FileType", "");
         }
-        if (!success) {
-            map.put("ErrorMsg", errorMsg);
-        }
-
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, "Container Registry", "PushImage", map);
     }
 }

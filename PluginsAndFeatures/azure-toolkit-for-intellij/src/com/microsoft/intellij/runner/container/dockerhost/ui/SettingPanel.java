@@ -22,44 +22,32 @@
 
 package com.microsoft.intellij.runner.container.dockerhost.ui;
 
+import com.microsoft.intellij.runner.AzureSettingPanel;
 import icons.MavenIcons;
 
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.runner.container.dockerhost.DockerHostRunConfiguration;
 import com.microsoft.intellij.runner.container.utils.DockerUtil;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 
-import org.jetbrains.idea.maven.model.MavenConstants;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
-
-import rx.Observable;
-import rx.schedulers.Schedulers;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -68,11 +56,10 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class SettingPanel {
+public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration>{
     private static final String IMAGE_NAME_PREFIX = "localimage";
     private static final String DEFAULT_TAG_NAME = "latest";
 
-    private final Project project;
     private JTextField textDockerHost;
     private JCheckBox comboTlsEnabled;
     private TextFieldWithBrowseButton dockerCertPathTextField;
@@ -88,16 +75,11 @@ public class SettingPanel {
     private JLabel lblMavenProject;
     private JComboBox cbMavenProject;
 
-    private Artifact lastSelectedArtifact;
-    private boolean isCbArtifactInited;
-
-    private boolean telemetrySent;
-
     /**
      * Constructor.
      */
     public SettingPanel(Project project) {
-        this.project = project;
+        super(project);
 
         dockerCertPathTextField.addActionListener(this::onDockerCertPathBrowseButtonClick);
         comboTlsEnabled.addActionListener(event -> updateComponentEnabledState());
@@ -121,23 +103,8 @@ public class SettingPanel {
             }
         });
 
-        // Artifact to build
-        isCbArtifactInited = false;
         cbArtifact.addActionListener(e -> {
-            final Artifact selectedArtifact = (Artifact) cbArtifact.getSelectedItem();
-            if (!Comparing.equal(lastSelectedArtifact, selectedArtifact)) {
-                if (isCbArtifactInited) {
-                    if (lastSelectedArtifact != null) {
-                        BuildArtifactsBeforeRunTaskProvider
-                                .setBuildArtifactBeforeRunOption(rootPanel, project, lastSelectedArtifact, false);
-                    }
-                    if (selectedArtifact != null) {
-                        BuildArtifactsBeforeRunTaskProvider
-                                .setBuildArtifactBeforeRunOption(rootPanel, project, selectedArtifact, true);
-                    }
-                }
-                lastSelectedArtifact = selectedArtifact;
-            }
+            artifactActionPeformed((Artifact) cbArtifact.getSelectedItem());
         });
 
         cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
@@ -168,42 +135,60 @@ public class SettingPanel {
                 }
             }
         });
-
-        telemetrySent = false;
     }
 
-    // TODO: refactor later
-    private void sendTelemetry(String targetName) {
-        if (telemetrySent) {
-            return;
-        }
-        Observable.fromCallable(() -> {
-            Map<String, String> map = new HashMap<>();
-            String fileType = "";
-            if (targetName != null) {
-                fileType = MavenRunTaskUtil.getFileType(targetName);
-            }
-            map.put("FileType", fileType);
-            AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, "Docker Run",
-                    "Open", map);
-            return true;
-        }).subscribeOn(Schedulers.io()).subscribe(
-                (res) -> telemetrySent = true,
-                (err) -> telemetrySent = true
-        );
+    @Override
+    @NotNull
+    public String getPanelName() {
+        return "Docker Run";
     }
 
+    @Override
+    @NotNull
+    public JPanel getMainPanel() {
+        return rootPanel;
+    }
+
+    // TODO: remove
     public JPanel getRootPanel() {
         return rootPanel;
     }
 
+    @Override
+    @NotNull
+    protected JComboBox<Artifact> getCbArtifact() {
+        return cbArtifact;
+    }
+
+    @Override
+    @NotNull
+    protected JLabel getLblArtifact() {
+        return lblArtifact;
+    }
+
+    @Override
+    @NotNull
+    protected JComboBox<MavenProject> getCbMavenProject() {
+        return cbMavenProject;
+    }
+
+    @Override
+    @NotNull
+    protected JLabel getLblMavenProject() {
+        return lblMavenProject;
+    }
 
     /**
      * Function triggered in constructing the panel.
      *
      * @param conf configuration instance
      */
-    public void reset(DockerHostRunConfiguration conf) {
+    @Override
+    public void resetFromConfig(DockerHostRunConfiguration conf) {
+        if (!isMavenProject()) {
+            dockerFilePathTextField.setText(DockerUtil.getDefaultDockerFilePathIfExist(getProjectBasePath()));
+        }
+
         textDockerHost.setText(conf.getDockerHost());
         comboTlsEnabled.setSelected(conf.isTlsEnabled());
         dockerCertPathTextField.setText(conf.getDockerCertPath());
@@ -211,14 +196,6 @@ public class SettingPanel {
         textTagName.setText(conf.getTagName());
         updateComponentEnabledState();
 
-        if (!MavenRunTaskUtil.isMavenProject(project)) {
-            List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
-            setupArtifactCombo(artifacts, conf.getDataModel().getTargetPath());
-            dockerFilePathTextField.setText(DockerUtil.getDefaultDockerFilePathIfExist(project.getBasePath()));
-        } else {
-            List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
-            setupMavenProjectCombo(mavenProjects, conf.getTargetPath());
-        }
         // load dockerFile path from existing configuration.
         if (!Utils.isEmptyString(conf.getDockerFilePath())) {
             dockerFilePathTextField.setText(conf.getDockerFilePath());
@@ -240,30 +217,14 @@ public class SettingPanel {
                 e.printStackTrace();
             }
         }
-        sendTelemetry(conf.getTargetName());
     }
 
-    @SuppressWarnings("Duplicates")
-    private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetPath) {
-        cbMavenProject.removeAllItems();
-        if (null != mvnprjs) {
-            for (MavenProject prj : mvnprjs) {
-                cbMavenProject.addItem(prj);
-                if (MavenRunTaskUtil.getTargetPath(prj).equals(targetPath)) {
-                    cbMavenProject.setSelectedItem(prj);
-                }
-            }
-        }
-        cbMavenProject.setVisible(true);
-        lblMavenProject.setVisible(true);
-    }
-
-    /**
+     /**
      * Function triggered by any content change events.
      *
      * @param conf configuration instance
      */
-    @SuppressWarnings("Duplicates")
+    @Override
     public void apply(DockerHostRunConfiguration conf) {
         conf.setDockerHost(textDockerHost.getText());
         conf.setTlsEnabled(comboTlsEnabled.isSelected());
@@ -275,36 +236,13 @@ public class SettingPanel {
         } else {
             conf.setTagName(textTagName.getText());
         }
-        // set target
-        if (lastSelectedArtifact != null) {
-            String targetPath = lastSelectedArtifact.getOutputFilePath();
-            conf.setTargetPath(targetPath);
-            conf.setTargetName(Paths.get(targetPath).getFileName().toString());
-        } else {
-            MavenProject mavenProject = (MavenProject) cbMavenProject.getSelectedItem();
-            if (mavenProject != null) {
-                conf.setTargetPath(MavenRunTaskUtil.getTargetPath(mavenProject));
-                conf.setTargetName(MavenRunTaskUtil.getTargetName(mavenProject));
-            }
-        }
+
+        conf.setTargetPath(getTargetPath());
+        conf.setTargetName(getTargetName());
     }
 
-    @SuppressWarnings("Duplicates")
-    private void setupArtifactCombo(List<Artifact> artifacts, String targetPath) {
-        isCbArtifactInited = false;
-        cbArtifact.removeAllItems();
-        if (null != artifacts) {
-            for (Artifact artifact : artifacts) {
-                cbArtifact.addItem(artifact);
-                if (null != targetPath && Comparing.equal(artifact.getOutputFilePath(), targetPath)) {
-                    cbArtifact.setSelectedItem(artifact);
-                }
-            }
-        }
-        cbArtifact.setVisible(true);
-        lblArtifact.setVisible(true);
-        isCbArtifactInited = true;
-    }
+    @Override
+    public void disposeEditor() {}
 
     private void updateComponentEnabledState() {
         pnlDockerCertPath.setVisible(comboTlsEnabled.isSelected());
@@ -328,7 +266,5 @@ public class SettingPanel {
             path = builder.toString();
             dockerCertPathTextField.setText(path);
         }
-
     }
-
 }

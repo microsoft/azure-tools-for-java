@@ -36,7 +36,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
