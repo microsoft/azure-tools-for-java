@@ -18,6 +18,15 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.0.11]</h3>
+      <ul>
+        <li>Support view/edit properties of Azure Web App (Windows/Linux).</li>
+        <li>Support interactive login mode for Azure China.</li>
+        <li>Support running docker locally for multiple modules in current project (simultaneously).</li>
+        <li>Users can now use the same code for both Spark local run and cluster run, which means they can test locally and then submit to cluster without modification.</li>
+        <li>HDInsight tools for IntelliJ now generate run/debug configuration automatically to make Spark job run/debug easier for both local and cluster run.</li>
+        <li>Fix some bugs.</li>
+      </ul>
       <h3>[3.0.10]</h3>
       <ul>
         <li>Support pushing docker image of the project to Azure Container Registry.</li>
