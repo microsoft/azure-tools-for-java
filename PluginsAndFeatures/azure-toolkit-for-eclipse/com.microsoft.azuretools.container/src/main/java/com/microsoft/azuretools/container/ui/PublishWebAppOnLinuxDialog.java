@@ -28,6 +28,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +110,9 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     private static final String DOMAIN_NAME_REGEX = "^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$";
     private static final String REPO_COMPONENTS_REGEX = "[a-z0-9]+(?:[._-][a-z0-9]+)*";
     private static final String TAG_REGEX = "^[\\w]+[\\w.-]*$";
+    private static final String APP_NAME_PREFIX = "webapp-linux";
+    private static final String RESOURCE_GROUP_NAME_PREFIX = "rg-web-linux";
+    private static final String APP_SERVICE_PLAN_NAME_PREFIX = "appsp-linux";
     private static final int TAG_LENGTH = 128;
     private static final int REPO_LENGTH = 255;
 
@@ -599,6 +605,12 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
 
     // helpers
     private void reset() {
+        // set default value
+        DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
+        String date = df.format(new Date());
+        cpNew.txtAppName.setText(String.format("%s-%s", APP_NAME_PREFIX, date));
+        cpNew.txtNewResourceGroupName.setText(String.format("%s-%s", RESOURCE_GROUP_NAME_PREFIX, date));
+        cpNew.txtAppServicePlanName.setText(String.format("%s-%s", APP_SERVICE_PLAN_NAME_PREFIX, date));
         // set default Dockerfile path
         String defaultDockerFilePath = DockerUtil.getDefaultDockerFilePathIfExist(basePath);
         cpAcr.setDockerfilePath(defaultDockerFilePath);
