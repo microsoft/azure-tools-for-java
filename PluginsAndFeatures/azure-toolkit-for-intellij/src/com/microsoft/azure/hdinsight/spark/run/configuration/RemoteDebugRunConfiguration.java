@@ -33,23 +33,22 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
-import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor;
-import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobSubmissionState;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunConfigurationModule>
 {
+    public static String ACTION_TRIGGER_PROP = "ActionTrigger";
+
     @NotNull
     private SparkBatchJobConfigurableModel jobModel;
+    @NotNull
+    final private Properties actionProperties = new Properties();
 
     public RemoteDebugRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, @NotNull RunConfigurationModule configurationModule, String name) {
         super(name, configurationModule, factory);
@@ -98,9 +97,19 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) throws ExecutionException {
         SparkBatchJobSubmissionState state = new SparkBatchJobSubmissionState(getProject(), jobModel);
 
-        state.createAppInsightEvent(executor, new HashMap<>());
+        state.createAppInsightEvent(executor, actionProperties.entrySet().stream().collect(Collectors.toMap(
+                (Map.Entry<Object, Object> entry) -> (String) entry.getKey(),
+                (Map.Entry<Object, Object> entry) -> (String) entry.getValue()
+        )));
+
+        // Clear the action properties
+        actionProperties.clear();
 
         return state;
+    }
+
+    public void setActionProperty(@NotNull final String key, @NotNull final String value) {
+        this.actionProperties.put(key, value);
     }
 
     @Override

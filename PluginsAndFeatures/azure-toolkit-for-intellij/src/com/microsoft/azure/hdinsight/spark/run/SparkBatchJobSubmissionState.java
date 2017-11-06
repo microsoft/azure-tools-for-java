@@ -51,7 +51,6 @@ import com.microsoft.azure.hdinsight.spark.common.SparkLocalRunConfigurableModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.mock.SparkLocalRunner;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction;
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunConfigurable;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
@@ -257,9 +256,15 @@ public class SparkBatchJobSubmissionState implements RunProfileState, RemoteStat
         return this.remoteConnection;
     }
 
-    public void createAppInsightEvent(@NotNull Executor executor, @NotNull final Map<String, String> postEventProps) {
-        postEventProps.put("Executor", executor.getId());
-        postEventProps.put("ActionUuid", getUuid());
+    public void createAppInsightEvent(@NotNull Executor executor, @Nullable final Map<String, String> addedEventProps) {
+        HashMap<String, String> postEventProps = new HashMap<String, String>() {{
+            put("Executor", executor.getId());
+            put("ActionUuid", getUuid());
+        }};
+
+        // Merge added props, but not overwrite Executor and ActionUuid properties.
+        Optional.ofNullable(addedEventProps)
+                .ifPresent(propsToAdd -> propsToAdd.forEach((k, v) -> postEventProps.merge(k, v, (vOld, vNew) -> vOld)));
 
         switch (executor.getId()) {
             case "Run":

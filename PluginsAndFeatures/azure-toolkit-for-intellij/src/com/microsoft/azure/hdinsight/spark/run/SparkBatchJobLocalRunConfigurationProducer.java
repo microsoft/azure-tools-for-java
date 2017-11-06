@@ -102,6 +102,7 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
                 });
 
         configuration.setGeneratedName();
+        configuration.setActionProperty(RemoteDebugRunConfiguration.ACTION_TRIGGER_PROP, "Context");
         setupConfigurationModule(context, configuration);
     }
 
@@ -212,17 +213,21 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
                 .map(mcPair -> {
                     final Module configurationModule = jobConfiguration.getConfigurationModule().getModule();
 
-                    if (Comparing.equal(context.getModule(), configurationModule)) {
-                        return true;
+                    if (!Comparing.equal(context.getModule(), configurationModule)) {
+
+                        RemoteDebugRunConfiguration template = (RemoteDebugRunConfiguration)context
+                                .getRunManager()
+                                .getConfigurationTemplate(getConfigurationFactory())
+                                .getConfiguration();
+                        final Module predefinedModule = template.getConfigurationModule().getModule();
+
+                        if (!Comparing.equal(predefinedModule, configurationModule)) {
+                            return false;
+                        }
                     }
 
-                    RemoteDebugRunConfiguration template = (RemoteDebugRunConfiguration)context
-                            .getRunManager()
-                            .getConfigurationTemplate(getConfigurationFactory())
-                            .getConfiguration();
-                    final Module predefinedModule = template.getConfigurationModule().getModule();
-
-                    return Comparing.equal(predefinedModule, configurationModule);
+                    jobConfiguration.setActionProperty(RemoteDebugRunConfiguration.ACTION_TRIGGER_PROP, "ContextReuse");
+                    return true;
                 })
                 .orElse(false);
     }
