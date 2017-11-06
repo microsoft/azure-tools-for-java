@@ -43,7 +43,8 @@ import java.util.stream.Collectors;
 
 public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunConfigurationModule>
 {
-    public static String ACTION_TRIGGER_PROP = "ActionTrigger";
+    // The prop to store the action trigger source if it can be got, such as Run Context
+    final public static String ACTION_TRIGGER_PROP = "ActionTrigger";
 
     @NotNull
     private SparkBatchJobConfigurableModel jobModel;
