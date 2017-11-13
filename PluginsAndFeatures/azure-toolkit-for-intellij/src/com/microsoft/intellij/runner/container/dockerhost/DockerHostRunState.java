@@ -87,7 +87,6 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
                 } catch (Exception e) {
                     // ignore
                 }
-                processHandler.notifyProcessTerminated(processEvent.getExitCode());
             }
 
             @Override
