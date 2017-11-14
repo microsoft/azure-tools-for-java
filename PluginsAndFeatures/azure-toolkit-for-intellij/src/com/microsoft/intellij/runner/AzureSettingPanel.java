@@ -29,7 +29,6 @@ import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import rx.Observable;
@@ -136,7 +135,7 @@ public abstract class AzureSettingPanel <T extends AzureRunConfigurationBase> {
     @NotNull
     protected abstract JLabel getLblMavenProject();
 
-    private void setupArtifactCombo(@NotNull List<Artifact> artifacts, @NotNull String targetPath) {
+    private void setupArtifactCombo(List<Artifact> artifacts, String targetPath) {
         isCbArtifactInited = false;
         JComboBox<Artifact> cbArtifact = getCbArtifact();
         cbArtifact.removeAllItems();
@@ -169,14 +168,16 @@ public abstract class AzureSettingPanel <T extends AzureRunConfigurationBase> {
         getLblMavenProject().setVisible(true);
     }
 
-    private void sendTelemetry(@Nullable String subId, @NotNull String targetName) {
+    private void sendTelemetry(String subId, String targetName) {
         if (telemetrySent) {
             return;
         }
         Observable.fromCallable(() -> {
             Map<String, String> map = new HashMap<>();
-            map.put("SubscriptionId", subId);
-            map.put("FileType", MavenRunTaskUtil.getFileType(targetName));
+            map.put("SubscriptionId", subId !=null ? subId : "");
+            if (targetName != null) {
+                map.put("FileType", MavenRunTaskUtil.getFileType(targetName));
+            }
             AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog,
                     getPanelName(),
                     "Open" /*action*/,
