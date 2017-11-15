@@ -176,6 +176,7 @@ public class AzurePlugin extends AbstractProjectComponent {
         if (upgrade) {
             AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
         }
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Load, null, true);
     }
 
     private void initializeAIRegistry() {

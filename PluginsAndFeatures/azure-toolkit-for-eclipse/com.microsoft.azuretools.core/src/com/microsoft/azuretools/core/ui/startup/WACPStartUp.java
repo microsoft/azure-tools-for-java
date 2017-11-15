@@ -1,20 +1,20 @@
 /**
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
+ * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
  * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package com.microsoft.azuretools.core.ui.startup;
@@ -36,11 +36,11 @@ import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.telemetry.AppInsightsConfigurationImpl;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.core.utils.FileUtil;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 
 /**
  * This class gets executed after the Workbench initializes.
@@ -48,7 +48,8 @@ import com.microsoft.azuretools.core.utils.PluginUtil;
 public class WACPStartUp implements IStartup {
 	private String _hashmac = GetHashMac.GetHashMac();
 
-	public void earlyStartup() {
+	@Override
+    public void earlyStartup() {
 		initialize();
 
 		Collection<String> obsoletePackages = Activator.getDefault().getObsoletePackages();
@@ -79,7 +80,7 @@ public class WACPStartUp implements IStartup {
 			String pluginInstLoc = String.format("%s%s%s", PluginUtil.pluginFolder, File.separator,
 					Messages.commonPluginID);
 			final String dataFile = String.format("%s%s%s", pluginInstLoc, File.separator, Messages.dataFileName);
-			
+
 			boolean install = false;
 			boolean upgrade = false;
 			if (new File(pluginInstLoc).exists()) {
@@ -127,12 +128,15 @@ public class WACPStartUp implements IStartup {
 				FileUtil.copyResourceFile(Messages.dataFileEntry, dataFile);
 				setValues(dataFile);
 			}
-			
+
 			AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
-			if (install)
-	            AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
-	        if (upgrade)
+			if (install) {
+                AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
+			}
+	        if (upgrade) {
 	            AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
+	        }
+	        AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Load, null, true);
 		} catch (Exception ex) {
 			Activator.getDefault().log(ex.getMessage(), ex);
 		}
@@ -141,12 +145,12 @@ public class WACPStartUp implements IStartup {
 	private void setValues(final String dateFile) throws Exception {
 		setValues(dateFile, true, true);
 	}
-	
-	
+
+
 
 	/**
 	 * Method updates or creates property elements in data.xml
-	 * 
+	 *
 	 * @param dataFile
 	 * @throws Exception
 	 */
@@ -165,7 +169,8 @@ public class WACPStartUp implements IStartup {
 		}
 
 		Display.getDefault().syncExec(new Runnable() {
-			public void run() {
+			@Override
+            public void run() {
 				if (isHDInsight && Activator.getDefault().isScalaInstallationTipNeeded()) {
 					boolean isShowHDInsightTips = true;
 					HDInsightScalaHelpDlg hdInsightHelpDlg = new HDInsightScalaHelpDlg(Display.getDefault().getActiveShell());
@@ -182,5 +187,5 @@ public class WACPStartUp implements IStartup {
 				Activator.getDefault().getBundle().getVersion().toString());
 		DataOperations.updatePropertyValue(doc, Messages.instID, _hashmac);
 		ParserXMLUtility.saveXMLFile(dataFile, doc);
-	} 
+	}
 }

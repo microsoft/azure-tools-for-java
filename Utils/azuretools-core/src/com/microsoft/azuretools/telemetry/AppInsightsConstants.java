@@ -28,6 +28,7 @@ public final class AppInsightsConstants {
     public static String Deny = "Deny";
     public static String Upgrade = "Upgrade";
     public static String Install = "Install";
+    public static String Load = "Load";
 
     // azure
     public static String SubscriptionId = "SubscriptionId";
