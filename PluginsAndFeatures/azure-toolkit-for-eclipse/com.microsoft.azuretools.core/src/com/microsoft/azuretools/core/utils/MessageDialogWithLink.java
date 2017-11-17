@@ -40,7 +40,7 @@ public class MessageDialogWithLink extends MessageDialog {
 		
 	protected Control createCustomArea(Composite parent) {
 		Link link = new Link(parent, SWT.WRAP);
-		link.setText("<a>" + messageWithLink + "</a>");
+		link.setText(messageWithLink);
 		link.addListener(SWT.Selection, e -> {
 			openURL(e.text);
 		});
