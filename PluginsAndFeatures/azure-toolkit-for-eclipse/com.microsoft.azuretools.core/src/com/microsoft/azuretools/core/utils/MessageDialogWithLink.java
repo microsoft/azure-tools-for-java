@@ -1,5 +1,10 @@
 package com.microsoft.azuretools.core.utils;
 
+import java.awt.Desktop;
+import java.net.URI;
+import java.util.Optional;
+
+import com.microsoft.azuretools.core.Activator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -35,10 +40,24 @@ public class MessageDialogWithLink extends MessageDialog {
 		
 	protected Control createCustomArea(Composite parent) {
 		Link link = new Link(parent, SWT.WRAP);
-		link.setText(messageWithLink);
+		link.setText("<a>" + messageWithLink + "</a>");
+		link.addListener(SWT.Selection, e -> {
+			openURL(e.text);
+		});
 		
 		return link;
 	}
 	
 	private String messageWithLink;
+	
+	private static void openURL(String url) {
+		Desktop dt = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+		if (dt != null && dt.isSupported(Desktop.Action.BROWSE)) {
+			try {
+				dt.browse(new URI(url));
+			} catch (Exception ignore) {
+				Activator.getDefault().log(ignore.getMessage(), ignore);
+			}
+		}
+	}
 }
