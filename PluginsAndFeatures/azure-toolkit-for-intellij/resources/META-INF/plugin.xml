@@ -6,11 +6,12 @@
 
   <description><![CDATA[
       <html>
-        <p>These plugins allow Java developers to easily create, develop, configure, test, and deploy highly available and scalable Java web apps to Azure from IntelliJ on all supported platforms.</p>
+        <p>These plugins allow Java developers and Azure HDInsight users to easily create, develop, configure, test, and deploy highly available and scalable Java web apps and Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.</p>
         <ul>
           <li>Azure Web App Workflow: You can run your web applications on Azure Web App with One-Click experience using Azure Toolkits for IntelliJ.</li>
           <li>Azure Container Workflow: You can dockerize and run your web application on Azure Web App (Linux) via Azure Container Registry.</li>
           <li>Azure Explorer: You can view and manage your cloud resources on Azure with Azure Explorer in Azure Toolkits for IntelliJ.</li>
+          <li>Azure HDInsight: Use Azure HDInsight tool to submit Spark jobs to HDInsight cluster, monitor and debug Spark or Hadoop Hive jobs easily.</li>
         </ul>
       </html>
     ]]></description>
