@@ -3,7 +3,7 @@
 set -e
 
 SCRIPTPATH=$(pwd -P)
-cd $SCRIPTPATH
+cd "$SCRIPTPATH"
 
 MAVEN_QUIET=""
 INTELLIJ_VERSION=false

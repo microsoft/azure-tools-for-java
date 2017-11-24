@@ -4,7 +4,7 @@ set -e
 
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
-cd $SCRIPTPATH
+cd "$SCRIPTPATH"
 
 
 VERSION="3.0.11"
