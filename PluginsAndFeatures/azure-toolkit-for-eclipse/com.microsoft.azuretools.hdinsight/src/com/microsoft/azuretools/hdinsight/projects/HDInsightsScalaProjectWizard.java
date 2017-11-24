@@ -23,6 +23,8 @@ import java.awt.Dialog;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Optional;
+
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.core.runtime.CoreException;
@@ -45,12 +47,11 @@ import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.hdinsight.Activator;
 
 public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements IExecutableExtension {
-	private SparkVersion sparkVersion;
+	private Optional<SparkVersion> sparkVersion = Optional.empty();
 	private boolean isUsingMaven = true;
 	private String id;
 	public static NewJavaProjectWizardPageOne hdInsightScalaPageOne;
 	public NewJavaProjectWizardPageTwo hdInsightScalaPageTwo;
-	public static final String scalaClasspathContainerId = "org.scala-ide.sdt.launching.SCALA_CONTAINER";
 	
 	public HDInsightsScalaProjectWizard() {
 		this(
@@ -87,7 +88,11 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 	}
 	
 	public void setSparkVersion(SparkVersion val) {
-		sparkVersion = val;
+		sparkVersion = Optional.of(val);
+	}
+	
+	public String getScalaVersion() {
+		return sparkVersion.map(SparkVersion::getScalaVersion).orElse("");
 	}
 	
 	private static boolean setFocusToInstallationWindow() {
@@ -155,7 +160,7 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 	@Override
 	public boolean performFinish() {
 		try {
-			CreateProjectUtil.createSampleFile(this.id, this.hdInsightScalaPageOne.getProjectName(), this.isUsingMaven, this.sparkVersion);
+			CreateProjectUtil.createSampleFile(this.id, this.hdInsightScalaPageOne.getProjectName(), this.isUsingMaven, this.sparkVersion.get());
 		} catch (CoreException e) {
 			Activator.getDefault().log("Create HDInsight project error", e);
 		}

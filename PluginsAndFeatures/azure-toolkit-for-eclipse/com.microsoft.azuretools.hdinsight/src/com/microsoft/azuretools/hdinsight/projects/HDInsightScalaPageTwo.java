@@ -1,30 +1,34 @@
 package com.microsoft.azuretools.hdinsight.projects;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.BuildPathsBlock;
-import org.eclipse.jdt.ui.wizards.BuildPathDialogAccess;
 import org.eclipse.jdt.ui.wizards.JavaCapabilityConfigurationPage;
-import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.swt.widgets.Display;
+import org.scalaide.core.IScalaInstallation;
 import org.scalaide.core.SdtConstants;
+import org.scalaide.core.internal.ScalaPlugin;
+import org.scalaide.core.internal.jdt.util.ClasspathContainerSetter;
+import org.scalaide.core.internal.project.ScalaInstallationChoice;
+import org.scalaide.core.internal.project.ScalaProject;
+import org.scalaide.util.internal.SettingConverterUtil;
+
+import scala.Option;
+import scala.tools.nsc.settings.ScalaVersion;
+
 
 public class HDInsightScalaPageTwo extends NewJavaProjectWizardPageTwo {
 	private HDInsightsScalaProjectWizard parent = null;
@@ -70,7 +74,7 @@ public class HDInsightScalaPageTwo extends NewJavaProjectWizardPageTwo {
 							int scalaClasspathContainerEntryIndex = -1;
 							for (int i = 0; i < entries.length; i++) {
 								String entryName = entries[i].getPath().toPortableString().toLowerCase();
-								if (entryName != null && entryName.contains(parent.scalaClasspathContainerId.toLowerCase())) {
+								if (entryName != null && entryName.contains(SdtConstants.ScalaLibContId().toLowerCase())) {
 									scalaClasspathContainerEntry = entries[i];
 									scalaClasspathContainerEntryIndex = i;
 									break;
@@ -78,12 +82,20 @@ public class HDInsightScalaPageTwo extends NewJavaProjectWizardPageTwo {
 							}
 							
 							if (scalaClasspathContainerEntry != null) {
-								IClasspathEntry created = BuildPathDialogAccess.configureContainerEntry(getShell(), scalaClasspathContainerEntry, javaProject, entries);
-								if (created != null) {
-									entries[scalaClasspathContainerEntryIndex] = created;
+								ClasspathContainerSetter setter = new ClasspathContainerSetter(javaProject);
+								Option<IScalaInstallation> scalaInstallation = setter.bestScalaBundleForVersion(ScalaVersion.apply(parent.getScalaVersion()));
+								if (!scalaInstallation.isEmpty()) {
+									setter.updateBundleFromScalaInstallation(new Path(SdtConstants.ScalaLibContId()), scalaInstallation.get());
+									
+									ScalaPlugin plugin = ScalaPlugin.apply();
+									Option<ScalaProject> scalaPrj = plugin.asScalaProject(javaProject.getProject());
+									
+									if (!scalaPrj.isEmpty()) {
+										scalaPrj.get().projectSpecificStorage().setValue(
+												SettingConverterUtil.SCALA_DESIRED_INSTALLATION(), 
+												ScalaInstallationChoice.apply(ScalaVersion.apply(parent.getScalaVersion())).toString());
+									}
 								}
-								
-								javaProject.setRawClasspath(entries, new NullProgressMonitor());								
 							}
 						} catch (JavaModelException ignore) {
 							
