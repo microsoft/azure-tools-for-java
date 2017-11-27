@@ -47,7 +47,7 @@ import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.hdinsight.Activator;
 
 public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements IExecutableExtension {
-	private Optional<SparkVersion> sparkVersion = Optional.empty();
+	private SparkVersion sparkVersion;
 	private boolean isUsingMaven = true;
 	private String id;
 	public static NewJavaProjectWizardPageOne hdInsightScalaPageOne;
@@ -88,11 +88,11 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 	}
 	
 	public void setSparkVersion(SparkVersion val) {
-		sparkVersion = Optional.of(val);
+		sparkVersion = val;
 	}
 	
-	public String getScalaVersion() {
-		return sparkVersion.map(SparkVersion::getScalaVersion).orElse("");
+	public Optional<String> getScalaVersion() {
+		return Optional.ofNullable(sparkVersion).map(SparkVersion::getScalaVersion);
 	}
 	
 	private static boolean setFocusToInstallationWindow() {
@@ -160,7 +160,7 @@ public class HDInsightsScalaProjectWizard extends JavaProjectWizard implements I
 	@Override
 	public boolean performFinish() {
 		try {
-			CreateProjectUtil.createSampleFile(this.id, this.hdInsightScalaPageOne.getProjectName(), this.isUsingMaven, this.sparkVersion.get());
+			CreateProjectUtil.createSampleFile(this.id, this.hdInsightScalaPageOne.getProjectName(), this.isUsingMaven, this.sparkVersion);
 		} catch (CoreException e) {
 			Activator.getDefault().log("Create HDInsight project error", e);
 		}

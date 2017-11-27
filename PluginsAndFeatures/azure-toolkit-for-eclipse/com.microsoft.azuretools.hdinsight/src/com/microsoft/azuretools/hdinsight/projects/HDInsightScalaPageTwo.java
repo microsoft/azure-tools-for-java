@@ -82,8 +82,9 @@ public class HDInsightScalaPageTwo extends NewJavaProjectWizardPageTwo {
 							}
 							
 							if (scalaClasspathContainerEntry != null) {
+								ScalaVersion scalaVersion = parent.getScalaVersion().map(ver -> ScalaVersion.apply(ver)).orElseGet(ScalaVersion::current);
 								ClasspathContainerSetter setter = new ClasspathContainerSetter(javaProject);
-								Option<IScalaInstallation> scalaInstallation = setter.bestScalaBundleForVersion(ScalaVersion.apply(parent.getScalaVersion()));
+								Option<IScalaInstallation> scalaInstallation = setter.bestScalaBundleForVersion(scalaVersion);
 								if (!scalaInstallation.isEmpty()) {
 									setter.updateBundleFromScalaInstallation(new Path(SdtConstants.ScalaLibContId()), scalaInstallation.get());
 									
@@ -93,7 +94,7 @@ public class HDInsightScalaPageTwo extends NewJavaProjectWizardPageTwo {
 									if (!scalaPrj.isEmpty()) {
 										scalaPrj.get().projectSpecificStorage().setValue(
 												SettingConverterUtil.SCALA_DESIRED_INSTALLATION(), 
-												ScalaInstallationChoice.apply(ScalaVersion.apply(parent.getScalaVersion())).toString());
+												ScalaInstallationChoice.apply(scalaVersion).toString());
 									}
 								}
 							}
