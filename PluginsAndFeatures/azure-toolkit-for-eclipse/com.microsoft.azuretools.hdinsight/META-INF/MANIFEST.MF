@@ -15,8 +15,8 @@ Require-Bundle: org.eclipse.ui,
  org.scala-ide.sdt.core;resolution:=optional,
  org.eclipse.jface,
  org.eclipse.m2e.core;resolution:=optional,
- org.scala-lang.scala-compiler,
- org.scala-lang.scala-library
+ org.scala-lang.scala-compiler;resolution:=optional,
+ org.scala-lang.scala-library;resolution:=optional
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Import-Package: com.microsoft.azuretools.hdinsight.common2,
