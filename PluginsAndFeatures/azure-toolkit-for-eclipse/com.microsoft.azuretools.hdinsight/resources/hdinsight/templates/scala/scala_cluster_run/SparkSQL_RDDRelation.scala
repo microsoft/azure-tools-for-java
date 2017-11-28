@@ -28,7 +28,7 @@ import org.apache.spark.sql.{SaveMode, SQLContext}
 // names and types.
 case class Record(key: Int, value: String)
 
-object RDDRelation {
+object SparkSQL_RDDRelation {
   def main(args: Array[String]) {
     val sparkConf = new SparkConf().setAppName("RDDRelation")
     val sc = new SparkContext(sparkConf)
