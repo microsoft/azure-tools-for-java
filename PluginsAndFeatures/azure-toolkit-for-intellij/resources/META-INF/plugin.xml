@@ -19,6 +19,11 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.0.12]</h3>
+      <ul>
+        <li>Support submitting the script to HDInsight cluster without modification in Spark local run.</li>
+        <li>Fixed some bugs.</li>
+      </ul>
       <h3>[3.0.11]</h3>
       <ul>
         <li>Support view/edit properties of Azure Web App (Windows/Linux).</li>
