@@ -38,7 +38,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 class MockRawLocalFileSystem extends RawLocalFileSystem {
-    private boolean useWindowsFileStatus = !Stat.isAvailable();
+    private boolean useWindowsFileStatus = System.getProperty("os.name").toLowerCase().startsWith("windows");
 
     @Override
     public URI getUri() {

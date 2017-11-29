@@ -151,7 +151,8 @@ public class SbtProjectGenerator {
         sbtLines.add(String.format("\"org.apache.spark\" %% \"spark-sql_%s\" %% \"%s\",", this.scalaVer, this.sparkVersion));
         sbtLines.add(String.format("\"org.apache.spark\" %% \"spark-streaming_%s\" %% \"%s\",", this.scalaVer, this.sparkVersion));
         sbtLines.add(String.format("\"org.apache.spark\" %% \"spark-mllib_%s\" %% \"%s\",", this.scalaVer, this.sparkVersion));
-        sbtLines.add(String.format("\"org.jmockit\" %% \"jmockit\" %% \"%s\" %% \"%s\"", "1.34", "test"));
+        sbtLines.add(String.format("\"org.jmockit\" %% \"jmockit\" %% \"%s\" %% \"%s\",", "1.34", "test"));
+        sbtLines.add(String.format("\"org.apache.hadoop\" %% \"hadoop-common\" %% \"%s\" %% \"%s\"", "2.7.1", "test"));
         sbtLines.add(")");
 
         return StringUtils.join(sbtLines, "\n");
