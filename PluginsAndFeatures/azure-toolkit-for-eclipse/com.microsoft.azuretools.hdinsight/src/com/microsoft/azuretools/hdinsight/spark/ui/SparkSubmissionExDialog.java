@@ -548,9 +548,17 @@ public class SparkSubmissionExDialog extends Dialog {
 							for (IMethod method : methods) {
 								if (method.getElementName().equalsIgnoreCase("main")) {
 
-									// remove .class suffix
-									final String simpleClassName = unitName.substring(0, unitName.length() - 6);
-
+									String simpleClassName = type.getElementName();
+									if (simpleClassName == null || simpleClassName.isEmpty()) {
+										// remove .class suffix
+										simpleClassName = unitName.substring(0, unitName.length() - 6);
+									}
+									
+									// Handle duplicated Scala class
+									if (simpleClassName.endsWith("$") && simpleClassName.length() > 1) {
+										simpleClassName = simpleClassName.substring(0, simpleClassName.length() - 1);
+									}
+									
 									if (mypackage.isDefaultPackage()) {
 										filterClassSet.add(simpleClassName);
 									} else {
