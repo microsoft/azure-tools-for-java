@@ -2,7 +2,8 @@
 ### Building
 * Clone the repository with HTTPS or SSH:
     ```
-    $ git clone  https://github.com/Microsoft/azure-tools-for-java.git
+    $ git clone https://github.com/Microsoft/azure-tools-for-java.git
+    $ cd azure-tools-for-java
     ```
 * Run the following command under the Project base path:
     ```
@@ -12,7 +13,7 @@
     ```
     $ ./gradlew -b PluginsAndFeatures/azure-toolkit-for-intellij/build.gradle buildPlugin
     ```
-    You can find the outputs under ```PluginsAndFeatures\azure-toolkit-for-intellij\build\distributions```
+    You can find the outputs under ```PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions```
     
 ### Run/Debug
 * Open IntelliJ, import the PluginsAndFeatures/azure-toolkit-for-intellij/build.gradle as *Project*.
@@ -23,7 +24,8 @@
 ### Building
 * Clone the repository with HTTPS or SSH:
     ```
-    $ git clone  https://github.com/Microsoft/azure-tools-for-java.git
+    $ git clone https://github.com/Microsoft/azure-tools-for-java.git
+    $ cd azure-tools-for-java
     ```
 * Run the following command under the Project base path:
     ```
@@ -34,12 +36,12 @@
     ```
     mvn clean install -f PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml
     ```
-    You can find the outputs under ```PluginsAndFeatures\azure-toolkit-for-eclipse\WindowsAzurePlugin4EJ\target```
+    You can find the outputs under ```PluginsAndFeatures/azure-toolkit-for-eclipse/WindowsAzurePlugin4EJ/target```
 
 ### Run/Debug
 * Open Eclipse, select ```import > Maven > Existing Maven Projects```:
     ![eclipse_import_step1](docs/resources/eclipse_import_step1.png)
-* Import all the modules under ```PluginsAndFeatures\azure-toolkit-for-eclipse```:
+* Import all the modules under ```PluginsAndFeatures/azure-toolkit-for-eclipse```:
     ![eclipse_import_step1](docs/resources/eclipse_import_step2.png)
 * New a run/debug comfiguration and click Run/Debug:
     ![eclipse_debug](docs/resources/eclipse_debug.png)
