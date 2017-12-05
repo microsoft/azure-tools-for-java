@@ -5,11 +5,11 @@
     $ git clone https://github.com/Microsoft/azure-tools-for-java.git
     $ cd azure-tools-for-java
     ```
-* Run the following command under the Project base path:
+* Run the following command under the project base path:
     ```
     $ mvn clean install -f Utils/pom.xml
     ```
-* Then you can use gradle to build the plugin
+* Use Gradle to build the plugin
     ```
     $ ./gradlew -b PluginsAndFeatures/azure-toolkit-for-intellij/build.gradle buildPlugin
     ```
@@ -17,7 +17,7 @@
     
 ### Run/Debug
 * Open IntelliJ, import the PluginsAndFeatures/azure-toolkit-for-intellij/build.gradle as *Project*.
-* Run/Debug the plugin by trigger the gradle task as following:
+* Run/Debug the plugin by triggering the Gradle task as following:
     ![intellij_run_debug](docs/resources/intellij_run_debug.png)
 
 ## Azure Toolkit for Eclipse
@@ -27,12 +27,12 @@
     $ git clone https://github.com/Microsoft/azure-tools-for-java.git
     $ cd azure-tools-for-java
     ```
-* Run the following command under the Project base path:
+* Run the following command under the project base path:
     ```
     $ mvn clean install -f Utils/pom.xml
     $ mvn clean install -f PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml
     ```
-* Build the plugin
+* Use Maven to build the plugin
     ```
     mvn clean install -f PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml
     ```
@@ -42,6 +42,6 @@
 * Open Eclipse, select ```import > Maven > Existing Maven Projects```:
     ![eclipse_import_step1](docs/resources/eclipse_import_step1.png)
 * Import all the modules under ```PluginsAndFeatures/azure-toolkit-for-eclipse```:
-    ![eclipse_import_step1](docs/resources/eclipse_import_step2.png)
-* New a run/debug comfiguration and click Run/Debug:
+    ![eclipse_import_step2](docs/resources/eclipse_import_step2.png)
+* New a run/debug configuration and click Run/Debug:
     ![eclipse_debug](docs/resources/eclipse_debug.png)
