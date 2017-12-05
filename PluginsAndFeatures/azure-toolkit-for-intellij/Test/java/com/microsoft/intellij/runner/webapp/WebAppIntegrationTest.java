@@ -246,7 +246,7 @@ public class WebAppIntegrationTest extends IntegrationTestBase {
         settingModel.setCreatingNew(webAppConfig.creatingNew);
         settingModel.setCreatingResGrp(webAppConfig.creatingResGrp);
         settingModel.setCreatingAppServicePlan(webAppConfig.creatingAppServicePlan);
-        settingModel.setTargetPath(Paths.get("test/resources", webAppConfig.targetName).toString());
+        settingModel.setTargetPath(Paths.get("Test/resources", webAppConfig.targetName).toString());
         settingModel.setAppServicePlanId(webAppConfig.AppServicePlanId);
         settingModel.setWebAppId(webAppConfig.webAppId);
         settingModel.setJdkVersion(JavaVersion.JAVA_8_NEWEST);

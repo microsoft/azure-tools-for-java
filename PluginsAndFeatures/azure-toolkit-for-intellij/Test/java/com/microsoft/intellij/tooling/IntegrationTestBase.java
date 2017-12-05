@@ -275,7 +275,7 @@ public abstract class IntegrationTestBase {
     }
 
     private File getRecordFile() {
-        Path resourceDirectory = Paths.get("test/resources",RECORD_FOLDER);
+        Path resourceDirectory = Paths.get("Test/resources",RECORD_FOLDER);
         File folderFile = new File(resourceDirectory.toAbsolutePath().toString());
         if (!folderFile.exists())
             folderFile.mkdir();
