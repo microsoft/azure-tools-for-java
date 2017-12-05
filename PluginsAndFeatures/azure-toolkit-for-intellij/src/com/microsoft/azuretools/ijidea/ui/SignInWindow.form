@@ -3,7 +3,7 @@
   <grid id="cbd77" binding="contentPane" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="10" left="10" bottom="10" right="10"/>
     <constraints>
-      <xy x="48" y="54" width="603" height="343"/>
+      <xy x="48" y="54" width="603" height="368"/>
     </constraints>
     <properties>
       <enabled value="true"/>
@@ -104,6 +104,16 @@
                   <editable value="false"/>
                   <opaque value="false"/>
                   <text value="&lt;html&gt;&#10;  &lt;head&gt;&#10;    &#10;  &lt;/head&gt;&#10;  &lt;body&gt;&#10;    Follow these manual &lt;a href=&quot;https://go.microsoft.com/fwlink/?linkid=847862&quot;&gt;steps&lt;/a&gt; &#10;    if Azure Toolkit fails to create an authentication file programmatically.&#10;  &lt;/body&gt;&#10;&lt;/html&gt;&#10;"/>
+                </properties>
+              </component>
+              <component id="83316" class="javax.swing.JLabel" binding="uncorrectFilePathLabel">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <foreground color="-769226"/>
+                  <labelFor value="b9632"/>
+                  <text value="Please choose right file format" noi18n="true"/>
                 </properties>
               </component>
             </children>

@@ -60,6 +60,7 @@ import java.util.Map;
 
 public class SignInWindow extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(SignInWindow.class);
+    private static final String AZUREAUTH = "azureauth";
 
     private JPanel contentPane;
 
@@ -73,6 +74,7 @@ public class SignInWindow extends AzureDialogWrapper {
     private JButton browseButton;
     private JButton createNewAuthenticationFileButton;
     private JEditorPane manualSpNoteEditorPane;
+    private JLabel uncorrectFilePathLabel;
 
     private AuthMethodDetails authMethodDetails;
     private AuthMethodDetails authMethodDetailsResult;
@@ -106,11 +108,12 @@ public class SignInWindow extends AzureDialogWrapper {
 
         fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
-        FileFilter filter = new FileNameExtensionFilter("*.azureauth", "azureauth");
+        FileFilter filter = new FileNameExtensionFilter("*." + AZUREAUTH, AZUREAUTH);
         fileChooser.setFileFilter(filter);
         fileChooser.addChoosableFileFilter(filter);
         fileChooser.setApproveButtonText("Select");
         fileChooser.setDialogTitle("Select Authentication File");
+        uncorrectFilePathLabel.setVisible(false);
 
         this.authMethodDetails = authMethodDetails;
         authFileTextField.setText(authMethodDetails.getCredFilePath());
@@ -169,10 +172,17 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private void onInteractiveRadioButton() {
+        uncorrectFilePathLabel.setVisible(false);
+        myOKAction.setEnabled(true);
         enableAutomatedAuthControls(false);
     }
 
     private void onAutomatedRadioButton() {
+        if (!authFileTextField.getText().isEmpty())
+        {
+            uncorrectFilePathLabel.setVisible(!authFileTextField.getText().endsWith(AZUREAUTH));
+            this.myOKAction.setEnabled(authFileTextField.getText().endsWith(AZUREAUTH));
+        }
         enableAutomatedAuthControls(true);
     }
 
@@ -186,13 +196,17 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private void doSelectCredFilepath() {
+        uncorrectFilePathLabel.setVisible(false);
         int returnVal = fileChooser.showOpenDialog(contentPane);
+
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             try {
                 String filepath = file.getCanonicalPath();
-                //setCredFilepath(filepath.toString());
                 authFileTextField.setText(filepath);
+                uncorrectFilePathLabel.setVisible(!filepath.endsWith(AZUREAUTH));
+                this.myOKAction.setEnabled(filepath.endsWith(AZUREAUTH));
+                //setCredFilepath(filepath.toString());
             } catch (IOException ex) {
                 ex.printStackTrace();
                 //LOGGER.error("doSelectCredFilepath", ex);
@@ -218,25 +232,25 @@ public class SignInWindow extends AzureDialogWrapper {
 
     private void signInAsync() {
         ProgressManager.getInstance().run(
-            new Task.Modal(project, "Sign In Progress", false) {
-                @Override
-                public void run(ProgressIndicator indicator) {
-                    indicator.setIndeterminate(true);
-                    indicator.setText("Signing In...");
-                    try {
-                        AdAuthManager.getInstance().signIn();
-                    } catch (AuthCanceledException ex) {
-                        System.out.println(ex.getMessage());
-                    } catch (Exception ex) {
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                ErrorWindow.show(project, ex.getMessage(), "Sign In Error");
-                            }
-                        });
+                new Task.Modal(project, "Sign In Progress", false) {
+                    @Override
+                    public void run(ProgressIndicator indicator) {
+                        indicator.setIndeterminate(true);
+                        indicator.setText("Signing In...");
+                        try {
+                            AdAuthManager.getInstance().signIn();
+                        } catch (AuthCanceledException ex) {
+                            System.out.println(ex.getMessage());
+                        } catch (Exception ex) {
+                            ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ErrorWindow.show(project, ex.getMessage(), "Sign In Error");
+                                }
+                            });
+                        }
                     }
                 }
-            }
         );
     }
 
