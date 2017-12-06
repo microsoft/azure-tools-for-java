@@ -35,6 +35,12 @@
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
     </properties>
+    <repositories>
+        <repository>
+            <id>com.teamdev</id>
+            <url>http://maven.teamdev.com/repository/products</url>
+        </repository>
+    </repositories>
     <profiles>
         <profile>
             <id>jenkins</id>
@@ -187,6 +193,21 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.teamdev.jxbrowser</groupId>
+            <artifactId>jxbrowser-win</artifactId>
+            <version>6.16</version>
+        </dependency>
+        <dependency>
+            <groupId>com.teamdev.jxbrowser</groupId>
+            <artifactId>jxbrowser-mac</artifactId>
+            <version>6.16</version>
+        </dependency>
+        <dependency>
+            <groupId>com.teamdev.jxbrowser</groupId>
+            <artifactId>jxbrowser-linux64</artifactId>
+            <version>6.16</version>
         </dependency>
     </dependencies>
 </project>

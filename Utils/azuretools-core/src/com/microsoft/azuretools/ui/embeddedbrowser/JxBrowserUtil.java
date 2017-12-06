@@ -23,6 +23,8 @@
 package com.microsoft.azuretools.ui.embeddedbrowser;
 
 import com.google.common.collect.ImmutableMap;
+import com.teamdev.jxbrowser.chromium.Browser;
+import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 
 public class JxBrowserUtil {
     private static final ImmutableMap<String, String> versionMap = ImmutableMap.of(
@@ -33,4 +35,12 @@ public class JxBrowserUtil {
             "linux32", "jxbrowser-linux64-6.16"
             );
 
+    public void createBrowserAndBrowserView(Browser[] browsers, BrowserView[] browserViews) {
+        browsers[0] = new Browser();
+        browserViews[0] = new BrowserView(browsers[0]);
+    }
+
+    public void loadURL(Browser browser, String url) {
+        browser.loadURL(url);
+    }
 }
