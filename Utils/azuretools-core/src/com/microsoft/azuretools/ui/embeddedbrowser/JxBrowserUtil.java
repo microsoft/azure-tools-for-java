@@ -22,25 +22,43 @@
 
 package com.microsoft.azuretools.ui.embeddedbrowser;
 
-import com.google.common.collect.ImmutableMap;
-import com.teamdev.jxbrowser.chromium.Browser;
-import com.teamdev.jxbrowser.chromium.swing.BrowserView;
-
 import javax.swing.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JxBrowserUtil {
-    private static final ImmutableMap<String, String> versionMap = ImmutableMap.of(
-            "win32", "jxbrowser-win32-6.16",
-            "win64", "jxbrowser-6.16",
-            "mac", "jxbrowser-mac-6.16",
-            "linux64", "jxbrowser-linux64-6.16",
-            "linux32", "jxbrowser-linux64-6.16"
-            );
 
-    public JComponent createBrowserViewAndLoadURL(String url) {
-        Browser browser = new Browser();
-        BrowserView browserView = new BrowserView(browser);
-        browser.loadURL(url);
-        return browserView;
+    private static final Map<String, String> versionMap;
+    static {
+        Map<String, String> temp = new HashMap<>();
+        temp.put("win32", "jxbrowser-win32-6.16");
+        temp.put("win64", "jxbrowser-6.16");
+        temp.put("mac", "jxbrowser-mac-6.16");
+        temp.put("linux64", "jxbrowser-linux64-6.16");
+        temp.put("linux32", "jxbrowser-linux64-6.16");
+        versionMap = Collections.unmodifiableMap(temp);
+    }
+
+    public JComponent createBrowserViewAndLoadURL(String url) throws Exception {
+        Object browserView = null;
+        try {
+            Class<?> browserClass = Class.forName("com.teamdev.jxbrowser.chromium.Browser");
+            Object browser = browserClass.newInstance();
+            Class<?> browserViewClass = Class.forName("com.teamdev.jxbrowser.chromium.swing.BrowserView");
+            Constructor<?> browserViewConstructor = browserViewClass.getConstructor(browserClass);
+            browserView = browserViewConstructor.newInstance(browser);
+
+            if (browserView != null) {
+                Method loadURLMethod = browserClass.getMethod("loadURL", String.class);
+                loadURLMethod.invoke(url);
+            }
+        } catch (Exception e) {
+            throw new Exception("Fail to load JxBrowser or load URL: " + e.getMessage());
+        }
+
+        return (JComponent)browserView;
     }
 }
