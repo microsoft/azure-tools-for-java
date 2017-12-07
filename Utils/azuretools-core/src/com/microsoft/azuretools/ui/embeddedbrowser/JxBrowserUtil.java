@@ -31,16 +31,15 @@ import java.util.Map;
 
 public class JxBrowserUtil {
 
-    private static final Map<String, String> versionMap;
-    static {
-        Map<String, String> temp = new HashMap<>();
-        temp.put("win32", "jxbrowser-win32-6.16");
-        temp.put("win64", "jxbrowser-6.16");
-        temp.put("mac", "jxbrowser-mac-6.16");
-        temp.put("linux64", "jxbrowser-linux64-6.16");
-        temp.put("linux32", "jxbrowser-linux64-6.16");
-        versionMap = Collections.unmodifiableMap(temp);
-    }
+    private static final Map<String, String> versionMap = Collections.unmodifiableMap(
+        new HashMap<String, String>() {{
+            put("win32", "jxbrowser-win32-6.16");
+            put("win64", "jxbrowser-6.16");
+            put("mac", "jxbrowser-mac-6.16");
+            put("linux64", "jxbrowser-linux64-6.16");
+            put("linux32", "jxbrowser-linux64-6.16");
+        }}
+    );
 
     public JComponent createBrowserViewAndLoadURL(String url) throws Exception {
         Object browserView = null;
