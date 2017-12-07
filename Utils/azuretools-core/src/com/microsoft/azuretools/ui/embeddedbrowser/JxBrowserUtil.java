@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableMap;
 import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 
+import javax.swing.*;
+
 public class JxBrowserUtil {
     private static final ImmutableMap<String, String> versionMap = ImmutableMap.of(
             "win32", "jxbrowser-win32-6.16",
@@ -35,12 +37,10 @@ public class JxBrowserUtil {
             "linux32", "jxbrowser-linux64-6.16"
             );
 
-    public void createBrowserAndBrowserView(Browser[] browsers, BrowserView[] browserViews) {
-        browsers[0] = new Browser();
-        browserViews[0] = new BrowserView(browsers[0]);
-    }
-
-    public void loadURL(Browser browser, String url) {
+    public JComponent createBrowserViewAndLoadURL(String url) {
+        Browser browser = new Browser();
+        BrowserView browserView = new BrowserView(browser);
         browser.loadURL(url);
+        return browserView;
     }
 }
