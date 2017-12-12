@@ -111,7 +111,11 @@ public class JxBrowserUtil {
                 FileUtils.deleteQuietly(jxBrowserJarFile);
                 FileUtils.deleteQuietly(licenseJarFile);
                 FileUtils.deleteQuietly(commonJarFile);
-                downloadFilesFromAzure(new Path[]{jxBrowserJarPath, commonJarPath, licenseJarPath});
+                downloadFilesFromAzure(new ArrayList<Path>(){{
+                    add(jxBrowserJarPath);
+                    add(commonJarPath);
+                    add(licenseJarPath);
+                }});
             }
 
             URL[] urls = new URL[] {commonJarFile.toURI().toURL(), jxBrowserJarFile.toURI().toURL(), licenseJarFile.toURI().toURL()};
@@ -140,7 +144,7 @@ public class JxBrowserUtil {
      * @param filePathNames
      * @return
      */
-    private static boolean downloadFilesFromAzure(@NotNull Path[] filePathNames) {
+    private static boolean downloadFilesFromAzure(@NotNull List<Path> filePathNames) {
         boolean result = true;
         ExecutorService threadPool = Executors.newFixedThreadPool(2);
         try {
@@ -167,13 +171,13 @@ public class JxBrowserUtil {
     private static boolean checkFileDigest(@NotNull Path filePathName, @NotNull Path digestFilePathName) {
         File targetFile = filePathName.toFile();
         if (!targetFile.exists() || !targetFile.isFile()) {
-            log.warning(filePathName + "doesn't exist");
+            log.warning(filePathName + " doesn't exist");
             return false;
         }
 
         File digestFile = digestFilePathName.toFile();
         if (!digestFile.exists() || !digestFile.isFile()) {
-            log.warning(digestFilePathName + "doesn't exist");
+            log.warning(digestFilePathName + " doesn't exist");
             return false;
         }
 
@@ -225,38 +229,37 @@ public class JxBrowserUtil {
      * @param waitTime
      * @return
      */
-    private static boolean downloadAndCheckDigest(@NotNull ExecutorService threadPool, @NotNull final Path[] filePathNames, int currentRetry, int waitTime) {
-        List<Path> filePathArray = Arrays.asList(filePathNames);
+    private static boolean downloadAndCheckDigest(@NotNull ExecutorService threadPool, @NotNull List<Path> filePathNames, int currentRetry, int waitTime) {
         List<Path> digestPathNames = new ArrayList<>();
-        for (int i = 0; i < filePathNames.length; i++) {
-            digestPathNames.add(Paths.get(FilenameUtils.removeExtension(filePathNames[i].toString()) + ".md5"));
+        for (int i = 0; i < filePathNames.size(); i++) {
+            digestPathNames.add(Paths.get(FilenameUtils.removeExtension(filePathNames.get(i).toString()) + ".md5"));
         }
 
         boolean result = true;
         try {
-            int i = filePathArray.size() - 1;
+            int i = filePathNames.size() - 1;
             for (; i >= 0; i--) {
-                if (checkFileDigest(filePathArray.get(i), digestPathNames.get(i)) == true)  {
-                    filePathArray.remove(i);
+                if (checkFileDigest(filePathNames.get(i), digestPathNames.get(i)) == true)  {
+                    filePathNames.remove(i);
                     digestPathNames.remove(i);
                 }
             }
 
-            if (filePathArray.size() == 0) return true;
+            if (filePathNames.size() == 0) return true;
 
-            if (currentRetry > MAX_RETRY_TIMES) {
-                log.warning("Maximum retry time reached. Fail to download" + filePathArray.get(0));
+            if (currentRetry >= MAX_RETRY_TIMES) {
+                log.warning("Maximum retry time reached. Fail to download" + filePathNames.get(0));
                 return false;
             }
 
-            for (i = 0; i < filePathArray.size(); i++) {
-                FileUtils.deleteQuietly(filePathArray.get(i).toFile());
+            for (i = 0; i < filePathNames.size(); i++) {
+                FileUtils.deleteQuietly(filePathNames.get(i).toFile());
                 FileUtils.deleteQuietly(digestPathNames.get(i).toFile());
             }
 
             List<Callable<Boolean>> downloadThreads = new ArrayList<>();
-            for (i = 0; i < filePathArray.size(); i++) {
-                final Path filePathName = filePathArray.get(i);
+            for (i = 0; i < filePathNames.size(); i++) {
+                final Path filePathName = filePathNames.get(i);
                 final Path digestPathName = digestPathNames.get(i);
                 downloadThreads.add(new Callable<Boolean>() {
                     @Override
@@ -273,13 +276,17 @@ public class JxBrowserUtil {
                 });
             };
 
-            threadPool.invokeAll(downloadThreads, waitTime, TimeUnit.SECONDS);
+            List<Future<Boolean>> results = threadPool.invokeAll(downloadThreads, waitTime, TimeUnit.SECONDS);
+
+            for (i = 0; i < results.size(); i++) {
+                results.get(i).get();
+            }
         } catch (Exception ex) {
             result = false;
-            log.warning(String.format("Download fileName %s fail with exception %s", (filePathNames.length > 0 ? filePathNames[0] : ""), ex.getMessage()));
+            log.warning(String.format("Download fileName %s fail with exception %s", (filePathNames.size() > 0 ? filePathNames.get(0) : ""), ex.getMessage()));
         } finally {
             if (!result) {
-                log.warning("Start to download again with retry count " + currentRetry + "and wait time" + waitTime);
+                log.warning("Start to download again with retry count " + currentRetry + " and wait time " + waitTime);
                 result = downloadAndCheckDigest(threadPool, filePathNames, currentRetry + 1, waitTime * RETRY_BACKOFF_FACTOR);
             }
         }
@@ -287,7 +294,7 @@ public class JxBrowserUtil {
         return result;
     }
 
-    private static boolean downloadAndCheckDigest(@NotNull ExecutorService threadPool, @NotNull Path[] filePathNames) {
+    private static boolean downloadAndCheckDigest(@NotNull ExecutorService threadPool, @NotNull List<Path> filePathNames) {
         return downloadAndCheckDigest(threadPool, filePathNames, 0, MAX_WAIT_TIME_IN_SECONDS);
     }
 
