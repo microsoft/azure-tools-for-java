@@ -22,12 +22,10 @@
 
 package com.microsoft.azuretools.ui.embeddedbrowser;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.utils.StorageAccoutUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -39,6 +37,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
@@ -52,13 +51,13 @@ import java.util.logging.Logger;
 public class JxBrowserUtil {
     public static final Logger log = Logger.getLogger(JxBrowserUtil.class.getName());
     public static int MAX_RETRY_TIMES = 3;
-    public static int MAX_WAIT_TIME_IN_SECONDS = 300;
+    public static int MAX_WAIT_TIME_IN_SECONDS = 120;
 
     /** Mapping OS to package name */
     private static final Map<String, String> platformToJxBrowserJar = Collections.unmodifiableMap(
             new HashMap<String, String>() {{
                 put("win32", "jxbrowser-win32-6.16.jar");
-                put("win64", "jxbrowser-6.16.jar");
+                put("win64", "jxbrowser-win32-6.16.jar");
                 put("mac", "jxbrowser-mac-6.16.jar");
                 put("linux64", "jxbrowser-linux64-6.16.jar");
                 put("linux32", "jxbrowser-linux64-6.16.jar");
@@ -68,8 +67,10 @@ public class JxBrowserUtil {
     private static final String JXBROWSER_CLASS_BROWSERVIEW = "com.teamdev.jxbrowser.chromium.swing.BrowserView";
     private static final String JXBROWSER_CLASS_BROWSER = "com.teamdev.jxbrowser.chromium.Browser";
     private static final String AZURE_ACCOUNT_NAME = "ltiantest";
-    private static final String AZURE_ACCOUNT_KEY = "UBCWXXk1ha9ktwa5WTFN0MNSQOGMnyFg5KQvruM+AX4nQHxIQ7LjpTTIQtAM7ZsRbkhayUqy1AT80V+ZPssQFA==";
+    private static final String AZURE_BLOB_URI = "http://ltiantest.blob.core.windows.net";
     private static final String JXBROWSER_LICENSE_FILE = "license.jar";
+    private static final String JXBROWSER_COMMON_JAR = "jxbrowser-6.16.jar";
+    private static final int RETRY_BACKOFF_FACTOR = 3;
 
     /**
      * Async version of createBrowserViewAndLoadURL, return FutureTask<JComponent>
@@ -102,15 +103,18 @@ public class JxBrowserUtil {
         try {
             Path jxBrowserJarPath = Paths.get(targetPath, getJxBrowserJarFileName());
             Path licenseJarPath = Paths.get(targetPath, JXBROWSER_LICENSE_FILE);
+            Path commonJarPath = Paths.get(targetPath, JXBROWSER_COMMON_JAR);
             File jxBrowserJarFile = jxBrowserJarPath.toFile();
             File licenseJarFile = licenseJarPath.toFile();
-            if (!licenseJarFile.exists() || !licenseJarFile.isFile() || !jxBrowserJarFile.exists() || !jxBrowserJarFile.isFile()) {
+            File commonJarFile = commonJarPath.toFile();
+            if (!licenseJarFile.exists() || !licenseJarFile.isFile() || !jxBrowserJarFile.exists() || !jxBrowserJarFile.isFile() || !commonJarFile.exists() || !commonJarFile.isFile()) {
                 FileUtils.deleteQuietly(jxBrowserJarFile);
                 FileUtils.deleteQuietly(licenseJarFile);
-                downloadJxBrowserJarsFromAzure(jxBrowserJarPath, licenseJarPath);
+                FileUtils.deleteQuietly(commonJarFile);
+                downloadFilesFromAzure(new Path[]{jxBrowserJarPath, commonJarPath, licenseJarPath});
             }
 
-            URL[] urls = new URL[] {jxBrowserJarFile.toURI().toURL(), licenseJarFile.toURI().toURL()};
+            URL[] urls = new URL[] {commonJarFile.toURI().toURL(), jxBrowserJarFile.toURI().toURL(), licenseJarFile.toURI().toURL()};
 
             ClassLoader classLoader = new URLClassLoader(urls, JxBrowserUtil.class.getClassLoader());
 
@@ -133,19 +137,17 @@ public class JxBrowserUtil {
 
     /**
      * Download JxBrowser jars (i.e. jxbrowser-win32-6.16.jar and license.jar) and check digest (with retries) into given targetPath
-     * @param jxBrowserJarPath
-     * @param licenseJarPath
+     * @param filePathNames
      * @return
      */
-    private static boolean downloadJxBrowserJarsFromAzure(@NotNull Path jxBrowserJarPath, @NotNull Path licenseJarPath) {
+    private static boolean downloadFilesFromAzure(@NotNull Path[] filePathNames) {
         boolean result = true;
         ExecutorService threadPool = Executors.newFixedThreadPool(2);
         try {
-            downloadAndCheckDigest(threadPool, jxBrowserJarPath);
-            downloadAndCheckDigest(threadPool, licenseJarPath);
+            downloadAndCheckDigest(threadPool, filePathNames);
 
             threadPool.shutdown();
-            threadPool.awaitTermination(MAX_WAIT_TIME_IN_SECONDS * MAX_RETRY_TIMES, TimeUnit.SECONDS);
+            threadPool.awaitTermination((long) (MAX_WAIT_TIME_IN_SECONDS * Math.pow(RETRY_BACKOFF_FACTOR, MAX_RETRY_TIMES)), TimeUnit.SECONDS);
         } catch (Exception ex) {
             log.severe("Download JxBrowser jars failed with exception " + ex.getMessage());
             result = false;
@@ -201,8 +203,8 @@ public class JxBrowserUtil {
     private static Boolean downloadFromAzure(@NotNull Path filePathName) {
         Boolean result = true;
         try {
-            CloudStorageAccount account = CloudStorageAccount.parse(StorageAccoutUtils.getConnectionString(AZURE_ACCOUNT_NAME, AZURE_ACCOUNT_KEY));
-            CloudBlobClient serviceClient = account.createCloudBlobClient();
+            URI cloudBlobUri = new URI(AZURE_BLOB_URI);
+            CloudBlobClient serviceClient = new CloudBlobClient(cloudBlobUri);
             CloudBlobContainer container = serviceClient.getContainerReference("libcontainer1");
             CloudBlockBlob blob = container.getBlockBlobReference(filePathName.getFileName().toString());
             File downloadingFile = filePathName.toFile();
@@ -218,80 +220,98 @@ public class JxBrowserUtil {
     /**
      * Download file and check digest with retry. Return false if all retry fails
      * @param threadPool
-     * @param filePathName
+     * @param filePathNames
      * @param currentRetry
+     * @param waitTime
      * @return
      */
-    private static boolean downloadAndCheckDigest(@NotNull ExecutorService threadPool, @NotNull final Path filePathName, int currentRetry) {
-        final Path digestPathName = Paths.get(FilenameUtils.removeExtension(filePathName.toString()) + ".md5");
+    private static boolean downloadAndCheckDigest(@NotNull ExecutorService threadPool, @NotNull final Path[] filePathNames, int currentRetry, int waitTime) {
+        List<Path> filePathArray = Arrays.asList(filePathNames);
+        List<Path> digestPathNames = new ArrayList<>();
+        for (int i = 0; i < filePathNames.length; i++) {
+            digestPathNames.add(Paths.get(FilenameUtils.removeExtension(filePathNames[i].toString()) + ".md5"));
+        }
 
         boolean result = true;
         try {
-            if (checkFileDigest(filePathName, digestPathName) == true) {
-                return true;
+            int i = filePathArray.size() - 1;
+            for (; i >= 0; i--) {
+                if (checkFileDigest(filePathArray.get(i), digestPathNames.get(i)) == true)  {
+                    filePathArray.remove(i);
+                    digestPathNames.remove(i);
+                }
             }
 
+            if (filePathArray.size() == 0) return true;
+
             if (currentRetry > MAX_RETRY_TIMES) {
-                log.warning("Maximum retry time reached. Fail to download" + filePathName);
+                log.warning("Maximum retry time reached. Fail to download" + filePathArray.get(0));
                 return false;
             }
 
-            FileUtils.deleteQuietly(filePathName.toFile());
-            FileUtils.deleteQuietly(digestPathName.toFile());
+            for (i = 0; i < filePathArray.size(); i++) {
+                FileUtils.deleteQuietly(filePathArray.get(i).toFile());
+                FileUtils.deleteQuietly(digestPathNames.get(i).toFile());
+            }
 
             List<Callable<Boolean>> downloadThreads = new ArrayList<>();
-            downloadThreads.add(new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    return downloadFromAzure(filePathName);
-                }
-            });
+            for (i = 0; i < filePathArray.size(); i++) {
+                final Path filePathName = filePathArray.get(i);
+                final Path digestPathName = digestPathNames.get(i);
+                downloadThreads.add(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return downloadFromAzure(filePathName);
+                    }
+                });
 
-            downloadThreads.add(new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    return downloadFromAzure(digestPathName);
-                }
-            });
+                downloadThreads.add(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return downloadFromAzure(digestPathName);
+                    }
+                });
+            };
 
-            threadPool.invokeAll(downloadThreads, MAX_WAIT_TIME_IN_SECONDS, TimeUnit.SECONDS);
+            threadPool.invokeAll(downloadThreads, waitTime, TimeUnit.SECONDS);
         } catch (Exception ex) {
             result = false;
-            log.warning(String.format("Download fileName %s fail with exception %s", filePathName, ex.getMessage()));
+            log.warning(String.format("Download fileName %s fail with exception %s", (filePathNames.length > 0 ? filePathNames[0] : ""), ex.getMessage()));
         } finally {
             if (!result) {
-                result = downloadAndCheckDigest(threadPool, filePathName, currentRetry + 1);
+                log.warning("Start to download again with retry count " + currentRetry + "and wait time" + waitTime);
+                result = downloadAndCheckDigest(threadPool, filePathNames, currentRetry + 1, waitTime * RETRY_BACKOFF_FACTOR);
             }
         }
 
         return result;
     }
 
-    private static boolean downloadAndCheckDigest(@NotNull ExecutorService threadPool, @NotNull Path filePathName) {
-        return downloadAndCheckDigest(threadPool, filePathName, 0);
+    private static boolean downloadAndCheckDigest(@NotNull ExecutorService threadPool, @NotNull Path[] filePathNames) {
+        return downloadAndCheckDigest(threadPool, filePathNames, 0, MAX_WAIT_TIME_IN_SECONDS);
     }
 
     private static String getJxBrowserJarFileName() throws JxBrowserException {
         String osName = System.getProperty("os.name").toLowerCase();
         String osArch = System.getProperty("os.arch").toLowerCase();
-        log.info("osName is : " + osName + ", osArch is: " + osArch);
+        log.warning("osName is : " + osName + ", osArch is: " + osArch);
 
-        if (osName.contains("win")) {
+        if (osName.contains("mac") || osName.contains("darwin")) {
+            return platformToJxBrowserJar.get("mac");
+        } else if (osName.contains("win")) {
             if (osArch.contains("64")) {
                 return platformToJxBrowserJar.get("win64");
             } else {
                 return platformToJxBrowserJar.get("win32");
             }
-        } else if (osName.contains("mac")) {
-            return platformToJxBrowserJar.get("mac");
         } else if (osName.contains("nix") || osName.contains("nux")) {
             if (osArch.contains("64")) {
                 return platformToJxBrowserJar.get("linux64");
             } else {
-                throw new JxBrowserException("JxBrowser does not provide jar file for Linux 32bit.");
+                return platformToJxBrowserJar.get("linux32");
             }
         } else {
-            throw new JxBrowserException("Cannot recognize the operation system.");
+            throw new JxBrowserException("Cannot recognize the operation system." + osName);
         }
     }
 }
