@@ -93,6 +93,16 @@
                   <text value="New..."/>
                 </properties>
               </component>
+              <component id="83316" class="javax.swing.JLabel" binding="uncorrectFilePathLabel">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <foreground color="-769226"/>
+                  <labelFor value="b9632"/>
+                  <text value="Please choose right file format" noi18n="true"/>
+                </properties>
+              </component>
               <component id="af2c9" class="javax.swing.JEditorPane" binding="manualSpNoteEditorPane">
                 <constraints>
                   <grid row="4" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
@@ -103,17 +113,7 @@
                   <contentType value="text/html"/>
                   <editable value="false"/>
                   <opaque value="false"/>
-                  <text value="&lt;html&gt;&#10;  &lt;head&gt;&#10;    &#10;  &lt;/head&gt;&#10;  &lt;body&gt;&#10;    Follow these manual &lt;a href=&quot;https://go.microsoft.com/fwlink/?linkid=847862&quot;&gt;steps&lt;/a&gt; &#10;    if Azure Toolkit fails to create an authentication file programmatically.&#10;  &lt;/body&gt;&#10;&lt;/html&gt;&#10;"/>
-                </properties>
-              </component>
-              <component id="83316" class="javax.swing.JLabel" binding="uncorrectFilePathLabel">
-                <constraints>
-                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <foreground color="-769226"/>
-                  <labelFor value="b9632"/>
-                  <text value="Please choose right file format" noi18n="true"/>
+                  <text value="&lt;html&gt;&#10;  &lt;head&gt;&#10;    &#10;  &lt;/head&gt;&#10;  &lt;body&gt;&#10;    Follow these manual &lt;a href=&quot;https://github.com/Azure/azure-sdk-for-java/blob/master/archive/AUTH.md#using-an-authentication-file&quot;&gt;steps&lt;/a&gt; &#10;    if Azure Toolkit fails to create an authentication file programmatically.&#10;  &lt;/body&gt;&#10;&lt;/html&gt;&#10;"/>
                 </properties>
               </component>
             </children>
