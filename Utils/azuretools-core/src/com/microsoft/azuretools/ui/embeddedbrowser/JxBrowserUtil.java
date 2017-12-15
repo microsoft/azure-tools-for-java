@@ -53,6 +53,8 @@ public class JxBrowserUtil {
     public static int MAX_RETRY_TIMES = 3;
     public static int MAX_WAIT_TIME_IN_SECONDS = 120;
 
+    public static final LoadedClassesAndMethods loadedClasses = new LoadedClassesAndMethods();
+
     /** Mapping OS to package name */
     private static final Map<String, String> platformToJxBrowserJar = Collections.unmodifiableMap(
             new HashMap<String, String>() {{
@@ -73,33 +75,52 @@ public class JxBrowserUtil {
     private static final int RETRY_BACKOFF_FACTOR = 3;
 
     /**
-     * Async version of createBrowserViewAndLoadURL, return FutureTask<JComponent>
+     * Return JComponent to be used in Swing
      * @param url
-     * @return
+     * @return JComponent (JxBrowser BrowserView) that can be added to Swing UI
      */
-    public static FutureTask<JComponent> createBrowserViewAndLoadURLAsync(@NotNull final String url, final String targetPath) {
-        FutureTask<JComponent> createAndLoadTask = new FutureTask<> (new Callable<JComponent>() {
-            @Override
-            public JComponent call() throws JxBrowserException {
-                return createBrowserViewAndLoadURL(url, targetPath);
+    public static JComponent createBrowserViewAndLoadURL(@NotNull final String url, final String targetPath) throws JxBrowserException {
+        synchronized (JxBrowserUtil.class) {
+            if (!loadedClasses.isLoaded()) {
+                CompletableFuture<Void> downloadAndLoadClassesTask = CompletableFuture.runAsync(() -> {
+                    try {
+                        downloadAndLoadClasses(targetPath);
+                    } catch (JxBrowserException e) {
+                        throw new CompletionException(e);
+                    }
+                });
+
+                try {
+                    downloadAndLoadClassesTask.get();
+                } catch (Exception e) {
+                    throw new JxBrowserException("Fail to download and load classes with exception " + e.getMessage());
+                }
             }
-        });
+        }
 
-        Thread thread = new Thread(createAndLoadTask);
-        thread.setDaemon(true);
-        thread.start();
+        if (!loadedClasses.isLoaded()) return null;
 
-        return createAndLoadTask;
+        try {
+            Object browser = loadedClasses.browserClass.newInstance();
+
+            Object browserView = loadedClasses.browserViewConstructor.newInstance(browser);
+
+            if (browserView != null) {
+                loadedClasses.loadURLMethod.invoke(browser, url);
+            }
+
+            return (JComponent) browserView;
+        } catch (Exception e) {
+            throw new JxBrowserException("Fail to load URL with exception " + e.getMessage());
+        }
     }
 
     /**
-     * Create Swing JComponent, load the URL
-     * @param url
-     * @return JComponent (JxBrowser BrowserView) that can be added to Swing UI
-     * @throws Exception Re-throw exception like ClassNotFound, etc.
+     * Download and load classes
+     * @param targetPath
+     * @throws JxBrowserException
      */
-    private static JComponent createBrowserViewAndLoadURL(@NotNull String url, String targetPath) throws JxBrowserException {
-        Object browserView = null;
+    private static void downloadAndLoadClasses(String targetPath) throws JxBrowserException {
         try {
             Path jxBrowserJarPath = Paths.get(targetPath, getJxBrowserJarFileName());
             Path licenseJarPath = Paths.get(targetPath, JXBROWSER_LICENSE_FILE);
@@ -107,36 +128,27 @@ public class JxBrowserUtil {
             File jxBrowserJarFile = jxBrowserJarPath.toFile();
             File licenseJarFile = licenseJarPath.toFile();
             File commonJarFile = commonJarPath.toFile();
-            if (!licenseJarFile.exists() || !licenseJarFile.isFile() || !jxBrowserJarFile.exists() || !jxBrowserJarFile.isFile() || !commonJarFile.exists() || !commonJarFile.isFile()) {
+
+            if (!licenseJarFile.exists() || !licenseJarFile.isFile()
+                    || !jxBrowserJarFile.exists() || !jxBrowserJarFile.isFile()
+                    || !commonJarFile.exists() || !commonJarFile.isFile()) {
                 FileUtils.deleteQuietly(jxBrowserJarFile);
                 FileUtils.deleteQuietly(licenseJarFile);
                 FileUtils.deleteQuietly(commonJarFile);
-                downloadFilesFromAzure(new ArrayList<Path>(){{
-                    add(jxBrowserJarPath);
-                    add(commonJarPath);
-                    add(licenseJarPath);
-                }});
+                downloadFilesFromAzure(Arrays.asList(jxBrowserJarPath, commonJarPath, licenseJarPath));
             }
 
             URL[] urls = new URL[] {commonJarFile.toURI().toURL(), jxBrowserJarFile.toURI().toURL(), licenseJarFile.toURI().toURL()};
 
             ClassLoader classLoader = new URLClassLoader(urls, JxBrowserUtil.class.getClassLoader());
 
-            Class<?> browserClass = Class.forName(JXBROWSER_CLASS_BROWSER, true, classLoader);
-            Object browser = browserClass.newInstance();
-            Class<?> browserViewClass = Class.forName(JXBROWSER_CLASS_BROWSERVIEW, true, classLoader);
-            Constructor<?> browserViewConstructor = browserViewClass.getConstructor(browserClass);
-            browserView = browserViewConstructor.newInstance(browser);
-
-            if (browserView != null) {
-                Method loadURLMethod = browserClass.getMethod("loadURL", String.class);
-                loadURLMethod.invoke(browser, url);
-            }
+            loadedClasses.browserClass = Class.forName(JXBROWSER_CLASS_BROWSER, true, classLoader);
+            loadedClasses.browserViewClass = Class.forName(JXBROWSER_CLASS_BROWSERVIEW, true, classLoader);
+            loadedClasses.loadURLMethod = loadedClasses.browserClass.getMethod("loadURL", String.class);
+            loadedClasses.browserViewConstructor = loadedClasses.browserViewClass.getConstructor(loadedClasses.browserClass);
         } catch (Exception e) {
             throw new JxBrowserException("Fail to load JxBrowser or load URL: " + e.getMessage());
         }
-
-        return (JComponent)browserView;
     }
 
     /**
@@ -171,13 +183,13 @@ public class JxBrowserUtil {
     private static boolean checkFileDigest(@NotNull Path filePathName, @NotNull Path digestFilePathName) {
         File targetFile = filePathName.toFile();
         if (!targetFile.exists() || !targetFile.isFile()) {
-            log.warning(filePathName + " doesn't exist");
+            log.fine(filePathName + " doesn't exist");
             return false;
         }
 
         File digestFile = digestFilePathName.toFile();
         if (!digestFile.exists() || !digestFile.isFile()) {
-            log.warning(digestFilePathName + " doesn't exist");
+            log.fine(digestFilePathName + " doesn't exist");
             return false;
         }
 
@@ -189,6 +201,7 @@ public class JxBrowserUtil {
             targetFileStream = new FileInputStream(targetFile);
             digest = DigestUtils.md5Hex(targetFileStream).toUpperCase();
             digestFileContent = FileUtils.readFileToString(digestFile, "UTF-8");
+            targetFileStream.close();
         } catch (IOException e) {
             log.warning(String.format("Fail to read file %s or digest %s", filePathName, digestFilePathName));
             result = false;
@@ -196,7 +209,12 @@ public class JxBrowserUtil {
             IOUtils.closeQuietly(targetFileStream);
         }
 
-        return result == true && digestFileContent.equals(digest);
+        if (digestFileContent.equals(digest) == false) {
+            log.warning(String.format("Check sum error for file %s and digest file %s", filePathName, digestFilePathName));
+            return false;
+        }
+
+        return result;
     }
 
     /**
@@ -205,7 +223,7 @@ public class JxBrowserUtil {
      * @return
      */
     private static Boolean downloadFromAzure(@NotNull Path filePathName) {
-        Boolean result = true;
+        boolean result = true;
         try {
             URI cloudBlobUri = new URI(AZURE_BLOB_URI);
             CloudBlobClient serviceClient = new CloudBlobClient(cloudBlobUri);
@@ -239,13 +257,13 @@ public class JxBrowserUtil {
         try {
             int i = filePathNames.size() - 1;
             for (; i >= 0; i--) {
-                if (checkFileDigest(filePathNames.get(i), digestPathNames.get(i)) == true)  {
+                if (checkFileDigest(filePathNames.get(i), digestPathNames.get(i)))  {
                     filePathNames.remove(i);
                     digestPathNames.remove(i);
                 }
             }
 
-            if (filePathNames.size() == 0) return true;
+            if (filePathNames.isEmpty()) return true;
 
             if (currentRetry >= MAX_RETRY_TIMES) {
                 log.warning("Maximum retry time reached. Fail to download" + filePathNames.get(0));
@@ -261,32 +279,23 @@ public class JxBrowserUtil {
             for (i = 0; i < filePathNames.size(); i++) {
                 final Path filePathName = filePathNames.get(i);
                 final Path digestPathName = digestPathNames.get(i);
-                downloadThreads.add(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        return downloadFromAzure(filePathName);
-                    }
-                });
-
-                downloadThreads.add(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        return downloadFromAzure(digestPathName);
-                    }
-                });
+                downloadThreads.add(() -> downloadFromAzure(filePathName));
+                downloadThreads.add(() -> downloadFromAzure(digestPathName));
             };
 
             List<Future<Boolean>> results = threadPool.invokeAll(downloadThreads, waitTime, TimeUnit.SECONDS);
 
             for (i = 0; i < results.size(); i++) {
-                results.get(i).get();
+                if (results.get(i).get() != true) {
+                    result = false;
+                }
             }
         } catch (Exception ex) {
             result = false;
             log.warning(String.format("Download fileName %s fail with exception %s", (filePathNames.size() > 0 ? filePathNames.get(0) : ""), ex.getMessage()));
         } finally {
             if (!result) {
-                log.warning("Start to download again with retry count " + currentRetry + " and wait time " + waitTime);
+                log.fine("Start to download again with retry count " + currentRetry + " and wait time " + waitTime);
                 result = downloadAndCheckDigest(threadPool, filePathNames, currentRetry + 1, waitTime * RETRY_BACKOFF_FACTOR);
             }
         }
@@ -301,24 +310,40 @@ public class JxBrowserUtil {
     private static String getJxBrowserJarFileName() throws JxBrowserException {
         String osName = System.getProperty("os.name").toLowerCase();
         String osArch = System.getProperty("os.arch").toLowerCase();
-        log.warning("osName is : " + osName + ", osArch is: " + osArch);
+        log.fine("osName is : " + osName + ", osArch is: " + osArch);
 
+        String result = "";
         if (osName.contains("mac") || osName.contains("darwin")) {
-            return platformToJxBrowserJar.get("mac");
+            result = platformToJxBrowserJar.get("mac");
         } else if (osName.contains("win")) {
             if (osArch.contains("64")) {
-                return platformToJxBrowserJar.get("win64");
+                result = platformToJxBrowserJar.get("win64");
             } else {
-                return platformToJxBrowserJar.get("win32");
+                result = platformToJxBrowserJar.get("win32");
             }
         } else if (osName.contains("nix") || osName.contains("nux")) {
             if (osArch.contains("64")) {
-                return platformToJxBrowserJar.get("linux64");
+                result = platformToJxBrowserJar.get("linux64");
             } else {
-                return platformToJxBrowserJar.get("linux32");
+                result = platformToJxBrowserJar.get("linux32");
             }
         } else {
             throw new JxBrowserException("Cannot recognize the operation system." + osName);
+        }
+
+
+        return result;
+    }
+
+    private static class LoadedClassesAndMethods {
+        volatile static Class<?> browserClass = null;
+        volatile static Class<?> browserViewClass = null;
+        volatile static Constructor<?> browserViewConstructor = null;
+        volatile static Method loadURLMethod = null;
+
+
+        public static boolean isLoaded(){
+            return browserClass != null && browserViewClass != null && browserViewConstructor != null && loadURLMethod != null;
         }
     }
 }
