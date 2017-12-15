@@ -58,9 +58,12 @@ import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import rx.exceptions.Exceptions;
 import rx.subjects.PublishSubject;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
@@ -155,12 +158,18 @@ public class SparkBatchJobSubmissionState implements RunProfileState, RemoteStat
                             }
                         },
                         err -> {
+                            StringWriter errWriter = new StringWriter();
+                            err.printStackTrace(new PrintWriter(errWriter));
+
+                            String errMessage = Optional.ofNullable(err.getMessage())
+                                                        .orElse(err.toString()) + "\n stack trace: " + errWriter.getBuffer().toString();
+
                             createAppInsightEvent(executor, new HashMap<String, String>() {{
                                 put("IsSubmitSucceed", "false");
-                                put("SubmitFailedReason", HDInsightUtil.normalizeTelemetryMessage(err.getMessage()));
+                                put("SubmitFailedReason", HDInsightUtil.normalizeTelemetryMessage(errMessage));
                             }});
 
-                            ctrlMessageView.print("ERROR: " + err.getMessage(), ConsoleViewContentType.ERROR_OUTPUT);
+                            ctrlMessageView.print("ERROR: " + errMessage, ConsoleViewContentType.ERROR_OUTPUT);
                             disconnectAction.setEnabled(false);
                         },
                         () -> disconnectAction.setEnabled(false)

@@ -137,6 +137,18 @@ public class MavenProjectGenerator {
                         "/hdinsight/templates/scala/scala_local_run/data/HdiSamples/HdiSamples/SensorSampleData/hvac/HVAC.csv"
                 }, root + "/data/__default__/HdiSamples/HdiSamples/SensorSampleData/hvac/");
 
+                if (SparkVersion.sparkVersionComparator.compare(this.sparkVersion, SparkVersion.SPARK_2_1_0) >= 0) {
+                    // sample code
+                    ProjectSampleUtil.copyFileToPath(new String[]{
+                            "/hdinsight/templates/scala/sparksql/SparkSQLExample.scala"
+                    }, root + "/src/main/scala/sample");
+
+                    // sample data
+                    ProjectSampleUtil.copyFileToPath(new String[]{
+                            "/hdinsight/templates/scala/scala_local_run/data/example/data/people.json"
+                    }, root + "/data/__default__/example/data/");
+                }
+
                 // Falling through
             case Scala:
             case Java:

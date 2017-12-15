@@ -22,9 +22,7 @@
 
 package com.microsoft.azure.hdinsight.projects;
 
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Comparator;
 
 public enum SparkVersion {
     SPARK_2_1_0("2.1.0", "2.11.8", "2.11"),
@@ -76,4 +74,16 @@ public enum SparkVersion {
     public String getSparkVersioninDashFormat() {
     	return sparkVersion.replace(".", "_") + "_";
     }
+
+    public static Comparator<SparkVersion> sparkVersionComparator = (v1, v2) -> {
+        String[] v1Vers = v1.getSparkVersion().split("\\.");
+        String[] v2Vers = v2.getSparkVersion().split("\\.");
+
+        int majorVerResult = Integer.parseInt(v1Vers[0]) - Integer.parseInt(v2Vers[0]);
+        int minorVerResult = Integer.parseInt(v1Vers[1]) - Integer.parseInt(v2Vers[1]);
+        int patchVerResult = Integer.parseInt(v1Vers[2]) - Integer.parseInt(v2Vers[2]);
+
+        return majorVerResult != 0 ? majorVerResult :
+                                    (minorVerResult != 0 ? minorVerResult : patchVerResult);
+    };
 }

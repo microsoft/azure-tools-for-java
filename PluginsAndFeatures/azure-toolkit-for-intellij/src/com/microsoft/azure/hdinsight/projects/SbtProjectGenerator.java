@@ -46,7 +46,8 @@ import java.util.List;
 public class SbtProjectGenerator {
     private Module module;
     private HDInsightTemplatesType templatesType;
-    private String sparkVersion;
+    private SparkVersion sparkVersion;
+    private String sparkSimpleVersion;
     private String scalaVersion;
     private String scalaVer;
     private String sbtVersion;
@@ -57,7 +58,8 @@ public class SbtProjectGenerator {
                                @NotNull String sbtVersion) {
         this.module = module;
         this.templatesType = templatesType;
-        this.sparkVersion = sparkVersion.getSparkVersion();
+        this.sparkVersion = sparkVersion;
+        this.sparkSimpleVersion = sparkVersion.getSparkVersion();
         this.scalaVersion = sparkVersion.getScalaVersion();
         this.scalaVer = sparkVersion.getScalaVer();
         this.sbtVersion = sbtVersion;
@@ -122,6 +124,18 @@ public class SbtProjectGenerator {
                         "/hdinsight/templates/scala/scala_local_run/data/HdiSamples/HdiSamples/SensorSampleData/hvac/HVAC.csv"
                 }, root + "/data/__default__/HdiSamples/HdiSamples/SensorSampleData/hvac/");
 
+                if (SparkVersion.sparkVersionComparator.compare(this.sparkVersion, SparkVersion.SPARK_2_1_0) >= 0) {
+                    // sample code
+                    ProjectSampleUtil.copyFileToPath(new String[]{
+                            "/hdinsight/templates/scala/sparksql/SparkSQLExample.scala"
+                    }, root + "/src/main/scala/sample");
+
+                    // sample data
+                    ProjectSampleUtil.copyFileToPath(new String[]{
+                            "/hdinsight/templates/scala/scala_local_run/data/example/data/people.json"
+                    }, root + "/data/__default__/example/data/");
+                }
+
                 // Falling through
             case Scala:
             case Java:
@@ -147,10 +161,10 @@ public class SbtProjectGenerator {
         sbtLines.add("version := \"1.0\"");
         sbtLines.add(String.format("scalaVersion := \"%s\"", this.scalaVersion));
         sbtLines.add("libraryDependencies ++= Seq(");
-        sbtLines.add(String.format("\"org.apache.spark\" %% \"spark-core_%s\" %% \"%s\",", this.scalaVer, this.sparkVersion));
-        sbtLines.add(String.format("\"org.apache.spark\" %% \"spark-sql_%s\" %% \"%s\",", this.scalaVer, this.sparkVersion));
-        sbtLines.add(String.format("\"org.apache.spark\" %% \"spark-streaming_%s\" %% \"%s\",", this.scalaVer, this.sparkVersion));
-        sbtLines.add(String.format("\"org.apache.spark\" %% \"spark-mllib_%s\" %% \"%s\",", this.scalaVer, this.sparkVersion));
+        sbtLines.add(String.format("\"org.apache.spark\" %% \"spark-core_%s\" %% \"%s\",", this.scalaVer, this.sparkSimpleVersion));
+        sbtLines.add(String.format("\"org.apache.spark\" %% \"spark-sql_%s\" %% \"%s\",", this.scalaVer, this.sparkSimpleVersion));
+        sbtLines.add(String.format("\"org.apache.spark\" %% \"spark-streaming_%s\" %% \"%s\",", this.scalaVer, this.sparkSimpleVersion));
+        sbtLines.add(String.format("\"org.apache.spark\" %% \"spark-mllib_%s\" %% \"%s\",", this.scalaVer, this.sparkSimpleVersion));
         sbtLines.add(String.format("\"org.jmockit\" %% \"jmockit\" %% \"%s\" %% \"%s\"", "1.34", "test"));
         sbtLines.add(")");
 

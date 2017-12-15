@@ -137,7 +137,10 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
                 ActionRunner task = new ActionRunner(project);
                 task.queue();
             }
-        }, ModalityState.stateForComponent(contentPane));
+            // TODO: this is a temp fix for intelliJ error
+            // https://github.com/JetBrains/intellij-community/commit/df6a596e15e2ffb0c2e6b6b4be8c4af0ef096a00#diff-52c7fa7387b3775c006937597017b726
+            // The fix should be release in intelliJ 2018. We need revert back to the origin code after the latest two versions are both 2018.
+        }, ModalityState.any()); // ModalityState.stateForComponent(contentPane));
     }
 
     private class ActionRunner extends Task.Modal implements IListener<Status> {
