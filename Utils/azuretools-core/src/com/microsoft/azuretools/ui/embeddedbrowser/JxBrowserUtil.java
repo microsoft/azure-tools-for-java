@@ -68,8 +68,7 @@ public class JxBrowserUtil {
 
     private static final String JXBROWSER_CLASS_BROWSERVIEW = "com.teamdev.jxbrowser.chromium.swing.BrowserView";
     private static final String JXBROWSER_CLASS_BROWSER = "com.teamdev.jxbrowser.chromium.Browser";
-    private static final String AZURE_ACCOUNT_NAME = "ltiantest";
-    private static final String AZURE_BLOB_URI = "http://ltiantest.blob.core.windows.net";
+    private static final String AZURE_BLOB_URI = "https://ltiantest.blob.core.windows.net";
     private static final String JXBROWSER_LICENSE_FILE = "license.jar";
     private static final String JXBROWSER_COMMON_JAR = "jxbrowser-6.16.jar";
     private static final int RETRY_BACKOFF_FACTOR = 3;
@@ -98,7 +97,9 @@ public class JxBrowserUtil {
             }
         }
 
-        if (!loadedClasses.isLoaded()) return null;
+        if (!loadedClasses.isLoaded()) {
+            throw new JxBrowserException("Fail to load JxBrowser classes");
+        }
 
         try {
             Object browser = loadedClasses.browserClass.newInstance();
@@ -242,12 +243,13 @@ public class JxBrowserUtil {
     /**
      * Download file and check digest with retry. Return false if all retry fails
      * @param threadPool
-     * @param filePathNames
+     * @param filePathNameList
      * @param currentRetry
      * @param waitTime
      * @return
      */
-    private static boolean downloadAndCheckDigest(@NotNull ExecutorService threadPool, @NotNull List<Path> filePathNames, int currentRetry, int waitTime) {
+    private static boolean downloadAndCheckDigest(@NotNull ExecutorService threadPool, @NotNull List<Path> filePathNameList, int retryLeft, int waitTime) {
+        List<Path> filePathNames = new ArrayList<>(filePathNameList);
         List<Path> digestPathNames = new ArrayList<>();
         for (int i = 0; i < filePathNames.size(); i++) {
             digestPathNames.add(Paths.get(FilenameUtils.removeExtension(filePathNames.get(i).toString()) + ".md5"));
@@ -263,9 +265,11 @@ public class JxBrowserUtil {
                 }
             }
 
-            if (filePathNames.isEmpty()) return true;
+            if (filePathNames.isEmpty()) {
+                return true;
+            }
 
-            if (currentRetry >= MAX_RETRY_TIMES) {
+            if (retryLeft < 0) {
                 log.warning("Maximum retry time reached. Fail to download" + filePathNames.get(0));
                 return false;
             }
@@ -286,7 +290,7 @@ public class JxBrowserUtil {
             List<Future<Boolean>> results = threadPool.invokeAll(downloadThreads, waitTime, TimeUnit.SECONDS);
 
             for (i = 0; i < results.size(); i++) {
-                if (results.get(i).get() != true) {
+                if (!results.get(i).get()) {
                     result = false;
                 }
             }
@@ -295,8 +299,8 @@ public class JxBrowserUtil {
             log.warning(String.format("Download fileName %s fail with exception %s", (filePathNames.size() > 0 ? filePathNames.get(0) : ""), ex.getMessage()));
         } finally {
             if (!result) {
-                log.fine("Start to download again with retry count " + currentRetry + " and wait time " + waitTime);
-                result = downloadAndCheckDigest(threadPool, filePathNames, currentRetry + 1, waitTime * RETRY_BACKOFF_FACTOR);
+                log.fine("Start to download again with retry count " + retryLeft + " and wait time " + waitTime);
+                result = downloadAndCheckDigest(threadPool, filePathNames, retryLeft - 1, waitTime * RETRY_BACKOFF_FACTOR);
             }
         }
 
@@ -304,7 +308,7 @@ public class JxBrowserUtil {
     }
 
     private static boolean downloadAndCheckDigest(@NotNull ExecutorService threadPool, @NotNull List<Path> filePathNames) {
-        return downloadAndCheckDigest(threadPool, filePathNames, 0, MAX_WAIT_TIME_IN_SECONDS);
+        return downloadAndCheckDigest(threadPool, filePathNames, MAX_RETRY_TIMES, MAX_WAIT_TIME_IN_SECONDS);
     }
 
     private static String getJxBrowserJarFileName() throws JxBrowserException {
@@ -342,7 +346,7 @@ public class JxBrowserUtil {
         volatile static Method loadURLMethod = null;
 
 
-        public static boolean isLoaded(){
+        public static boolean isLoaded() {
             return browserClass != null && browserViewClass != null && browserViewConstructor != null && loadURLMethod != null;
         }
     }
