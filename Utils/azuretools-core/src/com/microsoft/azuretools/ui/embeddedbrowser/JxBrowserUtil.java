@@ -80,7 +80,7 @@ public class JxBrowserUtil {
      */
     public static CompletableFuture<JComponent> createBrowserViewAndLoadURL(@NotNull final String url, final String targetPath) {
         log.fine("Start to download, create browser view and load URL at time " + System.currentTimeMillis());
-        CompletableFuture<Void> downloadAndLoadClassesTask = CompletableFuture.runAsync(() -> {
+        CompletableFuture<JComponent> downloadAndLoadClassesTask = CompletableFuture.supplyAsync(() -> {
             synchronized (JxBrowserUtil.class) {
                 if (!loadedClasses.isLoaded()) {
                     try {
@@ -90,9 +90,7 @@ public class JxBrowserUtil {
                     }
                 };
             }
-        });
 
-        CompletableFuture<JComponent> loadURLTask = downloadAndLoadClassesTask.thenApplyAsync(ignored -> {
             if (!loadedClasses.isLoaded()) {
                 log.severe("Class JxBrowser is not loaded at time " + System.currentTimeMillis());
                 throw new CompletionException(new JxBrowserException("Class JxBrowser is not loaded"));
@@ -107,7 +105,7 @@ public class JxBrowserUtil {
                     loadedClasses.loadURLMethod.invoke(browser, url);
                 }
 
-                return (JComponent) browserView;
+                return (JComponent)browserView;
             } catch (Exception e) {
                 log.severe("Class JxBrowser is not loaded at time " +  + System.currentTimeMillis());
                 throw new CompletionException(e);
@@ -116,7 +114,7 @@ public class JxBrowserUtil {
 
         log.fine("Finished downloading, creating browser view and loading URL at " + System.currentTimeMillis());
 
-        return loadURLTask;
+        return downloadAndLoadClassesTask;
     }
 
     /**
