@@ -78,42 +78,45 @@ public class JxBrowserUtil {
      * @param url
      * @return JComponent (JxBrowser BrowserView) that can be added to Swing UI
      */
-    public static JComponent createBrowserViewAndLoadURL(@NotNull final String url, final String targetPath) throws JxBrowserException {
-        synchronized (JxBrowserUtil.class) {
-            if (!loadedClasses.isLoaded()) {
-                CompletableFuture<Void> downloadAndLoadClassesTask = CompletableFuture.runAsync(() -> {
+    public static CompletableFuture<JComponent> createBrowserViewAndLoadURL(@NotNull final String url, final String targetPath) {
+        log.fine("Start to download, create browser view and load URL at time " + System.currentTimeMillis());
+        CompletableFuture<Void> downloadAndLoadClassesTask = CompletableFuture.runAsync(() -> {
+            synchronized (JxBrowserUtil.class) {
+                if (!loadedClasses.isLoaded()) {
                     try {
                         downloadAndLoadClasses(targetPath);
                     } catch (JxBrowserException e) {
                         throw new CompletionException(e);
                     }
-                });
+                };
+            }
+        });
 
-                try {
-                    downloadAndLoadClassesTask.get();
-                } catch (Exception e) {
-                    throw new JxBrowserException("Fail to download and load classes with exception " + e.getMessage());
+        CompletableFuture<JComponent> loadURLTask = downloadAndLoadClassesTask.thenApplyAsync(ignored -> {
+            if (!loadedClasses.isLoaded()) {
+                log.severe("Class JxBrowser is not loaded at time " + System.currentTimeMillis());
+                throw new CompletionException(new JxBrowserException("Class JxBrowser is not loaded"));
+            }
+
+            try {
+                Object browser = loadedClasses.browserClass.newInstance();
+
+                Object browserView = loadedClasses.browserViewConstructor.newInstance(browser);
+
+                if (browserView != null) {
+                    loadedClasses.loadURLMethod.invoke(browser, url);
                 }
+
+                return (JComponent) browserView;
+            } catch (Exception e) {
+                log.severe("Class JxBrowser is not loaded at time " +  + System.currentTimeMillis());
+                throw new CompletionException(e);
             }
-        }
+        });
 
-        if (!loadedClasses.isLoaded()) {
-            throw new JxBrowserException("Fail to load JxBrowser classes");
-        }
+        log.fine("Finished downloading, creating browser view and loading URL at " + System.currentTimeMillis());
 
-        try {
-            Object browser = loadedClasses.browserClass.newInstance();
-
-            Object browserView = loadedClasses.browserViewConstructor.newInstance(browser);
-
-            if (browserView != null) {
-                loadedClasses.loadURLMethod.invoke(browser, url);
-            }
-
-            return (JComponent) browserView;
-        } catch (Exception e) {
-            throw new JxBrowserException("Fail to load URL with exception " + e.getMessage());
-        }
+        return loadURLTask;
     }
 
     /**
