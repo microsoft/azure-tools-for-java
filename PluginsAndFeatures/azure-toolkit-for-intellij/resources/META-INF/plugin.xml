@@ -19,6 +19,12 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.1.0]</h3>
+      <ul>
+        <li>Fixed compatibility issue with IntelliJ IDEA 2017.3</li>
+        <li>HDInsight tools UI refactoring: Added toolbar entry and right click context menu entry for Spark job submission and local/in-cluster debugging, which make users submit or debug job easier.</li>
+        <li>Fixed some bugs.</li>
+      </ul>
       <h3>[3.0.12]</h3>
       <ul>
         <li>Support submitting the script to HDInsight cluster without modification in Spark local run.</li>
