@@ -245,7 +245,7 @@ public class JxBrowserUtil {
      * Download file and check digest with retry. Return false if all retry fails
      * @param threadPool
      * @param filePathNameList
-     * @param currentRetry
+     * @param retryLeft
      * @param waitTime
      * @return
      */
