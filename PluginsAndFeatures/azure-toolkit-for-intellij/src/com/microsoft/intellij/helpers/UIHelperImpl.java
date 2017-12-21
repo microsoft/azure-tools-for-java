@@ -172,7 +172,7 @@ public class UIHelperImpl implements UIHelper {
             public void run() {
                 FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true);
             }
-        }, ModalityState.any());
+        });
     }
 
     @org.jetbrains.annotations.NotNull
