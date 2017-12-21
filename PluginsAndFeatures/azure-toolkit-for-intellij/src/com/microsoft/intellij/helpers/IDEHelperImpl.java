@@ -115,7 +115,7 @@ public class IDEHelperImpl implements IDEHelper {
             public void run() {
                 FileEditorManager.getInstance((Project) projectObject).closeFile((VirtualFile) openedFile);
             }
-        }, ModalityState.any());
+        });
     }
 
     @Override
