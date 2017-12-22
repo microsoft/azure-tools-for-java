@@ -68,7 +68,7 @@ public class JxBrowserUtil {
 
     private static final String JXBROWSER_CLASS_BROWSERVIEW = "com.teamdev.jxbrowser.chromium.swing.BrowserView";
     private static final String JXBROWSER_CLASS_BROWSER = "com.teamdev.jxbrowser.chromium.Browser";
-    private static final String AZURE_BLOB_URI = "https://ltiantest.blob.core.windows.net";
+    private static final String AZURE_BLOB_URI = "https://hdinsighttool.azureedge.net";
     private static final String JXBROWSER_LICENSE_FILE = "license.jar";
     private static final String JXBROWSER_COMMON_JAR = "jxbrowser-6.16.jar";
     private static final int RETRY_BACKOFF_FACTOR = 3;
