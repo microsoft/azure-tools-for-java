@@ -80,7 +80,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
 
     // User-agent header for Azure SDK calls
-    public static final String USER_AGENT = "Azure Toolkit for IntelliJ, v%s, machineid:%s";
+    public static final String USER_AGENT = "Azure Toolkit for IntelliJ, v%s";
 
     public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
     public static boolean IS_ANDROID_STUDIO = "AndroidStudio".equals(PlatformUtils.getPlatformPrefix());
@@ -99,7 +99,16 @@ public class AzurePlugin extends AbstractProjectComponent {
     public AzurePlugin(Project project) {
         super(project);
         this.azureSettings = AzureSettings.getSafeInstance(project);
-        CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION, getMachineId()));
+        String userAgent = (String.format(USER_AGENT, PLUGIN_VERSION));
+        boolean allowTelemetry = true;
+        if (new File(dataFile).exists()) {
+            String prefValue = DataOperations.getProperty(dataFile, message("prefVal"));
+            if (prefValue != null && prefValue.equalsIgnoreCase("false")) {
+                allowTelemetry = false;
+            }
+        }
+        userAgent += allowTelemetry ? String.format(", machineid:%s", getMachineId()) : "";
+        CommonSettings.setUserAgent(userAgent);
     }
 
 

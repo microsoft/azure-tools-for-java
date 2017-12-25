@@ -25,12 +25,14 @@ package com.microsoft.intellij.ui;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azuretools.adauth.StringUtils;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.util.GetHashMac;
 import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.w3c.dom.Document;
@@ -101,6 +103,11 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                     // Either from Agree to Deny, or from Deny to Agree.
                     final String action = acceptTelemetry ? AppInsightsConstants.Allow : AppInsightsConstants.Deny;
                     AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "", action, null, true);
+                    String userAgent = (String.format(AzurePlugin.USER_AGENT, CommonConst.PLUGIN_VERISON));
+                    if (acceptTelemetry) {
+                        userAgent += String.format(", machineid:%s", DataOperations.getProperty(dataFile, message("instID")));
+                    }
+                    CommonSettings.setUserAgent(userAgent);
                 }
             } else {
                 AzurePlugin.copyResourceFile(message("dataFileName"), dataFile);
