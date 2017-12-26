@@ -121,10 +121,10 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        pluginInstLoc = String.format("%s%s%s", PluginUtil.pluginFolder, File.separator,
-                com.microsoft.azuretools.core.utils.Messages.commonPluginID);
-        dataFile = String.format("%s%s%s", pluginInstLoc, File.separator,
-                com.microsoft.azuretools.core.utils.Messages.dataFileName);
+        pluginInstLoc = Paths.get(PluginUtil.pluginFolder, File.separator,
+                com.microsoft.azuretools.core.utils.Messages.commonPluginID).toString();
+        dataFile = Paths.get(pluginInstLoc, File.separator,
+                com.microsoft.azuretools.core.utils.Messages.dataFileName).toString();
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
