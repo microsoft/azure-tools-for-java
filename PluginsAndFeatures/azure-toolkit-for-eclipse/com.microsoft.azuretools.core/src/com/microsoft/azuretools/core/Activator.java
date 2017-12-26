@@ -1,20 +1,20 @@
  /*
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
+ * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
  * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
@@ -89,7 +89,9 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
     public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
 
     // User-agent header for Azure SDK calls
-    public static final String USER_AGENT = "Azure Toolkit for Eclipse, v%s, machineid:%s";
+    public static final String USER_AGENT = "Azure Toolkit for Eclipse, v%s";
+    private String pluginInstLoc;
+    private String dataFile;
 
     // The shared instance
     private static Activator plugin;
@@ -98,11 +100,11 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
     private PluginSettings settings;
     public static final String CONSOLE_NAME = Messages.consoleName;
-    
+
     private static final EventListenerList DEPLOYMENT_EVENT_LISTENERS = new EventListenerList();
-    
+
     private Collection<String> obsoletePackages;
-    
+
     private static final EventListenerList UPLOAD_PROGRESS_EVENT_LISTENERS = new EventListenerList();
     public static List<DeploymentEventListener> depEveList = new ArrayList<DeploymentEventListener>();
 
@@ -115,15 +117,20 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
      */
+    @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
+        pluginInstLoc = String.format("%s%s%s", PluginUtil.pluginFolder, File.separator,
+                com.microsoft.azuretools.core.utils.Messages.commonPluginID);
+        dataFile = String.format("%s%s%s", pluginInstLoc, File.separator,
+                com.microsoft.azuretools.core.utils.Messages.dataFileName);
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
         initAzureToolsCoreLibsSettings();
-        
+
         // load up the plugin settings
         try {
             loadPluginSettings();
@@ -149,7 +156,16 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
     private void initAzureToolsCoreLibsSettings() {
         try {
-            CommonSettings.setUserAgent(String.format(USER_AGENT, FrameworkUtil.getBundle(getClass()).getVersion(), getMachineId()));
+            String userAgent = String.format(USER_AGENT, FrameworkUtil.getBundle(getClass()).getVersion());
+            boolean allowTelemetry = true;
+            if (new File(dataFile).exists()) {
+                String prefValue = DataOperations.getProperty(dataFile, com.microsoft.azuretools.core.utils.Messages.prefVal);
+                if (prefValue != null && prefValue.equalsIgnoreCase("false")) {
+                    allowTelemetry = false;
+                }
+             }
+            userAgent += allowTelemetry ? String.format(", machineid:%s", getMachineId()) : "";
+            CommonSettings.setUserAgent(userAgent);
             if (CommonSettings.getUiFactory() == null)
                 CommonSettings.setUiFactory(new UIFactory());
             String wd = "AzureToolsForEclipse";
@@ -184,10 +200,6 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
     private String getMachineId() {
 		String ret = null;
-		String pluginInstLoc = String.format("%s%s%s", PluginUtil.pluginFolder, File.separator,
-				com.microsoft.azuretools.core.utils.Messages.commonPluginID);
-		String dataFile = String.format("%s%s%s", pluginInstLoc, File.separator,
-				com.microsoft.azuretools.core.utils.Messages.dataFileName);
 		if (new File(dataFile).exists()) {
 			ret = DataOperations.getProperty(dataFile, com.microsoft.azuretools.core.utils.Messages.instID);
 			if (ret == null || ret.isEmpty() || !GetHashMac.IsValidHashMacFormat(ret)) {
@@ -199,17 +211,17 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
 		return ret;
 	}
-    
+
     public Collection<String> getObsoletePackages() {
     	return obsoletePackages;
     }
-    
-    public boolean isScalaInstallationTipNeeded() {    	
+
+    public boolean isScalaInstallationTipNeeded() {
     	boolean isScalaPluginInstalled = PluginUtil.checkPlugInInstallation("org.scala-ide.sdt.core");
     	boolean isHDInsightSelected = PluginUtil.checkPlugInInstallation("com.microsoft.azuretools.hdinsight");
     	return isHDInsightSelected && !isScalaPluginInstalled;
     }
-    
+
     private void findObsoletePackages(BundleContext context) {
     	/// Fix Issue : https://github.com/Microsoft/azure-tools-for-java/issues/188
 		Map<String, String> obsoletePackageMap = new HashMap<String, String>();
@@ -249,6 +261,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
      */
+    @Override
     public void stop(BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
@@ -262,7 +275,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
     public static Activator getDefault() {
         return plugin;
     }
-    
+
     /**
      * Returns an image descriptor for the image file at the given
      * plug-in relative path
@@ -335,14 +348,16 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
         Activator.prefState = prefState;
     }
 
+    @Override
     public PluginSettings getSettings() {
         return settings;
     }
 
+    @Override
     public String getPluginId() {
         return PLUGIN_ID;
     }
-    
+
     public static void removeUnNecessaryListener() {
         for (int i = 0 ; i < depEveList.size(); i++) {
             removeDeploymentEventListener(depEveList.get(i));
@@ -357,13 +372,13 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
     public static void removeDeploymentEventListener(DeploymentEventListener listener) {
         DEPLOYMENT_EVENT_LISTENERS.remove(DeploymentEventListener.class, listener);
     }
-    
+
     public void addUploadProgressEventListener(UploadProgressEventListener listener) {
         UPLOAD_PROGRESS_EVENT_LISTENERS.add(UploadProgressEventListener.class, listener);
     }
-    
+
     public void removeUploadProgressEventListener(UploadProgressEventListener listener) {
-        UPLOAD_PROGRESS_EVENT_LISTENERS.remove(UploadProgressEventListener.class, listener);        
+        UPLOAD_PROGRESS_EVENT_LISTENERS.remove(UploadProgressEventListener.class, listener);
     }
 
     public void fireDeploymentEvent(DeploymentEventArgs args) {
@@ -385,7 +400,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             }
         }
     }
-    
+
     public static MessageConsole findConsole(String name) {
         ConsolePlugin consolePlugin = ConsolePlugin.getDefault();
         IConsoleManager conMan = consolePlugin.getConsoleManager();

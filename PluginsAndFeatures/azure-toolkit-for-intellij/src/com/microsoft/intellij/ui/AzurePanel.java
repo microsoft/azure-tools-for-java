@@ -103,7 +103,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                     // Either from Agree to Deny, or from Deny to Agree.
                     final String action = acceptTelemetry ? AppInsightsConstants.Allow : AppInsightsConstants.Deny;
                     AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "", action, null, true);
-                    String userAgent = (String.format(AzurePlugin.USER_AGENT, CommonConst.PLUGIN_VERISON));
+                    String userAgent = String.format(AzurePlugin.USER_AGENT, CommonConst.PLUGIN_VERISON);
                     if (acceptTelemetry) {
                         userAgent += String.format(", machineid:%s", DataOperations.getProperty(dataFile, message("instID")));
                     }
