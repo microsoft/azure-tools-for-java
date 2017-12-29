@@ -161,10 +161,8 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
 						 // Either from Agree to Deny, or from Deny to Agree.
 						 final String action = acceptTelemetry ? AppInsightsConstants.Allow : AppInsightsConstants.Deny;
 						 AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "", action, null, true);
-						 String userAgent = String.format(Activator.USER_AGENT, FrameworkUtil.getBundle(getClass()).getVersion());
-						 if (acceptTelemetry) {
-						     userAgent += String.format(", machineid:%s", DataOperations.getProperty(dataFile, Messages.instID));
-						 }
+						 String userAgent = String.format(Activator.USER_AGENT, FrameworkUtil.getBundle(getClass()).getVersion(),
+						         acceptTelemetry ? DataOperations.getProperty(dataFile, Messages.instID) : "");
 						 CommonSettings.setUserAgent(userAgent);
 					}
 				} else {

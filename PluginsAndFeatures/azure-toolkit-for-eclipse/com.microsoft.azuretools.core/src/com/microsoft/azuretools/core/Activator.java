@@ -89,7 +89,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
     public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
 
     // User-agent header for Azure SDK calls
-    public static final String USER_AGENT = "Azure Toolkit for Eclipse, v%s";
+    public static final String USER_AGENT = "Azure Toolkit for Eclipse, v%s, machineid:%s";
     private String pluginInstLoc;
     private String dataFile;
 
@@ -156,16 +156,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
     private void initAzureToolsCoreLibsSettings() {
         try {
-            String userAgent = String.format(USER_AGENT, FrameworkUtil.getBundle(getClass()).getVersion());
-            boolean allowTelemetry = true;
-            if (new File(dataFile).exists()) {
-                String prefValue = DataOperations.getProperty(dataFile, com.microsoft.azuretools.core.utils.Messages.prefVal);
-                if (prefValue != null && prefValue.equalsIgnoreCase("false")) {
-                    allowTelemetry = false;
-                }
-             }
-            userAgent += allowTelemetry ? String.format(", machineid:%s", getMachineId()) : "";
-            CommonSettings.setUserAgent(userAgent);
+            CommonSettings.setUserAgent(String.format(USER_AGENT, FrameworkUtil.getBundle(getClass()).getVersion(), getMachineId()));
             if (CommonSettings.getUiFactory() == null)
                 CommonSettings.setUiFactory(new UIFactory());
             String wd = "AzureToolsForEclipse";
@@ -201,6 +192,10 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
     private String getMachineId() {
 		String ret = null;
 		if (new File(dataFile).exists()) {
+		    String prefValue = DataOperations.getProperty(dataFile, com.microsoft.azuretools.core.utils.Messages.prefVal);
+		    if (prefValue != null && prefValue.equalsIgnoreCase("false")) {
+                return "";
+            }
 			ret = DataOperations.getProperty(dataFile, com.microsoft.azuretools.core.utils.Messages.instID);
 			if (ret == null || ret.isEmpty() || !GetHashMac.IsValidHashMacFormat(ret)) {
 				ret = GetHashMac.GetHashMac();
