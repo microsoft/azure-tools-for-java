@@ -31,6 +31,7 @@ import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.util.PluginHelper;
@@ -103,14 +104,14 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                     // Either from Agree to Deny, or from Deny to Agree.
                     final String action = acceptTelemetry ? AppInsightsConstants.Allow : AppInsightsConstants.Deny;
                     AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "", action, null, true);
-                    String userAgent = String.format(AzurePlugin.USER_AGENT, CommonConst.PLUGIN_VERISON,
-                            acceptTelemetry ? DataOperations.getProperty(dataFile, message("instID")) : "");
-                    CommonSettings.setUserAgent(userAgent);
                 }
             } else {
                 AzurePlugin.copyResourceFile(message("dataFileName"), dataFile);
                 setValues(dataFile);
             }
+            String userAgent = String.format(AzurePlugin.USER_AGENT, CommonConst.PLUGIN_VERISON,
+                    TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID")));
+            CommonSettings.setUserAgent(userAgent);
         } catch (Exception ex) {
             AzurePlugin.log(ex.getMessage(), ex);
             PluginUtil.displayErrorDialog(message("errTtl"), message("updateErrMsg"));

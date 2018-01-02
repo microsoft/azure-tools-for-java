@@ -63,8 +63,6 @@ import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.deploy.UploadProgressEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.UploadProgressEventListener;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
-import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.core.azureexplorer.helpers.IDEHelperImpl;
 import com.microsoft.azuretools.core.azureexplorer.helpers.MvpUIHelperImpl;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
@@ -73,6 +71,7 @@ import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.core.ui.UIFactory;
 import com.microsoft.azuretools.core.ui.views.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
@@ -81,7 +80,7 @@ import com.microsoft.tooling.msservices.components.PluginSettings;
  * The activator class controls the plug-in life cycle
  */
 public class Activator extends AbstractUIPlugin implements PluginComponent {
-	private static FileHandler logFileHandler = null;
+    private static FileHandler logFileHandler = null;
 
     // The plug-in ID
     public static final String PLUGIN_ID = "com.microsoft.azuretools.core"; //$NON-NLS-1$
@@ -156,13 +155,15 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
     private void initAzureToolsCoreLibsSettings() {
         try {
-            CommonSettings.setUserAgent(String.format(USER_AGENT, FrameworkUtil.getBundle(getClass()).getVersion(), getMachineId()));
+            CommonSettings.setUserAgent(String.format(USER_AGENT, FrameworkUtil.getBundle(getClass()).getVersion(),
+                    TelemetryUtils.getMachieId(dataFile, com.microsoft.azuretools.core.utils.Messages.prefVal,
+                            com.microsoft.azuretools.core.utils.Messages.instID)));
             if (CommonSettings.getUiFactory() == null)
                 CommonSettings.setUiFactory(new UIFactory());
             String wd = "AzureToolsForEclipse";
             Path dirPath = Paths.get(System.getProperty("user.home"), wd);
             if (!Files.exists(dirPath)) {
-            	Files.createDirectory(dirPath);
+                Files.createDirectory(dirPath);
             }
             CommonSettings.setUpEnvironment(dirPath.toString());
             initAzureToolsCoreLibsLoggerFileHandler();
@@ -189,68 +190,50 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
         }
     }
 
-    private String getMachineId() {
-		String ret = null;
-		if (new File(dataFile).exists()) {
-		    String prefValue = DataOperations.getProperty(dataFile, com.microsoft.azuretools.core.utils.Messages.prefVal);
-		    if (prefValue != null && prefValue.equalsIgnoreCase("false")) {
-                return "";
-            }
-			ret = DataOperations.getProperty(dataFile, com.microsoft.azuretools.core.utils.Messages.instID);
-			if (ret == null || ret.isEmpty() || !GetHashMac.IsValidHashMacFormat(ret)) {
-				ret = GetHashMac.GetHashMac();
-			}
-		} else {
-			ret = GetHashMac.GetHashMac();
-		}
-
-		return ret;
-	}
-
     public Collection<String> getObsoletePackages() {
-    	return obsoletePackages;
+        return obsoletePackages;
     }
 
     public boolean isScalaInstallationTipNeeded() {
-    	boolean isScalaPluginInstalled = PluginUtil.checkPlugInInstallation("org.scala-ide.sdt.core");
-    	boolean isHDInsightSelected = PluginUtil.checkPlugInInstallation("com.microsoft.azuretools.hdinsight");
-    	return isHDInsightSelected && !isScalaPluginInstalled;
+        boolean isScalaPluginInstalled = PluginUtil.checkPlugInInstallation("org.scala-ide.sdt.core");
+        boolean isHDInsightSelected = PluginUtil.checkPlugInInstallation("com.microsoft.azuretools.hdinsight");
+        return isHDInsightSelected && !isScalaPluginInstalled;
     }
 
     private void findObsoletePackages(BundleContext context) {
-    	/// Fix Issue : https://github.com/Microsoft/azure-tools-for-java/issues/188
-		Map<String, String> obsoletePackageMap = new HashMap<String, String>();
-		BufferedReader reader = null;
-		try {
-			Properties prop = new Properties();
-			reader = new BufferedReader(new FileReader(getResourceAsFile("/resources/obsolete_packages.properties")));
-			prop.load(reader);
-			Enumeration<?> e = prop.propertyNames();
+        /// Fix Issue : https://github.com/Microsoft/azure-tools-for-java/issues/188
+        Map<String, String> obsoletePackageMap = new HashMap<String, String>();
+        BufferedReader reader = null;
+        try {
+            Properties prop = new Properties();
+            reader = new BufferedReader(new FileReader(getResourceAsFile("/resources/obsolete_packages.properties")));
+            prop.load(reader);
+            Enumeration<?> e = prop.propertyNames();
 
-			while (e.hasMoreElements()) {
-				String key = (String) e.nextElement();
-				if (!StringUtils.isNullOrWhiteSpace(key)) {
-					obsoletePackageMap.put(key, prop.getProperty(key));
-				}
-			}
-		} catch (IOException ex) {
-			log("findObsoletePackages@Activator", ex);
-		} finally {
-			if (reader != null) {
-				try {
-					reader.close();
-				} catch (IOException ignored) {
-				}
-			}
-		}
-		obsoletePackages = new HashSet<String>();
-		Bundle[] bundles = context.getBundles();
-		for (int i = 0; i < bundles.length; ++i) {
-			String symbolicName = bundles[i].getSymbolicName().toLowerCase();
-			if (obsoletePackageMap.containsKey(symbolicName)) {
-				obsoletePackages.add(obsoletePackageMap.get(symbolicName) + "(" + bundles[i].getVersion() + ")");
-			}
-		}
+            while (e.hasMoreElements()) {
+                String key = (String) e.nextElement();
+                if (!StringUtils.isNullOrWhiteSpace(key)) {
+                    obsoletePackageMap.put(key, prop.getProperty(key));
+                }
+            }
+        } catch (IOException ex) {
+            log("findObsoletePackages@Activator", ex);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+        obsoletePackages = new HashSet<String>();
+        Bundle[] bundles = context.getBundles();
+        for (int i = 0; i < bundles.length; ++i) {
+            String symbolicName = bundles[i].getSymbolicName().toLowerCase();
+            if (obsoletePackageMap.containsKey(symbolicName)) {
+                obsoletePackages.add(obsoletePackageMap.get(symbolicName) + "(" + bundles[i].getVersion() + ")");
+            }
+        }
     }
     /*
      * (non-Javadoc)

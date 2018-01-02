@@ -46,6 +46,7 @@ import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
@@ -99,7 +100,8 @@ public class AzurePlugin extends AbstractProjectComponent {
     public AzurePlugin(Project project) {
         super(project);
         this.azureSettings = AzureSettings.getSafeInstance(project);
-        CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION, getMachineId()));
+        CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
+                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
     }
 
 
@@ -303,24 +305,6 @@ public class AzurePlugin extends AbstractProjectComponent {
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
-    }
-
-    public String getMachineId() {
-        String ret;
-        if (new File(dataFile).exists()) {
-            String prefValue = DataOperations.getProperty(dataFile, message("prefVal"));
-            if (prefValue != null && prefValue.equalsIgnoreCase("false")) {
-                return "";
-            }
-            ret = DataOperations.getProperty(dataFile, message("instID"));
-            if (ret == null || ret.isEmpty() || !GetHashMac.IsValidHashMacFormat(ret)) {
-                ret = _hashmac;
-            }
-        } else {
-            ret = GetHashMac.GetHashMac();
-        }
-
-        return ret;
     }
 
     /**
