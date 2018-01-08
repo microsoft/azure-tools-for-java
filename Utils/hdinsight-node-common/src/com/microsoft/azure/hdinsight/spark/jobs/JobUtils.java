@@ -413,7 +413,7 @@ public class JobUtils {
                     }
 
                     String path = String.format("SparkSubmission/%s/%s", uploadFolderPath, file.getName());
-                    String uploadedPath = String.format("wasb://%s@%s/%s", defaultContainerName, blobStorageAccount.getFullStorageBlobName(), path);
+                    String uploadedPath = String.format("wasbs://%s@%s/%s", defaultContainerName, blobStorageAccount.getFullStorageBlobName(), path);
 
                     logSubject.onNext(new SimpleImmutableEntry<>(Info,
                             String.format("Begin uploading file %s to Azure Blob Storage Account %s ...",

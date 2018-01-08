@@ -47,7 +47,7 @@ public class ClusterDetail implements IClusterDetail {
     private final String DefaultFS = "fs.defaultFS";
     private final String FSDefaultName = "fs.default.name";
     private final String StorageAccountKeyPrefix = "fs.azure.account.key.";
-    private final String StorageAccountNamePattern = "^wasb://(.*)@(.*)$";
+    private final String StorageAccountNamePattern = "^wasb[s]?://(.*)@(.*)$";
     private final String ResourceGroupStartTag = "resourceGroups/";
     private final String ResourceGroupEndTag = "/providers/";
 
