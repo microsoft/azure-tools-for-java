@@ -19,9 +19,16 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.2.0]</h3>
+      <ul>
+        <li>Fixed Spark job submission issue when user right click Spark project and submit Spark job in project explorer.</li>
+        <li>Fixed HDInsight wasbs access bug when SSL encrypted access is used.</li>
+        <li>Added JxBrowser support for new Spark job UI.</li>
+        <li>Fixed winutils.exe not setup issue and updated error message.</li>
+      </ul>
       <h3>[3.1.0]</h3>
       <ul>
-        <li>Fixed compatibility issue with IntelliJ IDEA 2017.3</li>
+        <li>Fixed compatibility issue with IntelliJ IDEA 2017.3.</li>
         <li>HDInsight tools UI refactoring: Added toolbar entry and right click context menu entry for Spark job submission and local/in-cluster debugging, which make users submit or debug job easier.</li>
         <li>Fixed some bugs.</li>
       </ul>
