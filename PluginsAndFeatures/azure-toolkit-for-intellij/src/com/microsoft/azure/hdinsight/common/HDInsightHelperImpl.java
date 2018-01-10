@@ -36,7 +36,6 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
-import sun.plugin2.main.server.Plugin;
 
 import javax.swing.*;
 
