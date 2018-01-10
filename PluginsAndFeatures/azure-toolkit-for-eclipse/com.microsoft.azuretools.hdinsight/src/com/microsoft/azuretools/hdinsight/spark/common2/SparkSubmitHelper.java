@@ -238,7 +238,7 @@ public class SparkSubmitHelper {
 					BlobContainer defaultContainer = getSparkClusterDefaultContainer(blobStorageAccount,
 							defaultContainerName);
 					String path = String.format("SparkSubmission/%s/%s", uploadFolderPath, file.getName());
-					String uploadedPath = String.format("wasb://%s@%s/%s", defaultContainerName,
+					String uploadedPath = String.format("wasbs://%s@%s/%s", defaultContainerName,
 							blobStorageAccount.getFullStorageBlobName(), path);
 
 					HDInsightUtil.showInfoOnSubmissionMessageWindow(
