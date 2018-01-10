@@ -92,9 +92,11 @@ public class HDInsightHelperImpl implements HDInsightHelper {
 
 	@Override
 	public String getInstallationId() {
-		// TODO Auto-generated method stub
-		if (isOptIn()) return instID;
-		else return "";
+		if (isOptIn()) {
+		    return instID;
+        } else {
+		    return "";
+        }
 	}
 	
     @Override

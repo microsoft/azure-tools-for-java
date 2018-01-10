@@ -62,9 +62,11 @@ public class HDInsightHelperImpl implements HDInsightHelper {
 
     @Override
     public String getInstallationId() {
-
-        if (isOptIn()) return instID;
-        else return "";
+        if (isOptIn()) {
+            return instID;
+        } else {
+            return "";
+        }
     }
 
     public void openJobViewEditor(Object projectObject, String uuid) {
