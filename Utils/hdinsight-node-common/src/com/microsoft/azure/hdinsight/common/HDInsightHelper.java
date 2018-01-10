@@ -29,4 +29,5 @@ public interface HDInsightHelper {
     String getPluginRootPath();
     String getInstallationId();
     boolean isIntelliJPlugin();
+    boolean isOptIn();
 }

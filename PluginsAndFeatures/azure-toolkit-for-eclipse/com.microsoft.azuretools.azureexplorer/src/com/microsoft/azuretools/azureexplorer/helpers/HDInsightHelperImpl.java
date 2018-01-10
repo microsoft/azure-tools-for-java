@@ -44,12 +44,14 @@ import com.microsoft.azuretools.core.utils.PluginUtil;
 public class HDInsightHelperImpl implements HDInsightHelper {
 	private static final String HDINSIHGT_BUNDLE_ID = "com.microsoft.azuretools.hdinsight";
 	private static String instID = "";
+	private static boolean isOptin = true;
 
 	static {
 		final String pluginInstLoc = String.format("%s%s%s", PluginUtil.pluginFolder, File.separator,
 				Messages.commonPluginID);
 		final String dataFile = String.format("%s%s%s", pluginInstLoc, File.separator, Messages.dataFileName);
 		instID = DataOperations.getProperty(dataFile, Messages.instID);
+		isOptin = DataOperations.getProperty(dataFile, Messages.prefVal);
 	}
 
 	public void openJobViewEditor(Object projectObject, @NotNull String clusterName) {
@@ -91,7 +93,8 @@ public class HDInsightHelperImpl implements HDInsightHelper {
 	@Override
 	public String getInstallationId() {
 		// TODO Auto-generated method stub
-		return instID;
+		if (isOptin()) return instID;
+		else return "";
 	}
 	
     @Override
@@ -99,4 +102,8 @@ public class HDInsightHelperImpl implements HDInsightHelper {
         return false;
     }
 
+    @Override
+    public boolean isOptIn() {
+        return isOptin;
+    }
 }

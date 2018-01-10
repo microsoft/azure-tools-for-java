@@ -36,15 +36,18 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
+import sun.plugin2.main.server.Plugin;
 
 import javax.swing.*;
 
 public class HDInsightHelperImpl implements HDInsightHelper {
 
     private static String instID = "";
+    private static boolean isOptIn = true;
     static {
         String dataFile = PluginHelper.getTemplateFile(AzureBundle.message("dataFileName"));
         instID = DataOperations.getProperty(dataFile, AzureBundle.message("instID"));
+        isOptIn = Boolean.parseBoolean(DataOperations.getProperty(dataFile, AzureBundle.message("prefVal")));
     }
 
     @Override
@@ -60,7 +63,9 @@ public class HDInsightHelperImpl implements HDInsightHelper {
 
     @Override
     public String getInstallationId() {
-        return instID;
+
+        if (isOptIn()) return instID;
+        else return "";
     }
 
     public void openJobViewEditor(Object projectObject, String uuid) {
@@ -154,5 +159,10 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     @Override
     public boolean isIntelliJPlugin() {
         return true;
+    }
+
+    @Override
+    public boolean isOptIn() {
+        return isOptIn;
     }
 }
