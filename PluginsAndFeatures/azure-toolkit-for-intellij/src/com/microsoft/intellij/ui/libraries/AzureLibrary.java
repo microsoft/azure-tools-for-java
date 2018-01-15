@@ -77,7 +77,6 @@ public class AzureLibrary {
             null,
             new String[]{
                     "applicationinsights-core",
-                    "applicationinsights-management",
                     "applicationinsights-web",
                     "guava",
                     "httpcore",

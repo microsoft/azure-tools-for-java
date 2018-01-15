@@ -342,12 +342,12 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>applicationinsights-core</artifactId>
-                <version>1.0.3</version>
+                <version>1.0.10</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>applicationinsights-web</artifactId>
-                <version>1.0.3</version>
+                <version>1.0.10</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
