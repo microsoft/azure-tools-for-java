@@ -12,6 +12,6 @@
   <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
   -->
   <artifactId>com.microsoft.applicationinsights.feature</artifactId>
-  <version>1.0.3-SNAPSHOT</version>
+  <version>1.0.10-SNAPSHOT</version>
   <packaging>eclipse-feature</packaging>
 </project>
