@@ -23,8 +23,6 @@ package com.microsoft.azuretools.core.ui;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,7 +34,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -54,9 +51,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.AdAuthManager;
@@ -67,7 +61,6 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
-import org.eclipse.swt.widgets.Link;
 
 public class SignInDialog extends AzureTitleAreaDialogWrapper {
 	private static ILog LOG = Activator.getDefault().getLog();
@@ -83,7 +76,6 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     private AuthMethodDetails authMethodDetails;
     private String accountEmail;
     FileDialog fileDialog;
-    private Link link;
 
     public AuthMethodDetails getAuthMethodDetails() {
         return authMethodDetails;
@@ -98,7 +90,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         setHelpAvailable(false);
         setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
     }
-    
+
     public static SignInDialog go(Shell parentShell, AuthMethodDetails authMethodDetails) {
     	SignInDialog d = new SignInDialog(parentShell);
         d.authMethodDetails = authMethodDetails;
@@ -145,7 +137,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
             }
         });
         rbtnInteractive.setText("Interactive");
-        
+
         Composite compositeInteractive = new Composite(group, SWT.NONE);
         GridData gd_compositeInteractive = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
         gd_compositeInteractive.heightHint = 38;
@@ -167,11 +159,11 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
             }
         });
         rbtnAutomated.setText("Automated");
-        
+
         Composite compositeAutomated = new Composite(group, SWT.NONE);
         compositeAutomated.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         compositeAutomated.setLayout(new GridLayout(2, false));
-        
+
         lblAutomatedInfo = new Label(compositeAutomated, SWT.WRAP | SWT.HORIZONTAL);
         lblAutomatedInfo.setEnabled(false);
         GridData gd_lblAutomatedInfo = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
@@ -180,7 +172,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         gd_lblAutomatedInfo.heightHint = 49;
         lblAutomatedInfo.setLayoutData(gd_lblAutomatedInfo);
         lblAutomatedInfo.setText("An authentication file with credentials for an Azure Active Directory service principal will be used for automated sign ins.");
-        
+
         lblAuthenticationFile = new Label(compositeAutomated, SWT.NONE);
         lblAuthenticationFile.setEnabled(false);
         GridData gd_lblAuthenticationFile = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
@@ -188,7 +180,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         lblAuthenticationFile.setLayoutData(gd_lblAuthenticationFile);
         lblAuthenticationFile.setText("Authentication file:");
         new Label(compositeAutomated, SWT.NONE);
-        
+
         textAuthenticationFilePath = new Text(compositeAutomated, SWT.BORDER | SWT.READ_ONLY);
         textAuthenticationFilePath.setEnabled(false);
         GridData gd_textAuthenticationFilePath = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
@@ -205,7 +197,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         });
         btnBrowse.setText("Browse...");
         new Label(compositeAutomated, SWT.NONE);
-        
+
         btnCreateAuthenticationFile = new Button(compositeAutomated, SWT.NONE);
         btnCreateAuthenticationFile.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -216,24 +208,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         btnCreateAuthenticationFile.setEnabled(false);
         btnCreateAuthenticationFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnCreateAuthenticationFile.setText("New...");
-        
-        link = new Link(compositeAutomated, SWT.NONE);
-        link.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                try {
-                    PlatformUI.getWorkbench().getBrowserSupport().
-                    getExternalBrowser().openURL(new URL("https://go.microsoft.com/fwlink/?linkid=847862"));
-                } catch (PartInitException | MalformedURLException ex) {
-                    LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "widgetSelected@SelectionAdapter@link@SignInDialog", ex));
-                }
-            }
-        });
-        GridData gd_link = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
-        gd_link.widthHint = 312;
-        link.setLayoutData(gd_link);
-        link.setText("Follow these manual <a>steps</a> if Azure Toolkit fails to create an authentication file programmatically.");
-        
+
         fileDialog = new FileDialog(btnBrowse.getShell(), SWT.OPEN);
         fileDialog.setText("Select Authentication File");
         fileDialog.setFilterPath(System.getProperty("user.home"));
