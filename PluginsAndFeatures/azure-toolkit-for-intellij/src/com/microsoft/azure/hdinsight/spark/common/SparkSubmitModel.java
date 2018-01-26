@@ -42,6 +42,8 @@ import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.common.NotSupportExecption;
+import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveTableModel;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
@@ -65,6 +67,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel.SUBMISSION_CONTENT_SSH_CERT;
+import static com.microsoft.azure.hdinsight.spark.jobs.JobUtils.updateSparkJobSubmissionStorageConf;
 
 public class SparkSubmitModel {
 
@@ -337,6 +340,8 @@ public class SparkSubmitModel {
 
     private void tryToCreateBatchSparkJob(@NotNull final IClusterDetail selectedClusterDetail) throws HDIException,IOException {
         SparkBatchSubmission.getInstance().setCredentialsProvider(selectedClusterDetail.getHttpUserName(), selectedClusterDetail.getHttpPassword());
+        updateSparkJobSubmissionStorageConf(submissionParameter, selectedClusterDetail);
+
         HttpResponse response = SparkBatchSubmission.getInstance().createBatchSparkJob(JobUtils.getLivyConnectionURL(selectedClusterDetail), submissionParameter);
 
         if (response.getCode() == 201 || response.getCode() == 200) {
@@ -385,6 +390,7 @@ public class SparkSubmitModel {
         SparkBatchSubmission.getInstance().setCredentialsProvider(selectedClusterDetail.getHttpUserName(), selectedClusterDetail.getHttpPassword());
 
         try {
+            updateSparkJobSubmissionStorageConf(submissionParameter, selectedClusterDetail);
             SparkBatchRemoteDebugJob debugJob = SparkBatchRemoteDebugJob.factory(
                     JobUtils.getLivyConnectionURL(selectedClusterDetail),
                     submissionParameter,

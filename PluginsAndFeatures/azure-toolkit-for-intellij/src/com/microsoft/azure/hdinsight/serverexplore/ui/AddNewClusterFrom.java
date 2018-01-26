@@ -38,12 +38,19 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
+import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
+import com.microsoft.tooling.msservices.model.storage.BlobContainer;
+import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class AddNewClusterFrom extends DialogWrapper {
@@ -55,6 +62,7 @@ public class AddNewClusterFrom extends DialogWrapper {
 
     private String storageName;
     private String storageKey;
+    private String storageContainer;
 
     private HDStorageAccount storageAccount;
 
@@ -73,6 +81,8 @@ public class AddNewClusterFrom extends DialogWrapper {
     private JLabel storageKeyLabel;
     private JLabel userNameLabel;
     private JLabel passwordLabel;
+    private JComboBox<BlobContainer> containersComboBox;
+    private JLabel storageContainerLabel;
 
     private HDInsightRootModule hdInsightModule;
 
@@ -93,7 +103,57 @@ public class AddNewClusterFrom extends DialogWrapper {
         errorMessageField.setBorder(BorderFactory.createEmptyBorder());
 
         this.setModal(true);
+
+        storageKeyTextField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                super.focusLost(e);
+
+                if (StringUtils.isNotBlank(storageNameField.getText()) && StringUtils.isNotBlank(storageKeyTextField.getText())) {
+                    ClientStorageAccount storageAccount = new ClientStorageAccount(storageNameField.getText());
+                    storageAccount.setPrimaryKey(storageKeyTextField.getText());
+
+                    refreshContainers(storageAccount);
+                }
+            }
+        });
+
+        storageNameField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                super.focusLost(e);
+
+                if (StringUtils.isNotBlank(storageNameField.getText()) && StringUtils.isNotBlank(storageKeyTextField.getText())) {
+                    ClientStorageAccount storageAccount = new ClientStorageAccount(storageNameField.getText());
+                    storageAccount.setPrimaryKey(storageKeyTextField.getText());
+
+                    refreshContainers(storageAccount);
+                }
+            }
+        });
     }
+
+    private void refreshContainers(@NotNull ClientStorageAccount storageAccount) {
+        try {
+            containersComboBox.removeAllItems();
+
+            StorageClientSDKManager.getManager().getBlobContainers(storageAccount.getConnectionString())
+                    .forEach(containersComboBox::addItem);
+
+            containersComboBox.setMaximumRowCount(6);
+        } catch (AzureCmdException e) {
+            containersComboBox.removeAllItems();
+        }
+    }
+
+//    Optional<HDStorageAccount> getBlobStorageAccount() {
+//        if (StringUtils.isBlank(storageName) || StringUtils.isBlank(storageKey) || StringUtils.isBlank(storageContainer)) {
+//            return Optional.empty();
+//        }
+//
+//        return Optional.of(new HDStorageAccount(
+//                null, ClusterManagerEx.getInstance().getBlobFullName(storageName), storageKey, true, storageContainer));
+//    }
 
     private class HelpAction extends AbstractAction {
         private HelpAction() {
@@ -157,6 +217,13 @@ public class AddNewClusterFrom extends DialogWrapper {
                         isCarryOnNextStep = false;
                     }
                 }
+
+                if (containersComboBox.getSelectedItem() == null) {
+                    errorMessage = "The storage container isn't selected";
+                    isCarryOnNextStep = false;
+                } else {
+                    storageContainer = ((BlobContainer) containersComboBox.getSelectedItem()).getName();
+                }
             }
 
             if (isCarryOnNextStep) {
@@ -190,17 +257,18 @@ public class AddNewClusterFrom extends DialogWrapper {
     private void getStorageAccount() {
         addNewClusterPanel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    storageAccount = AddHDInsightAdditionalClusterImpl.getStorageAccount(clusterName, storageName, storageKey, userName, password);
-                    isCarryOnNextStep = true;
-                } catch (AzureCmdException | HDIException e) {
-                    isCarryOnNextStep = false;
-                    errorMessage = e.getMessage();
-                }
-            }
+        ApplicationManager.getApplication().invokeAndWait(() -> {
+//            try {
+//                storageAccount = AddHDInsightAdditionalClusterImpl.getStorageAccount(clusterName, storageName, storageKey, userName, password);
+//                isCarryOnNextStep = true;
+//            } catch (AzureCmdException | HDIException e) {
+//                isCarryOnNextStep = false;
+//                errorMessage = e.getMessage();
+//            }
+
+            storageAccount = new HDStorageAccount(
+                    null, ClusterManagerEx.getInstance().getBlobFullName(storageName), storageKey, false, storageContainer);
+            isCarryOnNextStep = true;
         }, ModalityState.NON_MODAL);
 
         addNewClusterPanel.setCursor(Cursor.getDefaultCursor());
