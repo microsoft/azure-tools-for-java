@@ -122,7 +122,7 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
         submissionPanel.setClustersListRefreshEnabled(false);
 
         DefaultLoader.getIdeHelper().executeOnPooledThread(() -> {
-            HDInsightUtil.showInfoOnSubmissionMessageWindow(myProject, "List spark clusters ...", true);
+            HDInsightUtil.showInfoOnSubmissionMessageWindow(myProject, "List spark clusters ...");
             List<IClusterDetail> cachedClusters = ClusterManagerEx.getInstance().getClusterDetailsWithoutAsync(true);
 
             if (!ClusterManagerEx.getInstance().isSelectedSubscriptionExist()) {
