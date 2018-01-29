@@ -21,10 +21,13 @@
  */
 package com.microsoft.azure.hdinsight.serverexplore.ui;
 
+import com.intellij.CommonBundle;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.popup.IconButton;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
@@ -41,7 +44,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.stream.Stream;
 
 public class AddNewClusterFrom extends DialogWrapper {
 
@@ -63,18 +66,23 @@ public class AddNewClusterFrom extends DialogWrapper {
     private JTextField userNameField;
     private JPasswordField passwordField;
     private JTextField errorMessageField;
-    private JPanel buttonPanel;
-    private JButton Okbutton;
-    private JButton cancelButton;
     private JTextField storageNameField;
-    private JTextField storageKeyTextField;
+    private JTextArea storageKeyTextField;
+    private JLabel clusterNameLabel;
+    private JLabel storageNameLabel;
+    private JLabel storageKeyLabel;
+    private JLabel userNameLabel;
+    private JLabel passwordLabel;
 
     private HDInsightRootModule hdInsightModule;
 
     private static final String URL_PREFIX = "https://";
+    private static final String HELP_URL = "https://go.microsoft.com/fwlink/?linkid=866472";
 
     public AddNewClusterFrom(final Project project, HDInsightRootModule hdInsightModule) {
         super(project, true);
+        myHelpAction = new HelpAction();
+
         init();
         this.project = project;
         this.hdInsightModule = hdInsightModule;
@@ -85,75 +93,89 @@ public class AddNewClusterFrom extends DialogWrapper {
         errorMessageField.setBorder(BorderFactory.createEmptyBorder());
 
         this.setModal(true);
-
-        addActionListener();
     }
 
-    private void addActionListener() {
-        Okbutton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                synchronized (AddNewClusterFrom.class) {
-                    isCarryOnNextStep = true;
-                    errorMessage = null;
-                    errorMessageField.setVisible(false);
+    private class HelpAction extends AbstractAction {
+        private HelpAction() {
+            this.putValue("Name", CommonBundle.getHelpButtonText());
+        }
 
-                    String clusterNameOrUrl = clusterNameFiled.getText().trim();
-                    userName = userNameField.getText().trim();
-                    storageName = storageNameField.getText().trim();
+        public void actionPerformed(ActionEvent e) {
+            AddNewClusterFrom.this.doHelpAction();
+        }
+    }
 
-                    storageKey = storageKeyTextField.getText().trim();
+    @Override
+    protected void doHelpAction() {
+        BrowserUtil.browse(HELP_URL);
+    }
 
-                    password = String.valueOf(passwordField.getPassword());
+    @Override
+    protected void doOKAction() {
+        synchronized (AddNewClusterFrom.class) {
+            isCarryOnNextStep = true;
+            errorMessage = null;
+            errorMessageField.setVisible(false);
 
-                    AppInsightsClient.create(HDInsightBundle.message("HDInsightAddNewClusterAction"), null);
+            String clusterNameOrUrl = clusterNameFiled.getText().trim();
+            userName = userNameField.getText().trim();
+            storageName = storageNameField.getText().trim();
 
-                    if (StringHelper.isNullOrWhiteSpace(clusterNameOrUrl) || StringHelper.isNullOrWhiteSpace(storageName) || StringHelper.isNullOrWhiteSpace(storageKey) || StringHelper.isNullOrWhiteSpace(userName) || StringHelper.isNullOrWhiteSpace(password)) {
-                        errorMessage = "Cluster Name, Storage Key, User Name, or Password shouldn't be empty";
+            storageKey = storageKeyTextField.getText().trim();
+
+            password = String.valueOf(passwordField.getPassword());
+
+            AppInsightsClient.create(HDInsightBundle.message("HDInsightAddNewClusterAction"), null);
+
+            if (StringHelper.isNullOrWhiteSpace(clusterNameOrUrl) || StringHelper.isNullOrWhiteSpace(storageName) || StringHelper.isNullOrWhiteSpace(storageKey) || StringHelper.isNullOrWhiteSpace(userName) || StringHelper.isNullOrWhiteSpace(password)) {
+                Stream<JLabel> highLightLabels = Stream.of(
+                        clusterNameLabel,
+                        storageNameLabel,
+                        storageKeyLabel,
+                        userNameLabel,
+                        passwordLabel);
+
+                String highlightPrefix = "* ";
+                highLightLabels.filter(label -> !label.getText().startsWith(highlightPrefix))
+                               .forEach(label -> label.setText(highlightPrefix + label.getText()));
+
+                errorMessage = "All (*) fields are required.";
+                isCarryOnNextStep = false;
+            } else {
+                clusterName = getClusterName(clusterNameOrUrl);
+
+                if (clusterName == null) {
+                    errorMessage = "Wrong cluster name or endpoint";
+                    isCarryOnNextStep = false;
+                } else {
+                    int status = ClusterManagerEx.getInstance().isHDInsightAdditionalStorageExist(clusterName, storageName);
+                    if(status == 1) {
+                        errorMessage = "Cluster already exists in linked list";
                         isCarryOnNextStep = false;
-                    } else {
-                        clusterName = getClusterName(clusterNameOrUrl);
-
-                        if (clusterName == null) {
-                            errorMessage = "Wrong cluster name or endpoint";
-                            isCarryOnNextStep = false;
-                        } else {
-                            int status = ClusterManagerEx.getInstance().isHDInsightAdditionalStorageExist(clusterName, storageName);
-                            if(status == 1) {
-                                errorMessage = "Cluster already exist in current list";
-                                isCarryOnNextStep = false;
-                            } else if(status == 2) {
-                                errorMessage = "Default storage account is required";
-                                isCarryOnNextStep = false;
-                            }
-                        }
-                    }
-
-                    if (isCarryOnNextStep) {
-                        getStorageAccount();
-                    }
-
-                    if (isCarryOnNextStep) {
-                        if (storageAccount != null) {
-                            HDInsightAdditionalClusterDetail hdInsightAdditionalClusterDetail = new HDInsightAdditionalClusterDetail(clusterName, userName, password, storageAccount);
-                            ClusterManagerEx.getInstance().addHDInsightAdditionalCluster(hdInsightAdditionalClusterDetail);
-                            hdInsightModule.refreshWithoutAsync();
-                        }
-                        close(DialogWrapper.OK_EXIT_CODE, true);
-                    } else {
-                        errorMessageField.setText(errorMessage);
-                        errorMessageField.setVisible(true);
+                    } else if(status == 2) {
+                        errorMessage = "Default storage account is required";
+                        isCarryOnNextStep = false;
                     }
                 }
             }
-        });
 
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                close(DialogWrapper.CANCEL_EXIT_CODE, true);
+            if (isCarryOnNextStep) {
+                getStorageAccount();
             }
-        });
+
+            if (isCarryOnNextStep) {
+                if (storageAccount != null) {
+                    HDInsightAdditionalClusterDetail hdInsightAdditionalClusterDetail = new HDInsightAdditionalClusterDetail(clusterName, userName, password, storageAccount);
+                    ClusterManagerEx.getInstance().addHDInsightAdditionalCluster(hdInsightAdditionalClusterDetail);
+                    hdInsightModule.refreshWithoutAsync();
+                }
+
+                super.doOKAction();
+            } else {
+                errorMessageField.setText(errorMessage);
+                errorMessageField.setVisible(true);
+            }
+        }
     }
 
     //format input string
@@ -187,7 +209,7 @@ public class AddNewClusterFrom extends DialogWrapper {
     @NotNull
     @Override
     protected Action[] createActions() {
-        return new Action[0];
+        return new Action[] { getOKAction(), getCancelAction(), getHelpAction() };
     }
 
     @NotNull

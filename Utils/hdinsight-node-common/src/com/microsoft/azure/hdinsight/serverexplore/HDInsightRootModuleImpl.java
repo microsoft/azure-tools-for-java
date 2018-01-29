@@ -71,7 +71,9 @@ public class HDInsightRootModuleImpl extends HDInsightRootModule {
     public void refreshWithoutAsync() {
         synchronized (this) {
             removeAllChildNodes();
-            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetailsWithoutAsync();
+
+            // refresh the cluster list with invalidating the cache
+            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails();
 
             if (clusterDetailList != null) {
                 for (IClusterDetail clusterDetail : clusterDetailList) {

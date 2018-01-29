@@ -50,7 +50,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AddHDInsightAdditionalClusterImpl {
-    private static final Pattern PATTERN_DEFAULT_STORAGE = Pattern.compile("\"fs\\.defaultFS\":\"wasb://([^@\"]*)@([^@\"]*)\"", Pattern.CASE_INSENSITIVE | Pattern.COMMENTS);
+    private static final Pattern PATTERN_DEFAULT_STORAGE = Pattern.compile("\"fs\\.defaultFS\":\"wasb[s]?://([^@\"]*)@([^@\"]*)\"", Pattern.CASE_INSENSITIVE | Pattern.COMMENTS);
     private static final Pattern PATTER_STORAGE_KEY = Pattern.compile("\"fs\\.azure\\.account\\.key\\.[^\"]*\":\"[^\"]*=\"", Pattern.CASE_INSENSITIVE | Pattern.COMMENTS);
 
     private static final String SERVICE_NAME = "HDFS";
@@ -58,7 +58,7 @@ public class AddHDInsightAdditionalClusterImpl {
 
     private static String getClusterConfigureFileUrl(@NotNull final String clusterName) {
         final String connectionString = ClusterManagerEx.getInstance().getClusterConnectionString(clusterName);
-        return String.format("%s/api/v1/clusters/%s/configurations/service_config_versions?service_name=%s&service_config_version=%s", connectionString, SERVICE_NAME, HDFS_SERVICE_CONFIG_VERSION);
+        return String.format("%s/api/v1/clusters/%s/configurations/service_config_versions?service_name=%s&service_config_version=%s", connectionString, clusterName, SERVICE_NAME, HDFS_SERVICE_CONFIG_VERSION);
     }
 
     public static HDStorageAccount getStorageAccount(String clusterName, String storageName, String storageKey, String userName, String password) throws HDIException, AzureCmdException {

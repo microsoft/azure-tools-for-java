@@ -150,25 +150,11 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
 
     private static String getClusterNameWitStatus(IClusterDetail clusterDetail) {
         String state = clusterDetail.getState();
-        String sparkVersion = clusterDetail.getSparkVersion();
         if (!StringHelper.isNullOrWhiteSpace(state) && !state.equalsIgnoreCase("Running")) {
-            return String.format("%s (Spark:%s) (State:%s)", clusterDetail.getName(), sparkVersion, state);
+            return String.format("%s (State:%s)", clusterDetail.getTitle(), state);
         }
 
-        boolean isAdditional = clusterDetail instanceof HDInsightAdditionalClusterDetail;
-        boolean isEmulator = clusterDetail instanceof EmulatorClusterDetail;
-        String optionalMessage = "";
-        if (isAdditional) {
-           optionalMessage = "Linked";
-        } else if (isEmulator) {
-            optionalMessage = "Emulator";
-        }
-
-        if (StringHelper.isNullOrWhiteSpace(optionalMessage)) {
-            return String.format("%s (Spark: %s)", clusterDetail.getName(), sparkVersion);
-        } else {
-            return  String.format("%s (Spark: %s %s)", clusterDetail.getName(), sparkVersion, optionalMessage);
-        }
+        return clusterDetail.getTitle();
     }
 
     private void openUrlLink(String linkUrl) {

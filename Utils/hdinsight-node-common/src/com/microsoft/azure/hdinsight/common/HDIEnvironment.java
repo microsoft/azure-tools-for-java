@@ -16,7 +16,7 @@ public final class HDIEnvironment implements IEnvironment {
 
     private static final HDIEnvironment GLOBAL = new HDIEnvironment(new HashMap<String, String>() {{
             put("connectionString", "https://%s.azurehdinsight.net/");
-            put("blobFullName", ".blob.core.windows.net");
+            put("blobFullName", "%s.blob.core.windows.net");
             put("portalUrl", "https://portal.azure.com/");
         }}, Environment.GLOBAL);
 

@@ -82,7 +82,7 @@ public class ClusterDetail implements IClusterDetail {
     public String getTitle() {
         return Optional.ofNullable(getSparkVersion())
                 .filter(ver -> !ver.trim().isEmpty())
-                .map(ver -> getName() + "(Spark: " + ver + ")")
+                .map(ver -> getName() + " (Spark: " + ver + ")")
                 .orElse(getName());
     }
 

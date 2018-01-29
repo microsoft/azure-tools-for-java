@@ -55,8 +55,8 @@ public class EmulatorClusterDetail implements IClusterDetail {
 	public String getTitle() {
 		return Optional.ofNullable(getSparkVersion())
 				.filter(ver -> !ver.trim().isEmpty())
-				.map(ver -> getName() + "(Spark: " + ver + ")")
-				.orElse(getName());
+				.map(ver -> getName() + " (Spark: " + ver + " Emulator)")
+				.orElse(getName() + " (Emulator)");
 	}
 
 	@Override

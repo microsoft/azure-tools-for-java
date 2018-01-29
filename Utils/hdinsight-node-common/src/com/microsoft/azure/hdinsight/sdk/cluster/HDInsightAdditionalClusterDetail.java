@@ -69,8 +69,8 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail {
     public String getTitle() {
         return Optional.ofNullable(getSparkVersion())
                 .filter(ver -> !ver.trim().isEmpty())
-                .map(ver -> getName() + "(Spark: " + ver + ")")
-                .orElse(getName());
+                .map(ver -> getName() + " (Spark: " + ver + " Linked)")
+                .orElse(getName() + " [Linked]");
     }
 
     @Override
@@ -115,7 +115,7 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail {
 
     @Override
     public SubscriptionDetail getSubscription() {
-        return null;
+        return new SubscriptionDetail("[LinkedCluster]", "[NoSubscription]", "", false);
     }
 
     @Override

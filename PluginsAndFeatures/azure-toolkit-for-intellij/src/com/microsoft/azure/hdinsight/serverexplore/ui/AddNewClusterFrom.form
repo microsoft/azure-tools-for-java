@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.azure.hdinsight.serverexplore.ui.AddNewClusterFrom">
-  <grid id="27dc6" binding="addNewClusterPanel" layout-manager="GridLayoutManager" row-count="17" column-count="8" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="addNewClusterPanel" layout-manager="GridLayoutManager" row-count="15" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="599" height="456"/>
+      <xy x="20" y="20" width="456" height="426"/>
     </constraints>
     <properties>
       <doubleBuffered value="true"/>
@@ -14,7 +14,7 @@
     </clientProperties>
     <border type="none"/>
     <children>
-      <component id="75f7e" class="javax.swing.JLabel">
+      <component id="75f7e" class="javax.swing.JLabel" binding="clusterNameLabel">
         <constraints>
           <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="2" hsize-policy="2" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -22,16 +22,7 @@
           <text value="Cluster Name:"/>
         </properties>
       </component>
-      <component id="c4bf7" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="1" column="1" row-span="1" col-span="4" vsize-policy="2" hsize-policy="2" anchor="1" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <font size="26"/>
-          <text value="Link A Cluster"/>
-        </properties>
-      </component>
-      <component id="3625b" class="javax.swing.JLabel">
+      <component id="3625b" class="javax.swing.JLabel" binding="userNameLabel">
         <constraints>
           <grid row="9" column="1" row-span="1" col-span="1" vsize-policy="2" hsize-policy="2" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -39,45 +30,19 @@
           <text value="User Name:"/>
         </properties>
       </component>
-      <hspacer id="8bcb3">
-        <constraints>
-          <grid row="5" column="5" row-span="1" col-span="2" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="100" height="-1"/>
-          </grid>
-        </constraints>
-      </hspacer>
-      <hspacer id="214a3">
-        <constraints>
-          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="100" height="-1"/>
-          </grid>
-        </constraints>
-      </hspacer>
-      <vspacer id="ecbce">
-        <constraints>
-          <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
-            <preferred-size width="-1" height="30"/>
-          </grid>
-        </constraints>
-      </vspacer>
-      <vspacer id="4641b">
-        <constraints>
-          <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
-            <preferred-size width="-1" height="20"/>
-          </grid>
-        </constraints>
-      </vspacer>
       <component id="500cb" class="javax.swing.JTextField" binding="clusterNameFiled">
         <constraints>
           <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="2" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
+            <preferred-size width="270" height="24"/>
           </grid>
         </constraints>
-        <properties/>
+        <properties>
+          <toolTipText value="The HDInsight cluster name, such as 'mycluster' of cluster URL 'mycluster.azurehdinsight.net'.&#10;&#10;Press the F1 key or click the '?'(Help) button to get more details."/>
+        </properties>
       </component>
       <component id="32905" class="javax.swing.JTextField" binding="errorMessageField">
         <constraints>
-          <grid row="13" column="0" row-span="1" col-span="6" vsize-policy="2" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+          <grid row="13" column="1" row-span="1" col-span="2" vsize-policy="2" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>
           </grid>
         </constraints>
@@ -89,52 +54,24 @@
           <visible value="true"/>
         </properties>
       </component>
-      <grid id="6f56d" binding="buttonPanel" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-        <margin top="0" left="0" bottom="0" right="0"/>
-        <constraints>
-          <grid row="15" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties/>
-        <border type="none"/>
-        <children>
-          <component id="d50cd" class="javax.swing.JButton" binding="Okbutton">
-            <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="OK"/>
-            </properties>
-          </component>
-        </children>
-      </grid>
-      <vspacer id="e3eaf">
-        <constraints>
-          <grid row="16" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
-            <preferred-size width="-1" height="30"/>
-          </grid>
-        </constraints>
-      </vspacer>
-      <vspacer id="b5dd7">
-        <constraints>
-          <grid row="12" column="3" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
-            <preferred-size width="-1" height="10"/>
-          </grid>
-        </constraints>
-      </vspacer>
       <vspacer id="78d3b">
         <constraints>
           <grid row="14" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
-            <preferred-size width="-1" height="15"/>
+            <preferred-size width="270" height="15"/>
           </grid>
         </constraints>
       </vspacer>
       <component id="5f906" class="javax.swing.JPasswordField" binding="passwordField">
         <constraints>
-          <grid row="11" column="2" row-span="1" col-span="1" vsize-policy="2" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="11" column="2" row-span="1" col-span="1" vsize-policy="2" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="270" height="25"/>
+          </grid>
         </constraints>
-        <properties/>
+        <properties>
+          <toolTipText value="The password of the HDInsight cluster user provided.&#10;&#10;Press the F1 key or click the '?'(Help) button to get more details."/>
+        </properties>
       </component>
-      <component id="beb" class="javax.swing.JLabel">
+      <component id="beb" class="javax.swing.JLabel" binding="passwordLabel">
         <constraints>
           <grid row="11" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -145,76 +82,112 @@
       <component id="5fae" class="javax.swing.JTextField" binding="userNameField">
         <constraints>
           <grid row="9" column="2" row-span="1" col-span="1" vsize-policy="2" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
+            <preferred-size width="270" height="24"/>
           </grid>
         </constraints>
         <properties>
           <text value=""/>
+          <toolTipText value="The user name of the HDInsight cluster.&#10;&#10;Press the F1 key or click the '?'(Help) button to get more details."/>
         </properties>
       </component>
       <vspacer id="f887">
         <constraints>
           <grid row="10" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
-            <preferred-size width="-1" height="5"/>
+            <preferred-size width="270" height="5"/>
           </grid>
         </constraints>
       </vspacer>
       <vspacer id="7f432">
         <constraints>
           <grid row="8" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
-            <preferred-size width="-1" height="5"/>
+            <preferred-size width="270" height="5"/>
           </grid>
         </constraints>
       </vspacer>
-      <component id="7586e" class="javax.swing.JLabel">
+      <component id="7586e" class="javax.swing.JLabel" binding="storageKeyLabel">
         <constraints>
-          <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="2" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="2" hsize-policy="0" anchor="5" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <text value="Storage Key:"/>
         </properties>
       </component>
-      <component id="34e3b" class="javax.swing.JButton" binding="cancelButton" default-binding="true">
-        <constraints>
-          <grid row="15" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Cancel"/>
-        </properties>
-      </component>
-      <component id="d806b" class="javax.swing.JLabel">
+      <component id="d806b" class="javax.swing.JLabel" binding="storageNameLabel">
         <constraints>
           <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="2" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Storage Name:"/>
+          <text value="Default Storage Account:"/>
         </properties>
       </component>
-      <vspacer id="49387">
+      <component id="ccca8" class="javax.swing.JTextField" binding="storageNameField">
         <constraints>
-          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <grid row="5" column="2" row-span="1" col-span="1" vsize-policy="2" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="270" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <toolTipText value="The default storage account of the HDInsight cluster, which can be found from HDInsight cluster properties of Azure portal.&#10;&#10;Press the F1 key or click the '?'(Help) button to get more details."/>
+        </properties>
+      </component>
+      <vspacer id="ecbce">
+        <constraints>
+          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
+            <preferred-size width="270" height="30"/>
+          </grid>
+        </constraints>
+      </vspacer>
+      <vspacer id="4641b">
+        <constraints>
+          <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
+            <preferred-size width="270" height="20"/>
+          </grid>
+        </constraints>
+      </vspacer>
+      <vspacer id="b5dd7">
+        <constraints>
+          <grid row="12" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
+            <preferred-size width="270" height="10"/>
+          </grid>
         </constraints>
       </vspacer>
       <vspacer id="40ef">
         <constraints>
-          <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <grid row="6" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
+            <preferred-size width="270" height="14"/>
+          </grid>
         </constraints>
       </vspacer>
-      <component id="ccca8" class="javax.swing.JTextField" binding="storageNameField">
+      <vspacer id="49387">
         <constraints>
-          <grid row="5" column="2" row-span="1" col-span="1" vsize-policy="2" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
+          <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
+            <preferred-size width="270" height="14"/>
           </grid>
         </constraints>
-        <properties/>
+      </vspacer>
+      <component id="88bef" class="javax.swing.JTextArea" binding="storageKeyTextField">
+        <constraints>
+          <grid row="7" column="2" row-span="1" col-span="1" vsize-policy="2" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="50"/>
+          </grid>
+        </constraints>
+        <properties>
+          <columns value="0"/>
+          <lineWrap value="true"/>
+          <toolTipText value="The storage key of the default storage account, which can be found from HDInsight cluster storage accounts of Azure portal.&#10;&#10;Press the F1 key or click the '?'(Help) button to get more details."/>
+        </properties>
+        <clientProperties>
+          <html.disable class="java.lang.Boolean" value="false"/>
+        </clientProperties>
       </component>
-      <component id="cbf2c" class="javax.swing.JTextField" binding="storageKeyTextField">
+      <component id="c4bf7" class="javax.swing.JLabel">
         <constraints>
-          <grid row="7" column="2" row-span="1" col-span="1" vsize-policy="2" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
+          <grid row="1" column="1" row-span="1" col-span="2" vsize-policy="2" hsize-policy="2" anchor="1" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
+        <properties>
+          <font size="26"/>
+          <text value="Link A Cluster"/>
+        </properties>
       </component>
     </children>
   </grid>

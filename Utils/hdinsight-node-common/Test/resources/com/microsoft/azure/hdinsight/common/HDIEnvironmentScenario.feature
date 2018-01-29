@@ -1,7 +1,7 @@
 Feature: HDIEnvironment test
   Scenario: Environment url test
     Given send environment string 'global'
-    Then the portal url 'https://portal.azure.com/', HDInsight url 'https://%s.azurehdinsight.net/', blob full name '.blob.core.windows.net'
+    Then the portal url 'https://portal.azure.com/', HDInsight url 'https://%s.azurehdinsight.net/', blob full name '%s.blob.core.windows.net'
     Given send environment string 'china'
     Then the portal url 'https://portal.azure.cn/', HDInsight url 'https://%s.azurehdinsight.cn/', blob full name '%s.blob.core.chinacloudapi.cn'
     Given send environment string 'germany'

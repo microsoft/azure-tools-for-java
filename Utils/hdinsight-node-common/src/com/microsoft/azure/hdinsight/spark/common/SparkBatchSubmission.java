@@ -85,6 +85,7 @@ public class SparkBatchSubmission {
         HttpGet httpGet = new HttpGet(connectUrl);
         httpGet.addHeader("Content-Type", "application/json");
         httpGet.addHeader("User-Agent", userAgentName);
+        httpGet.addHeader("X-Requested-By", "ambari");
         try(CloseableHttpResponse response = httpclient.execute(httpGet)) {
             return StreamUtil.getResultFromHttpResponse(response);
         }
@@ -112,6 +113,7 @@ public class SparkBatchSubmission {
         HttpPost httpPost = new HttpPost(connectUrl);
         httpPost.addHeader("Content-Type", "application/json");
         httpPost.addHeader("User-Agent", userAgentName);
+        httpPost.addHeader("X-Requested-By", "ambari");
         StringEntity postingString =new StringEntity(submissionParameter.serializeToJson());
         httpPost.setEntity(postingString);
         try(CloseableHttpResponse response = httpclient.execute(httpPost)) {
@@ -142,6 +144,7 @@ public class SparkBatchSubmission {
         HttpDelete httpDelete = new HttpDelete(connectUrl +  "/" + batchId);
         httpDelete.addHeader("User-Agent", userAgentName);
         httpDelete.addHeader("Content-Type", "application/json");
+        httpDelete.addHeader("X-Requested-By", "ambari");
 
         try(CloseableHttpResponse response = httpclient.execute(httpDelete)) {
             return StreamUtil.getResultFromHttpResponse(response);
