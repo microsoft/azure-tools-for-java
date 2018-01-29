@@ -27,13 +27,10 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.popup.IconButton;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
-import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
-import com.microsoft.azure.hdinsight.serverexplore.AddHDInsightAdditionalClusterImpl;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -232,9 +229,15 @@ public class AddNewClusterFrom extends DialogWrapper {
 
                         ClusterManagerEx.getInstance().addHDInsightAdditionalCluster(hdInsightAdditionalClusterDetail);
                         hdInsightModule.refreshWithoutAsync();
-                    } catch (Exception ignore) {
+                    } catch (AuthenticationException authErr) {
                         isCarryOnNextStep = false;
-                        errorMessage = "Wrong username/password to log in";
+                        errorMessage = "Authentication Error: " + Optional.ofNullable(authErr.getMessage())
+                                                               .filter(msg -> !msg.isEmpty())
+                                                               .orElse("Wrong username/password") +
+                                " (" + authErr.getErrorCode() + ")";
+                    } catch (Exception ex) {
+                        isCarryOnNextStep = false;
+                        errorMessage = "Authentication Error: " + ex.getMessage();
                     }
                 }
             }
