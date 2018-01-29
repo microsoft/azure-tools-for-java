@@ -27,10 +27,7 @@ import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -91,6 +88,17 @@ public class SparkBatchSubmission {
         }
     }
 
+    public HttpResponse getHttpResponseViaHead(String connectUrl) throws IOException {
+        CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
+
+        HttpHead httpHead = new HttpHead(connectUrl);
+        httpHead.addHeader("Content-Type", "application/json");
+        httpHead.addHeader("User-Agent", userAgentName);
+        httpHead.addHeader("X-Requested-By", "ambari");
+        try(CloseableHttpResponse response = httpclient.execute(httpHead)) {
+            return StreamUtil.getResultFromHttpResponse(response);
+        }
+    }
 
     /**
      * get all batches spark jobs

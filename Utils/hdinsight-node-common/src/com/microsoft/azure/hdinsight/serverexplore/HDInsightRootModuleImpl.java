@@ -32,6 +32,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
 import java.util.List;
 
@@ -84,4 +85,10 @@ public class HDInsightRootModuleImpl extends HDInsightRootModule {
 
     }
 
+    @Override
+    protected void onNodeClick(NodeActionEvent e) {
+        if (!initialized) {
+            this.load(false);
+        }
+    }
 }

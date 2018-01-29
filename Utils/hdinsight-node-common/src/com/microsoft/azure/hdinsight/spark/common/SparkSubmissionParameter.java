@@ -26,7 +26,11 @@ import com.microsoft.azuretools.utils.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class SparkSubmissionParameter {
@@ -164,19 +168,6 @@ public class SparkSubmissionParameter {
 
     public void setFilePath(String filePath) {
         this.file = filePath;
-    }
-
-    public void setStorageAccount(String storageAccountFullName, String storageAccessKey) {
-        SparkConfigures sparkConf = Optional.ofNullable(this.getJobConfig().get(Conf))
-            .map(SparkConfigures::new)
-            .orElse(new SparkConfigures());
-
-        sparkConf.put("spark.hadoop.fs.azure.keyprovider." + storageAccountFullName.split("\\.")[0],
-                      "org.apache.hadoop.fs.azure.SimpleKeyProvider");
-        sparkConf.put("spark.hadoop.fs.azure.account.key." + storageAccountFullName,
-                      storageAccessKey);
-
-        this.getJobConfig().put(Conf, sparkConf);
     }
 
     public static List<SparkSubmissionJobConfigCheckResult> checkJobConfigMap(Map<String, Object> jobConfigMap) {

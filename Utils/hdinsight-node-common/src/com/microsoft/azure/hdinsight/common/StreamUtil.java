@@ -29,14 +29,12 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.entity.StringEntity;
 
 import javax.swing.*;
 import java.io.*;
 import java.net.URL;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class StreamUtil {
 
@@ -56,7 +54,9 @@ public class StreamUtil {
     public static HttpResponse getResultFromHttpResponse(CloseableHttpResponse response) throws IOException {
         int code = response.getStatusLine().getStatusCode();
         String reason = response.getStatusLine().getReasonPhrase();
-        HttpEntity entity = response.getEntity();
+        // Entity for HEAD is empty
+        HttpEntity entity = Optional.ofNullable(response.getEntity())
+                .orElse(new StringEntity(""));
         try (InputStream inputStream = entity.getContent()) {
             String response_content = getResultFromInputStream(inputStream);
             return new HttpResponse(code, response_content, new HashMap<String, List<String>>(), reason);

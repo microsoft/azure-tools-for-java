@@ -135,10 +135,11 @@ public class ClusterManagerEx {
                 .flatMap(cluster -> {
                     try {
                         cluster.getConfigurationInfo();
-                    } catch (Exception ignore) {
-                    }
 
-                    return cluster.isConfigInfoAvailable() ? Optional.of(cluster) : Optional.empty();
+                        return Optional.of(cluster);
+                    } catch (Exception ignore) {
+                        return Optional.empty();
+                    }
                 });
     }
 

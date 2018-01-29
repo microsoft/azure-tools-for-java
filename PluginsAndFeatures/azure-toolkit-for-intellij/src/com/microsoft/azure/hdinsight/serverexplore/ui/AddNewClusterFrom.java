@@ -30,10 +30,12 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.popup.IconButton;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.serverexplore.AddHDInsightAdditionalClusterImpl;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
+import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
@@ -146,15 +148,6 @@ public class AddNewClusterFrom extends DialogWrapper {
         }
     }
 
-//    Optional<HDStorageAccount> getBlobStorageAccount() {
-//        if (StringUtils.isBlank(storageName) || StringUtils.isBlank(storageKey) || StringUtils.isBlank(storageContainer)) {
-//            return Optional.empty();
-//        }
-//
-//        return Optional.of(new HDStorageAccount(
-//                null, ClusterManagerEx.getInstance().getBlobFullName(storageName), storageKey, true, storageContainer));
-//    }
-
     private class HelpAction extends AbstractAction {
         private HelpAction() {
             this.putValue("Name", CommonBundle.getHelpButtonText());
@@ -192,6 +185,7 @@ public class AddNewClusterFrom extends DialogWrapper {
                         clusterNameLabel,
                         storageNameLabel,
                         storageKeyLabel,
+                        storageContainerLabel,
                         userNameLabel,
                         passwordLabel);
 
@@ -228,15 +222,24 @@ public class AddNewClusterFrom extends DialogWrapper {
 
             if (isCarryOnNextStep) {
                 getStorageAccount();
+
+                if (storageAccount == null) {
+                    isCarryOnNextStep = false;
+                } else {
+                    HDInsightAdditionalClusterDetail hdInsightAdditionalClusterDetail = new HDInsightAdditionalClusterDetail(clusterName, userName, password, storageAccount);
+                    try {
+                        JobUtils.authenticate(hdInsightAdditionalClusterDetail);
+
+                        ClusterManagerEx.getInstance().addHDInsightAdditionalCluster(hdInsightAdditionalClusterDetail);
+                        hdInsightModule.refreshWithoutAsync();
+                    } catch (Exception ignore) {
+                        isCarryOnNextStep = false;
+                        errorMessage = "Wrong username/password to log in";
+                    }
+                }
             }
 
             if (isCarryOnNextStep) {
-                if (storageAccount != null) {
-                    HDInsightAdditionalClusterDetail hdInsightAdditionalClusterDetail = new HDInsightAdditionalClusterDetail(clusterName, userName, password, storageAccount);
-                    ClusterManagerEx.getInstance().addHDInsightAdditionalCluster(hdInsightAdditionalClusterDetail);
-                    hdInsightModule.refreshWithoutAsync();
-                }
-
                 super.doOKAction();
             } else {
                 errorMessageField.setText(errorMessage);
@@ -258,14 +261,6 @@ public class AddNewClusterFrom extends DialogWrapper {
         addNewClusterPanel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         ApplicationManager.getApplication().invokeAndWait(() -> {
-//            try {
-//                storageAccount = AddHDInsightAdditionalClusterImpl.getStorageAccount(clusterName, storageName, storageKey, userName, password);
-//                isCarryOnNextStep = true;
-//            } catch (AzureCmdException | HDIException e) {
-//                isCarryOnNextStep = false;
-//                errorMessage = e.getMessage();
-//            }
-
             storageAccount = new HDStorageAccount(
                     null, ClusterManagerEx.getInstance().getBlobFullName(storageName), storageKey, false, storageContainer);
             isCarryOnNextStep = true;

@@ -35,11 +35,17 @@ import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.App;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.ApplicationMasterLogs;
-import com.microsoft.azure.hdinsight.sdk.storage.*;
-import com.microsoft.azure.hdinsight.spark.common.*;
+import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob;
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
+import com.microsoft.azure.hdinsight.spark.common.SparkJobException;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivyBatchesInformation;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivySession;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -545,7 +551,6 @@ public class JobUtils {
         return Single.create((SingleSubscriber<? super SparkBatchJob> ob) -> {
             try {
                 SparkBatchSubmission.getInstance().setCredentialsProvider(cluster.getHttpUserName(), cluster.getHttpPassword());
-                updateSparkJobSubmissionStorageConf(parameter, cluster);
 
                 SparkBatchJob sparkJob = new SparkBatchJob(
                         URI.create(getLivyConnectionURL(cluster)),
@@ -558,24 +563,6 @@ public class JobUtils {
                 ob.onError(e);
             }
         });
-    }
-
-    public static void updateSparkJobSubmissionStorageConf(@NotNull SparkSubmissionParameter parameter, @NotNull IClusterDetail cluster) {
-        try {
-            IHDIStorageAccount storageAccount = cluster.getStorageAccount();
-
-            switch (storageAccount.getAccountType()) {
-                case BLOB:
-                    // Enable blob storage account conf for job uploaded
-                    HDStorageAccount blob = (HDStorageAccount) storageAccount;
-                    parameter.setStorageAccount(blob.getFullStorageBlobName(), blob.getPrimaryKey());
-
-                    break;
-                case ADLS:
-                case UNKNOWN:
-                default:
-            }
-        } catch (HDIException ignored) { }
     }
 
     public static Single<SimpleImmutableEntry<IClusterDetail, String>> deployArtifact(@NotNull String artifactLocalPath,
@@ -602,5 +589,23 @@ public class JobUtils {
 
     public static Cache getGlobalCache() {
         return globalCache;
+    }
+
+    public static AbstractMap.SimpleImmutableEntry<Integer, Map<String, List<String>>>
+    authenticate(IClusterDetail clusterDetail) throws HDIException, IOException {
+        SparkBatchSubmission submission = SparkBatchSubmission.getInstance();
+        submission.setCredentialsProvider(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
+        String livyUrl = URI.create(ClusterManagerEx.getInstance().getClusterConnectionString(clusterDetail.getName()))
+                .resolve("/livy/")
+                .toString();
+        com.microsoft.azure.hdinsight.sdk.common.HttpResponse response = submission.getHttpResponseViaHead(livyUrl);
+
+        int statusCode = response.getCode();
+
+        if (statusCode >= 200 && statusCode < 300) {
+            return new AbstractMap.SimpleImmutableEntry<>(statusCode, response.getHeaders());
+        }
+
+        throw new AuthenticationException("Authentication failed", statusCode);
     }
 }
