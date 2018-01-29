@@ -32,8 +32,11 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public class SparkBatchSubmission {
 
@@ -89,15 +92,28 @@ public class SparkBatchSubmission {
     }
 
     public HttpResponse getHttpResponseViaHead(String connectUrl) throws IOException {
-        CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
+        CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(getCredentialsProvider())
+                .build();
 
         HttpHead httpHead = new HttpHead(connectUrl);
         httpHead.addHeader("Content-Type", "application/json");
-        httpHead.addHeader("User-Agent", userAgentName);
+        httpHead.addHeader("User-Agent", getUserAgentName());
         httpHead.addHeader("X-Requested-By", "ambari");
+
+        // WORKAROUND: https://github.com/Microsoft/azure-tools-for-java/issues/1358
+        // The Ambari local account will cause Kerberos authentication initializing infinitely.
+        // Set a timer here to cancel the progress.
+        Observable.timer(3, TimeUnit.SECONDS, Schedulers.io())
+                  .take(1)
+                  .subscribe(i -> httpHead.abort());
+
         try(CloseableHttpResponse response = httpclient.execute(httpHead)) {
             return StreamUtil.getResultFromHttpResponse(response);
         }
+    }
+
+    public String getUserAgentName() {
+        return userAgentName;
     }
 
     /**
