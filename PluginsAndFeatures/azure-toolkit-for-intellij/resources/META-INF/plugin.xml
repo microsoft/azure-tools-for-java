@@ -19,6 +19,12 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.3.0]</h3>
+      <ul>
+        <li>Added support of Enterprise Security Package HDInsight Spark cluster.</li>
+        <li>Support submitting Spark jobs using Ambari username/password instead of the Azure subscription credential.</li>
+        <li>Fixed some bugs.</li>
+      </ul>
       <h3>[3.2.0]</h3>
       <ul>
         <li>Fixed Spark job submission issue when user right click Spark project and submit Spark job in project explorer.</li>
