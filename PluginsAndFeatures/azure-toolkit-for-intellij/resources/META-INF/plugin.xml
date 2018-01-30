@@ -23,6 +23,7 @@
       <ul>
         <li>Added support of Enterprise Security Package HDInsight Spark cluster.</li>
         <li>Support submitting Spark jobs using Ambari username/password instead of the Azure subscription credential.</li>
+        <li>Updated ApplicationInsights version to v1.0.10.</li>
         <li>Fixed some bugs.</li>
       </ul>
       <h3>[3.2.0]</h3>
