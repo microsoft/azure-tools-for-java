@@ -19,6 +19,11 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.4.0]</h3>
+      <ul>
+        <li>Users can use Ambari username/password to submit Spark job to HDInsight cluster, in additional to Azure subscription based authentication. This means users without Azure subscription permission can still use Ambari credentials to submit/debug their Spark jobs in HDInsight clusters.</li>
+        <li>The dependency on storage permission is removed and users do not need to provide storage credentials for Spark job submission any more (storage credential is still needed if users want to use storage explorer).</li>
+      <ul>
       <h3>[3.3.0]</h3>
       <ul>
         <li>Added support of Enterprise Security Package HDInsight Spark cluster.</li>
