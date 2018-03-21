@@ -127,7 +127,7 @@ public class AuthContext {
             throw new AuthException(e.getMessage(), e);
         }
 
-        log.log(Level.FINEST, "==> authorization code: " + code.getCode());
+        log.log(Level.INFO, "==> authorization code: " + code.getCode());
             
         if (code.getStatus() == AuthorizationStatus.Success) {
             return code.getCode();
@@ -269,13 +269,13 @@ public class AuthContext {
         IdToken idTokenBody = null;
         try {
             if (!StringUtils.isNullOrWhiteSpace(idToken)) {
-                log.log(Level.FINEST, "idToken: " + idToken);
+                log.log(Level.INFO, "idToken: " + idToken);
                 String[] idTokenSegments = idToken.split("\\.");
 
                 // If Id token format is invalid, we silently ignore the id token
                 if (idTokenSegments.length == 2) {
                     byte[] decoded = Base64.decodeBase64(idTokenSegments[1]);
-                    log.log(Level.FINEST, "==> decoded idToken: " + new String(decoded));
+                    log.log(Level.INFO, "==> decoded idToken: " + new String(decoded));
                     idTokenBody = JsonHelper.deserialize(IdToken.class, new String(decoded));
                 }
             }

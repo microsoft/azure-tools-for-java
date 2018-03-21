@@ -54,6 +54,7 @@ class AuthenticationAuthority {
         this.validateAuthority = validateAuthority;
         validateAuthorityUrl();
         setupAuthorityProperties();
+
     }
 
     String getHost() {

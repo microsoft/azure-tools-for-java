@@ -43,6 +43,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AdAuthManager {
@@ -114,6 +115,7 @@ public class AdAuthManager {
         Map<String, List<String>> tidToSidsMap = new HashMap<>();
 
         List<Tenant> tenants = AccessTokenAzureManager.getTenants(commonTid);
+        LOGGER.log(Level.INFO, String.format("available tenants: %d", tenants.size()));
         for (Tenant t : tenants) {
             String tid = t.tenantId();
             AuthContext ac1 = createContext(tid, null);
@@ -162,6 +164,7 @@ public class AdAuthManager {
     }
 
     private AuthContext createContext(@NotNull final String tid, final UUID corrId) throws IOException {
+        LOGGER.log(Level.INFO, String.format("create context for tenant: %s", tid));
         String authority = null;
         String endpoint = env.activeDirectoryEndpoint();
         if (StringUtils.isNullOrEmpty(endpoint)) {
