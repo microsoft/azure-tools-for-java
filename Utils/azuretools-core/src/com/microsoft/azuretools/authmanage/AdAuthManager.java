@@ -120,7 +120,13 @@ public class AdAuthManager {
             String tid = t.tenantId();
             AuthContext ac1 = createContext(tid, null);
             // put tokens into the cache
-            ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable);
+            try {
+                ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable);
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "fail to get token without new auth code");
+                LOGGER.log(Level.SEVERE, e.getMessage());
+                ac1.acquireToken(env.managementEndpoint(), true, userId, isDisplayable);
+            }
             ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable);
             ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable);
             // TODO: remove later
