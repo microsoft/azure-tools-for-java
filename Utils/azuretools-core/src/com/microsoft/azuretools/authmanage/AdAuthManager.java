@@ -108,7 +108,9 @@ public class AdAuthManager {
         cleanCache();
         String commonTid = "common";
         AuthContext ac = createContext(commonTid, null); 
-        AuthResult result = ac.acquireToken(env.managementEndpoint(), true, null, false);
+        // AuthResult result = ac.acquireToken(env.managementEndpoint(), true, null, false);
+        String code = ac.acquireAuthCode(env.managementEndpoint(), null);
+        AuthResult result = ac.getTokenWithAuthCode(code, env.managementEndpoint());
         String userId = result.getUserId();
         boolean isDisplayable = result.isUserIdDisplayble();
 
@@ -120,13 +122,10 @@ public class AdAuthManager {
             String tid = t.tenantId();
             AuthContext ac1 = createContext(tid, null);
             // put tokens into the cache
-            try {
-                ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable);
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "fail to get token without new auth code");
-                LOGGER.log(Level.SEVERE, e.getMessage());
-                ac1.acquireToken(env.managementEndpoint(), true, userId, isDisplayable);
-            }
+            
+            // ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable);
+            // MFA Workaround: use auth_code[pwd, mfa] to acquire first token
+            ac1.getTokenWithAuthCode(code, env.managementEndpoint());
             ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable);
             ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable);
             // TODO: remove later
@@ -137,7 +136,6 @@ public class AdAuthManager {
             }
             tidToSidsMap.put(t.tenantId(), sids);
         }
-
         if (!isDisplayable) {
             throw new IllegalArgumentException("accountEmail is null");
         }
@@ -170,7 +168,6 @@ public class AdAuthManager {
     }
 
     private AuthContext createContext(@NotNull final String tid, final UUID corrId) throws IOException {
-        LOGGER.log(Level.INFO, String.format("create context for tenant: %s", tid));
         String authority = null;
         String endpoint = env.activeDirectoryEndpoint();
         if (StringUtils.isNullOrEmpty(endpoint)) {

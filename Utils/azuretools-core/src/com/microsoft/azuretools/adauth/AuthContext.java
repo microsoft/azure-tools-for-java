@@ -115,7 +115,8 @@ public class AuthContext {
         }
     }
 
-    private String acquireAuthCode(@NotNull final String resource, String userDisplayableId) throws AuthException {
+    // TODO: private -> public
+    public String acquireAuthCode(@NotNull final String resource, String userDisplayableId) throws AuthException {
         AuthCode code = null;
         try {
             AuthCodeInteractiveHandler handler = new AuthCodeInteractiveHandler(this.authenticationAuthority,
@@ -152,7 +153,8 @@ public class AuthContext {
         return result;
     }
  
-    private AuthResult getTokenWithAuthCode(@NotNull final String code,
+    // TODO: private -> public
+    public AuthResult getTokenWithAuthCode(@NotNull final String code,
                                             @NotNull final String resource) throws AuthException {
         Map<String, String> requestParameters = new HashMap<>();
         requestParameters.put(OAuthParameter.Resource, resource);
