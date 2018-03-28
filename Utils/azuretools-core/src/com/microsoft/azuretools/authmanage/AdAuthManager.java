@@ -120,7 +120,7 @@ public class AdAuthManager {
             // put tokens into the cache
             try {
                 ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable);
-            } catch (AuthError e) {
+            } catch (AuthException e) {
                 //TODO: should narrow to AuthError.InteractionRequired
                 ac1.acquireToken(env.managementEndpoint(), true, userId, isDisplayable);
             }
