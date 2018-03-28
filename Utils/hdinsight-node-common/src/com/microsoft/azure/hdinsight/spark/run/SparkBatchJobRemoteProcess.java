@@ -270,7 +270,12 @@ public class SparkBatchJobRemoteProcess extends Process {
 
     protected Observable<SimpleImmutableEntry<SparkBatchJobState, String>> awaitForJobDone(SparkBatchJob runningJob) {
         return runningJob.getJobDoneObservable()
-                .subscribeOn(schedulers.processBarVisibleAsync("Spark batch job " + getTitle() + " is running"));
+                .subscribeOn(schedulers.processBarVisibleAsync("Spark batch job " + getTitle() + " is running"))
+                .flatMap(jobStateDiagnosticsPair -> runningJob
+                                .getJobLogAggregationDoneObservable()
+                                .subscribeOn(schedulers.processBarVisibleAsync(
+                                        "Waiting for " + getTitle() + " log aggregation is done"))
+                                .map(any -> jobStateDiagnosticsPair));
     }
 
     @NotNull

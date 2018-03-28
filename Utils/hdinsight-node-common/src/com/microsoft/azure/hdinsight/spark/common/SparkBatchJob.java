@@ -742,44 +742,22 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         return Observable.create((Subscriber<? super SimpleImmutableEntry<SparkBatchJobState, String>> ob) -> {
             try {
                 boolean isJobActive = true;
-                boolean isLogAggregateDone = false;
                 SparkBatchJobState state = SparkBatchJobState.NOT_STARTED;
-                String applicationId = null;
                 String diagnostics = "";
 
-                while (isJobActive || !isLogAggregateDone) {
-                    if (isJobActive) {
-                        HttpResponse httpResponse = this.getSubmission().getBatchSparkJobStatus(
-                                this.getConnectUri().toString(), batchId);
+                while (isJobActive) {
+                    HttpResponse httpResponse = this.getSubmission().getBatchSparkJobStatus(
+                            this.getConnectUri().toString(), batchId);
 
-                        if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
-                            SparkSubmitResponse jobResp = ObjectConvertUtils.convertJsonToObject(
-                                    httpResponse.getMessage(), SparkSubmitResponse.class)
-                                    .orElseThrow(() -> new UnknownServiceException(
-                                            "Bad spark job response: " + httpResponse.getMessage()));
+                    if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
+                        SparkSubmitResponse jobResp = ObjectConvertUtils.convertJsonToObject(
+                                httpResponse.getMessage(), SparkSubmitResponse.class)
+                                .orElseThrow(() -> new UnknownServiceException(
+                                        "Bad spark job response: " + httpResponse.getMessage()));
 
-                            state = SparkBatchJobState.valueOf(jobResp.getState().toUpperCase());
+                        state = SparkBatchJobState.valueOf(jobResp.getState().toUpperCase());
 
-                            isJobActive = !state.isJobDone();
-                            applicationId = jobResp.getAppId();
-                        }
-                    } else {
-                        App yarnApp = this.getSparkJobYarnApplication(this.getConnectUri(), applicationId);
-                        diagnostics = yarnApp.getDiagnostics();
-
-                        switch (yarnApp.getLogAggregationStatus().toUpperCase()) {
-                            case "SUCCEEDED":
-                            case "FAILED":
-                            case "TIME_OUT":
-                                isLogAggregateDone = true;
-                                break;
-                            case "DISABLED":
-                            case "NOT_START":
-                            case "RUNNING":
-                            case "RUNNING_WITH_FAILURE":
-                            default:
-                                isLogAggregateDone = false;
-                        }
+                        isJobActive = !state.isJobDone();
                     }
 
                     // Retry interval
@@ -794,6 +772,31 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                 ob.onCompleted();
             }
         });
+    }
+
+    public Observable<String> getJobLogAggregationDoneObservable() {
+        return getSparkJobApplicationIdObservable()
+                .flatMap(applicationId ->
+                        Observable.fromCallable(() -> getSparkJobYarnApplication(this.getConnectUri(), applicationId))
+                                .repeatWhen(ob -> ob.delay(getDelaySeconds(), TimeUnit.SECONDS))
+                                .takeUntil(this::isYarnAppLogAggregationDone)
+                                .filter(this::isYarnAppLogAggregationDone))
+                .map(yarnApp -> yarnApp.getLogAggregationStatus().toUpperCase());
+    }
+
+    private Boolean isYarnAppLogAggregationDone(App yarnApp) {
+        switch (yarnApp.getLogAggregationStatus().toUpperCase()) {
+            case "SUCCEEDED":
+            case "FAILED":
+            case "TIME_OUT":
+                return true;
+            case "DISABLED":
+            case "NOT_START":
+            case "RUNNING":
+            case "RUNNING_WITH_FAILURE":
+            default:
+                return false;
+        }
     }
 
     /**
