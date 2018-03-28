@@ -37,7 +37,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 @State(
         name = "AzureSettings",
         storages = {
-                @Storage(id = "AzureSettings", file = "$PROJECT_FILE$"),
+                @Storage(file = "$PROJECT_FILE$"),
                 @Storage(file = "$PROJECT_CONFIG_DIR$/azureSettings.xml", scheme = StorageScheme.DIRECTORY_BASED)
         }
 )
