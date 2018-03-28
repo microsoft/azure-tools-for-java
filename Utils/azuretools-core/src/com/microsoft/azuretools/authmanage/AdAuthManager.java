@@ -106,7 +106,7 @@ public class AdAuthManager {
 
         cleanCache();
         String commonTid = "common";
-        AuthContext ac = createContext(commonTid, null); 
+        AuthContext ac = createContext(commonTid, null);
         AuthResult result = ac.acquireToken(env.managementEndpoint(), true, null, false);
         String userId = result.getUserId();
         boolean isDisplayable = result.isUserIdDisplayble();
@@ -118,11 +118,16 @@ public class AdAuthManager {
             String tid = t.tenantId();
             AuthContext ac1 = createContext(tid, null);
             // put tokens into the cache
-            ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable);
+            try {
+                ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable);
+            } catch (AuthError e) {
+                //TODO: should narrow to AuthError.InteractionRequired
+                ac1.acquireToken(env.managementEndpoint(), true, userId, isDisplayable);
+            }
             ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable);
             ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable);
             // TODO: remove later
-          //  ac1.acquireToken(Constants.resourceVault, false, userId, isDisplayable);
+            // ac1.acquireToken(Constants.resourceVault, false, userId, isDisplayable);
             List<String> sids = new LinkedList<>();
             for (Subscription s : AccessTokenAzureManager.getSubscriptions(tid)) {
                 sids.add(s.subscriptionId());
@@ -140,7 +145,7 @@ public class AdAuthManager {
         return result;
     }
 
-    public Map<String, List<String>>  getAccountTenantsAndSubscriptions() {
+    public Map<String, List<String>> getAccountTenantsAndSubscriptions() {
         return adAuthDetails.getTidToSidsMap();
     }
 
@@ -172,10 +177,9 @@ public class AdAuthManager {
         } else {
             authority = endpoint + "/" + tid;
         }
-        return new AuthContext(authority, Constants.clientId, Constants.redirectUri,
-                this.webUi, true, corrId);
+        return new AuthContext(authority, Constants.clientId, Constants.redirectUri, this.webUi, true, corrId);
     }
-    
+
     // logout
     private void cleanCache() {
         AuthContext.cleanTokenCache();

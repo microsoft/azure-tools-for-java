@@ -84,10 +84,13 @@ class HttpHelper {
             log.log(Level.SEVERE, message);
 
             TokenResponse r = JsonHelper.deserialize(TokenResponse.class, err.toString());
-            if (r.error.equals("invalid_grant"))
+            if (r.error.equals(AuthError.InvalidGrant)) {
                 throw new AuthException(AuthError.InvalidGrant, message);
-            else
+            } else if (r.error.equals(AuthError.InteractionRequired)) {
+                throw new AuthException(AuthError.InteractionRequired, message);
+            } else {
                 throw new IOException(message);
+            }
         }
 
         verifyCorrelationIdInReponseHeader(connection, callState);
@@ -146,8 +149,8 @@ class HttpHelper {
             try {
                 UUID correlationId = UUID.fromString(correlationIdHeader);
                 if (!correlationId.equals(callState.correlationId)) {
-                    log.log(Level.WARNING, "Returned correlation id '" + correlationId + "' does not match the sent correlation id '"
-                            + callState.correlationId + "'");
+                    log.log(Level.WARNING, "Returned correlation id '" + correlationId
+                            + "' does not match the sent correlation id '" + callState.correlationId + "'");
                 }
             } catch (IllegalArgumentException ex) {
                 log.log(Level.WARNING, "Returned correlation id '" + correlationIdHeader + "' is not in GUID format.");
