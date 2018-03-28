@@ -106,7 +106,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
                 }
                 FileEditorManager.getInstance(project).openFile((VirtualFile) virtualFile, true, false);
             }
-        }, ModalityState.any());
+        });
     }
 
     private void openItem(@NotNull final Project project, @NotNull IClusterDetail myClusterDetail, @NotNull String uuid, @Nullable VirtualFile closeableFile) {
