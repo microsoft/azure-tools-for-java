@@ -76,7 +76,7 @@ if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2017.3
 fi
 
-./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-2017.3 -Pdep_plugins=org.intellij.scala:2017.3.9
+./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-2017.3 -Pdep_plugins=org.intellij.scala:2017.3.15
 
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2017.3.zip
 
