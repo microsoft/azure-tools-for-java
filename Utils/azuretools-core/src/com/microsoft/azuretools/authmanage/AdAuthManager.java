@@ -43,6 +43,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AdAuthManager {
@@ -107,18 +108,24 @@ public class AdAuthManager {
         cleanCache();
         String commonTid = "common";
         AuthContext ac = createContext(commonTid, null); 
-        AuthResult result = ac.acquireToken(env.managementEndpoint(), true, null, false);
+        // AuthResult result = ac.acquireToken(env.managementEndpoint(), true, null, false);
+        String code = ac.acquireAuthCode(env.managementEndpoint(), null);
+        AuthResult result = ac.getTokenWithAuthCode(code, env.managementEndpoint());
         String userId = result.getUserId();
         boolean isDisplayable = result.isUserIdDisplayble();
 
         Map<String, List<String>> tidToSidsMap = new HashMap<>();
 
         List<Tenant> tenants = AccessTokenAzureManager.getTenants(commonTid);
+        LOGGER.log(Level.INFO, String.format("available tenants: %d", tenants.size()));
         for (Tenant t : tenants) {
             String tid = t.tenantId();
             AuthContext ac1 = createContext(tid, null);
             // put tokens into the cache
-            ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable);
+            
+            // ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable);
+            // MFA Workaround: use auth_code[pwd, mfa] to acquire first token
+            ac1.getTokenWithAuthCode(code, env.managementEndpoint());
             ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable);
             ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable);
             // TODO: remove later
@@ -129,7 +136,6 @@ public class AdAuthManager {
             }
             tidToSidsMap.put(t.tenantId(), sids);
         }
-
         if (!isDisplayable) {
             throw new IllegalArgumentException("accountEmail is null");
         }

@@ -63,7 +63,7 @@ class AuthCodeInteractiveHandler {
         this.webUi = webUi;
         this.resource = resource;
         this.userDisplayableId = userDisplayableId;
-        log.log(Level.FINEST, String.format(
+        log.log(Level.INFO, String.format(
                 "\n=== AcquireTokenInteractiveHandler params:"
                         + "\n\tresource: %s\n\twebUi: %s\n\tdisplabableId: %s\n\tauthority: %s",
                 this.resource,
@@ -79,9 +79,9 @@ class AuthCodeInteractiveHandler {
 
         String resultUri = null;
         try {
-            log.log(Level.FINEST, "acquireAuthorization...");
+            log.log(Level.INFO, "acquireAuthorization...");
             URI authorizationUri = this.createAuthorizationUri(correlationId);
-            log.log(Level.FINEST, "Starting web ui...");
+            log.log(Level.INFO, "Starting web ui...");
             resultUri = webUi.authenticate(authorizationUri, redirectUri);
         } catch (UnsupportedEncodingException | URISyntaxException ex) {
             log.log(Level.SEVERE, "acquireAuthorization@AcquireTokenInteractiveHandler: " + ex);

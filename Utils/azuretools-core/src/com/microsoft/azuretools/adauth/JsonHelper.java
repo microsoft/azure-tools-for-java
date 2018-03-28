@@ -33,8 +33,8 @@ public class JsonHelper {
 //	private static final Logger log = Logger.getLogger(JsonHelper.class.getName());
 	
     public static <T> T deserialize(Class<T> cls, String json) throws IOException {
-//    	log.log(Level.FINEST, "structure: " + cls.getName());
-//    	log.log(Level.FINEST, "json string: " + json);
+//    	log.log(Level.INFO, "structure: " + cls.getName());
+//    	log.log(Level.INFO, "json string: " + json);
         if(json == null) return null;
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(json, cls);
