@@ -10,8 +10,7 @@ import java.util.Map;
 @State(
         name = "HDInsightSettings",
         storages = {
-                @Storage(id = "com.microsoft.azure.application.settings",
-                        file = "$APP_CONFIG$/azure.application.settings.xml",
+                @Storage(file = "$APP_CONFIG$/azure.application.settings.xml",
                         scheme = StorageScheme.DIRECTORY_BASED)
         })
 public class ApplicationSettings implements PersistentStateComponent<ApplicationSettings.State> {

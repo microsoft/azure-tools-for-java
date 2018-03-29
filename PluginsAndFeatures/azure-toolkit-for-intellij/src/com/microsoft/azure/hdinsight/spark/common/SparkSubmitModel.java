@@ -34,14 +34,11 @@ import com.intellij.packaging.impl.compiler.ArtifactCompileScope;
 import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
-import com.microsoft.azure.hdinsight.common.JobStatusManager;
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
-import com.microsoft.azure.hdinsight.sdk.common.NotSupportExecption;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveTableModel;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -54,14 +51,10 @@ import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.Text;
 import org.jetbrains.annotations.NotNull;
-import rx.Observer;
-import rx.Single;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.*;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -530,6 +523,7 @@ public class SparkSubmitModel {
 
         SparkSubmitAdvancedConfigModel advConfModel = getAdvancedConfigModel();
         if (advConfModel.enableRemoteDebug) {
+            advConfModel.setClusterName(submissionParameter.getClusterName());
             submitModelElement.addContent(advConfModel.exportToElement());
         }
 
@@ -581,7 +575,11 @@ public class SparkSubmitModel {
             SparkSubmitModel newSubmitModel = new SparkSubmitModel(project, parameter);
 
             Optional.ofNullable(element.getChild(SUBMISSION_CONTENT_SSH_CERT))
-                    .map(SparkSubmitAdvancedConfigModel::factoryFromElement)
+                    .map(advConfElem -> {
+                        SparkSubmitAdvancedConfigModel advConfModel = new SparkSubmitAdvancedConfigModel();
+                        advConfModel.setClusterName(parameter.getClusterName());
+                        return advConfModel.factoryFromElement(advConfElem);
+                    })
                     .ifPresent(newSubmitModel::setAdvancedConfigModel);
 
             return newSubmitModel;
