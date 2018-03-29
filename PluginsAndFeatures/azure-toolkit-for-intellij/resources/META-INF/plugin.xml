@@ -24,7 +24,7 @@
         <li>Added open Azure Storage Explorer for exploring data in HDInsight cluster (blob or ADLS).</li>
         <li>Improved Spark remote debugging.</li>
         <li>Improved Spark job submission correctness check.</li>
-        <li>Fixed an Azure login with multi-tanant issue.</li>
+        <li>Fixed an login issue.</li>
       <ul>
       <h3>[3.4.0]</h3>
       <ul>
