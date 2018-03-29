@@ -19,6 +19,13 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.5.0]</h3>
+      <ul>
+        <li>Added open Azure Storage Explorer for exploring data in HDInsight cluster (blob or ADLS).</li>
+        <li>Improved Spark remote debugging.</li>
+        <li>Improved Spark job submission correctness check.</li>
+        <li>Fixed an Azure login with multi-tanant issue.</li>
+      <ul>
       <h3>[3.4.0]</h3>
       <ul>
         <li>Users can use Ambari username/password to submit Spark job to HDInsight cluster, in additional to Azure subscription based authentication. This means users without Azure subscription permission can still use Ambari credentials to submit/debug their Spark jobs in HDInsight clusters.</li>
