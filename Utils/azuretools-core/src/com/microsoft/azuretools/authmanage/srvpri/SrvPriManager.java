@@ -22,17 +22,11 @@
 
 package com.microsoft.azuretools.authmanage.srvpri;
 
-import com.microsoft.azure.AzureEnvironment;
-import com.microsoft.azure.management.Azure;
-import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.srvpri.entities.AuthenticationError;
-import com.microsoft.azuretools.authmanage.srvpri.report.FileListener;
-import com.microsoft.azuretools.authmanage.srvpri.report.IListener;
-import com.microsoft.azuretools.authmanage.srvpri.report.Reporter;
-import com.microsoft.azuretools.authmanage.srvpri.step.*;
-import org.codehaus.jackson.map.ObjectMapper;
-
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,6 +35,22 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.logging.Logger;
+
+import org.codehaus.jackson.map.ObjectMapper;
+
+import com.microsoft.azure.AzureEnvironment;
+import com.microsoft.azure.management.Azure;
+import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azuretools.authmanage.srvpri.entities.AuthenticationError;
+import com.microsoft.azuretools.authmanage.srvpri.report.FileListener;
+import com.microsoft.azuretools.authmanage.srvpri.report.IListener;
+import com.microsoft.azuretools.authmanage.srvpri.report.Reporter;
+import com.microsoft.azuretools.authmanage.srvpri.step.ApplicationStep;
+import com.microsoft.azuretools.authmanage.srvpri.step.CommonParams;
+import com.microsoft.azuretools.authmanage.srvpri.step.RoleAssignmentStep;
+import com.microsoft.azuretools.authmanage.srvpri.step.ServicePrincipalStep;
+import com.microsoft.azuretools.authmanage.srvpri.step.Status;
+import com.microsoft.azuretools.authmanage.srvpri.step.StepManager;
 
 /**
  * Created by vlashch on 8/16/16.
@@ -81,7 +91,7 @@ public class SrvPriManager {
         CommonParams.setStatusReporter(statusReporter);
 
         // generate a password
-        String password = UUID.randomUUID().toString();
+        String password = "AZURE" + UUID.randomUUID().toString();
 
         CommonParams.setSubscriptionIdList(subscriptionIds);
         CommonParams.setResultSubscriptionIdList(new LinkedList<>());
@@ -155,7 +165,7 @@ public class SrvPriManager {
                     "Can't create a service principal."
             ));
         }
-        
+
         return null;
     }
 
