@@ -143,7 +143,6 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                 ctrlSubject);
         final SparkBatchJobDebugProcessHandler driverDebugHandler =
                 new SparkBatchJobDebugProcessHandler(project, driverDebugProcess, debugEventSubject);
-        driverDebugHandler.getRemoteDebugProcess().start();
 
         // Prepare an independent submission console
         final ConsoleViewImpl submissionConsole = new ConsoleViewImpl(project, true);
@@ -177,7 +176,10 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                             break;
                     }
                 },
-                err -> submissionConsole.print(ExceptionUtils.getRootCauseMessage(err), ConsoleViewContentType.ERROR_OUTPUT),
+                err -> {
+                    submissionConsole.print(ExceptionUtils.getRootCauseMessage(err), ConsoleViewContentType.ERROR_OUTPUT);
+                    jobDriverEnvReady.setError("The Spark job remote debug is cancelled due to " + ExceptionUtils.getRootCauseMessage(err));
+                },
                 () -> {
                     if (Optional.ofNullable(driverDebugHandler.getUserData(ProcessHandler.TERMINATION_REQUESTED))
                                 .orElse(false)) {
@@ -279,6 +281,8 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
         ExecutionManager.getInstance(project).startRunProfile(new RunProfileStarter() {
             @Override
             public Promise<RunContentDescriptor> executeAsync(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env) throws ExecutionException {
+                driverDebugHandler.getRemoteDebugProcess().start();
+
                 return jobDriverEnvReady
                         .then(forkEnv -> Observable.fromCallable(() -> doExecute(state, forkEnv))
                                 .subscribeOn(schedulers.dispatchUIThread()).toBlocking().singleOrDefault(null))
