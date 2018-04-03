@@ -90,8 +90,8 @@ cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-too
 # Extract jars to sign
 # intelliJ
 rm -rf ${INTELLIJ_TOSIGN}/*
-unzip -p ./artifacts/azure-toolkit-for-intellij-2017.2.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_2017.3.jar
-unzip -p ./artifacts/azure-toolkit-for-intellij-2017.3.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_2018.1.jar
+unzip -p ./artifacts/azure-toolkit-for-intellij-2017.3.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_2017.3.jar
+unzip -p ./artifacts/azure-toolkit-for-intellij-2018.1.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_2018.1.jar
 
 # Eclipse
 rm -rf ${ECLIPSE_TOSIGN}/*
