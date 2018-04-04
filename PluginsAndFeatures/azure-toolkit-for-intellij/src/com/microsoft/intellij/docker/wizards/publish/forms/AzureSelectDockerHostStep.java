@@ -496,7 +496,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
       if (AzureDockerUtils.DEBUG) System.out.format("User canceled delete Docker host op: %d\n", option);
       return;
     }
-    AppInsightsClient.createByType(AppInsightsClient.EventType.DockerHost, deleteHost.name, "Remove");
+    AppInsightsClient.createByType(AppInsightsClient.EventType.DockerHost, "", "Remove");
     int currentRow = dockerHostsTable.getSelectedRow();
     tableModel.removeRow(currentRow);
     tableModel.fireTableDataChanged();
