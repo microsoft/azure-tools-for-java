@@ -9,6 +9,5 @@
     <version>3.5.0-SNAPSHOT</version>
   </parent>
   <artifactId>com.microsoft.applicationinsights.ui</artifactId>
-  <version>1.0.10-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>

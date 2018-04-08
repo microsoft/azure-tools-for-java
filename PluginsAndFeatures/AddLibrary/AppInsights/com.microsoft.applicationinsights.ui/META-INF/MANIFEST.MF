@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Application Insights Plugin for Java
 Bundle-SymbolicName: com.microsoft.applicationinsights.ui;singleton:=true
-Bundle-Version: 1.0.10.qualifier
+Bundle-Version: 3.5.0.qualifier
 Bundle-Activator: com.microsoft.applicationinsights.ui.activator.Activator
 Bundle-Vendor: Microsoft Corp.
 Require-Bundle: org.eclipse.ui,
