@@ -96,7 +96,7 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     private static final int REPO_LENGTH = 255;
     private static final String IMAGE_NAME_PREFIX = "localimage";
     private static final String DEFAULT_TAG_NAME = "latest";
-    private static final String SELECT_DOCKER_FILE = "...";
+    private static final String SELECT_DOCKER_FILE = "Browse...";
 
     private DockerHostRunSetting dataModel;
     private Text txtDockerHost;
@@ -105,7 +105,6 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     private Button btnTlsEnabled;
     private FileSelector dockerFileSelector;
     private FileSelector certPathSelector;
-    private Label lblCertPath;
 
     /**
      * Create the dialog.
@@ -130,15 +129,10 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
         composite.setLayout(new GridLayout(5, false));
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
-        Label lblDockerFile = new Label(composite, SWT.NONE);
-        lblDockerFile.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        lblDockerFile.setText("Docker File");
-
-        dockerFileSelector = new FileSelector(composite, SWT.NONE, false, SELECT_DOCKER_FILE, basePath);
-        dockerFileSelector.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
+        dockerFileSelector = new FileSelector(composite, SWT.NONE, false, SELECT_DOCKER_FILE, basePath, "Docker File");
+        dockerFileSelector.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 5, 1));
 
         Label lblDockerHost = new Label(composite, SWT.NONE);
-        lblDockerHost.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblDockerHost.setText("Docker Host");
 
         txtDockerHost = new Text(composite, SWT.BORDER);
@@ -148,15 +142,10 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
         btnTlsEnabled.addListener(SWT.Selection, event -> onBtnTlsEnabledSelection());
         btnTlsEnabled.setText("Enable TLS");
 
-        lblCertPath = new Label(composite, SWT.NONE);
-        lblCertPath.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        lblCertPath.setText("Cert Path");
-
-        certPathSelector = new FileSelector(composite, SWT.NONE, true, "...", null);
-        certPathSelector.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        certPathSelector = new FileSelector(composite, SWT.NONE, true, "Browse...", null, "Cert Path");
+        certPathSelector.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
 
         Label lblImage = new Label(composite, SWT.NONE);
-        lblImage.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblImage.setText("Image Name");
 
         txtImageName = new Text(composite, SWT.BORDER);
@@ -206,7 +195,6 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void updateCertPathVisibility() {
-        lblCertPath.setVisible(btnTlsEnabled.getSelection());
         certPathSelector.setVisible(btnTlsEnabled.getSelection());
     }
 

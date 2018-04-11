@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 public class FileSelector extends Composite {
@@ -37,15 +38,19 @@ public class FileSelector extends Composite {
     /**
      * Create the composite.
      */
-    public FileSelector(Composite parent, int style, boolean isDir, String btnText, String basePath) {
+    public FileSelector(Composite parent, int style, boolean isDir, String btnText, String basePath, String textLabel) {
         super(parent, style);
-        GridLayout gridLayout = new GridLayout(2, false);
+        GridLayout gridLayout = new GridLayout(3, false);
         gridLayout.marginHeight = 0;
         gridLayout.marginWidth = 0;
         setLayout(gridLayout);
 
+        Label lblNewLabel = new Label(this, SWT.NONE);
+        lblNewLabel.setText(textLabel);
+
         txtFilePath = new Text(this, SWT.BORDER);
         txtFilePath.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
+
 
         Button btnFileSelector = new Button(this, SWT.NONE);
         btnFileSelector.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, true, 1, 1));
@@ -70,6 +75,13 @@ public class FileSelector extends Composite {
 
         });
 
+    }
+
+    /**
+     * @wbp.parser.constructor
+     */
+    public FileSelector(Composite parent, int style, boolean isDir, String btnText, String basePath) {
+        this(parent, style, isDir, btnText, basePath, "");
     }
 
     public void setFilePath(String filePath) {
