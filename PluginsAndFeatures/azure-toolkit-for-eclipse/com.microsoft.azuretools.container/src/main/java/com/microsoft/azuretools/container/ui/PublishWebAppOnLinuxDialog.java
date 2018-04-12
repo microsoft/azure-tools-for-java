@@ -179,12 +179,12 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
     @Override
     protected Control createDialogArea(Composite parent) {
         setTitle("Run on Web App for Containers");
-        setMessage(""); // TODO: specify the message.
+        setMessage("Run on web app for containers");
         Composite area = (Composite) super.createDialogArea(parent);
 
         expandBar = new ExpandBar(area, SWT.V_SCROLL);
         GridData gdExpandBar = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1);
-        gdExpandBar.minimumWidth = 600;
+        gdExpandBar.minimumWidth = 550;
 
         expandBar.setLayoutData(gdExpandBar);
         expandBar.setBackground(area.getBackground());
