@@ -345,6 +345,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
             readTblAppSettings();
             updateSaveAndDiscardBtnStatus();
         }
+        tblAppSettings.setFocus();
     }
 
     private void onBtnNewItemSelection() {
