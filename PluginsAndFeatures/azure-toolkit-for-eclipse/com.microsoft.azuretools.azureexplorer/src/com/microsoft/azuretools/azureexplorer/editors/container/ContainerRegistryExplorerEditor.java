@@ -560,6 +560,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         lstTag.removeAll();
         fillList(tags, lstTag);
         enableWidgets();
+        lstRepo.setFocus();
     }
 
     @Override
