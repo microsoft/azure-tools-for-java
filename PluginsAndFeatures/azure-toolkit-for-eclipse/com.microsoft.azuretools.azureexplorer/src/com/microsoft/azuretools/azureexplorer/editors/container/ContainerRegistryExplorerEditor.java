@@ -99,8 +99,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
     private static final String LABEL_PASSWORD2 = "Password2";
     private static final String LABEL_TAG = "Tag";
     private static final String LABEL_REPOSITORY = "Repository";
-    private static final String TLTM_NEXT_PAGE = "Next page";
-    private static final String TLTM_PREVIOUS_PAGE = "Previous page";
+    private static final String TLTM_NEXT = "Next";
+    private static final String TLTM_PREVIOUS = "Previous";
     private static final String TLTM_REFRESH = "Refresh";
     private static final String BTN_DISABLE = "Disable";
     private static final String BTN_ENABLE = "Enable";
@@ -335,6 +335,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         tltmRefreshRepo = new ToolItem(repoRefreshToolBar, SWT.NONE);
         tltmRefreshRepo.setImage(imgRefreshEnable);
         tltmRefreshRepo.setToolTipText(TLTM_REFRESH);
+        tltmRefreshRepo.setText(TLTM_REFRESH);
         tltmRefreshRepo.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmRefreshRepo", null) {
             @Override
             protected void handleEventFunc(Event event) {
@@ -366,7 +367,9 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         repoToolBar.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
 
         tltmRepoPreviousPage = new ToolItem(repoToolBar, SWT.NONE);
-        tltmRepoPreviousPage.setToolTipText(TLTM_PREVIOUS_PAGE);
+        tltmRepoPreviousPage.setToolTipText(TLTM_PREVIOUS);
+        tltmRepoPreviousPage.setText(TLTM_PREVIOUS);;
+        tltmRepoPreviousPage.setText("Previous");
         tltmRepoPreviousPage
                 .setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_BACK));
         tltmRepoPreviousPage.addListener(SWT.Selection,
@@ -380,7 +383,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
                 });
 
         tltmRepoNextPage = new ToolItem(repoToolBar, SWT.NONE);
-        tltmRepoNextPage.setToolTipText(TLTM_NEXT_PAGE);
+        tltmRepoNextPage.setToolTipText(TLTM_NEXT);
+        tltmRepoNextPage.setText(TLTM_NEXT);
         tltmRepoNextPage.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_FORWARD));
         tltmRepoNextPage.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmRepoNextPage", null) {
             @Override
@@ -401,6 +405,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         tltmRefreshTag = new ToolItem(tagRefreshToolBar, SWT.NONE);
         tltmRefreshTag.setImage(imgRefreshEnable);
         tltmRefreshTag.setToolTipText(TLTM_REFRESH);
+        tltmRefreshTag.setText(TLTM_REFRESH);
         tltmRefreshTag.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmRefreshTag", null) {
             @Override
             protected void handleEventFunc(Event event) {
@@ -452,7 +457,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         tagToolBar.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
 
         tltmTagPreviousPage = new ToolItem(tagToolBar, SWT.NONE);
-        tltmTagPreviousPage.setToolTipText(TLTM_PREVIOUS_PAGE);
+        tltmTagPreviousPage.setToolTipText(TLTM_PREVIOUS);
+        tltmTagPreviousPage.setText(TLTM_PREVIOUS);
         tltmTagPreviousPage.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_BACK));
         tltmTagPreviousPage.addListener(SWT.Selection,
                 new AzureListenerWrapper(INSIGHT_NAME, "tltmTagPreviousPage", null) {
@@ -468,7 +474,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
                 });
 
         tltmTagNextPage = new ToolItem(tagToolBar, SWT.NONE);
-        tltmTagNextPage.setToolTipText(TLTM_NEXT_PAGE);
+        tltmTagNextPage.setToolTipText(TLTM_NEXT);
+        tltmTagNextPage.setText(TLTM_NEXT);
         tltmTagNextPage.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_FORWARD));
         tltmTagNextPage.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmTagNextPage", null) {
             @Override
