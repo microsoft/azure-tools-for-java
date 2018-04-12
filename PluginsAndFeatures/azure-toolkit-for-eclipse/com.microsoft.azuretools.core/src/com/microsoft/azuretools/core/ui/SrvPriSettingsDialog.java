@@ -131,8 +131,10 @@ public class SrvPriSettingsDialog extends AzureTitleAreaDialogWrapper {
         
         Group grpDestinationFolder = new Group(container, SWT.NONE);
         grpDestinationFolder.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        grpDestinationFolder.setText("Destination folder:");
-        grpDestinationFolder.setLayout(new GridLayout(2, false));
+        grpDestinationFolder.setLayout(new GridLayout(3, false));
+
+        Label lblNewLabel_1 = new Label(grpDestinationFolder, SWT.NONE);
+        lblNewLabel_1.setText("Destination folder:");
         
         textDestinationFolderPath = new Text(grpDestinationFolder, SWT.BORDER | SWT.READ_ONLY);
         textDestinationFolderPath.setEditable(false);
@@ -155,7 +157,7 @@ public class SrvPriSettingsDialog extends AzureTitleAreaDialogWrapper {
                 textDestinationFolderPath.setText(path);
             }
         });
-        btnBrowse.setText("...");
+        btnBrowse.setText("Browse...");
 
         return area;
     }
