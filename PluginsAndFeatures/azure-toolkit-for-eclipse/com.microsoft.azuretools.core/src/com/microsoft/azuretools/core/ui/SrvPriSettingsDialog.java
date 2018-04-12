@@ -134,8 +134,8 @@ public class SrvPriSettingsDialog extends AzureTitleAreaDialogWrapper {
         grpDestinationFolder.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         grpDestinationFolder.setLayout(new GridLayout(3, false));
 
-        Label lblNewLabel_1 = new Label(grpDestinationFolder, SWT.NONE);
-        lblNewLabel_1.setText("Destination folder:");
+        Label lblDestinationFolder = new Label(grpDestinationFolder, SWT.NONE);
+        lblDestinationFolder.setText("Destination folder:");
         
         textDestinationFolderPath = new Text(grpDestinationFolder, SWT.BORDER | SWT.READ_ONLY);
         textDestinationFolderPath.setEditable(false);
