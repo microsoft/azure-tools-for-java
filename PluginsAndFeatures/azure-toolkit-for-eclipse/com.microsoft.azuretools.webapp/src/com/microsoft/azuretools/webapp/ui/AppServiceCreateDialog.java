@@ -653,7 +653,6 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
             }
 
             comboSubscription.removeAll();
-            ;
             binderSubscriptionDetails = new ArrayList<SubscriptionDetail>();
             for (SubscriptionDetail sd : sdl) {
                 if (sd != null && sd.isSelected()) {
