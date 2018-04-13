@@ -91,6 +91,7 @@ public class SrvPriSettingsDialog extends AzureTitleAreaDialogWrapper {
      */
     @Override
     protected Control createDialogArea(Composite parent) {
+        setMessage("Create Authentication Files");
         setTitle("Create Authentication Files");
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
@@ -131,8 +132,10 @@ public class SrvPriSettingsDialog extends AzureTitleAreaDialogWrapper {
         
         Group grpDestinationFolder = new Group(container, SWT.NONE);
         grpDestinationFolder.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        grpDestinationFolder.setText("Destination folder:");
-        grpDestinationFolder.setLayout(new GridLayout(2, false));
+        grpDestinationFolder.setLayout(new GridLayout(3, false));
+
+        Label lblDestinationFolder = new Label(grpDestinationFolder, SWT.NONE);
+        lblDestinationFolder.setText("Destination folder:");
         
         textDestinationFolderPath = new Text(grpDestinationFolder, SWT.BORDER | SWT.READ_ONLY);
         textDestinationFolderPath.setEditable(false);
@@ -155,7 +158,7 @@ public class SrvPriSettingsDialog extends AzureTitleAreaDialogWrapper {
                 textDestinationFolderPath.setText(path);
             }
         });
-        btnBrowse.setText("...");
+        btnBrowse.setText("Browse...");
 
         return area;
     }

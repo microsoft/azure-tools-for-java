@@ -303,18 +303,24 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         cpTableButtons.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
 
         btnNewItem = new Button(cpTableButtons, SWT.NONE);
+        btnNewItem.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnNewItem.setText("New");
         btnNewItem.setToolTipText("New");
         btnNewItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
         btnNewItem.setEnabled(false);
         btnNewItem.addListener(SWT.Selection, event -> onBtnNewItemSelection());
 
         btnDeleteItem = new Button(cpTableButtons, SWT.NONE);
+        btnDeleteItem.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnDeleteItem.setText("Delete");
         btnDeleteItem.setToolTipText("Delete");
         btnDeleteItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
         btnDeleteItem.setEnabled(false);
         btnDeleteItem.addListener(SWT.Selection, event -> onBtnDeleteItemSelection());
 
         btnEditItem = new Button(cpTableButtons, SWT.NONE);
+        btnEditItem.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnEditItem.setText("Edit");
         btnEditItem.setToolTipText("Edit");
         btnEditItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ETOOL_CLEAR));
         btnEditItem.setEnabled(false);
@@ -345,6 +351,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
             readTblAppSettings();
             updateSaveAndDiscardBtnStatus();
         }
+        tblAppSettings.setFocus();
     }
 
     private void onBtnNewItemSelection() {

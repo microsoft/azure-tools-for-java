@@ -22,22 +22,11 @@
 
 package com.microsoft.azuretools.azureexplorer.editors.container;
 
-import com.microsoft.azure.management.containerregistry.Registry;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.azureexplorer.Activator;
-import com.microsoft.azuretools.container.utils.DockerUtil;
-import com.microsoft.azuretools.core.components.AzureListenerWrapper;
-import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
-import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
-import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyMvpView;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyViewPresenter;
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerClient;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -73,11 +62,22 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.container.utils.DockerUtil;
+import com.microsoft.azuretools.core.components.AzureListenerWrapper;
+import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
+import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
+import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyMvpView;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyViewPresenter;
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DockerClient;
 
 public class ContainerRegistryExplorerEditor extends EditorPart implements ContainerRegistryPropertyMvpView {
 
@@ -99,8 +99,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
     private static final String LABEL_PASSWORD2 = "Password2";
     private static final String LABEL_TAG = "Tag";
     private static final String LABEL_REPOSITORY = "Repository";
-    private static final String TLTM_NEXT_PAGE = "Next page";
-    private static final String TLTM_PREVIOUS_PAGE = "Previous page";
+    private static final String TLTM_NEXT = "Next";
+    private static final String TLTM_PREVIOUS = "Previous";
     private static final String TLTM_REFRESH = "Refresh";
     private static final String BTN_DISABLE = "Disable";
     private static final String BTN_ENABLE = "Enable";
@@ -202,7 +202,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         Label lblRegistryName = new Label(container, SWT.NONE);
         lblRegistryName.setText(LABEL_NAME);
 
-        txtRegistryName = new Text(container, SWT.READ_ONLY);
+        txtRegistryName = new Text(container, SWT.READ_ONLY | SWT.BORDER);
+        txtRegistryName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         txtRegistryName.setText(LOADING);
 
         Label lblAdminUserEnabled = new Label(container, SWT.NONE);
@@ -230,21 +231,23 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         Label lblType = new Label(container, SWT.NONE);
         lblType.setText(LABEL_TYPE);
 
-        txtType = new Text(container, SWT.READ_ONLY);
+        txtType = new Text(container, SWT.BORDER | SWT.READ_ONLY);
+        txtType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         txtType.setText(LOADING);
 
         lblUserName = new Label(container, SWT.NONE);
         lblUserName.setText(LABEL_USER_NAME);
         lblUserName.setVisible(false);
 
-        txtUserName = new Text(container, SWT.READ_ONLY);
+        txtUserName = new Text(container, SWT.BORDER | SWT.READ_ONLY);
         txtUserName.setText(LOADING);
         txtUserName.setVisible(false);
 
         Label lblResourceGroup = new Label(container, SWT.NONE);
         lblResourceGroup.setText(LABEL_RES_GRP);
 
-        txtResGrp = new Text(container, SWT.READ_ONLY);
+        txtResGrp = new Text(container, SWT.BORDER | SWT.READ_ONLY);
+        txtResGrp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         txtResGrp.setText(LOADING);
 
         lblPrimaryPassword = new Label(container, SWT.NONE);
@@ -252,6 +255,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         lblPrimaryPassword.setVisible(false);
 
         lnkPrimaryPassword = new Link(container, SWT.NONE);
+        lnkPrimaryPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lnkPrimaryPassword.setText(COPY_TO_CLIPBOARD);
         lnkPrimaryPassword.setVisible(false);
 
@@ -270,7 +274,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         Label lblSubscriptionId = new Label(container, SWT.NONE);
         lblSubscriptionId.setText(LABEL_SUBSCRIPTION);
 
-        txtSubscriptionId = new Text(container, SWT.READ_ONLY);
+        txtSubscriptionId = new Text(container, SWT.BORDER | SWT.READ_ONLY);
+        txtSubscriptionId.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         txtSubscriptionId.setText(LOADING);
 
         lblSecondaryPassword = new Label(container, SWT.NONE);
@@ -278,6 +283,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         lblSecondaryPassword.setVisible(false);
 
         lnkSecondaryPassword = new Link(container, SWT.NONE);
+        lnkSecondaryPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lnkSecondaryPassword.setText(COPY_TO_CLIPBOARD);
         lnkSecondaryPassword.setVisible(false);
 
@@ -296,7 +302,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         Label lblRegion = new Label(container, SWT.NONE);
         lblRegion.setText(LABEL_REGION);
 
-        txtRegion = new Text(container, SWT.READ_ONLY);
+        txtRegion = new Text(container, SWT.BORDER | SWT.READ_ONLY);
+        txtRegion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         txtRegion.setText(LOADING);
         new Label(container, SWT.NONE);
         new Label(container, SWT.NONE);
@@ -304,7 +311,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         Label lblLoginServerUrl = new Label(container, SWT.NONE);
         lblLoginServerUrl.setText(LABEL_LOGIN_SERVER_URL);
 
-        txtLoginServerUrl = new Text(container, SWT.READ_ONLY);
+        txtLoginServerUrl = new Text(container, SWT.BORDER | SWT.READ_ONLY);
+        txtLoginServerUrl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         txtLoginServerUrl.setText(LOADING);
         new Label(container, SWT.NONE);
         new Label(container, SWT.NONE);
@@ -327,6 +335,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         tltmRefreshRepo = new ToolItem(repoRefreshToolBar, SWT.NONE);
         tltmRefreshRepo.setImage(imgRefreshEnable);
         tltmRefreshRepo.setToolTipText(TLTM_REFRESH);
+        tltmRefreshRepo.setText(TLTM_REFRESH);
         tltmRefreshRepo.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmRefreshRepo", null) {
             @Override
             protected void handleEventFunc(Event event) {
@@ -358,7 +367,9 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         repoToolBar.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
 
         tltmRepoPreviousPage = new ToolItem(repoToolBar, SWT.NONE);
-        tltmRepoPreviousPage.setToolTipText(TLTM_PREVIOUS_PAGE);
+        tltmRepoPreviousPage.setToolTipText(TLTM_PREVIOUS);
+        tltmRepoPreviousPage.setText(TLTM_PREVIOUS);;
+        tltmRepoPreviousPage.setText("Previous");
         tltmRepoPreviousPage
                 .setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_BACK));
         tltmRepoPreviousPage.addListener(SWT.Selection,
@@ -372,7 +383,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
                 });
 
         tltmRepoNextPage = new ToolItem(repoToolBar, SWT.NONE);
-        tltmRepoNextPage.setToolTipText(TLTM_NEXT_PAGE);
+        tltmRepoNextPage.setToolTipText(TLTM_NEXT);
+        tltmRepoNextPage.setText(TLTM_NEXT);
         tltmRepoNextPage.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_FORWARD));
         tltmRepoNextPage.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmRepoNextPage", null) {
             @Override
@@ -393,6 +405,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         tltmRefreshTag = new ToolItem(tagRefreshToolBar, SWT.NONE);
         tltmRefreshTag.setImage(imgRefreshEnable);
         tltmRefreshTag.setToolTipText(TLTM_REFRESH);
+        tltmRefreshTag.setText(TLTM_REFRESH);
         tltmRefreshTag.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmRefreshTag", null) {
             @Override
             protected void handleEventFunc(Event event) {
@@ -444,7 +457,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         tagToolBar.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
 
         tltmTagPreviousPage = new ToolItem(tagToolBar, SWT.NONE);
-        tltmTagPreviousPage.setToolTipText(TLTM_PREVIOUS_PAGE);
+        tltmTagPreviousPage.setToolTipText(TLTM_PREVIOUS);
+        tltmTagPreviousPage.setText(TLTM_PREVIOUS);
         tltmTagPreviousPage.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_BACK));
         tltmTagPreviousPage.addListener(SWT.Selection,
                 new AzureListenerWrapper(INSIGHT_NAME, "tltmTagPreviousPage", null) {
@@ -460,7 +474,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
                 });
 
         tltmTagNextPage = new ToolItem(tagToolBar, SWT.NONE);
-        tltmTagNextPage.setToolTipText(TLTM_NEXT_PAGE);
+        tltmTagNextPage.setToolTipText(TLTM_NEXT);
+        tltmTagNextPage.setText(TLTM_NEXT);
         tltmTagNextPage.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_FORWARD));
         tltmTagNextPage.addListener(SWT.Selection, new AzureListenerWrapper(INSIGHT_NAME, "tltmTagNextPage", null) {
             @Override
@@ -552,6 +567,7 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         lstTag.removeAll();
         fillList(tags, lstTag);
         enableWidgets();
+        lstRepo.setFocus();
     }
 
     @Override

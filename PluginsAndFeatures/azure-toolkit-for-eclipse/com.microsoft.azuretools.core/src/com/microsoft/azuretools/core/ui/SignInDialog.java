@@ -114,6 +114,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
      */
     @Override
     protected Control createDialogArea(Composite parent) {
+        setMessage("Azure Sign In");
         setTitle("Azure Sign In");
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
@@ -162,11 +163,11 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
 
         Composite compositeAutomated = new Composite(group, SWT.NONE);
         compositeAutomated.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-        compositeAutomated.setLayout(new GridLayout(2, false));
+        compositeAutomated.setLayout(new GridLayout(3, false));
 
         lblAutomatedInfo = new Label(compositeAutomated, SWT.WRAP | SWT.HORIZONTAL);
         lblAutomatedInfo.setEnabled(false);
-        GridData gd_lblAutomatedInfo = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+        GridData gd_lblAutomatedInfo = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
         gd_lblAutomatedInfo.widthHint = 483;
         gd_lblAutomatedInfo.horizontalIndent = 11;
         gd_lblAutomatedInfo.heightHint = 49;
@@ -179,7 +180,6 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         gd_lblAuthenticationFile.horizontalIndent = 10;
         lblAuthenticationFile.setLayoutData(gd_lblAuthenticationFile);
         lblAuthenticationFile.setText("Authentication file:");
-        new Label(compositeAutomated, SWT.NONE);
 
         textAuthenticationFilePath = new Text(compositeAutomated, SWT.BORDER | SWT.READ_ONLY);
         textAuthenticationFilePath.setEnabled(false);
@@ -196,6 +196,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
             }
         });
         btnBrowse.setText("Browse...");
+        new Label(compositeAutomated, SWT.NONE);
         new Label(compositeAutomated, SWT.NONE);
 
         btnCreateAuthenticationFile = new Button(compositeAutomated, SWT.NONE);
