@@ -93,7 +93,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         container.setLayout(new GridLayout(1, false));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
         
-        table = new Table(container, SWT.BORDER | SWT.CHECK);
+        table = new Table(container, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
         GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gd_table.heightHint = 300;
         table.setLayoutData(gd_table);
@@ -107,7 +107,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         TableColumn tblclmnNewColumn_1 = new TableColumn(table, SWT.NONE);
         tblclmnNewColumn_1.setWidth(270);
         tblclmnNewColumn_1.setText("Subscription ID");
-        
+
         Button btnRefresh = new Button(container, SWT.NONE);
         btnRefresh.addSelectionListener(new SelectionAdapter() {
             @Override
