@@ -175,7 +175,6 @@ public final class ContainerSettingComposite extends Composite implements Contai
         txtUserName.setText(setting.getUsername());
         txtPassword.setText(setting.getPassword());
         txtImageTag.setText(setting.getImageNameWithTag());
-        txtImageTag.setFocus();
     }
 
     @Override
