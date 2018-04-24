@@ -509,6 +509,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         setScrolledCompositeContent();
         setChildrenTransparent(panelHolder);
         setChildrenTransparent(container);
+
+        txtRegistryName.setFocus();
     }
 
     @Override
