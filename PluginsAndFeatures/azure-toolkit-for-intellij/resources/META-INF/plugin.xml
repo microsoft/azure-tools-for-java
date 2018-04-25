@@ -19,6 +19,13 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.6.0]</h3>
+      <ul>
+        <li>Updated ApplicationInsights version to v2.0.2.</li>
+        <li>Added Spark 2.2 templates for HDInsight.</li>
+        <li>Added SSH password expiration check.</li>
+        <li>Fixed some bugs.</li>
+      <ul>
       <h3>[3.5.0]</h3>
       <ul>
         <li>Added open Azure Storage Explorer for exploring data in HDInsight cluster (blob or ADLS).</li>
