@@ -21,6 +21,8 @@
  */
 package com.microsoft.azure.hdinsight.sdk.rest.spark.task;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * A spark task resource contains information about a task of that was submitted to a cluster.
  *
@@ -34,6 +36,8 @@ package com.microsoft.azure.hdinsight.sdk.rest.spark.task;
  * Query Parameters Supported
  *   None
  */
+
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class Task {
     private String attempt;
 

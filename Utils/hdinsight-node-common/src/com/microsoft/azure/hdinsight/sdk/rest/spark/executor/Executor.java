@@ -26,6 +26,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.job.Job;
 import com.microsoft.azure.hdinsight.sdk.rest.spark.stage.Stage;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppResponse;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -54,6 +55,8 @@ import java.util.Optional;
  * Query Parameters Supported
  *   None
  */
+
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class Executor implements IConvertible {
     private String id;
     private String hostPort;

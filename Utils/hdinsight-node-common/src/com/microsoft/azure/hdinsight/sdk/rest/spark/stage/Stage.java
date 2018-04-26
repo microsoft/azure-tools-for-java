@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.sdk.rest.spark.stage;
 
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +41,8 @@ import java.util.List;
  * Query Parameters Supported
  *   None
  */
+
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class Stage implements IConvertible {
     private String status;
     private int stageId;
