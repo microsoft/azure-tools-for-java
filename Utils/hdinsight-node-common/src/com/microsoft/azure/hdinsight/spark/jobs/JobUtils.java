@@ -276,12 +276,12 @@ public class JobUtils {
                     // In running, no log type paragraph in page
                     String typ = Optional.ofNullable(logType.get()).orElse(type);
 
-                    // Only get the first <pre>...</pre>
-                    if (!logTypeMap.containsKey(typ)) {
-                        logTypeMap.put(typ, Optional.ofNullable(node.getFirstChild())
-                                .map(DomNode::getTextContent)
-                                .orElse(""));
+                    // put every <pre>...</pre> together
+                    String nodeTextContent = Optional.ofNullable(node.getFirstChild()).map(DomNode::getTextContent).orElse("");
+                    if (logTypeMap.containsKey(typ)) {
+                        nodeTextContent = logTypeMap.get(typ) + nodeTextContent;
                     }
+                    logTypeMap.put(typ, nodeTextContent);
                 }
             }
 
