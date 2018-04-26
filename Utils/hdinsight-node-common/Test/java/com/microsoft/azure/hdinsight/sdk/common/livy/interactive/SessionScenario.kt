@@ -55,18 +55,18 @@ class SessionScenario {
         sessionMock = SparkSession(name, URI.create(httpServerMock!!.completeUrl("/")))
     }
 
+    @Given("^create the Spark interactive session, and save the response$")
+    fun createSparkSessionAndSave() {
+        sessionMock = sessionMock!!.create()
+                .toBlocking()
+                .single()
+    }
+
     @Then("^check the returned livy interactive session after creating should be$")
     fun checkCreatedSparkSession(expect: Map<String, String>) {
-        sessionMock!!.create()
-                .subscribe(
-                        { session -> expect.keys.forEach { when(it) {
-                            "id" -> assertThat(session.id).isEqualTo(expect[it]!!.toInt())
-                        }}},
-                        {
-                            err -> throw err
-                        }
-                )
-
+        expect.keys.forEach { when(it) {
+            "id" -> assertThat(sessionMock!!.id).isEqualTo(expect[it]!!.toInt())
+        }}
     }
 
     @Then("^check the HttpResponseException\\((\\d+)\\) when creating livy interactive session after creating should be thrown$")
@@ -118,5 +118,14 @@ class SessionScenario {
     fun checkStatementRunResultOutput(outputExpect: List<String>) {
         assertThat(result!!["text/plain"]!!.split("\n"))
                 .containsExactlyElementsOf(outputExpect)
+    }
+
+    @Then("^those request headers UA fields are different$")
+    fun checkHeaderUaBeDifferent() {
+        val uas = httpServerMock!!.livyServerMock.allServeEvents
+                .map { it.request.getHeader("User-Agent") }
+
+        assertThat(uas).isNotEmpty
+        assertThat(uas).doesNotHaveDuplicates()
     }
 }

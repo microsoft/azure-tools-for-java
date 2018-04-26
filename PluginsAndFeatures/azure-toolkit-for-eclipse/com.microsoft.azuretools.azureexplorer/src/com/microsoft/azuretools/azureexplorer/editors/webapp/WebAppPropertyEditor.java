@@ -332,6 +332,8 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         setExtraInfoVisible(false);
         setChildrenTransparent(cpOverview);
         setChildrenTransparent(cpExtraInfo);
+
+        btnGetPublishProfile.setFocus();
     }
 
     private void onBtnEditItemSelection() {

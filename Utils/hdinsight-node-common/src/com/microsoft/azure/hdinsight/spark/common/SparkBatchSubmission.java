@@ -23,7 +23,9 @@ package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
+import com.microsoft.azure.hdinsight.common.appinsight.AppInsightsHttpRequestInstallIdMapRecord;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -36,17 +38,12 @@ import rx.Observable;
 import rx.schedulers.Schedulers;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class SparkBatchSubmission {
 
-    private static String userAgentName;
-
     private SparkBatchSubmission() {
-        String installID = HDInsightLoader.getHDInsightHelper().getInstallationId();
-        String userAgentSource = SparkBatchSubmission.class.getClassLoader().getClass().getName().toLowerCase().contains("intellij")
-                ? "Azure Toolkit for IntelliJ " : "Azure Toolkit for Eclipse ";
-        userAgentName = userAgentSource + installID;
     }
 
     // Singleton Instance
@@ -66,6 +63,15 @@ public class SparkBatchSubmission {
 
     private CredentialsProvider credentialsProvider =  new BasicCredentialsProvider();
 
+    @NotNull
+    public String getInstallationID() {
+        if (HDInsightLoader.getHDInsightHelper() == null) {
+            return "";
+        }
+
+        return HDInsightLoader.getHDInsightHelper().getInstallationId();
+    }
+
     /**
      * Set http request credential using username and password
      * @param username : username
@@ -84,7 +90,7 @@ public class SparkBatchSubmission {
 
         HttpGet httpGet = new HttpGet(connectUrl);
         httpGet.addHeader("Content-Type", "application/json");
-        httpGet.addHeader("User-Agent", userAgentName);
+        httpGet.addHeader("User-Agent", getUserAgentPerRequest(false));
         httpGet.addHeader("X-Requested-By", "ambari");
         try(CloseableHttpResponse response = httpclient.execute(httpGet)) {
             return StreamUtil.getResultFromHttpResponse(response);
@@ -97,7 +103,7 @@ public class SparkBatchSubmission {
 
         HttpHead httpHead = new HttpHead(connectUrl);
         httpHead.addHeader("Content-Type", "application/json");
-        httpHead.addHeader("User-Agent", getUserAgentName());
+        httpHead.addHeader("User-Agent", getUserAgentPerRequest(true));
         httpHead.addHeader("X-Requested-By", "ambari");
 
         // WORKAROUND: https://github.com/Microsoft/azure-tools-for-java/issues/1358
@@ -112,8 +118,24 @@ public class SparkBatchSubmission {
         }
     }
 
-    public String getUserAgentName() {
-        return userAgentName;
+    /**
+     * To generator a User-Agent for HTTP request with a random UUID
+     *
+     * @param isMapToInstallID true for create the relationship between the UUID and InstallationID
+     * @return the unique UA string
+     */
+    @NotNull
+    private String getUserAgentPerRequest(boolean isMapToInstallID) {
+        String loadingClass = SparkBatchSubmission.class.getClassLoader().getClass().getName().toLowerCase();
+        String userAgentSource = loadingClass.contains("intellij") ? "Azure Toolkit for IntelliJ " :
+                (loadingClass.contains("eclipse") ? "Azure Toolkit for Eclipse " : "Azure HDInsight Java SDK ");
+        String requestId = UUID.randomUUID().toString();
+
+        if (isMapToInstallID) {
+            new AppInsightsHttpRequestInstallIdMapRecord(requestId, getInstallationID()).post();
+        }
+
+        return userAgentSource + requestId;
     }
 
     /**
@@ -136,7 +158,7 @@ public class SparkBatchSubmission {
         CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
         HttpPost httpPost = new HttpPost(connectUrl);
         httpPost.addHeader("Content-Type", "application/json");
-        httpPost.addHeader("User-Agent", userAgentName);
+        httpPost.addHeader("User-Agent", getUserAgentPerRequest(true));
         httpPost.addHeader("X-Requested-By", "ambari");
         StringEntity postingString =new StringEntity(submissionParameter.serializeToJson());
         httpPost.setEntity(postingString);
@@ -166,7 +188,7 @@ public class SparkBatchSubmission {
     public HttpResponse killBatchJob(String connectUrl, int batchId)throws IOException {
         CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
         HttpDelete httpDelete = new HttpDelete(connectUrl +  "/" + batchId);
-        httpDelete.addHeader("User-Agent", userAgentName);
+        httpDelete.addHeader("User-Agent", getUserAgentPerRequest(true));
         httpDelete.addHeader("Content-Type", "application/json");
         httpDelete.addHeader("X-Requested-By", "ambari");
 

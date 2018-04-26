@@ -109,6 +109,11 @@ public class Statement {
     }
 
     @Nullable
+    public String getUserAgent(boolean isMapToInstallID) {
+        return getSession().getUserAgent(isMapToInstallID);
+    }
+
+    @Nullable
     public StatementOutput getOutput() {
         return output;
     }
@@ -172,6 +177,7 @@ public class Statement {
         entity.setContentType("application/json");
 
         return getHttp()
+                .setUserAgent(getUserAgent(false))
                 .post(uri.toString(), entity, null, null, com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Statement.class);
     }
 
@@ -191,6 +197,7 @@ public class Statement {
         }
 
         return getHttp()
+                .setUserAgent(getUserAgent(false))
                 .get(uri.toString(), null, null, com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Statement.class);
     }
 

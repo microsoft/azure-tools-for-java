@@ -86,10 +86,14 @@ public class HttpObservable {
     public HttpObservable() {
         this.defaultHeaders = new HeaderGroup();
 
+        String loadingClass = this.getClass().getClassLoader().getClass().getName().toLowerCase();
+        this.userAgent = loadingClass.contains("intellij") ? "Azure Toolkit for IntelliJ" :
+                (loadingClass.contains("eclipse") ? "Azure Toolkit for Eclipse" : "Azure HDInsight SDK HTTP RxJava client");
+
         // set default headers
         this.defaultHeaders.setHeaders(new Header[] {
                 new BasicHeader("Content-Type", "application/json"),
-                new BasicHeader("User-Agent", "HDInsight SDK Http Observable client"),
+                new BasicHeader("User-Agent", userAgent),
                 new BasicHeader("X-Requested-By", "ambari")
         });
 
@@ -139,8 +143,10 @@ public class HttpObservable {
         return defaultRequestConfig;
     }
 
-    public void setDefaultRequestConfig(@NotNull RequestConfig defaultRequestConfig) {
+    public HttpObservable setDefaultRequestConfig(@NotNull RequestConfig defaultRequestConfig) {
         this.defaultRequestConfig = defaultRequestConfig;
+
+        return this;
     }
 
     @NotNull
@@ -148,8 +154,10 @@ public class HttpObservable {
         return cookieStore;
     }
 
-    public void setCookieStore(@NotNull CookieStore cookieStore) {
+    public HttpObservable setCookieStore(@NotNull CookieStore cookieStore) {
         this.cookieStore = cookieStore;
+
+        return this;
     }
 
     @NotNull
@@ -162,8 +170,10 @@ public class HttpObservable {
         return defaultHeaders.getAllHeaders();
     }
 
-    public void setDefaultHeader(@Nullable Header defaultHeader) {
+    public HttpObservable setDefaultHeader(@Nullable Header defaultHeader) {
         this.defaultHeaders.updateHeader(defaultHeader);
+
+        return this;
     }
 
     @NotNull
@@ -176,11 +186,11 @@ public class HttpObservable {
         return userAgent;
     }
 
-    public void setUserAgent(@Nullable String userAgent) {
+    public HttpObservable setUserAgent(@Nullable String userAgent) {
         this.userAgent = userAgent;
 
         // Update the default headers
-        setDefaultHeader(new BasicHeader("User-Agent", getUserAgent()));
+        return setDefaultHeader(new BasicHeader("User-Agent", userAgent));
     }
 
     /*

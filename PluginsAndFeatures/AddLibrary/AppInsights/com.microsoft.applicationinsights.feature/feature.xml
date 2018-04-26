@@ -2,7 +2,7 @@
 <feature
       id="com.microsoft.applicationinsights.feature"
       label="Application Insights Plugin for Java"
-      version="3.5.0.qualifier"
+      version="3.6.0.qualifier"
       provider-name="Microsoft Corp.">
 
    <description>
@@ -73,7 +73,7 @@ c. Germany and Austria.
 </license>
 
    <requires>
-      <import feature="com.microsoft.azuretools.sdk.feature" version="3.5.0.qualifier"/>
+      <import feature="com.microsoft.azuretools.sdk.feature" version="3.6.0.qualifier"/>
    </requires>
 
    <plugin
