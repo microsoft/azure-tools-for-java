@@ -22,14 +22,15 @@
 
 package com.microsoft.intellij;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
-import com.microsoft.azure.hdinsight.common.HDInsightLoader;
+import com.intellij.openapi.extensions.Extensions;
+import com.intellij.util.containers.hash.HashMap;
 import com.microsoft.azure.sparkserverless.SparkServerlessClusterOpsCtrl;
 import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterOps;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -54,6 +55,7 @@ import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -62,6 +64,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
@@ -79,11 +82,15 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setUiHelper(new UIHelperImpl());
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
-        Node.setNode2Actions(NodeActionsMap.node2Actions);
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
 
-        HDInsightLoader.setHHDInsightHelper(new HDInsightHelperImpl());
+        Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions = new HashMap<>();
+        for (NodeActionsMap nodeActionsMap : Extensions.getExtensions(NodeActionsMap.EXTENSION_POINT_NAME)) {
+            node2Actions.putAll(nodeActionsMap.getMap());
+        }
+        Node.setNode2Actions(node2Actions);
+
         try {
             loadPluginSettings();
         } catch (IOException e) {
@@ -107,8 +114,6 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
             ActionManager am = ActionManager.getInstance();
             DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
             toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
-            DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
-            popupGroup.add(am.getAction("AzurePopupGroup"));
             loadWebApps();
         }
         try {

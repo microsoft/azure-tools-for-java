@@ -50,7 +50,14 @@
     <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
   </extensions>
 
+  <extensions defaultExtensionNs="com.microsoft.intellij">
+    <nodeActionsMap implementation="com.microsoft.intellij.serviceexplorer.NodeJavaActionsMap" />
+  </extensions>
+
   <application-components>
+    <component>
+      <implementation-class>com.microsoft.intellij.AzureJavaActionsComponent</implementation-class>
+    </component>
     <component>
       <implementation-class>com.microsoft.azure.hdinsight.jobs.JobViewApplicationComponent</implementation-class>
     </component>

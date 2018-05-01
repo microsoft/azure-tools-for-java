@@ -20,18 +20,27 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.serviceexplorer;
+package com.microsoft.intellij;
 
-import com.google.common.collect.ImmutableList;
-import com.intellij.openapi.extensions.ExtensionPointName;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.IdeActions;
+import com.intellij.openapi.components.ApplicationComponent;
+import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
+import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 
-import java.util.Map;
+public class AzureJavaActionsComponent implements ApplicationComponent {
 
-public abstract class NodeActionsMap {
-    public static final ExtensionPointName<NodeActionsMap> EXTENSION_POINT_NAME =
-            ExtensionPointName.create("com.microsoft.intellij.nodeActionsMap");
+    public AzureJavaActionsComponent() {
+        HDInsightLoader.setHHDInsightHelper(new HDInsightHelperImpl());
+    }
 
-    public abstract Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> getMap();
+    @Override
+    public void initComponent() {
+        if (!AzurePlugin.IS_ANDROID_STUDIO) {
+            ActionManager am = ActionManager.getInstance();
+            DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
+            popupGroup.add(am.getAction("AzurePopupGroup"));
+        }
+    }
 }

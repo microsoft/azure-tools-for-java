@@ -107,6 +107,11 @@
 
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
 
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.microsoft.intellij.nodeActionsMap"
+                    interface="com.microsoft.intellij.serviceexplorer.NodeActionsMap" />
+  </extensionPoints>
+
   <extensions defaultExtensionNs="com.intellij">
     <toolWindow
           anchor="bottom"
@@ -137,6 +142,10 @@
           id="Azure Explorer"
           canCloseContents="false"
           icon="/icons/AzureExplorer_16.png"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.microsoft.intellij">
+    <nodeActionsMap implementation="com.microsoft.intellij.serviceexplorer.DefaultNodeActionsMap" />
   </extensions>
 
   <application-components>
