@@ -22,33 +22,6 @@
 
 package com.microsoft.intellij;
 
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.IdeActions;
-import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
-import com.microsoft.azure.hdinsight.common.HDInsightLoader;
-import com.microsoft.intellij.helpers.IDEHelperJavaImpl;
-import com.microsoft.tooling.msservices.helpers.IDEHelper;
+public class AzureRiderActionsComponent extends AzureActionsComponent {
 
-public class AzureJavaActionsComponent extends AzureActionsComponent {
-
-    public AzureJavaActionsComponent() {
-        super();
-        HDInsightLoader.setHHDInsightHelper(new HDInsightHelperImpl());
-    }
-
-    @Override
-    public void initComponent() {
-        if (!AzurePlugin.IS_ANDROID_STUDIO) {
-            ActionManager am = ActionManager.getInstance();
-            DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
-            popupGroup.add(am.getAction("AzurePopupGroup"));
-        }
-        super.initComponent();
-    }
-
-    @Override
-    protected IDEHelper createIDEHelper() {
-        return new IDEHelperJavaImpl();
-    }
 }

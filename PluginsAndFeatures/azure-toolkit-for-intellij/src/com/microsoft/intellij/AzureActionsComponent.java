@@ -53,6 +53,7 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
+import com.microsoft.tooling.msservices.helpers.IDEHelper;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -71,7 +72,7 @@ import java.util.logging.SimpleFormatter;
 
 import rx.internal.util.PlatformDependent;
 
-public class AzureActionsComponent implements ApplicationComponent, PluginComponent {
+public abstract class AzureActionsComponent implements ApplicationComponent, PluginComponent {
     public static final String PLUGIN_ID = CommonConst.PLUGIN_ID;
     private static final Logger LOG = Logger.getInstance(AzureActionsComponent.class);
     private static FileHandler logFileHandler = null;
@@ -81,7 +82,7 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
     public AzureActionsComponent() {
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setUiHelper(new UIHelperImpl());
-        DefaultLoader.setIdeHelper(new IDEHelperImpl());
+        DefaultLoader.setIdeHelper(createIDEHelper());
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
 
@@ -97,6 +98,10 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
             PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"),
                     "An error occurred while attempting to load settings", e);
         }
+    }
+
+    protected IDEHelper createIDEHelper() {
+        return new IDEHelperImpl();
     }
 
     @NotNull

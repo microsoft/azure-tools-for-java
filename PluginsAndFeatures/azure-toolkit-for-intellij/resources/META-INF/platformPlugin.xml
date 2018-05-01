@@ -148,11 +148,7 @@
     <nodeActionsMap implementation="com.microsoft.intellij.serviceexplorer.DefaultNodeActionsMap" />
   </extensions>
 
-  <application-components>
-    <component>
-      <implementation-class>com.microsoft.intellij.AzureActionsComponent</implementation-class>
-    </component>
-  </application-components>
+  <application-components />
 
   <project-components>
     <component>

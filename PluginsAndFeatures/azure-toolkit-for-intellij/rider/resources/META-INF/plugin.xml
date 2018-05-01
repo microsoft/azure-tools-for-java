@@ -17,7 +17,13 @@
   <depends>com.intellij.modules.rider</depends>
 
   <extensions defaultExtensionNs="com.intellij"/>
-  <application-components/>
+
+  <application-components>
+    <component>
+      <implementation-class>com.microsoft.intellij.AzureRiderActionsComponent</implementation-class>
+    </component>
+  </application-components>
+
   <project-components/>
   <actions/>
 
