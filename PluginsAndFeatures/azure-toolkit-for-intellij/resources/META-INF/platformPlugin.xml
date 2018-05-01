@@ -110,6 +110,8 @@
   <extensionPoints>
     <extensionPoint qualifiedName="com.microsoft.intellij.nodeActionsMap"
                     interface="com.microsoft.intellij.serviceexplorer.NodeActionsMap" />
+    <extensionPoint qualifiedName="com.microsoft.intellij.serverExplorerToolWindowListener"
+                    interface="com.microsoft.intellij.components.ServerExplorerToolWindowListener" />
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij">

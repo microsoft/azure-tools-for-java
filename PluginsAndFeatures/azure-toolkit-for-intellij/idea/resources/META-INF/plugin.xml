@@ -52,6 +52,7 @@
 
   <extensions defaultExtensionNs="com.microsoft.intellij">
     <nodeActionsMap implementation="com.microsoft.intellij.serviceexplorer.NodeJavaActionsMap" />
+    <serverExplorerToolWindowListener implementation="com.microsoft.intellij.serviceexplorer.ServerExplorerToolWindowJavaListener" />
   </extensions>
 
   <application-components>
