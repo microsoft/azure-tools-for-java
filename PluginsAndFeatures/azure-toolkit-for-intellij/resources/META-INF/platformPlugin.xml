@@ -150,15 +150,6 @@
     <nodeActionsMap implementation="com.microsoft.intellij.serviceexplorer.DefaultNodeActionsMap" />
   </extensions>
 
-  <application-components />
-
-  <project-components>
-    <component>
-      <implementation-class>com.microsoft.intellij.AzurePlugin</implementation-class>
-      <loadForDefaultProject/>
-    </component>
-  </project-components>
-
   <actions>
     <action id="Actions.AzureDockerHostDeploy" class="com.microsoft.intellij.actions.AzureDockerHostDeployAction"
             text="Publish as Docker Container..." description="Azure website deployment for Java on Docker"

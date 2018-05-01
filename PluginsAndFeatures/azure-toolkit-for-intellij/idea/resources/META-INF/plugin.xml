@@ -67,7 +67,12 @@
     </component>
   </application-components>
 
-  <project-components/>
+  <project-components>
+    <component>
+      <implementation-class>com.microsoft.intellij.AzureJavaPlugin</implementation-class>
+      <loadForDefaultProject/>
+    </component>
+  </project-components>
 
   <actions>
     <action id="Actions.LibraryConfigurationAction"

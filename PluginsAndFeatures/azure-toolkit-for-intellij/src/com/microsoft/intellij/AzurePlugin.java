@@ -34,51 +34,35 @@ import com.intellij.util.PlatformUtils;
 import com.intellij.util.containers.HashSet;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
-import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
-import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
-import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
-import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
-import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
-import org.apache.commons.io.FileUtils;
-import org.w3c.dom.Document;
 
 import javax.swing.event.EventListenerList;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
-public class AzurePlugin extends AbstractProjectComponent {
-    private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.AzurePlugin");
+public abstract class AzurePlugin extends AbstractProjectComponent {
+    protected static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.AzurePlugin");
+
     public static final String PLUGIN_VERSION = CommonConst.PLUGIN_VERISON;
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
     public static final String JDBC_LIBRARIES_VERSION = "6.1.0.jre8";
-    public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
 
     // User-agent header for Azure SDK calls
     public static final String USER_AGENT = "Azure Toolkit for IntelliJ, v%s, machineid:%s";
@@ -88,22 +72,15 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     public static String pluginFolder = PluginUtil.getPluginRootDirectory();
 
-    private static final EventListenerList DEPLOYMENT_EVENT_LISTENERS = new EventListenerList();
+    protected static final EventListenerList DEPLOYMENT_EVENT_LISTENERS = new EventListenerList();
     public static List<DeploymentEventListener> depEveList = new ArrayList<DeploymentEventListener>();
 
-    private String dataFile = PluginHelper.getTemplateFile(message("dataFileName"));
-
     private final AzureSettings azureSettings;
-
-    private String _hashmac = GetHashMac.GetHashMac();
 
     public AzurePlugin(Project project) {
         super(project);
         this.azureSettings = AzureSettings.getSafeInstance(project);
-        CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
-                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
     }
-
 
     public void projectOpened() {
         initializeAIRegistry();
@@ -133,52 +110,7 @@ public class AzurePlugin extends AbstractProjectComponent {
         }
     }
 
-    private void initializeTelemetry() throws Exception {
-        boolean install = false;
-        boolean upgrade = false;
-
-        if (new File(dataFile).exists()) {
-            String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
-            if (version == null || version.isEmpty()) {
-                upgrade = true;
-                // proceed with setValues method as no version specified
-                setValues(dataFile);
-            } else {
-                String curVersion = PLUGIN_VERSION;
-                // compare version
-                if (curVersion.equalsIgnoreCase(version)) {
-                    // Case of normal IntelliJ restart
-                    // check preference-value & installation-id exists or not else copy values
-                    String prefValue = DataOperations.getProperty(dataFile, message("prefVal"));
-                    String instID = DataOperations.getProperty(dataFile, message("instID"));
-                    if (prefValue == null || prefValue.isEmpty()) {
-                        setValues(dataFile);
-                    } else if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
-                        upgrade = true;
-                        Document doc = ParserXMLUtility.parseXMLFile(dataFile);
-                        DataOperations.updatePropertyValue(doc, message("instID"), _hashmac);
-                        ParserXMLUtility.saveXMLFile(dataFile, doc);
-                    }
-                } else {
-                    upgrade = true;
-                    // proceed with setValues method. Case of new plugin installation
-                    setValues(dataFile);
-                }
-            }
-        } else {
-            // copy file and proceed with setValues method
-            install = true;
-            copyResourceFile(message("dataFileName"), dataFile);
-            setValues(dataFile);
-        }
-        AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
-        if (install) {
-            AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
-        }
-        if (upgrade) {
-            AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
-        }
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Load, null, true);
+    protected void initializeTelemetry() throws Exception {
     }
 
     private void initializeAIRegistry() {
@@ -208,23 +140,6 @@ public class AzurePlugin extends AbstractProjectComponent {
             AzureSettings.getSafeInstance(myProject).saveAppInsights();
         } catch (Exception ex) {
             AzurePlugin.log(ex.getMessage(), ex);
-        }
-    }
-
-    private void setValues(final String dataFile) throws Exception {
-        try {
-            final Document doc = ParserXMLUtility.parseXMLFile(dataFile);
-            String recordedVersion = DataOperations.getProperty(dataFile, message("pluginVersion"));
-            if (Utils.whetherUpdateTelemetryPref(recordedVersion)) {
-                DataOperations.updatePropertyValue(doc, message("prefVal"), String.valueOf("true"));
-            }
-
-            DataOperations.updatePropertyValue(doc, message("pluginVersion"), PLUGIN_VERSION);
-            DataOperations.updatePropertyValue(doc, message("instID"), _hashmac);
-
-            ParserXMLUtility.saveXMLFile(dataFile, doc);
-        } catch (Exception ex) {
-            LOG.error(message("error"), ex);
         }
     }
 
@@ -270,27 +185,16 @@ public class AzurePlugin extends AbstractProjectComponent {
                 });
     }
 
-    private void telemetryAI() {
-        ModuleManager.getInstance(myProject).getModules();
-    }
-
     public String getComponentName() {
         return "MSOpenTechTools.AzurePlugin";
-    }
-
-    // currently we didn't have a better way to know if it is in debug model.
-    // the code suppose we are under debug model if the plugin root path contains 'sandbox' for Gradle default debug path
-    private boolean isDebugModel() {
-        return PluginUtil.getPluginRootDirectory().contains("sandbox");
     }
 
     /**
      * Copies Azure Toolkit for IntelliJ
      * related files in azure-toolkit-for-intellij plugin folder at startup.
      */
-    private void copyPluginComponents() {
+    protected void copyPluginComponents() {
         try {
-            extractJobViewResource();
             for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
                 if (azureLibrary.getLocation() != null) {
                     if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
@@ -356,75 +260,5 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     public static void log(String message) {
         LOG.info(message);
-    }
-
-    private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";
-
-    private boolean isFirstInstallationByVersion() {
-        if (new File(dataFile).exists()) {
-            String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
-            if (!StringHelper.isNullOrWhiteSpace(version) && version.equals(PLUGIN_VERSION)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private void extractJobViewResource() {
-        File indexRootFile = new File(PluginUtil.getPluginRootDirectory() + File.separator + "com.microsoft.hdinsight");
-
-        if (isFirstInstallationByVersion() || isDebugModel()) {
-            if (indexRootFile.exists()) {
-                try {
-                    FileUtils.deleteDirectory(indexRootFile);
-                } catch (IOException e) {
-                    LOG.error("delete HDInsight job view folder error", e);
-                }
-            }
-        }
-
-        URL url = AzurePlugin.class.getResource(HTML_ZIP_FILE_NAME);
-        if (url != null) {
-            File toFile = new File(indexRootFile.getAbsolutePath(), HTML_ZIP_FILE_NAME);
-            try {
-                FileUtils.copyURLToFile(url, toFile);
-                unzip(toFile.getAbsolutePath(), toFile.getParent());
-            } catch (IOException e) {
-                LOG.error("Extract Job View Folder", e);
-            }
-        } else {
-            LOG.error("Can't find HDInsight job view zip package");
-        }
-    }
-
-    private static void unzip(String zipFilePath, String destDirectory) throws IOException {
-        File destDir = new File(destDirectory);
-        if (!destDir.exists()) {
-            destDir.mkdir();
-        }
-        ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath));
-        ZipEntry entry = zipIn.getNextEntry();
-        while (entry != null) {
-            String filePath = destDirectory + File.separator + entry.getName();
-            if (!entry.isDirectory()) {
-                extractFile(zipIn, filePath);
-            } else {
-                File dir = new File(filePath);
-                dir.mkdir();
-            }
-            zipIn.closeEntry();
-            entry = zipIn.getNextEntry();
-        }
-        zipIn.close();
-    }
-
-    private static void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
-        BufferedOutputStream bos = new BufferedOutputStream(new java.io.FileOutputStream(filePath));
-        byte[] bytesIn = new byte[1024 * 10];
-        int read = 0;
-        while ((read = zipIn.read(bytesIn)) != -1) {
-            bos.write(bytesIn, 0, read);
-        }
-        bos.close();
     }
 }
