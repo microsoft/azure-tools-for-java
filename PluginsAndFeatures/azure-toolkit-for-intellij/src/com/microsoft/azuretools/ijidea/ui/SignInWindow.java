@@ -42,14 +42,10 @@ import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.html.HTMLDocument;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -64,14 +60,14 @@ public class SignInWindow extends AzureDialogWrapper {
     private JPanel contentPane;
 
     private JRadioButton interactiveRadioButton;
-    private JTextPane interactiveCommentTextPane;
 
     private JRadioButton automatedRadioButton;
-    private JTextPane automatedCommentTextPane;
     private JLabel authFileLabel;
     private JTextField authFileTextField;
     private JButton browseButton;
     private JButton createNewAuthenticationFileButton;
+    private JLabel automatedCommentLabel;
+    private JLabel interactiveCommentLabel;
 
     private AuthMethodDetails authMethodDetails;
     private AuthMethodDetails authMethodDetailsResult;
@@ -139,8 +135,6 @@ public class SignInWindow extends AzureDialogWrapper {
         });
 
         Font labelFont = UIManager.getFont("Label.font");
-        interactiveCommentTextPane.setFont(labelFont);
-        automatedCommentTextPane.setFont(labelFont);
 
         interactiveRadioButton.setSelected(true);
         onInteractiveRadioButton();
@@ -157,8 +151,8 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private void enableAutomatedAuthControls(boolean enabled) {
-        interactiveCommentTextPane.setEnabled(!enabled);
-        automatedCommentTextPane.setEnabled(enabled);
+        interactiveCommentLabel.setEnabled(!enabled);
+        automatedCommentLabel.setEnabled(enabled);
         authFileLabel.setEnabled(enabled);
         authFileTextField.setEnabled(enabled);
         browseButton.setEnabled(enabled);

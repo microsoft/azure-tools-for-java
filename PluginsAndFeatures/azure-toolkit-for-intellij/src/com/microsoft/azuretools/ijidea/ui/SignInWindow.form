@@ -3,7 +3,7 @@
   <grid id="cbd77" binding="contentPane" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="10" left="10" bottom="10" right="10"/>
     <constraints>
-      <xy x="48" y="54" width="603" height="343"/>
+      <xy x="48" y="54" width="636" height="357"/>
     </constraints>
     <properties>
       <enabled value="true"/>
@@ -52,6 +52,7 @@
                 </constraints>
                 <properties>
                   <editable value="false"/>
+                  <text value=""/>
                 </properties>
               </component>
               <component id="3a659" class="javax.swing.JButton" binding="browseButton" default-binding="true">
@@ -72,25 +73,22 @@
                   <text value="Authentication file:" noi18n="true"/>
                 </properties>
               </component>
-              <component id="77e46" class="javax.swing.JTextPane" binding="automatedCommentTextPane">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
-                  </grid>
-                </constraints>
-                <properties>
-                  <editable value="false"/>
-                  <enabled value="true"/>
-                  <opaque value="false"/>
-                  <text value="An authentication file with credentials for an Azure Active Directory service principal will be used for automated sign ins."/>
-                </properties>
-              </component>
               <component id="19f87" class="javax.swing.JButton" binding="createNewAuthenticationFileButton" default-binding="true">
                 <constraints>
                   <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <text value="New..."/>
+                </properties>
+              </component>
+              <component id="c88ce" class="javax.swing.JLabel" binding="automatedCommentLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                    <maximum-size width="600" height="-1"/>
+                  </grid>
+                </constraints>
+                <properties>
+                  <text value="&lt;html&gt;An authentication file with credentials for an Azure Active Directory service principal will be used for automated sign ins.&lt;/html&gt;"/>
                 </properties>
               </component>
             </children>
@@ -105,17 +103,12 @@
             </properties>
             <border type="none"/>
             <children>
-              <component id="ebc6b" class="javax.swing.JTextPane" binding="interactiveCommentTextPane">
+              <component id="25eef" class="javax.swing.JLabel" binding="interactiveCommentLabel">
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="2" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
-                  </grid>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <editable value="false"/>
-                  <enabled value="true"/>
-                  <opaque value="false"/>
-                  <text value="You will manually sign in using your Azure credentials as needed.&#10;"/>
+                  <text value="You will manually sign in using your Azure credentials as needed. "/>
                 </properties>
               </component>
             </children>
