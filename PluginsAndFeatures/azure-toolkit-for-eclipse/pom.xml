@@ -39,7 +39,7 @@
     <repository>
       <id>mars</id>
       <layout>p2</layout>
-      <url>http://mirror.cc.columbia.edu/pub/software/eclipse/releases/mars/</url>
+      <url>http://download.eclipse.org/releases/mars/</url>
     </repository>
     <repository>
       <id>scala</id>
