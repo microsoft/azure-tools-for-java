@@ -64,9 +64,6 @@ public class NodeActionsMap {
             new HashMap<>();
 
     static {
-        // enable spark serverless node subscribe actions
-        new SparkServerlessClusterOpsCtrl(SparkServerlessClusterOps.getInstance());
-
         node2Actions.put(VMArmModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateVMAction.class).build());
         node2Actions.put(QueueModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
