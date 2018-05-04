@@ -420,7 +420,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
                 webAppOnLinuxDeployConfiguration.setAppServicePlanName(txtCreateAppServicePlan.getText());
                 Location selectedLocation = (Location) cbLocation.getSelectedItem();
                 if (selectedLocation != null) {
-                    webAppOnLinuxDeployConfiguration.setLocationName(selectedLocation.region().name());
+                    webAppOnLinuxDeployConfiguration.setLocationName(selectedLocation.name());
                 } else {
                     webAppOnLinuxDeployConfiguration.setLocationName(null);
                 }
@@ -638,7 +638,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         if (locationList != null && locationList.size() > 0) {
             locationList.forEach((item) -> {
                 cbLocation.addItem(item);
-                if (Comparing.equal(item.region().name(), defaultLocationName)) {
+                if (Comparing.equal(item.name(), defaultLocationName)) {
                     cbLocation.setSelectedItem(item);
                     // defaultLocationName = null;
                 }
