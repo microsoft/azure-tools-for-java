@@ -219,7 +219,6 @@ public class ContainerSettingPanel implements ContainerSettingView {
         txtUserName.setText(setting.getUsername());
         passwordField.setText(setting.getPassword());
         txtImageTag.setText(setting.getImageNameWithTag());
-        txtImageTag.requestFocus();
     }
 
     @Override
