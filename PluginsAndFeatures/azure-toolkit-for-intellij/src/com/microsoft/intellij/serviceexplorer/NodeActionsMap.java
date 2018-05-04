@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewEmulatorAction;
+import com.microsoft.azure.sparkserverless.SparkServerlessClusterOpsCtrl;
 import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.CreateNewDockerHostAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.DeleteDockerHostAction;
@@ -62,6 +63,9 @@ public class NodeActionsMap {
             new HashMap<>();
 
     static {
+        // enable spark serverless node subscribe actions
+        new SparkServerlessClusterOpsCtrl();
+
         node2Actions.put(VMArmModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateVMAction.class).build());
         node2Actions.put(QueueModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()

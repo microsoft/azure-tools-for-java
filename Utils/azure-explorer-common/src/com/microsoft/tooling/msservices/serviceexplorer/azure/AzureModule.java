@@ -36,6 +36,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessClusterRootModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
@@ -55,6 +56,7 @@ public class AzureModule extends AzureRefreshableNode {
     private StorageModule storageModule;
     private WebAppModule webAppModule;
     private HDInsightRootModule hdInsightModule;
+    private SparkServerlessClusterRootModule sparkServerlessClusterRootModule;
     private DockerHostModule dockerHostModule;
     private ContainerRegistryModule containerRegistryModule;
 
@@ -69,6 +71,7 @@ public class AzureModule extends AzureRefreshableNode {
         storageModule = new StorageModule(this);
         webAppModule = new WebAppModule(this);
         //hdInsightModule = new HDInsightRootModule(this);
+        sparkServerlessClusterRootModule = new SparkServerlessClusterRootModule(this);
         vmArmServiceModule = new VMArmModule(this);
         redisCacheModule = new RedisCacheModule(this);
         dockerHostModule = new DockerHostModule(this);
@@ -138,6 +141,11 @@ public class AzureModule extends AzureRefreshableNode {
         if (hdInsightModule != null && !isDirectChild(hdInsightModule)) {
             addChildNode(hdInsightModule);
         }
+
+        if (sparkServerlessClusterRootModule != null && !isDirectChild(sparkServerlessClusterRootModule)) {
+            addChildNode(sparkServerlessClusterRootModule);
+        }
+
         if (!isDirectChild(dockerHostModule)) {
             addChildNode(dockerHostModule);
         }
@@ -159,6 +167,7 @@ public class AzureModule extends AzureRefreshableNode {
                 storageModule.load(true);
                 webAppModule.load(true);
                 hdInsightModule.load(true);
+                sparkServerlessClusterRootModule.load(true);
                 dockerHostModule.load(true);
                 containerRegistryModule.load(true);
             }
