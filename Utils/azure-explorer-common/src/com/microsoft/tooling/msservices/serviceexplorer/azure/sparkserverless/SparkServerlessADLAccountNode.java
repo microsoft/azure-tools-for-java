@@ -35,7 +35,7 @@ public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
     // TODO: Update icon path
     private static final String ICON_PATH = "StorageAccount_16.png";
     // TODO: Update adlAccount type
-    private static String adlAccount;
+    private final String adlAccount;
 
     public SparkServerlessADLAccountNode(@NotNull Node parent, @NotNull String adlAccountName) {
         super(ADLAccount_MODULE_ID, adlAccountName, parent, ICON_PATH, true);

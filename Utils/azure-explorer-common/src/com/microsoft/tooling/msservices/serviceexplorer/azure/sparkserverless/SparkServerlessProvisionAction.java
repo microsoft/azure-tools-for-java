@@ -33,7 +33,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class SparkServerlessProvisionAction extends AzureNodeActionListener {
     // TODO: Update adlAccount type
-    private String adlAccount;
+    private final String adlAccount;
     public SparkServerlessProvisionAction(@NotNull Node node, @NotNull String adlAccount) {
         super(node, "Provisioning Spark Serverless Cluster");
         this.adlAccount = adlAccount;
