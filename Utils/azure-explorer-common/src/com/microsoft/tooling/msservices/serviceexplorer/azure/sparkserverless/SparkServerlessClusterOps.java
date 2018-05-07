@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless;
 
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -40,14 +41,17 @@ public class SparkServerlessClusterOps {
         provisionAction = PublishSubject.create();
     }
 
+    @NotNull
     public static SparkServerlessClusterOps getInstance() {
         return instance;
     }
 
+    @NotNull
     public PublishSubject<Triple<String, String, Node>> getDestroyAction() {
         return destroyAction;
     }
 
+    @NotNull
     public PublishSubject<Pair<String, Node>> getProvisionAction() {
         return provisionAction;
     }

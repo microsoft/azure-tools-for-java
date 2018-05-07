@@ -60,6 +60,7 @@ public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
         addAction("Provision a Serverless Cluster", new SparkServerlessProvisionAction(this, adlAccount));
     }
 
+    @NotNull
     public String getAdlAccount() {
         return adlAccount;
     }

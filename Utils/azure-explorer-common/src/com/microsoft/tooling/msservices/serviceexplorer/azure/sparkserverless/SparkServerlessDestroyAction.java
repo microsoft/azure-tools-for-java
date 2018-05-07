@@ -42,6 +42,7 @@ public class SparkServerlessDestroyAction extends AzureNodeActionPromptListener 
         this.clusterName = clusterName;
     }
 
+    @Override
     protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
         try {
             Node parentNode = e.getAction().getNode().getParent();
@@ -61,6 +62,7 @@ public class SparkServerlessDestroyAction extends AzureNodeActionPromptListener 
         }
     }
 
+    @Override
     protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
     }
 }

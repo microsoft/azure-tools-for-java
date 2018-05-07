@@ -52,6 +52,7 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode {
         addAction("Delete", new SparkServerlessDestroyAction(this, clusterName, adlAccount));
     }
 
+    @NotNull
     public String getClusterName() {
         return clusterName;
     }
