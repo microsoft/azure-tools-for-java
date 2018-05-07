@@ -31,14 +31,14 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import java.util.List;
 
 public class SparkServerlessClusterRootModule extends AzureRefreshableNode{
-    private static final String SparkServerless_SERVICE_MODULE_ID = SparkServerlessClusterRootModule.class.getName();
+    private static final String SERVICE_MODULE_ID = SparkServerlessClusterRootModule.class.getName();
     // TODO: Update icon path
     private static final String ICON_PATH = "StorageAccount_16.png";
     // TODO: determine root node name
     private static final String BASE_MODULE_NAME = "Cosmos";
 
     public SparkServerlessClusterRootModule(@NotNull Node parent) {
-        super(SparkServerless_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH, true);
+        super(SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH, true);
         this.loadActions();
     }
 

@@ -31,10 +31,10 @@ import rx.subjects.PublishSubject;
 public class SparkServerlessClusterOps {
     private static SparkServerlessClusterOps instance = new SparkServerlessClusterOps();
 
-    // TODO: Update type for the triplet <adlAccount, clusterName, parentNode>
-    private PublishSubject<Triple<String, String, Node>> destroyAction;
+    // TODO: Update type for the triplet <adlAccount, clusterName, currentNode>
+    private final PublishSubject<Triple<String, String, Node>> destroyAction;
     // TODO: Update type for the pair <adlAccount, node>
-    private PublishSubject<Pair<String, Node>> provisionAction;
+    private final PublishSubject<Pair<String, Node>> provisionAction;
 
     private SparkServerlessClusterOps() {
         destroyAction = PublishSubject.create();

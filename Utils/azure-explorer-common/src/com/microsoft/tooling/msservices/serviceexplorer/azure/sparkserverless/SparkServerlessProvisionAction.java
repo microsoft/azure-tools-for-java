@@ -30,32 +30,24 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionListener;
 import org.apache.commons.lang3.tuple.Pair;
+import rx.subjects.PublishSubject;
 
 public class SparkServerlessProvisionAction extends AzureNodeActionListener {
     // TODO: Update adlAccount type
     private final String adlAccount;
-    public SparkServerlessProvisionAction(@NotNull Node node, @NotNull String adlAccount) {
+    private final PublishSubject<Pair<String, Node>> provisionAction;
+
+    public SparkServerlessProvisionAction(@NotNull Node node,
+                                          @NotNull String adlAccount,
+                                          @NotNull PublishSubject<Pair<String, Node>> provisionAction) {
         super(node, "Provisioning Spark Serverless Cluster");
         this.adlAccount = adlAccount;
+        this.provisionAction = provisionAction;
     }
 
     @Override
     protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-        // SparkServerlessClusterOps.getInstance().getDestroyAction().onNext(clusterName);
-        SparkServerlessClusterOps.getInstance().getProvisionAction().onNext(Pair.of(adlAccount, e.getAction().getNode()));
-
-        // TODO: call provisionAction
-
-        DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                // refresh itself
-                RefreshableNode node = (RefreshableNode)e.getAction().getNode();
-                node.removeAllChildNodes();
-                node.load(false);
-            }
-        });
-
+        provisionAction.onNext(Pair.of(adlAccount, e.getAction().getNode()));
     }
 
     @Override

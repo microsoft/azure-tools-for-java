@@ -31,14 +31,13 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import java.util.List;
 
 public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
-    private static final String ADLAccount_MODULE_ID = SparkServerlessADLAccountNode.class.getName();
     // TODO: Update icon path
     private static final String ICON_PATH = "StorageAccount_16.png";
     // TODO: Update adlAccount type
     private final String adlAccount;
 
     public SparkServerlessADLAccountNode(@NotNull Node parent, @NotNull String adlAccountName) {
-        super(ADLAccount_MODULE_ID, adlAccountName, parent, ICON_PATH, true);
+        super(adlAccountName, adlAccountName, parent, ICON_PATH, true);
         this.adlAccount = adlAccountName;
         this.loadActions();
     }
@@ -57,7 +56,8 @@ public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
     protected void loadActions() {
         super.loadActions();
 
-        addAction("Provision a Serverless Cluster", new SparkServerlessProvisionAction(this, adlAccount));
+        addAction("Provision a Serverless Cluster", new SparkServerlessProvisionAction(this, adlAccount,
+                                                        SparkServerlessClusterOps.getInstance().getProvisionAction()));
     }
 
     @NotNull

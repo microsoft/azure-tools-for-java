@@ -22,30 +22,48 @@
 
 package com.microsoft.azure.sparkserverless;
 
+import com.intellij.openapi.diagnostic.Logger;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessClusterOps;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
-import rx.functions.Action1;
 
 public class SparkServerlessClusterOpsCtrl {
+    private static Logger LOG = Logger.getInstance(SparkServerlessClusterOpsCtrl.class.getName());
     public SparkServerlessClusterOpsCtrl() {
-        SparkServerlessClusterOps.getInstance().getDestroyAction().subscribe(new Action1<Triple<String, String, Node>>() {
-            @Override
-            public void call(Triple<String, String, Node> triplet) {
-                System.out.println(String.format("Message received. AdlAccount: %s, clusterName: %s, parentNode: %s",
-                        triplet.getLeft(), triplet.getMiddle(), triplet.getRight()));
-                // TODO: pop up a destroy dialog
-            }
-        });
+        SparkServerlessClusterOps.getInstance().getDestroyAction().subscribe(triplet -> {
+            LOG.info(String.format("Message received. AdlAccount: %s, clusterName: %s, currentNode: %s",
+                    triplet.getLeft(), triplet.getMiddle(), triplet.getRight()));
 
-        SparkServerlessClusterOps.getInstance().getProvisionAction().subscribe(new Action1<Pair<String, Node>>() {
-            @Override
-            public void call(Pair<String, Node> pair) {
-                System.out.println(String.format("Message received. AdlAccount: %s, node: %s",
-                        pair.getLeft(), pair.getRight()));
-                // TODO: pop up a provision dialog
+            // TODO: pop up a destroy dialog
+
+            // TODO: Update confirmDestroyAction
+            boolean confirmDestroyAction = true;
+            if (confirmDestroyAction) {
+                // instruct parent node to remove this node
+                DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    Node currentNode = triplet.getRight();
+                    currentNode.getParent().removeDirectChildNode(currentNode);
+                });
             }
-        });
+        }, ex -> LOG.error(ex.getMessage(), ex));
+
+        SparkServerlessClusterOps.getInstance().getProvisionAction().subscribe(pair -> {
+            LOG.info(String.format("Message received. AdlAccount: %s, node: %s",
+                    pair.getLeft(), pair.getRight()));
+
+            // TODO: pop up a provision dialog
+
+            // TODO: Update confirmProvisionAction
+            boolean confirmProvisionAction = true;
+            if (confirmProvisionAction) {
+                DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    // refresh itself
+                    RefreshableNode node = (RefreshableNode)pair.getRight();
+                    node.removeAllChildNodes();
+                    node.load(false);
+                });
+            }
+        }, ex -> LOG.error(ex.getMessage(), ex));
     }
 }

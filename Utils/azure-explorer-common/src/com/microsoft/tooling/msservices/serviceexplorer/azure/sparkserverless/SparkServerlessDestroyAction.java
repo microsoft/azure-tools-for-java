@@ -27,39 +27,32 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionListener;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
+import rx.subjects.PublishSubject;
 
-public class SparkServerlessDestroyAction extends AzureNodeActionPromptListener {
+public class SparkServerlessDestroyAction extends AzureNodeActionListener {
     // TODO: Update clusterName type
     private final String clusterName;
     // TODO: Update adlAccount type
     private final String adlAccount;
-    public SparkServerlessDestroyAction(@NotNull Node node, @NotNull String clusterName, @NotNull String adlAccount) {
-        super(node, String.format("This operation will permanently remove the SparkServerless cluster %s. Are you sure you want to continue?", clusterName),
-                "Deleting SparkServerless Cluster");
+    private final PublishSubject<Triple<String, String, Node>> destroyAction;
+
+    public SparkServerlessDestroyAction(@NotNull Node node,
+                                        @NotNull String clusterName,
+                                        @NotNull String adlAccount,
+                                        @NotNull PublishSubject<Triple<String, String, Node>> destroyAction) {
+        super(node, "Deleting SparkServerless Cluster");
         this.adlAccount = adlAccount;
         this.clusterName = clusterName;
+        this.destroyAction = destroyAction;
     }
 
     @Override
     protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-        try {
-            Node parentNode = e.getAction().getNode().getParent();
-            SparkServerlessClusterOps.getInstance().getDestroyAction().onNext(ImmutableTriple.of(adlAccount, clusterName, parentNode));
-
-            // TODO: call deleteSparkServerlessCluster()
-
-            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    // instruct parent node to remove this node
-                    parentNode.removeDirectChildNode(e.getAction().getNode());
-                }
-            });
-        } catch (Exception ex) {
-            DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
-        }
+        Node currentNode = e.getAction().getNode();
+        destroyAction.onNext(ImmutableTriple.of(adlAccount, clusterName, currentNode));
     }
 
     @Override
