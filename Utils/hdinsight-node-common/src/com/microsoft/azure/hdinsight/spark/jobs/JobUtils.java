@@ -352,7 +352,8 @@ public class JobUtils {
                     int lastLineBreak = logs.lastIndexOf('\n');
 
                     if (lastLineBreak < 0) {
-                        if (logs.isEmpty() && !remainedLine.isEmpty()) {
+                        // No linebreak found
+                        if (logs.isEmpty()) {
                             // Remained line is a full line since the backend producing logs line by line
                             ob.onNext(remainedLine);
                             remainedLine = "";
@@ -374,8 +375,8 @@ public class JobUtils {
                                 .reduce((x, y) -> x + y)
                                 .orElse(0);
 
+                        nextStart += handledLength - remainedLine.length();
                         remainedLine = "";
-                        nextStart += handledLength;
                     }
 
                     Thread.sleep(retryIntervalMs);

@@ -3,7 +3,7 @@ Feature: ClusterFileBase64KBBufferedOutputStream tests
   Scenario: Unit tests with mocked Livy session
     Given create a mocked Livy session for ClusterFileBase64KBBufferedOutputStream
     And create a Spark cluster file BASE64 output stream '/tmp/test.jar' with page size 1KB
-    Then uploading the following BASE64 string with page size 64
+    Then uploading the following BASE64 string
       | UEsDBBQACAgIADV2OUwAAAAAAAAAAAAAAAAUAAQATUVUQS1JTkYvTUFOSUZFU1QuTUb+ygAA803M |
       | y0xLLS7RDUstKs7Mz7NSMNQz4OXyTczM03XOSSwutlLwSM3JyQ/PL8pJ4eXi5QIAUEsHCMTT9Boz |
       | AAAAMQAAAFBLAwQUAAgICAA0djlMAAAAAAAAAAAAAAAAEQAAAEhlbGxvV29ybGQkLmNsYXNzfVPt |

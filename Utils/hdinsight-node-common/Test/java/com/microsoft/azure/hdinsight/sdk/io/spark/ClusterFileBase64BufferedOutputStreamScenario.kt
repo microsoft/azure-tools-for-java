@@ -47,8 +47,8 @@ class ClusterFileBase64BufferedOutputStreamScenario {
         runCodesArg = ArgumentCaptor.forClass(String::class.java)
     }
 
-    @Then("^uploading the following BASE64 string with page size (\\d+)$")
-    fun uploadFileToCluster(pageSize: Int, encodes: List<String>) {
+    @Then("^uploading the following BASE64 string$")
+    fun uploadFileToCluster(encodes: List<String>) {
         val base64Code = encodes.joinToString("")
         clusterFileBase64OutputStream.use {   // autoclose resource
             IOUtils.copy(ByteArrayInputStream(base64Code.toByteArray(Charsets.UTF_8)), it)

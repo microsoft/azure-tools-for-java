@@ -94,7 +94,7 @@ class SparkLocalRunnerITScenario {
 
         val catJob = jvmProcess.createProcess("", SparkLocalRunner::class.java, args)
 
-        val outputLines = runToGetStdoutLines(catJob!!)
+        val outputLines = runToGetStdoutLines(catJob)
 
         assertThat(outputLines).containsAll(expectOutputs)
         assertThat(outputLines).hasSameSizeAs(expectOutputs)
