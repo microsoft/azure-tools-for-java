@@ -30,6 +30,7 @@ import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
+import com.microsoft.azure.sparkserverless.SparkServerlessClusterOpsCtrl;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -52,6 +53,8 @@ import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
+import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessClusterOps;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessClusterRootModule;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -98,6 +101,9 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
     public void initComponent() {
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
             ServiceManager.setServiceProvider(SecureStore.class, IdeaSecureStore.getInstance());
+            // enable spark serverless node subscribe actions
+            ServiceManager.setServiceProvider(SparkServerlessClusterOpsCtrl.class,
+                    new SparkServerlessClusterOpsCtrl(SparkServerlessClusterOps.getInstance()));
             initAuthManage();
             ActionManager am = ActionManager.getInstance();
             DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
