@@ -34,6 +34,7 @@ public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
     // TODO: Update icon path
     private static final String ICON_PATH = "StorageAccount_16.png";
     // TODO: Update adlAccount type
+    @NotNull
     private final String adlAccount;
 
     public SparkServerlessADLAccountNode(@NotNull Node parent, @NotNull String adlAccountName) {
@@ -56,8 +57,8 @@ public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
     protected void loadActions() {
         super.loadActions();
 
-        addAction("Provision a Serverless Cluster", new SparkServerlessProvisionAction(this, adlAccount,
-                                                        SparkServerlessClusterOps.getInstance().getProvisionAction()));
+        addAction("Provision a Serverless Cluster", new SparkServerlessProvisionAction(
+                this, adlAccount, SparkServerlessClusterOps.getInstance().getProvisionAction()));
     }
 
     @NotNull

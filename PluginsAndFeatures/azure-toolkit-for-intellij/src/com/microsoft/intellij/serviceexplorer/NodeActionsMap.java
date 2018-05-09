@@ -47,6 +47,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.container.Containe
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessClusterOps;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.BlobModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.QueueModule;
@@ -64,7 +65,7 @@ public class NodeActionsMap {
 
     static {
         // enable spark serverless node subscribe actions
-        new SparkServerlessClusterOpsCtrl();
+        new SparkServerlessClusterOpsCtrl(SparkServerlessClusterOps.getInstance());
 
         node2Actions.put(VMArmModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateVMAction.class).build());

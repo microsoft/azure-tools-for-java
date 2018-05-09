@@ -28,10 +28,13 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 public class SparkServerlessClusterNode extends AzureRefreshableNode {
+    @NotNull
     private final String CLUSTER_MODULE_ID;
     // TODO: Update icon path
     private static final String ICON_PATH = "StorageAccount_16.png";
+    @NotNull
     private final String clusterName;
+    @NotNull
     private final String adlAccount;
 
     public SparkServerlessClusterNode(@NotNull Node parent, @NotNull String clusterName, @NotNull String adlAccount) {
@@ -50,8 +53,8 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode {
     @Override
     protected void loadActions() {
         super.loadActions();
-        addAction("Delete", new SparkServerlessDestroyAction(this, clusterName, adlAccount,
-                                            SparkServerlessClusterOps.getInstance().getDestroyAction()));
+        addAction("Delete", new SparkServerlessDestroyAction(
+                this, clusterName, adlAccount, SparkServerlessClusterOps.getInstance().getDestroyAction()));
     }
 
     @NotNull

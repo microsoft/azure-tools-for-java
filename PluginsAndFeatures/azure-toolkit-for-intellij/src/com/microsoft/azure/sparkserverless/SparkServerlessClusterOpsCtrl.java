@@ -22,16 +22,22 @@
 
 package com.microsoft.azure.sparkserverless;
 
-import com.intellij.openapi.diagnostic.Logger;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessClusterOps;
+import java.util.logging.Logger;
 
 public class SparkServerlessClusterOpsCtrl {
-    private static Logger LOG = Logger.getInstance(SparkServerlessClusterOpsCtrl.class.getName());
-    public SparkServerlessClusterOpsCtrl() {
-        SparkServerlessClusterOps.getInstance().getDestroyAction().subscribe(triplet -> {
+    @NotNull
+    private final SparkServerlessClusterOps sparkServerlessClusterOps;
+    private static Logger LOG = Logger.getLogger(SparkServerlessClusterOpsCtrl.class.getName());
+
+    public SparkServerlessClusterOpsCtrl(@NotNull SparkServerlessClusterOps sparkServerlessClusterOps) {
+        this.sparkServerlessClusterOps = sparkServerlessClusterOps;
+
+        this.sparkServerlessClusterOps.getDestroyAction().subscribe(triplet -> {
             LOG.info(String.format("Message received. AdlAccount: %s, clusterName: %s, currentNode: %s",
                     triplet.getLeft(), triplet.getMiddle(), triplet.getRight()));
 
@@ -46,9 +52,9 @@ public class SparkServerlessClusterOpsCtrl {
                     currentNode.getParent().removeDirectChildNode(currentNode);
                 });
             }
-        }, ex -> LOG.error(ex.getMessage(), ex));
+        }, ex -> LOG.severe(ex.getMessage()));
 
-        SparkServerlessClusterOps.getInstance().getProvisionAction().subscribe(pair -> {
+        this.sparkServerlessClusterOps.getProvisionAction().subscribe(pair -> {
             LOG.info(String.format("Message received. AdlAccount: %s, node: %s",
                     pair.getLeft(), pair.getRight()));
 
@@ -64,6 +70,6 @@ public class SparkServerlessClusterOpsCtrl {
                     node.load(false);
                 });
             }
-        }, ex -> LOG.error(ex.getMessage(), ex));
+        }, ex -> LOG.severe(ex.getMessage()));
     }
 }

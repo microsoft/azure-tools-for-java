@@ -32,8 +32,10 @@ public class SparkServerlessClusterOps {
     private static SparkServerlessClusterOps instance = new SparkServerlessClusterOps();
 
     // TODO: Update type for the triplet <adlAccount, clusterName, currentNode>
+    @NotNull
     private final PublishSubject<Triple<String, String, Node>> destroyAction;
     // TODO: Update type for the pair <adlAccount, node>
+    @NotNull
     private final PublishSubject<Pair<String, Node>> provisionAction;
 
     private SparkServerlessClusterOps() {

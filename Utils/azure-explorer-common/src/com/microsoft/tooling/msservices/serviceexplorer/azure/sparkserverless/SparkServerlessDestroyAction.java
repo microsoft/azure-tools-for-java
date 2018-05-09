@@ -34,9 +34,12 @@ import rx.subjects.PublishSubject;
 
 public class SparkServerlessDestroyAction extends AzureNodeActionListener {
     // TODO: Update clusterName type
+    @NotNull
     private final String clusterName;
     // TODO: Update adlAccount type
+    @NotNull
     private final String adlAccount;
+    @NotNull
     private final PublishSubject<Triple<String, String, Node>> destroyAction;
 
     public SparkServerlessDestroyAction(@NotNull Node node,

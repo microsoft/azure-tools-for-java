@@ -34,7 +34,9 @@ import rx.subjects.PublishSubject;
 
 public class SparkServerlessProvisionAction extends AzureNodeActionListener {
     // TODO: Update adlAccount type
+    @NotNull
     private final String adlAccount;
+    @NotNull
     private final PublishSubject<Pair<String, Node>> provisionAction;
 
     public SparkServerlessProvisionAction(@NotNull Node node,
