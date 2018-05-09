@@ -54,7 +54,6 @@ import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessClusterOps;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessClusterRootModule;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
