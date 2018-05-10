@@ -22,17 +22,17 @@
 
 package com.microsoft.azure.sparkserverless;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessClusterOps;
-import java.util.logging.Logger;
 
 public class SparkServerlessClusterOpsCtrl {
     @NotNull
     private final SparkServerlessClusterOps sparkServerlessClusterOps;
-    private static Logger LOG = Logger.getLogger(SparkServerlessClusterOpsCtrl.class.getName());
+    private static Logger LOG = Logger.getInstance(SparkServerlessClusterOpsCtrl.class.getName());
 
     public SparkServerlessClusterOpsCtrl(@NotNull SparkServerlessClusterOps sparkServerlessClusterOps) {
         this.sparkServerlessClusterOps = sparkServerlessClusterOps;
@@ -52,7 +52,7 @@ public class SparkServerlessClusterOpsCtrl {
                     currentNode.getParent().removeDirectChildNode(currentNode);
                 });
             }
-        }, ex -> LOG.severe(ex.getMessage()));
+        }, ex -> LOG.error(ex.getMessage(), ex));
 
         this.sparkServerlessClusterOps.getProvisionAction().subscribe(pair -> {
             LOG.info(String.format("Message received. AdlAccount: %s, node: %s",
@@ -70,6 +70,6 @@ public class SparkServerlessClusterOpsCtrl {
                     node.load(false);
                 });
             }
-        }, ex -> LOG.severe(ex.getMessage()));
+        }, ex -> LOG.error(ex.getMessage(), ex));
     }
 }

@@ -50,7 +50,7 @@ public class AzureModule extends AzureRefreshableNode {
     private static final String AZURE_SERVICE_MODULE_ID = AzureModule.class.getName();
     private static final String ICON_PATH = "AzureExplorer_16.png";
     private static final String BASE_MODULE_NAME = "Azure";
-    private static String ENABLE_SPARK_SERVERLESS_SERVICE;
+    private static boolean isSparkServerlessEnabled = false;
     private Object project;
     private VMArmModule vmArmServiceModule;
     private RedisCacheModule redisCacheModule;
@@ -72,8 +72,8 @@ public class AzureModule extends AzureRefreshableNode {
         storageModule = new StorageModule(this);
         webAppModule = new WebAppModule(this);
         //hdInsightModule = new HDInsightRootModule(this);
-        ENABLE_SPARK_SERVERLESS_SERVICE =
-                Optional.ofNullable(System.getenv("azure.sparkserverless.enable")).orElse("").toLowerCase();
+        isSparkServerlessEnabled =
+                Optional.ofNullable(System.getenv("AZURE_SPARKSERVERLESS_ENABLE")).orElse("").equals("true");
         sparkServerlessClusterRootModule = new SparkServerlessClusterRootModule(this);
         vmArmServiceModule = new VMArmModule(this);
         redisCacheModule = new RedisCacheModule(this);
@@ -145,7 +145,7 @@ public class AzureModule extends AzureRefreshableNode {
             addChildNode(hdInsightModule);
         }
 
-        if (ENABLE_SPARK_SERVERLESS_SERVICE.equals("true")
+        if (isSparkServerlessEnabled
                 && sparkServerlessClusterRootModule != null && !isDirectChild(sparkServerlessClusterRootModule)) {
             addChildNode(sparkServerlessClusterRootModule);
         }
