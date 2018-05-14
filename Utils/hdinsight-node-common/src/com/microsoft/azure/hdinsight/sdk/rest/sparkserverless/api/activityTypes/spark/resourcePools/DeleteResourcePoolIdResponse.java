@@ -30,7 +30,7 @@ import java.util.Map;
  * response of 'delete /activityTypes/spark/resourcePools/{resourcePoolId}'
  */
 public class DeleteResourcePoolIdResponse {
-    public static final Map<Integer, String> successfulResponse = ImmutableMap.of(
+    public static final Map<Integer, String> successfulResponses = ImmutableMap.of(
             200, "Successfully stopped the resource pool",
             202, "Successfully initiated the stoppage of the specified resource pool",
             204, "The specified resource pool was not found");

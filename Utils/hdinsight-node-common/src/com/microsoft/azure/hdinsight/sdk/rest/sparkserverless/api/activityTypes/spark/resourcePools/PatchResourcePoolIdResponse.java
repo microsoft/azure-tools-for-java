@@ -33,7 +33,7 @@ import java.util.Map;
  * response of 'patch /activityTypes/spark/resourcePools/{resourcePoolId}'
  */
 public class PatchResourcePoolIdResponse {
-    public static final Map<Integer, String> successfulResponse = ImmutableMap.of(
+    public static final Map<Integer, String> successfulResponses = ImmutableMap.of(
             200, "Successfully updated the details of the specified resource pool",
             201, "Successfully initiated an update of the specified resource pool",
             202, "Successfully initiated an update of the specified resource pool");

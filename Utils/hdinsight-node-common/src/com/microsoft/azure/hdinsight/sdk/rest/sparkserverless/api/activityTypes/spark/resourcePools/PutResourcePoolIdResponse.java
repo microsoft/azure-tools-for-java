@@ -33,7 +33,7 @@ import java.util.Map;
  * response of 'put /activityTypes/spark/resourcePools/{resourcePoolId}'
  */
 public class PutResourcePoolIdResponse {
-    public static final Map<Integer, String> successfulResponse = ImmutableMap.of(
+    public static final Map<Integer, String> successfulResponses = ImmutableMap.of(
             200, "Successfully submitted the spark resource pool creation request");
 
     @NotNull

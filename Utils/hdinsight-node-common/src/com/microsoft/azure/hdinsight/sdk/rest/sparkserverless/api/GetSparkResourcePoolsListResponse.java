@@ -33,7 +33,7 @@ import java.util.Map;
  * response of 'get /activityTypes/spark/resourcePools'
  */
 public class GetSparkResourcePoolsListResponse {
-    public static final Map<Integer, String> successfulResponse = ImmutableMap.of(
+    public static final Map<Integer, String> successfulResponses = ImmutableMap.of(
             200, "Successfully retrieved list of resource pools");
 
     @NotNull
