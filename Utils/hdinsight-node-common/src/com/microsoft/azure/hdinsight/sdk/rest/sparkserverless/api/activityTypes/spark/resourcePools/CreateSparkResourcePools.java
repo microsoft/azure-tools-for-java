@@ -20,66 +20,64 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.sparkserverless;
+package com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.api.activityTypes.spark.resourcePools;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.CreateSparkResourcePool;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 /**
- * The parameters used to submit a new Data Lake Analytics resource pool
- * creation request.
+ * Submits a resource pool creation request to the specified Data Lake Analytics account
  */
-public class CreateSparkResourcePool {
+public class CreateSparkResourcePools {
     /**
-     * the friendly name of the resource pool to submit.
+     * resource pool identifier.
+     * Uniquely identifies the resource pool across all resource pools submitted to the service
      */
     @NotNull
-    @JsonProperty(value = "name", required = true)
-    private String name;
+    @JsonProperty(value = "resourcePoolId", required = true)
+    private String resourcePoolId;
 
     /**
-     * The spark resource pool specific properties.
+     * The parameters to submit a spark resource pool creation request
      */
     @NotNull
-    @JsonProperty(value = "properties", required = true)
-    private CreateSparkResourcePoolParameters properties;
+    @JsonProperty(value = "parameters", required = true)
+    private CreateSparkResourcePool parameters;
+
+    // TODO: maybe one more filed: ApiVersionParameter?
 
     /**
-     * Get the name value.
-     *
-     * @return the name value
+     * get the resourcePoolId value
+     * @return the resourcePoolId value
      */
     @NotNull
-    public String getName() {
-        return this.name;
+    public String getResourcePoolId() {
+        return resourcePoolId;
     }
 
     /**
-     * Set the name value.
-     *
-     * @param name the name value to set
+     * set the resourcePoolId value
+     * @param resourcePoolId the resourcePoolId value to set
      */
-    public void setName(@NotNull String name) {
-        this.name = name;
+    public void setResourcePoolId(@NotNull String resourcePoolId) {
+        this.resourcePoolId = resourcePoolId;
     }
 
     /**
-     * Get the properties value.
-     *
-     * @return the properties value
+     * get the parameters value
+     * @return the parameters value
      */
     @NotNull
-    public CreateSparkResourcePoolParameters getProperties() {
-        return this.properties;
+    public CreateSparkResourcePool getParameters() {
+        return parameters;
     }
 
     /**
-     * Set the properties value.
-     *
-     * @param properties the properties value to set
+     * set the parameters value
+     * @param parameters the parameters value to set
      */
-    public void setProperties(@NotNull CreateSparkResourcePoolParameters properties) {
-        this.properties = properties;
+    public void setParameters(@NotNull CreateSparkResourcePool parameters) {
+        this.parameters = parameters;
     }
-
 }

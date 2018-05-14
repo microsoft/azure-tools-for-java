@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) Microsoft Corporation
  * <p/>
  * All rights reserved.
@@ -20,40 +20,13 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.sparkserverless;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+package com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.api;
 
 /**
- * The parameters that can be used to update existing Data Lake Analytics spark
- * resource pool. Only update of number of spark workers is allowed.
+ * Gets all the resource pools for the account
  */
-public class UpdateSparkResourcePool {
+public class GetSparkResourcePoolsList {
     /**
-     * The spark resource pool specific properties.
+     * TODO: maybe we need the field: ApiVersionParameter ?
      */
-    @NotNull
-    @JsonProperty(value = "properties")
-    private UpdateSparkResourcePoolParameters properties;
-
-    /**
-     * Get the properties value.
-     *
-     * @return the properties value
-     */
-    @NotNull
-    public UpdateSparkResourcePoolParameters getProperties() {
-        return this.properties;
-    }
-
-    /**
-     * Set the properties value.
-     *
-     * @param properties the properties value to set
-     */
-    public void setProperties(@NotNull UpdateSparkResourcePoolParameters properties) {
-        this.properties = properties;
-    }
-
 }

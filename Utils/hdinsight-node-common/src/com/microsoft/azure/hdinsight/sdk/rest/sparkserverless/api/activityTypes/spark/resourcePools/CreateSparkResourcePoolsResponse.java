@@ -20,40 +20,32 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.sparkserverless;
+package com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.api.activityTypes.spark.resourcePools;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.SparkResourcePool;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 /**
- * The parameters that can be used to update existing Data Lake Analytics spark
- * resource pool. Only update of number of spark workers is allowed.
+ * response of 'put /activityTypes/spark/resourcePools/{resourcePoolId}'
+ *
+ * response:
+ * 200: Successfully submitted the spark resource pool creation request
  */
-public class UpdateSparkResourcePool {
+public class CreateSparkResourcePoolsResponse {
     /**
-     * The spark resource pool specific properties.
+     * spark resource pool
      */
     @NotNull
-    @JsonProperty(value = "properties")
-    private UpdateSparkResourcePoolParameters properties;
+    @JsonProperty(value = "sparkResourcePool")
+    private SparkResourcePool sparkResourcePool;
 
     /**
-     * Get the properties value.
-     *
-     * @return the properties value
+     * get the sparkResourcePool value
+     * @return the sparkResourcePool value
      */
     @NotNull
-    public UpdateSparkResourcePoolParameters getProperties() {
-        return this.properties;
+    public SparkResourcePool getSparkResourcePool() {
+        return sparkResourcePool;
     }
-
-    /**
-     * Set the properties value.
-     *
-     * @param properties the properties value to set
-     */
-    public void setProperties(@NotNull UpdateSparkResourcePoolParameters properties) {
-        this.properties = properties;
-    }
-
 }
