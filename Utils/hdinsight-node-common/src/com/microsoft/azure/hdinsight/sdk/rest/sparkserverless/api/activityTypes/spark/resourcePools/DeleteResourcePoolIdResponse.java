@@ -22,29 +22,16 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.api.activityTypes.spark.resourcePools;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.SparkResourcePool;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.google.common.collect.ImmutableMap;
+
+import java.util.Map;
 
 /**
- * response of 'patch /activityTypes/spark/resourcePools/{resourcePoolId}'
- *
- * response:
- * 200: Successfully updated the details of the specified resource pool
- * 201: Successfully initiated an update of the specified resource pool
- * 202: Successfully initiated an update of the specified resource pool
+ * response of 'delete /activityTypes/spark/resourcePools/{resourcePoolId}'
  */
-public class UpdateSparkResourcePoolsResponse {
-    @NotNull
-    @JsonProperty(value = "sparkResourcePool")
-    private SparkResourcePool sparkResourcePool;
-
-    /**
-     * get the sparkResourcePool value
-     * @return the sparkResourcePool value
-     */
-    @NotNull
-    public SparkResourcePool getSparkResourcePool() {
-        return sparkResourcePool;
-    }
+public class DeleteResourcePoolIdResponse {
+    public static final Map<Integer, String> successfulResponse = ImmutableMap.of(
+            200, "Successfully stopped the resource pool",
+            202, "Successfully initiated the stoppage of the specified resource pool",
+            204, "The specified resource pool was not found");
 }

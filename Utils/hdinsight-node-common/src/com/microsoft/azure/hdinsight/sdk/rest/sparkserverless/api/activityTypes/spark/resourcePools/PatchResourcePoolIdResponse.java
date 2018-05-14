@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  * <p/>
  * All rights reserved.
@@ -20,13 +20,34 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.api;
+package com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.api.activityTypes.spark.resourcePools;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
+import com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.SparkResourcePool;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+
+import java.util.Map;
 
 /**
- * Gets all the resource pools for the account
+ * response of 'patch /activityTypes/spark/resourcePools/{resourcePoolId}'
  */
-public class GetSparkResourcePoolsList {
+public class PatchResourcePoolIdResponse {
+    public static final Map<Integer, String> successfulResponse = ImmutableMap.of(
+            200, "Successfully updated the details of the specified resource pool",
+            201, "Successfully initiated an update of the specified resource pool",
+            202, "Successfully initiated an update of the specified resource pool");
+
+    @NotNull
+    @JsonProperty(value = "sparkResourcePool")
+    private SparkResourcePool sparkResourcePool;
+
     /**
-     * TODO: maybe we need the field: ApiVersionParameter ?
+     * get the sparkResourcePool value
+     * @return the sparkResourcePool value
      */
+    @NotNull
+    public SparkResourcePool getSparkResourcePool() {
+        return sparkResourcePool;
+    }
 }

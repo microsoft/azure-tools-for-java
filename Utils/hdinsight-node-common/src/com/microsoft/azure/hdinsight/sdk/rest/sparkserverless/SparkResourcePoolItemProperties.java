@@ -43,7 +43,7 @@ public class SparkResourcePoolItemProperties {
      */
     @NotNull
     @JsonProperty(value = "targetInstanceCount", access = JsonProperty.Access.WRITE_ONLY)
-    private Integer targetInstanceCount;
+    private int targetInstanceCount;
 
     /**
      * Number of cores in each started instance of spark master or spark
@@ -51,7 +51,7 @@ public class SparkResourcePoolItemProperties {
      */
     @NotNull
     @JsonProperty(value = "perInstanceCoreCount", access = JsonProperty.Access.WRITE_ONLY)
-    private Integer perInstanceCoreCount;
+    private int perInstanceCoreCount;
 
     /**
      * Allocated memory in GB for each started instance of spark master or
@@ -59,7 +59,7 @@ public class SparkResourcePoolItemProperties {
      */
     @NotNull
     @JsonProperty(value = "perInstanceMemoryInGB", access = JsonProperty.Access.WRITE_ONLY)
-    private Integer perInstanceMemoryInGB;
+    private int perInstanceMemoryInGB;
 
     /**
      * Guid represting the spark master or worker.
@@ -87,21 +87,21 @@ public class SparkResourcePoolItemProperties {
      */
     @NotNull
     @JsonProperty(value = "runningInstanceCount", access = JsonProperty.Access.WRITE_ONLY)
-    private Integer runningInstanceCount;
+    private int runningInstanceCount;
 
     /**
      * Number of instances yet to be launched.
      */
     @NotNull
     @JsonProperty(value = "outstandingInstanceCount", access = JsonProperty.Access.WRITE_ONLY)
-    private Integer outstandingInstanceCount;
+    private int outstandingInstanceCount;
 
     /**
      * Number of instances that failed to launch.
      */
     @NotNull
     @JsonProperty(value = "failedInstanceCount", access = JsonProperty.Access.WRITE_ONLY)
-    private Integer failedInstanceCount;
+    private int failedInstanceCount;
 
     /**
      * Get the name value.
@@ -119,7 +119,7 @@ public class SparkResourcePoolItemProperties {
      * @return the targetInstanceCount value
      */
     @NotNull
-    public Integer getTargetInstanceCount() {
+    public int getTargetInstanceCount() {
         return this.targetInstanceCount;
     }
 
@@ -129,7 +129,7 @@ public class SparkResourcePoolItemProperties {
      * @return the perInstanceCoreCount value
      */
     @NotNull
-    public Integer getPerInstanceCoreCount() {
+    public int getPerInstanceCoreCount() {
         return this.perInstanceCoreCount;
     }
 
@@ -139,7 +139,7 @@ public class SparkResourcePoolItemProperties {
      * @return the perInstanceMemoryInGB value
      */
     @NotNull
-    public Integer getPerInstanceMemoryInGB() {
+    public int getPerInstanceMemoryInGB() {
         return this.perInstanceMemoryInGB;
     }
 
@@ -179,7 +179,7 @@ public class SparkResourcePoolItemProperties {
      * @return the runningInstanceCount value
      */
     @NotNull
-    public Integer getRunningInstanceCount() {
+    public int getRunningInstanceCount() {
         return this.runningInstanceCount;
     }
 
@@ -189,7 +189,7 @@ public class SparkResourcePoolItemProperties {
      * @return the outstandingInstanceCount value
      */
     @NotNull
-    public Integer getOutstandingInstanceCount() {
+    public int getOutstandingInstanceCount() {
         return this.outstandingInstanceCount;
     }
 
@@ -199,7 +199,7 @@ public class SparkResourcePoolItemProperties {
      * @return the failedInstanceCount value
      */
     @NotNull
-    public Integer getFailedInstanceCount() {
+    public int getFailedInstanceCount() {
         return this.failedInstanceCount;
     }
 

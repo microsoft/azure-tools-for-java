@@ -23,16 +23,18 @@
 package com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.api.activityTypes.spark.resourcePools;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.SparkResourcePool;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
+import java.util.Map;
+
 /**
  * response of 'get /activityTypes/spark/resourcePools/{resourcePoolId}'
- *
- * response:
- * 200: Successfully retrieved details of the specified resource pool
  */
-public class GetSparkResourcePoolsResponse {
+public class GetResourcePoolIdResponse {
+    public static final Map<Integer, String> successfulResponse = ImmutableMap.of(
+            200, "Successfully retrieved details of the specified resource pool");
 
     @NotNull
     @JsonProperty(value = "sparkResourcePool")

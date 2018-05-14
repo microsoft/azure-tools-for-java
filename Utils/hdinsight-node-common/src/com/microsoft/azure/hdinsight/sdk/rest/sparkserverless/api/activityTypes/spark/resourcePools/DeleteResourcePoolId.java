@@ -23,26 +23,18 @@
 package com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.api.activityTypes.spark.resourcePools;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.UpdateSparkResourcePool;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 /**
- * Updates the resource pool for the specified resource pool ID
+ * Cancels the running resource pool specified by the resource pool ID
  */
-public class UpdateSparkResourcePools {
+public class DeleteResourcePoolId {
     /**
      * resource pool identifier. Uniquely identifies the resource pool across all resource pools submitted to the service
      */
     @NotNull
     @JsonProperty(value = "resourcePoolId", required = true)
     private String resourcePoolId;
-
-    /**
-     * The parameters to update a spark resource pool
-     */
-    @NotNull
-    @JsonProperty(value = "updateSparkResourcePool")
-    private UpdateSparkResourcePool parameters;
 
     // TODO: maybe one more filed: ApiVersionParameter?
 
@@ -53,21 +45,5 @@ public class UpdateSparkResourcePools {
     @NotNull
     public String getResourcePoolId() {
         return resourcePoolId;
-    }
-
-    /**
-     * set the the resourcePoolId value
-     * @param resourcePoolId the resourcePoolId value to set
-     */
-    public void setResourcePoolId(@NotNull String resourcePoolId) {
-        this.resourcePoolId = resourcePoolId;
-    }
-
-    /**
-     * set the parameters value
-     * @param parameters the parameters value to set
-     */
-    public void setParameters(@NotNull UpdateSparkResourcePool parameters) {
-        this.parameters = parameters;
     }
 }

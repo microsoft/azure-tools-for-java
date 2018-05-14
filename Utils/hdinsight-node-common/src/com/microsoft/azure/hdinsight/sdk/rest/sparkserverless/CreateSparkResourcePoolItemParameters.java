@@ -42,7 +42,7 @@ public class CreateSparkResourcePoolItemParameters {
      */
     @NotNull
     @JsonProperty(value = "targetInstanceCount")
-    private Integer targetInstanceCount;
+    private int targetInstanceCount;
 
     /**
      * Number of cores in each started instance of spark master or spark
@@ -50,7 +50,7 @@ public class CreateSparkResourcePoolItemParameters {
      */
     @NotNull
     @JsonProperty(value = "perInstanceCoreCount")
-    private Integer perInstanceCoreCount;
+    private int perInstanceCoreCount;
 
     /**
      * Allocated memory in GB for each started instance of spark master or
@@ -58,7 +58,7 @@ public class CreateSparkResourcePoolItemParameters {
      */
     @NotNull
     @JsonProperty(value = "perInstanceMemoryInGB")
-    private Integer perInstanceMemoryInGB;
+    private int perInstanceMemoryInGB;
 
     /**
      * Get the name value.
@@ -85,7 +85,7 @@ public class CreateSparkResourcePoolItemParameters {
      * @return the targetInstanceCount value
      */
     @NotNull
-    public Integer getTargetInstanceCount() {
+    public int getTargetInstanceCount() {
         return this.targetInstanceCount;
     }
 
@@ -94,7 +94,7 @@ public class CreateSparkResourcePoolItemParameters {
      *
      * @param targetInstanceCount the targetInstanceCount value to set
      */
-    public void setTargetInstanceCount(@NotNull Integer targetInstanceCount) {
+    public void setTargetInstanceCount(@NotNull int targetInstanceCount) {
         this.targetInstanceCount = targetInstanceCount;
     }
 
@@ -104,7 +104,7 @@ public class CreateSparkResourcePoolItemParameters {
      * @return the perInstanceCoreCount value
      */
     @NotNull
-    public Integer getPerInstanceCoreCount() {
+    public int getPerInstanceCoreCount() {
         return this.perInstanceCoreCount;
     }
 
@@ -113,7 +113,7 @@ public class CreateSparkResourcePoolItemParameters {
      *
      * @param perInstanceCoreCount the perInstanceCoreCount value to set
      */
-    public void setPerInstanceCoreCount(@NotNull Integer perInstanceCoreCount) {
+    public void setPerInstanceCoreCount(@NotNull int perInstanceCoreCount) {
         this.perInstanceCoreCount = perInstanceCoreCount;
     }
 
@@ -123,7 +123,7 @@ public class CreateSparkResourcePoolItemParameters {
      * @return the perInstanceMemoryInGB value
      */
     @NotNull
-    public Integer getPerInstanceMemoryInGB() {
+    public int getPerInstanceMemoryInGB() {
         return this.perInstanceMemoryInGB;
     }
 
@@ -132,7 +132,7 @@ public class CreateSparkResourcePoolItemParameters {
      *
      * @param perInstanceMemoryInGB the perInstanceMemoryInGB value to set
      */
-    public void setPerInstanceMemoryInGB(@NotNull Integer perInstanceMemoryInGB) {
+    public void setPerInstanceMemoryInGB(@NotNull int perInstanceMemoryInGB) {
         this.perInstanceMemoryInGB = perInstanceMemoryInGB;
     }
 

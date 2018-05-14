@@ -22,17 +22,36 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.sparkserverless.api.activityTypes.spark.resourcePools;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+
 /**
- * response of 'delete /activityTypes/spark/resourcePools/{resourcePoolId}'
- *
- * response:
- * 200: Successfully stopped the resource pool
- * 202: Successfully initiated the stoppage of the specified resource pool
- * 204: The specified resource pool was not found
+ * Gets the resource pool information for the specified resource pool ID
  */
-public class StopSparkResourcePoolsResponse {
+public class GetResourcePoolId {
     /**
-     * TODO: remove this class
-     * If we remove this class, we won't see the response comments
+     * resource pool ID
      */
+    @NotNull
+    @JsonProperty(value = "resourcePoolId", required = true)
+    private String resourcePoolId;
+
+    // TODO: maybe one more filed: ApiVersionParameter?
+
+    /**
+     * get the resourcePoolId value
+     * @return the resourcePoolId value
+     */
+    @NotNull
+    public String getResourcePoolId() {
+        return resourcePoolId;
+    }
+
+    /**
+     * set the resourcePoolId value
+     * @param resourcePoolId the resourcePoolId value to set
+     */
+    public void setResourcePoolId(@NotNull String resourcePoolId) {
+        this.resourcePoolId = resourcePoolId;
+    }
 }
