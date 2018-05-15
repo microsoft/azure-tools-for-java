@@ -34,6 +34,7 @@ import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
+import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterRootModuleImpl;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
@@ -84,6 +85,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         AzureModule azureModule = new AzureModuleImpl(project);
 
         HDInsightUtil.setHDInsightRootModule(azureModule);
+        azureModule.setSparkServerlessModule(new SparkServerlessClusterRootModuleImpl(azureModule));
 
         // initialize with all the service modules
         DefaultTreeModel treeModel = new DefaultTreeModel(initRoot(project, azureModule));

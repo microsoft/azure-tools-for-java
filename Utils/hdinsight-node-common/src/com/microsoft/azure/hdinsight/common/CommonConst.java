@@ -49,4 +49,6 @@ public class CommonConst {
     public static final String EMULATOR_CLUSTERS = "com.microsoft.azure.hdinsight.EmulatorClusters";
     public static final String CACHED_SPARK_SDK_PATHS = "com.microsoft.azure.hdinsight.cachedSparkSDKpath";
     public static final String SPARK_FAILURE_TASK_CONTEXT_EXTENSION = "ftd";
+
+    public static final String AZURE_DATA_LAKE_ICON_PATH = "ADL_13.png";
 }

@@ -20,45 +20,61 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless;
+package com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode;
 
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import org.apache.log4j.Logger;
 
 public class SparkServerlessClusterNode extends AzureRefreshableNode {
+    @NotNull
+    private static Logger LOG = Logger.getLogger(SparkServerlessClusterNode.class);
     @NotNull
     private final String CLUSTER_MODULE_ID;
     // TODO: Update icon path
     private static final String ICON_PATH = "StorageAccount_16.png";
     @NotNull
-    private final String clusterName;
+    private final AzureSparkServerlessCluster cluster;
     @NotNull
-    private final String adlAccount;
+    private final AzureSparkServerlessAccount adlAccount;
 
-    public SparkServerlessClusterNode(@NotNull Node parent, @NotNull String clusterName, @NotNull String adlAccount) {
-        super(String.format("%s_%s", clusterName, adlAccount), clusterName, parent, ICON_PATH, true);
-        this.clusterName = clusterName;
+    public SparkServerlessClusterNode(@NotNull Node parent,
+                                      @NotNull AzureSparkServerlessCluster cluster,
+                                      @NotNull AzureSparkServerlessAccount adlAccount) {
+        super(String.format("%s_%s", adlAccount.getName(), cluster.getName()),
+                String.format("%s [%s]", cluster.getName(), cluster.getState()),
+                parent,
+                ICON_PATH,
+                true);
+        this.cluster = cluster;
         this.adlAccount = adlAccount;
-        this.CLUSTER_MODULE_ID = String.format("%s_%s", clusterName, adlAccount);
+        this.CLUSTER_MODULE_ID = String.format("%s_%s", cluster.getName(), adlAccount.getName());
         this.loadActions();
     }
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        // TODO
+        try {
+            cluster.getConfigurationInfo();
+            name = String.format("%s [%s]", cluster.getName(), cluster.getState());
+        } catch (Exception e) {
+            LOG.error(e);
+        }
     }
 
     @Override
     protected void loadActions() {
         super.loadActions();
         addAction("Delete", new SparkServerlessDestroyAction(
-                this, clusterName, adlAccount, SparkServerlessClusterOps.getInstance().getDestroyAction()));
+                this, cluster, adlAccount, SparkServerlessClusterOps.getInstance().getDestroyAction()));
     }
 
     @NotNull
     public String getClusterName() {
-        return clusterName;
+        return cluster.getName();
     }
 }

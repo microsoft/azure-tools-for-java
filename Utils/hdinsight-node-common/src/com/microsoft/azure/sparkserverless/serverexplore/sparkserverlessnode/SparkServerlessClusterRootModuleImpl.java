@@ -20,49 +20,35 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless;
+package com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode;
 
-import com.google.common.collect.ImmutableList;
+import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-import java.util.List;
-
-public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
+public class SparkServerlessClusterRootModuleImpl extends SparkServerlessClusterRootModule{
+    private static final String SERVICE_MODULE_ID = SparkServerlessClusterRootModuleImpl.class.getName();
     // TODO: Update icon path
-    private static final String ICON_PATH = "StorageAccount_16.png";
-    // TODO: Update adlAccount type
-    @NotNull
-    private final String adlAccount;
+    private static final String ICON_PATH = CommonConst.AZURE_DATA_LAKE_ICON_PATH;
+    // TODO: determine root node name
+    private static final String BASE_MODULE_NAME = "Azure Data Lake";
 
-    public SparkServerlessADLAccountNode(@NotNull Node parent, @NotNull String adlAccountName) {
-        super(adlAccountName, adlAccountName, parent, ICON_PATH, true);
-        this.adlAccount = adlAccountName;
+    public SparkServerlessClusterRootModuleImpl(@NotNull Node parent) {
+        super(SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH, true);
         this.loadActions();
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
-        synchronized (this) {
-            // TODO: Update getClusterList
-            List<String> clusterNameList = ImmutableList.of("spark20", "spark21", "spark22");
-            clusterNameList.forEach(clusterName ->
-                    addChildNode(new SparkServerlessClusterNode(this, clusterName, adlAccount)));
-        }
+    protected void refreshItems() throws AzureCmdException{
+        AzureSparkServerlessClusterManager.getInstance().get().subscribe(cluster -> {
+            cluster.getAccounts().forEach(account -> {
+                addChildNode(new SparkServerlessADLAccountNode(this, account));
+            });
+        });
     }
 
-    @Override
-    protected void loadActions() {
-        super.loadActions();
-
-        addAction("Provision a Serverless Cluster", new SparkServerlessProvisionAction(
-                this, adlAccount, SparkServerlessClusterOps.getInstance().getProvisionAction()));
-    }
-
-    @NotNull
-    public String getAdlAccount() {
-        return adlAccount;
-    }
+    // TODO: refreshWithoutAsync() is called when unlink an HDInsight cluster. Maybe we also need to implement this method here?
+    // public void refreshWithoutAsync()
 }

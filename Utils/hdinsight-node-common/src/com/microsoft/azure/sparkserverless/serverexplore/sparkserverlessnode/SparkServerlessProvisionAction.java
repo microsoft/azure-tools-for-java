@@ -20,45 +20,43 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless;
+package com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode;
 
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionListener;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.lang3.tuple.Pair;
 import rx.subjects.PublishSubject;
 
-public class SparkServerlessDestroyAction extends AzureNodeActionListener {
-    // TODO: Update clusterName type
-    @NotNull
-    private final String clusterName;
+public class SparkServerlessProvisionAction extends AzureNodeActionListener {
     // TODO: Update adlAccount type
     @NotNull
-    private final String adlAccount;
+    private final AzureSparkServerlessAccount adlAccount;
     @NotNull
-    private final PublishSubject<Triple<String, String, Node>> destroyAction;
+    private final PublishSubject<Pair<AzureSparkServerlessAccount, SparkServerlessADLAccountNode>> provisionAction;
+    @NotNull
+    private final SparkServerlessADLAccountNode adlAccountNode;
 
-    public SparkServerlessDestroyAction(@NotNull Node node,
-                                        @NotNull String clusterName,
-                                        @NotNull String adlAccount,
-                                        @NotNull PublishSubject<Triple<String, String, Node>> destroyAction) {
-        super(node, "Deleting SparkServerless Cluster");
+    public SparkServerlessProvisionAction(@NotNull SparkServerlessADLAccountNode adlAccountNode,
+                                          @NotNull AzureSparkServerlessAccount adlAccount,
+                                          @NotNull PublishSubject<Pair<
+                                                  AzureSparkServerlessAccount,
+                                                  SparkServerlessADLAccountNode>> provisionAction) {
+        super(adlAccountNode, "Provision Spark Cluster");
         this.adlAccount = adlAccount;
-        this.clusterName = clusterName;
-        this.destroyAction = destroyAction;
+        this.provisionAction = provisionAction;
+        this.adlAccountNode = adlAccountNode;
     }
 
     @Override
     protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-        Node currentNode = e.getAction().getNode();
-        destroyAction.onNext(ImmutableTriple.of(adlAccount, clusterName, currentNode));
+        provisionAction.onNext(Pair.of(adlAccount, adlAccountNode));
     }
 
     @Override
     protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+
     }
 }
