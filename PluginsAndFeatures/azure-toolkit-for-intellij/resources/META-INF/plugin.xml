@@ -19,6 +19,12 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.7.0]</h3>
+      <ul>
+        <li>Users do not need to login again in interactive login mode, if Azure refresh token is still validated.</li>
+        <li>Updated ApplicationInsights version to v2.1.0.</li>
+        <li>Fixed some bugs.</li>
+      <ul>
       <h3>[3.6.0]</h3>
       <ul>
         <li>Updated ApplicationInsights version to v2.0.2.</li>
