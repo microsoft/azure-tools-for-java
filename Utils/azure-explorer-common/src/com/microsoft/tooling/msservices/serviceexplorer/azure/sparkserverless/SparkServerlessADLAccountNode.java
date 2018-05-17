@@ -65,4 +65,6 @@ public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
     public String getAdlAccount() {
         return adlAccount;
     }
+
+    // TODO: implement refreshWithoutAsync()
 }

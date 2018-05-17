@@ -36,7 +36,7 @@ public class SparkServerlessClusterOps {
     private final PublishSubject<Triple<String, String, Node>> destroyAction;
     // TODO: Update type for the pair <adlAccount, node>
     @NotNull
-    private final PublishSubject<Pair<String, Node>> provisionAction;
+    private final PublishSubject<Pair<String, SparkServerlessADLAccountNode>> provisionAction;
 
     private SparkServerlessClusterOps() {
         destroyAction = PublishSubject.create();
@@ -54,7 +54,7 @@ public class SparkServerlessClusterOps {
     }
 
     @NotNull
-    public PublishSubject<Pair<String, Node>> getProvisionAction() {
+    public PublishSubject<Pair<String, SparkServerlessADLAccountNode>> getProvisionAction() {
         return provisionAction;
     }
 }

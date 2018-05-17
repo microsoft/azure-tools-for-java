@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessProvisionDialog">
-  <grid id="27dc6" layout-manager="GridLayoutManager" row-count="10" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="provisionDialogPanel" layout-manager="GridLayoutManager" row-count="9" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="517" height="542"/>
+      <xy x="20" y="20" width="563" height="542"/>
     </constraints>
     <properties>
       <verifyInputWhenFocusTarget value="true"/>
@@ -42,17 +42,6 @@
         </constraints>
         <properties>
           <text value="Previous Spark Events:"/>
-        </properties>
-      </component>
-      <component id="7f62" class="javax.swing.JTextField" binding="errorMessageFieldTextField" default-binding="true">
-        <constraints>
-          <grid row="9" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
-        </constraints>
-        <properties>
-          <text value=""/>
-          <visible value="false"/>
         </properties>
       </component>
       <component id="74d2f" class="javax.swing.JTextField" binding="adlAccountField">
@@ -114,7 +103,7 @@
               </grid>
             </constraints>
             <properties>
-              <text value=""/>
+              <text value="8"/>
             </properties>
           </component>
           <component id="d9b5" class="javax.swing.JLabel" binding="masterMemoryLabel">
@@ -132,7 +121,7 @@
               </grid>
             </constraints>
             <properties>
-              <text value=""/>
+              <text value="256"/>
             </properties>
           </component>
         </children>
@@ -160,7 +149,7 @@
               </grid>
             </constraints>
             <properties>
-              <text value=""/>
+              <text value="8"/>
             </properties>
           </component>
           <component id="f18aa" class="javax.swing.JLabel" binding="workerMemoryLabel">
@@ -178,7 +167,7 @@
               </grid>
             </constraints>
             <properties>
-              <text value=""/>
+              <text value="256"/>
             </properties>
           </component>
           <component id="70474" class="javax.swing.JLabel" binding="workerNumberOfContainersLabel">
@@ -201,7 +190,7 @@
           </component>
         </children>
       </grid>
-      <grid id="17177" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="17177" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -216,7 +205,8 @@
               </grid>
             </constraints>
             <properties>
-              <text value=""/>
+              <editable value="false"/>
+              <text value="0"/>
             </properties>
           </component>
           <component id="c7274" class="javax.swing.JLabel">
@@ -234,7 +224,16 @@
               </grid>
             </constraints>
             <properties>
-              <text value=""/>
+              <editable value="false"/>
+              <text value="0"/>
+            </properties>
+          </component>
+          <component id="a9fcd" class="javax.swing.JButton" binding="refreshButton">
+            <constraints>
+              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="refresh"/>
             </properties>
           </component>
         </children>
@@ -246,7 +245,8 @@
           </grid>
         </constraints>
         <properties>
-          <text value=""/>
+          <editable value="false"/>
+          <text value="0"/>
         </properties>
       </component>
       <component id="757d7" class="javax.swing.JSeparator">
@@ -257,11 +257,16 @@
       </component>
       <component id="e2f7a" class="javax.swing.JTextField" binding="errorMessageField">
         <constraints>
-          <grid row="8" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+          <grid row="8" column="0" row-span="1" col-span="2" vsize-policy="7" hsize-policy="7" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>
           </grid>
         </constraints>
-        <properties/>
+        <properties>
+          <background color="-12828863"/>
+          <editable value="false"/>
+          <foreground color="-5625047"/>
+          <horizontalAlignment value="0"/>
+        </properties>
       </component>
     </children>
   </grid>

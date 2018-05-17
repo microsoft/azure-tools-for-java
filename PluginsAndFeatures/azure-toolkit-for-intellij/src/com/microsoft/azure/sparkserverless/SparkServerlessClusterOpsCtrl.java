@@ -23,10 +23,10 @@
 package com.microsoft.azure.sparkserverless;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessProvisionDialog;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessClusterOps;
 
 public class SparkServerlessClusterOpsCtrl {
@@ -55,21 +55,13 @@ public class SparkServerlessClusterOpsCtrl {
         }, ex -> LOG.error(ex.getMessage(), ex));
 
         this.sparkServerlessClusterOps.getProvisionAction().subscribe(pair -> {
-            LOG.info(String.format("Message received. AdlAccount: %s, node: %s",
+            LOG.info(String.format("Provision Message received. AdlAccount: %s, node: %s",
                     pair.getLeft(), pair.getRight()));
 
-            // TODO: pop up a provision dialog
-
-            // TODO: Update confirmProvisionAction
-            boolean confirmProvisionAction = true;
-            if (confirmProvisionAction) {
-                DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    // refresh itself
-                    RefreshableNode node = (RefreshableNode)pair.getRight();
-                    node.removeAllChildNodes();
-                    node.load(false);
-                });
-            }
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                SparkServerlessProvisionDialog provisionDialog = new SparkServerlessProvisionDialog(pair.getRight());
+                provisionDialog.show();
+            });
         }, ex -> LOG.error(ex.getMessage(), ex));
     }
 }
