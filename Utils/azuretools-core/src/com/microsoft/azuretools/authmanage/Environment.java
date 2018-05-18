@@ -1,27 +1,33 @@
 package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.AzureEnvironment;
+import org.apache.commons.lang3.StringUtils;
 
-public enum Environment {
-    GLOBAL("GLOBAL") {
+import java.util.stream.Stream;
+
+public abstract class Environment {
+    public static final Environment GLOBAL = new Environment("GLOBAL") {
         @Override
         public AzureEnvironment getAzureEnvironment() {
             return AzureEnvironment.AZURE;
         }
-    },
-    CHINA("CHINA") {
+    };
+
+    public static final Environment CHINA = new Environment("CHINA") {
         @Override
         public AzureEnvironment getAzureEnvironment() {
             return AzureEnvironment.AZURE_CHINA;
         }
-    },
-    GERMAN("GERMAN") {
+    };
+
+    public static final Environment GERMAN = new Environment("GERMAN") {
         @Override
         public AzureEnvironment getAzureEnvironment() {
             return AzureEnvironment.AZURE_GERMANY;
         }
-    },
-    US_GOVERNMENT("US_GOVERNMENT") {
+    };
+
+    public static final Environment US_GOVERNMENT = new Environment("US_GOVERNMENT") {
         @Override
         public AzureEnvironment getAzureEnvironment() {
             return AzureEnvironment.AZURE_US_GOVERNMENT;
@@ -32,6 +38,13 @@ public enum Environment {
 
     Environment(String name) {
         this.envName = name;
+    }
+
+    public static Environment valueOf(String name) throws IllegalAccessException {
+        return Stream.of(GLOBAL, CHINA, GERMAN, US_GOVERNMENT)
+                .filter(env -> StringUtils.equalsIgnoreCase(env.envName, name))
+                .findFirst()
+                .orElseThrow(() -> new IllegalAccessException("No such Environment defined for " + name));
     }
 
     public abstract AzureEnvironment getAzureEnvironment();
