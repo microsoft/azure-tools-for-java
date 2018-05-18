@@ -132,14 +132,14 @@ public class AddNewClusterFrom extends DialogWrapper implements SettableControl<
     @Override
     public void getData(@NotNull AddNewClusterModel data) {
         // Components -> Data
-        data.setClusterName(clusterNameFiled.getText())
+        data.setClusterName(clusterNameFiled.getText().trim())
             .setClusterNameLabelTitle(clusterNameLabel.getText())
-            .setUserName(userNameField.getText())
+            .setUserName(userNameField.getText().trim())
             .setUserNameLabelTitle(userNameLabel.getText())
             .setPassword(String.valueOf(passwordField.getPassword()))
             .setPasswordLabelTitle(passwordLabel.getText())
-            .setStorageName(storageNameField.getText())
-            .setStorageKey(storageKeyTextField.getText())
+            .setStorageName(storageNameField.getText().trim())
+            .setStorageKey(storageKeyTextField.getText().trim())
             .setErrorMessage(errorMessageField.getText())
             .setSelectedContainerIndex(containersComboBox.getSelectedIndex())
             .setContainers(IntStream.range(0, containersComboBox.getItemCount())
@@ -165,8 +165,15 @@ public class AddNewClusterFrom extends DialogWrapper implements SettableControl<
 
     @Override
     protected void doOKAction() {
+        if (!getOKAction().isEnabled()) {
+            return;
+        }
+
+        getOKAction().setEnabled(false);
+
         ctrlProvider
                 .validateAndAdd()
+                .doOnEach(notification -> getOKAction().setEnabled(true))
                 .subscribe(toUpdate -> {
                     hdInsightModule.refreshWithoutAsync();
                     AppInsightsClient.create(HDInsightBundle.message("HDInsightAddNewClusterAction"), null);

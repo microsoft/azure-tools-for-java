@@ -152,7 +152,9 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
         if (!isExecutor) {
             if (executor instanceof SparkBatchJobDebugExecutor ||
                     executor instanceof SparkBatchJobRunExecutor) {
-                BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(getProject(), this, Objects.requireNonNull(getSubmitModel().getArtifact()));
+                if (getSubmitModel().getArtifact() != null) {
+                    BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(getProject(), this, getSubmitModel().getArtifact());
+                }
 
                 setRunMode(RunMode.REMOTE);
             } else {

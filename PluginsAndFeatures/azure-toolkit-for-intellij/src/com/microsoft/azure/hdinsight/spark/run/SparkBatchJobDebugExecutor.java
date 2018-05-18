@@ -25,6 +25,7 @@ import com.intellij.execution.Executor;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.icons.AllIcons;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.common.CommonConst;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -94,7 +95,11 @@ public class SparkBatchJobDebugExecutor extends Executor {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
+        if (obj == null || DefaultDebugExecutor.getDebugExecutorInstance() == null) {
+            return false;
+        }
+
         // Intellij requires the executor equaling DefaultDebugExecutor to enable the support for multiple debug tabs
         return obj.equals(DefaultDebugExecutor.getDebugExecutorInstance()) || super.equals(obj);
     }

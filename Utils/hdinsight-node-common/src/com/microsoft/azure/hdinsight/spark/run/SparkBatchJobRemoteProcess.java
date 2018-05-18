@@ -64,6 +64,7 @@ public class SparkBatchJobRemoteProcess extends Process {
     private SparkBatchJob sparkJob;
     @NotNull
     private final PublishSubject<SparkBatchJobSubmissionEvent> eventSubject = PublishSubject.create();
+    private boolean isDestroyed = false;
 
     private boolean isDisconnected;
 
@@ -137,6 +138,8 @@ public class SparkBatchJobRemoteProcess extends Process {
             }
         });
 
+        this.isDestroyed = true;
+
         this.disconnect();
     }
 
@@ -159,6 +162,7 @@ public class SparkBatchJobRemoteProcess extends Process {
         // Build, deploy and wait for the job done.
         jobSubscription = prepareArtifact()
                 .flatMap(this::submitJob)
+                .flatMap(this::awaitForJobStarted)
                 .flatMap(this::attachInputStreams)
                 .flatMap(this::awaitForJobDone)
                 .subscribe(sdPair -> {
@@ -174,9 +178,37 @@ public class SparkBatchJobRemoteProcess extends Process {
                     }
                 }, err -> {
                     ctrlSubject.onError(err);
-                    disconnect();
+                    destroy();
                 }, () -> {
                     disconnect();
+                });
+    }
+
+    @NotNull
+    public boolean isJobStarted(@NotNull SparkBatchJob job, SparkBatchJobState state) {
+        return state == SparkBatchJobState.RUNNING;
+    }
+
+    @NotNull
+    private Observable<SparkBatchJob> awaitForJobStarted(@NotNull SparkBatchJob job) {
+        return job.getStatus()
+                .map(status -> new SimpleImmutableEntry<>(
+                        SparkBatchJobState.valueOf(status.getState().toUpperCase()),
+                        String.join("\n", status.getLog())))
+                .retry(job.getRetriesMax())
+                .repeatWhen(ob -> ob
+                        .doOnNext(ignored -> logInfo("The Spark job is starting..."))
+                        .delay(job.getDelaySeconds(), TimeUnit.SECONDS)
+                )
+                .takeUntil(stateLogPair -> stateLogPair.getKey().isJobDone() || isJobStarted(job, stateLogPair.getKey()))
+                .filter(stateLogPair -> stateLogPair.getKey().isJobDone() || isJobStarted(job, stateLogPair.getKey()))
+                .flatMap(stateLogPair -> {
+                    if (stateLogPair.getKey().isJobDone() && stateLogPair.getKey() != SparkBatchJobState.SUCCESS) {
+                        return Observable.error(
+                                new SparkJobException("The Spark job failed to start due to " + stateLogPair.getValue()));
+                    }
+
+                    return Observable.just(job);
                 });
     }
 
@@ -295,5 +327,9 @@ public class SparkBatchJobRemoteProcess extends Process {
     @NotNull
     public String getArtifactPath() {
         return artifactPath;
+    }
+
+    public boolean isDestroyed() {
+        return isDestroyed;
     }
 }

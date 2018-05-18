@@ -274,7 +274,10 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      * @param driverHttpAddress the host:port combination string to parse
      * @return the host got, otherwise null
      */
-    protected String parseAmHostHttpAddressHost(String driverHttpAddress) {
+    protected String parseAmHostHttpAddressHost(@Nullable String driverHttpAddress) {
+        if (driverHttpAddress == null) {
+            return null;
+        }
 
         Pattern driverRegex = Pattern.compile("(?<host>[^:]+):(?<port>\\d+)");
         Matcher driverMatcher = driverRegex.matcher(driverHttpAddress);
@@ -908,6 +911,28 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                 }
 
                 throw new SparkJobException("Can't get cluster " + getSubmissionParameter().getClusterName() + " to submit.");
+        });
+    }
+
+    /**
+     * New RxAPI: Get the job status (from livy)
+     *
+     * @return Spark Job observable
+     */
+    @NotNull
+    public Observable<SparkSubmitResponse> getStatus() {
+        return Observable.fromCallable(() -> {
+            HttpResponse httpResponse = this.getSubmission().getBatchSparkJobStatus(
+                    this.getConnectUri().toString(), getBatchId());
+
+            if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
+                return ObjectConvertUtils.convertJsonToObject(
+                        httpResponse.getMessage(), SparkSubmitResponse.class)
+                        .orElseThrow(() -> new UnknownServiceException(
+                                "Bad spark job response: " + httpResponse.getMessage()));
+            }
+
+            throw new SparkJobException("Can't get cluster " + getSubmissionParameter().getClusterName() + " status.");
         });
     }
 }

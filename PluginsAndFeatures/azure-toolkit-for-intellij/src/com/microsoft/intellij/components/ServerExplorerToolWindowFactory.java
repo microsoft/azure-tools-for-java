@@ -62,6 +62,9 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -99,7 +102,42 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 treeMousePressed(e, tree);
             }
         });
+        // add keyboard handler for the tree
+        tree.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
 
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                TreePath treePath = tree.getAnchorSelectionPath();
+                if (treePath == null) {
+                    return;
+                }
+
+                SortableTreeNode treeNode = (SortableTreeNode) treePath.getLastPathComponent();
+                Node node = (Node) treeNode.getUserObject();
+
+                Rectangle rectangle = tree.getRowBounds(tree.getRowForPath(treePath));
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    if (!node.isLoading()) {
+                        node.getClickAction().fireNodeActionEvent();
+                    }
+                }
+                else if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
+                    if (node.hasNodeActions()) {
+                        JPopupMenu menu = createPopupMenuForNode(node);
+                        menu.show(e.getComponent(), (int) rectangle.getX(), (int) rectangle.getY());
+                    }
+                }
+            }
+        });
         // add the tree to the window
         toolWindow.getComponent().add(new JBScrollPane(tree));
 

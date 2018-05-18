@@ -51,6 +51,12 @@ public class SparkBatchJobRunProcessHandler extends ColoredRemoteProcessHandler<
                 super.processWillTerminate(event, willBeDestroyed);
             }
         });
+
+        process.getCtrlSubject().subscribe(
+                ignored -> {},
+                err -> notifyProcessTerminated(-1),
+                () -> notifyProcessDetached()
+        );
     }
 
     @NotNull
