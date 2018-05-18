@@ -177,6 +177,6 @@ public class AccessTokenAzureManager extends AzureManagerBase {
     
     @Override
     public Environment getEnvironment() {
-        return CommonSettings.getEnvironmentEnum();
+        return CommonSettings.getEnvironment();
     }
 }

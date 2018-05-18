@@ -106,7 +106,9 @@ public class AdAuthManager {
      * @return true for success
      */
     public synchronized boolean tryRestoreSignIn(@NotNull AuthMethodDetails authMethodDetails) {
-        if (secureStore == null) {
+        if (secureStore == null || authMethodDetails.getAzureEnv() == null ||
+                // Restore only for the same saved Azure environment with current
+                !CommonSettings.getEnvironment().getName().equals(authMethodDetails.getAzureEnv())) {
             return false;
         }
 

@@ -5,6 +5,8 @@ import java.net.URL;
 import java.util.Arrays;
 
 import com.microsoft.azuretools.adauth.AuthErrorMessage;
+import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azuretools.authmanage.ProvidedEnvironment;
 
 enum AuthorityType {
     AAD,
@@ -145,6 +147,11 @@ class AuthenticationAuthority {
     }
 
     boolean doStaticInstanceDiscovery() {
+        // Exception for provided environment
+        if (CommonSettings.getEnvironment() instanceof ProvidedEnvironment) {
+            return true;
+        }
+
         if (validateAuthority) {
             return Arrays.asList(TRUSTED_HOST_LIST).contains(this.host);
         }

@@ -41,6 +41,8 @@ public class AuthMethodDetails {
     @JsonProperty
     private AuthMethod authMethod;
 
+    @JsonProperty
+    private String azureEnv;
 
     // for jackson json
     public AuthMethodDetails() {
@@ -72,5 +74,11 @@ public class AuthMethodDetails {
     }
 
 
+    public String getAzureEnv() {
+        return azureEnv;
+    }
 
+    public void setAzureEnv(String azureEnv) {
+        this.azureEnv = azureEnv;
+    }
 }

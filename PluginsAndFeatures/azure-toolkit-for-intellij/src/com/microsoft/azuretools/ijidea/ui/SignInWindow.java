@@ -32,6 +32,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.AdAuthManager;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.interact.AuthMethod;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
@@ -343,6 +344,7 @@ public class SignInWindow extends AzureDialogWrapper {
             }
             authMethodDetailsResult.setAuthMethod(AuthMethod.AD);
             authMethodDetailsResult.setAccountEmail(accountEmail);
+            authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
         } else { // automated
             String authPath = authFileTextField.getText();
             if (StringUtils.isNullOrWhiteSpace(authPath)) {

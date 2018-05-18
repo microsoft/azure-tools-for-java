@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.authmanage;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -34,11 +35,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Created by shch on 10/10/2016.
  */
 public class CommonSettings {
+    private static final Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
     public static final String authMethodDetailsFileName = "AuthMethodDetails.json";
 
     private static String settingsBaseDir = null;
@@ -67,7 +70,24 @@ public class CommonSettings {
                 JsonElement envElement = jsonObject.get(ENV_NAME_KEY);
                 String envName = (envElement != null ? envElement.getAsString() : null);
                 if (null != envName){
-                    setEnvironment(envName, null);
+                    // Provider file firstly
+                    ProvidedEnvironment providedEnv = null;
+                    JsonElement providedEnvElem = jsonObject.get(envName);
+
+                    if (providedEnvElem != null) {
+                        try {
+                            providedEnv = new Gson().fromJson(providedEnvElem, ProvidedEnvironment.class);
+                        } catch (Exception e) {
+                            LOGGER.warning("Parsing JSON String from " + providedEnvElem +
+                                           "as provided environment failed, got the exception: " + e );
+                        }
+                    }
+
+                    if (providedEnv == null) {
+                        setEnvironment(envName, null);
+                    } else {
+                        ENV = providedEnv;
+                    }
                 }
             }
         } catch (Exception e) {
@@ -85,7 +105,7 @@ public class CommonSettings {
     	return ENV.getAzureEnvironment();
     }
 
-    public static Environment getEnvironmentEnum() {
+    public static Environment getEnvironment() {
         return ENV;
     }
 
