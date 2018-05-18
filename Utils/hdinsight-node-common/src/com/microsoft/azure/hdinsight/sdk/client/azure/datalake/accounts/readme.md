@@ -1,13 +1,14 @@
 # Account API 
 > version: `stable-2016-11-01`
+
 > date: `2018-05-18`
-##Prerequisites
+
+## Prerequisites
 We depend `azure-rest-api-specs-pr` and `azure-libraries-for-java` to generate Java API. So make sure you have these files in current directory before running `autorest`.
 
 > 1. `git clone https://github.com/hnihanth/azure-rest-api-specs-pr.git`
 
 > 2. `git clone https://github.com/Azure/azure-libraries-for-java.git`
-
 
 ## Getting Started 
 

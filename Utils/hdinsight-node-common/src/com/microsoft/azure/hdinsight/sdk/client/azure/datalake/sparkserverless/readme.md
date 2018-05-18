@@ -1,6 +1,8 @@
 # SparkResourcePool API 
 > version: `2018-02-01-preview`
+
 > date: `2018-05-18`
+
 ## Prerequisites
 We depend `sparkresourcepool.json` and `azure-libraries-for-java` to generate Java API. So make sure you have these files in current directory before running `autorest`.
 
