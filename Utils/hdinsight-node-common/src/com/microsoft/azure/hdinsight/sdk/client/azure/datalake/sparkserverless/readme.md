@@ -1,14 +1,13 @@
 # SparkResourcePool API 
 > version: `2018-02-01-preview`
 
-> date: `2018-05-18`
-
 ## Prerequisites
 We depend `sparkresourcepool.json` and `azure-libraries-for-java` to generate Java API. So make sure you have these files in current directory before running `autorest`.
 
 > 1.  Download [sparkresourcepools.json](https://github.com/hnihanth/azure-rest-api-specs-pr/blob/SparkResourcePoolSpec/specification/datalake-analytics/data-plane/Microsoft.DataLakeAnalytics/preview/2018-02-01-preview/sparkresourcepools.json)
 
 > 2. `git clone https://github.com/Azure/azure-libraries-for-java.git`
+
 ## Getting Started 
 
 To build the SDKs for SparkResourcePool API, simply install AutoRest via `npm` (`npm install -g autorest`) and then run:
