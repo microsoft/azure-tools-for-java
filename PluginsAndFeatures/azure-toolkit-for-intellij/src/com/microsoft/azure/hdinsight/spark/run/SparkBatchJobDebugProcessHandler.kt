@@ -79,7 +79,7 @@ class SparkBatchJobDebugProcessHandler(project: Project,
     override fun isProcessTerminating(): Boolean = !isJdbPortForwarded && !isKilled || super.isProcessTerminating()
 
     // True for the Stop button will be disabled, and Remote Debug button will be enabled
-    override fun isProcessTerminated(): Boolean = isKilled || super.isProcessTerminated()
+    override fun isProcessTerminated(): Boolean = isKilled || remoteDebugProcess.isDestroyed || super.isProcessTerminated()
 
     override fun getCtrlSubject(): PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> {
         return remoteDebugProcess.ctrlSubject
