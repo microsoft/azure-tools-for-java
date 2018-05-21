@@ -182,8 +182,22 @@ public class AdAuthManager {
                 //TODO: should narrow to AuthError.InteractionRequired
                 ac1.acquireToken(env.managementEndpoint(), true, userId, isDisplayable);
             }
-            ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable);
+
+            // FIXME!!! Some environments and subscriptions can't get the resource manager token
+            // Let the log in process passed, and throwing the errors when to access those resources
+            try {
+                ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable);
+            } catch (AuthException ignored) {
+            }
+
             ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable);
+
+            // ADL account access token
+            try {
+                ac1.acquireToken(env.dataLakeEndpointResourceId(), false, userId, isDisplayable);
+            } catch (AuthException ignored) {
+            }
+
             // TODO: remove later
             // ac1.acquireToken(Constants.resourceVault, false, userId, isDisplayable);
             List<String> sids = new LinkedList<>();
