@@ -20,41 +20,41 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless;
+package com.microsoft.azure.sparkserverless.serverexplore;
 
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
-import rx.subjects.PublishSubject;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
-public class SparkServerlessClusterOps {
-    private static SparkServerlessClusterOps instance = new SparkServerlessClusterOps();
-
-    // TODO: Update type for the triplet <adlAccount, clusterName, currentNode>
+public class SparkServerlessClusterDestoryModel implements Cloneable {
     @NotNull
-    private final PublishSubject<Triple<String, String, SparkServerlessClusterNode>> destroyAction;
-    // TODO: Update type for the pair <adlAccount, node>
-    @NotNull
-    private final PublishSubject<Pair<String, SparkServerlessADLAccountNode>> provisionAction;
+    private String clusterName;
 
-    private SparkServerlessClusterOps() {
-        destroyAction = PublishSubject.create();
-        provisionAction = PublishSubject.create();
+    @Nullable
+    private String errorMessage;
+
+    @NotNull
+    public String getClusterName() {
+        return clusterName;
     }
 
-    @NotNull
-    public static SparkServerlessClusterOps getInstance() {
-        return instance;
+    public SparkServerlessClusterDestoryModel setClusterName(@NotNull String clusterName) {
+        this.clusterName = clusterName;
+        return this;
     }
 
-    @NotNull
-    public PublishSubject<Triple<String, String, SparkServerlessClusterNode>> getDestroyAction() {
-        return destroyAction;
+    @Nullable
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
-    @NotNull
-    public PublishSubject<Pair<String, SparkServerlessADLAccountNode>> getProvisionAction() {
-        return provisionAction;
+    public SparkServerlessClusterDestoryModel setErrorMessage(@Nullable String errorMessage) {
+        this.errorMessage = errorMessage;
+        return this;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        // Here is a shadow clone, not deep clone
+        return super.clone();
     }
 }

@@ -40,13 +40,16 @@ public class SparkServerlessDestroyAction extends AzureNodeActionListener {
     @NotNull
     private final String adlAccount;
     @NotNull
-    private final PublishSubject<Triple<String, String, Node>> destroyAction;
+    private final PublishSubject<Triple<String, String, SparkServerlessClusterNode>> destroyAction;
+    @NotNull
+    private final SparkServerlessClusterNode clusterNode;
 
-    public SparkServerlessDestroyAction(@NotNull Node node,
+    public SparkServerlessDestroyAction(@NotNull SparkServerlessClusterNode clusterNode,
                                         @NotNull String clusterName,
                                         @NotNull String adlAccount,
-                                        @NotNull PublishSubject<Triple<String, String, Node>> destroyAction) {
-        super(node, "Deleting SparkServerless Cluster");
+                                        @NotNull PublishSubject<Triple<String, String, SparkServerlessClusterNode>> destroyAction) {
+        super(clusterNode, "Deleting Spark Cluster");
+        this.clusterNode = clusterNode;
         this.adlAccount = adlAccount;
         this.clusterName = clusterName;
         this.destroyAction = destroyAction;
@@ -54,8 +57,7 @@ public class SparkServerlessDestroyAction extends AzureNodeActionListener {
 
     @Override
     protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-        Node currentNode = e.getAction().getNode();
-        destroyAction.onNext(ImmutableTriple.of(adlAccount, clusterName, currentNode));
+        destroyAction.onNext(ImmutableTriple.of(adlAccount, clusterName, clusterNode));
     }
 
     @Override

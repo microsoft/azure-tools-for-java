@@ -23,6 +23,7 @@
 package com.microsoft.azure.sparkserverless;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterDestoryDialog;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessProvisionDialog;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -38,24 +39,18 @@ public class SparkServerlessClusterOpsCtrl {
         this.sparkServerlessClusterOps = sparkServerlessClusterOps;
 
         this.sparkServerlessClusterOps.getDestroyAction().subscribe(triplet -> {
-            LOG.info(String.format("Message received. AdlAccount: %s, clusterName: %s, currentNode: %s",
+            LOG.info(String.format("Destroy message received. AdlAccount: %s, clusterName: %s, currentNode: %s",
                     triplet.getLeft(), triplet.getMiddle(), triplet.getRight()));
 
-            // TODO: pop up a destroy dialog
-
-            // TODO: Update confirmDestroyAction
-            boolean confirmDestroyAction = true;
-            if (confirmDestroyAction) {
-                // instruct parent node to remove this node
-                DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    Node currentNode = triplet.getRight();
-                    currentNode.getParent().removeDirectChildNode(currentNode);
-                });
-            }
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                SparkServerlessClusterDestoryDialog destroyDialog = new SparkServerlessClusterDestoryDialog(
+                        triplet.getRight());
+                destroyDialog.show();
+            });
         }, ex -> LOG.error(ex.getMessage(), ex));
 
         this.sparkServerlessClusterOps.getProvisionAction().subscribe(pair -> {
-            LOG.info(String.format("Provision Message received. AdlAccount: %s, node: %s",
+            LOG.info(String.format("Provision message received. AdlAccount: %s, node: %s",
                     pair.getLeft(), pair.getRight()));
 
             DefaultLoader.getIdeHelper().invokeLater(() -> {
