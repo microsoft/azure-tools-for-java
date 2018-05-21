@@ -78,7 +78,7 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         this.adlAccountNode = adlAccountNode;
 
         init();
-        this.setTitle("Spark Serverless Cluster");
+        this.setTitle("Provision Spark Cluster");
         errorMessageField.setBackground(this.provisionDialogPanel.getBackground());
         errorMessageField.setBorder(BorderFactory.createEmptyBorder());
         this.setModal(true);
@@ -86,13 +86,13 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         adlAccountField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
+                // TODO: check validity of ADL account
                 availableAUField.setText(String.valueOf(ctrlProvider.getAvailableAU(adlAccountField.getText())));
                 totalAUField.setText(String.valueOf(ctrlProvider.getTotalAU(adlAccountField.getText())));
             }
         });
         refreshButton.addActionListener(e -> {
                 availableAUField.setText(String.valueOf(ctrlProvider.getAvailableAU(adlAccountField.getText())));
-                totalAUField.setText(String.valueOf(ctrlProvider.getTotalAU(adlAccountField.getText())));
         });
         masterCoresField.addFocusListener(new FocusAdapter() {
             @Override
