@@ -22,10 +22,7 @@
 
 package com.microsoft.azuretools.authmanage;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azuretools.authmanage.interact.IUIFactory;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -36,6 +33,7 @@ import java.io.FileReader;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.StreamSupport;
 
 /**
  * Created by shch on 10/10/2016.
@@ -72,14 +70,24 @@ public class CommonSettings {
                 if (null != envName){
                     // Provider file firstly
                     ProvidedEnvironment providedEnv = null;
-                    JsonElement providedEnvElem = jsonObject.get(envName);
 
-                    if (providedEnvElem != null) {
-                        try {
-                            providedEnv = new Gson().fromJson(providedEnvElem, ProvidedEnvironment.class);
-                        } catch (Exception e) {
-                            LOGGER.warning("Parsing JSON String from " + providedEnvElem +
-                                           "as provided environment failed, got the exception: " + e );
+                    JsonArray envs = jsonObject.getAsJsonArray("Environments");
+                    if (envs != null) {
+                        JsonElement providedEnvElem = StreamSupport.stream(envs.spliterator(), false)
+                                .map(JsonElement::getAsJsonObject)
+                                .filter(obj -> obj != null &&
+                                                obj.get("envName") != null &&
+                                                obj.get("envName").getAsString().equals(envName))
+                                .findFirst()
+                                .orElse(null);
+
+                        if (providedEnvElem != null) {
+                            try {
+                                providedEnv = new Gson().fromJson(providedEnvElem, ProvidedEnvironment.class);
+                            } catch (Exception e) {
+                                LOGGER.warning("Parsing JSON String from " + providedEnvElem +
+                                        "as provided environment failed, got the exception: " + e );
+                            }
                         }
                     }
 
