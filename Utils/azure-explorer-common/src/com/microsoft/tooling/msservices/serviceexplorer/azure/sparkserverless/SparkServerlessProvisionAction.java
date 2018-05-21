@@ -44,7 +44,7 @@ public class SparkServerlessProvisionAction extends AzureNodeActionListener {
     public SparkServerlessProvisionAction(@NotNull SparkServerlessADLAccountNode adlAccountNode,
                                           @NotNull String adlAccount,
                                           @NotNull PublishSubject<Pair<String, SparkServerlessADLAccountNode>> provisionAction) {
-        super(adlAccountNode, "Provisioning Spark Serverless Cluster");
+        super(adlAccountNode, "Provision Spark Cluster");
         this.adlAccount = adlAccount;
         this.provisionAction = provisionAction;
         this.adlAccountNode = adlAccountNode;
