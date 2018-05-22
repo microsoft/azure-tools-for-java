@@ -127,12 +127,7 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
     }
 
     private void updateCalculatedAUField() {
-        int calculatedAU = ctrlProvider.getCalculatedAU(
-                masterCoresField.getText(),
-                masterMemoryField.getText(),
-                workerCoresField.getText(),
-                workerMemoryField.getText(),
-                workerNumberOfContainersField.getText());
+        int calculatedAU = ctrlProvider.getCalculatedAU(masterCoresField.getText(), workerCoresField.getText());
         calculatedAUField.setText(String.valueOf(calculatedAU));
     }
 

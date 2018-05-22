@@ -53,17 +53,10 @@ public class SparkServerlessClusterProvisionCtrlProvider {
     // TODO: Update formula for getCalculatedAU
     @NotNull
     public int getCalculatedAU(@Nullable String masterCoresStr,
-                               @Nullable String masterMemoryStr,
-                               @Nullable String workerCoresStr,
-                               @Nullable String workerMemoryStr,
-                               @Nullable String workerNumberOfContainersStr) {
+                               @Nullable String workerCoresStr) {
         int masterCores = editorStringToInt(masterCoresStr);
-        int masterMemory = editorStringToInt(masterMemoryStr);
         int workerCores = editorStringToInt(workerCoresStr);
-        int workerMemory = editorStringToInt(workerMemoryStr);
-        int workerNumberOfContainers = editorStringToInt(workerNumberOfContainersStr);
-        return workerNumberOfContainers == ILLEGAL_NUMERIC_INPUT ? ILLEGAL_NUMERIC_INPUT :
-                masterCores + masterMemory + workerCores + workerMemory + workerNumberOfContainers;
+        return masterCores + workerCores;
     }
 
     // TODO: Update getTotalAU
