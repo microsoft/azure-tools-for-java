@@ -187,7 +187,14 @@ public class AdAuthManager {
             // Let the log in process passed, and throwing the errors when to access those resources
             try {
                 ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable);
-            } catch (AuthException ignored) {
+            } catch (AuthException e) {
+                if (CommonSettings.getEnvironment() instanceof ProvidedEnvironment) {
+                    // Swallow the exception since some provided environments are not full featured
+                    LOGGER.warning("Can't get " + env.resourceManagerEndpoint() + " access token from environment " +
+                            CommonSettings.getEnvironment().getName());
+                } else {
+                    throw e;
+                }
             }
 
             ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable);
