@@ -60,11 +60,13 @@ public class SparkServerlessClusterDestoryDialog extends DialogWrapper
         this.setModal(true);
     }
 
+    // Components -> Data
     public void getData(@NotNull SparkServerlessClusterDestoryModel data) {
         data.setClusterName(clusterNameField.getText())
                 .setErrorMessage(errorMessageField.getText());
     }
 
+    // Data -> Components
     public void setData(@NotNull SparkServerlessClusterDestoryModel data) {
         clusterNameField.setText(data.getClusterName());
         errorMessageField.setText(data.getErrorMessage());
@@ -72,21 +74,20 @@ public class SparkServerlessClusterDestoryDialog extends DialogWrapper
 
     @Override
     protected void doOKAction() {
+        if (!getOKAction().isEnabled()) {
+            return;
+        }
+
+        getOKAction().setEnabled(false);
+
         ctrlProvider
                 .validateAndDestroy(clusterNode.getClusterName())
+                .doOnEach(notification -> getOKAction().setEnabled(true))
                 .subscribe(toUpdate -> {
                     clusterNode.getParent().removeDirectChildNode(clusterNode);
                     super.doOKAction();
                 });
     }
-
-
-    @NotNull
-    @Override
-    protected Action[] createActions() {
-        return new Action[] {getOKAction(), getCancelAction()};
-    }
-
 
     @NotNull
     @Override
@@ -100,7 +101,4 @@ public class SparkServerlessClusterDestoryDialog extends DialogWrapper
         return destroyDialogPanel;
     }
 
-    public static void main(String[] args) {
-
-    }
 }

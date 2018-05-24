@@ -35,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.util.Arrays;
 
 public class SparkServerlessProvisionDialog extends DialogWrapper
         implements SettableControl<SparkServerlessClusterProvisionSettingsModel> {
@@ -91,47 +92,28 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
                 totalAUField.setText(String.valueOf(ctrlProvider.getTotalAU(adlAccountField.getText())));
             }
         });
-        refreshButton.addActionListener(e -> {
-                availableAUField.setText(String.valueOf(ctrlProvider.getAvailableAU(adlAccountField.getText())));
-        });
-        masterCoresField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                updateCalculatedAUField();
-            }
-        });
-        masterMemoryField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                updateCalculatedAUField();
-            }
-        });
-        workerCoresField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                updateCalculatedAUField();
-            }
-        });
-        workerMemoryField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                updateCalculatedAUField();
-            }
-        });
-        workerNumberOfContainersField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                updateCalculatedAUField();
-            }
-        });
+
+        refreshButton.addActionListener(e ->
+                availableAUField.setText(String.valueOf(ctrlProvider.getAvailableAU(adlAccountField.getText()))));
+
+        Arrays.asList(masterCoresField, workerCoresField).forEach(comp ->
+            comp.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusLost(FocusEvent e) {
+                    updateCalculatedAUField();
+                    super.focusLost(e);
+                }
+            })
+        );
     }
 
     private void updateCalculatedAUField() {
-        int calculatedAU = ctrlProvider.getCalculatedAU(masterCoresField.getText(), workerCoresField.getText());
-        calculatedAUField.setText(String.valueOf(calculatedAU));
+        calculatedAUField.setText(
+                String.valueOf(ctrlProvider.getCalculatedAU(masterCoresField.getText(), workerCoresField.getText())));
     }
 
 
+    // Data -> Components
     @Override
     public void setData(@NotNull SparkServerlessClusterProvisionSettingsModel data) {
         clusterNameField.setText(data.getClusterName());
@@ -139,12 +121,12 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         previousSparkEventsField.setText(data.getPreviousSparkEvents());
         availableAUField.setText(String.valueOf(data.getAvailableAU()));
         totalAUField.setText(String.valueOf(data.getTotalAU()));
-        calculatedAUField.setText(String.valueOf(data.getCalculatedAU()));
         masterCoresField.setText(String.valueOf(data.getMasterCores()));
         masterMemoryField.setText(String.valueOf(data.getMasterMemory()));
         workerCoresField.setText(String.valueOf(data.getWorkerCores()));
         workerMemoryField.setText(String.valueOf(data.getWorkerMemory()));
         workerNumberOfContainersField.setText(String.valueOf(data.getWorkerNumberOfContainers()));
+        updateCalculatedAUField();
 
         clusterNameLabel.setText(data.getClusterNameLabelTitle());
         adlAccountLabel.setText(data.getAdlAccountLabelTitle());
@@ -155,6 +137,7 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         // TODO: finish all other fields
     }
 
+    // Components -> Data
     @Override
     public void getData(@NotNull SparkServerlessClusterProvisionSettingsModel data) {
         // TODO: remove applying jTextFieldToInt to master/worker fields in the final version
@@ -180,19 +163,19 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
 
     @Override
     protected void doOKAction() {
+        if (!getOKAction().isEnabled()) {
+            return;
+        }
+
+        getOKAction().setEnabled(false);
         ctrlProvider
                 .validateAndProvision()
+                .doOnEach(notification -> getOKAction().setEnabled(true))
                 .subscribe(toUpdate -> {
                     // TODO: replace load with refreshWithoutAsync
                     adlAccountNode.load(false);
                     super.doOKAction();
                 });
-    }
-
-    @NotNull
-    @Override
-    protected Action[] createActions() {
-        return new Action[] {getOKAction(), getCancelAction()};
     }
 
     @NotNull
