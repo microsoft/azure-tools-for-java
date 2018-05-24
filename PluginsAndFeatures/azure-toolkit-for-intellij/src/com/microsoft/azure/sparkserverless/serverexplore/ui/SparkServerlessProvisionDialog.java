@@ -29,7 +29,7 @@ import com.microsoft.azure.sparkserverless.serverexplore.SparkServerlessClusterP
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessADLAccountNode;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -144,14 +144,14 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         data.setClusterName(clusterNameField.getText())
                 .setAdlAccount(adlAccountField.getText())
                 .setPreviousSparkEvents(previousSparkEventsField.getText())
-                .setAvailableAU(ctrlProvider.editorStringToInt(availableAUField.getText()))
-                .setTotalAU(ctrlProvider.editorStringToInt(totalAUField.getText()))
-                .setCalculatedAU(ctrlProvider.editorStringToInt(calculatedAUField.getText()))
-                .setMasterCores(ctrlProvider.editorStringToInt(masterCoresField.getText()))
-                .setMasterMemory(ctrlProvider.editorStringToInt(masterMemoryField.getText()))
-                .setWorkerCores(ctrlProvider.editorStringToInt(workerCoresField.getText()))
-                .setWorkerMemory(ctrlProvider.editorStringToInt(workerMemoryField.getText()))
-                .setWorkerNumberOfContainers(ctrlProvider.editorStringToInt(workerNumberOfContainersField.getText()))
+                .setAvailableAU(NumberUtils.toInt(availableAUField.getText()))
+                .setTotalAU(NumberUtils.toInt(totalAUField.getText()))
+                .setCalculatedAU(NumberUtils.toInt(calculatedAUField.getText()))
+                .setMasterCores(NumberUtils.toInt(masterCoresField.getText()))
+                .setMasterMemory(NumberUtils.toInt(masterMemoryField.getText()))
+                .setWorkerCores(NumberUtils.toInt(workerCoresField.getText()))
+                .setWorkerMemory(NumberUtils.toInt(workerMemoryField.getText()))
+                .setWorkerNumberOfContainers(NumberUtils.toInt(workerNumberOfContainersField.getText()))
                 .setClusterNameLabelTitle(clusterNameLabel.getText())
                 .setAdlAccountLabelTitle(adlAccountLabel.getText())
                 .setPreviousSparkEventsLabelTitle(previousSparkEventsLabel.getText())

@@ -23,40 +23,39 @@
 package com.microsoft.azure.sparkserverless;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterDestoryDialog;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessProvisionDialog;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessClusterOps;
 
 public class SparkServerlessClusterOpsCtrl {
     @NotNull
     private final SparkServerlessClusterOps sparkServerlessClusterOps;
     private static Logger LOG = Logger.getInstance(SparkServerlessClusterOpsCtrl.class.getName());
+    private IdeSchedulers ideSchedulers = new IdeaSchedulers(null);
 
     public SparkServerlessClusterOpsCtrl(@NotNull SparkServerlessClusterOps sparkServerlessClusterOps) {
         this.sparkServerlessClusterOps = sparkServerlessClusterOps;
 
-        this.sparkServerlessClusterOps.getDestroyAction().subscribe(triplet -> {
-            LOG.info(String.format("Destroy message received. AdlAccount: %s, clusterName: %s, currentNode: %s",
-                    triplet.getLeft(), triplet.getMiddle(), triplet.getRight()));
+        this.sparkServerlessClusterOps.getDestroyAction()
+                .observeOn(ideSchedulers.dispatchUIThread())
+                .subscribe(triplet -> {
+                    LOG.info(String.format("Destroy message received. AdlAccount: %s, clusterName: %s, currentNode: %s",
+                            triplet.getLeft(), triplet.getMiddle(), triplet.getRight()));
+                    SparkServerlessClusterDestoryDialog destroyDialog = new SparkServerlessClusterDestoryDialog(
+                            triplet.getRight());
+                    destroyDialog.show();
+                }, ex -> LOG.error(ex.getMessage(), ex));
 
-            DefaultLoader.getIdeHelper().invokeLater(() -> {
-                SparkServerlessClusterDestoryDialog destroyDialog = new SparkServerlessClusterDestoryDialog(
-                        triplet.getRight());
-                destroyDialog.show();
-            });
-        }, ex -> LOG.error(ex.getMessage(), ex));
-
-        this.sparkServerlessClusterOps.getProvisionAction().subscribe(pair -> {
-            LOG.info(String.format("Provision message received. AdlAccount: %s, node: %s",
-                    pair.getLeft(), pair.getRight()));
-
-            DefaultLoader.getIdeHelper().invokeLater(() -> {
-                SparkServerlessProvisionDialog provisionDialog = new SparkServerlessProvisionDialog(pair.getRight());
-                provisionDialog.show();
-            });
-        }, ex -> LOG.error(ex.getMessage(), ex));
+        this.sparkServerlessClusterOps.getProvisionAction()
+                .observeOn(ideSchedulers.dispatchUIThread())
+                .subscribe(pair -> {
+                    LOG.info(String.format("Provision message received. AdlAccount: %s, node: %s",
+                            pair.getLeft(), pair.getRight()));
+                    SparkServerlessProvisionDialog provisionDialog = new SparkServerlessProvisionDialog(pair.getRight());
+                    provisionDialog.show();
+                }, ex -> LOG.error(ex.getMessage(), ex));
     }
 }

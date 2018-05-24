@@ -27,11 +27,10 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import rx.Observable;
 
 public class SparkServerlessClusterProvisionCtrlProvider {
-    public static final int ILLEGAL_NUMERIC_INPUT = 0;
-
     @NotNull
     private SettableControl<SparkServerlessClusterProvisionSettingsModel> controllableView;
 
@@ -46,16 +45,10 @@ public class SparkServerlessClusterProvisionCtrlProvider {
     }
 
     @NotNull
-    public static int editorStringToInt(@Nullable String str) {
-        return StringUtils.isNumeric(str) ? Integer.valueOf(str) : ILLEGAL_NUMERIC_INPUT;
-    }
-
-    // TODO: Update formula for getCalculatedAU
-    @NotNull
     public int getCalculatedAU(@Nullable String masterCoresStr,
                                @Nullable String workerCoresStr) {
-        int masterCores = editorStringToInt(masterCoresStr);
-        int workerCores = editorStringToInt(workerCoresStr);
+        int masterCores = NumberUtils.toInt(masterCoresStr);
+        int workerCores = NumberUtils.toInt(workerCoresStr);
         return masterCores + workerCores;
     }
 
@@ -113,14 +106,15 @@ public class SparkServerlessClusterProvisionCtrlProvider {
                     }
 
                     // Numeric field check
-                    // TODO: only workerNumberOfContainers field numeric check will be reserved finally
-                    if (masterCores == ILLEGAL_NUMERIC_INPUT ||
-                            masterMemory == ILLEGAL_NUMERIC_INPUT ||
-                            workerCores == ILLEGAL_NUMERIC_INPUT ||
-                            workerMemory == ILLEGAL_NUMERIC_INPUT ||
-                            workerNumberOfContainers == ILLEGAL_NUMERIC_INPUT) {
+                    // TODO: Only workerNumberOfContainers field numeric check will be reserved finally
+                    // TODO: Determine whether workerNumberOfContainers is in legal range
+                    if (masterCores <= 0 ||
+                            masterMemory <= 0 ||
+                            workerCores <= 0 ||
+                            workerMemory <= 0 ||
+                            workerNumberOfContainers <= 0) {
                         return toUpdate.setErrorMessage(
-                                "These fields should be numeric: Master cores, master memory, " +
+                                "These fields should be positive numbers: Master cores, master memory, " +
                                         "worker cores, worker memory and worker number of containers.");
                     }
 
