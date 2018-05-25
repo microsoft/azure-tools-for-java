@@ -57,7 +57,7 @@ public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
     protected void loadActions() {
         super.loadActions();
 
-        addAction("Provision a Serverless Cluster", new SparkServerlessProvisionAction(
+        addAction("Provision Spark Cluster", new SparkServerlessProvisionAction(
                 this, adlAccount, SparkServerlessClusterOps.getInstance().getProvisionAction()));
     }
 
@@ -65,4 +65,6 @@ public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
     public String getAdlAccount() {
         return adlAccount;
     }
+
+    // TODO: implement refreshWithoutAsync()
 }

@@ -37,19 +37,22 @@ public class SparkServerlessProvisionAction extends AzureNodeActionListener {
     @NotNull
     private final String adlAccount;
     @NotNull
-    private final PublishSubject<Pair<String, Node>> provisionAction;
+    private final PublishSubject<Pair<String, SparkServerlessADLAccountNode>> provisionAction;
+    @NotNull
+    private final SparkServerlessADLAccountNode adlAccountNode;
 
-    public SparkServerlessProvisionAction(@NotNull Node node,
+    public SparkServerlessProvisionAction(@NotNull SparkServerlessADLAccountNode adlAccountNode,
                                           @NotNull String adlAccount,
-                                          @NotNull PublishSubject<Pair<String, Node>> provisionAction) {
-        super(node, "Provisioning Spark Serverless Cluster");
+                                          @NotNull PublishSubject<Pair<String, SparkServerlessADLAccountNode>> provisionAction) {
+        super(adlAccountNode, "Provision Spark Cluster");
         this.adlAccount = adlAccount;
         this.provisionAction = provisionAction;
+        this.adlAccountNode = adlAccountNode;
     }
 
     @Override
     protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-        provisionAction.onNext(Pair.of(adlAccount, e.getAction().getNode()));
+        provisionAction.onNext(Pair.of(adlAccount, adlAccountNode));
     }
 
     @Override
