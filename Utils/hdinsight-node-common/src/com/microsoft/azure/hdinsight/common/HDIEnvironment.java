@@ -44,26 +44,25 @@ public final class HDIEnvironment implements IEnvironment {
     }
 
     public HDIEnvironment(@NotNull Environment environment) {
-        switch (environment) {
-            case GLOBAL:
-                this.environment = Environment.GLOBAL;
-                this.endpoints = HDIEnvironment.GLOBAL.endpoints;
-                break;
-            case CHINA:
-                this.environment = Environment.CHINA;
-                this.endpoints = HDIEnvironment.CHINA.endpoints;
-                break;
-            case GERMAN:
-                this.environment = Environment.GERMAN;
-                this.endpoints = HDIEnvironment.GERMANY.endpoints;
-                break;
-            case US_GOVERNMENT:
-                this.environment = Environment.US_GOVERNMENT;
-                this.endpoints = HDIEnvironment.US_GOVERNMENT.endpoints;
-                break;
-            default:
-                this.environment = Environment.GLOBAL;
-                this.endpoints = HDIEnvironment.GLOBAL.endpoints;
+        if (Environment.GLOBAL.equals(environment)) {
+            this.environment = Environment.GLOBAL;
+            this.endpoints = HDIEnvironment.GLOBAL.endpoints;
+
+        } else if (Environment.CHINA.equals(environment)) {
+            this.environment = Environment.CHINA;
+            this.endpoints = HDIEnvironment.CHINA.endpoints;
+
+        } else if (Environment.GERMAN.equals(environment)) {
+            this.environment = Environment.GERMAN;
+            this.endpoints = HDIEnvironment.GERMANY.endpoints;
+
+        } else if (Environment.US_GOVERNMENT.equals(environment)) {
+            this.environment = Environment.US_GOVERNMENT;
+            this.endpoints = HDIEnvironment.US_GOVERNMENT.endpoints;
+
+        } else {
+            this.environment = Environment.GLOBAL;
+            this.endpoints = HDIEnvironment.GLOBAL.endpoints;
         }
     }
     public Environment getEnvironment() {
@@ -98,17 +97,16 @@ public final class HDIEnvironment implements IEnvironment {
         if (azureManager != null) {
             env = azureManager.getEnvironment();
         }
-        switch (env) {
-            case GLOBAL:
-                return HDIEnvironment.GLOBAL;
-            case CHINA:
-                return HDIEnvironment.CHINA;
-            case GERMAN:
-                return HDIEnvironment.GERMANY;
-            case US_GOVERNMENT:
-                return HDIEnvironment.US_GOVERNMENT;
-            default:
-                return HDIEnvironment.GLOBAL;
+        if (Environment.GLOBAL.equals(env)) {
+            return HDIEnvironment.GLOBAL;
+        } else if (Environment.CHINA.equals(env)) {
+            return HDIEnvironment.CHINA;
+        } else if (Environment.GERMAN.equals(env)) {
+            return HDIEnvironment.GERMANY;
+        } else if (Environment.US_GOVERNMENT.equals(env)) {
+            return HDIEnvironment.US_GOVERNMENT;
+        } else {
+            return HDIEnvironment.GLOBAL;
         }
     }
 }

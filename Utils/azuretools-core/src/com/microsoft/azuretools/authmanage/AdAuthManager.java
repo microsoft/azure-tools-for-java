@@ -106,7 +106,9 @@ public class AdAuthManager {
      * @return true for success
      */
     public synchronized boolean tryRestoreSignIn(@NotNull AuthMethodDetails authMethodDetails) {
-        if (secureStore == null) {
+        if (secureStore == null || authMethodDetails.getAzureEnv() == null ||
+                // Restore only for the same saved Azure environment with current
+                !CommonSettings.getEnvironment().getName().equals(authMethodDetails.getAzureEnv())) {
             return false;
         }
 
@@ -180,8 +182,29 @@ public class AdAuthManager {
                 //TODO: should narrow to AuthError.InteractionRequired
                 ac1.acquireToken(env.managementEndpoint(), true, userId, isDisplayable);
             }
-            ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable);
+
+            // FIXME!!! Some environments and subscriptions can't get the resource manager token
+            // Let the log in process passed, and throwing the errors when to access those resources
+            try {
+                ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable);
+            } catch (AuthException e) {
+                if (CommonSettings.getEnvironment() instanceof ProvidedEnvironment) {
+                    // Swallow the exception since some provided environments are not full featured
+                    LOGGER.warning("Can't get " + env.resourceManagerEndpoint() + " access token from environment " +
+                            CommonSettings.getEnvironment().getName());
+                } else {
+                    throw e;
+                }
+            }
+
             ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable);
+
+            // ADL account access token
+            try {
+                ac1.acquireToken(env.dataLakeEndpointResourceId(), false, userId, isDisplayable);
+            } catch (AuthException ignored) {
+            }
+
             // TODO: remove later
             // ac1.acquireToken(Constants.resourceVault, false, userId, isDisplayable);
             List<String> sids = new LinkedList<>();

@@ -29,6 +29,8 @@ import com.microsoft.azuretools.authmanage.Environment;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.microsoft.azuretools.authmanage.Environment.*;
+
 /**
  * Created by vlashch on 1/27/17.
  */
@@ -44,30 +46,28 @@ public abstract class AzureManagerBase implements AzureManager {
     @Override
     public String getPortalUrl() {
         Environment env = getEnvironment();
-        switch (env) {
-            case GLOBAL:
-                return GLOBAL_PORTAL;
-            case CHINA:
-                return CHINA_PORTAL;
-            case GERMAN:
-                return AzureEnvironment.AZURE_GERMANY.portal();
-            case US_GOVERNMENT:
-                return AzureEnvironment.AZURE_US_GOVERNMENT.portal();
-            default:
-                return GLOBAL_PORTAL;
+        if (GLOBAL.equals(env)) {
+            return GLOBAL_PORTAL;
+        } else if (CHINA.equals(env)) {
+            return CHINA_PORTAL;
+        } else if (GERMAN.equals(env)) {
+            return AzureEnvironment.AZURE_GERMANY.portal();
+        } else if (US_GOVERNMENT.equals(env)) {
+            return AzureEnvironment.AZURE_US_GOVERNMENT.portal();
+        } else {
+            return env.getAzureEnvironment().portal();
         }
     }
 
     @Override
     public String getScmSuffix() {
         Environment env = getEnvironment();
-        switch (env) {
-            case GLOBAL:
-                return GLOBAL_SCM_SUFFIX;
-            case CHINA:
-                return CHINA_SCM_SUFFIX;
-            default:
-                return GLOBAL_SCM_SUFFIX;
+        if (GLOBAL.equals(env)) {
+            return GLOBAL_SCM_SUFFIX;
+        } else if (CHINA.equals(env)) {
+            return CHINA_SCM_SUFFIX;
+        } else {
+            return GLOBAL_SCM_SUFFIX;
         }
     }
 }

@@ -22,9 +22,7 @@
 
 package com.microsoft.azuretools.authmanage;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azuretools.authmanage.interact.IUIFactory;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -34,11 +32,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.logging.Logger;
+import java.util.stream.StreamSupport;
 
 /**
  * Created by shch on 10/10/2016.
  */
 public class CommonSettings {
+    private static final Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
     public static final String authMethodDetailsFileName = "AuthMethodDetails.json";
 
     private static String settingsBaseDir = null;
@@ -67,7 +68,34 @@ public class CommonSettings {
                 JsonElement envElement = jsonObject.get(ENV_NAME_KEY);
                 String envName = (envElement != null ? envElement.getAsString() : null);
                 if (null != envName){
-                    setEnvironment(envName, null);
+                    // Provider file firstly
+                    ProvidedEnvironment providedEnv = null;
+
+                    JsonArray envs = jsonObject.getAsJsonArray("Environments");
+                    if (envs != null) {
+                        JsonElement providedEnvElem = StreamSupport.stream(envs.spliterator(), false)
+                                .map(JsonElement::getAsJsonObject)
+                                .filter(obj -> obj != null &&
+                                                obj.get("envName") != null &&
+                                                obj.get("envName").getAsString().equals(envName))
+                                .findFirst()
+                                .orElse(null);
+
+                        if (providedEnvElem != null) {
+                            try {
+                                providedEnv = new Gson().fromJson(providedEnvElem, ProvidedEnvironment.class);
+                            } catch (Exception e) {
+                                LOGGER.warning("Parsing JSON String from " + providedEnvElem +
+                                        "as provided environment failed, got the exception: " + e );
+                            }
+                        }
+                    }
+
+                    if (providedEnv == null) {
+                        setEnvironment(envName, null);
+                    } else {
+                        ENV = providedEnv;
+                    }
                 }
             }
         } catch (Exception e) {
@@ -85,7 +113,7 @@ public class CommonSettings {
     	return ENV.getAzureEnvironment();
     }
 
-    public static Environment getEnvironmentEnum() {
+    public static Environment getEnvironment() {
         return ENV;
     }
 
