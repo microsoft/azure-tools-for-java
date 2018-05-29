@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode;
 
+import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -36,7 +37,7 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode {
     @NotNull
     private final String CLUSTER_MODULE_ID;
     // TODO: Update icon path
-    private static final String ICON_PATH = "StorageAccount_16.png";
+    private static final String ICON_PATH = CommonConst.ClusterIConPath;
     @NotNull
     private final AzureSparkServerlessCluster cluster;
     @NotNull

@@ -33,7 +33,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
     // TODO: Update icon path
-    private static final String ICON_PATH = CommonConst.AZURE_DATA_LAKE_ICON_PATH;
+    private static final String ICON_PATH = CommonConst.ADLS_STORAGE_ACCOUNT_ICON_PATH;
     @NotNull
     private final AzureSparkServerlessAccount adlAccount;
 

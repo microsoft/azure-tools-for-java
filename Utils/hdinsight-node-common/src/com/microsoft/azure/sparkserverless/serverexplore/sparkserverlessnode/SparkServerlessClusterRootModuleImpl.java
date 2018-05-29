@@ -31,7 +31,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 public class SparkServerlessClusterRootModuleImpl extends SparkServerlessClusterRootModule{
     private static final String SERVICE_MODULE_ID = SparkServerlessClusterRootModuleImpl.class.getName();
     // TODO: Update icon path
-    private static final String ICON_PATH = CommonConst.AZURE_DATA_LAKE_ICON_PATH;
+    private static final String ICON_PATH = CommonConst.AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH;
     // TODO: determine root node name
     private static final String BASE_MODULE_NAME = "Azure Data Lake";
 
