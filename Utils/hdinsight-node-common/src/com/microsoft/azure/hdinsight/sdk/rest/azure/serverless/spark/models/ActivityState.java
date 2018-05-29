@@ -50,6 +50,9 @@ public enum ActivityState {
     /** Enum value Scheduling. */
     SCHEDULING("Scheduling"),
 
+    /** Enum value Scheduled. */
+    SCHEDULED("Scheduled"),
+
     /** Enum value Starting. */
     STARTING("Starting"),
 
