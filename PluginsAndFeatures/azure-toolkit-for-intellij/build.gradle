@@ -53,10 +53,11 @@ findbugs {
 }
 
 intellij {
-    pluginName 'azure-toolkit-for-intellij'
-    version intellij_version
+    pluginName = 'azure-toolkit-for-intellij'
+    version = intellij_version
+    updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
     plugins = ['maven', dep_plugins]
-	downloadSources Boolean.valueOf(sources)
+	downloadSources = Boolean.valueOf(sources)
 }
 
 sourceSets {
