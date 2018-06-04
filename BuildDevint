@@ -54,7 +54,7 @@ fi
 
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.1.zip
 
-# Build intellij 2018.1 plugin
+# Build intellij 2018.2 compatible plugin
 if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2018.2
 fi
