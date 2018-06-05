@@ -221,7 +221,7 @@ public class AddNewEmulatorForm extends AzureTitleAreaDialogWrapper {
 	}
 
 	private boolean checkLivyEndpoint() {
-		SparkBatchSubmission.getInstance().setCredentialsProvider(userName, password);
+		SparkBatchSubmission.getInstance().setUsernamePasswordCredential(userName, password);
 		HttpResponse httpResponse = null;
 
 		try {
@@ -234,7 +234,7 @@ public class AddNewEmulatorForm extends AzureTitleAreaDialogWrapper {
 	}
 
 	private boolean checkSparkHistoryEndpoint() {
-		SparkBatchSubmission.getInstance().setCredentialsProvider(userName, password);
+		SparkBatchSubmission.getInstance().setUsernamePasswordCredential(userName, password);
 		HttpResponse httpResponse = null;
 
 		try {
@@ -248,7 +248,7 @@ public class AddNewEmulatorForm extends AzureTitleAreaDialogWrapper {
 	}
 
 	private boolean checkAmbariEndpoint() {
-		SparkBatchSubmission.getInstance().setCredentialsProvider("admin", "admin");
+		SparkBatchSubmission.getInstance().setUsernamePasswordCredential("admin", "admin");
 		HttpResponse httpResponse = null;
 
 		try {

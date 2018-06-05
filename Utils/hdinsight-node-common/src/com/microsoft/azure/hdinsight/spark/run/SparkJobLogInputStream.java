@@ -22,15 +22,18 @@
 
 package com.microsoft.azure.hdinsight.spark.run;
 
+import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Optional;
 
 import static java.lang.Thread.sleep;
@@ -39,7 +42,7 @@ public class SparkJobLogInputStream extends InputStream {
     @NotNull
     private String logType;
     @Nullable
-    private SparkBatchJob sparkBatchJob;
+    private ISparkBatchJob sparkBatchJob;
     @Nullable
     private String logUrl;
 
@@ -52,34 +55,23 @@ public class SparkJobLogInputStream extends InputStream {
         this.logType = logType;
     }
 
-    public SparkBatchJob attachJob(@NotNull SparkBatchJob sparkJob) {
-        refreshLogUrl(sparkJob);
+    public ISparkBatchJob attachJob(@NotNull ISparkBatchJob sparkJob) {
         setSparkBatchJob(sparkJob);
 
         return sparkJob;
     }
 
-    private synchronized Optional<String> fetchLog(long logOffset, int fetchSize) {
+    private synchronized Optional<SimpleImmutableEntry<String, Long>> fetchLog(long logOffset, int fetchSize) {
         return getAttachedJob()
-                .flatMap(job -> getLogUrl().map(url -> new AbstractMap.SimpleImmutableEntry<>(job, url)))
-                .map(jobUrlPair -> {
-                    SparkBatchJob job = jobUrlPair.getKey();
-
-                    return JobUtils.getInformationFromYarnLogDom(
-                            job.getSubmission().getCredentialsProvider(),
-                            jobUrlPair.getValue(),
-                            getLogType(),
-                            logOffset,
-                            fetchSize);
-                })
-                .filter(slice -> !slice.isEmpty());
+                .map(job -> job.getDriverLog(getLogType(), logOffset, fetchSize)
+                               .toBlocking().singleOrDefault(new SimpleImmutableEntry<>("", logOffset)));
     }
 
-    void setSparkBatchJob(@Nullable SparkBatchJob sparkBatchJob) {
+    void setSparkBatchJob(@Nullable ISparkBatchJob sparkBatchJob) {
         this.sparkBatchJob = sparkBatchJob;
     }
 
-    public Optional<SparkBatchJob> getAttachedJob() {
+    public Optional<ISparkBatchJob> getAttachedJob() {
         return Optional.ofNullable(sparkBatchJob);
     }
 
@@ -96,15 +88,13 @@ public class SparkJobLogInputStream extends InputStream {
     public int available() throws IOException {
         if (bufferPos >= buffer.length) {
             return fetchLog(offset, -1)
-                    .map(slice -> {
-                        buffer = slice.getBytes();
+                    .map(sliceOffsetPair -> {
+                        buffer = sliceOffsetPair.getKey().getBytes();
                         bufferPos = 0;
-                        offset += slice.length();
+                        offset = sliceOffsetPair.getValue() + sliceOffsetPair.getKey().length();
 
                         return buffer.length;
                     }).orElseGet(() -> {
-                        getAttachedJob().ifPresent(this::refreshLogUrl);
-
                         try {
                             sleep(3000);
                         } catch (InterruptedException ignore) { }
@@ -113,16 +103,6 @@ public class SparkJobLogInputStream extends InputStream {
                     });
         } else {
             return buffer.length - bufferPos;
-        }
-    }
-
-    protected void refreshLogUrl(SparkBatchJob sparkJob) {
-        String currentLogUrl = sparkJob.getSparkJobDriverLogUrlObservable().toBlocking().singleOrDefault(this.logUrl);
-
-        if (!StringUtils.equals(currentLogUrl, this.logUrl)) {
-            // The driver log url's changed due to the job was rerun, read it from beginning
-            setLogUrl(currentLogUrl);
-            offset = 0;
         }
     }
 

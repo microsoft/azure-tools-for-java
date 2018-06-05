@@ -275,7 +275,7 @@ public class SparkSubmitModel {
     }
 
     private void tryToCreateBatchSparkJob(@NotNull final IClusterDetail selectedClusterDetail) throws HDIException,IOException {
-        SparkBatchSubmission.getInstance().setCredentialsProvider(selectedClusterDetail.getHttpUserName(), selectedClusterDetail.getHttpPassword());
+        SparkBatchSubmission.getInstance().setUsernamePasswordCredential(selectedClusterDetail.getHttpUserName(), selectedClusterDetail.getHttpPassword());
         HttpResponse response = SparkBatchSubmission.getInstance().createBatchSparkJob(JobUtils.getLivyConnectionURL(selectedClusterDetail), submissionParameter);
 
         if (response.getCode() == 201 || response.getCode() == 200) {

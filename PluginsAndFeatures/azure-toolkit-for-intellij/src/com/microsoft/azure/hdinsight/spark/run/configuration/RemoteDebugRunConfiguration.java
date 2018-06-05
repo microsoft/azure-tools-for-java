@@ -69,21 +69,28 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
     @NotNull
     final private Properties actionProperties = new Properties();
 
-    public RemoteDebugRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, @NotNull RunConfigurationModule configurationModule, String name) {
+    public RemoteDebugRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, @NotNull RunConfigurationModule configurationModule, @NotNull String name) {
+        this(new SparkBatchJobConfigurableModel(project), factory, configurationModule, name);
+    }
+
+    public RemoteDebugRunConfiguration(@NotNull SparkBatchJobConfigurableModel jobModel,
+                                       @NotNull ConfigurationFactory factory,
+                                       @NotNull RunConfigurationModule configurationModule,
+                                       @NotNull String name) {
         super(name, configurationModule, factory);
 
-        this.jobModel = new SparkBatchJobConfigurableModel(project);
+        this.jobModel = jobModel;
     }
 
     @Override
-    public void readExternal(Element rootElement) throws InvalidDataException {
+    public void readExternal(@NotNull Element rootElement) throws InvalidDataException {
         super.readExternal(rootElement);
 
         jobModel.applyFromElement(rootElement);
     }
 
     @Override
-    public void writeExternal(Element rootElement) throws WriteExternalException {
+    public void writeExternal(@NotNull Element rootElement) throws WriteExternalException {
         super.writeExternal(rootElement);
 
         Element jobConfigElement = jobModel.exportToElement();
@@ -98,6 +105,11 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
     @NotNull
     public SparkSubmitModel getSubmitModel() {
         return getModel().getSubmitModel();
+    }
+
+    @NotNull
+    public Properties getActionProperties() {
+        return actionProperties;
     }
 
     @NotNull

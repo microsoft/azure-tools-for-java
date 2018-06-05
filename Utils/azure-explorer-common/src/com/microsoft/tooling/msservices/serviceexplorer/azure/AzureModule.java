@@ -23,6 +23,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure;
 
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
+import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterRootModule;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -36,7 +37,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessClusterRootModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
@@ -74,7 +74,6 @@ public class AzureModule extends AzureRefreshableNode {
         //hdInsightModule = new HDInsightRootModule(this);
         isSparkServerlessEnabled =
                 Optional.ofNullable(System.getenv("AZURE_SPARKSERVERLESS_ENABLE")).orElse("").equals("true");
-        sparkServerlessClusterRootModule = new SparkServerlessClusterRootModule(this);
         vmArmServiceModule = new VMArmModule(this);
         redisCacheModule = new RedisCacheModule(this);
         dockerHostModule = new DockerHostModule(this);
@@ -121,6 +120,10 @@ public class AzureModule extends AzureRefreshableNode {
 
     public void setHdInsightModule(@NotNull HDInsightRootModule rootModule) {
         this.hdInsightModule = rootModule;
+    }
+
+    public void setSparkServerlessModule(@NotNull SparkServerlessClusterRootModule rootModule) {
+        this.sparkServerlessClusterRootModule = rootModule;
     }
 
     @Override

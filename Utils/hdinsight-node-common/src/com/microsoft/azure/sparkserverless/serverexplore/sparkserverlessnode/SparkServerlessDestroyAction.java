@@ -20,40 +20,52 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless;
+package com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode;
 
+import com.microsoft.azure.hdinsight.sdk.cluster.DestroyableCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionListener;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import rx.subjects.PublishSubject;
 
-public class SparkServerlessProvisionAction extends AzureNodeActionListener {
+public class SparkServerlessDestroyAction extends AzureNodeActionListener {
+    // TODO: Update clusterName type
+    @NotNull
+    private final DestroyableCluster cluster;
     // TODO: Update adlAccount type
     @NotNull
-    private final String adlAccount;
+    private final AzureSparkServerlessAccount adlAccount;
     @NotNull
-    private final PublishSubject<Pair<String, Node>> provisionAction;
+    private final PublishSubject<Triple<
+            AzureSparkServerlessAccount, DestroyableCluster, SparkServerlessClusterNode>> destroyAction;
+    @NotNull
+    private final SparkServerlessClusterNode clusterNode;
 
-    public SparkServerlessProvisionAction(@NotNull Node node,
-                                          @NotNull String adlAccount,
-                                          @NotNull PublishSubject<Pair<String, Node>> provisionAction) {
-        super(node, "Provisioning Spark Serverless Cluster");
+    public SparkServerlessDestroyAction(@NotNull SparkServerlessClusterNode clusterNode,
+                                        @NotNull DestroyableCluster cluster,
+                                        @NotNull AzureSparkServerlessAccount adlAccount,
+                                        @NotNull PublishSubject<Triple<
+                                                AzureSparkServerlessAccount,
+                                                DestroyableCluster,
+                                                SparkServerlessClusterNode>> destroyAction) {
+        super(clusterNode, "Deleting Spark Cluster");
+        this.clusterNode = clusterNode;
         this.adlAccount = adlAccount;
-        this.provisionAction = provisionAction;
+        this.cluster = cluster;
+        this.destroyAction = destroyAction;
     }
 
     @Override
     protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-        provisionAction.onNext(Pair.of(adlAccount, e.getAction().getNode()));
+        destroyAction.onNext(ImmutableTriple.of(adlAccount, cluster, clusterNode));
     }
 
     @Override
     protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
-
+        // TODO: Do nothing. Refer to class DeleteQueue
     }
 }

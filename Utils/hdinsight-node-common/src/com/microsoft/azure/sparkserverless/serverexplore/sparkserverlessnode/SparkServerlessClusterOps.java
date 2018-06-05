@@ -20,10 +20,11 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless;
+package com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode;
 
+import com.microsoft.azure.hdinsight.sdk.cluster.DestroyableCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import rx.subjects.PublishSubject;
@@ -31,12 +32,11 @@ import rx.subjects.PublishSubject;
 public class SparkServerlessClusterOps {
     private static SparkServerlessClusterOps instance = new SparkServerlessClusterOps();
 
-    // TODO: Update type for the triplet <adlAccount, clusterName, currentNode>
     @NotNull
-    private final PublishSubject<Triple<String, String, Node>> destroyAction;
-    // TODO: Update type for the pair <adlAccount, node>
+    private final PublishSubject<Triple<
+            AzureSparkServerlessAccount, DestroyableCluster, SparkServerlessClusterNode>> destroyAction;
     @NotNull
-    private final PublishSubject<Pair<String, Node>> provisionAction;
+    private final PublishSubject<Pair<AzureSparkServerlessAccount, SparkServerlessADLAccountNode>> provisionAction;
 
     private SparkServerlessClusterOps() {
         destroyAction = PublishSubject.create();
@@ -49,12 +49,13 @@ public class SparkServerlessClusterOps {
     }
 
     @NotNull
-    public PublishSubject<Triple<String, String, Node>> getDestroyAction() {
+    public PublishSubject<Triple<
+            AzureSparkServerlessAccount, DestroyableCluster, SparkServerlessClusterNode>> getDestroyAction() {
         return destroyAction;
     }
 
     @NotNull
-    public PublishSubject<Pair<String, Node>> getProvisionAction() {
+    public PublishSubject<Pair<AzureSparkServerlessAccount, SparkServerlessADLAccountNode>> getProvisionAction() {
         return provisionAction;
     }
 }

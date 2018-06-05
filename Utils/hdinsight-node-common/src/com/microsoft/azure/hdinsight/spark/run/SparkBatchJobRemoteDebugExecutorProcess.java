@@ -25,10 +25,7 @@ package com.microsoft.azure.hdinsight.spark.run;
 import com.jcraft.jsch.JSchException;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.spark.common.SparkBatchDebugSession;
-import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob;
-import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJob;
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
+import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import rx.Observable;
 import rx.subjects.PublishSubject;
@@ -50,13 +47,12 @@ public class SparkBatchJobRemoteDebugExecutorProcess extends SparkBatchJobRemote
     private final SparkJobExecutorLogInputStream stdErrInputStream;
 
     public SparkBatchJobRemoteDebugExecutorProcess(@NotNull IdeSchedulers schedulers,
-                                                   @NotNull SparkSubmissionParameter submissionParameter,
                                                    @NotNull SparkBatchRemoteDebugJob parentJob,
                                                    @NotNull String host,
                                                    @NotNull SparkBatchDebugSession debugSshSession,
                                                    @NotNull String logBaseUrl) {
         // Needn't artifact path for executor since no deployment
-        super(schedulers, debugSshSession, submissionParameter, "", debugSshSession.getAuth(), PublishSubject.create());
+        super(schedulers, debugSshSession, parentJob, "", "Executor " + host, debugSshSession.getAuth(), PublishSubject.create());
 
         this.parentJob = parentJob;
         this.host = host;
@@ -72,12 +68,7 @@ public class SparkBatchJobRemoteDebugExecutorProcess extends SparkBatchJobRemote
     }
 
     @Override
-    protected Observable<SimpleImmutableEntry<IClusterDetail, String>> prepareArtifact() {
-        return Observable.just(new SimpleImmutableEntry<>(null, "executor, no standalone path"));
-    }
-
-    @Override
-    protected Observable<? extends SparkBatchJob> submitJob(SimpleImmutableEntry<IClusterDetail, String> clusterArtifactUriPair) {
+    protected Observable<? extends ISparkBatchJob> prepareArtifact() {
         return Observable.just(parentJob);
     }
 
@@ -93,14 +84,16 @@ public class SparkBatchJobRemoteDebugExecutorProcess extends SparkBatchJobRemote
 
     @NotNull
     @Override
-    protected SparkBatchDebugJobJdbPortForwardedEvent createEventWithJdbPorForwarding(SparkBatchRemoteDebugJob job)
-            throws JSchException, IOException {
-        int remotePort = job.getYarnContainerJDBListenPort(logUrl);
+    protected Observable<SparkBatchDebugJobJdbPortForwardedEvent> createEventWithJdbPorForwarding(
+            SparkBatchRemoteDebugJob job) {
+        return Observable.fromCallable(() -> {
+            int remotePort = job.getYarnContainerJDBListenPort(logUrl);
 
-        int localPort = getDebugSession()
-                .forwardToRemotePort(host, remotePort)
-                .getForwardedLocalPort(host, remotePort);
+            int localPort = getDebugSession()
+                    .forwardToRemotePort(host, remotePort)
+                    .getForwardedLocalPort(host, remotePort);
 
-        return new SparkBatchDebugJobJdbPortForwardedEvent(job, getDebugSession(), host, remotePort, localPort, false);
+            return new SparkBatchDebugJobJdbPortForwardedEvent(job, getDebugSession(), host, remotePort, localPort, false);
+        });
     }
 }

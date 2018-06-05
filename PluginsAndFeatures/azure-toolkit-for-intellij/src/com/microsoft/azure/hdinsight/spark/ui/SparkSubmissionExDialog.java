@@ -68,10 +68,13 @@ public class SparkSubmissionExDialog extends JDialog {
         Image image = StreamUtil.getImageResourceFile(CommonConst.ProductIConPath).getImage();
         setIconImage(image);
 
-        contentControl = new SparkSubmissionContentPanelConfigurable(this.project, () -> {
+        CallBack callBack = () -> {
             setSubmitButtonStatus();
             pack();
-        });
+        };
+
+        contentControl = new SparkSubmissionContentPanelConfigurable(
+                this.project, callBack, new SparkSubmissionContentPanel(callBack));
         contentControl.setData(Optional.ofNullable(this.project.getUserData(SUBMISSION_DATA_KEY))
                                        .orElseGet(() -> new SparkSubmitModel(project)));
         setContentPane(getContentPane());

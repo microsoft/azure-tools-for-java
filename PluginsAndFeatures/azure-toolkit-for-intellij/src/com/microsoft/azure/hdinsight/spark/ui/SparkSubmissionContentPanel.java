@@ -87,7 +87,7 @@ public class SparkSubmissionContentPanel extends JPanel{
 
     private CallBack updateCallBack;
 
-    private final int margin = 10;
+    protected final int margin = 10;
     private static final String REFRESH_BUTTON_PATH = "/icons/refresh.png";
 
     @NotNull
@@ -112,10 +112,6 @@ public class SparkSubmissionContentPanel extends JPanel{
     private JRadioButton localArtifactRadioButton;
     @NotNull
     private final JLabel[] errorMessageLabels = new JLabel[5];
-    @NotNull
-    private SparkSubmissionAdvancedConfigDialog advancedConfigDialog;
-    @NotNull
-    private JButton advancedConfigButton= new JButton("Advanced configuration");
     @NotNull
     FixedSizeButton loadJobConfigurationFixedSizeButton;
 
@@ -144,8 +140,6 @@ public class SparkSubmissionContentPanel extends JPanel{
         addReferencedJarsLineItem();
         //TODO: ReferencedFiles Parameter Valid Check
         addReferencedFilesLineItem();
-
-        addAdvancedConfigLineItem();
     }
 
     void updateTableColumn() {
@@ -206,11 +200,6 @@ public class SparkSubmissionContentPanel extends JPanel{
     @NotNull
     JTextField getReferencedFilesTextField() {
         return referencedFilesTextField;
-    }
-
-    @NotNull
-    SparkSubmissionAdvancedConfigDialog getAdvancedConfigDialog() {
-        return advancedConfigDialog;
     }
 
     @NotNull
@@ -492,10 +481,6 @@ public class SparkSubmissionContentPanel extends JPanel{
         loadJobConfigurationFixedSizeButton.addActionListener(actionListener);
     }
 
-    void addAdvancedConfigurationButtonActionListener(ActionListener actionListener) {
-        advancedConfigButton.addActionListener(actionListener);
-    }
-
     private void addConfigurationLineItem() {
         JLabel jobConfigurationLabel = new JLabel("Job configurations");
 
@@ -604,24 +589,6 @@ public class SparkSubmissionContentPanel extends JPanel{
                         1, 0,
                         GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
                         new Insets(margin, margin, 0, margin), 0, 0));
-    }
-
-    private void addAdvancedConfigLineItem() {
-        advancedConfigButton.setEnabled(false);
-        advancedConfigButton.setToolTipText("Specify advanced configuration, for example, enabling Spark remote debug");
-
-        clusterSelectedSubject
-                .throttleWithTimeout(200, TimeUnit.MILLISECONDS)
-                .subscribe(cluster -> advancedConfigButton.setEnabled(cluster != null));
-
-        add(advancedConfigButton,
-                new GridBagConstraints(0, ++displayLayoutCurrentRow,
-                        0, 1,
-                        1, 0,
-                        GridBagConstraints.SOUTHEAST, GridBagConstraints.NONE,
-                        new Insets(margin, margin, 0, 0), 0, 0));
-
-        advancedConfigDialog = new SparkSubmissionAdvancedConfigDialog();
     }
 
     private void addReferencedFilesLineItem() {

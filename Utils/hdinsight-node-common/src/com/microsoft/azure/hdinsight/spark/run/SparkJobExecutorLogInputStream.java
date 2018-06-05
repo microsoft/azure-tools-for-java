@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.run;
 
+import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
@@ -34,14 +35,9 @@ class SparkJobExecutorLogInputStream extends SparkJobLogInputStream {
     }
 
     @Override
-    public SparkBatchJob attachJob(@NotNull SparkBatchJob sparkJob) {
+    public ISparkBatchJob attachJob(@NotNull ISparkBatchJob sparkJob) {
         setSparkBatchJob(sparkJob);
 
         return sparkJob;
-    }
-
-    @Override
-    protected void refreshLogUrl(SparkBatchJob sparkJob) {
-        // Needn't to refresh log url for executor
     }
 }
