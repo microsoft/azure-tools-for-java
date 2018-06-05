@@ -27,47 +27,50 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Defines values for ActivityState.
+ * Defines values for SparkItemGroupState.
  */
-public enum ActivityState {
-    /** Enum value Any. */
-    ANY("Any"),
+public enum SparkItemGroupState {
+    /** Enum value Waiting. */
+    WAITING("Waiting"),
 
-    /** Enum value Submitted. */
-    SUBMITTED("Submitted"),
+    /** Enum value Launch. */
+    LAUNCH("Launch"),
 
-    /** Enum value Preparing. */
-    PREPARING("Preparing"),
+    /** Enum value Release. */
+    RELEASE("Release"),
 
-    /** Enum value Queued. */
-    QUEUED("Queued"),
+    /** Enum value Stable. */
+    STABLE("Stable"),
 
-    /** Enum value Scheduled. */
-    SCHEDULED("Scheduled"),
+    /** Enum value Idle. */
+    IDLE("Idle"),
 
-    /** Enum value Finalizing. */
-    FINALIZING("Finalizing"),
+    /** Enum value Failed. */
+    FAILED("Failed"),
 
-    /** Enum value Ended. */
-    ENDED("Ended");
+    /** Enum value Shutdown. */
+    SHUTDOWN("Shutdown"),
 
-    /** The actual serialized value for a ActivityState instance. */
+    /** Enum value Completed. */
+    COMPLETED("Completed");
+
+    /** The actual serialized value for a SparkItemGroupState instance. */
     private String value;
 
-    ActivityState(String value) {
+    SparkItemGroupState(String value) {
         this.value = value;
     }
 
     /**
-     * Parses a serialized value to a ActivityState instance.
+     * Parses a serialized value to a SparkItemGroupState instance.
      *
      * @param value the serialized value to parse.
-     * @return the parsed ActivityState object, or null if unable to parse.
+     * @return the parsed SparkItemGroupState object, or null if unable to parse.
      */
     @JsonCreator
-    public static ActivityState fromString(String value) {
-        ActivityState[] items = ActivityState.values();
-        for (ActivityState item : items) {
+    public static SparkItemGroupState fromString(String value) {
+        SparkItemGroupState[] items = SparkItemGroupState.values();
+        for (SparkItemGroupState item : items) {
             if (item.toString().equalsIgnoreCase(value)) {
                 return item;
             }
