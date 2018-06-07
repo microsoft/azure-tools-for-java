@@ -40,6 +40,8 @@ public class SparkBatchJobConfigurableModel {
     @NotNull
     private SparkSubmitModel submitModel;
 
+    public SparkBatchJobConfigurableModel() { }
+
     public SparkBatchJobConfigurableModel(@NotNull Project project) {
         localRunConfigurableModel = new SparkLocalRunConfigurableModel(project);
         submitModel = new SparkSubmitModel(project);
@@ -82,7 +84,7 @@ public class SparkBatchJobConfigurableModel {
                     .ifPresent(elem -> getLocalRunConfigurableModel().applyFromElement(elem));
 
             Optional.ofNullable(root.getChild("spark_submission"))
-                    .map(elem -> SparkSubmitModel.factoryFromElement(getSubmitModel().getProject(), elem))
+                    .map(elem -> getSubmitModel().applyFromElement(elem))
                     .ifPresent(this::setSubmitModel);
         }
     }

@@ -47,9 +47,10 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
         return myWholePanel;
     }
 
-    private void createUIComponents() {
+    protected void createUIComponents() {
         myLocalRunConfigurable = new SparkLocalRunConfigurable(myProject);
-        myClusterSubmissionConfigurable = new SparkSubmissionContentPanelConfigurable(myProject, () -> {});
+        myClusterSubmissionConfigurable = new SparkSubmissionDebuggablePanelConfigurable(
+                myProject, () -> {}, new SparkSubmissionDebuggableContentPanel(null));
     }
 
     @Override
@@ -64,5 +65,26 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
         // Component -> Data
         myLocalRunConfigurable.getData(data.getLocalRunConfigurableModel());
         myClusterSubmissionConfigurable.getData(data.getSubmitModel());
+    }
+
+    public SparkLocalRunConfigurable getMyLocalRunConfigurable() {
+        return myLocalRunConfigurable;
+    }
+
+    public SparkSubmissionContentPanelConfigurable getMyClusterSubmissionConfigurable() {
+        return myClusterSubmissionConfigurable;
+    }
+
+    @NotNull
+    public Project getProject() {
+        return myProject;
+    }
+
+    protected void setMyLocalRunConfigurable(SparkLocalRunConfigurable myLocalRunConfigurable) {
+        this.myLocalRunConfigurable = myLocalRunConfigurable;
+    }
+
+    protected void setMyClusterSubmissionConfigurable(SparkSubmissionContentPanelConfigurable myClusterSubmissionConfigurable) {
+        this.myClusterSubmissionConfigurable = myClusterSubmissionConfigurable;
     }
 }

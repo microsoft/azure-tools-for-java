@@ -34,16 +34,17 @@ import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
+import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction;
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import rx.Observer;
 import rx.subjects.PublishSubject;
 
-import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 
 public class SparkBatchJobRunner extends DefaultProgramRunner {
     @NotNull
@@ -54,13 +55,19 @@ public class SparkBatchJobRunner extends DefaultProgramRunner {
 
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-        return SparkBatchJobRunExecutor.EXECUTOR_ID.equals(executorId) && profile instanceof RemoteDebugRunConfiguration;
+        return SparkBatchJobRunExecutor.EXECUTOR_ID.equals(executorId) && profile.getClass() == RemoteDebugRunConfiguration.class;
+    }
+
+    @NotNull
+    public ISparkBatchJob buildSparkBatchJob(@NotNull SparkSubmitModel submitModel,
+                                             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) throws ExecutionException {
+        return new SparkBatchJob(submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject);
     }
 
     @Nullable
     @Override
-    protected RunContentDescriptor doExecute(RunProfileState state, ExecutionEnvironment environment) throws ExecutionException {
-        SparkBatchJobSubmissionState submissionState = (SparkBatchJobSubmissionState) state;
+    protected RunContentDescriptor doExecute(@NotNull RunProfileState state,@NotNull ExecutionEnvironment environment) throws ExecutionException {
+        SparkBatchRemoteRunProfileState submissionState = (SparkBatchRemoteRunProfileState) state;
 
         // Check parameters before starting
         submissionState.checkSubmissionParameter();
@@ -70,11 +77,12 @@ public class SparkBatchJobRunner extends DefaultProgramRunner {
 
         // Prepare the run table console view UI
         SparkJobLogConsoleView jobOutputView = new SparkJobLogConsoleView(project);
-        PublishSubject<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject = PublishSubject.create();
+        PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject = PublishSubject.create();
         SparkBatchJobRemoteProcess remoteProcess = new SparkBatchJobRemoteProcess(
                 new IdeaSchedulers(project),
-                submitModel.getSubmissionParameter(),
+                buildSparkBatchJob(submitModel, ctrlSubject),
                 submitModel.getArtifactPath().orElseThrow(() -> new ExecutionException("No artifact selected")),
+                submitModel.getSubmissionParameter().getMainClassName(),
                 ctrlSubject);
         SparkBatchJobRunProcessHandler processHandler = new SparkBatchJobRunProcessHandler(remoteProcess, "Package and deploy the job to Spark cluster", null);
 

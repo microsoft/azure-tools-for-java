@@ -58,6 +58,8 @@ public class AdAuthManager {
     private static final String SECURE_STORE_KEY = "cachedAuthResult";
 
     private static final String AUTHORIZATIONREQUIRED = "Authorization is required, please sign out and sign in again";
+    @NotNull
+    private String commonTenantId = COMMON_TID;
 
     /**
      * Get the AdAuthManager singleton instance.
@@ -160,7 +162,7 @@ public class AdAuthManager {
 
         if (savedAuth == null) {
             cleanCache();
-            AuthContext ac = createContext(COMMON_TID, null);
+            AuthContext ac = createContext(getCommonTenantId(), null);
             result = ac.acquireToken(env.managementEndpoint(), true, null, false);
         } else {
             result = savedAuth;
@@ -171,7 +173,7 @@ public class AdAuthManager {
 
         Map<String, List<String>> tidToSidsMap = new HashMap<>();
 
-        List<Tenant> tenants = AccessTokenAzureManager.getTenants(COMMON_TID);
+        List<Tenant> tenants = AccessTokenAzureManager.getTenants(getCommonTenantId());
         for (Tenant t : tenants) {
             String tid = t.tenantId();
             AuthContext ac1 = createContext(tid, null);
@@ -263,7 +265,10 @@ public class AdAuthManager {
                     return null;
                 }
 
-                AuthContext ac = createContext(COMMON_TID, null);
+                String tenantId = StringUtils.isNullOrWhiteSpace(savedAuth.getUserInfo().getTenantId()) ? COMMON_TID :
+                        savedAuth.getUserInfo().getTenantId();
+
+                AuthContext ac = createContext(tenantId, null);
                 AuthResult updatedAuth = ac.acquireToken(savedAuth);
 
                 saveToSecureStore(updatedAuth);
@@ -278,12 +283,17 @@ public class AdAuthManager {
     }
 
     private void saveToSecureStore(@Nullable AuthResult authResult) {
-        if (secureStore == null) {
+        if (secureStore == null || authResult == null) {
             return;
         }
 
         try {
             String authJson = JsonHelper.serialize(authResult);
+
+            String tenantId = StringUtils.isNullOrWhiteSpace(authResult.getUserInfo().getTenantId()) ? COMMON_TID :
+                    authResult.getUserInfo().getTenantId();
+            // Update common tenantId after token acquired successfully
+            setCommonTenantId(tenantId);
 
             secureStore.savePassword(SECURE_STORE_SERVICE, SECURE_STORE_KEY, authJson);
         } catch (IOException e) {
@@ -311,6 +321,7 @@ public class AdAuthManager {
         adAuthDetails = new AdAuthDetails();
 
         // clear saved auth result
+        setCommonTenantId(COMMON_TID);
         saveToSecureStore(null);
     }
 
@@ -323,5 +334,14 @@ public class AdAuthManager {
         }
 
         secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+    }
+
+    public void setCommonTenantId(@NotNull String commonTenantId) {
+        this.commonTenantId = commonTenantId;
+    }
+
+    @NotNull
+    public String getCommonTenantId() {
+        return commonTenantId;
     }
 }

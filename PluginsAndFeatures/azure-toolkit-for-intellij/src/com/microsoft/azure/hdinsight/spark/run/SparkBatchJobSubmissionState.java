@@ -67,7 +67,9 @@ import java.util.*;
 /**
  * Spark Batch Job Submission Run profile state
  */
-public class SparkBatchJobSubmissionState implements RunProfileState, RemoteState {
+public class SparkBatchJobSubmissionState implements RunProfileState,
+                                                     RemoteState,
+                                                     SparkBatchRemoteRunProfileState {
     @NotNull
     private UUID uuid = UUID.randomUUID();
 
@@ -75,7 +77,7 @@ public class SparkBatchJobSubmissionState implements RunProfileState, RemoteStat
     private RemoteConnection remoteConnection;
     @NotNull
     private SparkBatchJobConfigurableModel jobModel;
-    private final Boolean isExecutor;
+    private final boolean isExecutor;
 
     // Properties for executing
     @Nullable
@@ -87,7 +89,7 @@ public class SparkBatchJobSubmissionState implements RunProfileState, RemoteStat
 
     public SparkBatchJobSubmissionState(@NotNull Project project,
                                         @NotNull SparkBatchJobConfigurableModel jobModel,
-                                        Boolean isExecutor) {
+                                        boolean isExecutor) {
         this.myProject = project;
         this.jobModel = jobModel;
         this.isExecutor = isExecutor;

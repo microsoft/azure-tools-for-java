@@ -22,19 +22,20 @@
 
 package com.microsoft.azure.hdinsight.spark.run;
 
+import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob;
 import org.jetbrains.annotations.NotNull;
 
 
 public class SparkBatchJobSubmittedEvent implements SparkBatchJobSubmissionEvent {
     @NotNull
-    private SparkBatchJob job;
+    private ISparkBatchJob job;
 
-    public SparkBatchJobSubmittedEvent(@NotNull SparkBatchJob job) {
+    public SparkBatchJobSubmittedEvent(@NotNull ISparkBatchJob job) {
         this.job = job;
     }
 
-    public SparkBatchJob getJob() {
+    public ISparkBatchJob getJob() {
         return job;
     }
 }

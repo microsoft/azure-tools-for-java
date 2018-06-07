@@ -21,6 +21,7 @@
 
 package com.microsoft.azure.hdinsight.spark.ui;
 
+import com.google.common.collect.ImmutableList;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
@@ -35,9 +36,9 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -57,20 +58,28 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
     @NotNull
     private SparkSubmitModel submitModel;
 
-    public SparkSubmissionContentPanelConfigurable(@NotNull Project project, @Nullable CallBack callBack) {
+    public SparkSubmissionContentPanelConfigurable(@NotNull Project project,
+                                                   @Nullable CallBack callBack,
+                                                   @NotNull SparkSubmissionContentPanel submissionPanel) {
         this.myProject = project;
         this.updateCallback = callBack;
+        this.submissionPanel = submissionPanel;
+
     }
 
-    private void createUIComponents() {
+    @NotNull
+    protected ImmutableList<IClusterDetail> getClusterDetails() {
+        return ClusterManagerEx.getInstance().getClusterDetails();
+    }
+
+    protected void createUIComponents() {
+        // Customized UI creation
         this.submitModel = new SparkSubmitModel(myProject);
-        this.submissionPanel = new SparkSubmissionContentPanel(updateCallback);
         this.submissionPanel.getClustersListComboBox().getComboBox().setModel(submitModel.getClusterComboBoxModel());
 
         ManifestFileUtil.setupMainClassField(myProject, submissionPanel.getMainClassTextField());
 
-        this.submissionPanel.addClusterListRefreshActionListener(e ->
-                refreshClusterSelection(ClusterManagerEx.getInstance().getClusterDetails()));
+        this.submissionPanel.addClusterListRefreshActionListener(e -> refreshClusterListAsync());
 
         this.submissionPanel.addJobConfigurationLoadButtonActionListener(e -> {
             FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(
@@ -91,28 +100,22 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
         this.submissionPanel.getSelectedArtifactComboBox().setModel(submitModel.getArtifactComboBoxModel());
         this.submissionPanel.getJobConfigurationTable().setModel(submitModel.getTableModel());
 
-        final SparkSubmissionAdvancedConfigDialog advConfDialog = this.submissionPanel.getAdvancedConfigDialog();
-        advConfDialog.addCallbackOnOk(() -> advConfDialog.getData(submitModel.getAdvancedConfigModel()));
-
-        this.submissionPanel.addAdvancedConfigurationButtonActionListener(e -> {
-            // Read the current panel setting into current model
-
-            advConfDialog.setAuthenticationAutoVerify(submitModel.getSelectedClusterDetail().map(IClusterDetail::getName)
-                                                                                            .orElse(null));
-            advConfDialog.setModal(true);
-            advConfDialog.setVisible(true);
-        });
-
         this.submissionPanel.updateTableColumn();
 
         refreshClusterListAsync();
     }
+
+    @NotNull
+    public SparkSubmitModel getSubmitModel() {
+        return submitModel;
+    }
+
     @NotNull
     public JComponent getComponent() {
         return submissionPanel;
     }
 
-    private void refreshClusterSelection(List<IClusterDetail> clusters) {
+    protected void refreshClusterSelection(@NotNull List<IClusterDetail> clusters) {
         Optional<String> selectedClusterTitle = submitModel.getSelectedClusterDetail()
                 .map(IClusterDetail::getTitle);
         resetClusterDetailsToComboBoxModel(submitModel, clusters);
@@ -123,7 +126,7 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
         }
     }
 
-    private void refreshClusterListAsync() {
+    protected void refreshClusterListAsync() {
         submissionPanel.setClustersListRefreshEnabled(false);
 
         DefaultLoader.getIdeHelper().executeOnPooledThread(() -> {
@@ -152,7 +155,7 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
 
     }
 
-    private void resetClusterDetailsToComboBoxModel(SparkSubmitModel destSubmitModel, List<IClusterDetail> cachedClusterDetails) {
+    protected void resetClusterDetailsToComboBoxModel(@NotNull SparkSubmitModel destSubmitModel, @NotNull List<IClusterDetail> cachedClusterDetails) {
         List<IClusterDetail> clusterDetails = new ArrayList<>();
 
         try {
@@ -228,9 +231,6 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
         // update job configuration table
         submitModel.getTableModel().loadJobConfigMap(data.getTableModel().getJobConfigMap());
 
-        // Advanced Configuration Dialog
-        submissionPanel.getAdvancedConfigDialog().setData(data.getAdvancedConfigModel());
-
         if (updateCallback != null) {
             updateCallback.run();
         }
@@ -289,9 +289,9 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
                 .boxed()
                 .map(componentArtifactsModel::getElementAt)
                 .forEach(artifact -> data.getArtifactComboBoxModel().addElement(artifact));
-
-        // Advanced Configuration Dialog
-        submissionPanel.getAdvancedConfigDialog().getData(data.getAdvancedConfigModel());
     }
 
+    public SparkSubmissionContentPanel getSubmissionPanel() {
+        return submissionPanel;
+    }
 }

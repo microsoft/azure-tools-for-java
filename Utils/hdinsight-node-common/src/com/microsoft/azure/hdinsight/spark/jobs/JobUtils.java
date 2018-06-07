@@ -45,9 +45,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.ApplicationMasterLogs;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
-import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivyBatchesInformation;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivySession;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -619,23 +617,6 @@ public class JobUtils {
         return URI.create(clusterDetail.getConnectionUrl()).resolve("/livy/");
     }
 
-    public static Single<SparkBatchJob> submit(@NotNull IClusterDetail cluster, @NotNull SparkSubmissionParameter parameter) {
-        return Single.create((SingleSubscriber<? super SparkBatchJob> ob) -> {
-            try {
-                SparkBatchSubmission.getInstance().setCredentialsProvider(cluster.getHttpUserName(), cluster.getHttpPassword());
-
-                SparkBatchJob sparkJob = new SparkBatchJob(
-                        URI.create(getLivyConnectionURL(cluster)),
-                        parameter,
-                        SparkBatchSubmission.getInstance());
-
-                sparkJob.createBatchJob();
-                ob.onSuccess(sparkJob);
-            } catch (Exception e) {
-                ob.onError(e);
-            }
-        });
-    }
 
     public static Single<SimpleImmutableEntry<IClusterDetail, String>> deployArtifact(@NotNull String artifactLocalPath,
                                                         @NotNull String clusterName,
@@ -666,7 +647,7 @@ public class JobUtils {
     public static AbstractMap.SimpleImmutableEntry<Integer, Map<String, List<String>>>
     authenticate(IClusterDetail clusterDetail) throws HDIException, IOException {
         SparkBatchSubmission submission = SparkBatchSubmission.getInstance();
-        submission.setCredentialsProvider(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
+        submission.setUsernamePasswordCredential(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
         String livyUrl = URI.create(ClusterManagerEx.getInstance().getClusterConnectionString(clusterDetail.getName()))
                 .resolve("/livy/batches")
                 .toString();

@@ -65,7 +65,7 @@ public class SparkSubmitModel {
     private static final String[] columns = {"Key", "Value", ""};
     private  static final String SparkYarnLogUrlFormat = "%s/yarnui/hn/cluster/app/%s";
 
-    private static final String SUBMISSION_CONTENT_NAME = "spark_submission";
+    protected static final String SUBMISSION_CONTENT_NAME = "spark_submission";
     private static final String SUBMISSION_ATTRIBUTE_CLUSTER_NAME = "cluster_name";
     private static final String SUBMISSION_ATTRIBUTE_SELECTED_CLUSTER = "selected_cluster";
     private static final String SUBMISSION_ATTRIBUTE_IS_LOCAL_ARTIFACT = "is_local_artifact";
@@ -275,7 +275,7 @@ public class SparkSubmitModel {
     }
 
     private void tryToCreateBatchSparkJob(@NotNull final IClusterDetail selectedClusterDetail) throws HDIException,IOException {
-        SparkBatchSubmission.getInstance().setCredentialsProvider(selectedClusterDetail.getHttpUserName(), selectedClusterDetail.getHttpPassword());
+        SparkBatchSubmission.getInstance().setUsernamePasswordCredential(selectedClusterDetail.getHttpUserName(), selectedClusterDetail.getHttpPassword());
         HttpResponse response = SparkBatchSubmission.getInstance().createBatchSparkJob(JobUtils.getLivyConnectionURL(selectedClusterDetail), submissionParameter);
 
         if (response.getCode() == 201 || response.getCode() == 200) {
@@ -530,7 +530,7 @@ public class SparkSubmitModel {
         return submitModelElement;
     }
 
-    static public SparkSubmitModel factoryFromElement(@NotNull Project project, @NotNull Element rootElement)
+    public SparkSubmitModel applyFromElement(@NotNull Element rootElement)
             throws InvalidDataException{
         Attribute nilValueAttribute = new Attribute("Nil", "");
         Attribute falseValueAttribute = new Attribute("False", "false");
@@ -572,17 +572,24 @@ public class SparkSubmitModel {
                     tableModel.getJobConfigMap()
             );
 
-            SparkSubmitModel newSubmitModel = new SparkSubmitModel(project, parameter);
+            setSubmissionParameters(parameter);
+            this.tableModel = tableModel;
+            initializeTableModel(tableModel);
 
-            Optional.ofNullable(element.getChild(SUBMISSION_CONTENT_SSH_CERT))
+            Optional<SparkSubmitAdvancedConfigModel> advOpt = Optional.ofNullable(element.getChild(SUBMISSION_CONTENT_SSH_CERT))
                     .map(advConfElem -> {
                         SparkSubmitAdvancedConfigModel advConfModel = new SparkSubmitAdvancedConfigModel();
                         advConfModel.setClusterName(parameter.getClusterName());
                         return advConfModel.factoryFromElement(advConfElem);
-                    })
-                    .ifPresent(newSubmitModel::setAdvancedConfigModel);
+                    });
 
-            return newSubmitModel;
-        }).orElseGet(() -> new SparkSubmitModel(project));
+            if (advOpt.isPresent()) {
+                setAdvancedConfigModel(advOpt.get());
+            } else {
+                setAdvancedConfigModel(new SparkSubmitAdvancedConfigModel());
+            }
+
+            return this;
+        }).orElse(this);
     }
 }

@@ -25,9 +25,7 @@ package com.microsoft.azure.hdinsight.spark.run;
 import com.google.common.net.HostAndPort;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.spark.common.*;
-import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
+import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.io.output.NullOutputStream;
@@ -38,10 +36,8 @@ import rx.subjects.PublishSubject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
 
@@ -49,9 +45,9 @@ public class SparkBatchJobRemoteProcess extends Process {
     @NotNull
     private IdeSchedulers schedulers;
     @NotNull
-    private SparkSubmissionParameter submissionParameter;
-    @NotNull
     private String artifactPath;
+    @NotNull
+    private final String title;
     @NotNull
     private final PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject;
     @NotNull
@@ -60,8 +56,8 @@ public class SparkBatchJobRemoteProcess extends Process {
     private SparkJobLogInputStream jobStderrLogInputSteam;
     @Nullable
     private Subscription jobSubscription;
-    @Nullable
-    private SparkBatchJob sparkJob;
+    @NotNull
+    private final ISparkBatchJob sparkJob;
     @NotNull
     private final PublishSubject<SparkBatchJobSubmissionEvent> eventSubject = PublishSubject.create();
     private boolean isDestroyed = false;
@@ -69,12 +65,14 @@ public class SparkBatchJobRemoteProcess extends Process {
     private boolean isDisconnected;
 
     public SparkBatchJobRemoteProcess(@NotNull IdeSchedulers schedulers,
-                                      @NotNull SparkSubmissionParameter submissionParameter,
+                                      @NotNull ISparkBatchJob sparkJob,
                                       @NotNull String artifactPath,
+                                      @NotNull String title,
                                       @NotNull PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
         this.schedulers = schedulers;
-        this.submissionParameter = submissionParameter;
+        this.sparkJob = sparkJob;
         this.artifactPath = artifactPath;
+        this.title = title;
         this.ctrlSubject = ctrlSubject;
 
         this.jobStdoutLogInputSteam = new SparkJobLogInputStream("stdout");
@@ -131,31 +129,20 @@ public class SparkBatchJobRemoteProcess extends Process {
 
     @Override
     public void destroy() {
-        getSparkJob().ifPresent(sparkBatchJob -> {
-            try {
-                sparkBatchJob.killBatchJob();
-            } catch (IOException ignored) {
-            }
-        });
+        getSparkJob().killBatchJob().subscribe();
 
         this.isDestroyed = true;
 
         this.disconnect();
     }
 
-    public Optional<SparkBatchJob> getSparkJob() {
-        return Optional.ofNullable(sparkJob);
+    @NotNull
+    public ISparkBatchJob getSparkJob() {
+        return sparkJob;
     }
 
     public Optional<Subscription> getJobSubscription() {
         return Optional.ofNullable(jobSubscription);
-    }
-
-    public SparkBatchJob createJobToSubmit(IClusterDetail cluster) {
-        return new SparkBatchJob(
-                URI.create(JobUtils.getLivyConnectionURL(cluster)),
-                getSubmissionParameter(),
-                SparkBatchSubmission.getInstance());
     }
 
     public void start() {
@@ -166,15 +153,15 @@ public class SparkBatchJobRemoteProcess extends Process {
                 .flatMap(this::attachInputStreams)
                 .flatMap(this::awaitForJobDone)
                 .subscribe(sdPair -> {
-                    if (sdPair.getKey() == SparkBatchJobState.SUCCESS) {
-                        logInfo("");
-                        logInfo("========== RESULT ==========");
-                        logInfo("Job run successfully.");
+                    if (sparkJob.isSuccess(sdPair.getKey())) {
+                        ctrlInfo("");
+                        ctrlInfo("========== RESULT ==========");
+                        ctrlInfo("Job run successfully.");
                     } else {
-                        logInfo("");
-                        logInfo("========== RESULT ==========");
-                        logError("Job state is " + sdPair.getKey().toString());
-                        logError("Diagnostics: " + sdPair.getValue());
+                        ctrlInfo("");
+                        ctrlInfo("========== RESULT ==========");
+                        ctrlError("Job state is " + sdPair.getKey());
+                        ctrlError("Diagnostics: " + sdPair.getValue());
                     }
                 }, err -> {
                     ctrlSubject.onError(err);
@@ -185,51 +172,15 @@ public class SparkBatchJobRemoteProcess extends Process {
     }
 
     @NotNull
-    public boolean isJobStarted(@NotNull SparkBatchJob job, SparkBatchJobState state) {
-        return state == SparkBatchJobState.RUNNING;
+    private Observable<? extends ISparkBatchJob> awaitForJobStarted(@NotNull ISparkBatchJob job) {
+        return job.awaitStarted()
+                .map(state -> job);
     }
 
-    @NotNull
-    private Observable<SparkBatchJob> awaitForJobStarted(@NotNull SparkBatchJob job) {
-        return job.getStatus()
-                .map(status -> new SimpleImmutableEntry<>(
-                        SparkBatchJobState.valueOf(status.getState().toUpperCase()),
-                        String.join("\n", status.getLog())))
-                .retry(job.getRetriesMax())
-                .repeatWhen(ob -> ob
-                        .doOnNext(ignored -> logInfo("The Spark job is starting..."))
-                        .delay(job.getDelaySeconds(), TimeUnit.SECONDS)
-                )
-                .takeUntil(stateLogPair -> stateLogPair.getKey().isJobDone() || isJobStarted(job, stateLogPair.getKey()))
-                .filter(stateLogPair -> stateLogPair.getKey().isJobDone() || isJobStarted(job, stateLogPair.getKey()))
-                .flatMap(stateLogPair -> {
-                    if (stateLogPair.getKey().isJobDone() && stateLogPair.getKey() != SparkBatchJobState.SUCCESS) {
-                        return Observable.error(
-                                new SparkJobException("The Spark job failed to start due to " + stateLogPair.getValue()));
-                    }
-
-                    return Observable.just(job);
-                });
-    }
-
-    private Observable<SparkBatchJob> attachJobInputStream(SparkJobLogInputStream inputStream, SparkBatchJob job) {
+    private Observable<? extends ISparkBatchJob> attachJobInputStream(SparkJobLogInputStream inputStream, ISparkBatchJob job) {
         return Observable.just(inputStream)
                 .map(stream -> stream.attachJob(job))
-                .subscribeOn(schedulers.processBarVisibleAsync("Attach Spark batch job outputs " + inputStream.getLogType()))
-                .retryWhen(attempts -> attempts.flatMap(err -> {
-                    try {
-                        final String state = job.getState();
-
-                        if (state.equals("starting") || state.equals("not_started") || state.equals("running")) {
-                            logInfo("Job is waiting for start due to cluster busy, please wait or disconnect (The job will run when the cluster is free).");
-
-                            return Observable.timer(5, TimeUnit.SECONDS);
-                        }
-                    } catch (IOException ignored) {
-                    }
-
-                    return Observable.error(new SparkJobException("Spark Job Service not available, please check HDInsight cluster status.", err));
-                }));
+                .subscribeOn(schedulers.processBarVisibleAsync("Attach Spark batch job outputs " + inputStream.getLogType()));
     }
 
     public void disconnect() {
@@ -241,11 +192,11 @@ public class SparkBatchJobRemoteProcess extends Process {
         this.getJobSubscription().ifPresent(Subscription::unsubscribe);
     }
 
-    protected void logInfo(String message) {
+    protected void ctrlInfo(String message) {
         ctrlSubject.onNext(new SimpleImmutableEntry<>(Info, message));
     }
 
-    protected void logError(String message) {
+    protected void ctrlError(String message) {
         ctrlSubject.onNext(new SimpleImmutableEntry<>(MessageInfoType.Error, message));
     }
 
@@ -254,29 +205,22 @@ public class SparkBatchJobRemoteProcess extends Process {
         return eventSubject;
     }
 
-    protected Observable<SparkBatchJob> startJobSubmissionLogReceiver(SparkBatchJob job) {
-
+    protected Observable<ISparkBatchJob> startJobSubmissionLogReceiver(ISparkBatchJob job) {
         return job.getSubmissionLog()
                 .doOnNext(ctrlSubject::onNext)
                 .doOnError(ctrlSubject::onError)
                 .last()
                 .map(messageTypeText -> job);
-
     }
 
     // Build and deploy artifact
-    protected Observable<SimpleImmutableEntry<IClusterDetail, String>> prepareArtifact() {
-        return JobUtils.deployArtifact(artifactPath, getSubmissionParameter().getClusterName(), ctrlSubject)
-                       .subscribeOn(schedulers.processBarVisibleAsync("Deploy the jar file into cluster"))
-                       .toObservable();
+    protected Observable<? extends ISparkBatchJob> prepareArtifact() {
+        return getSparkJob()
+                .deploy(artifactPath)
+                .subscribeOn(schedulers.processBarVisibleAsync("Deploy the jar file into cluster"));
     }
 
-    protected Observable<? extends SparkBatchJob> submitJob(SimpleImmutableEntry<IClusterDetail, String> clusterArtifactUriPair) {
-        IClusterDetail cluster = clusterArtifactUriPair.getKey();
-        getSubmissionParameter().setFilePath(clusterArtifactUriPair.getValue());
-
-        sparkJob = this.createJobToSubmit(cluster);
-
+    protected Observable<? extends ISparkBatchJob> submitJob(ISparkBatchJob sparkJob) {
         return sparkJob
                 .submit()
                 .subscribeOn(schedulers.processBarVisibleAsync("Submit the Spark batch job"))
@@ -291,42 +235,29 @@ public class SparkBatchJobRemoteProcess extends Process {
 
     @NotNull
     public String getTitle() {
-        return getSubmissionParameter().getMainClassName();
+        return title;
     }
 
-    protected Observable<? extends SparkBatchJob> attachInputStreams(SparkBatchJob job) {
+    private Observable<? extends ISparkBatchJob> attachInputStreams(ISparkBatchJob job) {
         return Observable.zip(
                 attachJobInputStream((SparkJobLogInputStream) getErrorStream(), job),
                 attachJobInputStream((SparkJobLogInputStream) getInputStream(), job),
-                (job1, job2) -> {
-                    sparkJob = job;
-                    return job;
-                });
+                (job1, job2) -> job);
     }
 
-    protected Observable<SimpleImmutableEntry<SparkBatchJobState, String>> awaitForJobDone(SparkBatchJob runningJob) {
-        return runningJob.getJobDoneObservable()
+    Observable<SimpleImmutableEntry<String, String>> awaitForJobDone(ISparkBatchJob runningJob) {
+        return runningJob.awaitDone()
                 .subscribeOn(schedulers.processBarVisibleAsync("Spark batch job " + getTitle() + " is running"))
                 .flatMap(jobStateDiagnosticsPair -> runningJob
-                                .getJobLogAggregationDoneObservable()
-                                .subscribeOn(schedulers.processBarVisibleAsync(
-                                        "Waiting for " + getTitle() + " log aggregation is done"))
-                                .map(any -> jobStateDiagnosticsPair));
+                        .awaitPostDone()
+                        .subscribeOn(schedulers.processBarVisibleAsync(
+                                "Waiting for " + getTitle() + " log aggregation is done"))
+                        .map(any -> jobStateDiagnosticsPair));
     }
 
     @NotNull
     public PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> getCtrlSubject() {
         return ctrlSubject;
-    }
-
-    @NotNull
-    public SparkSubmissionParameter getSubmissionParameter() {
-        return submissionParameter;
-    }
-
-    @NotNull
-    public String getArtifactPath() {
-        return artifactPath;
     }
 
     public boolean isDestroyed() {

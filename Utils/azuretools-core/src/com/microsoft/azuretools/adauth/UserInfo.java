@@ -34,6 +34,7 @@ public class UserInfo {
     private String identityProvider;
     private String passwordChangeUrl;
     private Date passwordExpiresOn;
+    private String tenantId;
 
     private UserInfo() {
     }
@@ -113,6 +114,7 @@ public class UserInfo {
         
         final UserInfo userInfo = new UserInfo();
         userInfo.uniqueId = uniqueId;
+        userInfo.tenantId = tokens.tenantId;
         userInfo.displayableId = displayableId;
         userInfo.givenName = tokens.givenName;
         userInfo.familyName = tokens.familyName;
@@ -133,4 +135,7 @@ public class UserInfo {
         return userInfo;
     }
 
+    public String getTenantId() {
+        return tenantId;
+    }
 }

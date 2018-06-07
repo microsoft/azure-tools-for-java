@@ -88,7 +88,7 @@ public class AccessTokenAzureManager extends AzureManagerBase {
     public List<Subscription> getSubscriptions() throws IOException {
         List<Subscription> sl = new LinkedList<Subscription>();
         // could be multi tenant - return all subscriptions for the current account
-        List<Tenant> tl = getTenants("common");
+        List<Tenant> tl = getTenants(AdAuthManager.getInstance().getCommonTenantId());
         for (Tenant t : tl) {
             sl.addAll(getSubscriptions(t.tenantId()));
         }
@@ -98,7 +98,7 @@ public class AccessTokenAzureManager extends AzureManagerBase {
     @Override
     public List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() throws IOException {
         List<Pair<Subscription, Tenant>> stl = new LinkedList<>();
-        for (Tenant t : getTenants("common")) {
+        for (Tenant t : getTenants(AdAuthManager.getInstance().getCommonTenantId())) {
             String tid = t.tenantId();
             for (Subscription s : getSubscriptions(tid)) {
                 stl.add(new Pair<Subscription, Tenant>(s, t));

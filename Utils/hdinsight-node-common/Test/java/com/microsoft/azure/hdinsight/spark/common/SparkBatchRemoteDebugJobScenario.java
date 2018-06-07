@@ -23,7 +23,6 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttempt;
-import cucumber.api.PendingException;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
@@ -46,11 +45,12 @@ import static org.mockito.Mockito.*;
 
 public class SparkBatchRemoteDebugJobScenario {
     private SparkBatchSubmission submissionMock;
-    private Exception caught;
+    private Throwable caught;
     private ArgumentCaptor<SparkSubmissionParameter> submissionParameterArgumentCaptor;
     private MockHttpService httpServerMock;
     private SparkBatchRemoteDebugJob debugJobMock;
     private Logger loggerMock;
+    private SparkSubmissionParameter debugSubmissionParameter;
 
     @Before
     public void setUp() throws Throwable {
@@ -58,6 +58,7 @@ public class SparkBatchRemoteDebugJobScenario {
         submissionMock = mock(SparkBatchSubmission.class);
         when(submissionMock.getBatchSparkJobStatus(anyString(), anyInt())).thenCallRealMethod();
         when(submissionMock.getHttpResponseViaGet(anyString())).thenCallRealMethod();
+        when(submissionMock.getHttpClient()).thenCallRealMethod();
         when(submissionMock.createBatchSparkJob(anyString(), submissionParameterArgumentCaptor.capture())).thenCallRealMethod();
 
         debugJobMock = mock(SparkBatchRemoteDebugJob.class, CALLS_REAL_METHODS);
@@ -87,11 +88,7 @@ public class SparkBatchRemoteDebugJobScenario {
         caught = null;
 
         try {
-            debugJobMock = SparkBatchRemoteDebugJob.factory(httpServerMock.completeUrl(connectUrl),
-                    parameter,
-                    submissionMock);
-
-            debugJobMock.createBatchJob();
+            debugSubmissionParameter = SparkBatchRemoteDebugJob.convertToDebugParameter(parameter);
         } catch (Exception e) {
             caught = e;
         }
@@ -115,9 +112,7 @@ public class SparkBatchRemoteDebugJobScenario {
         assertNull(caught);
 
         String submittedDriverJavaOption =
-                ((SparkConfigures) submissionParameterArgumentCaptor.getValue().getJobConfig()
-                        .getOrDefault("conf", new SparkConfigures()))
-                    .get("spark.driver.extraJavaOptions").toString();
+                ((SparkConfigures) debugSubmissionParameter.getJobConfig().get("conf")).get("spark.driver.extraJavaOptions").toString();
 
         assertEquals(expectedDriverJvmOption, submittedDriverJavaOption);
     }
@@ -127,9 +122,7 @@ public class SparkBatchRemoteDebugJobScenario {
         assertNull(caught);
 
         String maxRetries =
-                ((SparkConfigures) submissionParameterArgumentCaptor.getValue().getJobConfig()
-                        .getOrDefault("conf", new SparkConfigures()))
-                        .get("spark.yarn.maxAppAttempts").toString();
+                ((SparkConfigures) debugSubmissionParameter.getJobConfig().get("conf")).get("spark.yarn.maxAppAttempts").toString();
 
         assertEquals(expectedMaxRetries, maxRetries);
     }
@@ -150,7 +143,7 @@ public class SparkBatchRemoteDebugJobScenario {
                     new URI(httpServerMock.completeUrl(connectUrl)), batchId));
         } catch (Exception e) {
             caught = e;
-            assertEquals(expectedApplicationId, "__exception_got__");
+            assertEquals(expectedApplicationId, "__exception_got__" + e);
         }
     }
 
@@ -209,9 +202,9 @@ public class SparkBatchRemoteDebugJobScenario {
         when(debugJobMock.getBatchId()).thenReturn(batchId);
 
         try {
-            assertEquals(expectedPort, debugJobMock.getSparkDriverDebuggingPort());
+            assertEquals(expectedPort, debugJobMock.getSparkDriverDebuggingPort().toBlocking().single().intValue());
         } catch (Exception e) {
-            caught = e;
+            caught = e.getCause();
             assertEquals(expectedPort, 0);
         }
 
@@ -226,9 +219,9 @@ public class SparkBatchRemoteDebugJobScenario {
         when(debugJobMock.getBatchId()).thenReturn(batchId);
 
         try {
-            assertEquals(expectedHost, debugJobMock.getSparkDriverHost());
+            assertEquals(expectedHost, debugJobMock.getSparkDriverHost().toBlocking().single());
         } catch (Exception e) {
-            caught = e;
+            caught = e.getCause();
             assertEquals(expectedHost, "__exception_got__");
         }
     }
@@ -279,5 +272,16 @@ public class SparkBatchRemoteDebugJobScenario {
     @And("^mock Spark job uri '(.*)' is (valid|invalid)$")
     public void mockSparkJobUriIsValidOrNot(String uriToCheck, String validOrNot) throws Throwable {
         doReturn(validOrNot.equals("valid")).when(debugJobMock).isUriValid(URI.create(uriToCheck));
+    }
+
+    @And("^submit Spark job$")
+    public void submitSparkJob() {
+        caught = null;
+
+        try {
+            debugJobMock = (SparkBatchRemoteDebugJob) debugJobMock.submit().toBlocking().singleOrDefault(null);
+        } catch (Exception e) {
+            caught = e;
+        }
     }
 }

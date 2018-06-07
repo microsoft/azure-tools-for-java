@@ -22,14 +22,18 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
+import rx.Observer;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.UnknownServiceException;
+import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,10 +44,10 @@ import java.util.stream.Stream;
 
 public class SparkBatchRemoteDebugJob extends SparkBatchJob implements ISparkBatchDebugJob, ILogger {
     SparkBatchRemoteDebugJob(
-            URI connectUri,
             SparkSubmissionParameter submissionParameter,
-            SparkBatchSubmission sparkBatchSubmission) {
-        super(connectUri, submissionParameter, sparkBatchSubmission);
+            SparkBatchSubmission sparkBatchSubmission,
+            @NotNull Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+        super(submissionParameter, sparkBatchSubmission, ctrlSubject);
     }
 
     /**
@@ -75,14 +79,15 @@ public class SparkBatchRemoteDebugJob extends SparkBatchJob implements ISparkBat
      * @throws IOException exceptions for the driver debugging port not found
      */
     @Override
-    public int getSparkDriverDebuggingPort() throws IOException {
-        try {
-            String driverLogUrl = this.getSparkJobDriverLogUrlObservable().toBlocking().first();
-
-            return getYarnContainerJDBListenPort(driverLogUrl);
-        } catch (NoSuchElementException ignored) {
-            throw new UnknownServiceException("Can't get Spark job driver log URL.");
-        }
+    public Observable<Integer> getSparkDriverDebuggingPort() {
+        return this.getSparkJobDriverLogUrlObservable()
+                .flatMap(driverLogUrl -> {
+                    try {
+                        return Observable.just(getYarnContainerJDBListenPort(driverLogUrl));
+                    } catch (UnknownServiceException e) {
+                        return Observable.error(e);
+                    }
+                });
     }
 
     /**
@@ -107,20 +112,20 @@ public class SparkBatchRemoteDebugJob extends SparkBatchJob implements ISparkBat
     /**
      * The factory helper function to create a SparkBatchRemoteDebugJob instance
      *
-     * @param connectUrl the base connection URI for HDInsight Spark Job service, such as: http://livy:8998/batches
      * @param submissionParameter the Spark Batch Job submission parameter
      * @param submission the Spark Batch Job submission
      * @return a new SparkBatchRemoteDebugJob instance
      * @throws DebugParameterDefinedException the exception for the Spark driver debug option exists
      */
     static public SparkBatchRemoteDebugJob factory(
-            String connectUrl,
             SparkSubmissionParameter submissionParameter,
-            SparkBatchSubmission submission) throws DebugParameterDefinedException {
+            SparkBatchSubmission submission,
+            @NotNull Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject)
+            throws DebugParameterDefinedException {
 
         SparkSubmissionParameter debugSubmissionParameter = convertToDebugParameter(submissionParameter);
 
-        return new SparkBatchRemoteDebugJob(URI.create(connectUrl), debugSubmissionParameter, submission);
+        return new SparkBatchRemoteDebugJob(debugSubmissionParameter, submission, ctrlSubject);
     }
 
     /**
@@ -205,5 +210,17 @@ public class SparkBatchRemoteDebugJob extends SparkBatchJob implements ISparkBat
                 submissionParameter.getReferencedJars(),
                 submissionParameter.getArgs(),
                 jobConfigWithDebug);
+    }
+
+    @Override
+    public boolean isRunning(@NotNull String state) {
+        try {
+            // The Debugging enabled job will wait for the JDB to connect in STARTING state to run
+            return (SparkBatchJobState.valueOf(state.toUpperCase()) == SparkBatchJobState.STARTING &&
+                            getSparkDriverDebuggingPort().toBlocking().singleOrDefault(-1) > 0) ||
+                    super.isRunning(state);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

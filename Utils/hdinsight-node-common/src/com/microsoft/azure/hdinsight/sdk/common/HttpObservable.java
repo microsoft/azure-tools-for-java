@@ -52,10 +52,7 @@ import org.apache.http.protocol.HttpContext;
 import rx.Observable;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static rx.exceptions.Exceptions.propagate;
 
@@ -77,6 +74,9 @@ public class HttpObservable {
 
     @NotNull
     private CloseableHttpClient httpClient;
+
+    @NotNull
+    private List<NameValuePair> defaultParameters = new ArrayList<>();
 
 
     /*
@@ -165,8 +165,14 @@ public class HttpObservable {
         return httpClient;
     }
 
+    public HttpObservable setHttpClient(@NotNull CloseableHttpClient httpClient) {
+        this.httpClient = httpClient;
+
+        return this;
+    }
+
     @Nullable
-    public Header[] getDefaultHeaders() {
+    public Header[] getDefaultHeaders() throws IOException {
         return defaultHeaders.getAllHeaders();
     }
 
@@ -191,6 +197,12 @@ public class HttpObservable {
 
         // Update the default headers
         return setDefaultHeader(new BasicHeader("User-Agent", userAgent));
+    }
+
+
+    @NotNull
+    public List<NameValuePair> getDefaultParameters() {
+        return defaultParameters;
     }
 
     /*
@@ -264,6 +276,8 @@ public class HttpObservable {
             URIBuilder builder = new URIBuilder(httpRequest.getURI());
 
             // Add parameters
+            builder.setParameters(getDefaultParameters());
+
             Optional.ofNullable(parameters)
                     .filter(pairs -> !pairs.isEmpty())
                     .ifPresent(builder::addParameters);

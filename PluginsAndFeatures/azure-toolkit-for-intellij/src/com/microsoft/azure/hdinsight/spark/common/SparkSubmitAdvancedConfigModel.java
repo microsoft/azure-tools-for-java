@@ -76,7 +76,7 @@ public class SparkSubmitAdvancedConfigModel extends SparkBatchRemoteDebugJobSshA
             sshCertElement.setAttribute(
                     SUBMISSION_ATTRIBUTE_SSH_CERT_PRIVATE_KEYPATH_NAME,
                     Optional.ofNullable(this.sshKeyFile).map(File::toString).orElse(""));
-        } else if (StringUtils.isNotBlank(sshPassword)){
+        } else if (StringUtils.isNotBlank(sshPassword) && StringUtils.isNotBlank(clusterName)){
             PasswordSafe.getInstance().setPassword(
                     new CredentialAttributes(getCredentialStoreAccount(), sshUserName), sshPassword);
 

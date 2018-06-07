@@ -23,53 +23,42 @@
 package com.microsoft.azure.sparkserverless;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager;
+import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterOps;
+import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterDestoryDialog;
+import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessProvisionDialog;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.sparkserverless.SparkServerlessClusterOps;
+import com.microsoft.intellij.rxjava.IdeaSchedulers;
 
 public class SparkServerlessClusterOpsCtrl {
     @NotNull
     private final SparkServerlessClusterOps sparkServerlessClusterOps;
     private static Logger LOG = Logger.getInstance(SparkServerlessClusterOpsCtrl.class.getName());
+    private IdeSchedulers ideSchedulers = new IdeaSchedulers(null);
 
     public SparkServerlessClusterOpsCtrl(@NotNull SparkServerlessClusterOps sparkServerlessClusterOps) {
         this.sparkServerlessClusterOps = sparkServerlessClusterOps;
 
-        this.sparkServerlessClusterOps.getDestroyAction().subscribe(triplet -> {
-            LOG.info(String.format("Message received. AdlAccount: %s, clusterName: %s, currentNode: %s",
-                    triplet.getLeft(), triplet.getMiddle(), triplet.getRight()));
+        this.sparkServerlessClusterOps.getDestroyAction()
+                .observeOn(ideSchedulers.dispatchUIThread())
+                .subscribe(triplet -> {
+                    LOG.info(String.format("Destroy message received. AdlAccount: %s, cluster: %s, currentNode: %s",
+                            triplet.getLeft().getName(), triplet.getMiddle(), triplet.getRight().getName()));
+                    SparkServerlessClusterDestoryDialog destroyDialog = new SparkServerlessClusterDestoryDialog(
+                            triplet.getRight(), triplet.getMiddle());
+                    destroyDialog.show();
+                }, ex -> LOG.error(ex.getMessage(), ex));
 
-            // TODO: pop up a destroy dialog
-
-            // TODO: Update confirmDestroyAction
-            boolean confirmDestroyAction = true;
-            if (confirmDestroyAction) {
-                // instruct parent node to remove this node
-                DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    Node currentNode = triplet.getRight();
-                    currentNode.getParent().removeDirectChildNode(currentNode);
-                });
-            }
-        }, ex -> LOG.error(ex.getMessage(), ex));
-
-        this.sparkServerlessClusterOps.getProvisionAction().subscribe(pair -> {
-            LOG.info(String.format("Message received. AdlAccount: %s, node: %s",
-                    pair.getLeft(), pair.getRight()));
-
-            // TODO: pop up a provision dialog
-
-            // TODO: Update confirmProvisionAction
-            boolean confirmProvisionAction = true;
-            if (confirmProvisionAction) {
-                DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    // refresh itself
-                    RefreshableNode node = (RefreshableNode)pair.getRight();
-                    node.removeAllChildNodes();
-                    node.load(false);
-                });
-            }
-        }, ex -> LOG.error(ex.getMessage(), ex));
+        this.sparkServerlessClusterOps.getProvisionAction()
+                .observeOn(ideSchedulers.dispatchUIThread())
+                .subscribe(pair -> {
+                    LOG.info(String.format("Provision message received. AdlAccount: %s, node: %s",
+                            pair.getLeft().getName(), pair.getRight().getName()));
+                    SparkServerlessProvisionDialog provisionDialog = new SparkServerlessProvisionDialog(
+                            pair.getRight(), pair.getLeft());
+                    provisionDialog.show();
+                }, ex -> LOG.error(ex.getMessage(), ex));
     }
+
 }

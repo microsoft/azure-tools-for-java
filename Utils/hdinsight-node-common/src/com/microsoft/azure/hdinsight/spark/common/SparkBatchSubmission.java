@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit;
 
 public class SparkBatchSubmission {
 
-    private SparkBatchSubmission() {
+    SparkBatchSubmission() {
     }
 
     // Singleton Instance
@@ -72,12 +72,17 @@ public class SparkBatchSubmission {
         return HDInsightLoader.getHDInsightHelper().getInstallationId();
     }
 
+    @NotNull
+    protected CloseableHttpClient getHttpClient() throws IOException {
+        return HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
+    }
+
     /**
      * Set http request credential using username and password
      * @param username : username
      * @param password : password
      */
-    public void setCredentialsProvider(String username, String password){
+    public void setUsernamePasswordCredential(String username, String password) {
         credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY), new UsernamePasswordCredentials(username, password));
     }
 
@@ -86,7 +91,7 @@ public class SparkBatchSubmission {
     }
 
     public HttpResponse getHttpResponseViaGet(String connectUrl) throws IOException {
-        CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
+        CloseableHttpClient httpclient = getHttpClient();
 
         HttpGet httpGet = new HttpGet(connectUrl);
         httpGet.addHeader("Content-Type", "application/json");
@@ -98,8 +103,7 @@ public class SparkBatchSubmission {
     }
 
     public HttpResponse getHttpResponseViaHead(String connectUrl) throws IOException {
-        CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(getCredentialsProvider())
-                .build();
+        CloseableHttpClient httpclient = getHttpClient();
 
         HttpHead httpHead = new HttpHead(connectUrl);
         httpHead.addHeader("Content-Type", "application/json");
@@ -155,7 +159,7 @@ public class SparkBatchSubmission {
      * @return response result
      */
     public HttpResponse createBatchSparkJob(String connectUrl, SparkSubmissionParameter submissionParameter)throws IOException{
-        CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
+        CloseableHttpClient httpclient = getHttpClient();
         HttpPost httpPost = new HttpPost(connectUrl);
         httpPost.addHeader("Content-Type", "application/json");
         httpPost.addHeader("User-Agent", getUserAgentPerRequest(true));
@@ -186,7 +190,7 @@ public class SparkBatchSubmission {
      * @throws IOException
      */
     public HttpResponse killBatchJob(String connectUrl, int batchId)throws IOException {
-        CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
+        CloseableHttpClient httpclient = getHttpClient();
         HttpDelete httpDelete = new HttpDelete(connectUrl +  "/" + batchId);
         httpDelete.addHeader("User-Agent", getUserAgentPerRequest(true));
         httpDelete.addHeader("Content-Type", "application/json");
