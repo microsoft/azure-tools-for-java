@@ -338,9 +338,11 @@ public class AzureSparkServerlessCluster extends SparkCluster
         return name;
     }
 
+    @NotNull
     @Override
     public String getTitle() {
-        return name + " [" + state.toUpperCase() + "]";
+        return String.format(
+                "%s [%s]", name, getMasterState() != null ? getMasterState().toUpperCase(): getState().toUpperCase());
     }
 
     @NotNull
@@ -349,9 +351,9 @@ public class AzureSparkServerlessCluster extends SparkCluster
         return state;
     }
 
-    @NotNull
+    @Nullable
     public String getMasterState() {
-        return this.master == null ? "unknown" : this.master.state.toString();
+        return this.master == null || this.master.state == null ? null : this.master.state.toString();
     }
 
     @Override

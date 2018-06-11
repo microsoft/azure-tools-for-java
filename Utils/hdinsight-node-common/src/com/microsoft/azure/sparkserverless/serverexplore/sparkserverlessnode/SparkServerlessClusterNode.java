@@ -53,7 +53,7 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode {
                                       @NotNull AzureSparkServerlessCluster cluster,
                                       @NotNull AzureSparkServerlessAccount adlAccount) {
         super(String.format("%s_%s", adlAccount.getName(), cluster.getName()),
-                String.format("%s [%s]", cluster.getName(), cluster.getMasterState()),
+                cluster.getTitle(),
                 parent,
                 ICON_PATH,
                 true);
@@ -70,7 +70,7 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode {
 
     @Override
     protected void updateNodeNameAfterLoading() {
-        setName(String.format("%s [%s]", cluster.getName(), cluster.getMasterState()));
+        setName(cluster.getTitle());
     }
 
     @Override
