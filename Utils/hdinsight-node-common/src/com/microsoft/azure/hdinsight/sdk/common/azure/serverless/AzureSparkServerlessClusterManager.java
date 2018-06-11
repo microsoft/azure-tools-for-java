@@ -146,9 +146,13 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
         return get()
                 .map(AzureSparkServerlessClusterManager::getAccounts)
                 .flatMap(Observable::from)
+                .observeOn(Schedulers.io())
                 .flatMap(AzureSparkServerlessAccount::get)
+                .map(account -> account.getClusters())
+                .flatMap(Observable::from)
+                .flatMap(cluster -> ((AzureSparkServerlessCluster)cluster).get())
                 .toSortedList()
-                .map(accounts -> this)
+                .map(clusters -> this)
                 .defaultIfEmpty(this);
     }
 
