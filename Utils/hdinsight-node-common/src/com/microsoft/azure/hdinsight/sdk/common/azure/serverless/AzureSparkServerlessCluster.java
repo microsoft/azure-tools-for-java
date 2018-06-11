@@ -143,11 +143,11 @@ public class AzureSparkServerlessCluster extends SparkCluster
         @NotNull
         private String sparkEventsPath = "";
         private int masterInstances = 1;
-        private int masterPerInstanceCores = 2;
-        private int masterPerInstanceMemory = 16;
+        private int masterPerInstanceCores = 4;
+        private int masterPerInstanceMemory = 12;
         private int workerInstances = 2;
         private int workerPerInstanceCores = 2;
-        private int workerPerInstanceMemory = 16;
+        private int workerPerInstanceMemory = 6;
 
         public Builder( @NotNull AzureSparkServerlessAccount acount) {
             this.acount = acount;
