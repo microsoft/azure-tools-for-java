@@ -79,6 +79,8 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode {
         String suffix = "/?adlaAccountName=" + adlAccount.getName();
         addAction("Delete", new SparkServerlessDestroyAction(
                 this, cluster, adlAccount, SparkServerlessClusterOps.getInstance().getDestroyAction()));
+        addAction("View Cluster Status", new SparkServerlessMonitorAction(
+                this, cluster, SparkServerlessClusterOps.getInstance().getMonitorAction()));
         addAction("Open Livy UI", new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {

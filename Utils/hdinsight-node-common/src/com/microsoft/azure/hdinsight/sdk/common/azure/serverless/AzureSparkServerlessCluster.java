@@ -62,6 +62,10 @@ public class AzureSparkServerlessCluster extends SparkCluster
         int instances;
         int coresPerInstance;
         int memoryGBSizePerInstance;
+        int targetInstanceCount;
+        int runningInstanceCount;
+        int failedInstanceCount;
+        int outstandingInstanceCount;
         @NotNull
         SparkItemGroupState state;
 
@@ -85,6 +89,26 @@ public class AzureSparkServerlessCluster extends SparkCluster
         SparkResource setMemoryGBSizePerInstance(int memoryGBSizePerInstance) {
             this.memoryGBSizePerInstance = memoryGBSizePerInstance;
 
+            return this;
+        }
+
+        SparkResource setTargetInstanceCount(int targetInstanceCount) {
+            this.targetInstanceCount = targetInstanceCount;
+            return this;
+        }
+
+        SparkResource setRunningInstanceCount(int runningInstanceCount) {
+            this.runningInstanceCount = runningInstanceCount;
+            return this;
+        }
+
+        SparkResource setFailedInstanceCount(int failedInstanceCount) {
+            this.failedInstanceCount = failedInstanceCount;
+            return this;
+        }
+
+        SparkResource setOutstandingInstanceCount(int outstandingInstanceCount) {
+            this.outstandingInstanceCount = outstandingInstanceCount;
             return this;
         }
     }
@@ -354,6 +378,43 @@ public class AzureSparkServerlessCluster extends SparkCluster
         return this.master == null || this.master.state == null ? null : this.master.state.toString();
     }
 
+    @Nullable
+    public String getWorkerState() {
+        return this.worker == null || this.worker.state == null ? null : this.worker.state.toString();
+    }
+
+    public int getMasterTargetInstanceCount() {
+        return this.master == null ? 0 : this.master.targetInstanceCount;
+    }
+
+    public int getWorkerTargetInstanceCount() {
+        return this.worker == null ? 0 : this.worker.targetInstanceCount;
+    }
+
+    public int getMasterRunningInstanceCount() {
+        return this.master == null ? 0 : this.master.runningInstanceCount;
+    }
+
+    public int getWorkerRunningInstanceCount() {
+        return this.worker == null ? 0 : this.worker.runningInstanceCount;
+    }
+
+    public int getMasterFailedInstanceCount() {
+        return this.master == null ? 0 : this.master.failedInstanceCount;
+    }
+
+    public int getWorkerFailedInstanceCount() {
+        return this.worker == null ? 0 : this.worker.failedInstanceCount;
+    }
+
+    public int getMasterOutstandingInstanceCount() {
+        return this.master == null ? 0 : this.master.outstandingInstanceCount;
+    }
+
+    public int getWorkerOutstandingInstanceCount() {
+        return this.worker == null ? 0 : this.worker.outstandingInstanceCount;
+    }
+
     @Override
     public String getLocation() {
         return null;
@@ -540,6 +601,10 @@ public class AzureSparkServerlessCluster extends SparkCluster
                         .setInstances(item.targetInstanceCount())
                         .setCoresPerInstance(item.perInstanceCoreCount())
                         .setMemoryGBSizePerInstance(item.perInstanceMemoryInGB())
+                        .setTargetInstanceCount(item.targetInstanceCount())
+                        .setFailedInstanceCount(item.failedInstanceCount())
+                        .setOutstandingInstanceCount(item.outstandingInstanceCount())
+                        .setRunningInstanceCount(item.runningInstanceCount())
                         .setState(item.status()))
                 .findFirst()
                 .orElse(null);

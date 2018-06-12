@@ -24,6 +24,7 @@ package com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode;
 
 import com.microsoft.azure.hdinsight.sdk.cluster.DestroyableCluster;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -37,10 +38,12 @@ public class SparkServerlessClusterOps {
             AzureSparkServerlessAccount, DestroyableCluster, SparkServerlessClusterNode>> destroyAction;
     @NotNull
     private final PublishSubject<Pair<AzureSparkServerlessAccount, SparkServerlessADLAccountNode>> provisionAction;
-
+    @NotNull
+    private final PublishSubject<Pair<AzureSparkServerlessCluster, SparkServerlessClusterNode>> monitorAction;
     private SparkServerlessClusterOps() {
         destroyAction = PublishSubject.create();
         provisionAction = PublishSubject.create();
+        monitorAction = PublishSubject.create();
     }
 
     @NotNull
@@ -57,5 +60,10 @@ public class SparkServerlessClusterOps {
     @NotNull
     public PublishSubject<Pair<AzureSparkServerlessAccount, SparkServerlessADLAccountNode>> getProvisionAction() {
         return provisionAction;
+    }
+
+    @NotNull
+    public PublishSubject<Pair<AzureSparkServerlessCluster, SparkServerlessClusterNode>> getMonitorAction() {
+        return monitorAction;
     }
 }
