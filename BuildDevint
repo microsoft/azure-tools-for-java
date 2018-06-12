@@ -38,19 +38,12 @@ cp ./PluginsAndFeatures/azure-toolkit-for-eclipse/WindowsAzurePlugin4EJ/target/W
 chmod +x ./gradlew
 chmod +x ./tools/IntellijVersionHelper
 
-# Build intellij 2017.3 plugin
-if [ $INTELLIJ_VERSION == "true" ] ; then
-    ./tools/IntellijVersionHelper 2017.3
-fi
-./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Pintellij_version=IC-2017.3 -Pdep_plugins=org.intellij.scala:2017.3.15
-cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2017.3.zip
-
 # Build intellij 2018.1 plugin
 if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2018.1
 fi
 
-./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s 
+./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Pintellij_version=IC-2018.1 -Pdep_plugins=org.intellij.scala:2018.1.8
 
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.1.zip
 
@@ -59,7 +52,7 @@ if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2018.2
 fi
 
-./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -PupdateVersionRange=false
+./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s
 
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.2.zip
 echo "ALL BUILD SUCCESSFUL"
