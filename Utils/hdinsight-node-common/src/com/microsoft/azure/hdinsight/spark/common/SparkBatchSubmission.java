@@ -26,6 +26,7 @@ import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.common.appinsight.AppInsightsHttpRequestInstallIdMapRecord;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -133,7 +134,9 @@ public class SparkBatchSubmission {
         String loadingClass = SparkBatchSubmission.class.getClassLoader().getClass().getName().toLowerCase();
         String userAgentSource = loadingClass.contains("intellij") ? "Azure Toolkit for IntelliJ " :
                 (loadingClass.contains("eclipse") ? "Azure Toolkit for Eclipse " : "Azure HDInsight Java SDK ");
-        String requestId = UUID.randomUUID().toString();
+        String requestId = AppInsightsClient.getConfigurationSessionId() == null ?
+                UUID.randomUUID().toString() :
+                AppInsightsClient.getConfigurationSessionId();
 
         if (isMapToInstallID) {
             new AppInsightsHttpRequestInstallIdMapRecord(requestId, getInstallationID()).post();

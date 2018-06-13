@@ -32,6 +32,7 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.http.NameValuePair;
 import org.apache.http.impl.client.HttpClients;
 
@@ -109,18 +110,11 @@ public class AzureHttpObservable extends OAuthTokenHttpObservable {
     }
 
     @NotNull
-    public AzureHttpObservable withUuidUserAgent(boolean isMapToInstallID) {
-        String originUa = getUserAgent();
-
-        if (originUa == null) {
-            return null;
-        }
-
-        String requestId = UUID.randomUUID().toString();
-
-        if (isMapToInstallID) {
-            new AppInsightsHttpRequestInstallIdMapRecord(requestId, getInstallationID()).post();
-        }
+    public AzureHttpObservable withUuidUserAgent() {
+        String originUa = getUserAgentPrefix();
+        String requestId = AppInsightsClient.getConfigurationSessionId() == null ?
+                UUID.randomUUID().toString() :
+                AppInsightsClient.getConfigurationSessionId();
 
         setUserAgent(String.format("%s %s", originUa.trim(), requestId));
 

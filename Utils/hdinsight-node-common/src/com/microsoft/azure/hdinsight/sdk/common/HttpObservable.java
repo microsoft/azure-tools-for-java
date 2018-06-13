@@ -60,6 +60,9 @@ public class HttpObservable {
     @NotNull
     private RequestConfig defaultRequestConfig;
 
+    @NotNull
+    private String userAgentPrefix;
+
     @Nullable
     private String userAgent = null;
 
@@ -87,8 +90,9 @@ public class HttpObservable {
         this.defaultHeaders = new HeaderGroup();
 
         String loadingClass = this.getClass().getClassLoader().getClass().getName().toLowerCase();
-        this.userAgent = loadingClass.contains("intellij") ? "Azure Toolkit for IntelliJ" :
+        this.userAgentPrefix = loadingClass.contains("intellij") ? "Azure Toolkit for IntelliJ" :
                 (loadingClass.contains("eclipse") ? "Azure Toolkit for Eclipse" : "Azure HDInsight SDK HTTP RxJava client");
+        this.userAgent = userAgentPrefix;
 
         // set default headers
         this.defaultHeaders.setHeaders(new Header[] {
@@ -137,6 +141,11 @@ public class HttpObservable {
     /*
      * Getter / Setter
      */
+
+    @NotNull
+    public String getUserAgentPrefix() {
+        return userAgentPrefix;
+    }
 
     @NotNull
     public RequestConfig getDefaultRequestConfig() {

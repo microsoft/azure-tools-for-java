@@ -23,7 +23,6 @@
 package com.microsoft.azure.hdinsight.sdk.common.azure.serverless;
 
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Sets;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureDataLakeHttpObservable;
@@ -113,7 +112,7 @@ public class AzureSparkServerlessAccount implements ClusterContainer {
         URI uri = getUri().resolve(REST_SEGMENT_SPARK_RESOURCEPOOLS);
 
         return getHttp()
-                .withUuidUserAgent(false)
+                .withUuidUserAgent()
                 .get(uri.toString(), null, null, SparkResourcePoolList.class);
     }
 

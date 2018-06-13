@@ -23,7 +23,6 @@
 package com.microsoft.azure.hdinsight.sdk.common.livy.interactive;
 
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
-import com.microsoft.azure.hdinsight.common.appinsight.AppInsightsHttpRequestInstallIdMapRecord;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.ApplicationNotStartException;
@@ -34,6 +33,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.SessionState;
 import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.api.PostSessions;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.http.entity.StringEntity;
@@ -206,20 +206,13 @@ public abstract class Session implements AutoCloseable, Closeable {
     }
 
     @Nullable
-    public String getUserAgent(boolean isMapToInstallID) {
-        String originUa = getHttp().getUserAgent();
+    public String getUserAgent() {
+        String userAgentPrefix = getHttp().getUserAgentPrefix();
+        String requestId = AppInsightsClient.getConfigurationSessionId() == null ?
+                UUID.randomUUID().toString() :
+                AppInsightsClient.getConfigurationSessionId();
 
-        if (originUa == null) {
-            return null;
-        }
-
-        String requestId = UUID.randomUUID().toString();
-
-        if (isMapToInstallID) {
-            new AppInsightsHttpRequestInstallIdMapRecord(requestId, getInstallationID()).post();
-        }
-
-        return String.format("%s %s", originUa.trim(), requestId);
+        return String.format("%s %s", userAgentPrefix.trim(), requestId);
     }
 
     /*
@@ -265,7 +258,7 @@ public abstract class Session implements AutoCloseable, Closeable {
         entity.setContentType("application/json");
 
         return getHttp()
-                .setUserAgent(getUserAgent(true))
+                .setUserAgent(getUserAgent())
                 .post(uri.toString(), entity, null, null, com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Session.class);
     }
 
@@ -290,7 +283,7 @@ public abstract class Session implements AutoCloseable, Closeable {
         }
 
         return getHttp()
-                .setUserAgent(getUserAgent(true))
+                .setUserAgent(getUserAgent())
                 .delete(uri.toString(), null, null);
     }
 
@@ -315,7 +308,7 @@ public abstract class Session implements AutoCloseable, Closeable {
         }
 
         return getHttp()
-                .setUserAgent(getUserAgent(false))
+                .setUserAgent(getUserAgent())
                 .get(uri.toString(), null, null, com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Session.class);
     }
 

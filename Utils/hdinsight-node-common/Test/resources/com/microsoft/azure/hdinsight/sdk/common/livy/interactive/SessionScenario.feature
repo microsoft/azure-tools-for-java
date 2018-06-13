@@ -52,3 +52,9 @@ Feature: Livy Interactive Session Tests
     And create a livy Spark interactive session instance with name 'testSparkREPL2'
     And create the Spark interactive session, and save the response
     Then those request headers UA fields are different
+
+  Scenario: getUserAgent() shouldn't generate multiple UUID
+    Given create a livy Spark interactive session instance with name 'testGetUserAgent'
+    And get and set the session UserAgent
+    And get and set the session UserAgent
+    Then the UserAgent should only has one UUID

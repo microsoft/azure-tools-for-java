@@ -30,8 +30,6 @@ import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccount;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeStoreAccountInformation;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.*;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
@@ -462,7 +460,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
         URI uri = getUri();
 
         return getHttp()
-                .withUuidUserAgent(false)
+                .withUuidUserAgent()
                 .get(uri.toString(), null, null, SparkResourcePool.class);
     }
 
@@ -572,7 +570,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
         entity.setContentType("application/json");
 
         return getHttp()
-                .withUuidUserAgent(true)
+                .withUuidUserAgent()
                 // FIXME!! Need to confirm the response type PutResourcePoolIdResponse or SparkResourcePool
                 .put(uri.toString(), entity, null, null, SparkResourcePool.class);
     }
@@ -624,7 +622,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
         URI uri = getUri();
 
         return getHttp()
-                .withUuidUserAgent(true)
+                .withUuidUserAgent()
                 .delete(uri.toString(), null, null);
     }
 

@@ -39,6 +39,7 @@ class SessionScenario {
     var sessionMock: Session? = null
     var code: String = ""
     var result: Map<String, String>? = null
+    var userAgent: String? = null
 
     @Before
     fun setUp() {
@@ -127,5 +128,20 @@ class SessionScenario {
 
         assertThat(uas).isNotEmpty
         assertThat(uas).doesNotHaveDuplicates()
+    }
+
+    @Given("^get and set the session UserAgent$")
+    fun getAndSetSessionUserAgent() {
+        userAgent = sessionMock?.getUserAgent()
+        sessionMock!!.http.userAgent = userAgent!!
+    }
+
+    @Then("^the UserAgent should only has one UUID$")
+    fun checkOnlyOneUUIDInUserAgent() {
+        val uuidRex = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}".toRegex()
+
+        val result = uuidRex.findAll(userAgent!!)
+
+        assertThat(result.count()).isEqualTo(1)
     }
 }

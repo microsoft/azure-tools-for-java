@@ -29,6 +29,7 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.UUID;
 
 public class AppInsightsClient {
     static AppInsightsConfiguration configuration;
@@ -50,6 +51,11 @@ public class AppInsightsClient {
         if (appInsightsConfiguration == null)
             throw new NullPointerException("AppInsights configuration cannot be null.");
         configuration = appInsightsConfiguration;
+    }
+
+    @Nullable
+    public static String getConfigurationSessionId() {
+        return configuration == null ? null : configuration.sessionId();
     }
 
     public static void createByType(final EventType eventType, final String objectName, final String action) {
