@@ -43,6 +43,10 @@ public class SparkServerlessClusterRootModuleImpl extends HDInsightRootModule {
 
     @Override
     protected void refreshItems() throws AzureCmdException{
+        if (!isFeatureEnabled()) {
+            return;
+        }
+
         AzureSparkServerlessClusterManager.getInstance().get().subscribe(cluster -> {
             cluster.getAccounts().forEach(account -> {
                 addChildNode(new SparkServerlessADLAccountNode(this, account));
