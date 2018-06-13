@@ -24,6 +24,7 @@ package com.microsoft.intellij.helpers.storage;
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.ide.structureView.StructureViewBuilder;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileChooser.*;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
@@ -33,6 +34,8 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFileWrapper;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.ISubscriptionSelectionListener;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -561,12 +564,13 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         BlobFile fileSelection = getFileSelection();
 
         assert fileSelection != null;
-        JFileChooser jFileChooser = new JFileChooser(new File(fileSelection.getName()));
-        jFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        int saveDialog = jFileChooser.showSaveDialog(this.mainPanel);
 
-        if (saveDialog == JFileChooser.APPROVE_OPTION) {
-            downloadSelectedFile(jFileChooser.getSelectedFile(), false);
+        FileSaverDescriptor fileDescriptor = new FileSaverDescriptor(SAVE_AS, "Select location to save blob file.");
+        final FileSaverDialog dialog = FileChooserFactory.getInstance().createSaveFileDialog(fileDescriptor, this.project);
+        final VirtualFileWrapper save = dialog.save(LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")), "");
+
+        if (save != null) {
+            downloadSelectedFile(save.getFile(), false);
         }
     }
 

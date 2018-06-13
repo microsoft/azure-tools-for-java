@@ -24,13 +24,15 @@ package com.microsoft.intellij.helpers;
 
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.fileChooser.*;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileWrapper;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.management.storage.StorageAccount;
@@ -127,13 +129,16 @@ public class UIHelperImpl implements UIHelper {
 
     /**
      * returns File if file chosen and OK pressed; otherwise returns null
+     * TODO: name confusion, FileChooser vs FileSaver
      */
     @Override
     public File showFileChooser(String title) {
-        JFileChooser saveFile = new JFileChooser();
-        saveFile.setDialogTitle(title);
-        if (saveFile.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-            return saveFile.getSelectedFile();
+        FileSaverDescriptor fileDescriptor = new FileSaverDescriptor(title, "");
+        final FileSaverDialog dialog = FileChooserFactory.getInstance().createSaveFileDialog(fileDescriptor, (Project) null);
+        final VirtualFileWrapper save = dialog.save(LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")), "");
+
+        if (save != null) {
+            return save.getFile();
         }
         return null;
     }

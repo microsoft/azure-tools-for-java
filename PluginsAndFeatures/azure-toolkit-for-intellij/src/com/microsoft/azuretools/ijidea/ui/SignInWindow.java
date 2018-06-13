@@ -24,11 +24,16 @@ package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.AdAuthManager;
@@ -43,13 +48,9 @@ import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -76,8 +77,6 @@ public class SignInWindow extends AzureDialogWrapper {
 
     private String accountEmail;
 
-    final JFileChooser fileChooser;
-
     private Project project;
 
     public AuthMethodDetails getAuthMethodDetails() {
@@ -100,14 +99,6 @@ public class SignInWindow extends AzureDialogWrapper {
         setModal(true);
         setTitle("Azure Sign In");
         setOKButtonText("Sign in");
-
-        fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
-        FileFilter filter = new FileNameExtensionFilter("*.azureauth", "azureauth");
-        fileChooser.setFileFilter(filter);
-        fileChooser.addChoosableFileFilter(filter);
-        fileChooser.setApproveButtonText("Select");
-        fileChooser.setDialogTitle("Select Authentication File");
 
         this.authMethodDetails = authMethodDetails;
         authFileTextField.setText(authMethodDetails.getCredFilePath());
@@ -162,18 +153,15 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private void doSelectCredFilepath() {
-        int returnVal = fileChooser.showOpenDialog(contentPane);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            try {
-                String filepath = file.getCanonicalPath();
-                //setCredFilepath(filepath.toString());
-                authFileTextField.setText(filepath);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                //LOGGER.error("doSelectCredFilepath", ex);
-                ErrorWindow.show(project, ex.getMessage(), "File Path Error");
-            }
+        FileChooserDescriptor fileDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor("azureauth");
+        fileDescriptor.setTitle("Select Authentication File");
+        final VirtualFile file = FileChooser.chooseFile(
+                fileDescriptor,
+                this.project,
+                LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home"))
+        );
+        if (file != null) {
+            authFileTextField.setText(file.getPath());
         }
     }
 
@@ -307,8 +295,6 @@ public class SignInWindow extends AzureDialogWrapper {
             }
 
             authFileTextField.setText(path);
-            fileChooser.setCurrentDirectory(new File(destinationFolder));
-
 
         } catch (Exception ex) {
             ex.printStackTrace();

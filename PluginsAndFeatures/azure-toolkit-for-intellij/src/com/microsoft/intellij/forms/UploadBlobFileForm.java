@@ -21,8 +21,12 @@
  */
 package com.microsoft.intellij.forms;
 
+import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.intellij.helpers.LinkListener;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
@@ -61,16 +65,15 @@ public class UploadBlobFileForm extends AzureDialogWrapper {
         browseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                JFileChooser jFileChooser = new JFileChooser();
-                jFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                jFileChooser.setDialogTitle("Upload blob");
-                if (jFileChooser.showOpenDialog(contentPane) == JFileChooser.APPROVE_OPTION) {
-
-                    selectedFile = jFileChooser.getSelectedFile();
-                    nameTextField.setText(selectedFile.getAbsolutePath());
-
+                FileChooserDescriptor fileDiscriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
+                fileDiscriptor.setTitle("Upload blob");
+                final VirtualFile file = FileChooser.chooseFile(fileDiscriptor,null,null);
+                if (file != null) {
+                    nameTextField.setText(file.getPath());
+                    selectedFile = new File(nameTextField.getText());
                     validateForm();
                 }
+
             }
         });
 
