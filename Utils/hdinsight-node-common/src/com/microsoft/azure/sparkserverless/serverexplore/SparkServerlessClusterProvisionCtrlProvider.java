@@ -57,10 +57,11 @@ public class SparkServerlessClusterProvisionCtrlProvider {
     public int getCalculatedAU(int masterCores,
                                int workerCores,
                                int masterMemory,
-                               int workerMemory) {
+                               int workerMemory,
+                               int workerContainer) {
         return (int) Math.max(
-                Math.ceil((masterCores + workerCores) / 2.0),
-                Math.ceil((masterMemory + workerMemory) / 6.0));
+                Math.ceil((masterCores + workerCores * workerContainer) / 2.0),
+                Math.ceil((masterMemory + workerMemory * workerContainer) / 6.0));
     }
 
     public void updateCalculatedAU() {
@@ -70,7 +71,8 @@ public class SparkServerlessClusterProvisionCtrlProvider {
                         toUpdate.getMasterCores(),
                         toUpdate.getWorkerCores(),
                         toUpdate.getMasterMemory(),
-                        toUpdate.getWorkerMemory())))
+                        toUpdate.getWorkerMemory(),
+                        toUpdate.getWorkerNumberOfContainers())))
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData)
                 .subscribe();
@@ -126,12 +128,12 @@ public class SparkServerlessClusterProvisionCtrlProvider {
         // TODO: Check all of the necessary fields
         String clusterName = toUpdate.getClusterName();
         String adlAccount = toUpdate.getAdlAccount();
-        String previousSparkEvents = toUpdate.getPreviousSparkEvents();
+        String sparkEvents = toUpdate.getSparkEvents();
         int workerNumberOfContainers = toUpdate.getWorkerNumberOfContainers();
 
         if (StringHelper.isNullOrWhiteSpace(clusterName) ||
                 StringHelper.isNullOrWhiteSpace(adlAccount) ||
-                StringHelper.isNullOrWhiteSpace(previousSparkEvents) ||
+                StringHelper.isNullOrWhiteSpace(sparkEvents) ||
                 StringHelper.isNullOrWhiteSpace(String.valueOf(workerNumberOfContainers))) {
             String highlightPrefix = "* ";
             if (!toUpdate.getAdlAccountLabelTitle().startsWith(highlightPrefix)) {
@@ -140,9 +142,9 @@ public class SparkServerlessClusterProvisionCtrlProvider {
             if (!toUpdate.getClusterNameLabelTitle().startsWith(highlightPrefix)) {
                 toUpdate.setClusterNameLabelTitle(highlightPrefix + toUpdate.getClusterNameLabelTitle());
             }
-            if (!toUpdate.getPreviousSparkEventsLabelTitle().startsWith(highlightPrefix)) {
-                toUpdate.setPreviousSparkEventsLabelTitle(
-                        highlightPrefix + toUpdate.getPreviousSparkEventsLabelTitle());
+            if (!toUpdate.getSparkEventsLabelTitle().startsWith(highlightPrefix)) {
+                toUpdate.setSparkEventsLabelTitle(
+                        highlightPrefix + toUpdate.getSparkEventsLabelTitle());
             }
             if (!toUpdate.getWorkerNumberOfContainersLabelTitle().startsWith(highlightPrefix)) {
                 toUpdate.setWorkerNumberOfContainersLabelTitle(
@@ -200,7 +202,7 @@ public class SparkServerlessClusterProvisionCtrlProvider {
                             .workerPerInstanceCores(toUpdate.getWorkerCores())
                             .workerPerInstanceMemory(toUpdate.getWorkerMemory())
                             .workerInstances(toUpdate.getWorkerNumberOfContainers())
-                            .sparkEventsPath(toUpdate.getStorageRootPathLabelTitle() + toUpdate.getPreviousSparkEvents())
+                            .sparkEventsPath(toUpdate.getStorageRootPathLabelTitle() + toUpdate.getSparkEvents())
                             .userStorageAccount(account.getDetailResponse().defaultDataLakeStoreAccount())
                             .build().provision().toBlocking().single();
         } catch (Exception e) {
@@ -218,8 +220,8 @@ public class SparkServerlessClusterProvisionCtrlProvider {
         if (toUpdate.getAdlAccountLabelTitle().startsWith(highlightPrefix)) {
             toUpdate.setAdlAccountLabelTitle(toUpdate.getAdlAccountLabelTitle().substring(2));
         }
-        if (toUpdate.getPreviousSparkEventsLabelTitle().startsWith(highlightPrefix)) {
-            toUpdate.setPreviousSparkEventsLabelTitle(toUpdate.getPreviousSparkEventsLabelTitle().substring(2));
+        if (toUpdate.getSparkEventsLabelTitle().startsWith(highlightPrefix)) {
+            toUpdate.setSparkEventsLabelTitle(toUpdate.getSparkEventsLabelTitle().substring(2));
         }
         if (toUpdate.getWorkerNumberOfContainersLabelTitle().startsWith(highlightPrefix)) {
             toUpdate.setWorkerNumberOfContainersLabelTitle(

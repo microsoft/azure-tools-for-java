@@ -30,7 +30,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
     @NotNull
     private String adlAccount;
     @NotNull
-    private String previousSparkEvents;
+    private String sparkEvents;
     @NotNull
     private int masterCores;
     @NotNull
@@ -57,7 +57,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
     @NotNull
     private String adlAccountLabelTitle;
     @NotNull
-    private String previousSparkEventsLabelTitle;
+    private String sparkEventsLabelTitle;
     @NotNull
     private String workerNumberOfContainersLabelTitle;
 
@@ -85,12 +85,12 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
     }
 
     @NotNull
-    public String getPreviousSparkEvents() {
-        return previousSparkEvents;
+    public String getSparkEvents() {
+        return sparkEvents;
     }
 
-    public SparkServerlessClusterProvisionSettingsModel setPreviousSparkEvents(@NotNull String previousSparkEvents) {
-        this.previousSparkEvents = previousSparkEvents;
+    public SparkServerlessClusterProvisionSettingsModel setSparkEvents(@NotNull String sparkEvents) {
+        this.sparkEvents = sparkEvents;
         return this;
     }
 
@@ -196,13 +196,13 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
     }
 
     @NotNull
-    public String getPreviousSparkEventsLabelTitle() {
-        return previousSparkEventsLabelTitle;
+    public String getSparkEventsLabelTitle() {
+        return sparkEventsLabelTitle;
     }
 
-    public SparkServerlessClusterProvisionSettingsModel setPreviousSparkEventsLabelTitle(
-            @NotNull String previousSparkEventsLabelTitle) {
-        this.previousSparkEventsLabelTitle = previousSparkEventsLabelTitle;
+    public SparkServerlessClusterProvisionSettingsModel setSparkEventsLabelTitle(
+            @NotNull String sparkEventsLabelTitle) {
+        this.sparkEventsLabelTitle = sparkEventsLabelTitle;
         return this;
     }
 
