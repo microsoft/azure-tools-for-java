@@ -4,24 +4,21 @@ buildscript {
     repositories {
         mavenCentral()
         maven {
-            // url "https://oss.sonatype.org/content/repositories/snapshots/"
-            url 'http://yanzhjenkins.southeastasia.cloudapp.azure.com:8081/repository/maven-snapshots/'
+            url "https://oss.sonatype.org/content/repositories/snapshots/"
         }
         maven {
             url 'http://dl.bintray.com/jetbrains/intellij-plugin-service'
         }
-
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.0-SNAPSHOT"
     }
 }
 
-// plugins {
-//     id "org.jetbrains.intellij" version "0.2.18"
-// }
+plugins {
+    id "org.jetbrains.intellij" version "0.3.3"
+}
 apply plugin: "kotlin"
 apply plugin: 'org.jetbrains.intellij'
 
