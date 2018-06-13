@@ -67,7 +67,7 @@ public class UploadBlobFileForm extends AzureDialogWrapper {
             public void actionPerformed(ActionEvent actionEvent) {
                 FileChooserDescriptor fileDiscriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
                 fileDiscriptor.setTitle("Upload blob");
-                final VirtualFile file = FileChooser.chooseFile(fileDiscriptor,null,null);
+                final VirtualFile file = FileChooser.chooseFile(fileDiscriptor, null, null);
                 if (file != null) {
                     nameTextField.setText(file.getPath());
                     selectedFile = new File(nameTextField.getText());
