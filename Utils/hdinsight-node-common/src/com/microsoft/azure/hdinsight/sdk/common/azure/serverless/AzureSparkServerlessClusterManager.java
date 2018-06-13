@@ -255,6 +255,7 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
     public Observable<Boolean> isFeatureEnabled() {
         return concat(from(getAccounts()), get().flatMap(manager -> from(manager.getAccounts())))
                 .isEmpty()
-                .map(isEmpty -> !isEmpty);
+                .map(isEmpty -> !isEmpty)
+                .onErrorReturn(err -> false);
     }
 }
