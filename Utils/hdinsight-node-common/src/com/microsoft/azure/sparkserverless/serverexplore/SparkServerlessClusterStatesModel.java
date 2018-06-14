@@ -1,43 +1,34 @@
 package com.microsoft.azure.sparkserverless.serverexplore;
 
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.net.URI;
 
 public class SparkServerlessClusterStatesModel implements Cloneable{
     @NotNull
-    private String masterState;
+    private String masterState = "";
     @NotNull
-    private String workerState;
+    private String workerState = "";
 
-    @NotNull
     private int masterTarget;
-    @NotNull
     private int workerTarget;
 
-    @NotNull
     private int masterRunning;
-    @NotNull
     private int workerRunning;
 
-    @NotNull
     private int masterFailed;
-    @NotNull
     private int workerFailed;
 
-    @NotNull
     private int masterOutstanding;
-    @NotNull
     private int workerOutstanding;
 
-    @NotNull
-    private URI livyUri;
-    @NotNull
+    @Nullable
     private URI sparkHistoryUri;
-    @NotNull
+    @Nullable
     private URI sparkMasterUri;
     @NotNull
-    private String clusterState;
+    private String clusterState = "";
 
     @NotNull
     public String getMasterState() {
@@ -45,7 +36,7 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
     }
 
     @NotNull
-    public SparkServerlessClusterStatesModel setMasterState(String masterState) {
+    public SparkServerlessClusterStatesModel setMasterState(@NotNull String masterState) {
         this.masterState = masterState;
         return this;
     }
@@ -56,12 +47,11 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
     }
 
     @NotNull
-    public SparkServerlessClusterStatesModel setWorkerState(String workerState) {
+    public SparkServerlessClusterStatesModel setWorkerState(@NotNull String workerState) {
         this.workerState = workerState;
         return this;
     }
 
-    @NotNull
     public int getMasterTarget() {
         return masterTarget;
     }
@@ -72,7 +62,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return this;
     }
 
-    @NotNull
     public int getWorkerTarget() {
         return workerTarget;
     }
@@ -83,7 +72,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return this;
     }
 
-    @NotNull
     public int getMasterRunning() {
         return masterRunning;
     }
@@ -94,7 +82,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return this;
     }
 
-    @NotNull
     public int getWorkerRunning() {
         return workerRunning;
     }
@@ -105,7 +92,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return this;
     }
 
-    @NotNull
     public int getMasterFailed() {
         return masterFailed;
     }
@@ -116,7 +102,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return this;
     }
 
-    @NotNull
     public int getWorkerFailed() {
         return workerFailed;
     }
@@ -127,7 +112,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return this;
     }
 
-    @NotNull
     public int getMasterOutstanding() {
         return masterOutstanding;
     }
@@ -138,7 +122,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return this;
     }
 
-    @NotNull
     public int getWorkerOutstanding() {
         return workerOutstanding;
     }
@@ -149,35 +132,24 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return this;
     }
 
-    @NotNull
-    public URI getLivyUri() {
-        return livyUri;
-    }
-
-    @NotNull
-    public SparkServerlessClusterStatesModel setLivyUri(URI livyUri) {
-        this.livyUri = livyUri;
-        return this;
-    }
-
-    @NotNull
+    @Nullable
     public URI getSparkHistoryUri() {
         return sparkHistoryUri;
     }
 
     @NotNull
-    public SparkServerlessClusterStatesModel setSparkHistoryUri(URI sparkHistoryUri) {
+    public SparkServerlessClusterStatesModel setSparkHistoryUri(@Nullable URI sparkHistoryUri) {
         this.sparkHistoryUri = sparkHistoryUri;
         return this;
     }
 
-    @NotNull
+    @Nullable
     public URI getSparkMasterUri() {
         return sparkMasterUri;
     }
 
     @NotNull
-    public SparkServerlessClusterStatesModel setSparkMasterUri(URI sparkMasterUri) {
+    public SparkServerlessClusterStatesModel setSparkMasterUri(@Nullable URI sparkMasterUri) {
         this.sparkMasterUri = sparkMasterUri;
         return this;
     }
@@ -188,7 +160,7 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
     }
 
     @NotNull
-    public SparkServerlessClusterStatesModel setClusterState(String clusterState) {
+    public SparkServerlessClusterStatesModel setClusterState(@NotNull String clusterState) {
         this.clusterState = clusterState;
         return this;
     }

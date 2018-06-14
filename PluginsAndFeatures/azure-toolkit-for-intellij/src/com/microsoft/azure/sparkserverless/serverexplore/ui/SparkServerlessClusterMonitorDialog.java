@@ -1,6 +1,5 @@
 package com.microsoft.azure.sparkserverless.serverexplore.ui;
 
-import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
@@ -15,7 +14,6 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import rx.Subscription;
-import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +31,6 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
     private JLabel workerFailedLabel;
     private JLabel workerOutStandingLabel;
     private JLabel clusterStateLabel;
-    private JXHyperLinkWithUri livyEndpointHyperLink;
     private JXHyperLinkWithUri sparkHistoryHyperLink;
     private JXHyperLinkWithUri sparkMasterHyperLink;
     private JPanel monitorDialogPanel;
@@ -54,10 +51,6 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
                 this, new IdeaSchedulers((Project)clusterNode.getProject()), cluster);
         this.cluster = cluster;
 
-        livyEndpointHyperLink.addActionListener(event -> BrowserUtil.browse(livyEndpointHyperLink.getURI()));
-        sparkHistoryHyperLink.addActionListener(event -> BrowserUtil.browse(sparkHistoryHyperLink.getURI()));
-        sparkMasterHyperLink.addActionListener(event -> BrowserUtil.browse(sparkMasterHyperLink.getURI()));
-
         init();
         this.setTitle("Cluster Status");
         this.setModal(true);
@@ -66,7 +59,6 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
     @Override
     public void show() {
         refreshSub = ctrlProvider.updateAll()
-                .subscribeOn(Schedulers.io())
                 .repeatWhen(ob -> ob.delay(REFRESH_INTERVAL, TimeUnit.SECONDS))
                 .subscribe();
 
@@ -93,7 +85,6 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
             masterOutstandingLabel.setText(String.valueOf(data.getMasterOutstanding()));
             workerOutStandingLabel.setText(String.valueOf(data.getWorkerOutstanding()));
 
-            livyEndpointHyperLink.setURI(data.getLivyUri());
             sparkHistoryHyperLink.setURI(data.getSparkHistoryUri());
             sparkMasterHyperLink.setURI(data.getSparkMasterUri());
 

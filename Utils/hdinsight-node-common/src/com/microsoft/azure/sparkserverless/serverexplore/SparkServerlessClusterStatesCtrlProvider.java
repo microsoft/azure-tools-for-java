@@ -45,8 +45,6 @@ public class SparkServerlessClusterStatesCtrlProvider {
                             .setWorkerFailed(cluster.getWorkerFailedInstanceCount())
                             .setMasterOutstanding(cluster.getMasterOutstandingInstanceCount())
                             .setWorkerOutstanding(cluster.getWorkerOutstandingInstanceCount())
-                            .setLivyUri(cluster.getLivyUiUri() != null
-                                    ? URI.create(String.valueOf(cluster.getLivyUiUri() + suffix)) : null)
                             .setSparkHistoryUri(cluster.getSparkHistoryUiUri() != null
                                     ? URI.create(String.valueOf(cluster.getSparkHistoryUiUri() + suffix)) : null)
                             .setSparkMasterUri(cluster.getSparkMasterUiUri() != null

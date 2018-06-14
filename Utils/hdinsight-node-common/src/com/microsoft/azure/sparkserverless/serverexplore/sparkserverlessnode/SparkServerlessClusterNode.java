@@ -81,15 +81,6 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode {
                 this, cluster, adlAccount, SparkServerlessClusterOps.getInstance().getDestroyAction()));
         addAction("View Cluster Status", new SparkServerlessMonitorAction(
                 this, cluster, SparkServerlessClusterOps.getInstance().getMonitorAction()));
-        addAction("Open Livy UI", new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                try {
-                    Desktop.getDesktop().browse(URI.create(String.valueOf(cluster.getLivyUiUri() + suffix)));
-                } catch (IOException ignore) {
-                }
-            }
-        });
         addAction("Open Spark Master UI", new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
