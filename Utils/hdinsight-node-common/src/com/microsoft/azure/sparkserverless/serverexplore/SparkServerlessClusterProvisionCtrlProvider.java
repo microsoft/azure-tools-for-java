@@ -79,13 +79,12 @@ public class SparkServerlessClusterProvisionCtrlProvider {
     }
 
     public void updateTotalAU() {
-        Observable.just(new SparkServerlessClusterProvisionSettingsModel())
-                .doOnNext(controllableView::getData)
-                .map(toUpdate -> {
-                    // TODO: update totalAU field
-                    return toUpdate;
+        account.get()
+                .map(accountUpdated -> {
+                    SparkServerlessClusterProvisionSettingsModel toUpdate = new SparkServerlessClusterProvisionSettingsModel();
+                    controllableView.getData(toUpdate);
+                    return toUpdate.setTotalAU(accountUpdated.getMaxDegreeOfParallelism());
                 })
-                .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData)
                 .subscribe();
     }

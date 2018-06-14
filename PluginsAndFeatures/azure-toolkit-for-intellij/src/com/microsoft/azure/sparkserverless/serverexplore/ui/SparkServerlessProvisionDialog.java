@@ -187,6 +187,13 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
                 });
     }
 
+    @Override
+    public void show() {
+        // update totalAU before displaying the dialogue
+        ctrlProvider.updateTotalAU();
+        super.show();
+    }
+
     @NotNull
     @Override
     protected Action[] createLeftSideActions() {
