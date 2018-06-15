@@ -179,6 +179,10 @@ public class AzureSparkServerlessAccount implements ClusterContainer {
         return name;
     }
 
+    public int getMaxDegreeOfParallelism() {
+        return this.detailResponse != null ? this.detailResponse.maxDegreeOfParallelism() : 0;
+    }
+
     public AzureSparkServerlessAccount setDetailResponse(@Nullable DataLakeAnalyticsAccount detailResponse) {
         this.detailResponse = detailResponse;
 
