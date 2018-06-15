@@ -36,6 +36,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -121,6 +123,14 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         // TODO: will be removed in the final version
         this.adlAccountField.setText(adlAccountNode.getAdlAccount().getName());
         this.storageRootPathLabel.setText(Optional.of(account.getStorageRootPath()).orElse(""));
+        this.getWindow().addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowActivated(WindowEvent e) {
+                // update totalAU before displaying the dialogue
+                ctrlProvider.updateTotalAU();
+                super.windowActivated(e);
+            }
+        });
     }
 
     // Data -> Components
@@ -185,13 +195,6 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
                     adlAccountNode.load(false);
                     super.doOKAction();
                 });
-    }
-
-    @Override
-    public void show() {
-        // update totalAU before displaying the dialogue
-        ctrlProvider.updateTotalAU();
-        super.show();
     }
 
     @NotNull
