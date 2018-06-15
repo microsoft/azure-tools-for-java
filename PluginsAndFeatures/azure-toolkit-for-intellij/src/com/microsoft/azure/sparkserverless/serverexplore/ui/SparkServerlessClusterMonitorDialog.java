@@ -67,7 +67,9 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
 
             @Override
             public void windowClosing(WindowEvent e) {
-                refreshSub.unsubscribe();
+                if (refreshSub != null) {
+                    refreshSub.unsubscribe();
+                }
                 super.windowClosing(e);
             }
         });
