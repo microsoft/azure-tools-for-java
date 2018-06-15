@@ -36,6 +36,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -120,7 +122,15 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         // We can determine the ADL account since we provision on a specific ADL account Node
         // TODO: will be removed in the final version
         this.adlAccountField.setText(adlAccountNode.getAdlAccount().getName());
-        this.storageRootPathLabel.setText(Optional.of(account.getStorageRootPath()).orElse(""));
+        this.storageRootPathLabel.setText(Optional.ofNullable(account.getStorageRootPath()).orElse(""));
+        this.getWindow().addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                // update totalAU before displaying the dialogue
+                ctrlProvider.updateTotalAU();
+                super.windowOpened(e);
+            }
+        });
     }
 
     // Data -> Components
