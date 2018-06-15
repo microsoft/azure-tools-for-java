@@ -21,10 +21,11 @@
  */
 package com.microsoft.intellij.serviceexplorer.azure;
 
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 
 public class AzureModuleImpl extends AzureModule {
-    public AzureModuleImpl(Object project) {
+    public AzureModuleImpl(@Nullable Object project) {
         super(project);
     }
 

@@ -28,6 +28,7 @@ import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
@@ -47,14 +48,24 @@ public class AzureModule extends AzureRefreshableNode {
     private static final String AZURE_SERVICE_MODULE_ID = AzureModule.class.getName();
     private static final String ICON_PATH = "AzureExplorer_16.png";
     private static final String BASE_MODULE_NAME = "Azure";
+
+    @Nullable
     private Object project;
+    @NotNull
     private VMArmModule vmArmServiceModule;
+    @NotNull
     private RedisCacheModule redisCacheModule;
+    @NotNull
     private StorageModule storageModule;
+    @NotNull
     private WebAppModule webAppModule;
+    @Nullable
     private HDInsightRootModule hdInsightModule;
+    @Nullable
     private HDInsightRootModule sparkServerlessClusterRootModule;
+    @NotNull
     private DockerHostModule dockerHostModule;
+    @NotNull
     private ContainerRegistryModule containerRegistryModule;
 
     /**
@@ -62,8 +73,8 @@ public class AzureModule extends AzureRefreshableNode {
      *
      * @param project project
      */
-    public AzureModule(Object project) {
-        this(null, ICON_PATH, null);
+    public AzureModule(@Nullable Object project) {
+        super(AZURE_SERVICE_MODULE_ID, composeName(), null, ICON_PATH);
         this.project = project;
         storageModule = new StorageModule(this);
         webAppModule = new WebAppModule(this);
@@ -81,10 +92,6 @@ public class AzureModule extends AzureRefreshableNode {
         }
         // in case we already signed in with service principal between restarts, sign in event was not fired
         addSubscriptionSelectionListener();
-    }
-
-    public AzureModule(Node parent, String iconPath, Object data) {
-        super(AZURE_SERVICE_MODULE_ID, composeName(), parent, iconPath);
     }
 
     private static String composeName() {
@@ -168,8 +175,15 @@ public class AzureModule extends AzureRefreshableNode {
                 redisCacheModule.load(true);
                 storageModule.load(true);
                 webAppModule.load(true);
-                hdInsightModule.load(true);
-                sparkServerlessClusterRootModule.load(true);
+
+                if (hdInsightModule != null) {
+                    hdInsightModule.load(true);
+                }
+
+                if (sparkServerlessClusterRootModule != null) {
+                    sparkServerlessClusterRootModule.load(true);
+                }
+
                 dockerHostModule.load(true);
                 containerRegistryModule.load(true);
             }
@@ -178,6 +192,7 @@ public class AzureModule extends AzureRefreshableNode {
         }
     }
 
+    @Nullable
     @Override
     public Object getProject() {
         return project;
