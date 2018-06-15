@@ -16,10 +16,12 @@ import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import rx.Subscription;
 
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.concurrent.TimeUnit;
 
 public class SparkServerlessClusterMonitorDialog extends DialogWrapper
-    implements SettableControl<SparkServerlessClusterStatesModel> {
+        implements SettableControl<SparkServerlessClusterStatesModel> {
     private JLabel masterStateLabel;
     private JLabel workerStateLabel;
     private JLabel masterTargetLabel;
@@ -46,50 +48,53 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
 
     public SparkServerlessClusterMonitorDialog(@NotNull SparkServerlessClusterNode clusterNode,
                                                @NotNull AzureSparkServerlessCluster cluster) {
-        super((Project)clusterNode.getProject(), true);
+        super((Project) clusterNode.getProject(), true);
         this.ctrlProvider = new SparkServerlessClusterStatesCtrlProvider(
-                this, new IdeaSchedulers((Project)clusterNode.getProject()), cluster);
+                this, new IdeaSchedulers((Project) clusterNode.getProject()), cluster);
         this.cluster = cluster;
 
         init();
         this.setTitle("Cluster Status");
         this.setModal(true);
-    }
+        this.getWindow().addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                refreshSub = ctrlProvider.updateAll()
+                        .repeatWhen(ob -> ob.delay(REFRESH_INTERVAL, TimeUnit.SECONDS))
+                        .subscribe();
+                super.windowOpened(e);
+            }
 
-    @Override
-    public void show() {
-        refreshSub = ctrlProvider.updateAll()
-                .repeatWhen(ob -> ob.delay(REFRESH_INTERVAL, TimeUnit.SECONDS))
-                .subscribe();
-
-        super.show();
-        refreshSub.unsubscribe();
+            @Override
+            public void windowClosing(WindowEvent e) {
+                refreshSub.unsubscribe();
+                super.windowClosing(e);
+            }
+        });
     }
 
     // Data -> Components
     @Override
     public void setData(SparkServerlessClusterStatesModel data) {
-        ApplicationManager.getApplication().invokeAndWait(() -> {
-            masterStateLabel.setText(data.getMasterState());
-            workerStateLabel.setText(data.getWorkerState());
+        masterStateLabel.setText(data.getMasterState());
+        workerStateLabel.setText(data.getWorkerState());
 
-            masterTargetLabel.setText(String.valueOf(data.getMasterTarget()));
-            workerTargetLabel.setText(String.valueOf(data.getWorkerTarget()));
+        masterTargetLabel.setText(String.valueOf(data.getMasterTarget()));
+        workerTargetLabel.setText(String.valueOf(data.getWorkerTarget()));
 
-            masterRunningLabel.setText(String.valueOf(data.getMasterRunning()));
-            workerRunningLabel.setText(String.valueOf(data.getWorkerRunning()));
+        masterRunningLabel.setText(String.valueOf(data.getMasterRunning()));
+        workerRunningLabel.setText(String.valueOf(data.getWorkerRunning()));
 
-            masterFailedLabel.setText(String.valueOf(data.getMasterFailed()));
-            workerFailedLabel.setText(String.valueOf(data.getWorkerFailed()));
+        masterFailedLabel.setText(String.valueOf(data.getMasterFailed()));
+        workerFailedLabel.setText(String.valueOf(data.getWorkerFailed()));
 
-            masterOutstandingLabel.setText(String.valueOf(data.getMasterOutstanding()));
-            workerOutStandingLabel.setText(String.valueOf(data.getWorkerOutstanding()));
+        masterOutstandingLabel.setText(String.valueOf(data.getMasterOutstanding()));
+        workerOutStandingLabel.setText(String.valueOf(data.getWorkerOutstanding()));
 
-            sparkHistoryHyperLink.setURI(data.getSparkHistoryUri());
-            sparkMasterHyperLink.setURI(data.getSparkMasterUri());
+        sparkHistoryHyperLink.setURI(data.getSparkHistoryUri());
+        sparkMasterHyperLink.setURI(data.getSparkMasterUri());
 
-            clusterStateLabel.setText(data.getClusterState());
-        }, ModalityState.any());
+        clusterStateLabel.setText(data.getClusterState());
     }
 
     // Components -> Data

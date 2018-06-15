@@ -30,6 +30,7 @@ public class SparkServerlessClusterStatesCtrlProvider {
     public Observable<SparkServerlessClusterStatesModel> updateAll() {
         // refresh cluster property
         return cluster.get()
+                .observeOn(ideSchedulers.processBarVisibleAsync("Updating cluster status..."))
                 .map(clusterUpdated -> {
                     SparkServerlessClusterStatesModel toUpdate = new SparkServerlessClusterStatesModel();
                     controllableView.getData(toUpdate);
@@ -51,6 +52,7 @@ public class SparkServerlessClusterStatesCtrlProvider {
                                     ? URI.create(String.valueOf(cluster.getSparkMasterUiUri() + suffix)) : null)
                             .setClusterState(cluster.getState());
                 })
+                .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData);
     }
 
