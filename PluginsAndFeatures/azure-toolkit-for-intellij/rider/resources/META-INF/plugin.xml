@@ -1,0 +1,24 @@
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+  <id>com.microsoft.tooling.msservices.intellij.azure</id>
+  <name>Azure Toolkit for Rider</name>
+  <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
+
+  <description><![CDATA[
+      <html>
+        <p>TODO</p>
+      </html>
+    ]]></description>
+
+  <xi:include href="/META-INF/platformPlugin.xml" xpointer="xpointer(/idea-plugin/*)"/>
+
+  <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="181.*" until-build="181.*"/>
+
+  <depends>com.intellij.modules.rider</depends>
+
+  <extensions defaultExtensionNs="com.intellij"/>
+  <application-components/>
+  <project-components/>
+  <actions/>
+
+</idea-plugin>

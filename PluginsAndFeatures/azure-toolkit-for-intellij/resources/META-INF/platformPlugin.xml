@@ -1,20 +1,5 @@
 <idea-plugin>
-  <id>com.microsoft.tooling.msservices.intellij.azure</id>
-  <name>Azure Toolkit for IntelliJ</name>
   <version>3.8.0</version>
-  <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
-
-  <description><![CDATA[
-      <html>
-        <p>These plugins allow Java developers and Azure HDInsight users to easily create, develop, configure, test, and deploy highly available and scalable Java web apps and Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.</p>
-        <ul>
-          <li>Azure Web App Workflow: You can run your web applications on Azure Web App with One-Click experience using Azure Toolkits for IntelliJ.</li>
-          <li>Azure Container Workflow: You can dockerize and run your web application on Azure Web App (Linux) via Azure Container Registry.</li>
-          <li>Azure Explorer: You can view and manage your cloud resources on Azure with Azure Explorer in Azure Toolkits for IntelliJ.</li>
-          <li>Azure HDInsight: Use Azure HDInsight tool to submit Spark jobs to HDInsight cluster, monitor and debug Spark or Hadoop Hive jobs easily.</li>
-        </ul>
-      </html>
-    ]]></description>
 
   <change-notes>
     <![CDATA[
@@ -120,17 +105,7 @@
     ]]>
   </change-notes>
 
-  <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="182" until-build="182.*"/>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
-  <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
-  <depends optional="true">org.intellij.scala</depends>
-  <depends>org.jetbrains.idea.maven</depends>
-  <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
-       on how to target different products -->
-  <!-- uncomment to enable plugin in all products
-  <depends>com.intellij.modules.lang</depends>
-  -->
 
   <extensions defaultExtensionNs="com.intellij">
     <toolWindow
@@ -148,7 +123,6 @@
                   serviceImplementation="com.microsoft.intellij.AzureSettings"/>
     <applicationService serviceInterface="com.microsoft.intellij.ApplicationSettings"
                       serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
-    <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
 
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider"/>
@@ -163,38 +137,11 @@
           id="Azure Explorer"
           canCloseContents="false"
           icon="/icons/AzureExplorer_16.png"/>
-
-    <moduleBuilder builderClass="com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder"/>
-    <toolWindow
-        anchor="bottom"
-        factoryClass="com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionToolWindowFactory"
-        id="HDInsight Spark Submission"
-        canCloseContents="false"
-        icon="/icons/SparkSubmissionToolWindow.png"/>
-
-    <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />
-    <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />
-    <configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>
-    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType"/>
-    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.ServerlessSparkConfigurationType"/>
-    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.SparkFailureTaskDebugConfigurationType"/>
-    <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobLocalRunConfigurationProducer"/>
-    <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>
-    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
-    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ServerlessSparkBatchRunner" />
-    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
-    <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
   </extensions>
 
   <application-components>
     <component>
-      <implementation-class>com.microsoft.azure.hdinsight.jobs.JobViewApplicationComponent</implementation-class>
-    </component>
-    <component>
       <implementation-class>com.microsoft.intellij.AzureActionsComponent</implementation-class>
-    </component>
-    <component>
-      <implementation-class>com.microsoft.azure.hdinsight.projects.HDInsightActionsComponent</implementation-class>
     </component>
   </application-components>
 
@@ -206,12 +153,6 @@
   </project-components>
 
   <actions>
-    <action id="Actions.LibraryConfigurationAction"
-            class="com.microsoft.intellij.actions.LibraryConfigurationAction" text="Libraries Configuration"
-            description="Libraries Configuration"/>
-    <action id="Actions.ApplicationInsightsAction"
-            class="com.microsoft.intellij.actions.ApplicatioInsightsAction" text="Configure Application Insights..."
-            description="Configure Application Insights..." icon="/icons/ApplicationInsights_16.png"/>
     <action id="Actions.AzureDockerHostDeploy" class="com.microsoft.intellij.actions.AzureDockerHostDeployAction"
             text="Publish as Docker Container..." description="Azure website deployment for Java on Docker"
             icon="/icons/PublishDockerContainer_16.png">
@@ -225,59 +166,11 @@
             icon="/icons/CodeSamples_16.png">
     </action>
 
-    <action id="Actions.SubmitSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.SubmitAction" text="Submit Spark Application to HDInsight"
-            description="Submit Spark Application to HDInsight" icon="/icons/Spark.png"/>
-
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
             description="ShowSubscriptionsAction" />
-    <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
-            text="Run on Web App" description="Run on Web App"
-            icon="/icons/PublishWebApp_16.png">
-    </action>
-    <action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.AddDockerSupportAction"
-            text="Add Docker Support" description="Add Docker Support"
-            icon="/icons/AddDockerSupport_16.png">
-    </action>
-    <action id="Actions.RunOnDockerHost" class="com.microsoft.intellij.actions.RunOnDockerHostAction"
-            text="Docker Run" description="Docker Run"
-            icon="/icons/DockerRun_16.png">
-    </action>
-    <action id="Actions.PushImage" class="com.microsoft.intellij.actions.PushImageAction"
-            text="Push Image" description="Push Image"
-            icon="/icons/PushImage_16.png">
-    </action>
-    <action id="Actions.WebAppOnLinux" class="com.microsoft.intellij.actions.WebAppOnLinuxAction"
-            text="Run on Web App for Containers" description="Run on Web App for Containers"
-            icon="/icons/PublishWebAppOnLinux_16.png">
-    </action>
-    <action id="Actions.SparkJobDisconnect" class="com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction"
-            text="Disconnect" description="Disconnect the log view from remote Spark Job"
-            icon="/icons/SparkJobDisconnect.png">
-    </action>
-
-    <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/azure.png" popup="true"
-           class="com.microsoft.intellij.actions.AzurePopupGroup">
-      <reference ref="Actions.WebDeployAction"/>
-      <separator/>
-      <reference ref="Actions.AddDockerSupport"/>
-      <reference ref="Actions.RunOnDockerHost"/>
-      <reference ref="Actions.PushImage"/>
-      <reference ref="Actions.WebAppOnLinux"/>
-      <separator/>
-      <reference ref="Actions.AzureDockerHostDeploy"/>
-      <separator/>
-      <reference ref="Actions.ApplicationInsightsAction"/>
-      <reference ref="Actions.LibraryConfigurationAction"/>
-    </group>
 
     <group id="AzureToolbarGroup" text="Azure" description="Azure">
-      <group id="PublishToAzureGroup" text="Publish Group" description="Publish Group" popup="true" icon="/icons/Publish_16.png">
-        <reference ref="Actions.WebDeployAction"/>
-        <reference ref="Actions.WebAppOnLinux"/>
-        <reference ref="Actions.AzureDockerHostDeploy"/>
-      </group>
       <reference ref="Actions.AzureExplorerOpenAction"/>
       <reference ref="Actions.AzureCodeSamples"/>
     </group>
@@ -296,5 +189,5 @@
 
   </actions>
 
-    <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
+  <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
 </idea-plugin>
