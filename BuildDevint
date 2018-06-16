@@ -35,7 +35,6 @@ mvn install -f $SCRIPTPATH/PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml 
 mvn clean install -f $SCRIPTPATH/PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml $MAVEN_QUIET
 cp ./PluginsAndFeatures/azure-toolkit-for-eclipse/WindowsAzurePlugin4EJ/target/WindowsAzurePlugin4EJ*.zip ./$ARTIFACTS_DIR/WindowsAzurePlugin4EJ.zip
 
-chmod +x ./gradlew
 chmod +x ./tools/IntellijVersionHelper
 
 # Build intellij 2018.1 plugin
@@ -43,7 +42,7 @@ if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2018.1
 fi
 
-./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Pintellij_version=IC-2018.1 -Pdep_plugins=org.intellij.scala:2018.1.8
+(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Pintellij_version=IC-2018.1 -Pdep_plugins=org.intellij.scala:2018.1.8)
 
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.1.zip
 
@@ -52,7 +51,7 @@ if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2018.2
 fi
 
-./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s
+(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s)
 
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.2.zip
 echo "ALL BUILD SUCCESSFUL"

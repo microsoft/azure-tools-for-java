@@ -68,21 +68,20 @@ mvn install -f ./PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.re
 mvn clean install -f ./PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml -Dinstrkey=${ECLIPSE_KEY}  $MAVEN_QUIET
 cp ./PluginsAndFeatures/azure-toolkit-for-eclipse/WindowsAzurePlugin4EJ/target/WindowsAzurePlugin4EJ*.zip ./$ARTIFACTS_DIR/WindowsAzurePlugin4EJ.zip
 
-chmod +x ./gradlew
 chmod +x ./tools/IntellijVersionHelper
 
 # Build intellij 2018.1 plugin
 if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2018.1
 fi
-./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-2018.1 -Pdep_plugins=org.intellij.scala:2018.1.8
+(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-2018.1 -Pdep_plugins=org.intellij.scala:2018.1.8)
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.1.zip
 
 # Build intellij 2018.2 plugin
 if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2018.2
 fi
-./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Papplicationinsights.key=${INTELLIJ_KEY}
+(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Papplicationinsights.key=${INTELLIJ_KEY})
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.2.zip
 
 # Extract jars to sign
