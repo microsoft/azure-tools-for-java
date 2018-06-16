@@ -5,4 +5,5 @@ dependencies {
 
 intellij {
     pluginName = 'azure-toolkit-for-rider'
+    version = rider_version
 }

@@ -1,5 +1,4 @@
 rootProject.name = 'azure-toolkit-for-intellij'
-//intellij_version = 'IU-2016.3'
 
 include "idea"
 include "rider"

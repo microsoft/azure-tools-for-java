@@ -88,9 +88,27 @@ allprojects {
     }
 
     intellij {
-        version = intellij_version
+        switch (build_common_code_with) {
+            case "rider":
+                version = rider_version
+                break
+            case "idea":
+                version = idea_version
+                break
+            default:
+                throw new Exception("Unsupported value for build_common_code_with: " + build_common_code_with)
+        }
+
         updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
         downloadSources = Boolean.valueOf(sources)
+    }
+
+    instrumentCode {
+        // javac2 is required to compile .form files from IntelliJ IDEA UI Designer
+        // Since Rider distribution does not contain it, take it from IDEA
+        javac2 {
+            "${project(":idea").extensions.getByName("intellij").ideaDependency.classes}/lib/javac2.jar"
+        }
     }
 
     sourceSets {
