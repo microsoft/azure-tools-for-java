@@ -53,6 +53,7 @@
   <extensions defaultExtensionNs="com.microsoft.intellij">
     <nodeActionsMap implementation="com.microsoft.intellij.serviceexplorer.NodeJavaActionsMap" />
     <serverExplorerToolWindowListener implementation="com.microsoft.intellij.serviceexplorer.ServerExplorerToolWindowJavaListener" />
+    <dockerArtifactProvider implementation="com.microsoft.intellij.docker.DockerArtifactsFromJavaProjectModel" />
   </extensions>
 
   <application-components>

@@ -25,14 +25,13 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.packaging.impl.artifacts.ArtifactUtil;
 import com.intellij.ui.*;
 import com.intellij.ui.table.JBTable;
 import com.intellij.ui.wizard.WizardNavigationState;
@@ -47,6 +46,7 @@ import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.intellij.docker.DockerArtifactProvider;
 import com.microsoft.intellij.docker.dialogs.AzureViewDockerDialog;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
 import com.microsoft.intellij.docker.wizards.createhost.AzureNewDockerWizardDialog;
@@ -63,8 +63,12 @@ import javax.swing.table.TableColumn;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep implements TelemetryProperties {
@@ -207,13 +211,20 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
         setDialogButtonsState(doValidate(false) == null);
       }
     });
-    for (Artifact item : ArtifactUtil.getArtifactWithOutputPaths(model.getProject())) {
-      String path = item.getOutputFilePath();
-      if (path != null && (path.toLowerCase().endsWith(".war") || path.toLowerCase().endsWith(".jar")) &&
-          AzureDockerValidationUtils.validateDockerArtifactPath(path)) {
-        dockerArtifactComboboxWithBrowse.getComboBox().addItem(path);
+
+    Set<String> artifactPaths = new HashSet<>();
+    for (DockerArtifactProvider provider : Extensions.getExtensions(DockerArtifactProvider.EXTENSION_POINT_NAME)) {
+      for (File file: provider.getPaths(model.getProject())) {
+        artifactPaths.add(file.getPath());
       }
     }
+
+    final List<String> artifactPathStrings = new ArrayList<>(artifactPaths);
+    Collections.sort(artifactPathStrings);
+    for (String path: artifactPathStrings) {
+      dockerArtifactComboboxWithBrowse.getComboBox().addItem(path);
+    }
+
     if (dockerArtifactComboboxWithBrowse.getComboBox().getItemCount() > 0) {
       dockerArtifactComboboxWithBrowse.getComboBox().setSelectedIndex(0);
       String artifactFileName = new File((String) dockerArtifactComboboxWithBrowse.getComboBox().getItemAt(0)).getName();

@@ -112,6 +112,8 @@
                     interface="com.microsoft.intellij.serviceexplorer.NodeActionsMap" />
     <extensionPoint qualifiedName="com.microsoft.intellij.serverExplorerToolWindowListener"
                     interface="com.microsoft.intellij.components.ServerExplorerToolWindowListener" />
+    <extensionPoint qualifiedName="com.microsoft.intellij.dockerArtifactProvider"
+                    interface="com.microsoft.intellij.docker.DockerArtifactProvider" />
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij">
