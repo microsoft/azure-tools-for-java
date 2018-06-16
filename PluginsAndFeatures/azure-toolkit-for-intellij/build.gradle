@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.*
+
 buildscript {
     ext.kotlin_version = '1.2.10'
 
@@ -19,78 +21,12 @@ buildscript {
 plugins {
     id "org.jetbrains.intellij" version "0.3.3"
 }
-apply plugin: "kotlin"
-apply plugin: 'org.jetbrains.intellij'
 
-import org.apache.tools.ant.filters.*
 processResources {
     filesMatching('**/ApplicationInsights.xml') {
         filter(ReplaceTokens, tokens: ["applicationinsights.key": project.property("applicationinsights.key")])
     }
 }
-
-group 'com.microsoft.azuretools'
-
-compileJava {
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-}
-
-tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
-
-apply plugin: 'checkstyle'
-apply plugin: 'findbugs'
-
-checkstyle {
-    toolVersion = '7.7'
-    configFile = new File('config/checkstyle/checkstyle.xml')
-    showViolations = false
-}
-
-findbugs {
-    toolVersion = "3.0.1"
-    ignoreFailures = true
-}
-
-intellij {
-    pluginName = 'azure-toolkit-for-intellij'
-    version = intellij_version
-    updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
-    plugins = ['maven', dep_plugins]
-	downloadSources = Boolean.valueOf(sources)
-}
-
-sourceSets {
-    main {
-        java.srcDirs 'src'
-        kotlin.srcDirs 'src'
-        resources.srcDirs 'resources'
-    }
-    test {
-        java {
-            srcDir 'Test/java'
-        }
-        resources {
-            srcDir 'Test/resources'
-        }
-    }
-}
-
-repositories {
-    maven {url uri('../../.repository')} // to snap to the private maven repo on Jenkins if any
-    mavenLocal()
-    mavenCentral()
-}
-
-configurations {
-    compile.exclude module:'slf4j-api'
-    testCompile.exclude module:'htmlunit'
-    cucumberRuntime {
-        extendsFrom testRuntime
-    }
-}
-
-apply plugin: 'java'
 
 dependencies {
     compile fileTree(dir: '../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies', include: ['applicationinsights-management-1.0.3.jar'])
@@ -112,52 +48,72 @@ dependencies {
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
     }
     compile 'com.spotify:docker-client:8.6.2'
-
-    testCompile 'junit:junit:4.12'
-    testCompile 'info.cukes:cucumber-junit:1.2.5'
-    testCompile 'info.cukes:cucumber-java:1.2.5'
-    testCompile 'org.mockito:mockito-core:2.7.22'
-    testCompile 'org.assertj:assertj-swing-junit:3.5.0'
-
-    testCompile 'com.github.tomakehurst:wiremock:2.8.0'
-    testCompile 'org.powermock:powermock-module-junit4:1.7.0RC4'
-    testCompile 'org.powermock:powermock-api-mockito2:1.7.0RC4'
-    testCompile 'javax.servlet:javax.servlet-api:3.1.0'
 }
 
-test {
-    testLogging.showStandardStreams = true
-    testLogging {
-        events "passed", "skipped", "failed"
+configurations {
+    compile.exclude module: 'slf4j-api'
+}
+
+allprojects {
+    apply plugin: "kotlin"
+    apply plugin: 'org.jetbrains.intellij'
+    apply plugin: 'java'
+    apply plugin: 'checkstyle'
+    apply plugin: 'findbugs'
+
+    group 'com.microsoft.azuretools'
+
+    repositories {
+        maven { url new File(rootProject.projectDir, '../../.repository').toURI() } // to snap to the private maven repo on Jenkins if any
+        mavenLocal()
+        mavenCentral()
     }
-} 
 
-task cucumberPackJar(type: Jar) {
-    appendix = 'pathing'
+    compileJava {
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+    }
 
-    doFirst {
-        manifest {
-            attributes "Class-Path": configurations.cucumberRuntime.files.collect {
-                it.toURL().toString().replaceFirst(/file:\/+/, '/')
-            }.join(' ')
+    tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+
+    checkstyle {
+        toolVersion = '7.7'
+        configFile = new File(rootProject.projectDir, 'config/checkstyle/checkstyle.xml')
+        showViolations = false
+    }
+
+    findbugs {
+        toolVersion = "3.0.1"
+        ignoreFailures = true
+    }
+
+    intellij {
+        version = intellij_version
+        updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
+        downloadSources = Boolean.valueOf(sources)
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs 'src'
+            resources.srcDirs 'resources'
+        }
+        test {
+            java {
+                srcDir 'test/java'
+            }
+            resources {
+                srcDir 'test/resources'
+            }
+        }
+    }
+
+    test {
+        testLogging.showStandardStreams = true
+        testLogging {
+            events "passed", "skipped", "failed"
         }
     }
 }
-
-task cucumber() {
-    dependsOn assemble, compileTestJava, cucumberPackJar
-    doLast {
-        javaexec {
-            main = "cucumber.api.cli.Main"
-            classpath = files(sourceSets.main.output, sourceSets.test.output, cucumberPackJar.archivePath)
-            args = [
-                '--plugin', 'pretty',
-                '--glue', 'com.microsoft.azure.hdinsight.spark.common',
-                'Test/resources']
-        }
-    }
-}
-
-test.dependsOn cucumber
 
 defaultTasks 'buildPlugin', 'test'

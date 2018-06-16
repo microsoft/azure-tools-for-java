@@ -1,0 +1,8 @@
+dependencies {
+    compile rootProject
+    testCompile rootProject
+}
+
+intellij {
+    pluginName = 'azure-toolkit-for-rider'
+}
