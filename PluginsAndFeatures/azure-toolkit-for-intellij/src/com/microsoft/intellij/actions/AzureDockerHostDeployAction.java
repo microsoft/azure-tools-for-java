@@ -47,7 +47,6 @@ import com.microsoft.intellij.util.PluginUtil;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.intellij.projectImport.ProjectImportBuilder.getCurrentProject;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
@@ -56,7 +55,7 @@ public class AzureDockerHostDeployAction extends AzureAnAction {
 
   public void onActionPerformed(AnActionEvent actionEvent) {
     try {
-        Project project = getCurrentProject();
+        Project project = PluginUtil.getSelectedProject();
         if (!AzureSignInAction.doSignIn( AuthMethodManager.getInstance(), project)) return;
         AzureDockerUIResources.CANCELED = false;
 
