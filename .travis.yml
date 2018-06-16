@@ -14,7 +14,5 @@ jdk:
 - oraclejdk8
 before_install:
 - export MAVEN_OPTS="-Xmx768M"
-- chmod +x ./gradlew
-- chmod +x ./BuildDevint
 script:
 - travis_wait ./BuildDevint -q
