@@ -144,13 +144,13 @@ public abstract class IntegrationTestBase {
             restClient = new RestClient.Builder().withBaseUrl(MOCK_URI + "/")
                     .withSerializerAdapter(new AzureJacksonAdapter())
                     .withResponseBuilderFactory(new AzureResponseBuilder.Factory()).withCredentials(credentials)
-                    .withLogLevel(LogLevel.BODY_AND_HEADERS).withInterceptor(interceptor).build();
+                    .withLogLevel(LogLevel.NONE).withInterceptor(interceptor).build();
             return restClient;
         } else {
             restClient = new RestClient.Builder().withBaseUrl(GLOBAL_ENDPOINT)
                     .withSerializerAdapter(new AzureJacksonAdapter())
                     .withResponseBuilderFactory(new AzureResponseBuilder.Factory()).withCredentials(credentials)
-                    .withLogLevel(LogLevel.BODY_AND_HEADERS).withInterceptor(interceptor).build();
+                    .withLogLevel(LogLevel.NONE).withInterceptor(interceptor).build();
             return restClient;
         }
     }
