@@ -21,7 +21,7 @@
     <html>
       <h3>[3.8.0]</h3>
       <ul>
-        <li>Supported to run Spark jobs in Azure Data Lake cluster.</li>
+        <li>Supported to run Spark jobs in Azure Data Lake cluster (in private preview).</li>
         <li>Fixed some bugs.</li>
       <ul>
       <h3>[3.7.0]</h3>
