@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.7.0</version>
+  <version>3.8.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -19,6 +19,11 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.8.0]</h3>
+      <ul>
+        <li>Supported to run Spark jobs in Azure Data Lake cluster.</li>
+        <li>Fixed some bugs.</li>
+      <ul>
       <h3>[3.7.0]</h3>
       <ul>
         <li>Users do not need to login again in interactive login mode, if Azure refresh token is still validated.</li>
