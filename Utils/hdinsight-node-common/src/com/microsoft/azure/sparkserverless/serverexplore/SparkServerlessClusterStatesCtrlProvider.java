@@ -36,8 +36,11 @@ public class SparkServerlessClusterStatesCtrlProvider {
                     controllableView.getData(toUpdate);
 
                     String suffix = "/?adlaAccountName=" + cluster.getAccount().getName();
-                    return toUpdate.setMasterState(Optional.ofNullable(cluster.getMasterState()).orElse("Unknown"))
-                            .setWorkerState(Optional.ofNullable(cluster.getWorkerState()).orElse("Unknown"))
+                    return toUpdate
+                            .setMasterState(
+                                    Optional.ofNullable(cluster.getMasterState()).orElse("Unknown").toUpperCase())
+                            .setWorkerState(
+                                    Optional.ofNullable(cluster.getWorkerState()).orElse("Unknown").toUpperCase())
                             .setMasterTarget(cluster.getMasterTargetInstanceCount())
                             .setWorkerTarget(cluster.getWorkerTargetInstanceCount())
                             .setMasterRunning(cluster.getMasterRunningInstanceCount())
@@ -50,7 +53,9 @@ public class SparkServerlessClusterStatesCtrlProvider {
                                     ? URI.create(String.valueOf(cluster.getSparkHistoryUiUri() + suffix)) : null)
                             .setSparkMasterUri(cluster.getSparkMasterUiUri() != null
                                     ? URI.create(String.valueOf(cluster.getSparkMasterUiUri() + suffix)) : null)
-                            .setClusterState(cluster.getState());
+                            // cluster state here is set to align with cluster node state
+                            .setClusterState(cluster.getMasterState() != null
+                                    ? cluster.getMasterState().toUpperCase() : cluster.getState().toUpperCase());
                 })
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData);
