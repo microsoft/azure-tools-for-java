@@ -82,7 +82,7 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
 
     @Override
     public String getPresentableName() {
-        return "HDInsight";
+        return "Azure Spark/HDInsight";
     }
 
     @Override

@@ -42,7 +42,7 @@ class ServerlessSparkConfigurationType : ConfigurationType {
     }
 
     override fun getDisplayName(): String {
-        return "Cosmos ADL Spark Job"
+        return "Azure Data Lake Spark"
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {

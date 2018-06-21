@@ -11,15 +11,6 @@ public class JXHyperLinkWithUri extends JXHyperlink {
     @Nullable
     private URI uri;
 
-    public JXHyperLinkWithUri() {
-        super();
-        this.addActionListener(event -> {
-            if (this.uri != null) {
-                BrowserUtil.browse(this.uri);
-            }
-        });
-    }
-
     @Override
     public void setURI(@Nullable URI uri) {
         this.uri = uri;

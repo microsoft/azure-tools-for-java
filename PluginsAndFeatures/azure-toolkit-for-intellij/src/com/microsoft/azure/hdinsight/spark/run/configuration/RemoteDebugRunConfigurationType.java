@@ -32,7 +32,7 @@ import javax.swing.*;
 
 public class RemoteDebugRunConfigurationType implements ConfigurationType {
 
-    private static final String DISPLAY_NAME = "Azure HDInsight Spark Job";
+    private static final String DISPLAY_NAME = "Azure HDInsight Spark";
     private static final String ID = "SubmitSparkJob_Configuration";
     private static final String DESCRIPTION = "Azure HDInsight Spark Job Configuration Type";
 

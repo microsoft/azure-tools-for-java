@@ -25,18 +25,16 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.google.common.collect.ImmutableList
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.common.CallBack
-import com.microsoft.azure.hdinsight.common.HDInsightUtil
-import com.microsoft.azure.hdinsight.common.mvc.SettableControl
+import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager
 import com.microsoft.azure.hdinsight.spark.common.ServerlessSparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
-import org.apache.commons.lang3.exception.ExceptionUtils.*
 import rx.schedulers.Schedulers
 
 class ServerlessSparkSubmissionPanelConfigurable(private val project: Project, callBack: CallBack?, submissionPanel: SparkSubmissionContentPanel)
-    : SparkSubmissionContentPanelConfigurable(project, callBack, submissionPanel) {
+    : SparkSubmissionContentPanelConfigurable(project, callBack, submissionPanel), ILogger {
     override fun refreshClusterListAsync() {
         submissionPanel.setClustersListRefreshEnabled(false)
 
@@ -53,7 +51,7 @@ class ServerlessSparkSubmissionPanelConfigurable(private val project: Project, c
                                         submissionPanel.clustersListComboBox.comboBox.selectedItem as String)
                             }
                         },
-                        { err -> HDInsightUtil.showErrorMessageOnSubmissionMessageWindow(project, getRootCauseMessage(err)) }
+                        { err -> log().warn("Project ${project.name} failed to refresh Azure Data Lake Spark resource pools", err) }
                 )
     }
 

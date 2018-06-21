@@ -43,13 +43,13 @@ public class HDInsightProjectTemplate implements ProjectTemplate {
     public String getName() {
         switch (this.templateType) {
             case Java:
-                return "Spark on HDInsight (Java)";
+                return "Spark Project (Java)";
             case Scala:
-                return "Spark on HDInsight (Scala)";
+                return "Spark Project (Scala)";
             case ScalaClusterSample:
-                return "Spark on HDInsight Sample (Scala)";
+                return "Spark Project with Samples (Scala)";
             case ScalaFailureTaskDebugSample:
-                return "Spark with Failure Task Debugging Sample (Preview) (Scala)";
+                return "Spark Project with Failure Task Debugging Sample (Preview) (Scala)";
             default:
                 return "HDInsight Tools";
         }
@@ -61,11 +61,11 @@ public class HDInsightProjectTemplate implements ProjectTemplate {
         switch (this.templateType) {
             case Java:
             case Scala:
-                return "HDInsight Spark blank module.";
+                return "Azure Spark blank module project.";
             case ScalaClusterSample:
-                return "HDInsight Spark samples written in Scala.";
+                return "Azure Spark samples written in Scala.";
             case ScalaFailureTaskDebugSample:
-                return "HDInsight Spark samples with Failure Task Debugging feature enabled, written in Scala";
+                return "Azure Spark samples with Failure Task Debugging feature enabled, written in Scala";
             default:
                 return "HDInsight Tools";
         }
