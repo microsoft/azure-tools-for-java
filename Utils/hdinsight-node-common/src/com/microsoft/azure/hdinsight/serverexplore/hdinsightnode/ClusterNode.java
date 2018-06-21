@@ -169,10 +169,10 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
         return clusterDetail.getTitle();
     }
 
-    private void openUrlLink(String linkUrl) {
+    private void openUrlLink(@NotNull String linkUrl) {
         if (!StringHelper.isNullOrWhiteSpace(clusterDetail.getName())) {
             try {
-                Desktop.getDesktop().browse(new URI(linkUrl));
+                DefaultLoader.getIdeHelper().openLinkInBrowser(linkUrl);
             } catch (Exception exception) {
                 DefaultLoader.getUIHelper().showError(exception.getMessage(), "HDInsight Explorer");
             }
