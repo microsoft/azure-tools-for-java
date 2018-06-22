@@ -548,13 +548,14 @@ public class AzureSparkServerlessCluster extends SparkCluster
     }
 
     private Observable<SparkResourcePool> patchResourcePoolRequest(int workerTargetInstanceCount) {
-        URI uri = getUri();
-
-        UpdateSparkResourcePool patchBody = preparePatchResourcePool(workerTargetInstanceCount);
         if (master == null || worker == null) {
             return Observable.error(new AzureSparkResourcePoolNotReadyException(
                     "Spark master and worker are not stable yet. Please retry until they are stable."));
         }
+
+        URI uri = getUri();
+
+        UpdateSparkResourcePool patchBody = preparePatchResourcePool(workerTargetInstanceCount);
 
         String json = patchBody.convertToJson()
                 .orElseThrow(() -> new IllegalArgumentException("Bad Spark resource pool arguments to patch"));
