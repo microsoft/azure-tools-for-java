@@ -15,10 +15,13 @@ import java.util.Arrays;
 
 public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvisionDialog {
 
-    private void setFieldsUneditable() {
-        Arrays.asList(
-                clusterNameField, sparkEventsField, masterCoresField, masterMemoryField, workerCoresField, workerMemoryField)
-                .forEach(field -> field.setEditable(false));
+    private void disableUneditableFields() {
+        clusterNameField.setEditable(false);
+        sparkEventsField.setEditable(false);
+        masterCoresField.setEditable(false);
+        masterMemoryField.setEditable(false);
+        workerCoresField.setEditable(false);
+        workerMemoryField.setEditable(false);
         sparkVersionComboBox.setEditable(false);
     }
 
@@ -29,14 +32,15 @@ public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvision
 
         super((SparkServerlessADLAccountNode) clusterNode.getParent(), cluster.getAccount());
         this.setTitle("Update Cluster");
-        setFieldsUneditable();
+        disableUneditableFields();
         getOKAction().setEnabled(false);
         ctrlProvider = new SparkServerlessClusterUpdateCtrlProvider(
                 this, new IdeaSchedulers((Project)clusterNode.getProject()), cluster);
         this.getWindow().addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
-                ctrlProvider.initialize().subscribe(data -> getOKAction().setEnabled(true));
+                ctrlProvider.initialize()
+                        .subscribe(data -> getOKAction().setEnabled(true));
                 super.windowOpened(e);
             }
         });
@@ -52,10 +56,6 @@ public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvision
         ctrlProvider
                 .validateAndUpdate()
                 .doOnEach(notification -> getOKAction().setEnabled(true))
-                .subscribe(toUpdate -> {
-                    if (getOKAction().isEnabled()) {
-                        close(OK_EXIT_CODE);
-                    }
-                });
+                .subscribe(toUpdate -> close(OK_EXIT_CODE));
     }
 }

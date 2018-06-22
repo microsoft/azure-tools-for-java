@@ -26,8 +26,9 @@ public class SparkServerlessClusterUpdateCtrlProvider implements ILogger {
     }
 
     public Observable<SparkServerlessClusterProvisionSettingsModel> initialize() {
-        return cluster.get()
+        return Observable.just(cluster)
                 .observeOn(ideSchedulers.processBarVisibleAsync("Updating cluster status..."))
+                .flatMap(cluster -> cluster.get())
                 .map(clusterUpdated -> {
                     SparkServerlessClusterProvisionSettingsModel toUpdate =
                             new SparkServerlessClusterProvisionSettingsModel();

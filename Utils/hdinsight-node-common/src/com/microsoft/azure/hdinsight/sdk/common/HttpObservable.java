@@ -357,10 +357,10 @@ public class HttpObservable {
     }
 
     public <T> Observable<T> patch(@NotNull final String uri,
-                                 @Nullable final HttpEntity entity,
-                                 @Nullable final List<NameValuePair> parameters,
-                                 @Nullable final List<Header> addOrReplaceHeaders,
-                                 @NotNull final Class<T> clazz) {
+                                   @Nullable final HttpEntity entity,
+                                   @Nullable final List<NameValuePair> parameters,
+                                   @Nullable final List<Header> addOrReplaceHeaders,
+                                   @NotNull final Class<T> clazz) {
         return request(new HttpPatch(uri), entity, parameters, addOrReplaceHeaders)
                 .flatMap(HttpObservable::toStringOnlyOkResponse)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));

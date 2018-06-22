@@ -533,12 +533,8 @@ public class AzureSparkServerlessCluster extends SparkCluster
                 .defaultIfEmpty(this);
     }
 
-    @Nullable
+    @NotNull
     private UpdateSparkResourcePool preparePatchResourcePool(int workerTargetInstanceCount) {
-        if (master == null || worker == null) {
-            return null;
-        }
-
         UpdateSparkResourcePool patchBody = new UpdateSparkResourcePool();
 
         return patchBody
@@ -551,12 +547,13 @@ public class AzureSparkServerlessCluster extends SparkCluster
                         )));
     }
 
-    private Observable<SparkResourcePool> updateResourcePoolRequest(int workerTargetInstanceCount) {
+    private Observable<SparkResourcePool> patchResourcePoolRequest(int workerTargetInstanceCount) {
         URI uri = getUri();
 
         UpdateSparkResourcePool patchBody = preparePatchResourcePool(workerTargetInstanceCount);
-        if (patchBody == null) {
-            return Observable.error(new IllegalArgumentException("Spark master and worker is not stable yet. Please retry until they are stable."));
+        if (master == null || worker == null) {
+            return Observable.error(new AzureSparkResourcePoolNotReadyException(
+                    "Spark master and worker are not stable yet. Please retry until they are stable."));
         }
 
         String json = patchBody.convertToJson()
@@ -571,23 +568,8 @@ public class AzureSparkServerlessCluster extends SparkCluster
     }
 
     public Observable<AzureSparkServerlessCluster> update(int workerTargetInstanceCount) {
-        return updateResourcePoolRequest(workerTargetInstanceCount)
-                .map(resourcePoolResp -> {
-                    SparkResourcePoolProperties respProp = resourcePoolResp.properties();
-                    if (respProp != null) {
-                        if (respProp.sparkResourceCollection() != null) {
-                            respProp.sparkResourceCollection().stream()
-                                    .filter(sparkResource -> sparkResource.name().equals(SparkNodeType.SPARK_WORKER))
-                                    .forEach(sparkResource -> {
-                                        if (this.worker != null) {
-                                            this.worker.setTargetInstanceCount(sparkResource.targetInstanceCount());
-                                        }
-                                    });
-                        }
-                    }
-                    return this;
-                })
-                .defaultIfEmpty(this);
+        return patchResourcePoolRequest(workerTargetInstanceCount)
+                .flatMap(resourcePoolResp -> this.get());
     }
 
     private Observable<SparkResourcePool> getResourcePoolRequest() {
