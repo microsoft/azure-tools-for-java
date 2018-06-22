@@ -16,7 +16,7 @@
     You can find the outputs under ```PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions```
     
 ### Run/Debug
-* Open IntelliJ, import the PluginsAndFeatures/azure-toolkit-for-intellij/build.gradle as *Project*.
+* Open IntelliJ, open PluginsAndFeatures/azure-toolkit-for-intellij.
 * Run/Debug the plugin by triggering the Gradle task as following:
     ![intellij_run_debug](docs/resources/intellij_run_debug.png)
 

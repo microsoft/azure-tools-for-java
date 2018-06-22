@@ -36,7 +36,6 @@ target/
 **/.idea/**/uiDesigner.xml
 
 # Gradle:
-**/.idea/**/gradle.xml
 **/.idea/**/libraries
 
 # CMake
@@ -72,7 +71,7 @@ fabric.properties
 # Comment Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-215987721
 
 *.iml
-.idea/
+**/.idea/*
 # *.ipr
 
 # Sonarlint plugin
@@ -100,11 +99,6 @@ fabric.properties
 # Build tmp folder
 .repository
 artifacts
-
-# generated gradle files
-gradle/
-gradlew
-gradlew.bat
 
 # Mac OSX
 .DS_Store
