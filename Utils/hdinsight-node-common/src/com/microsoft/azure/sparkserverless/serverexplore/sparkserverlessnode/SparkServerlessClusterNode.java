@@ -81,6 +81,8 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode {
                 this, cluster, adlAccount, SparkServerlessClusterOps.getInstance().getDestroyAction()));
         addAction("View Cluster Status", new SparkServerlessMonitorAction(
                 this, cluster, SparkServerlessClusterOps.getInstance().getMonitorAction()));
+        addAction("Update", new SparkServerlessUpdateAction(
+                this, cluster, SparkServerlessClusterOps.getInstance().getUpdateAction()));
         addAction("Open Spark Master UI", new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
