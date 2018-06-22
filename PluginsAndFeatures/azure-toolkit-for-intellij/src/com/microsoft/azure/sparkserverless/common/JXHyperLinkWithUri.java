@@ -7,12 +7,8 @@ import org.jdesktop.swingx.hyperlink.HyperlinkAction;
 import java.net.URI;
 
 public class JXHyperLinkWithUri extends JXHyperlink {
-    @Nullable
-    private URI uri;
-
     @Override
     public void setURI(@Nullable URI uri) {
-        this.uri = uri;
         // setURI() in JXHyperlink will set uri to text field
         // so we override this method to keep text field not change
         String initialText = this.getText();

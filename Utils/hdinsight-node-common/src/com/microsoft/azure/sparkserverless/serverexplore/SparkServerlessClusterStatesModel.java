@@ -29,13 +29,14 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
     private URI sparkMasterUri;
     @NotNull
     private String clusterState = "";
+    @NotNull
+    private String clusterID = "";
 
     @NotNull
     public String getMasterState() {
         return masterState;
     }
 
-    @NotNull
     public SparkServerlessClusterStatesModel setMasterState(@NotNull String masterState) {
         this.masterState = masterState;
         return this;
@@ -46,7 +47,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return workerState;
     }
 
-    @NotNull
     public SparkServerlessClusterStatesModel setWorkerState(@NotNull String workerState) {
         this.workerState = workerState;
         return this;
@@ -56,7 +56,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return masterTarget;
     }
 
-    @NotNull
     public SparkServerlessClusterStatesModel setMasterTarget(int masterTarget) {
         this.masterTarget = masterTarget;
         return this;
@@ -66,7 +65,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return workerTarget;
     }
 
-    @NotNull
     public SparkServerlessClusterStatesModel setWorkerTarget(int workerTarget) {
         this.workerTarget = workerTarget;
         return this;
@@ -76,7 +74,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return masterRunning;
     }
 
-    @NotNull
     public SparkServerlessClusterStatesModel setMasterRunning(int masterRunning) {
         this.masterRunning = masterRunning;
         return this;
@@ -86,7 +83,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return workerRunning;
     }
 
-    @NotNull
     public SparkServerlessClusterStatesModel setWorkerRunning(int workerRunning) {
         this.workerRunning = workerRunning;
         return this;
@@ -96,7 +92,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return masterFailed;
     }
 
-    @NotNull
     public SparkServerlessClusterStatesModel setMasterFailed(int masterFailed) {
         this.masterFailed = masterFailed;
         return this;
@@ -106,7 +101,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return workerFailed;
     }
 
-    @NotNull
     public SparkServerlessClusterStatesModel setWorkerFailed(int workerFailed) {
         this.workerFailed = workerFailed;
         return this;
@@ -116,7 +110,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return masterOutstanding;
     }
 
-    @NotNull
     public SparkServerlessClusterStatesModel setMasterOutstanding(int masterOutstanding) {
         this.masterOutstanding = masterOutstanding;
         return this;
@@ -126,7 +119,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return workerOutstanding;
     }
 
-    @NotNull
     public SparkServerlessClusterStatesModel setWorkerOutstanding(int workerOutstanding) {
         this.workerOutstanding = workerOutstanding;
         return this;
@@ -137,7 +129,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return sparkHistoryUri;
     }
 
-    @NotNull
     public SparkServerlessClusterStatesModel setSparkHistoryUri(@Nullable URI sparkHistoryUri) {
         this.sparkHistoryUri = sparkHistoryUri;
         return this;
@@ -148,7 +139,6 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return sparkMasterUri;
     }
 
-    @NotNull
     public SparkServerlessClusterStatesModel setSparkMasterUri(@Nullable URI sparkMasterUri) {
         this.sparkMasterUri = sparkMasterUri;
         return this;
@@ -159,9 +149,18 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
         return clusterState;
     }
 
-    @NotNull
     public SparkServerlessClusterStatesModel setClusterState(@NotNull String clusterState) {
         this.clusterState = clusterState;
+        return this;
+    }
+
+    @NotNull
+    public String getClusterID() {
+        return clusterID;
+    }
+
+    public SparkServerlessClusterStatesModel setClusterID(@NotNull String clusterID) {
+        this.clusterID = clusterID;
         return this;
     }
 

@@ -34,6 +34,7 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
     private JXHyperLinkWithUri sparkHistoryHyperLink;
     private JXHyperLinkWithUri sparkMasterHyperLink;
     private JPanel monitorDialogPanel;
+    private JTextField clusterIDField;
 
     @Nullable
     private Subscription refreshSub;
@@ -49,7 +50,7 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
                 this, new IdeaSchedulers((Project) clusterNode.getProject()), cluster);
 
         init();
-        this.setTitle("Cluster Status");
+        this.setTitle(String.format("Cluster Status(%s)", cluster.getName()));
         this.setModal(true);
         this.getWindow().addWindowListener(new WindowAdapter() {
             @Override
@@ -93,6 +94,7 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
         sparkMasterHyperLink.setURI(data.getSparkMasterUri());
 
         clusterStateLabel.setText(data.getClusterState());
+        clusterIDField.setText(data.getClusterID());
     }
 
     // Components -> Data
