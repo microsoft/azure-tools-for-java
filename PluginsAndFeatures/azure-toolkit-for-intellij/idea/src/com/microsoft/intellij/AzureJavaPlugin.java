@@ -22,22 +22,11 @@
 
 package com.microsoft.intellij;
 
-import com.intellij.ide.plugins.cl.PluginClassLoader;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.FileUtil;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
-import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
-import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.azuretools.utils.TelemetryUtils;
-import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FileUtils;
-import org.w3c.dom.Document;
 
 import java.io.*;
 import java.net.URL;
@@ -49,85 +38,8 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class AzureJavaPlugin extends AzurePlugin {
 
-    private String dataFile = PluginHelper.getTemplateFile(message("dataFileName"));
-    private String _hashmac = GetHashMac.GetHashMac();
-
     public AzureJavaPlugin(Project project) {
         super(project);
-        CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
-                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
-    }
-
-    @Override
-    protected void initializeTelemetry() throws Exception {
-        boolean install = false;
-        boolean upgrade = false;
-
-        if (new File(dataFile).exists()) {
-            String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
-            if (version == null || version.isEmpty()) {
-                upgrade = true;
-                // proceed with setValues method as no version specified
-                setValues(dataFile);
-            } else {
-                String curVersion = PLUGIN_VERSION;
-                // compare version
-                if (curVersion.equalsIgnoreCase(version)) {
-                    // Case of normal IntelliJ restart
-                    // check preference-value & installation-id exists or not else copy values
-                    String prefValue = DataOperations.getProperty(dataFile, message("prefVal"));
-                    String instID = DataOperations.getProperty(dataFile, message("instID"));
-                    if (prefValue == null || prefValue.isEmpty()) {
-                        setValues(dataFile);
-                    } else if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
-                        upgrade = true;
-                        Document doc = ParserXMLUtility.parseXMLFile(dataFile);
-                        DataOperations.updatePropertyValue(doc, message("instID"), _hashmac);
-                        ParserXMLUtility.saveXMLFile(dataFile, doc);
-                    }
-                } else {
-                    upgrade = true;
-                    // proceed with setValues method. Case of new plugin installation
-                    setValues(dataFile);
-                }
-            }
-        } else {
-            // copy file and proceed with setValues method
-            install = true;
-            copyResourceFile(message("dataFileName"), dataFile);
-            setValues(dataFile);
-        }
-        AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
-        if (install) {
-            AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
-        }
-        if (upgrade) {
-            AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
-        }
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Load, null, true);
-    }
-
-    private void setValues(final String dataFile) throws Exception {
-        try {
-            final Document doc = ParserXMLUtility.parseXMLFile(dataFile);
-            String recordedVersion = DataOperations.getProperty(dataFile, message("pluginVersion"));
-            if (Utils.whetherUpdateTelemetryPref(recordedVersion)) {
-                DataOperations.updatePropertyValue(doc, message("prefVal"), String.valueOf("true"));
-            }
-
-            DataOperations.updatePropertyValue(doc, message("pluginVersion"), PLUGIN_VERSION);
-            DataOperations.updatePropertyValue(doc, message("instID"), _hashmac);
-
-            ParserXMLUtility.saveXMLFile(dataFile, doc);
-        } catch (Exception ex) {
-            LOG.error(message("error"), ex);
-        }
-    }
-
-    // currently we didn't have a better way to know if it is in debug model.
-    // the code suppose we are under debug model if the plugin root path contains 'sandbox' for Gradle default debug path
-    private boolean isDebugModel() {
-        return PluginUtil.getPluginRootDirectory().contains("sandbox");
     }
 
     /**
@@ -142,23 +54,6 @@ public class AzureJavaPlugin extends AzurePlugin {
             LOG.error(e.getMessage(), e);
         }
         super.copyPluginComponents();
-    }
-
-    /**
-     * Method copies specified file from plugin resources
-     *
-     * @param resourceFile
-     * @param destFile
-     */
-    public static void copyResourceFile(String resourceFile, String destFile) {
-        try {
-            InputStream is = ((PluginClassLoader) AzureJavaPlugin.class.getClassLoader()).findResource(resourceFile).openStream();
-            File outputFile = new File(destFile);
-            FileOutputStream fos = new FileOutputStream(outputFile);
-            FileUtil.writeFile(is, fos);
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-        }
     }
 
     private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";
