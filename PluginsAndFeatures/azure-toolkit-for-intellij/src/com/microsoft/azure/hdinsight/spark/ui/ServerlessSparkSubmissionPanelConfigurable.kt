@@ -51,7 +51,7 @@ class ServerlessSparkSubmissionPanelConfigurable(private val project: Project, c
                                         submissionPanel.clustersListComboBox.comboBox.selectedItem as String)
                             }
                         },
-                        { err -> log().warn("Project ${project.name} failed to refresh Azure Data Lake Spark resource pools", err) }
+                        { err -> log().warn("Project ${project.name} failed to refresh Azure Data Lake Spark Pool", err) }
                 )
     }
 

@@ -42,7 +42,7 @@ class ServerlessSparkConfigurationType : ConfigurationType {
     }
 
     override fun getDisplayName(): String {
-        return "Azure Data Lake Spark"
+        return "Azure Data Lake Spark Pool"
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {
