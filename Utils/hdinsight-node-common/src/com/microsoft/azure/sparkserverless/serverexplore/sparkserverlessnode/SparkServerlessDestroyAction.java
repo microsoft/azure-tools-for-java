@@ -33,10 +33,8 @@ import org.apache.commons.lang3.tuple.Triple;
 import rx.subjects.PublishSubject;
 
 public class SparkServerlessDestroyAction extends NodeActionListener {
-    // TODO: Update clusterName type
     @NotNull
     private final DestroyableCluster cluster;
-    // TODO: Update adlAccount type
     @NotNull
     private final AzureSparkServerlessAccount adlAccount;
     @NotNull

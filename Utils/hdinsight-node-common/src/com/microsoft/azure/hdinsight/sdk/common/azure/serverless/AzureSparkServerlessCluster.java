@@ -383,6 +383,22 @@ public class AzureSparkServerlessCluster extends SparkCluster
         return this.worker == null || this.worker.state == null ? null : this.worker.state.toString();
     }
 
+    public int getMasterPerInstanceCoreCount() {
+        return this.master == null ? 0 : this.master.coresPerInstance;
+    }
+
+    public int getWorkerPerInstanceCoreCount() {
+        return this.worker == null ? 0 : this.worker.coresPerInstance;
+    }
+
+    public int getMasterPerInstanceMemoryInGB() {
+        return this.master == null ? 0 : this.master.memoryGBSizePerInstance;
+    }
+
+    public int getWorkerPerInstanceMemoryInGB() {
+        return this.worker == null ? 0 : this.worker.memoryGBSizePerInstance;
+    }
+
     public int getMasterTargetInstanceCount() {
         return this.master == null ? 0 : this.master.targetInstanceCount;
     }
@@ -515,6 +531,46 @@ public class AzureSparkServerlessCluster extends SparkCluster
         return getResourcePoolRequest()
                 .map(this::updateWithResponse)
                 .defaultIfEmpty(this);
+    }
+
+    @NotNull
+    private UpdateSparkResourcePool preparePatchResourcePool(int workerTargetInstanceCount) {
+        UpdateSparkResourcePool patchBody = new UpdateSparkResourcePool();
+
+        return patchBody
+                .withName(getName())
+                .withProperties(new UpdateSparkResourcePoolParameters()
+                        .withSparkResourceCollection(Arrays.asList(
+                                new UpdateSparkResourcePoolItemParameters()
+                                        .withName(SparkNodeType.SPARK_WORKER)
+                                        .withTargetInstanceCount(workerTargetInstanceCount)
+                        )));
+    }
+
+    private Observable<SparkResourcePool> patchResourcePoolRequest(int workerTargetInstanceCount) {
+        if (master == null || worker == null) {
+            return Observable.error(new AzureSparkResourcePoolNotReadyException(
+                    "Spark master and worker are not stable yet. Please retry until they are stable."));
+        }
+
+        URI uri = getUri();
+
+        UpdateSparkResourcePool patchBody = preparePatchResourcePool(workerTargetInstanceCount);
+
+        String json = patchBody.convertToJson()
+                .orElseThrow(() -> new IllegalArgumentException("Bad Spark resource pool arguments to patch"));
+
+        StringEntity entity = new StringEntity(json, StandardCharsets.UTF_8);
+        entity.setContentType("application/json");
+
+        return getHttp()
+                .withUuidUserAgent()
+                .patch(uri.toString(), entity, null, null, SparkResourcePool.class);
+    }
+
+    public Observable<AzureSparkServerlessCluster> update(int workerTargetInstanceCount) {
+        return patchResourcePoolRequest(workerTargetInstanceCount)
+                .flatMap(resourcePoolResp -> this.get());
     }
 
     private Observable<SparkResourcePool> getResourcePoolRequest() {

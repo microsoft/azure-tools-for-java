@@ -28,6 +28,7 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServe
 import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterOps;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterDestoryDialog;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterMonitorDialog;
+import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterUpdateDialog;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessProvisionDialog;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
@@ -69,6 +70,16 @@ public class SparkServerlessClusterOpsCtrl {
                     SparkServerlessClusterMonitorDialog monitorDialog = new SparkServerlessClusterMonitorDialog(
                             pair.getRight(), pair.getLeft());
                     monitorDialog.show();
+                }, ex -> LOG.error(ex.getMessage(), ex));
+
+        this.sparkServerlessClusterOps.getUpdateAction()
+                .observeOn(ideSchedulers.dispatchUIThread())
+                .subscribe(pair -> {
+                    LOG.info(String.format("Update message received. cluster: %s, node: %s",
+                            pair.getLeft(), pair.getRight()));
+                    SparkServerlessClusterUpdateDialog updateDialog = new SparkServerlessClusterUpdateDialog(
+                            pair.getRight(), pair.getLeft());
+                    updateDialog.show();
                 }, ex -> LOG.error(ex.getMessage(), ex));
     }
 
