@@ -49,6 +49,7 @@ class TaskRecovery(sc: SparkContext, failureTask: FailureTask) extends Logging {
     }) toMap
 
   private val taskBinary = bcMap(failureTask.binaryTaskBcId).asInstanceOf[Broadcast[Array[Byte]]]
+  private val serializer = SparkEnv.get.closureSerializer.newInstance()
 
   private val part = decodeObj(failureTask.partitionEnc).asInstanceOf[Partition]
   private val locs = failureTask.hosts.map(HostTaskLocation).toSeq
@@ -95,26 +96,32 @@ class TaskRecovery(sc: SparkContext, failureTask: FailureTask) extends Logging {
           case _ =>
         }
 
-      }}
+        }}
 
-      val recoveryMapStatus = MapOutputTracker.deserializeMapStatuses(
-        Base64.getDecoder.decode(shuffleDep.mapStatusEnc))
-        .map(loc => loc.getClass.getDeclaredFields
-          .find(_.getName.endsWith("$$loc"))
-          .map(locationField => {
-            locationField.setAccessible(true)
-            locationField.set(loc, SparkEnv.get.blockManager.shuffleServerId)
+        val recoveryMapStatus = MapOutputTracker.deserializeMapStatuses(
+          Base64.getDecoder.decode(shuffleDep.mapStatusEnc))
+          .map(loc => loc.getClass.getDeclaredFields
+            .find(_.getName.endsWith("$$loc"))
+            .map(locationField => {
+              locationField.setAccessible(true)
+              locationField.set(loc, SparkEnv.get.blockManager.shuffleServerId)
 
-            loc
-          })
-          .getOrElse(loc))
+              loc
+            })
+            .getOrElse(loc))
 
-      SparkEnv.get.mapOutputTracker match {
-        case trackerMaster: MapOutputTrackerMaster => trackerMaster.registerMapOutputs(
-          shuffleDep.id,
-          recoveryMapStatus,
-          changeEpoch = true)
-      }
+        SparkEnv.get.mapOutputTracker match {
+          case trackerMaster: MapOutputTrackerMaster =>
+            // Register shuffle firstly
+            trackerMaster.registerShuffle(shuffleDep.id, recoveryMapStatus.size)
+
+            recoveryMapStatus.view.zipWithIndex.foreach { case (mapStatus, index) =>
+              trackerMaster.registerMapOutput(
+                shuffleDep.id,
+                index,
+                mapStatus)
+            }
+        }
     })
 
     new ResultTask(
@@ -125,7 +132,7 @@ class TaskRecovery(sc: SparkContext, failureTask: FailureTask) extends Logging {
       locs,
       0,
       failureTask.localProperties,
-      metrics
+      serializer.serialize(metrics).array()
     )
   } else {
     new ShuffleMapTask(
@@ -134,8 +141,8 @@ class TaskRecovery(sc: SparkContext, failureTask: FailureTask) extends Logging {
       taskBinary,
       part,
       locs,
-      metrics,
-      failureTask.localProperties
+      failureTask.localProperties,
+      serializer.serialize(metrics).array()
     )
   }
 

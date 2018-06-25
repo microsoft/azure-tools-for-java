@@ -71,6 +71,8 @@ class DAGWithFailureSaveScheduler(
 //  private val mapOutputTracker = sc.env.mapOutputTracker.asInstanceOf[MapOutputTrackerMaster]
   val failedEvents: mutable.HashMap[Int, CompletionEvent] = new mutable.HashMap()
   val fs = org.apache.hadoop.fs.FileSystem.get(sc.hadoopConfiguration)
+  private val minSizeForBroadcast =
+    sc.conf.getSizeAsBytes("spark.shuffle.mapOutput.minSizeForBroadcast", "512k").toInt
 
   def getEncodedByteArray(buffer: Array[Byte]): String =
     Base64.getEncoder.encode(buffer)
@@ -115,7 +117,7 @@ class DAGWithFailureSaveScheduler(
           data.retain()
           result.success(data)
         }
-      })
+      }, null)
 
     ThreadUtils.awaitResult(result.future, Duration.Inf)
   }
@@ -176,7 +178,8 @@ class DAGWithFailureSaveScheduler(
         .map { case (blockMgrId, blockIds) =>
           logInfo(blockMgrId.toString())
 
-          val mapStatus = mapOutputTracker.getSerializedMapOutputStatuses(shuffleId)
+          val mapStatus = mapOutputTracker.shuffleStatuses.get(shuffleId).head
+            .serializedMapStatus(SparkEnv.get.broadcastManager, sc.isLocal, minSizeForBroadcast)
 
           ShuffleDeps(
             shuffleId,

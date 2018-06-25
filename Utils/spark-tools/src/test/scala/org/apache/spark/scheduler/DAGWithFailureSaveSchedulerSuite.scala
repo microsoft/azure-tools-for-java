@@ -106,6 +106,10 @@ class DAGWithFailureSaveSchedulerSuite extends SparkFunSuite with LocalSparkCont
     override def executorLost(executorId: String, reason: ExecutorLossReason): Unit = {}
 //    override def workerRemoved(workerId: String, host: String, message: String): Unit = {}
     override def applicationAttemptId(): Option[String] = None
+
+    override def killTaskAttempt(taskId: Long, interruptThread: Boolean, reason: String): Boolean = true
+
+    override def workerRemoved(workerId: String, host: String, message: String): Unit = true
   }
 
   /**
