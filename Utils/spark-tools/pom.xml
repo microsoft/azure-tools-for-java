@@ -12,6 +12,7 @@
     <version>0.1.1</version>
 
     <modules>
+        <module>spark-v2.1</module>
         <module>spark-v2.3</module>
     </modules>
 
