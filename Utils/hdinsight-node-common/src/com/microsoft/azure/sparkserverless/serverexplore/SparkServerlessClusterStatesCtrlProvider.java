@@ -27,13 +27,10 @@ public class SparkServerlessClusterStatesCtrlProvider {
         this.cluster = cluster;
     }
 
-    public Observable<SparkServerlessClusterStatesModel> updateAll() {
-        // refresh cluster property
-        return cluster.get()
-                .map(clusterUpdated -> {
-                    SparkServerlessClusterStatesModel toUpdate = new SparkServerlessClusterStatesModel();
-                    controllableView.getData(toUpdate);
+    public Observable<AzureSparkServerlessCluster> updateAll() {
 
+        return Observable.just(new SparkServerlessClusterStatesModel())
+                .map(toUpdate -> {
                     String suffix = "/?adlaAccountName=" + cluster.getAccount().getName();
                     return toUpdate
                             .setMasterState(
@@ -56,7 +53,10 @@ public class SparkServerlessClusterStatesCtrlProvider {
                             .setClusterState(cluster.getMasterState() != null
                                     ? cluster.getMasterState().toUpperCase() : cluster.getState().toUpperCase());
                 })
-                .doOnNext(controllableView::setData);
+                .observeOn(ideSchedulers.dispatchUIThread())
+                .doOnNext(controllableView::setData)
+                .observeOn(Schedulers.io())
+                .flatMap(data -> cluster.get());
     }
 
 }

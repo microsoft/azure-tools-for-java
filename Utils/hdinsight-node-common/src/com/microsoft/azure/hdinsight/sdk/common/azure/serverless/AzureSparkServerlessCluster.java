@@ -27,6 +27,7 @@ import com.microsoft.azure.datalake.store.IfExists;
 import com.microsoft.azure.hdinsight.sdk.cluster.DestroyableCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.ProvisionableCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
+import com.microsoft.azure.hdinsight.sdk.common.AzureDataLakeHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
@@ -308,6 +309,9 @@ public class AzureSparkServerlessCluster extends SparkCluster
     @Nullable
     private SparkResource worker;
 
+    @NotNull
+    private final AzureHttpObservable http;
+
     private boolean isConfigInfoAvailable = false;
 
     public AzureSparkServerlessCluster(@NotNull AzureSparkServerlessAccount azureSparkServerlessAccount, @NotNull String guid) {
@@ -319,6 +323,8 @@ public class AzureSparkServerlessCluster extends SparkCluster
                 azureSparkServerlessAccount.getName(),
                 storageRootPath,
                 azureSparkServerlessAccount.getSubscription().getSubscriptionId());
+
+        this.http = new AzureDataLakeHttpObservable(azureSparkServerlessAccount.getSubscription().getTenantId(), ApiVersion.VERSION);
 
         // FIXME with Enum type
         this.state = "unknown";
@@ -524,7 +530,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
 
     @NotNull
     public AzureHttpObservable getHttp() {
-        return account.getHttp();
+        return http;
     }
 
     public Observable<AzureSparkServerlessCluster> get() {

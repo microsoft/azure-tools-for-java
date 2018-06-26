@@ -1,7 +1,5 @@
 package com.microsoft.azure.sparkserverless.serverexplore.ui;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
@@ -41,8 +39,6 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
     private Subscription refreshSub;
     @NotNull
     private SparkServerlessClusterStatesCtrlProvider ctrlProvider;
-    @NotNull
-    private AzureSparkServerlessCluster cluster;
 
     private static final int REFRESH_INTERVAL = 1;
 
@@ -51,7 +47,6 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
         super((Project) clusterNode.getProject(), true);
         this.ctrlProvider = new SparkServerlessClusterStatesCtrlProvider(
                 this, new IdeaSchedulers((Project) clusterNode.getProject()), cluster);
-        this.cluster = cluster;
 
         init();
         this.setTitle("Cluster Status");
@@ -60,6 +55,7 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
             @Override
             public void windowOpened(WindowEvent e) {
                 refreshSub = ctrlProvider.updateAll()
+                        .retryWhen(ob -> ob.delay(REFRESH_INTERVAL, TimeUnit.SECONDS))
                         .repeatWhen(ob -> ob.delay(REFRESH_INTERVAL, TimeUnit.SECONDS))
                         .subscribe();
                 super.windowOpened(e);

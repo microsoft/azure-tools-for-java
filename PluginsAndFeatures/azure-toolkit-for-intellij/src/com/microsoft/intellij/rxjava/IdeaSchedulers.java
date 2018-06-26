@@ -23,6 +23,8 @@
 package com.microsoft.intellij.rxjava;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -74,6 +76,12 @@ public class IdeaSchedulers implements IdeSchedulers {
     }
 
     public Scheduler dispatchUIThread() {
-        return Schedulers.from(command -> ApplicationManager.getApplication().invokeAndWait(command));
+        return Schedulers.from(command -> {
+            try {
+                ApplicationManager.getApplication().invokeAndWait(command, ModalityState.any());
+            } catch (ProcessCanceledException ignored) {
+                // FIXME!!! Not support process canceling currently, just ignore it
+            }
+        });
     }
 }

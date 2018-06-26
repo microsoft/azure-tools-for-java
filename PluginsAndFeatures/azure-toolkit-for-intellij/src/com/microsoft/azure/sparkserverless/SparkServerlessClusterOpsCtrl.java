@@ -24,7 +24,6 @@ package com.microsoft.azure.sparkserverless;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager;
 import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterOps;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterDestoryDialog;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterMonitorDialog;

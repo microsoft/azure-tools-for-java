@@ -1,6 +1,5 @@
 package com.microsoft.azure.sparkserverless.serverexplore.ui;
 
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azure.sparkserverless.serverexplore.SparkServerlessClusterUpdateCtrlProvider;
@@ -11,7 +10,6 @@ import com.microsoft.intellij.rxjava.IdeaSchedulers;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Arrays;
 
 public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvisionDialog {
 

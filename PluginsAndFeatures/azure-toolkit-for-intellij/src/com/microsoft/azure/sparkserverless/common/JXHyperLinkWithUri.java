@@ -1,6 +1,5 @@
 package com.microsoft.azure.sparkserverless.common;
 
-import com.intellij.ide.BrowserUtil;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jdesktop.swingx.hyperlink.HyperlinkAction;
