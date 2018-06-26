@@ -33,8 +33,7 @@ object FailureTaskRecoveryApp {
 
     implicit val formats = org.json4s.DefaultFormats
 
-    //val failureTaskContextFile = sparkconf.get("spark.failure.task.context")
-    val failureTaskContextFile = "C:\\Users\\zhwe\\IdeaProjects\\ftd13\\data\\__default__\\user\\current\\failure_save.ftd"
+    val failureTaskContextFile = sparkconf.get("spark.failure.task.context")
 
     val source = scala.io.Source.fromFile(failureTaskContextFile)
     val json = source.mkString
