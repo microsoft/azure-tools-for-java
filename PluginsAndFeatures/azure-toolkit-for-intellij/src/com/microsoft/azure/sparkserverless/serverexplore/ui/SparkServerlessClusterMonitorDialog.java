@@ -41,7 +41,7 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
     @NotNull
     private SparkServerlessClusterStatesCtrlProvider ctrlProvider;
 
-    private static final int REFRESH_INTERVAL = 1;
+    private static final int REFRESH_INTERVAL = 2;
 
     public SparkServerlessClusterMonitorDialog(@NotNull SparkServerlessClusterNode clusterNode,
                                                @NotNull AzureSparkServerlessCluster cluster) {
@@ -95,6 +95,7 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
 
         clusterStateLabel.setText(data.getClusterState());
         clusterIDField.setText(data.getClusterID());
+        clusterIDField.setBorder(null);
     }
 
     // Components -> Data
