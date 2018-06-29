@@ -26,14 +26,11 @@ import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 public class SparkServerlessClusterProvisionCtrlProvider {
 
@@ -54,7 +51,14 @@ public class SparkServerlessClusterProvisionCtrlProvider {
         this.account = account;
     }
 
-    public int getCalculatedAU(int masterCores,
+    public Observable<List<String>> getClusterNames() {
+        return account.get()
+                .flatMap(acc -> Observable.from(acc.getClusters()))
+                .map(cluster -> cluster.getName())
+                .toList();
+    }
+
+    public static int getCalculatedAU(int masterCores,
                                int workerCores,
                                int masterMemory,
                                int workerMemory,
@@ -64,125 +68,14 @@ public class SparkServerlessClusterProvisionCtrlProvider {
                 Math.ceil((masterMemory + workerMemory * workerContainer) / 6.0));
     }
 
-    public void updateCalculatedAU() {
-        Observable.just(new SparkServerlessClusterProvisionSettingsModel())
-                .doOnNext(controllableView::getData)
-                .map(toUpdate -> toUpdate.setCalculatedAU(getCalculatedAU(
-                        toUpdate.getMasterCores(),
-                        toUpdate.getWorkerCores(),
-                        toUpdate.getMasterMemory(),
-                        toUpdate.getWorkerMemory(),
-                        toUpdate.getWorkerNumberOfContainers())))
-                .observeOn(ideSchedulers.dispatchUIThread())
-                .doOnNext(controllableView::setData)
-                .subscribe();
+    public Observable<Integer> getTotalAU() {
+        return account.get()
+                .subscribeOn(Schedulers.io())
+                .map(account -> account.getMaxDegreeOfParallelism());
     }
 
-    public void updateTotalAU() {
-        account.get()
-                .map(accountUpdated -> {
-                    SparkServerlessClusterProvisionSettingsModel toUpdate = new SparkServerlessClusterProvisionSettingsModel();
-                    controllableView.getData(toUpdate);
-                    return toUpdate.setTotalAU(accountUpdated.getMaxDegreeOfParallelism());
-                })
-                .doOnNext(controllableView::setData)
-                .subscribe();
-    }
-
-    public void updateAvailableAU() {
-        Observable.just(new SparkServerlessClusterProvisionSettingsModel())
-                .doOnNext(controllableView::getData)
-                .map(toUpdate -> {
-                    // TODO: update availableAU field
-                    return toUpdate;
-                })
-                .observeOn(ideSchedulers.dispatchUIThread())
-                .doOnNext(controllableView::setData)
-                .subscribe();
-    }
-
-    @NotNull
-    public SparkServerlessClusterProvisionSettingsModel validateClusterNameUniqueness(
-            @NotNull SparkServerlessClusterProvisionSettingsModel toUpdate) {
-        if (!StringUtils.isEmpty(toUpdate.getErrorMessage())) {
-            return toUpdate;
-        }
-
-        Set<String> names = new HashSet<>();
-        account.refresh().getClusters().forEach(cluster -> names.add(cluster.getName()));
-        if (names.contains(toUpdate.getClusterName())) {
-            return toUpdate.setErrorMessage("Cluster name already exists.");
-        }
-        return toUpdate;
-
-    }
-
-    @NotNull
-    private static SparkServerlessClusterProvisionSettingsModel validateDataCompleteness(
-            @NotNull SparkServerlessClusterProvisionSettingsModel toUpdate) {
-        if (!StringUtils.isEmpty(toUpdate.getErrorMessage())) {
-            return toUpdate;
-        }
-
-        // TODO: Check all of the necessary fields
-        String clusterName = toUpdate.getClusterName();
-        String adlAccount = toUpdate.getAdlAccount();
-        String sparkEvents = toUpdate.getSparkEvents();
-        int workerNumberOfContainers = toUpdate.getWorkerNumberOfContainers();
-
-        if (StringHelper.isNullOrWhiteSpace(clusterName) ||
-                StringHelper.isNullOrWhiteSpace(adlAccount) ||
-                StringHelper.isNullOrWhiteSpace(sparkEvents) ||
-                StringHelper.isNullOrWhiteSpace(String.valueOf(workerNumberOfContainers))) {
-            String highlightPrefix = "* ";
-            if (!toUpdate.getAdlAccountLabelTitle().startsWith(highlightPrefix)) {
-                toUpdate.setAdlAccountLabelTitle(highlightPrefix + toUpdate.getAdlAccountLabelTitle());
-            }
-            if (!toUpdate.getClusterNameLabelTitle().startsWith(highlightPrefix)) {
-                toUpdate.setClusterNameLabelTitle(highlightPrefix + toUpdate.getClusterNameLabelTitle());
-            }
-            if (!toUpdate.getSparkEventsLabelTitle().startsWith(highlightPrefix)) {
-                toUpdate.setSparkEventsLabelTitle(
-                        highlightPrefix + toUpdate.getSparkEventsLabelTitle());
-            }
-            if (!toUpdate.getWorkerNumberOfContainersLabelTitle().startsWith(highlightPrefix)) {
-                toUpdate.setWorkerNumberOfContainersLabelTitle(
-                        highlightPrefix + toUpdate.getWorkerNumberOfContainersLabelTitle());
-            }
-            return toUpdate.setErrorMessage("All (*) fields are required.");
-        }
-
-        return toUpdate;
-    }
-
-    @NotNull
-    private static SparkServerlessClusterProvisionSettingsModel validateNumericField(
-            @NotNull SparkServerlessClusterProvisionSettingsModel toUpdate) {
-        if (!StringUtils.isEmpty(toUpdate.getErrorMessage())) {
-            return toUpdate;
-        }
-
-        int masterCores = toUpdate.getMasterCores();
-        int masterMemory = toUpdate.getMasterMemory();
-        int workerCores = toUpdate.getWorkerCores();
-        int workerMemory = toUpdate.getWorkerMemory();
-        int workerNumberOfContainers = toUpdate.getWorkerNumberOfContainers();
-
-        // TODO: Only workerNumberOfContainers field numeric check will be reserved finally
-        // TODO: Determine whether workerNumberOfContainers is in legal range
-        if (masterCores <= 0 ||
-                masterMemory <= 0 ||
-                workerCores <= 0 ||
-                workerMemory <= 0 ||
-                workerNumberOfContainers <= 0) {
-            String highlightPrefix = "* ";
-            if (!toUpdate.getWorkerNumberOfContainersLabelTitle().startsWith(highlightPrefix)) {
-                toUpdate.setWorkerNumberOfContainersLabelTitle(
-                        highlightPrefix + toUpdate.getWorkerNumberOfContainersLabelTitle());
-            }
-            return toUpdate.setErrorMessage("All (*) fields should be positive numbers.");
-        }
-        return toUpdate;
+    public Observable<Integer> getAvailableAU() {
+        return Observable.just(0);
     }
 
     @NotNull
@@ -210,37 +103,12 @@ public class SparkServerlessClusterProvisionCtrlProvider {
         return toUpdate;
     }
 
-    private static SparkServerlessClusterProvisionSettingsModel resetLabels(
-            @NotNull SparkServerlessClusterProvisionSettingsModel toUpdate) {
-        String highlightPrefix = "* ";
-        if (toUpdate.getClusterNameLabelTitle().startsWith(highlightPrefix)) {
-            toUpdate.setClusterNameLabelTitle(toUpdate.getClusterNameLabelTitle().substring(2));
-        }
-        if (toUpdate.getAdlAccountLabelTitle().startsWith(highlightPrefix)) {
-            toUpdate.setAdlAccountLabelTitle(toUpdate.getAdlAccountLabelTitle().substring(2));
-        }
-        if (toUpdate.getSparkEventsLabelTitle().startsWith(highlightPrefix)) {
-            toUpdate.setSparkEventsLabelTitle(toUpdate.getSparkEventsLabelTitle().substring(2));
-        }
-        if (toUpdate.getWorkerNumberOfContainersLabelTitle().startsWith(highlightPrefix)) {
-            toUpdate.setWorkerNumberOfContainersLabelTitle(
-                    toUpdate.getWorkerNumberOfContainersLabelTitle().substring(2));
-        }
-        return toUpdate;
-    }
-
         public Observable<SparkServerlessClusterProvisionSettingsModel> validateAndProvision() {
         // TODO: AU adequation check
         return Observable.just(new SparkServerlessClusterProvisionSettingsModel())
                 .doOnNext(controllableView::getData)
-                .observeOn(ideSchedulers.processBarVisibleAsync("Validating the cluster settings..."))
-                // Validation check one by one. If one check failed, we will stop other checks in the entry
-                // of the validation function.
+                .observeOn(ideSchedulers.processBarVisibleAsync("Provisioning cluster..."))
                 .map(toUpdate -> toUpdate.setErrorMessage(null))
-                .map(SparkServerlessClusterProvisionCtrlProvider::resetLabels)
-                .map(SparkServerlessClusterProvisionCtrlProvider::validateDataCompleteness)
-                .map(toUpdate -> validateClusterNameUniqueness(toUpdate))
-                .map(SparkServerlessClusterProvisionCtrlProvider::validateNumericField)
                 .map(toUpdate -> provisionCluster(toUpdate))
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData)

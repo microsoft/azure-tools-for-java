@@ -22,19 +22,42 @@
 
 package com.microsoft.azure.sparkserverless.common;
 
+import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.components.fields.IntegerField;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import org.jdesktop.swingx.JXHyperlink;
-import org.jdesktop.swingx.hyperlink.HyperlinkAction;
 
-import java.net.URI;
+import javax.swing.event.DocumentEvent;
 
-public class JXHyperLinkWithUri extends JXHyperlink {
-    @Override
-    public void setURI(@Nullable URI uri) {
-        // setURI() in JXHyperlink will set uri to text field
-        // so we override this method to keep text field not change
-        String initialText = this.getText();
-        this.setAction(HyperlinkAction.createHyperlinkAction(uri));
-        this.setText(initialText);
+public class IntegerWithErrorHintedField extends IntegerField implements Validatable {
+    @NotNull
+    private final ErrorMessageTooltip errorMessageTooltip = new ErrorMessageTooltip(this);
+
+    public IntegerWithErrorHintedField() {
+        super();
+        this.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(DocumentEvent e) {
+                errorMessageTooltip.setVisible(IntegerWithErrorHintedField.this);
+            }
+        });
     }
+
+    @Override
+    public boolean isLegal() {
+        return getValueEditor().isValid(getValue());
+    }
+
+    @Nullable
+    @Override
+    public String getErrorMessage() {
+        try {
+            this.validateContent();
+        } catch (ConfigurationException ex) {
+            return ex.getMessage();
+        }
+        return null;
+    }
+
 }

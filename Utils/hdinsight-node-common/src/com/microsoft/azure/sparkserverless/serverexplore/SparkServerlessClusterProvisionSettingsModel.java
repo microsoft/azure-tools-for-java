@@ -48,18 +48,8 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
     @NotNull
     private int calculatedAU;
 
-    // TODO: Asterisk(*) will be set before titles to warn user there are errors.
-    // TODO: Currently only the following titles are added to this class, do we need to add other titles?
     @NotNull
     private String storageRootPathLabelTitle;
-    @NotNull
-    private String clusterNameLabelTitle;
-    @NotNull
-    private String adlAccountLabelTitle;
-    @NotNull
-    private String sparkEventsLabelTitle;
-    @NotNull
-    private String workerNumberOfContainersLabelTitle;
 
     @Nullable
     private String errorMessage;
@@ -69,6 +59,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return clusterName;
     }
 
+    @NotNull
     public SparkServerlessClusterProvisionSettingsModel setClusterName(@NotNull String clusterName) {
         this.clusterName = clusterName;
         return this;
@@ -79,6 +70,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return adlAccount;
     }
 
+    @NotNull
     public SparkServerlessClusterProvisionSettingsModel setAdlAccount(@NotNull String adlAccount) {
         this.adlAccount = adlAccount;
         return this;
@@ -89,6 +81,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return sparkEvents;
     }
 
+    @NotNull
     public SparkServerlessClusterProvisionSettingsModel setSparkEvents(@NotNull String sparkEvents) {
         this.sparkEvents = sparkEvents;
         return this;
@@ -99,6 +92,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return availableAU;
     }
 
+    @NotNull
     public SparkServerlessClusterProvisionSettingsModel setAvailableAU(int availableAU) {
         this.availableAU = availableAU;
         return this;
@@ -109,6 +103,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return totalAU;
     }
 
+    @NotNull
     public SparkServerlessClusterProvisionSettingsModel setTotalAU(@NotNull int totalAU) {
         this.totalAU = totalAU;
         return this;
@@ -119,6 +114,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return calculatedAU;
     }
 
+    @NotNull
     public SparkServerlessClusterProvisionSettingsModel setCalculatedAU(@NotNull int calculatedAU) {
         this.calculatedAU = calculatedAU;
         return this;
@@ -129,6 +125,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return masterCores;
     }
 
+    @NotNull
     public SparkServerlessClusterProvisionSettingsModel setMasterCores(@NotNull int masterCores) {
         this.masterCores = masterCores;
         return this;
@@ -139,6 +136,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return masterMemory;
     }
 
+    @NotNull
     public SparkServerlessClusterProvisionSettingsModel setMasterMemory(@NotNull int masterMemory) {
         this.masterMemory = masterMemory;
         return this;
@@ -149,6 +147,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return workerCores;
     }
 
+    @NotNull
     public SparkServerlessClusterProvisionSettingsModel setWorkerCores(@NotNull int workerCores) {
         this.workerCores = workerCores;
         return this;
@@ -159,6 +158,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return workerMemory;
     }
 
+    @NotNull
     public SparkServerlessClusterProvisionSettingsModel setWorkerMemory(@NotNull int workerMemory) {
         this.workerMemory = workerMemory;
         return this;
@@ -169,51 +169,10 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return workerNumberOfContainers;
     }
 
+    @NotNull
     public SparkServerlessClusterProvisionSettingsModel setWorkerNumberOfContainers(
             @NotNull int workerNumberOfContainers) {
         this.workerNumberOfContainers = workerNumberOfContainers;
-        return this;
-    }
-
-    @NotNull
-    public String getClusterNameLabelTitle() {
-        return clusterNameLabelTitle;
-    }
-
-    public SparkServerlessClusterProvisionSettingsModel setClusterNameLabelTitle(@NotNull String clusterNameLabelTitle) {
-        this.clusterNameLabelTitle = clusterNameLabelTitle;
-        return this;
-    }
-
-    @NotNull
-    public String getAdlAccountLabelTitle() {
-        return adlAccountLabelTitle;
-    }
-
-    public SparkServerlessClusterProvisionSettingsModel setAdlAccountLabelTitle(@NotNull String adlAccountLabelTitle) {
-        this.adlAccountLabelTitle = adlAccountLabelTitle;
-        return this;
-    }
-
-    @NotNull
-    public String getSparkEventsLabelTitle() {
-        return sparkEventsLabelTitle;
-    }
-
-    public SparkServerlessClusterProvisionSettingsModel setSparkEventsLabelTitle(
-            @NotNull String sparkEventsLabelTitle) {
-        this.sparkEventsLabelTitle = sparkEventsLabelTitle;
-        return this;
-    }
-
-    @NotNull
-    public String getWorkerNumberOfContainersLabelTitle() {
-        return workerNumberOfContainersLabelTitle;
-    }
-
-    public SparkServerlessClusterProvisionSettingsModel setWorkerNumberOfContainersLabelTitle(
-            @NotNull String workerNumberOfContainersLabelTitle) {
-        this.workerNumberOfContainersLabelTitle = workerNumberOfContainersLabelTitle;
         return this;
     }
 
@@ -234,6 +193,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return errorMessage;
     }
 
+    @NotNull
     public SparkServerlessClusterProvisionSettingsModel setErrorMessage(@Nullable String errorMessage) {
         this.errorMessage = errorMessage;
         return this;
