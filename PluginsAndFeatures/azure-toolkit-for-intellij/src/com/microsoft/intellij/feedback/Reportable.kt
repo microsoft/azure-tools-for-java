@@ -53,7 +53,7 @@ open class Reportable(private val shortMessage: String) {
     }
 
     open fun getBody(): String {
-        return (platformInfo + detailInfo + additionalInfo)
+        return (platformInfo + additionalInfo + detailInfo)
                 .map { "${it.key}: ${it.value}" }
                 .reduce { l, r -> "$l\n$r"}
     }

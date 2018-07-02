@@ -23,6 +23,7 @@
 package com.microsoft.intellij.feedback
 
 import com.microsoft.tooling.msservices.components.DefaultLoader
+import org.apache.commons.lang3.StringUtils
 import org.apache.http.client.utils.URLEncodedUtils
 import org.apache.http.message.BasicNameValuePair
 import java.net.URI
@@ -40,11 +41,19 @@ class GithubIssue<T : Reportable>(private val reportable: T) {
         }
 
     private fun getRequestUrl(): String {
-        return pluginRepo.resolve("issues/new?" + URLEncodedUtils.format(listOf(
+        // A very simple implement with embedded Github Issue parameters
+        // into the browser URL (GET request), so there is a limitation
+        // of 2083 char-length.
+        //
+        // To support a bigger issue body, please implement a RESTful API
+        // version request.
+
+        return StringUtils.left(pluginRepo.resolve("issues/new?" + URLEncodedUtils.format(listOf(
                 BasicNameValuePair("title", reportable.getTitle()),
                 BasicNameValuePair("labels", labels.joinToString(",")),
                 BasicNameValuePair("body", reportable.getBody())
-        ), StandardCharsets.UTF_8)).toString()
+        ), StandardCharsets.UTF_8)).toString(), 2083)  // 2083 URL max length
+        .replace("""%[\d\w]?$""", "")                  // remove ending uncompleted escaped chars
     }
 
     fun report() {

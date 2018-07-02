@@ -22,12 +22,14 @@
 
 package com.microsoft.intellij.feedback
 
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+class ReportableSurvey(shortMessage: String) : Reportable(shortMessage) {
+    private val questions = listOf(
+                "# 1. Are you satisfied with the Azure Spark development functionalities & experiences offered in Azure Toolkit for IntelliJ? Please rate us from 1 (poor) to 10 (excellent).",
+                "# 2. What did you like or dislike about Azure Toolkit for IntelliJ?",
+                "# 3. What enhancements would you like Azure Toolkit for IntelliJ to implement?"
+    )
 
-class NewGithubIssueAction(private val issue: GithubIssue<out Reportable>, actionTitle: String)
-        : AzureAnAction(actionTitle) {
-    override fun onActionPerformed(anActionEvent: AnActionEvent?) {
-        issue.report()
+    override fun getBody(): String {
+        return super.getBody() + "\n\n" + questions.joinToString("\n\n") + "\n\n"
     }
 }

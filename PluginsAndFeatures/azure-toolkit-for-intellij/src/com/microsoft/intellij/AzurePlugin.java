@@ -41,11 +41,7 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.FileUtil;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
-import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
-import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
+import com.microsoft.azuretools.azurecommons.util.*;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -53,7 +49,7 @@ import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.feedback.GithubIssue;
 import com.microsoft.intellij.feedback.NewGithubIssueAction;
-import com.microsoft.intellij.feedback.Reportable;
+import com.microsoft.intellij.feedback.ReportableSurvey;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
@@ -64,12 +60,7 @@ import org.w3c.dom.Document;
 import rx.Observable;
 
 import javax.swing.event.EventListenerList;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,13 +111,14 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private void initializeFeedbackNotification() {
         Notification feedbackNotification = new Notification(
-                "Azure plugin",
-                "We're listening to you",
-                "Give feedback to Microsoft Azure Plugin",
+                "Azure Toolkit plugin",
+                "We're listening",
+                "Thanks for helping Microsoft improve Azure Toolkit experience!\nYour feedback is important. Please take a minute to fill out our",
                 NotificationType.INFORMATION);
 
         feedbackNotification.addAction(new NewGithubIssueAction(
-                new GithubIssue<>(new Reportable("Feedback from user"))));
+                        new GithubIssue<>(new ReportableSurvey("User feedback")).withLabel("Feedback"),
+                        "user satisfaction survey"));
 
         Observable.timer(30, TimeUnit.SECONDS)
                 .take(1)

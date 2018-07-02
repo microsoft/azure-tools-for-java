@@ -42,8 +42,9 @@ class MSErrorReportHandler : ErrorReportSubmitter() {
         val githubIssue = GithubIssue(
                 ReportableError("Uncaught Exception ${event.message ?: ""} ${event.throwableText.split("\n").first()}",
                                 event.toString())
-                .with("Additional Info", additionalInfo ?: "None")
-                .with("Parent component", parentComponent.toString()))
+                        .with("Additional Info", additionalInfo ?: "None")
+                        .with("Parent component", parentComponent.toString()))
+                .withLabel("bug")
 
         githubIssue.report()
 
