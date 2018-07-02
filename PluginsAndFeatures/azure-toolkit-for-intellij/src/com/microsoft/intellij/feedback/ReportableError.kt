@@ -22,49 +22,10 @@
 
 package com.microsoft.intellij.feedback
 
-import com.intellij.ide.plugins.PluginManager
-import com.intellij.openapi.application.ApplicationInfo
-import com.intellij.openapi.extensions.PluginId
-
-abstract class ReportableError(private val shortMessage: String, private val detailMessage: String) {
-    val plugin = PluginManager.getPlugin(PluginId.getId("com.microsoft.tooling.msservices.intellij.azure"))!!
-    private val appInfo = ApplicationInfo.getInstance()
-
-    private val platformInfo = mutableMapOf<String, String>(
-            "IntelliJ build version" to "${appInfo.fullVersion} ${appInfo.build}",
-            "JDK" to "${System.getProperty("java.vendor")} ${System.getProperty("java.version")}",
-            "Plugin version" to plugin.version
-    )
-
-    private val detailInfo = mapOf(
-            "Error message" to detailMessage
-    )
-
-    private val additionalInfo = mutableMapOf<String, String>()
-
-    open fun getTitleTags(): Set<String> {
-        return setOf("IntelliJ", "ReportedByUser")
-    }
-
-    open fun getTitle(): String {
-        val tags = getTitleTags()
-                .map { "[$it]" }
-                .reduce { l, r -> "$l$r"}     // Output as: [Tag1][Tag2]
-
-        return "$tags $shortMessage"
-    }
-
-    open fun getBody(): String {
-        return (platformInfo + detailInfo + additionalInfo)
-                .map { "${it.key}: ${it.value}" }
-                .reduce { l, r -> "$l\n$r"}
-    }
-
-    open fun with(key: String, value: String): ReportableError {
-        additionalInfo[key] = value
-
-        return this
-    }
-
-    abstract fun report()
+class ReportableError(shortMessage: String, private val detailMessage: String)
+            : Reportable(shortMessage){
+    override val detailInfo
+        get() = mapOf(
+                "Error message" to detailMessage
+        )
 }

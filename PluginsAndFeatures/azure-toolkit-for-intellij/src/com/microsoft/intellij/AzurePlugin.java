@@ -23,6 +23,9 @@
 package com.microsoft.intellij;
 
 import com.intellij.ide.plugins.cl.PluginClassLoader;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -48,6 +51,9 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.common.CommonConst;
+import com.microsoft.intellij.feedback.GithubIssue;
+import com.microsoft.intellij.feedback.NewGithubIssueAction;
+import com.microsoft.intellij.feedback.Reportable;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
@@ -55,6 +61,7 @@ import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
+import rx.Observable;
 
 import javax.swing.event.EventListenerList;
 import java.io.BufferedOutputStream;
@@ -67,6 +74,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -107,6 +115,22 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     public void projectOpened() {
         initializeAIRegistry();
+        initializeFeedbackNotification();
+    }
+
+    private void initializeFeedbackNotification() {
+        Notification feedbackNotification = new Notification(
+                "Azure plugin",
+                "We're listening to you",
+                "Give feedback to Microsoft Azure Plugin",
+                NotificationType.INFORMATION);
+
+        feedbackNotification.addAction(new NewGithubIssueAction(
+                new GithubIssue<>(new Reportable("Feedback from user"))));
+
+        Observable.timer(30, TimeUnit.SECONDS)
+                .take(1)
+                .subscribe(next -> Notifications.Bus.notify(feedbackNotification));
     }
 
     public void projectClosed() {

@@ -22,38 +22,12 @@
 
 package com.microsoft.intellij.feedback
 
-import com.microsoft.tooling.msservices.components.DefaultLoader
-import org.apache.http.client.utils.URLEncodedUtils
-import org.apache.http.message.BasicNameValuePair
-import java.net.URI
-import java.nio.charset.StandardCharsets
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 
-class GithubIssue<T : Reportable>(private val reportable: T) {
-    private val plugin = reportable.plugin
-    private val labels = mutableSetOf("IntelliJ")
-
-    private val pluginRepo: URI
-        get() {
-            val url = if (plugin.url.endsWith("/")) plugin.url else plugin.url + "/"
-
-            return URI.create(url)
-        }
-
-    private fun getRequestUrl(): String {
-        return pluginRepo.resolve("issues/new?" + URLEncodedUtils.format(listOf(
-                BasicNameValuePair("title", reportable.getTitle()),
-                BasicNameValuePair("labels", labels.joinToString(",")),
-                BasicNameValuePair("body", reportable.getBody())
-        ), StandardCharsets.UTF_8)).toString()
-    }
-
-    fun report() {
-        DefaultLoader.getIdeHelper().openLinkInBrowser(getRequestUrl())
-    }
-
-    fun withLabel(label: String): GithubIssue<T> {
-        labels.add(label)
-
-        return this
+class NewGithubIssueAction(private val issue: GithubIssue<out Reportable>)
+        : AzureAnAction("Feedback to Microsoft") {
+    override fun onActionPerformed(anActionEvent: AnActionEvent?) {
+        issue.report()
     }
 }

@@ -25,6 +25,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.intellij.feedback.GithubIssue;
+import com.microsoft.intellij.feedback.ReportableError;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
@@ -66,7 +67,7 @@ public class ErrorMessageForm extends AzureDialogWrapper {
         showAdvancedInfoCheckBox.setText(advancedInfoText);
 
         buttonFireIssue.addActionListener(event -> {
-            new GithubIssue(title, errorMessageDetail).report();
+            new GithubIssue<>(new ReportableError(title, errorMessageDetail)).withLabel("bug").report();
         });
 
         init();
