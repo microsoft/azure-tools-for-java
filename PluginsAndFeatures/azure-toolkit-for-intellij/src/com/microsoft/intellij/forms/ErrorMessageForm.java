@@ -24,7 +24,7 @@ package com.microsoft.intellij.forms;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.intellij.common.GithubIssue;
+import com.microsoft.intellij.feedback.GithubIssue;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.common
+package com.microsoft.intellij.feedback
 
 import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.application.ApplicationInfo

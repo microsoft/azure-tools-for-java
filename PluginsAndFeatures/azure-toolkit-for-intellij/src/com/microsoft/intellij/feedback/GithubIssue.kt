@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.common
+package com.microsoft.intellij.feedback
 
 import com.microsoft.tooling.msservices.components.DefaultLoader
 import org.apache.http.client.utils.URLEncodedUtils
