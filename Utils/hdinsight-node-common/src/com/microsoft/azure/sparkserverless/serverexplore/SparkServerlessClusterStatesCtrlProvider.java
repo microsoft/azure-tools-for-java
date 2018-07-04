@@ -51,7 +51,8 @@ public class SparkServerlessClusterStatesCtrlProvider {
                                     ? URI.create(String.valueOf(cluster.getSparkMasterUiUri() + suffix)) : null)
                             // cluster state here is set to align with cluster node state
                             .setClusterState(cluster.getMasterState() != null
-                                    ? cluster.getMasterState().toUpperCase() : cluster.getState().toUpperCase());
+                                    ? cluster.getMasterState().toUpperCase() : cluster.getState().toUpperCase())
+                            .setClusterID(cluster.getGuid());
                 })
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData)

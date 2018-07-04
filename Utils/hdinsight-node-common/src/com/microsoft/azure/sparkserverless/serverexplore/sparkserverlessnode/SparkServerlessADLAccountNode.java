@@ -23,16 +23,12 @@
 package com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
-import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ResourcePoolState;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-
-import java.io.IOException;
 
 public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
     // TODO: Update icon path
