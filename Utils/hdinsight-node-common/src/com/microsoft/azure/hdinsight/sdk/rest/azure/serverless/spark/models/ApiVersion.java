@@ -24,4 +24,5 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 public class ApiVersion {
     public static final String VERSION = "2018-02-01-preview"; // Preview version
+    public static final String JOB_API_VERSION = "2016-11-01";
 }

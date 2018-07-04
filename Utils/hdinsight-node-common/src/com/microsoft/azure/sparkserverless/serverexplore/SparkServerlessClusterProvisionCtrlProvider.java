@@ -75,7 +75,10 @@ public class SparkServerlessClusterProvisionCtrlProvider {
     }
 
     public Observable<Integer> getAvailableAU() {
-        return Observable.just(0);
+        return account.getJobDegreeOfParallelism()
+                .subscribeOn(Schedulers.io())
+                .map(jobDegreeOfParallelism -> account.getMaxDegreeOfParallelism() < jobDegreeOfParallelism ? 0
+                        : account.getMaxDegreeOfParallelism() - jobDegreeOfParallelism);
     }
 
     @NotNull
