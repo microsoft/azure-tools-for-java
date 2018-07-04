@@ -47,10 +47,9 @@ public class SparkServerlessClusterRootModuleImpl extends HDInsightRootModule {
             return;
         }
 
-        AzureSparkServerlessClusterManager.getInstance().get().subscribe(cluster -> {
-            cluster.getAccounts().forEach(account -> {
-                addChildNode(new SparkServerlessADLAccountNode(this, account));
-            });
+        AzureSparkServerlessClusterManager.getInstance().refresh();
+        AzureSparkServerlessClusterManager.getInstance().getAccounts().forEach(account -> {
+            addChildNode(new SparkServerlessADLAccountNode(this, account));
         });
     }
 

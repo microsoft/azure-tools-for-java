@@ -43,7 +43,13 @@ public class SparkServerlessClusterUpdateCtrlProvider implements ILogger {
                             .setMasterMemory(clusterUpdated.getMasterPerInstanceMemoryInGB())
                             .setWorkerCores(clusterUpdated.getWorkerPerInstanceCoreCount())
                             .setWorkerMemory(clusterUpdated.getWorkerPerInstanceMemoryInGB())
-                            .setWorkerNumberOfContainers(clusterUpdated.getWorkerTargetInstanceCount());
+                            .setWorkerNumberOfContainers(clusterUpdated.getWorkerTargetInstanceCount())
+                            .setCalculatedAU(SparkServerlessClusterProvisionCtrlProvider.getCalculatedAU(
+                                    clusterUpdated.getMasterPerInstanceCoreCount(),
+                                    clusterUpdated.getWorkerPerInstanceCoreCount(),
+                                    clusterUpdated.getMasterPerInstanceMemoryInGB(),
+                                    clusterUpdated.getWorkerPerInstanceMemoryInGB(),
+                                    clusterUpdated.getWorkerTargetInstanceCount()));
                 })
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData);
@@ -52,19 +58,12 @@ public class SparkServerlessClusterUpdateCtrlProvider implements ILogger {
     public Observable<SparkServerlessClusterProvisionSettingsModel> validateAndUpdate() {
         return Observable.just(new SparkServerlessClusterProvisionSettingsModel())
                 .doOnNext(controllableView::getData)
-                .observeOn(ideSchedulers.processBarVisibleAsync("Validating the settings..."))
+                .observeOn(ideSchedulers.processBarVisibleAsync("Updating cluster..."))
                 .map(toUpdate -> toUpdate.setErrorMessage(null))
-                .flatMap(toUpdate -> {
-                    if (toUpdate.getWorkerNumberOfContainers() == cluster.getWorkerTargetInstanceCount()) {
-                        return Observable.just(toUpdate.setErrorMessage("Number of Containers is not changed."));
-                    } else if (toUpdate.getWorkerNumberOfContainers() <= 0) {
-                        return Observable.just(toUpdate.setErrorMessage("Number of containers should be positive integer."));
-                    } else {
-                        return cluster.update(toUpdate.getWorkerNumberOfContainers())
+                .flatMap(toUpdate ->
+                        cluster.update(toUpdate.getWorkerNumberOfContainers())
                                 .map(cluster -> toUpdate)
-                                .onErrorReturn(err -> toUpdate.setErrorMessage(err.getMessage()));
-                    }
-                })
+                                .onErrorReturn(err -> toUpdate.setErrorMessage(err.getMessage())))
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData)
                 .filter(data -> StringUtils.isEmpty(data.getErrorMessage()));
