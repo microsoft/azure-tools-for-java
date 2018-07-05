@@ -109,7 +109,7 @@ public class AzureSparkServerlessAccount implements ClusterContainer {
     //
 
     public Observable<Integer> getJobDegreeOfParallelism() {
-        return getJobList()
+        return getJobs()
                 .flatMap(jobList -> Observable.from(jobList.value()))
                 .map(jobInfo -> jobInfo.degreeOfParallelism())
                 .defaultIfEmpty(0)
@@ -117,7 +117,7 @@ public class AzureSparkServerlessAccount implements ClusterContainer {
     }
 
     // TODO: handle job list pagination
-    public Observable<JobInfoListResult> getJobList() {
+    public Observable<JobInfoListResult> getJobs() {
         URI uri = getUri().resolve(REST_SEGMENT_JOB_LIST);
         List<NameValuePair> parameters = Collections.singletonList(
                 ODataParam.filter(String.format("state eq '%s'",JobState.RUNNING.toString())));

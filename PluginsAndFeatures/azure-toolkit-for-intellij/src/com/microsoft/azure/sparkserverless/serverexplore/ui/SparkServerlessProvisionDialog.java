@@ -148,11 +148,17 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         this.getWindow().addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
-                updateAvailableAU();
-                updateTotalAU();
+                updateAvailableAUAndTotalAUFirstTime();
                 updateCalculatedAU();
                 super.windowOpened(e);
             }
+        });
+    }
+
+    private void updateAvailableAUAndTotalAUFirstTime() {
+        ctrlProvider.getAvailableAUAndTotalAUFirstTime().subscribe(pair -> {
+            availableAUField.setText(String.valueOf(pair.getLeft()));
+            totalAUField.setText(String.valueOf(pair.getRight()));
         });
     }
 

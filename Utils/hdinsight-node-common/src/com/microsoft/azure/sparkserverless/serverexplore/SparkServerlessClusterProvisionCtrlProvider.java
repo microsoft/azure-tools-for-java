@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServe
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -79,6 +80,11 @@ public class SparkServerlessClusterProvisionCtrlProvider {
                 .subscribeOn(Schedulers.io())
                 .map(jobDegreeOfParallelism -> account.getMaxDegreeOfParallelism() < jobDegreeOfParallelism ? 0
                         : account.getMaxDegreeOfParallelism() - jobDegreeOfParallelism);
+    }
+
+    public Observable<Pair<Integer, Integer>> getAvailableAUAndTotalAUFirstTime() {
+        return Observable.zip(getTotalAU(), account.getJobDegreeOfParallelism(),
+                (totalAU, jobDegreeOfParallelism) -> Pair.of(totalAU - jobDegreeOfParallelism, totalAU));
     }
 
     @NotNull
