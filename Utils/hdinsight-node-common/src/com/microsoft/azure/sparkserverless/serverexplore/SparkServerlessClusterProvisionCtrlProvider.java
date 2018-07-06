@@ -69,22 +69,34 @@ public class SparkServerlessClusterProvisionCtrlProvider {
                 Math.ceil((masterMemory + workerMemory * workerContainer) / 6.0));
     }
 
-    public Observable<Integer> getTotalAU() {
+    private Observable<Integer> getTotalAU() {
         return account.get()
                 .subscribeOn(Schedulers.io())
                 .map(account -> account.getMaxDegreeOfParallelism());
     }
 
-    public Observable<Integer> getAvailableAU() {
+    private Observable<Integer> getUsedAU() {
         return account.getJobDegreeOfParallelism()
-                .subscribeOn(Schedulers.io())
-                .map(jobDegreeOfParallelism -> account.getMaxDegreeOfParallelism() < jobDegreeOfParallelism ? 0
-                        : account.getMaxDegreeOfParallelism() - jobDegreeOfParallelism);
+                .subscribeOn(Schedulers.io());
     }
 
-    public Observable<Pair<Integer, Integer>> getAvailableAUAndTotalAUFirstTime() {
-        return Observable.zip(getTotalAU(), account.getJobDegreeOfParallelism(),
-                (totalAU, jobDegreeOfParallelism) -> Pair.of(totalAU - jobDegreeOfParallelism, totalAU));
+    private int getAvailableAU(int totalAU, int usedAU) {
+        return totalAU < usedAU ? 0 : totalAU - usedAU;
+    }
+
+    public Observable<Integer> getAvailableAU() {
+        return getUsedAU()
+                .map(usedAU -> getAvailableAU(account.getMaxDegreeOfParallelism(), usedAU));
+    }
+
+    /**
+     * The result of availableAU replies on totalAU, here getAvailableAUAndTotalAU() is defined to make sure that
+     * availableAU is calculated after totalAU is ready. Notice that totalAU is calculated once for all,
+     * getAvailableAUAndTotalAU() should only be called once, next time getAvailableAU() is enough to calculate availableAU
+     */
+    public Observable<Pair<Integer, Integer>> getAvailableAUAndTotalAU() {
+        return Observable.zip(getTotalAU(), getUsedAU(),
+                (totalAU, usedAU) -> Pair.of(getAvailableAU(totalAU, usedAU), totalAU));
     }
 
     @NotNull

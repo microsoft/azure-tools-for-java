@@ -122,7 +122,8 @@ public class AzureSparkServerlessAccount implements ClusterContainer {
         List<NameValuePair> parameters = Collections.singletonList(
                 ODataParam.filter(String.format("state eq '%s'",JobState.RUNNING.toString())));
 
-        return new AzureDataLakeHttpObservable(subscription.getTenantId(), ApiVersion.JOB_API_VERSION)
+        return new AzureDataLakeHttpObservable(subscription.getTenantId(),
+                com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.ApiVersion.VERSION)
                 .withUuidUserAgent()
                 .get(uri.toString(), parameters, null, JobInfoListResult.class);
     }

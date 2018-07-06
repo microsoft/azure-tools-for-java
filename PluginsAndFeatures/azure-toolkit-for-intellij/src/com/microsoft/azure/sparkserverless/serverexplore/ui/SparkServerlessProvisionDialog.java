@@ -118,13 +118,6 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         this.adlAccountField.setText(adlAccountNode.getAdlAccount().getName());
         this.storageRootPathLabel.setText(Optional.ofNullable(account.getStorageRootPath()).orElse(""));
 
-        adlAccountField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                updateAvailableAU();
-                updateTotalAU();
-            }
-        });
         refreshButton.addActionListener(e -> updateAvailableAU());
         allAURelatedFields.forEach(comp ->
                 comp.addFocusListener(new FocusAdapter() {
@@ -148,15 +141,15 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         this.getWindow().addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
-                updateAvailableAUAndTotalAUFirstTime();
+                updateAvailableAUAndTotalAU();
                 updateCalculatedAU();
                 super.windowOpened(e);
             }
         });
     }
 
-    private void updateAvailableAUAndTotalAUFirstTime() {
-        ctrlProvider.getAvailableAUAndTotalAUFirstTime().subscribe(pair -> {
+    private void updateAvailableAUAndTotalAU() {
+        ctrlProvider.getAvailableAUAndTotalAU().subscribe(pair -> {
             availableAUField.setText(String.valueOf(pair.getLeft()));
             totalAUField.setText(String.valueOf(pair.getRight()));
         });
@@ -164,10 +157,6 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
 
     private void updateAvailableAU() {
         ctrlProvider.getAvailableAU().subscribe(au -> availableAUField.setText(String.valueOf(au)));
-    }
-
-    private void updateTotalAU() {
-        ctrlProvider.getTotalAU().subscribe(au -> totalAUField.setText(String.valueOf(au)));
     }
 
     private void updateCalculatedAU() {

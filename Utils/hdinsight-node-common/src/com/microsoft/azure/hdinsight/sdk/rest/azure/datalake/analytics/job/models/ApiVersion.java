@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
@@ -18,10 +18,11 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
 public class ApiVersion {
-    public static final String VERSION = "2018-02-01-preview"; // Preview version
+    public static final String VERSION = "2016-11-01";
 }
