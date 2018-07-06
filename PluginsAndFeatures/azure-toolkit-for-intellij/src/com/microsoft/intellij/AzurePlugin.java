@@ -23,6 +23,9 @@
 package com.microsoft.intellij;
 
 import com.intellij.ide.plugins.cl.PluginClassLoader;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -38,16 +41,15 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.FileUtil;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
-import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
-import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
+import com.microsoft.azuretools.azurecommons.util.*;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.common.CommonConst;
+import com.microsoft.intellij.feedback.GithubIssue;
+import com.microsoft.intellij.feedback.NewGithubIssueAction;
+import com.microsoft.intellij.feedback.ReportableSurvey;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
@@ -55,18 +57,15 @@ import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
+import rx.Observable;
 
 import javax.swing.event.EventListenerList;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -107,6 +106,23 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     public void projectOpened() {
         initializeAIRegistry();
+        initializeFeedbackNotification();
+    }
+
+    private void initializeFeedbackNotification() {
+        Notification feedbackNotification = new Notification(
+                "Azure Toolkit plugin",
+                "We're listening",
+                "Thanks for helping Microsoft improve Azure Toolkit experience!\nYour feedback is important. Please take a minute to fill out our",
+                NotificationType.INFORMATION);
+
+        feedbackNotification.addAction(new NewGithubIssueAction(
+                        new GithubIssue<>(new ReportableSurvey("User feedback")).withLabel("Feedback"),
+                        "user satisfaction survey"));
+
+        Observable.timer(30, TimeUnit.SECONDS)
+                .take(1)
+                .subscribe(next -> Notifications.Bus.notify(feedbackNotification));
     }
 
     public void projectClosed() {

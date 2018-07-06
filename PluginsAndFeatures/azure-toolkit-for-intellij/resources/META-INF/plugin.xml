@@ -1,4 +1,4 @@
-<idea-plugin>
+<idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
   <version>3.8.0</version>
@@ -184,6 +184,7 @@
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ServerlessSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
     <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
+    <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
   </extensions>
 
   <application-components>
