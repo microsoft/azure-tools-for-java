@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServe
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -68,14 +69,34 @@ public class SparkServerlessClusterProvisionCtrlProvider {
                 Math.ceil((masterMemory + workerMemory * workerContainer) / 6.0));
     }
 
-    public Observable<Integer> getTotalAU() {
+    private Observable<Integer> getTotalAU() {
         return account.get()
                 .subscribeOn(Schedulers.io())
                 .map(account -> account.getMaxDegreeOfParallelism());
     }
 
+    private Observable<Integer> getUsedAU() {
+        return account.getJobDegreeOfParallelism()
+                .subscribeOn(Schedulers.io());
+    }
+
+    private int getAvailableAU(int totalAU, int usedAU) {
+        return totalAU < usedAU ? 0 : totalAU - usedAU;
+    }
+
     public Observable<Integer> getAvailableAU() {
-        return Observable.just(0);
+        return getUsedAU()
+                .map(usedAU -> getAvailableAU(account.getMaxDegreeOfParallelism(), usedAU));
+    }
+
+    /**
+     * The result of availableAU replies on totalAU, here getAvailableAUAndTotalAU() is defined to make sure that
+     * availableAU is calculated after totalAU is ready. Notice that totalAU is calculated once for all,
+     * getAvailableAUAndTotalAU() should only be called once, next time getAvailableAU() is enough to calculate availableAU
+     */
+    public Observable<Pair<Integer, Integer>> getAvailableAUAndTotalAU() {
+        return Observable.zip(getTotalAU(), getUsedAU(),
+                (totalAU, usedAU) -> Pair.of(getAvailableAU(totalAU, usedAU), totalAU));
     }
 
     @NotNull
