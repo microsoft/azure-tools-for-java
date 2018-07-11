@@ -31,25 +31,25 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class JobInformation extends JobInformationBasic {
     /**
-     * the error message details for the job, if the job failed.
+     * The error message details for the job, if the job failed.
      */
     @JsonProperty(value = "errorMessage", access = JsonProperty.Access.WRITE_ONLY)
     private List<JobErrorDetails> errorMessage;
 
     /**
-     * the job state audit records, indicating when various operations have been performed on this job.
+     * The job state audit records, indicating when various operations have been performed on this job.
      */
     @JsonProperty(value = "stateAuditRecords", access = JsonProperty.Access.WRITE_ONLY)
     private List<JobStateAuditRecord> stateAuditRecords;
 
     /**
-     * the job specific properties.
+     * The job specific properties.
      */
     @JsonProperty(value = "properties", required = true)
     private JobProperties properties;
 
     /**
-     * Get the errorMessage value.
+     * Get the error message details for the job, if the job failed.
      *
      * @return the errorMessage value
      */
@@ -58,7 +58,7 @@ public class JobInformation extends JobInformationBasic {
     }
 
     /**
-     * Get the stateAuditRecords value.
+     * Get the job state audit records, indicating when various operations have been performed on this job.
      *
      * @return the stateAuditRecords value
      */
@@ -67,7 +67,7 @@ public class JobInformation extends JobInformationBasic {
     }
 
     /**
-     * Get the properties value.
+     * Get the job specific properties.
      *
      * @return the properties value
      */
@@ -76,7 +76,7 @@ public class JobInformation extends JobInformationBasic {
     }
 
     /**
-     * Set the properties value.
+     * Set the job specific properties.
      *
      * @param properties the properties value to set
      * @return the JobInformation object itself.

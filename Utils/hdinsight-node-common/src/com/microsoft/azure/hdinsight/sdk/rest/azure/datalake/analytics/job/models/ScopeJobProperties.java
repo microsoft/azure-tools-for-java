@@ -30,40 +30,28 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 /**
- * U-SQL job properties used when retrieving U-SQL jobs.
+ * Scope job properties used when submitting and retrieving Scope jobs. (Only for use internally with Scope job type.).
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonTypeName("USql")
-public class USqlJobProperties extends JobProperties {
+@JsonTypeName("Scope")
+public class ScopeJobProperties extends JobProperties {
     /**
      * The list of resources that are required by the job.
      */
     @JsonProperty(value = "resources", access = JsonProperty.Access.WRITE_ONLY)
-    private List<JobResource> resources;
-
-    /**
-     * The job specific statistics.
-     */
-    @JsonProperty(value = "statistics")
-    private JobStatistics statistics;
-
-    /**
-     * The job specific debug data locations.
-     */
-    @JsonProperty(value = "debugData")
-    private JobDataPath debugData;
-
-    /**
-     * The diagnostics for the job.
-     */
-    @JsonProperty(value = "diagnostics", access = JsonProperty.Access.WRITE_ONLY)
-    private List<Diagnostics> diagnostics;
+    private List<ScopeJobResource> resources;
 
     /**
      * The algebra file path after the job has completed.
      */
-    @JsonProperty(value = "algebraFilePath", access = JsonProperty.Access.WRITE_ONLY)
-    private String algebraFilePath;
+    @JsonProperty(value = "userAlgebraPath", access = JsonProperty.Access.WRITE_ONLY)
+    private String userAlgebraPath;
+
+    /**
+     * The list of email addresses, separated by semi-colons, to notify when the job reaches a terminal state.
+     */
+    @JsonProperty(value = "notifier")
+    private String notifier;
 
     /**
      * The total time this job spent compiling. This value should not be set by the user and will be ignored if it is.
@@ -104,84 +92,41 @@ public class USqlJobProperties extends JobProperties {
     private String yarnApplicationId;
 
     /**
-     * The timestamp (in ticks) for the yarn application executing the job. This value should not be set by the user
-     * and will be ignored if it is.
-     */
-    @JsonProperty(value = "yarnApplicationTimeStamp", access = JsonProperty.Access.WRITE_ONLY)
-    private Long yarnApplicationTimeStamp;
-
-    /**
-     * The specific compilation mode for the job used during execution. If this is not specified during submission, the
-     * server will determine the optimal compilation mode. Possible values include: 'Semantic', 'Full', 'SingleBox'.
-     */
-    @JsonProperty(value = "compileMode", access = JsonProperty.Access.WRITE_ONLY)
-    private CompileMode compileMode;
-
-    /**
      * Get the list of resources that are required by the job.
      *
      * @return the resources value
      */
-    public List<JobResource> resources() {
+    public List<ScopeJobResource> resources() {
         return this.resources;
-    }
-
-    /**
-     * Get the job specific statistics.
-     *
-     * @return the statistics value
-     */
-    public JobStatistics statistics() {
-        return this.statistics;
-    }
-
-    /**
-     * Set the job specific statistics.
-     *
-     * @param statistics the statistics value to set
-     * @return the USqlJobProperties object itself.
-     */
-    public USqlJobProperties withStatistics(JobStatistics statistics) {
-        this.statistics = statistics;
-        return this;
-    }
-
-    /**
-     * Get the job specific debug data locations.
-     *
-     * @return the debugData value
-     */
-    public JobDataPath debugData() {
-        return this.debugData;
-    }
-
-    /**
-     * Set the job specific debug data locations.
-     *
-     * @param debugData the debugData value to set
-     * @return the USqlJobProperties object itself.
-     */
-    public USqlJobProperties withDebugData(JobDataPath debugData) {
-        this.debugData = debugData;
-        return this;
-    }
-
-    /**
-     * Get the diagnostics for the job.
-     *
-     * @return the diagnostics value
-     */
-    public List<Diagnostics> diagnostics() {
-        return this.diagnostics;
     }
 
     /**
      * Get the algebra file path after the job has completed.
      *
-     * @return the algebraFilePath value
+     * @return the userAlgebraPath value
      */
-    public String algebraFilePath() {
-        return this.algebraFilePath;
+    public String userAlgebraPath() {
+        return this.userAlgebraPath;
+    }
+
+    /**
+     * Get the list of email addresses, separated by semi-colons, to notify when the job reaches a terminal state.
+     *
+     * @return the notifier value
+     */
+    public String notifier() {
+        return this.notifier;
+    }
+
+    /**
+     * Set the list of email addresses, separated by semi-colons, to notify when the job reaches a terminal state.
+     *
+     * @param notifier the notifier value to set
+     * @return the ScopeJobProperties object itself.
+     */
+    public ScopeJobProperties withNotifier(String notifier) {
+        this.notifier = notifier;
+        return this;
     }
 
     /**
@@ -236,24 +181,6 @@ public class USqlJobProperties extends JobProperties {
      */
     public String yarnApplicationId() {
         return this.yarnApplicationId;
-    }
-
-    /**
-     * Get the timestamp (in ticks) for the yarn application executing the job. This value should not be set by the user and will be ignored if it is.
-     *
-     * @return the yarnApplicationTimeStamp value
-     */
-    public Long yarnApplicationTimeStamp() {
-        return this.yarnApplicationTimeStamp;
-    }
-
-    /**
-     * Get the specific compilation mode for the job used during execution. If this is not specified during submission, the server will determine the optimal compilation mode. Possible values include: 'Semantic', 'Full', 'SingleBox'.
-     *
-     * @return the compileMode value
-     */
-    public CompileMode compileMode() {
-        return this.compileMode;
     }
 
 }

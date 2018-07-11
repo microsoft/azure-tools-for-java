@@ -32,62 +32,62 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class JobRecurrenceInformation {
     /**
-     * the recurrence identifier (a GUID), unique per activity/script, regardless of iterations. This is something to
+     * The recurrence identifier (a GUID), unique per activity/script, regardless of iterations. This is something to
      * link different occurrences of the same job together.
      */
     @JsonProperty(value = "recurrenceId", access = JsonProperty.Access.WRITE_ONLY)
     private UUID recurrenceId;
 
     /**
-     * the recurrence name, user friendly name for the correlation between jobs.
+     * The recurrence name, user friendly name for the correlation between jobs.
      */
     @JsonProperty(value = "recurrenceName", access = JsonProperty.Access.WRITE_ONLY)
     private String recurrenceName;
 
     /**
-     * the number of jobs in this recurrence that have failed.
+     * The number of jobs in this recurrence that have failed.
      */
     @JsonProperty(value = "numJobsFailed", access = JsonProperty.Access.WRITE_ONLY)
     private Integer numJobsFailed;
 
     /**
-     * the number of jobs in this recurrence that have been canceled.
+     * The number of jobs in this recurrence that have been canceled.
      */
     @JsonProperty(value = "numJobsCanceled", access = JsonProperty.Access.WRITE_ONLY)
     private Integer numJobsCanceled;
 
     /**
-     * the number of jobs in this recurrence that have succeeded.
+     * The number of jobs in this recurrence that have succeeded.
      */
     @JsonProperty(value = "numJobsSucceeded", access = JsonProperty.Access.WRITE_ONLY)
     private Integer numJobsSucceeded;
 
     /**
-     * the number of job execution hours that resulted in failed jobs.
+     * The number of job execution hours that resulted in failed jobs.
      */
     @JsonProperty(value = "auHoursFailed", access = JsonProperty.Access.WRITE_ONLY)
     private Double auHoursFailed;
 
     /**
-     * the number of job execution hours that resulted in canceled jobs.
+     * The number of job execution hours that resulted in canceled jobs.
      */
     @JsonProperty(value = "auHoursCanceled", access = JsonProperty.Access.WRITE_ONLY)
     private Double auHoursCanceled;
 
     /**
-     * the number of job execution hours that resulted in successful jobs.
+     * The number of job execution hours that resulted in successful jobs.
      */
     @JsonProperty(value = "auHoursSucceeded", access = JsonProperty.Access.WRITE_ONLY)
     private Double auHoursSucceeded;
 
     /**
-     * the last time a job in this recurrence was submitted.
+     * The last time a job in this recurrence was submitted.
      */
     @JsonProperty(value = "lastSubmitTime", access = JsonProperty.Access.WRITE_ONLY)
     private DateTime lastSubmitTime;
 
     /**
-     * Get the recurrenceId value.
+     * Get the recurrence identifier (a GUID), unique per activity/script, regardless of iterations. This is something to link different occurrences of the same job together.
      *
      * @return the recurrenceId value
      */
@@ -96,7 +96,7 @@ public class JobRecurrenceInformation {
     }
 
     /**
-     * Get the recurrenceName value.
+     * Get the recurrence name, user friendly name for the correlation between jobs.
      *
      * @return the recurrenceName value
      */
@@ -105,7 +105,7 @@ public class JobRecurrenceInformation {
     }
 
     /**
-     * Get the numJobsFailed value.
+     * Get the number of jobs in this recurrence that have failed.
      *
      * @return the numJobsFailed value
      */
@@ -114,7 +114,7 @@ public class JobRecurrenceInformation {
     }
 
     /**
-     * Get the numJobsCanceled value.
+     * Get the number of jobs in this recurrence that have been canceled.
      *
      * @return the numJobsCanceled value
      */
@@ -123,7 +123,7 @@ public class JobRecurrenceInformation {
     }
 
     /**
-     * Get the numJobsSucceeded value.
+     * Get the number of jobs in this recurrence that have succeeded.
      *
      * @return the numJobsSucceeded value
      */
@@ -132,7 +132,7 @@ public class JobRecurrenceInformation {
     }
 
     /**
-     * Get the auHoursFailed value.
+     * Get the number of job execution hours that resulted in failed jobs.
      *
      * @return the auHoursFailed value
      */
@@ -141,7 +141,7 @@ public class JobRecurrenceInformation {
     }
 
     /**
-     * Get the auHoursCanceled value.
+     * Get the number of job execution hours that resulted in canceled jobs.
      *
      * @return the auHoursCanceled value
      */
@@ -150,7 +150,7 @@ public class JobRecurrenceInformation {
     }
 
     /**
-     * Get the auHoursSucceeded value.
+     * Get the number of job execution hours that resulted in successful jobs.
      *
      * @return the auHoursSucceeded value
      */
@@ -159,7 +159,7 @@ public class JobRecurrenceInformation {
     }
 
     /**
-     * Get the lastSubmitTime value.
+     * Get the last time a job in this recurrence was submitted.
      *
      * @return the lastSubmitTime value
      */

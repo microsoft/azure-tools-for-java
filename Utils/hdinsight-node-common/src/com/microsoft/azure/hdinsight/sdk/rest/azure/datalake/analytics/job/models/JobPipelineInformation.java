@@ -33,79 +33,79 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class JobPipelineInformation {
     /**
-     * the job relationship pipeline identifier (a GUID).
+     * The job relationship pipeline identifier (a GUID).
      */
     @JsonProperty(value = "pipelineId", access = JsonProperty.Access.WRITE_ONLY)
     private UUID pipelineId;
 
     /**
-     * the friendly name of the job relationship pipeline, which does not need to be unique.
+     * The friendly name of the job relationship pipeline, which does not need to be unique.
      */
     @JsonProperty(value = "pipelineName", access = JsonProperty.Access.WRITE_ONLY)
     private String pipelineName;
 
     /**
-     * the pipeline uri, unique, links to the originating service for this pipeline.
+     * The pipeline uri, unique, links to the originating service for this pipeline.
      */
     @JsonProperty(value = "pipelineUri", access = JsonProperty.Access.WRITE_ONLY)
     private String pipelineUri;
 
     /**
-     * the number of jobs in this pipeline that have failed.
+     * The number of jobs in this pipeline that have failed.
      */
     @JsonProperty(value = "numJobsFailed", access = JsonProperty.Access.WRITE_ONLY)
     private Integer numJobsFailed;
 
     /**
-     * the number of jobs in this pipeline that have been canceled.
+     * The number of jobs in this pipeline that have been canceled.
      */
     @JsonProperty(value = "numJobsCanceled", access = JsonProperty.Access.WRITE_ONLY)
     private Integer numJobsCanceled;
 
     /**
-     * the number of jobs in this pipeline that have succeeded.
+     * The number of jobs in this pipeline that have succeeded.
      */
     @JsonProperty(value = "numJobsSucceeded", access = JsonProperty.Access.WRITE_ONLY)
     private Integer numJobsSucceeded;
 
     /**
-     * the number of job execution hours that resulted in failed jobs.
+     * The number of job execution hours that resulted in failed jobs.
      */
     @JsonProperty(value = "auHoursFailed", access = JsonProperty.Access.WRITE_ONLY)
     private Double auHoursFailed;
 
     /**
-     * the number of job execution hours that resulted in canceled jobs.
+     * The number of job execution hours that resulted in canceled jobs.
      */
     @JsonProperty(value = "auHoursCanceled", access = JsonProperty.Access.WRITE_ONLY)
     private Double auHoursCanceled;
 
     /**
-     * the number of job execution hours that resulted in successful jobs.
+     * The number of job execution hours that resulted in successful jobs.
      */
     @JsonProperty(value = "auHoursSucceeded", access = JsonProperty.Access.WRITE_ONLY)
     private Double auHoursSucceeded;
 
     /**
-     * the last time a job in this pipeline was submitted.
+     * The last time a job in this pipeline was submitted.
      */
     @JsonProperty(value = "lastSubmitTime", access = JsonProperty.Access.WRITE_ONLY)
     private DateTime lastSubmitTime;
 
     /**
-     * the list of run identifiers representing each run of this pipeline.
+     * The list of recurrence identifiers representing each run of this pipeline.
      */
     @JsonProperty(value = "runs", access = JsonProperty.Access.WRITE_ONLY)
     private List<JobPipelineRunInformation> runs;
 
     /**
-     * the list of recurrence identifiers representing each recurrence in this pipeline.
+     * The list of recurrence identifiers representing each run of this pipeline.
      */
     @JsonProperty(value = "recurrences", access = JsonProperty.Access.WRITE_ONLY)
     private List<UUID> recurrences;
 
     /**
-     * Get the pipelineId value.
+     * Get the job relationship pipeline identifier (a GUID).
      *
      * @return the pipelineId value
      */
@@ -114,7 +114,7 @@ public class JobPipelineInformation {
     }
 
     /**
-     * Get the pipelineName value.
+     * Get the friendly name of the job relationship pipeline, which does not need to be unique.
      *
      * @return the pipelineName value
      */
@@ -123,7 +123,7 @@ public class JobPipelineInformation {
     }
 
     /**
-     * Get the pipelineUri value.
+     * Get the pipeline uri, unique, links to the originating service for this pipeline.
      *
      * @return the pipelineUri value
      */
@@ -132,7 +132,7 @@ public class JobPipelineInformation {
     }
 
     /**
-     * Get the numJobsFailed value.
+     * Get the number of jobs in this pipeline that have failed.
      *
      * @return the numJobsFailed value
      */
@@ -141,7 +141,7 @@ public class JobPipelineInformation {
     }
 
     /**
-     * Get the numJobsCanceled value.
+     * Get the number of jobs in this pipeline that have been canceled.
      *
      * @return the numJobsCanceled value
      */
@@ -150,7 +150,7 @@ public class JobPipelineInformation {
     }
 
     /**
-     * Get the numJobsSucceeded value.
+     * Get the number of jobs in this pipeline that have succeeded.
      *
      * @return the numJobsSucceeded value
      */
@@ -159,7 +159,7 @@ public class JobPipelineInformation {
     }
 
     /**
-     * Get the auHoursFailed value.
+     * Get the number of job execution hours that resulted in failed jobs.
      *
      * @return the auHoursFailed value
      */
@@ -168,7 +168,7 @@ public class JobPipelineInformation {
     }
 
     /**
-     * Get the auHoursCanceled value.
+     * Get the number of job execution hours that resulted in canceled jobs.
      *
      * @return the auHoursCanceled value
      */
@@ -177,7 +177,7 @@ public class JobPipelineInformation {
     }
 
     /**
-     * Get the auHoursSucceeded value.
+     * Get the number of job execution hours that resulted in successful jobs.
      *
      * @return the auHoursSucceeded value
      */
@@ -186,7 +186,7 @@ public class JobPipelineInformation {
     }
 
     /**
-     * Get the lastSubmitTime value.
+     * Get the last time a job in this pipeline was submitted.
      *
      * @return the lastSubmitTime value
      */
@@ -195,7 +195,7 @@ public class JobPipelineInformation {
     }
 
     /**
-     * Get the runs value.
+     * Get the list of recurrence identifiers representing each run of this pipeline.
      *
      * @return the runs value
      */
@@ -204,7 +204,7 @@ public class JobPipelineInformation {
     }
 
     /**
-     * Get the recurrences value.
+     * Get the list of recurrence identifiers representing each run of this pipeline.
      *
      * @return the recurrences value
      */

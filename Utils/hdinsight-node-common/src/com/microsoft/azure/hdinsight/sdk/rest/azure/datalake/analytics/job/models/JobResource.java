@@ -30,26 +30,26 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class JobResource {
     /**
-     * the name of the resource.
+     * The name of the resource.
      */
     @JsonProperty(value = "name")
     private String name;
 
     /**
-     * the path to the resource.
+     * The path to the resource.
      */
     @JsonProperty(value = "resourcePath")
     private String resourcePath;
 
     /**
-     * the job resource type. Possible values include: 'VertexResource', 'JobManagerResource', 'StatisticsResource',
+     * The job resource type. Possible values include: 'VertexResource', 'JobManagerResource', 'StatisticsResource',
      * 'VertexResourceInUserFolder', 'JobManagerResourceInUserFolder', 'StatisticsResourceInUserFolder'.
      */
     @JsonProperty(value = "type")
     private JobResourceType type;
 
     /**
-     * Get the name value.
+     * Get the name of the resource.
      *
      * @return the name value
      */
@@ -58,7 +58,7 @@ public class JobResource {
     }
 
     /**
-     * Set the name value.
+     * Set the name of the resource.
      *
      * @param name the name value to set
      * @return the JobResource object itself.
@@ -69,7 +69,7 @@ public class JobResource {
     }
 
     /**
-     * Get the resourcePath value.
+     * Get the path to the resource.
      *
      * @return the resourcePath value
      */
@@ -78,7 +78,7 @@ public class JobResource {
     }
 
     /**
-     * Set the resourcePath value.
+     * Set the path to the resource.
      *
      * @param resourcePath the resourcePath value to set
      * @return the JobResource object itself.
@@ -89,7 +89,7 @@ public class JobResource {
     }
 
     /**
-     * Get the type value.
+     * Get the job resource type. Possible values include: 'VertexResource', 'JobManagerResource', 'StatisticsResource', 'VertexResourceInUserFolder', 'JobManagerResourceInUserFolder', 'StatisticsResourceInUserFolder'.
      *
      * @return the type value
      */
@@ -98,7 +98,7 @@ public class JobResource {
     }
 
     /**
-     * Set the type value.
+     * Set the job resource type. Possible values include: 'VertexResource', 'JobManagerResource', 'StatisticsResource', 'VertexResourceInUserFolder', 'JobManagerResourceInUserFolder', 'StatisticsResourceInUserFolder'.
      *
      * @param type the type value to set
      * @return the JobResource object itself.

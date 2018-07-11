@@ -31,44 +31,44 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class JobRelationshipProperties {
     /**
-     * the job relationship pipeline identifier (a GUID).
+     * The job relationship pipeline identifier (a GUID).
      */
     @JsonProperty(value = "pipelineId")
     private UUID pipelineId;
 
     /**
-     * the friendly name of the job relationship pipeline, which does not need to be unique.
+     * The friendly name of the job relationship pipeline, which does not need to be unique.
      */
     @JsonProperty(value = "pipelineName")
     private String pipelineName;
 
     /**
-     * the pipeline uri, unique, links to the originating service for this pipeline.
+     * The pipeline uri, unique, links to the originating service for this pipeline.
      */
     @JsonProperty(value = "pipelineUri")
     private String pipelineUri;
 
     /**
-     * the run identifier (a GUID), unique identifier of the iteration of this pipeline.
+     * The run identifier (a GUID), unique identifier of the iteration of this pipeline.
      */
     @JsonProperty(value = "runId")
     private UUID runId;
 
     /**
-     * the recurrence identifier (a GUID), unique per activity/script, regardless of iterations. This is something to
+     * The recurrence identifier (a GUID), unique per activity/script, regardless of iterations. This is something to
      * link different occurrences of the same job together.
      */
     @JsonProperty(value = "recurrenceId", required = true)
     private UUID recurrenceId;
 
     /**
-     * the recurrence name, user friendly name for the correlation between jobs.
+     * The recurrence name, user friendly name for the correlation between jobs.
      */
     @JsonProperty(value = "recurrenceName")
     private String recurrenceName;
 
     /**
-     * Get the pipelineId value.
+     * Get the job relationship pipeline identifier (a GUID).
      *
      * @return the pipelineId value
      */
@@ -77,7 +77,7 @@ public class JobRelationshipProperties {
     }
 
     /**
-     * Set the pipelineId value.
+     * Set the job relationship pipeline identifier (a GUID).
      *
      * @param pipelineId the pipelineId value to set
      * @return the JobRelationshipProperties object itself.
@@ -88,7 +88,7 @@ public class JobRelationshipProperties {
     }
 
     /**
-     * Get the pipelineName value.
+     * Get the friendly name of the job relationship pipeline, which does not need to be unique.
      *
      * @return the pipelineName value
      */
@@ -97,7 +97,7 @@ public class JobRelationshipProperties {
     }
 
     /**
-     * Set the pipelineName value.
+     * Set the friendly name of the job relationship pipeline, which does not need to be unique.
      *
      * @param pipelineName the pipelineName value to set
      * @return the JobRelationshipProperties object itself.
@@ -108,7 +108,7 @@ public class JobRelationshipProperties {
     }
 
     /**
-     * Get the pipelineUri value.
+     * Get the pipeline uri, unique, links to the originating service for this pipeline.
      *
      * @return the pipelineUri value
      */
@@ -117,7 +117,7 @@ public class JobRelationshipProperties {
     }
 
     /**
-     * Set the pipelineUri value.
+     * Set the pipeline uri, unique, links to the originating service for this pipeline.
      *
      * @param pipelineUri the pipelineUri value to set
      * @return the JobRelationshipProperties object itself.
@@ -128,7 +128,7 @@ public class JobRelationshipProperties {
     }
 
     /**
-     * Get the runId value.
+     * Get the run identifier (a GUID), unique identifier of the iteration of this pipeline.
      *
      * @return the runId value
      */
@@ -137,7 +137,7 @@ public class JobRelationshipProperties {
     }
 
     /**
-     * Set the runId value.
+     * Set the run identifier (a GUID), unique identifier of the iteration of this pipeline.
      *
      * @param runId the runId value to set
      * @return the JobRelationshipProperties object itself.
@@ -148,7 +148,7 @@ public class JobRelationshipProperties {
     }
 
     /**
-     * Get the recurrenceId value.
+     * Get the recurrence identifier (a GUID), unique per activity/script, regardless of iterations. This is something to link different occurrences of the same job together.
      *
      * @return the recurrenceId value
      */
@@ -157,7 +157,7 @@ public class JobRelationshipProperties {
     }
 
     /**
-     * Set the recurrenceId value.
+     * Set the recurrence identifier (a GUID), unique per activity/script, regardless of iterations. This is something to link different occurrences of the same job together.
      *
      * @param recurrenceId the recurrenceId value to set
      * @return the JobRelationshipProperties object itself.
@@ -168,7 +168,7 @@ public class JobRelationshipProperties {
     }
 
     /**
-     * Get the recurrenceName value.
+     * Get the recurrence name, user friendly name for the correlation between jobs.
      *
      * @return the recurrenceName value
      */
@@ -177,7 +177,7 @@ public class JobRelationshipProperties {
     }
 
     /**
-     * Set the recurrenceName value.
+     * Set the recurrence name, user friendly name for the correlation between jobs.
      *
      * @param recurrenceName the recurrenceName value to set
      * @return the JobRelationshipProperties object itself.

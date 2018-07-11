@@ -23,49 +23,37 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Defines values for JobType.
+ * The parameters used to submit a new Data Lake Analytics Scope job. (Only for use internally with Scope job type.).
  */
-public enum JobType {
-    /** Enum value USql. */
-    USQL("USql"),
+public class CreateScopeJobParameters extends CreateJobParameters {
+    /**
+     * The key-value pairs used to add additional metadata to the job information.
+     */
+    @JsonProperty(value = "tags")
+    private Map<String, String> tags;
 
-    /** Enum value Hive. */
-    HIVE("Hive"),
-
-    /** Enum value Scope. */
-    SCOPE("Scope");
-
-    /** The actual serialized value for a JobType instance. */
-    private String value;
-
-    JobType(String value) {
-        this.value = value;
+    /**
+     * Get the key-value pairs used to add additional metadata to the job information.
+     *
+     * @return the tags value
+     */
+    public Map<String, String> tags() {
+        return this.tags;
     }
 
     /**
-     * Parses a serialized value to a JobType instance.
+     * Set the key-value pairs used to add additional metadata to the job information.
      *
-     * @param value the serialized value to parse.
-     * @return the parsed JobType object, or null if unable to parse.
+     * @param tags the tags value to set
+     * @return the CreateScopeJobParameters object itself.
      */
-    @JsonCreator
-    public static JobType fromString(String value) {
-        JobType[] items = JobType.values();
-        for (JobType item : items) {
-            if (item.toString().equalsIgnoreCase(value)) {
-                return item;
-            }
-        }
-        return null;
+    public CreateScopeJobParameters withTags(Map<String, String> tags) {
+        this.tags = tags;
+        return this;
     }
 
-    @JsonValue
-    @Override
-    public String toString() {
-        return this.value;
-    }
 }

@@ -23,71 +23,55 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
-import org.joda.time.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * The Data Lake Analytics job state audit records for tracking the lifecycle of a job.
+ * The statistics information for resource usage.
  */
-public class JobStateAuditRecord {
+public class ResourceUsageStatistics {
     /**
-     * The new state the job is in.
+     * The average value.
      */
-    @JsonProperty(value = "newState", access = JsonProperty.Access.WRITE_ONLY)
-    private String newState;
+    @JsonProperty(value = "average", access = JsonProperty.Access.WRITE_ONLY)
+    private Double average;
 
     /**
-     * The time stamp that the state change took place.
+     * The minimum value.
      */
-    @JsonProperty(value = "timeStamp", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime timeStamp;
+    @JsonProperty(value = "minimum", access = JsonProperty.Access.WRITE_ONLY)
+    private Long minimum;
 
     /**
-     * The user who requests the change.
+     * The maximum value.
      */
-    @JsonProperty(value = "requestedByUser", access = JsonProperty.Access.WRITE_ONLY)
-    private String requestedByUser;
+    @JsonProperty(value = "maximum", access = JsonProperty.Access.WRITE_ONLY)
+    private Long maximum;
 
     /**
-     * The details of the audit log.
-     */
-    @JsonProperty(value = "details", access = JsonProperty.Access.WRITE_ONLY)
-    private String details;
-
-    /**
-     * Get the new state the job is in.
+     * Get the average value.
      *
-     * @return the newState value
+     * @return the average value
      */
-    public String newState() {
-        return this.newState;
+    public Double average() {
+        return this.average;
     }
 
     /**
-     * Get the time stamp that the state change took place.
+     * Get the minimum value.
      *
-     * @return the timeStamp value
+     * @return the minimum value
      */
-    public DateTime timeStamp() {
-        return this.timeStamp;
+    public Long minimum() {
+        return this.minimum;
     }
 
     /**
-     * Get the user who requests the change.
+     * Get the maximum value.
      *
-     * @return the requestedByUser value
+     * @return the maximum value
      */
-    public String requestedByUser() {
-        return this.requestedByUser;
-    }
-
-    /**
-     * Get the details of the audit log.
-     *
-     * @return the details value
-     */
-    public String details() {
-        return this.details;
+    public Long maximum() {
+        return this.maximum;
     }
 
 }

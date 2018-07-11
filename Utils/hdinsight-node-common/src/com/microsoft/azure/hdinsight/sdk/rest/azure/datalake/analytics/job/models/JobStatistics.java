@@ -32,25 +32,25 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class JobStatistics {
     /**
-     * the last update time for the statistics.
+     * The last update time for the statistics.
      */
     @JsonProperty(value = "lastUpdateTimeUtc", access = JsonProperty.Access.WRITE_ONLY)
     private DateTime lastUpdateTimeUtc;
 
     /**
-     * the job finalizing start time.
+     * The job finalizing start time.
      */
     @JsonProperty(value = "finalizingTimeUtc", access = JsonProperty.Access.WRITE_ONLY)
     private DateTime finalizingTimeUtc;
 
     /**
-     * the list of stages for the job.
+     * The list of stages for the job.
      */
     @JsonProperty(value = "stages", access = JsonProperty.Access.WRITE_ONLY)
     private List<JobStatisticsVertexStage> stages;
 
     /**
-     * Get the lastUpdateTimeUtc value.
+     * Get the last update time for the statistics.
      *
      * @return the lastUpdateTimeUtc value
      */
@@ -59,7 +59,7 @@ public class JobStatistics {
     }
 
     /**
-     * Get the finalizingTimeUtc value.
+     * Get the job finalizing start time.
      *
      * @return the finalizingTimeUtc value
      */
@@ -68,7 +68,7 @@ public class JobStatistics {
     }
 
     /**
-     * Get the stages value.
+     * Get the list of stages for the job.
      *
      * @return the stages value
      */

@@ -23,71 +23,62 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
-import org.joda.time.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * The Data Lake Analytics job state audit records for tracking the lifecycle of a job.
+ * The Scope job resources. (Only for use internally with Scope job type.).
  */
-public class JobStateAuditRecord {
+public class ScopeJobResource {
     /**
-     * The new state the job is in.
+     * The name of the resource.
      */
-    @JsonProperty(value = "newState", access = JsonProperty.Access.WRITE_ONLY)
-    private String newState;
+    @JsonProperty(value = "name")
+    private String name;
 
     /**
-     * The time stamp that the state change took place.
+     * The path to the resource.
      */
-    @JsonProperty(value = "timeStamp", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime timeStamp;
+    @JsonProperty(value = "path")
+    private String path;
 
     /**
-     * The user who requests the change.
-     */
-    @JsonProperty(value = "requestedByUser", access = JsonProperty.Access.WRITE_ONLY)
-    private String requestedByUser;
-
-    /**
-     * The details of the audit log.
-     */
-    @JsonProperty(value = "details", access = JsonProperty.Access.WRITE_ONLY)
-    private String details;
-
-    /**
-     * Get the new state the job is in.
+     * Get the name of the resource.
      *
-     * @return the newState value
+     * @return the name value
      */
-    public String newState() {
-        return this.newState;
+    public String name() {
+        return this.name;
     }
 
     /**
-     * Get the time stamp that the state change took place.
+     * Set the name of the resource.
      *
-     * @return the timeStamp value
+     * @param name the name value to set
+     * @return the ScopeJobResource object itself.
      */
-    public DateTime timeStamp() {
-        return this.timeStamp;
+    public ScopeJobResource withName(String name) {
+        this.name = name;
+        return this;
     }
 
     /**
-     * Get the user who requests the change.
+     * Get the path to the resource.
      *
-     * @return the requestedByUser value
+     * @return the path value
      */
-    public String requestedByUser() {
-        return this.requestedByUser;
+    public String path() {
+        return this.path;
     }
 
     /**
-     * Get the details of the audit log.
+     * Set the path to the resource.
      *
-     * @return the details value
+     * @param path the path value to set
+     * @return the ScopeJobResource object itself.
      */
-    public String details() {
-        return this.details;
+    public ScopeJobResource withPath(String path) {
+        this.path = path;
+        return this;
     }
 
 }

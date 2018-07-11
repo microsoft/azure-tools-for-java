@@ -24,7 +24,9 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
 import java.util.UUID;
+import org.joda.time.DateTime;
 import java.util.List;
+import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -32,63 +34,64 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class JobInformationBasic {
     /**
-     * the job's unique identifier (a GUID).
+     * The job's unique identifier (a GUID).
      */
     @JsonProperty(value = "jobId", access = JsonProperty.Access.WRITE_ONLY)
     private UUID jobId;
 
     /**
-     * the friendly name of the job.
+     * The friendly name of the job.
      */
     @JsonProperty(value = "name", required = true)
     private String name;
 
     /**
-     * the job type of the current job (Hive or USql). Possible values include: 'USql', 'Hive'.
+     * The job type of the current job (Hive, USql, or Scope (for internal use only)). Possible values include: 'USql',
+     * 'Hive', 'Scope'.
      */
     @JsonProperty(value = "type", required = true)
     private JobType type;
 
     /**
-     * the user or account that submitted the job.
+     * The user or account that submitted the job.
      */
     @JsonProperty(value = "submitter", access = JsonProperty.Access.WRITE_ONLY)
     private String submitter;
 
     /**
-     * the degree of parallelism used for this job. This must be greater than 0, if set to less than 0 it will default
+     * The degree of parallelism used for this job. This must be greater than 0, if set to less than 0 it will default
      * to 1.
      */
     @JsonProperty(value = "degreeOfParallelism")
     private Integer degreeOfParallelism;
 
     /**
-     * the priority value for the current job. Lower numbers have a higher priority. By default, a job has a priority
+     * The priority value for the current job. Lower numbers have a higher priority. By default, a job has a priority
      * of 1000. This must be greater than 0.
      */
     @JsonProperty(value = "priority")
     private Integer priority;
 
     /**
-     * the time the job was submitted to the service.
+     * The time the job was submitted to the service.
      */
     @JsonProperty(value = "submitTime", access = JsonProperty.Access.WRITE_ONLY)
-    private String submitTime;
+    private DateTime submitTime;
 
     /**
-     * the start time of the job.
+     * The start time of the job.
      */
     @JsonProperty(value = "startTime", access = JsonProperty.Access.WRITE_ONLY)
-    private String startTime;
+    private DateTime startTime;
 
     /**
-     * the completion time of the job.
+     * The completion time of the job.
      */
     @JsonProperty(value = "endTime", access = JsonProperty.Access.WRITE_ONLY)
-    private String endTime;
+    private DateTime endTime;
 
     /**
-     * the job state. When the job is in the Ended state, refer to Result and ErrorMessage for details. Possible values
+     * The job state. When the job is in the Ended state, refer to Result and ErrorMessage for details. Possible values
      * include: 'Accepted', 'Compiling', 'Ended', 'New', 'Queued', 'Running', 'Scheduling', 'Starting', 'Paused',
      * 'WaitingForCapacity'.
      */
@@ -96,34 +99,41 @@ public class JobInformationBasic {
     private JobState state;
 
     /**
-     * the result of job execution or the current result of the running job. Possible values include: 'None',
+     * The result of job execution or the current result of the running job. Possible values include: 'None',
      * 'Succeeded', 'Cancelled', 'Failed'.
      */
     @JsonProperty(value = "result", access = JsonProperty.Access.WRITE_ONLY)
     private JobResult result;
 
     /**
-     * the log folder path to use in the following format:
+     * The log folder path to use in the following format:
      * adl://&lt;accountName&gt;.azuredatalakestore.net/system/jobservice/jobs/Usql/2016/03/13/17/18/5fe51957-93bc-4de0-8ddc-c5a4753b068b/logs/.
      */
     @JsonProperty(value = "logFolder", access = JsonProperty.Access.WRITE_ONLY)
     private String logFolder;
 
     /**
-     * the list of log file name patterns to find in the logFolder. '*' is the only matching character allowed. Example
+     * The list of log file name patterns to find in the logFolder. '*' is the only matching character allowed. Example
      * format: jobExecution*.log or *mylog*.txt.
      */
     @JsonProperty(value = "logFilePatterns")
     private List<String> logFilePatterns;
 
     /**
-     * the recurring job relationship information properties.
+     * The recurring job relationship information properties.
      */
     @JsonProperty(value = "related")
     private JobRelationshipProperties related;
 
     /**
-     * Get the jobId value.
+     * The key-value pairs used to add additional metadata to the job information. (Only for use internally with Scope
+     * job type.).
+     */
+    @JsonProperty(value = "tags")
+    private Map<String, String> tags;
+
+    /**
+     * Get the job's unique identifier (a GUID).
      *
      * @return the jobId value
      */
@@ -132,7 +142,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Get the name value.
+     * Get the friendly name of the job.
      *
      * @return the name value
      */
@@ -141,7 +151,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Set the name value.
+     * Set the friendly name of the job.
      *
      * @param name the name value to set
      * @return the JobInformationBasic object itself.
@@ -152,7 +162,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Get the type value.
+     * Get the job type of the current job (Hive, USql, or Scope (for internal use only)). Possible values include: 'USql', 'Hive', 'Scope'.
      *
      * @return the type value
      */
@@ -161,7 +171,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Set the type value.
+     * Set the job type of the current job (Hive, USql, or Scope (for internal use only)). Possible values include: 'USql', 'Hive', 'Scope'.
      *
      * @param type the type value to set
      * @return the JobInformationBasic object itself.
@@ -172,7 +182,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Get the submitter value.
+     * Get the user or account that submitted the job.
      *
      * @return the submitter value
      */
@@ -181,7 +191,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Get the degreeOfParallelism value.
+     * Get the degree of parallelism used for this job. This must be greater than 0, if set to less than 0 it will default to 1.
      *
      * @return the degreeOfParallelism value
      */
@@ -190,7 +200,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Set the degreeOfParallelism value.
+     * Set the degree of parallelism used for this job. This must be greater than 0, if set to less than 0 it will default to 1.
      *
      * @param degreeOfParallelism the degreeOfParallelism value to set
      * @return the JobInformationBasic object itself.
@@ -201,7 +211,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Get the priority value.
+     * Get the priority value for the current job. Lower numbers have a higher priority. By default, a job has a priority of 1000. This must be greater than 0.
      *
      * @return the priority value
      */
@@ -210,7 +220,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Set the priority value.
+     * Set the priority value for the current job. Lower numbers have a higher priority. By default, a job has a priority of 1000. This must be greater than 0.
      *
      * @param priority the priority value to set
      * @return the JobInformationBasic object itself.
@@ -221,34 +231,34 @@ public class JobInformationBasic {
     }
 
     /**
-     * Get the submitTime value.
+     * Get the time the job was submitted to the service.
      *
      * @return the submitTime value
      */
-    public String submitTime() {
+    public DateTime submitTime() {
         return this.submitTime;
     }
 
     /**
-     * Get the startTime value.
+     * Get the start time of the job.
      *
      * @return the startTime value
      */
-    public String startTime() {
+    public DateTime startTime() {
         return this.startTime;
     }
 
     /**
-     * Get the endTime value.
+     * Get the completion time of the job.
      *
      * @return the endTime value
      */
-    public String endTime() {
+    public DateTime endTime() {
         return this.endTime;
     }
 
     /**
-     * Get the state value.
+     * Get the job state. When the job is in the Ended state, refer to Result and ErrorMessage for details. Possible values include: 'Accepted', 'Compiling', 'Ended', 'New', 'Queued', 'Running', 'Scheduling', 'Starting', 'Paused', 'WaitingForCapacity'.
      *
      * @return the state value
      */
@@ -257,7 +267,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Get the result value.
+     * Get the result of job execution or the current result of the running job. Possible values include: 'None', 'Succeeded', 'Cancelled', 'Failed'.
      *
      * @return the result value
      */
@@ -266,7 +276,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Get the logFolder value.
+     * Get the log folder path to use in the following format: adl://&lt;accountName&gt;.azuredatalakestore.net/system/jobservice/jobs/Usql/2016/03/13/17/18/5fe51957-93bc-4de0-8ddc-c5a4753b068b/logs/.
      *
      * @return the logFolder value
      */
@@ -275,7 +285,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Get the logFilePatterns value.
+     * Get the list of log file name patterns to find in the logFolder. '*' is the only matching character allowed. Example format: jobExecution*.log or *mylog*.txt.
      *
      * @return the logFilePatterns value
      */
@@ -284,7 +294,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Set the logFilePatterns value.
+     * Set the list of log file name patterns to find in the logFolder. '*' is the only matching character allowed. Example format: jobExecution*.log or *mylog*.txt.
      *
      * @param logFilePatterns the logFilePatterns value to set
      * @return the JobInformationBasic object itself.
@@ -295,7 +305,7 @@ public class JobInformationBasic {
     }
 
     /**
-     * Get the related value.
+     * Get the recurring job relationship information properties.
      *
      * @return the related value
      */
@@ -304,13 +314,33 @@ public class JobInformationBasic {
     }
 
     /**
-     * Set the related value.
+     * Set the recurring job relationship information properties.
      *
      * @param related the related value to set
      * @return the JobInformationBasic object itself.
      */
     public JobInformationBasic withRelated(JobRelationshipProperties related) {
         this.related = related;
+        return this;
+    }
+
+    /**
+     * Get the key-value pairs used to add additional metadata to the job information. (Only for use internally with Scope job type.).
+     *
+     * @return the tags value
+     */
+    public Map<String, String> tags() {
+        return this.tags;
+    }
+
+    /**
+     * Set the key-value pairs used to add additional metadata to the job information. (Only for use internally with Scope job type.).
+     *
+     * @param tags the tags value to set
+     * @return the JobInformationBasic object itself.
+     */
+    public JobInformationBasic withTags(Map<String, String> tags) {
+        this.tags = tags;
         return this;
     }
 
