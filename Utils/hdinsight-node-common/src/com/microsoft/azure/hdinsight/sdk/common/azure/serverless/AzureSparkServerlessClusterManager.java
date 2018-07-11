@@ -30,7 +30,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureManagementHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.ODataParam;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.api.GetAccountsListResponse;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.api.GetAccountsListResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccountBasic;
