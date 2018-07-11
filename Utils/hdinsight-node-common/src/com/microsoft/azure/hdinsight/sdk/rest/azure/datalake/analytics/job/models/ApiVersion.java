@@ -24,5 +24,5 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
 public class ApiVersion {
-    public static final String VERSION = "2016-11-01";
+    public static final String VERSION = "2017-09-01-preview";
 }

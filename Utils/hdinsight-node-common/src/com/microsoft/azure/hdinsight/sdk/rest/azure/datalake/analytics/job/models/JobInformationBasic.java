@@ -24,7 +24,6 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
 import java.util.UUID;
-import org.joda.time.DateTime;
 import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -76,19 +75,19 @@ public class JobInformationBasic {
      * The time the job was submitted to the service.
      */
     @JsonProperty(value = "submitTime", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime submitTime;
+    private String submitTime;
 
     /**
      * The start time of the job.
      */
     @JsonProperty(value = "startTime", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime startTime;
+    private String startTime;
 
     /**
      * The completion time of the job.
      */
     @JsonProperty(value = "endTime", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime endTime;
+    private String endTime;
 
     /**
      * The job state. When the job is in the Ended state, refer to Result and ErrorMessage for details. Possible values
@@ -235,7 +234,7 @@ public class JobInformationBasic {
      *
      * @return the submitTime value
      */
-    public DateTime submitTime() {
+    public String submitTime() {
         return this.submitTime;
     }
 
@@ -244,7 +243,7 @@ public class JobInformationBasic {
      *
      * @return the startTime value
      */
-    public DateTime startTime() {
+    public String startTime() {
         return this.startTime;
     }
 
@@ -253,7 +252,7 @@ public class JobInformationBasic {
      *
      * @return the endTime value
      */
-    public DateTime endTime() {
+    public String endTime() {
         return this.endTime;
     }
 

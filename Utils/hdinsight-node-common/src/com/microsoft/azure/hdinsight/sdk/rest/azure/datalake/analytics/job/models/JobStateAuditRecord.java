@@ -23,7 +23,6 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
-import org.joda.time.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -40,7 +39,7 @@ public class JobStateAuditRecord {
      * The time stamp that the state change took place.
      */
     @JsonProperty(value = "timeStamp", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime timeStamp;
+    private String timeStamp;
 
     /**
      * The user who requests the change.
@@ -68,7 +67,7 @@ public class JobStateAuditRecord {
      *
      * @return the timeStamp value
      */
-    public DateTime timeStamp() {
+    public String timeStamp() {
         return this.timeStamp;
     }
 
