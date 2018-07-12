@@ -24,7 +24,6 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
 import java.util.UUID;
-import org.joda.time.Period;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -47,7 +46,7 @@ public class JobStatisticsVertex {
      * The amount of execution time of the vertex.
      */
     @JsonProperty(value = "executionTime", access = JsonProperty.Access.WRITE_ONLY)
-    private Period executionTime;
+    private String executionTime;
 
     /**
      * The amount of data read of the vertex, in bytes.
@@ -84,7 +83,7 @@ public class JobStatisticsVertex {
      *
      * @return the executionTime value
      */
-    public Period executionTime() {
+    public String executionTime() {
         return this.executionTime;
     }
 

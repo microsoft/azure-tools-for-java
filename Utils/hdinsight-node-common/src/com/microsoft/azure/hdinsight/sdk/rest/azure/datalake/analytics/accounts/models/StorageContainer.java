@@ -22,7 +22,6 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models;
 
-import org.joda.time.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.rest.serializer.JsonFlatten;
 import com.microsoft.azure.SubResource;
@@ -36,7 +35,7 @@ public class StorageContainer extends SubResource {
      * The last modified time of the blob container.
      */
     @JsonProperty(value = "properties.lastModifiedTime", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime lastModifiedTime;
+    private String lastModifiedTime;
 
     /**
      * The resource name.
@@ -55,7 +54,7 @@ public class StorageContainer extends SubResource {
      *
      * @return the lastModifiedTime value
      */
-    public DateTime lastModifiedTime() {
+    public String lastModifiedTime() {
         return this.lastModifiedTime;
     }
 

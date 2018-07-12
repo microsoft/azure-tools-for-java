@@ -24,7 +24,6 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
 import java.util.List;
-import org.joda.time.Period;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -69,25 +68,25 @@ public class USqlJobProperties extends JobProperties {
      * The total time this job spent compiling. This value should not be set by the user and will be ignored if it is.
      */
     @JsonProperty(value = "totalCompilationTime", access = JsonProperty.Access.WRITE_ONLY)
-    private Period totalCompilationTime;
+    private String totalCompilationTime;
 
     /**
      * The total time this job spent queued. This value should not be set by the user and will be ignored if it is.
      */
     @JsonProperty(value = "totalQueuedTime", access = JsonProperty.Access.WRITE_ONLY)
-    private Period totalQueuedTime;
+    private String totalQueuedTime;
 
     /**
      * The total time this job spent executing. This value should not be set by the user and will be ignored if it is.
      */
     @JsonProperty(value = "totalRunningTime", access = JsonProperty.Access.WRITE_ONLY)
-    private Period totalRunningTime;
+    private String totalRunningTime;
 
     /**
      * The total time this job spent paused. This value should not be set by the user and will be ignored if it is.
      */
     @JsonProperty(value = "totalPausedTime", access = JsonProperty.Access.WRITE_ONLY)
-    private Period totalPausedTime;
+    private String totalPausedTime;
 
     /**
      * The ID used to identify the job manager coordinating job execution. This value should not be set by the user and
@@ -189,7 +188,7 @@ public class USqlJobProperties extends JobProperties {
      *
      * @return the totalCompilationTime value
      */
-    public Period totalCompilationTime() {
+    public String totalCompilationTime() {
         return this.totalCompilationTime;
     }
 
@@ -198,7 +197,7 @@ public class USqlJobProperties extends JobProperties {
      *
      * @return the totalQueuedTime value
      */
-    public Period totalQueuedTime() {
+    public String totalQueuedTime() {
         return this.totalQueuedTime;
     }
 
@@ -207,7 +206,7 @@ public class USqlJobProperties extends JobProperties {
      *
      * @return the totalRunningTime value
      */
-    public Period totalRunningTime() {
+    public String totalRunningTime() {
         return this.totalRunningTime;
     }
 
@@ -216,7 +215,7 @@ public class USqlJobProperties extends JobProperties {
      *
      * @return the totalPausedTime value
      */
-    public Period totalPausedTime() {
+    public String totalPausedTime() {
         return this.totalPausedTime;
     }
 

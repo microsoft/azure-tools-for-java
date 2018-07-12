@@ -24,7 +24,6 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
 import java.util.UUID;
-import org.joda.time.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -84,7 +83,7 @@ public class JobRecurrenceInformation {
      * The last time a job in this recurrence was submitted.
      */
     @JsonProperty(value = "lastSubmitTime", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime lastSubmitTime;
+    private String lastSubmitTime;
 
     /**
      * Get the recurrence identifier (a GUID), unique per activity/script, regardless of iterations. This is something to link different occurrences of the same job together.
@@ -163,7 +162,7 @@ public class JobRecurrenceInformation {
      *
      * @return the lastSubmitTime value
      */
-    public DateTime lastSubmitTime() {
+    public String lastSubmitTime() {
         return this.lastSubmitTime;
     }
 

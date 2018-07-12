@@ -24,7 +24,6 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
 import java.util.UUID;
-import org.joda.time.DateTime;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -90,7 +89,7 @@ public class JobPipelineInformation {
      * The last time a job in this pipeline was submitted.
      */
     @JsonProperty(value = "lastSubmitTime", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime lastSubmitTime;
+    private String lastSubmitTime;
 
     /**
      * The list of recurrence identifiers representing each run of this pipeline.
@@ -190,7 +189,7 @@ public class JobPipelineInformation {
      *
      * @return the lastSubmitTime value
      */
-    public DateTime lastSubmitTime() {
+    public String lastSubmitTime() {
         return this.lastSubmitTime;
     }
 

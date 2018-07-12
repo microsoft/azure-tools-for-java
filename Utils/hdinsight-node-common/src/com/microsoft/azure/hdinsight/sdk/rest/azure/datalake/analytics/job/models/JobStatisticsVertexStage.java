@@ -23,7 +23,6 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
-import org.joda.time.Period;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -136,7 +135,7 @@ public class JobStatisticsVertexStage {
      * The amount of time that failed vertices took up in this stage.
      */
     @JsonProperty(value = "totalFailedTime", access = JsonProperty.Access.WRITE_ONLY)
-    private Period totalFailedTime;
+    private String totalFailedTime;
 
     /**
      * The current progress of this stage, as a percentage.
@@ -148,7 +147,7 @@ public class JobStatisticsVertexStage {
      * The amount of time all successful vertices took in this stage.
      */
     @JsonProperty(value = "totalSucceededTime", access = JsonProperty.Access.WRITE_ONLY)
-    private Period totalSucceededTime;
+    private String totalSucceededTime;
 
     /**
      * The sum of the peak memory usage of all the vertices in the stage, in bytes.
@@ -160,7 +159,7 @@ public class JobStatisticsVertexStage {
      * The sum of the total execution time of all the vertices in the stage.
      */
     @JsonProperty(value = "totalExecutionTime", access = JsonProperty.Access.WRITE_ONLY)
-    private Period totalExecutionTime;
+    private String totalExecutionTime;
 
     /**
      * the vertex with the maximum amount of data read.
@@ -380,7 +379,7 @@ public class JobStatisticsVertexStage {
      *
      * @return the totalFailedTime value
      */
-    public Period totalFailedTime() {
+    public String totalFailedTime() {
         return this.totalFailedTime;
     }
 
@@ -398,7 +397,7 @@ public class JobStatisticsVertexStage {
      *
      * @return the totalSucceededTime value
      */
-    public Period totalSucceededTime() {
+    public String totalSucceededTime() {
         return this.totalSucceededTime;
     }
 
@@ -416,7 +415,7 @@ public class JobStatisticsVertexStage {
      *
      * @return the totalExecutionTime value
      */
-    public Period totalExecutionTime() {
+    public String totalExecutionTime() {
         return this.totalExecutionTime;
     }
 

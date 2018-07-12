@@ -23,7 +23,6 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
-import org.joda.time.DateTime;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -35,13 +34,13 @@ public class JobStatistics {
      * The last update time for the statistics.
      */
     @JsonProperty(value = "lastUpdateTimeUtc", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime lastUpdateTimeUtc;
+    private String lastUpdateTimeUtc;
 
     /**
      * The job finalizing start time.
      */
     @JsonProperty(value = "finalizingTimeUtc", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime finalizingTimeUtc;
+    private String finalizingTimeUtc;
 
     /**
      * The list of stages for the job.
@@ -54,7 +53,7 @@ public class JobStatistics {
      *
      * @return the lastUpdateTimeUtc value
      */
-    public DateTime lastUpdateTimeUtc() {
+    public String lastUpdateTimeUtc() {
         return this.lastUpdateTimeUtc;
     }
 
@@ -63,7 +62,7 @@ public class JobStatistics {
      *
      * @return the finalizingTimeUtc value
      */
-    public DateTime finalizingTimeUtc() {
+    public String finalizingTimeUtc() {
         return this.finalizingTimeUtc;
     }
 
