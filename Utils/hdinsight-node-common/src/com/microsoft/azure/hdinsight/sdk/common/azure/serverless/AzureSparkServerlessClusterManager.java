@@ -40,6 +40,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import rx.Observable;
@@ -72,7 +73,8 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
     private static final String REST_SEGMENT_ADL_ACCOUNT = "providers/Microsoft.DataLakeAnalytics/accounts";
 
     // FIXME!!!
-    private static final String ACCOUNT_FILTER = CommonSettings.getAdEnvironment().endpoints().getOrDefault("dataLakeSparkAccountFilter", "endswith(name, '-c09')");
+    // the last 4 characters match with pattern: -c**
+    private static final String ACCOUNT_FILTER = CommonSettings.getAdEnvironment().endpoints().getOrDefault("dataLakeSparkAccountFilter", "substring(name, length(name) sub 4, 2) eq '-c'");
 
     @NotNull
     private final HashMap<String, AzureHttpObservable> httpMap = new HashMap<>();
@@ -182,9 +184,15 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
                                         GetAccountsListResponse.class)))
                 // account basic list -> account basic
                 .flatMap(subAccountsObPair -> subAccountsObPair.getRight()
-                                .flatMap(accountsResp -> Observable.from(accountsResp.items()))
-                                .subscribeOn(Schedulers.io())
-                                .map(accountBasic -> Pair.of(subAccountsObPair.getLeft(), accountBasic)))
+                        .flatMap(accountsResp -> Observable.from(accountsResp.items()))
+                        .subscribeOn(Schedulers.io())
+                        // The last two characters of account name should be integers
+                        .filter(accountBasic -> {
+                            String accountName = accountBasic.name();
+                            return accountName.length() > 2 &&
+                                    NumberUtils.isDigits(accountName.substring(accountName.length() - 2));
+                        })
+                        .map(accountBasic -> Pair.of(subAccountsObPair.getLeft(), accountBasic)))
                 .flatMap(subAccountBasicPair -> {
                     // accountBasic.id is the account detail absolute URI path
                     URI accountDetailUri = getResourceManagerEndpoint().resolve(subAccountBasicPair.getRight().id());
