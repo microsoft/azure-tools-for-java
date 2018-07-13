@@ -26,6 +26,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.DocumentAdapter;
 import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.sparkserverless.common.IntegerWithErrorHintedField;
@@ -48,7 +49,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class SparkServerlessProvisionDialog extends DialogWrapper
-        implements SettableControl<SparkServerlessClusterProvisionSettingsModel> {
+        implements SettableControl<SparkServerlessClusterProvisionSettingsModel>, ILogger {
     @NotNull
     private SparkServerlessClusterProvisionCtrlProvider ctrlProvider;
     @NotNull
@@ -89,8 +90,12 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
             masterMemoryField, workerMemoryField, workerNumberOfContainersField);
 
     protected void setClusterNameSets() {
-        clusterNameField.setNotAllowedValues(
-                new HashSet<>(ctrlProvider.getClusterNames().toBlocking().singleOrDefault(new ArrayList<>())));
+        try {
+            clusterNameField.setNotAllowedValues(
+                    new HashSet<>(ctrlProvider.getClusterNames().toBlocking().singleOrDefault(new ArrayList<>())));
+        } catch (Exception ex) {
+            log().warn("Got exceptions when getting cluster names: " + ex);
+        }
     }
 
     public SparkServerlessProvisionDialog(@NotNull SparkServerlessADLAccountNode adlAccountNode,
