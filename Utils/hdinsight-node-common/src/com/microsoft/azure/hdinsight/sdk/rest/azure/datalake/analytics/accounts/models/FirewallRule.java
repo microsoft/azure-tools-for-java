@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.rest.serializer.JsonFlatten;
 import com.microsoft.azure.SubResource;
@@ -30,20 +31,30 @@ import com.microsoft.azure.SubResource;
  * Data Lake Analytics firewall rule information.
  */
 @JsonFlatten
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class FirewallRule extends SubResource {
-    /**
-     * The start IP address for the firewall rule. This can be either ipv4 or
-     * ipv6. Start and End should be in the same protocol.
-     */
-    @JsonProperty(value = "properties.startIpAddress", access = JsonProperty.Access.WRITE_ONLY)
-    private String startIpAddress;
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class Properties {
+        /**
+         * The start IP address for the firewall rule. This can be either ipv4 or
+         * ipv6. Start and End should be in the same protocol.
+         */
+        @JsonProperty(value = "startIpAddress", access = JsonProperty.Access.WRITE_ONLY)
+        private String startIpAddress;
+
+        /**
+         * The end IP address for the firewall rule. This can be either ipv4 or
+         * ipv6. Start and End should be in the same protocol.
+         */
+        @JsonProperty(value = "endIpAddress", access = JsonProperty.Access.WRITE_ONLY)
+        private String endIpAddress;
+    }
 
     /**
-     * The end IP address for the firewall rule. This can be either ipv4 or
-     * ipv6. Start and End should be in the same protocol.
+     * The properties
      */
-    @JsonProperty(value = "properties.endIpAddress", access = JsonProperty.Access.WRITE_ONLY)
-    private String endIpAddress;
+    @JsonProperty(value = "properties")
+    private Properties properties;
 
     /**
      * The resource name.
@@ -63,7 +74,7 @@ public class FirewallRule extends SubResource {
      * @return the startIpAddress value
      */
     public String startIpAddress() {
-        return this.startIpAddress;
+        return this.properties == null ? null : properties.startIpAddress;
     }
 
     /**
@@ -72,7 +83,7 @@ public class FirewallRule extends SubResource {
      * @return the endIpAddress value
      */
     public String endIpAddress() {
-        return this.endIpAddress;
+        return this.properties == null ? null : properties.endIpAddress;
     }
 
     /**

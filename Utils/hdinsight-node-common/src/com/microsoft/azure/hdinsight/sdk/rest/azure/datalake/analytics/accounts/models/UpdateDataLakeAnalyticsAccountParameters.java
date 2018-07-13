@@ -24,6 +24,8 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts
 
 import java.util.Map;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.rest.serializer.JsonFlatten;
 
@@ -32,6 +34,7 @@ import com.microsoft.rest.serializer.JsonFlatten;
  * account.
  */
 @JsonFlatten
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UpdateDataLakeAnalyticsAccountParameters {
     /**
      * The resource tags.
@@ -39,85 +42,94 @@ public class UpdateDataLakeAnalyticsAccountParameters {
     @JsonProperty(value = "tags")
     private Map<String, String> tags;
 
-    /**
-     * The list of Data Lake Store accounts associated with this account.
-     */
-    @JsonProperty(value = "properties.dataLakeStoreAccounts")
-    private List<UpdateDataLakeStoreWithAccountParameters> dataLakeStoreAccounts;
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class Properties {
+        /**
+         * The list of Data Lake Store accounts associated with this account.
+         */
+        @JsonProperty(value = "dataLakeStoreAccounts")
+        private List<UpdateDataLakeStoreWithAccountParameters> dataLakeStoreAccounts;
+
+        /**
+         * The list of Azure Blob storage accounts associated with this account.
+         */
+        @JsonProperty(value = "storageAccounts")
+        private List<UpdateStorageAccountWithAccountParameters> storageAccounts;
+
+        /**
+         * The list of compute policies associated with this account.
+         */
+        @JsonProperty(value = "computePolicies")
+        private List<UpdateComputePolicyWithAccountParameters> computePolicies;
+
+        /**
+         * The list of firewall rules associated with this Data Lake Analytics
+         * account.
+         */
+        @JsonProperty(value = "firewallRules")
+        private List<UpdateFirewallRuleWithAccountParameters> firewallRules;
+
+        /**
+         * The current state of the IP address firewall for this Data Lake
+         * Analytics account. Possible values include: 'Enabled', 'Disabled'.
+         */
+        @JsonProperty(value = "firewallState")
+        private FirewallState firewallState;
+
+        /**
+         * The current state of allowing or disallowing IPs originating within
+         * Azure through the firewall. If the firewall is disabled, this is not
+         * enforced. Possible values include: 'Enabled', 'Disabled'.
+         */
+        @JsonProperty(value = "firewallAllowAzureIps")
+        private FirewallAllowAzureIpsState firewallAllowAzureIps;
+
+        /**
+         * The commitment tier to use for next month. Possible values include:
+         * 'Consumption', 'Commitment_100AUHours', 'Commitment_500AUHours',
+         * 'Commitment_1000AUHours', 'Commitment_5000AUHours',
+         * 'Commitment_10000AUHours', 'Commitment_50000AUHours',
+         * 'Commitment_100000AUHours', 'Commitment_500000AUHours'.
+         */
+        @JsonProperty(value = "newTier")
+        private TierType newTier;
+
+        /**
+         * The maximum supported jobs running under the account at the same time.
+         */
+        @JsonProperty(value = "maxJobCount")
+        private Integer maxJobCount;
+
+        /**
+         * The maximum supported degree of parallelism for this account.
+         */
+        @JsonProperty(value = "maxDegreeOfParallelism")
+        private Integer maxDegreeOfParallelism;
+
+        /**
+         * The maximum supported degree of parallelism per job for this account.
+         */
+        @JsonProperty(value = "maxDegreeOfParallelismPerJob")
+        private Integer maxDegreeOfParallelismPerJob;
+
+        /**
+         * The minimum supported priority per job for this account.
+         */
+        @JsonProperty(value = "minPriorityPerJob")
+        private Integer minPriorityPerJob;
+
+        /**
+         * The number of days that job metadata is retained.
+         */
+        @JsonProperty(value = "queryStoreRetention")
+        private Integer queryStoreRetention;
+    }
 
     /**
-     * The list of Azure Blob storage accounts associated with this account.
+     * The properties
      */
-    @JsonProperty(value = "properties.storageAccounts")
-    private List<UpdateStorageAccountWithAccountParameters> storageAccounts;
-
-    /**
-     * The list of compute policies associated with this account.
-     */
-    @JsonProperty(value = "properties.computePolicies")
-    private List<UpdateComputePolicyWithAccountParameters> computePolicies;
-
-    /**
-     * The list of firewall rules associated with this Data Lake Analytics
-     * account.
-     */
-    @JsonProperty(value = "properties.firewallRules")
-    private List<UpdateFirewallRuleWithAccountParameters> firewallRules;
-
-    /**
-     * The current state of the IP address firewall for this Data Lake
-     * Analytics account. Possible values include: 'Enabled', 'Disabled'.
-     */
-    @JsonProperty(value = "properties.firewallState")
-    private FirewallState firewallState;
-
-    /**
-     * The current state of allowing or disallowing IPs originating within
-     * Azure through the firewall. If the firewall is disabled, this is not
-     * enforced. Possible values include: 'Enabled', 'Disabled'.
-     */
-    @JsonProperty(value = "properties.firewallAllowAzureIps")
-    private FirewallAllowAzureIpsState firewallAllowAzureIps;
-
-    /**
-     * The commitment tier to use for next month. Possible values include:
-     * 'Consumption', 'Commitment_100AUHours', 'Commitment_500AUHours',
-     * 'Commitment_1000AUHours', 'Commitment_5000AUHours',
-     * 'Commitment_10000AUHours', 'Commitment_50000AUHours',
-     * 'Commitment_100000AUHours', 'Commitment_500000AUHours'.
-     */
-    @JsonProperty(value = "properties.newTier")
-    private TierType newTier;
-
-    /**
-     * The maximum supported jobs running under the account at the same time.
-     */
-    @JsonProperty(value = "properties.maxJobCount")
-    private Integer maxJobCount;
-
-    /**
-     * The maximum supported degree of parallelism for this account.
-     */
-    @JsonProperty(value = "properties.maxDegreeOfParallelism")
-    private Integer maxDegreeOfParallelism;
-
-    /**
-     * The maximum supported degree of parallelism per job for this account.
-     */
-    @JsonProperty(value = "properties.maxDegreeOfParallelismPerJob")
-    private Integer maxDegreeOfParallelismPerJob;
-
-    /**
-     * The minimum supported priority per job for this account.
-     */
-    @JsonProperty(value = "properties.minPriorityPerJob")
-    private Integer minPriorityPerJob;
-
-    /**
-     * The number of days that job metadata is retained.
-     */
-    @JsonProperty(value = "properties.queryStoreRetention")
-    private Integer queryStoreRetention;
+    @JsonProperty(value = "properties")
+    private Properties properties;
 
     /**
      * Get the tags value.
@@ -145,7 +157,7 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the dataLakeStoreAccounts value
      */
     public List<UpdateDataLakeStoreWithAccountParameters> dataLakeStoreAccounts() {
-        return this.dataLakeStoreAccounts;
+        return this.properties == null ? null : properties.dataLakeStoreAccounts;
     }
 
     /**
@@ -155,7 +167,11 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the UpdateDataLakeAnalyticsAccountParameters object itself.
      */
     public UpdateDataLakeAnalyticsAccountParameters withDataLakeStoreAccounts(List<UpdateDataLakeStoreWithAccountParameters> dataLakeStoreAccounts) {
-        this.dataLakeStoreAccounts = dataLakeStoreAccounts;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.dataLakeStoreAccounts = dataLakeStoreAccounts;
         return this;
     }
 
@@ -165,7 +181,7 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the storageAccounts value
      */
     public List<UpdateStorageAccountWithAccountParameters> storageAccounts() {
-        return this.storageAccounts;
+        return this.properties == null ? null : properties.storageAccounts;
     }
 
     /**
@@ -175,7 +191,11 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the UpdateDataLakeAnalyticsAccountParameters object itself.
      */
     public UpdateDataLakeAnalyticsAccountParameters withStorageAccounts(List<UpdateStorageAccountWithAccountParameters> storageAccounts) {
-        this.storageAccounts = storageAccounts;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.storageAccounts = storageAccounts;
         return this;
     }
 
@@ -185,7 +205,7 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the computePolicies value
      */
     public List<UpdateComputePolicyWithAccountParameters> computePolicies() {
-        return this.computePolicies;
+        return this.properties == null ? null : properties.computePolicies;
     }
 
     /**
@@ -195,7 +215,11 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the UpdateDataLakeAnalyticsAccountParameters object itself.
      */
     public UpdateDataLakeAnalyticsAccountParameters withComputePolicies(List<UpdateComputePolicyWithAccountParameters> computePolicies) {
-        this.computePolicies = computePolicies;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.computePolicies = computePolicies;
         return this;
     }
 
@@ -205,7 +229,7 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the firewallRules value
      */
     public List<UpdateFirewallRuleWithAccountParameters> firewallRules() {
-        return this.firewallRules;
+        return this.properties == null ? null : properties.firewallRules;
     }
 
     /**
@@ -215,7 +239,11 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the UpdateDataLakeAnalyticsAccountParameters object itself.
      */
     public UpdateDataLakeAnalyticsAccountParameters withFirewallRules(List<UpdateFirewallRuleWithAccountParameters> firewallRules) {
-        this.firewallRules = firewallRules;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.firewallRules = firewallRules;
         return this;
     }
 
@@ -225,7 +253,7 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the firewallState value
      */
     public FirewallState firewallState() {
-        return this.firewallState;
+        return this.properties == null ? null : properties.firewallState;
     }
 
     /**
@@ -235,7 +263,11 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the UpdateDataLakeAnalyticsAccountParameters object itself.
      */
     public UpdateDataLakeAnalyticsAccountParameters withFirewallState(FirewallState firewallState) {
-        this.firewallState = firewallState;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.firewallState = firewallState;
         return this;
     }
 
@@ -245,7 +277,7 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the firewallAllowAzureIps value
      */
     public FirewallAllowAzureIpsState firewallAllowAzureIps() {
-        return this.firewallAllowAzureIps;
+        return this.properties == null ? null : properties.firewallAllowAzureIps;
     }
 
     /**
@@ -255,7 +287,11 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the UpdateDataLakeAnalyticsAccountParameters object itself.
      */
     public UpdateDataLakeAnalyticsAccountParameters withFirewallAllowAzureIps(FirewallAllowAzureIpsState firewallAllowAzureIps) {
-        this.firewallAllowAzureIps = firewallAllowAzureIps;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.firewallAllowAzureIps = firewallAllowAzureIps;
         return this;
     }
 
@@ -265,7 +301,7 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the newTier value
      */
     public TierType newTier() {
-        return this.newTier;
+        return this.properties == null ? null : properties.newTier;
     }
 
     /**
@@ -275,7 +311,11 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the UpdateDataLakeAnalyticsAccountParameters object itself.
      */
     public UpdateDataLakeAnalyticsAccountParameters withNewTier(TierType newTier) {
-        this.newTier = newTier;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.newTier = newTier;
         return this;
     }
 
@@ -285,7 +325,7 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the maxJobCount value
      */
     public Integer maxJobCount() {
-        return this.maxJobCount;
+        return this.properties == null ? null : properties.maxJobCount;
     }
 
     /**
@@ -295,7 +335,11 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the UpdateDataLakeAnalyticsAccountParameters object itself.
      */
     public UpdateDataLakeAnalyticsAccountParameters withMaxJobCount(Integer maxJobCount) {
-        this.maxJobCount = maxJobCount;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.maxJobCount = maxJobCount;
         return this;
     }
 
@@ -305,7 +349,7 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the maxDegreeOfParallelism value
      */
     public Integer maxDegreeOfParallelism() {
-        return this.maxDegreeOfParallelism;
+        return this.properties == null ? null : properties.maxDegreeOfParallelism;
     }
 
     /**
@@ -315,7 +359,11 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the UpdateDataLakeAnalyticsAccountParameters object itself.
      */
     public UpdateDataLakeAnalyticsAccountParameters withMaxDegreeOfParallelism(Integer maxDegreeOfParallelism) {
-        this.maxDegreeOfParallelism = maxDegreeOfParallelism;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.maxDegreeOfParallelism = maxDegreeOfParallelism;
         return this;
     }
 
@@ -325,7 +373,7 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the maxDegreeOfParallelismPerJob value
      */
     public Integer maxDegreeOfParallelismPerJob() {
-        return this.maxDegreeOfParallelismPerJob;
+        return this.properties == null ? null : properties.maxDegreeOfParallelismPerJob;
     }
 
     /**
@@ -335,7 +383,11 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the UpdateDataLakeAnalyticsAccountParameters object itself.
      */
     public UpdateDataLakeAnalyticsAccountParameters withMaxDegreeOfParallelismPerJob(Integer maxDegreeOfParallelismPerJob) {
-        this.maxDegreeOfParallelismPerJob = maxDegreeOfParallelismPerJob;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.maxDegreeOfParallelismPerJob = maxDegreeOfParallelismPerJob;
         return this;
     }
 
@@ -345,7 +397,7 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the minPriorityPerJob value
      */
     public Integer minPriorityPerJob() {
-        return this.minPriorityPerJob;
+        return this.properties == null ? null : properties.minPriorityPerJob;
     }
 
     /**
@@ -355,7 +407,11 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the UpdateDataLakeAnalyticsAccountParameters object itself.
      */
     public UpdateDataLakeAnalyticsAccountParameters withMinPriorityPerJob(Integer minPriorityPerJob) {
-        this.minPriorityPerJob = minPriorityPerJob;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.minPriorityPerJob = minPriorityPerJob;
         return this;
     }
 
@@ -365,7 +421,7 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the queryStoreRetention value
      */
     public Integer queryStoreRetention() {
-        return this.queryStoreRetention;
+        return this.properties == null ? null : properties.queryStoreRetention;
     }
 
     /**
@@ -375,7 +431,11 @@ public class UpdateDataLakeAnalyticsAccountParameters {
      * @return the UpdateDataLakeAnalyticsAccountParameters object itself.
      */
     public UpdateDataLakeAnalyticsAccountParameters withQueryStoreRetention(Integer queryStoreRetention) {
-        this.queryStoreRetention = queryStoreRetention;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.queryStoreRetention = queryStoreRetention;
         return this;
     }
 

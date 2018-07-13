@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.rest.serializer.JsonFlatten;
 
@@ -29,19 +30,29 @@ import com.microsoft.rest.serializer.JsonFlatten;
  * The parameters used to update an Azure Storage account.
  */
 @JsonFlatten
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UpdateStorageAccountParameters {
-    /**
-     * The updated access key associated with this Azure Storage account that
-     * will be used to connect to it.
-     */
-    @JsonProperty(value = "properties.accessKey")
-    private String accessKey;
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class Properties {
+        /**
+         * The updated access key associated with this Azure Storage account that
+         * will be used to connect to it.
+         */
+        @JsonProperty(value = "accessKey")
+        private String accessKey;
+
+        /**
+         * The optional suffix for the storage account.
+         */
+        @JsonProperty(value = "suffix")
+        private String suffix;
+    }
 
     /**
-     * The optional suffix for the storage account.
+     * The properties
      */
-    @JsonProperty(value = "properties.suffix")
-    private String suffix;
+    @JsonProperty(value = "properties")
+    private Properties properties;
 
     /**
      * Get the accessKey value.
@@ -49,7 +60,7 @@ public class UpdateStorageAccountParameters {
      * @return the accessKey value
      */
     public String accessKey() {
-        return this.accessKey;
+        return this.properties == null ? null : properties.accessKey;
     }
 
     /**
@@ -59,7 +70,11 @@ public class UpdateStorageAccountParameters {
      * @return the UpdateStorageAccountParameters object itself.
      */
     public UpdateStorageAccountParameters withAccessKey(String accessKey) {
-        this.accessKey = accessKey;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.accessKey = accessKey;
         return this;
     }
 
@@ -69,7 +84,7 @@ public class UpdateStorageAccountParameters {
      * @return the suffix value
      */
     public String suffix() {
-        return this.suffix;
+        return this.properties == null ? null : properties.suffix;
     }
 
     /**
@@ -79,7 +94,11 @@ public class UpdateStorageAccountParameters {
      * @return the UpdateStorageAccountParameters object itself.
      */
     public UpdateStorageAccountParameters withSuffix(String suffix) {
-        this.suffix = suffix;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.suffix = suffix;
         return this;
     }
 

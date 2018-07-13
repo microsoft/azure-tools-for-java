@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.rest.serializer.JsonFlatten;
 
@@ -30,6 +31,7 @@ import com.microsoft.rest.serializer.JsonFlatten;
  * Data Lake Analytics account.
  */
 @JsonFlatten
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UpdateDataLakeStoreWithAccountParameters {
     /**
      * The unique name of the Data Lake Store account to update.
@@ -37,11 +39,20 @@ public class UpdateDataLakeStoreWithAccountParameters {
     @JsonProperty(value = "name", required = true)
     private String name;
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class Properties {
+        /**
+         * The optional suffix for the Data Lake Store account.
+         */
+        @JsonProperty(value = "suffix")
+        private String suffix;
+    }
+
     /**
-     * The optional suffix for the Data Lake Store account.
+     * The properties
      */
-    @JsonProperty(value = "properties.suffix")
-    private String suffix;
+    @JsonProperty(value = "properties")
+    private Properties properties;
 
     /**
      * Get the name value.
@@ -69,7 +80,7 @@ public class UpdateDataLakeStoreWithAccountParameters {
      * @return the suffix value
      */
     public String suffix() {
-        return this.suffix;
+        return this.properties == null ? null : properties.suffix;
     }
 
     /**
@@ -79,7 +90,11 @@ public class UpdateDataLakeStoreWithAccountParameters {
      * @return the UpdateDataLakeStoreWithAccountParameters object itself.
      */
     public UpdateDataLakeStoreWithAccountParameters withSuffix(String suffix) {
-        this.suffix = suffix;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.suffix = suffix;
         return this;
     }
 
