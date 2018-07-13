@@ -675,7 +675,8 @@ public class AzureSparkServerlessCluster extends SparkCluster
     @NotNull
     @Override
     public Observable<? extends ProvisionableCluster> provision() {
-        return createResourcePoolRequest()
+        return prepareStorageFolder(this.sparkEventsPath)
+                .flatMap(resp -> createResourcePoolRequest())
                 .map(this::updateWithResponse)
                 .defaultIfEmpty(this);
     }
@@ -715,7 +716,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
                        .withResourcePoolVersion(this.resourcePoolVersion)
                        .withSparkVersion(this.sparkVersion)
                        // FIXME!! UserStorageAccount is missing
-                       .withSparkEventsDirectoryPath(this.sparkEventsPath)
+                       .withSparkEventsDirectoryPath(this.getAccount().getStorageRootPath() + this.sparkEventsPath)
                        .withSparkResourceCollection(Arrays.asList(
                                new CreateSparkResourcePoolItemParameters()
                                        .withName(SparkNodeType.SPARK_MASTER)
@@ -779,6 +780,19 @@ public class AzureSparkServerlessCluster extends SparkCluster
 
                 return size;
             }
+        });
+    }
+
+    @Nullable
+    public Observable<Boolean> prepareStorageFolder(@NotNull String path) {
+        return Observable.fromCallable(() -> {
+            String accessToken = getHttp().getAccessToken();
+            ADLStoreClient storeClient = ADLStoreClient.createClient(
+                    URI.create(this.getStorageAccount().getDefaultContainerOrRootPath()).getHost(), accessToken);
+            if (!storeClient.checkExists(path)) {
+                return storeClient.createDirectory(path);
+            }
+            return true;
         });
     }
 }
