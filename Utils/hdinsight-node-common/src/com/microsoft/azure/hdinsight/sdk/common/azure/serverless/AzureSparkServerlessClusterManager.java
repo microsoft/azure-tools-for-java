@@ -72,7 +72,9 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
     private static final String REST_SEGMENT_ADL_ACCOUNT = "providers/Microsoft.DataLakeAnalytics/accounts";
 
     // FIXME!!!
-    private static final String ACCOUNT_FILTER = CommonSettings.getAdEnvironment().endpoints().getOrDefault("dataLakeSparkAccountFilter", "endswith(name, '-c09') or endswith(name, '-c08')");
+    private static final String ACCOUNT_FILTER = CommonSettings.getAdEnvironment().endpoints()
+            .getOrDefault("dataLakeSparkAccountFilter",
+                    "length(name) gt 4 and substring(name, length(name) sub 4) ge '-c00' and substring(name, length(name) sub 4) le '-c99'");
 
     @NotNull
     private final HashMap<String, AzureHttpObservable> httpMap = new HashMap<>();
