@@ -194,6 +194,7 @@
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <horizontalAlignment value="0"/>
               <text value="/"/>
             </properties>
           </component>
@@ -285,14 +286,21 @@
       </component>
       <component id="a9fcd" class="javax.swing.JButton" binding="refreshButton">
         <constraints>
-          <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+          <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false">
+            <minimum-size width="20" height="20"/>
             <preferred-size width="20" height="20"/>
+            <maximum-size width="20" height="20"/>
           </grid>
         </constraints>
         <properties>
-          <horizontalAlignment value="4"/>
-          <horizontalTextPosition value="11"/>
+          <alignmentY value="0.5"/>
+          <borderPainted value="true"/>
+          <contentAreaFilled value="false"/>
+          <horizontalAlignment value="0"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="icons/RefreshLight_16.png"/>
           <text value=""/>
+          <verticalAlignment value="0"/>
         </properties>
       </component>
     </children>
