@@ -23,6 +23,7 @@
 package com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -30,7 +31,9 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
+import java.util.Objects;
+
+public class SparkServerlessADLAccountNode extends AzureRefreshableNode implements ILogger {
     // TODO: Update icon path
     private static final String ICON_PATH = CommonConst.AZURE_SERVERLESS_SPARK_ACCOUNT_ICON_PATH;
     @NotNull
@@ -50,18 +53,24 @@ public class SparkServerlessADLAccountNode extends AzureRefreshableNode {
          *  b) We have to add the cluster to adlAccount when we provision a cluster
          * But It seems that class AzureSparkServerlessAccount does not support these operations.
          */
-        adlAccount.get().subscribe(account -> {
-            account.getClusters().forEach(cluster -> {
-                try {
-                    AzureSparkServerlessCluster serverlessCluster = (AzureSparkServerlessCluster) cluster;
-                    // refresh the cluster
-                    serverlessCluster.getConfigurationInfo();
-                    addChildNode(new SparkServerlessClusterNode(this, serverlessCluster, adlAccount));
-                } catch (Exception ignore) {
-                    // FIXME: Do we need to log this exception?
-                }
-            });
-        });
+        adlAccount.get()
+                .onErrorResumeNext(err -> {
+                    log().warn("Got exceptions when listing Azure Data Lake account for Spark pool:" + err);
+
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .subscribe(account -> account.getClusters().forEach(cluster -> {
+                    try {
+                        AzureSparkServerlessCluster serverlessCluster = (AzureSparkServerlessCluster) cluster;
+                        // refresh the cluster
+                        serverlessCluster.getConfigurationInfo();
+                        addChildNode(new SparkServerlessClusterNode(this, serverlessCluster, adlAccount));
+                    } catch (Exception ex) {
+                        log().warn(String.format("Got exceptions when adding Azure Data Lake account node(%s):%s",
+                                                 adlAccount.getName(), ex));
+                    }
+                }));
     }
 
     @Override

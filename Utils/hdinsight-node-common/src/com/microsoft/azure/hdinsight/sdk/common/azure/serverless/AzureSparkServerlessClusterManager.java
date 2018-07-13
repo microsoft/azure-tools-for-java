@@ -135,7 +135,13 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
             return this;
         }
 
-        return get().toBlocking().singleOrDefault(this);
+        try {
+            return get().toBlocking().singleOrDefault(this);
+        } catch (Exception ex) {
+            log().warn("Got exceptions when refresh Azure Data Lake Spark pool: " + ex);
+
+            return this;
+        }
     }
 
     public Observable<AzureSparkServerlessClusterManager> get() {
