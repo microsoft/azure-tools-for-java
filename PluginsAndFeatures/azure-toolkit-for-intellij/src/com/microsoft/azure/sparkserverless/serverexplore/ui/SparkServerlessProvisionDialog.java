@@ -211,7 +211,7 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
                     // TODO: replace load with refreshWithoutAsync
                     adlAccountNode.load(false);
                     super.doOKAction();
-                });
+                }, err -> errorMessageField.setText(String.format("Provision failed. %s", err.getMessage())));
     }
 
     @NotNull
