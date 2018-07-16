@@ -287,9 +287,9 @@
       <component id="a9fcd" class="javax.swing.JButton" binding="refreshButton">
         <constraints>
           <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false">
-            <minimum-size width="20" height="20"/>
-            <preferred-size width="20" height="20"/>
-            <maximum-size width="20" height="20"/>
+            <minimum-size width="22" height="22"/>
+            <preferred-size width="22" height="22"/>
+            <maximum-size width="22" height="22"/>
           </grid>
         </constraints>
         <properties>
