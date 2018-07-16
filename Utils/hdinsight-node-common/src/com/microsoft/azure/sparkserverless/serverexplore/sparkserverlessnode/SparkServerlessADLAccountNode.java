@@ -30,6 +30,7 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import rx.Observable;
 
 import java.util.Objects;
 
@@ -55,11 +56,13 @@ public class SparkServerlessADLAccountNode extends AzureRefreshableNode implemen
          */
         adlAccount.get()
                 .onErrorResumeNext(err -> {
-                    log().warn("Got exceptions when listing Azure Data Lake account for Spark pool:" + err);
+                    log().warn(String.format(
+                            "Got exceptions when listing Azure Data Lake account(%s) for listing Spark pools: %s",
+                            adlAccount.getName(),
+                            err));
 
-                    return null;
+                    return Observable.empty();
                 })
-                .filter(Objects::nonNull)
                 .subscribe(account -> account.getClusters().forEach(cluster -> {
                     try {
                         AzureSparkServerlessCluster serverlessCluster = (AzureSparkServerlessCluster) cluster;
