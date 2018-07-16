@@ -19,7 +19,7 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h3>[3.9.0]</h3>
+      <h3>[3.8.0]</h3>
       <ul>
         <li>Supported to run Spark jobs in Azure Data Lake cluster (in private preview).</li>
         <li>Fixed some bugs.</li>
