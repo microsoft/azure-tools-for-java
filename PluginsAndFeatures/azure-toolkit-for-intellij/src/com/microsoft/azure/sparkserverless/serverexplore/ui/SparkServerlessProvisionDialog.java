@@ -25,7 +25,6 @@ package com.microsoft.azure.sparkserverless.serverexplore.ui;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.DocumentAdapter;
-import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
@@ -78,7 +77,7 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
     protected JLabel workerNumberOfContainersLabel;
     protected JTextField errorMessageField;
     protected JPanel provisionDialogPanel;
-    protected JButton refreshButton = new JButton(new ImageIcon(CommonConst.RefreshIConPath));
+    protected JButton refreshButton;
     protected JLabel storageRootPathLabel;
     protected JComboBox sparkVersionComboBox;
     protected JLabel sparkVersionLabel;
@@ -154,14 +153,26 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
     }
 
     private void updateAvailableAUAndTotalAU() {
-        ctrlProvider.getAvailableAUAndTotalAU().subscribe(pair -> {
-            availableAUField.setText(String.valueOf(pair.getLeft()));
-            totalAUField.setText(String.valueOf(pair.getRight()));
-        });
+        if (!refreshButton.isEnabled()) {
+            return;
+        }
+        refreshButton.setEnabled(false);
+        ctrlProvider.getAvailableAUAndTotalAU()
+                .doOnEach(pair -> refreshButton.setEnabled(true))
+                .subscribe(pair -> {
+                    availableAUField.setText(String.valueOf(pair.getLeft()));
+                    totalAUField.setText(String.valueOf(pair.getRight()));
+                });
     }
 
     private void updateAvailableAU() {
-        ctrlProvider.getAvailableAU().subscribe(au -> availableAUField.setText(String.valueOf(au)));
+        if (!refreshButton.isEnabled()) {
+            return;
+        }
+        refreshButton.setEnabled(false);
+        ctrlProvider.getAvailableAU()
+                .doOnEach(au -> refreshButton.setEnabled(true))
+                .subscribe(au -> availableAUField.setText(String.valueOf(au)));
     }
 
     private void updateCalculatedAU() {
