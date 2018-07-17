@@ -54,7 +54,6 @@ public class SparkServerlessClusterStatesCtrlProvider {
                                     ? cluster.getMasterState().toUpperCase() : cluster.getState().toUpperCase())
                             .setClusterID(cluster.getGuid());
                 })
-                .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData)
                 .observeOn(Schedulers.io())
                 .flatMap(data -> cluster.get());

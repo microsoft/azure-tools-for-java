@@ -29,6 +29,7 @@ import com.intellij.util.xmlb.XmlSerializer;
 import com.intellij.util.xmlb.annotations.MapAnnotation;
 import com.intellij.util.xmlb.annotations.Tag;
 import com.intellij.util.xmlb.annotations.Transient;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import org.apache.commons.lang3.SystemUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +45,7 @@ import static com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunConfigurable.H
 import static com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunConfigurable.WINUTILS_EXE_NAME;
 
 @Tag("spark-local-run-configurable-model")
-public class SparkLocalRunConfigurableModel implements CommonJavaRunConfigurationParameters {
+public class SparkLocalRunConfigurableModel implements CommonJavaRunConfigurationParameters, ILogger {
     @Tag(value = "is-parallel-execution", textIfEmpty = "false")
     private boolean isParallelExecution;
     @Tag(value = "is-pass-parent-envs", textIfEmpty = "true")
@@ -78,12 +79,16 @@ public class SparkLocalRunConfigurableModel implements CommonJavaRunConfiguratio
         this.setDataRootDirectory(Paths.get(this.getWorkingDirectory(), "data").toString());
 
         if (SystemUtils.IS_OS_WINDOWS) {
-            Optional.ofNullable(System.getenv(HADOOP_HOME_ENV))
-                    .map(hadoopHome -> Paths.get(hadoopHome, "bin", WINUTILS_EXE_NAME).toString())
-                    .map(File::new)
-                    .filter(File::exists)
-                    .map(winUtilsFile -> winUtilsFile.getParentFile().getParent())
-                    .ifPresent(hadoopHome -> this.envs.put(HADOOP_HOME_ENV, hadoopHome));
+            try {
+                Optional.ofNullable(System.getenv(HADOOP_HOME_ENV))
+                        .map(hadoopHome -> Paths.get(hadoopHome, "bin", WINUTILS_EXE_NAME).toString())
+                        .map(File::new)
+                        .filter(File::exists)
+                        .map(winUtilsFile -> winUtilsFile.getParentFile().getParent())
+                        .ifPresent(hadoopHome -> this.envs.put(HADOOP_HOME_ENV, hadoopHome));
+            } catch (Exception ex) {
+                log().warn("Ignore HADOOP_HOME environment variable since an exception is thrown when finding winutils.exe: " + ex);
+            }
         }
     }
 

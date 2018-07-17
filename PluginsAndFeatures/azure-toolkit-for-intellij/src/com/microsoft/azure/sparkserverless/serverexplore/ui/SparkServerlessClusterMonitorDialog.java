@@ -22,8 +22,11 @@
 
 package com.microsoft.azure.sparkserverless.serverexplore.ui;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.microsoft.azure.hdinsight.common.mvc.IdeCancellableScheduler;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azure.sparkserverless.common.JXHyperLinkWithUri;
@@ -96,28 +99,30 @@ public class SparkServerlessClusterMonitorDialog extends DialogWrapper
 
     // Data -> Components
     @Override
-    public void setData(SparkServerlessClusterStatesModel data) {
-        masterStateLabel.setText(data.getMasterState());
-        workerStateLabel.setText(data.getWorkerState());
+    public void setData(@NotNull SparkServerlessClusterStatesModel data) {
+        ApplicationManager.getApplication().invokeAndWait(() -> {
+            masterStateLabel.setText(data.getMasterState());
+            workerStateLabel.setText(data.getWorkerState());
 
-        masterTargetLabel.setText(String.valueOf(data.getMasterTarget()));
-        workerTargetLabel.setText(String.valueOf(data.getWorkerTarget()));
+            masterTargetLabel.setText(String.valueOf(data.getMasterTarget()));
+            workerTargetLabel.setText(String.valueOf(data.getWorkerTarget()));
 
-        masterRunningLabel.setText(String.valueOf(data.getMasterRunning()));
-        workerRunningLabel.setText(String.valueOf(data.getWorkerRunning()));
+            masterRunningLabel.setText(String.valueOf(data.getMasterRunning()));
+            workerRunningLabel.setText(String.valueOf(data.getWorkerRunning()));
 
-        masterFailedLabel.setText(String.valueOf(data.getMasterFailed()));
-        workerFailedLabel.setText(String.valueOf(data.getWorkerFailed()));
+            masterFailedLabel.setText(String.valueOf(data.getMasterFailed()));
+            workerFailedLabel.setText(String.valueOf(data.getWorkerFailed()));
 
-        masterOutstandingLabel.setText(String.valueOf(data.getMasterOutstanding()));
-        workerOutStandingLabel.setText(String.valueOf(data.getWorkerOutstanding()));
+            masterOutstandingLabel.setText(String.valueOf(data.getMasterOutstanding()));
+            workerOutStandingLabel.setText(String.valueOf(data.getWorkerOutstanding()));
 
-        sparkHistoryHyperLink.setURI(data.getSparkHistoryUri());
-        sparkMasterHyperLink.setURI(data.getSparkMasterUri());
+            sparkHistoryHyperLink.setURI(data.getSparkHistoryUri());
+            sparkMasterHyperLink.setURI(data.getSparkMasterUri());
 
-        clusterStateLabel.setText(data.getClusterState());
-        clusterIDField.setText(data.getClusterID());
-        clusterIDField.setBorder(null);
+            clusterStateLabel.setText(data.getClusterState());
+            clusterIDField.setText(data.getClusterID());
+            clusterIDField.setBorder(null);
+        }, ModalityState.any());
     }
 
     // Components -> Data
