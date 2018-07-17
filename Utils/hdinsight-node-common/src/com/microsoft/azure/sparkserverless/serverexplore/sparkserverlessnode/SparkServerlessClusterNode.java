@@ -65,7 +65,7 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode {
     @Override
     protected void refreshItems() throws AzureCmdException {
         cluster.get().toBlocking().singleOrDefault(cluster);
-        if (Optional.ofNullable(cluster.getWorkerState()).orElse("")
+        if (Optional.ofNullable(cluster.getMasterState()).orElse("")
                 .equals(SparkItemGroupState.STABLE.toString())) {
             addAction("Update", new SparkServerlessUpdateAction(
                     this, cluster, SparkServerlessClusterOps.getInstance().getUpdateAction()));
@@ -85,7 +85,7 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode {
                 this, cluster, adlAccount, SparkServerlessClusterOps.getInstance().getDestroyAction()));
         addAction("View Cluster Status", new SparkServerlessMonitorAction(
                 this, cluster, SparkServerlessClusterOps.getInstance().getMonitorAction()));
-        if (Optional.ofNullable(cluster.getWorkerState()).orElse("")
+        if (Optional.ofNullable(cluster.getMasterState()).orElse("")
                 .equals(SparkItemGroupState.STABLE.toString())) {
             addAction("Update", new SparkServerlessUpdateAction(
                     this, cluster, SparkServerlessClusterOps.getInstance().getUpdateAction()));
