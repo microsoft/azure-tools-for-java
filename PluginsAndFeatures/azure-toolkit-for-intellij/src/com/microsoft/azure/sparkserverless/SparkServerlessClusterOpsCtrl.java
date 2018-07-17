@@ -25,6 +25,7 @@ package com.microsoft.azure.sparkserverless;
 import com.intellij.openapi.diagnostic.Logger;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterOps;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterDestoryDialog;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterMonitorDialog;
@@ -45,7 +46,10 @@ public class SparkServerlessClusterOpsCtrl implements ILogger {
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .subscribe(triplet -> {
                     log().info(String.format("Destroy message received. AdlAccount: %s, cluster: %s, currentNode: %s",
-                            triplet.getLeft().getName(), triplet.getMiddle(), triplet.getRight().getName()));
+                            triplet.getLeft().getName(),
+                            // Type cast is necessary for DestroyableCluster
+                            ((AzureSparkServerlessCluster) triplet.getMiddle()).getName(),
+                            triplet.getRight().getName()));
                     SparkServerlessClusterDestoryDialog destroyDialog = new SparkServerlessClusterDestoryDialog(
                             triplet.getRight(), triplet.getMiddle());
                     destroyDialog.show();
@@ -65,7 +69,7 @@ public class SparkServerlessClusterOpsCtrl implements ILogger {
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .subscribe(pair -> {
                     log().info(String.format("Monitor message received. cluster: %s, node: %s",
-                            pair.getLeft(), pair.getRight()));
+                            pair.getLeft().getName(), pair.getRight().getName()));
                     SparkServerlessClusterMonitorDialog monitorDialog = new SparkServerlessClusterMonitorDialog(
                             pair.getRight(), pair.getLeft());
                     monitorDialog.show();
@@ -75,7 +79,7 @@ public class SparkServerlessClusterOpsCtrl implements ILogger {
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .subscribe(pair -> {
                     log().info(String.format("Update message received. cluster: %s, node: %s",
-                            pair.getLeft(), pair.getRight()));
+                            pair.getLeft().getName(), pair.getRight().getName()));
                     SparkServerlessClusterUpdateDialog updateDialog = new SparkServerlessClusterUpdateDialog(
                             pair.getRight(), pair.getLeft());
                     updateDialog.show();
