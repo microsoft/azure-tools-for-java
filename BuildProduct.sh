@@ -74,14 +74,14 @@ chmod +x ./tools/IntellijVersionHelper
 if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2018.1
 fi
-(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-2018.1 -Pdep_plugins=org.intellij.scala:2018.1.8)
+(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-2018.1 -Pdep_plugins=org.intellij.scala:2018.1.8)
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.1.zip
 
 # Build intellij 2018.2 plugin
 if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2018.2
 fi
-(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin --project-dir ./PluginsAndFeatures/azure-toolkit-for-intellij -s -Papplicationinsights.key=${INTELLIJ_KEY})
+(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=${INTELLIJ_KEY})
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.2.zip
 
 # Extract jars to sign
