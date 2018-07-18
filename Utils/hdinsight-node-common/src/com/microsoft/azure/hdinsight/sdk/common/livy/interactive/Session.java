@@ -74,6 +74,12 @@ public abstract class Session implements AutoCloseable, Closeable {
     @Nullable
     private List<String> lastLogs;  // Last session logs
 
+    private int executorCores = 1;  // Default cores per executor to create
+
+    private int executorNum = 2;    // Default executor count to create
+
+    private int driverCores = 2;    // Default driver cores to create
+
     /*
      * Constructor
      */
@@ -119,6 +125,30 @@ public abstract class Session implements AutoCloseable, Closeable {
         }
 
         return id;
+    }
+
+    public void setExecutorCores(int executorCores) {
+        this.executorCores = executorCores;
+    }
+
+    public int getExecutorCores() {
+        return executorCores;
+    }
+
+    public int getExecutorNum() {
+        return executorNum;
+    }
+
+    public void setExecutorNum(int executorNum) {
+        this.executorNum = executorNum;
+    }
+
+    public int getDriverCores() {
+        return driverCores;
+    }
+
+    public void setDriverCores(int driverCores) {
+        this.driverCores = driverCores;
     }
 
     public Observable<String> getAppId() {
@@ -243,6 +273,9 @@ public abstract class Session implements AutoCloseable, Closeable {
         PostSessions postBody = new PostSessions();
         postBody.setName(getName());
         postBody.setKind(getKind());
+        postBody.setExecutorCores(getExecutorCores());
+        postBody.setNumExecutors(getExecutorNum());
+        postBody.setDriverCores(getDriverCores());
 
         return postBody;
     }
