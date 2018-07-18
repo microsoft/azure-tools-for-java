@@ -21,8 +21,8 @@
     <html>
       <h3>[3.9.0]</h3>
       <ul>
-        <li>Added Spark 2.3 support</li>
-        <li>Spark in Azure Data Lake private preview refresh and bug fix</li>
+        <li>Added Spark 2.3 support.</li>
+        <li>Spark in Azure Data Lake private preview refresh and bug fix.</li>
         <li>Fixed some bugs.</li>
       <ul>
       <h3>[3.8.0]</h3>
