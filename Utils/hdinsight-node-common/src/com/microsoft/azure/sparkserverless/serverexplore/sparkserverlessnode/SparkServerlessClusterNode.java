@@ -23,6 +23,7 @@
 package com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkItemGroupState;
@@ -38,7 +39,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
 
-public class SparkServerlessClusterNode extends AzureRefreshableNode {
+public class SparkServerlessClusterNode extends AzureRefreshableNode implements ILogger {
     @NotNull
     private final String CLUSTER_MODULE_ID;
     // TODO: Update icon path
@@ -64,11 +65,15 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode {
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        cluster.get().toBlocking().singleOrDefault(cluster);
-        if (Optional.ofNullable(cluster.getMasterState()).orElse("")
-                .equals(SparkItemGroupState.STABLE.toString())) {
-            addAction("Update", new SparkServerlessUpdateAction(
-                    this, cluster, SparkServerlessClusterOps.getInstance().getUpdateAction()));
+        try {
+            cluster.get().toBlocking().singleOrDefault(cluster);
+            if (Optional.ofNullable(cluster.getWorkerState()).orElse("")
+                    .equals(SparkItemGroupState.STABLE.toString())) {
+                addAction("Update", new SparkServerlessUpdateAction(
+                        this, cluster, SparkServerlessClusterOps.getInstance().getUpdateAction()));
+            }
+        } catch (Exception ex) {
+            log().warn(String.format("Can't get the cluster %s details: %s", cluster.getName(), ex));
         }
     }
 

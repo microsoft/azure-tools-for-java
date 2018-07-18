@@ -62,7 +62,10 @@ public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvision
             @Override
             public void windowOpened(WindowEvent e) {
                 ctrlProvider.initialize()
-                        .subscribe();
+                        .subscribe(complete -> {}, err -> {
+                            log().warn(String.format("Can't get the cluster %s details: %s", cluster.getName(), err));
+                            errorMessageField.setText("Error Loading cluster details");
+                        });
                 super.windowOpened(e);
             }
         });

@@ -21,6 +21,7 @@
  */
 package com.microsoft.azure.sparkserverless.serverexplore;
 
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
@@ -33,7 +34,7 @@ import rx.schedulers.Schedulers;
 
 import java.util.List;
 
-public class SparkServerlessClusterProvisionCtrlProvider {
+public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
 
     @NotNull
     private SettableControl<SparkServerlessClusterProvisionSettingsModel> controllableView;
@@ -54,6 +55,10 @@ public class SparkServerlessClusterProvisionCtrlProvider {
 
     public Observable<List<String>> getClusterNames() {
         return account.get()
+                .onErrorReturn(err -> {
+                    log().warn(String.format("Can't get the account %s details: %s", account.getName(), err));
+                    return account;
+                })
                 .flatMap(acc -> Observable.from(acc.getClusters()))
                 .map(cluster -> cluster.getName())
                 .toList();
@@ -71,6 +76,10 @@ public class SparkServerlessClusterProvisionCtrlProvider {
 
     private Observable<Integer> getTotalAU() {
         return account.get()
+                .onErrorReturn(err -> {
+                    log().warn(String.format("Can't get the account %s details: %s", account.getName(), err));
+                    return account;
+                })
                 .subscribeOn(Schedulers.io())
                 .map(account -> account.getMaxDegreeOfParallelism());
     }
