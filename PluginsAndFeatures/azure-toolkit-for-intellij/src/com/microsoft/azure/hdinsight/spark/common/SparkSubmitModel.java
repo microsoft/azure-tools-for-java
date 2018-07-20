@@ -44,6 +44,7 @@ import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveTableModel;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.utils.Pair;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang.StringUtils;
@@ -424,10 +425,14 @@ public class SparkSubmitModel {
         return tableModel.getJobConfigMap();
     }
 
+    protected Pair<String, String>[] getDefaultParameters() {
+        return SparkSubmissionParameter.defaultParameters;
+    }
+
     private void initializeTableModel(final InteractiveTableModel tableModel) {
         if (submissionParameter.getJobConfig().isEmpty()) {
-            for (int i = 0; i < SparkSubmissionParameter.defaultParameters.length; ++i) {
-                tableModel.addRow(SparkSubmissionParameter.defaultParameters[i].first(), "");
+            for (int i = 0; i < getDefaultParameters().length; ++i) {
+                tableModel.addRow(getDefaultParameters()[i].first(), "");
             }
         } else {
             Map<String, Object> configs = submissionParameter.getJobConfig();

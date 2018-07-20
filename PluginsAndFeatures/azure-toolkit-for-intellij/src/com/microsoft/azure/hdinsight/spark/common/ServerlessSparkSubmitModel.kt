@@ -23,6 +23,7 @@
 package com.microsoft.azure.hdinsight.spark.common
 
 import com.intellij.openapi.project.Project
+import com.microsoft.azuretools.utils.Pair
 import org.jdom.Element
 import java.net.URI
 
@@ -37,6 +38,13 @@ class ServerlessSparkSubmitModel(project: Project) : SparkSubmitModel(project) {
         @JvmStatic val SERVERLESS_SUBMISSION_ATTRIBUTE_ACCOUNT_NAME = "account_name"
         @JvmStatic val SERVERLESS_SUBMISSION_ATTRIBUTE_CLUSTER_ID= "cluster_id"
         @JvmStatic val SERVERLESS_SUBMISSION_ATTRIBUTE_LIVY_URI = "livy_uri"
+    }
+
+    override fun getDefaultParameters(): Array<Pair<String, String>> {
+        return arrayOf(Pair(SparkSubmissionParameter.DriverMemory, SparkSubmissionParameter.DriverMemoryDefaultValue),
+                Pair(SparkSubmissionParameter.DriverCores, SparkSubmissionParameter.DriverCoresDefaultValue),
+                Pair(SparkSubmissionParameter.ExecutorMemory, SparkSubmissionParameter.ExecutorMemoryDefaultValue),
+                Pair(SparkSubmissionParameter.ExecutorCores, SparkSubmissionParameter.ExecutorCoresDefaultValue))
     }
 
     override fun exportToElement(): Element {
