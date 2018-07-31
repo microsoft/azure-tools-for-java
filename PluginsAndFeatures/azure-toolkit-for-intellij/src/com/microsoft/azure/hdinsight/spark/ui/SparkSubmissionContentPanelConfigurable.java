@@ -26,13 +26,16 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.impl.jar.JarFileSystemImpl;
 import com.intellij.packaging.impl.elements.ManifestFileUtil;
+import com.intellij.psi.PsiClass;
 import com.microsoft.azure.hdinsight.common.CallBack;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.intellij.helpers.ManifestFileUtilsEx;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -43,6 +46,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import javax.swing.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -77,7 +81,17 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
         this.submitModel = new SparkSubmitModel(myProject);
         this.submissionPanel.getClustersListComboBox().getComboBox().setModel(submitModel.getClusterComboBoxModel());
 
-        ManifestFileUtil.setupMainClassField(myProject, submissionPanel.getMainClassTextField());
+        submissionPanel.getMainClassTextField().addActionListener(e -> {
+                    PsiClass selected = submissionPanel.getLocalArtifactRadioButton().isSelected() ?
+                            new ManifestFileUtilsEx(myProject).selectMainClass(
+                                    new JarFileSystemImpl().findFileByPath(
+                                            submissionPanel.getSelectedArtifactTextField().getText() + "!/")) :
+                            ManifestFileUtil.selectMainClass(myProject, submissionPanel.getMainClassTextField().getText());
+                    if (selected != null) {
+                        submissionPanel.getMainClassTextField().setText(selected.getQualifiedName());
+                    }
+                }
+        );
 
         this.submissionPanel.addClusterListRefreshActionListener(e -> refreshClusterListAsync());
 
