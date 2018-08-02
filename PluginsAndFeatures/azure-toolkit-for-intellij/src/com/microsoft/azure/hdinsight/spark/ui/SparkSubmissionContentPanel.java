@@ -54,8 +54,6 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 public class SparkSubmissionContentPanel extends JPanel{
     public SparkSubmissionContentPanel(@Nullable CallBack updateCallBack){
@@ -571,7 +569,7 @@ public class SparkSubmissionContentPanel extends JPanel{
     }
 
     private void addReferencedJarsLineItem() {
-        JLabel commandLineArgs = new JLabel("Referenced Jars");
+        JLabel commandLineArgs = new JLabel("Referenced Jars(spark.jars)");
         commandLineArgs.setToolTipText("Files to be placed on the java classpath; The path needs to be a Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;)");
 
         add(commandLineArgs,
@@ -592,7 +590,7 @@ public class SparkSubmissionContentPanel extends JPanel{
     }
 
     private void addReferencedFilesLineItem() {
-        JLabel commandLineArgs = new JLabel("Referenced Files");
+        JLabel commandLineArgs = new JLabel("Referenced Files(spark.files)");
         commandLineArgs.setToolTipText("Files to be placed in executor working directory. The path needs to be a Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;) ");
         add(commandLineArgs,
                 new GridBagConstraints(0, ++displayLayoutCurrentRow,

@@ -54,6 +54,7 @@ import org.jdom.Element;
 import org.jdom.Text;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -472,6 +473,12 @@ public class SparkSubmitModel {
         if (!tableModel.hasEmptyRow()) {
             tableModel.addEmptyRow();
         }
+
+        tableModel.addTableModelListener(e -> {
+            if (e.getType() == TableModelEvent.UPDATE && (e.getLastRow() + 1) == tableModel.getRowCount()) {
+                tableModel.addEmptyRow();
+            }
+        });
     }
 
     public Element exportToElement() {
