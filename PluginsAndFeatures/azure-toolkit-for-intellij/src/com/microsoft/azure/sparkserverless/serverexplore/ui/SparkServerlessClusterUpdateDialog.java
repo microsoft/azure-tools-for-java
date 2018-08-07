@@ -76,6 +76,11 @@ public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvision
     protected void setClusterNameSets() {
         // To avoid cluster already exists tooltips
         clusterNameField.setNotAllowedValues(null);
+
+        sparkEventsField.setPatternAndErrorMessage(null);
+        // The text setting is necessary. By default, '/' is not allowed for TextWithErrorHintedField, leading to
+        // error tooltip. We have to set the text to trigger the validator of the new pattern.
+        sparkEventsField.setText("spark-events/");
     }
 
     @Override

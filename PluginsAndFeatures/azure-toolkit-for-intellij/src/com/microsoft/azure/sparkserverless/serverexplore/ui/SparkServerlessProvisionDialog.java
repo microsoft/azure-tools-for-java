@@ -92,6 +92,11 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         try {
             clusterNameField.setNotAllowedValues(
                     new HashSet<>(ctrlProvider.getClusterNames().toBlocking().singleOrDefault(new ArrayList<>())));
+
+            sparkEventsField.setPatternAndErrorMessage(null);
+            // The text setting is necessary. By default, '/' is not allowed for TextWithErrorHintedField, leading to
+            // error tooltip. We have to set the text to trigger the validator of the new pattern.
+            sparkEventsField.setText("spark-events/");
         } catch (Exception ex) {
             log().warn("Got exceptions when getting cluster names: " + ex);
         }
