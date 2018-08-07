@@ -281,7 +281,7 @@
         </constraints>
         <properties>
           <editable value="false"/>
-          <text value="spark-events"/>
+          <text value="spark-events/"/>
         </properties>
       </component>
       <component id="a9fcd" class="javax.swing.JButton" binding="refreshButton">
