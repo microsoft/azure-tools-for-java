@@ -21,7 +21,7 @@
     <html>
       <h3>[3.10.0]</h3>
       <ul>
-        <li>Support to fix Spark job configuration in run configuration before Spark job submission.</li>
+        <li>Supported to fix Spark job configuration in run configuration before Spark job submission.</li>
         <li>Fixed some bugs.</li>
       <ul>
       <h3>[3.9.0]</h3>
