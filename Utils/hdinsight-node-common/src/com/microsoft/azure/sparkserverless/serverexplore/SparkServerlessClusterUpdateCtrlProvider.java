@@ -38,7 +38,7 @@ public class SparkServerlessClusterUpdateCtrlProvider implements ILogger {
                             .setAdlAccount(clusterUpdated.getAccount().getName())
                             .setSparkEvents(clusterUpdated.getSparkEventsPath())
                             // TODO: set available AU
-                            .setTotalAU(clusterUpdated.getAccount().getMaxDegreeOfParallelism())
+                            .setTotalAU(clusterUpdated.getAccount().getSystemMaxDegreeOfParallelism())
                             .setMasterCores(clusterUpdated.getMasterPerInstanceCoreCount())
                             .setMasterMemory(clusterUpdated.getMasterPerInstanceMemoryInGB())
                             .setWorkerCores(clusterUpdated.getWorkerPerInstanceCoreCount())

@@ -81,7 +81,7 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
                     return account;
                 })
                 .subscribeOn(Schedulers.io())
-                .map(account -> account.getMaxDegreeOfParallelism());
+                .map(account -> account.getSystemMaxDegreeOfParallelism());
     }
 
     private Observable<Integer> getUsedAU() {
@@ -95,7 +95,7 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
 
     public Observable<Integer> getAvailableAU() {
         return getUsedAU()
-                .map(usedAU -> getAvailableAU(account.getMaxDegreeOfParallelism(), usedAU));
+                .map(usedAU -> getAvailableAU(account.getSystemMaxDegreeOfParallelism(), usedAU));
     }
 
     /**
