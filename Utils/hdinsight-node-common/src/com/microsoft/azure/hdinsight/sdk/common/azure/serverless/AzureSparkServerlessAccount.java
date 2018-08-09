@@ -23,6 +23,7 @@
 package com.microsoft.azure.hdinsight.sdk.common.azure.serverless;
 
 import com.google.common.collect.ImmutableSortedSet;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureDataLakeHttpObservable;
@@ -36,6 +37,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.model
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ResourcePoolState;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkResourcePoolList;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -43,13 +45,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import rx.Observable;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
-public class AzureSparkServerlessAccount implements ClusterContainer, Comparable<AzureSparkServerlessAccount> {
+public class AzureSparkServerlessAccount implements ClusterContainer, Comparable<AzureSparkServerlessAccount>, ILogger {
     private static final String REST_SEGMENT_SPARK_RESOURCEPOOLS = "/activityTypes/spark/resourcePools";
     private static final String REST_SEGMENT_JOB_LIST = "/Jobs";
+    private static final String REST_SEGMENT_JOB_MANAGEMENT_INFIX = "/#@microsoft.onmicrosoft.com/resource";
+    private static final String REST_SEGMENT_JOB_MANAGEMENT_SUFFIX = "/jobManagement";
 
     @NotNull
     private final SubscriptionDetail subscription;
@@ -102,6 +107,34 @@ public class AzureSparkServerlessAccount implements ClusterContainer, Comparable
     @NotNull
     public URI getUri() {
         return uri;
+    }
+
+    @Nullable
+    public URI getJobManagementURI() {
+        if (getId() == null) {
+            return null;
+        }
+
+        try {
+            String url = AuthMethodManager.getInstance().getAzureManager().getPortalUrl()
+                    + REST_SEGMENT_JOB_MANAGEMENT_INFIX
+                    + getId()
+                    + REST_SEGMENT_JOB_MANAGEMENT_SUFFIX;
+            return URI.create(url);
+        } catch (IOException ex) {
+            log().warn("Error getting AzureManager.", ex);
+            return null;
+        }
+    }
+
+    @Nullable
+    public String getId() {
+        return id;
+    }
+
+    public AzureSparkServerlessAccount setId(@Nullable String id) {
+        this.id = id;
+        return this;
     }
 
     //
@@ -197,7 +230,7 @@ public class AzureSparkServerlessAccount implements ClusterContainer, Comparable
 
     public AzureSparkServerlessAccount setBasicResponse(@Nullable DataLakeAnalyticsAccountBasic basicResponse) {
         this.basicResponse = basicResponse;
-
+        setId(this.basicResponse != null ? this.basicResponse.id() : null);
         return this;
     }
 

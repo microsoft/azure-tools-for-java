@@ -29,6 +29,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.sparkserverless.common.IntegerWithErrorHintedField;
+import com.microsoft.azure.sparkserverless.common.JXHyperLinkWithUri;
 import com.microsoft.azure.sparkserverless.common.TextWithErrorHintedField;
 import com.microsoft.azure.sparkserverless.serverexplore.SparkServerlessClusterProvisionCtrlProvider;
 import com.microsoft.azure.sparkserverless.serverexplore.SparkServerlessClusterProvisionSettingsModel;
@@ -81,6 +82,7 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
     protected JLabel storageRootPathLabel;
     protected JComboBox sparkVersionComboBox;
     protected JLabel sparkVersionLabel;
+    private JXHyperLinkWithUri jobQueueHyperLink;
 
     @NotNull
     private final List<TextWithErrorHintedField> allTextFields = Arrays.asList(clusterNameField, sparkEventsField);
@@ -121,6 +123,7 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         calculatedAUField.setBorder(BorderFactory.createEmptyBorder());
         this.setModal(true);
 
+        this.jobQueueHyperLink.setURI(account.getJobManagementURI());
         // setClusterNameSets to enable cluster name uniqueness check
         this.setClusterNameSets();
         // We can determine the ADL account since we provision on a specific ADL account Node
