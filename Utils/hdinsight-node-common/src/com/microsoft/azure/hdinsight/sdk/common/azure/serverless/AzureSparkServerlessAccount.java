@@ -41,6 +41,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import rx.Observable;
@@ -53,7 +54,9 @@ import java.util.List;
 public class AzureSparkServerlessAccount implements ClusterContainer, Comparable<AzureSparkServerlessAccount>, ILogger {
     private static final String REST_SEGMENT_SPARK_RESOURCEPOOLS = "/activityTypes/spark/resourcePools";
     private static final String REST_SEGMENT_JOB_LIST = "/Jobs";
-    private static final String REST_SEGMENT_JOB_MANAGEMENT_INFIX = "/#@microsoft.onmicrosoft.com/resource";
+    private static final String REST_SEGMENT_JOB_MANAGEMENT_TENANTID = "/#@";
+    private static final String REST_SEGMENT_JOB_MANAGEMENT_RESOURCE = "/resource";
+
     private static final String REST_SEGMENT_JOB_MANAGEMENT_SUFFIX = "/jobManagement";
 
     @NotNull
@@ -111,18 +114,28 @@ public class AzureSparkServerlessAccount implements ClusterContainer, Comparable
 
     @Nullable
     public URI getJobManagementURI() {
-        if (getId() == null) {
+        if (getId() == null || subscription.getTenantId() == null) {
+            log().warn(String.format("Can't get account ID or tenantID. AccountID:%s, tenantID:%s", getId(),
+                    subscription.getTenantId()));
             return null;
         }
 
         try {
-            String url = AuthMethodManager.getInstance().getAzureManager().getPortalUrl()
-                    + REST_SEGMENT_JOB_MANAGEMENT_INFIX
+            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+            if (azureManager == null) {
+                log().warn("Azure manager is null");
+                return null;
+            }
+
+            String url = azureManager.getPortalUrl()
+                    + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
+                    + subscription.getTenantId()
+                    + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
                     + getId()
                     + REST_SEGMENT_JOB_MANAGEMENT_SUFFIX;
             return URI.create(url);
         } catch (IOException ex) {
-            log().warn("Error getting AzureManager.", ex);
+            log().warn("Can't get Azure Manager now. Error: " + ex);
             return null;
         }
     }
