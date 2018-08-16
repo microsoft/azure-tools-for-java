@@ -63,7 +63,10 @@ public class SparkServerlessClusterUpdateCtrlProvider implements ILogger {
                 .flatMap(toUpdate ->
                         cluster.update(toUpdate.getWorkerNumberOfContainers())
                                 .map(cluster -> toUpdate)
-                                .onErrorReturn(err -> toUpdate.setErrorMessage(err.getMessage())))
+                                .onErrorReturn(err -> {
+                                    log().warn("Error update a cluster. " + err.toString());
+                                    return toUpdate.setErrorMessage(err.getMessage());
+                                }))
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData)
                 .filter(data -> StringUtils.isEmpty(data.getErrorMessage()));
