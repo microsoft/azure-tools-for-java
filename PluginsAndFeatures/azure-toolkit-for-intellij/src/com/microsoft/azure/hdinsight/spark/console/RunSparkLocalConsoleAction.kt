@@ -30,14 +30,14 @@ import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import org.jetbrains.plugins.scala.console.RunConsoleAction
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 
-class RunSparkConsoleAction
+class RunSparkLocalConsoleAction
     : AzureAnAction(), RunConsoleAction.RunActionBase<RemoteDebugRunConfigurationType> {
     override fun onActionPerformed(event: AnActionEvent) = doRunAction(event)
 
     override fun getMyConfigurationType(): RemoteDebugRunConfigurationType? =
         ConfigurationTypeUtil.findConfigurationType(RemoteDebugRunConfigurationType::class.java)
 
-    override fun getNewSettingName(): String = "Spark Console(Scala)"
+    override fun getNewSettingName(): String = "Spark Local Console(Scala)"
 
     override fun checkFile(psiFile: PsiFile): Boolean = psiFile is ScalaFile
 }

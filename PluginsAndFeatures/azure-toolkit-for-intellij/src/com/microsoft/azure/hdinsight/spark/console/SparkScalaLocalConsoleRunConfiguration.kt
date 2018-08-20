@@ -32,9 +32,9 @@ import com.microsoft.azure.hdinsight.spark.run.SparkBatchLocalRunState
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfiguration
 
-class SparkScalaConsoleRunConfiguration(
+class SparkScalaLocalConsoleRunConfiguration(
         project: Project,
-        configurationFactory: SparkScalaConsoleRunConfigurationFactory,
+        configurationFactory: SparkScalaLocalConsoleRunConfigurationFactory,
         name: String)
     : ScalaConsoleRunConfiguration(project, configurationFactory, name) {
 
@@ -48,7 +48,6 @@ class SparkScalaConsoleRunConfiguration(
         params.classPath.clear()
         params.classPath.addAll(localRunParams.classPath.pathList)
         params.mainClass = mainClass()
-//        params.programParametersList.add("org.apache.spark.deploy.SparkSubmit")
         params.programParametersList.add("--class", "org.apache.spark.repl.Main")
         params.programParametersList.add("--name", "Spark shell")
         params.programParametersList.add("spark-shell")

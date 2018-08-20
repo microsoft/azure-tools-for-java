@@ -22,25 +22,15 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.openapi.module.ModuleManager
-import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
+import org.jetbrains.plugins.scala.console.ScalaConsoleConfigurationType
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 
-class SparkScalaConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaConsoleConfigurationType)
-    : ScalaConsoleRunConfigurationFactory(sparkConsoleType) {
-    override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return SparkScalaConsoleRunConfiguration(project, this, "")
-    }
+class SparkScalaLocalConsoleConfigurationType : ScalaConsoleConfigurationType() {
+    override fun confFactory(): ScalaConsoleRunConfigurationFactory = SparkScalaLocalConsoleRunConfigurationFactory(this)
 
-    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
-        // Create a Spark Scala Console run configuration based on Spark Batch run configuration
-        val configuration = createTemplateConfiguration(template.project) as SparkScalaConsoleRunConfiguration
-        configuration.name = "${template.name} >> Spark Console(Scala)"
-        configuration.module = ModuleManager.getInstance(template.project).findModuleByName(template.project.name)
-        configuration.batchRunConfiguration = template as RemoteDebugRunConfiguration
+    override fun getDisplayName(): String = "Spark Local Console(Scala)"
 
-        return configuration
-    }
+    override fun getConfigurationTypeDescription(): String = "Spark local console(Scala) run configurations"
+
+    override fun getId(): String = "SparkScalaLocalConsoleRunConfiguration"
 }

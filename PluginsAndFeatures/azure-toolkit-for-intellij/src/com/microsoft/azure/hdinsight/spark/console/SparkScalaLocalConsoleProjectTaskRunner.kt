@@ -29,19 +29,19 @@ import com.intellij.openapi.project.Project
 import com.intellij.task.*
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
 
-class SparkScalaConsoleProjectTaskRunner : ProjectTaskRunner() {
+class SparkScalaLocalConsoleProjectTaskRunner : ProjectTaskRunner() {
     override fun run(
             project: Project,
             context: ProjectTaskContext,
             callback: ProjectTaskNotification?,
             tasks: MutableCollection<out ProjectTask>
     ) {
+        // TODO: Not called, why?
+
         callback?.finished(ProjectTaskResult(false, 0, 0))
     }
 
     override fun canRun(projectTask: ProjectTask): Boolean {
-        // TODO: Not called, why?
-
         val runConfiguration = (projectTask as? ExecuteRunConfigurationTask)?.runProfile
 
         return runConfiguration is RemoteDebugRunConfiguration
@@ -54,7 +54,7 @@ class SparkScalaConsoleProjectTaskRunner : ProjectTaskRunner() {
 
         val environmentBuilder = ExecutionEnvironmentBuilder.create(
                 executor ?: return null,
-                SparkScalaConsoleConfigurationType().confFactory().createConfiguration(
+                SparkScalaLocalConsoleConfigurationType().confFactory().createConfiguration(
                         "${batchRunConfiguration.name} Spark console(Scala)", batchRunConfiguration))
 
         return environmentBuilder.build()
