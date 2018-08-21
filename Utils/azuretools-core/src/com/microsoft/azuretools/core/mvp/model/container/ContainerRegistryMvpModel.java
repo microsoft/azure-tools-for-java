@@ -23,10 +23,11 @@
 package com.microsoft.azuretools.core.mvp.model.container;
 
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.containerregistry.AccessKeyType;
 import com.microsoft.azure.management.containerregistry.Registries;
 import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.management.containerregistry.RegistryCredentials;
 import com.microsoft.azure.management.containerregistry.RegistryPassword;
-import com.microsoft.azure.management.containerregistry.implementation.RegistryListCredentials;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -101,16 +102,16 @@ public class ContainerRegistryMvpModel {
         if (!registry.adminUserEnabled()) {
             throw new Exception(ADMIN_USER_NOT_ENABLED);
         }
-        final RegistryListCredentials credentials = registry.listCredentials();
+        final RegistryCredentials credentials = registry.getCredentials();
         if (credentials == null) {
             throw new Exception(CANNOT_GET_CREDENTIAL);
         }
         String username = credentials.username();
-        final List<RegistryPassword> passwords = credentials.passwords();
+        final Map<AccessKeyType, String> passwords = credentials.accessKeys();
         if (Utils.isEmptyString(username) || passwords == null || passwords.size() == 0) {
             throw new Exception(CANNOT_GET_CREDENTIAL);
         }
-        return new PrivateRegistryImageSetting(registry.loginServerUrl(), username, passwords.get(0).value(), IMAGE_TAG,
+        return new PrivateRegistryImageSetting(registry.loginServerUrl(), username, passwords.get(AccessKeyType.PRIMARY), IMAGE_TAG,
                 null);
     }
 

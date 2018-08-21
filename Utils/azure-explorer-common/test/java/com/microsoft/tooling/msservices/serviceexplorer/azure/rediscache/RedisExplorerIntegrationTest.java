@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -72,7 +73,7 @@ import junit.framework.Assert;
 @PowerMockIgnore("javax.*")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ AuthMethodManager.class, AzureManager.class, SubscriptionManager.class, DefaultLoader.class })
-
+@Ignore
 public class RedisExplorerIntegrationTest extends IntegrationTestBase {
 
     @Mock

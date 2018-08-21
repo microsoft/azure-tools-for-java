@@ -108,8 +108,8 @@ public class WebAppPropertyViewPresenter<V extends WebAppPropertyMvpView> extend
 
     private WebAppProperty generateProperty(WebApp app, AppServicePlan plan) {
         Map<String, String> appSettingsMap = new HashMap<>();
-        Map<String, AppSetting> appSetting = app.appSettings();
-        for (String key : app.appSettings().keySet()) {
+        Map<String, AppSetting> appSetting = app.getAppSettings();
+        for (String key : appSetting.keySet()) {
             AppSetting setting = appSetting.get(key);
             if (setting != null) {
                 appSettingsMap.put(setting.key(), setting.value());

@@ -43,9 +43,9 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.PublishingProfileFormat;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebContainer;
-import com.microsoft.azure.management.appservice.implementation.CsmPublishingProfileOptionsInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -431,8 +431,8 @@ public class AzureWebAppMvpModel {
                 .toString());
         file.createNewFile();
         try (InputStream inputStream = app.manager().inner().webApps()
-                .listPublishingProfileXmlWithSecrets(app.resourceGroupName(), app.name(), new
-                        CsmPublishingProfileOptionsInner());
+                .listPublishingProfileXmlWithSecrets(app.resourceGroupName(), app.name(),
+                        PublishingProfileFormat.FTP);
              OutputStream outputStream = new FileOutputStream(file);
         ) {
             IOUtils.copy(inputStream, outputStream);

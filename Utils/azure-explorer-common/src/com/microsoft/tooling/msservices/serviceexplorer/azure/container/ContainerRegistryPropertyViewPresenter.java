@@ -28,9 +28,10 @@ import java.util.Map;
 import java.util.Stack;
 
 import com.google.gson.Gson;
+import com.microsoft.azure.management.containerregistry.AccessKeyType;
 import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.management.containerregistry.RegistryCredentials;
 import com.microsoft.azure.management.containerregistry.RegistryPassword;
-import com.microsoft.azure.management.containerregistry.implementation.RegistryListCredentials;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
@@ -219,15 +220,11 @@ public class ContainerRegistryPropertyViewPresenter<V extends ContainerRegistryP
         String password = "";
         String password2 = "";
         if (registry.adminUserEnabled()) {
-            RegistryListCredentials credentials = registry.listCredentials();
+            RegistryCredentials credentials = registry.getCredentials();
             userName = credentials.username();
-            List<RegistryPassword> passwords = credentials.passwords();
-            if (passwords.size() > 0) {
-                password = passwords.get(0).value();
-            }
-            if (passwords.size() > 1) {
-                password2 = passwords.get(1).value();
-            }
+            Map<AccessKeyType, String> passwords = credentials.accessKeys();
+            password = passwords.get(AccessKeyType.PRIMARY) == null ? "" : passwords.get(AccessKeyType.PRIMARY);
+            password2 = passwords.get(AccessKeyType.SECONDARY) == null ? "" : passwords.get(AccessKeyType.SECONDARY);
         }
         return new ContainerRegistryProperty(registry.id(), registry.name(), registry.type(),
                 registry.resourceGroupName(), registry.regionName(), sid, registry.loginServerUrl(),

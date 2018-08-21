@@ -313,7 +313,7 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure</artifactId>
-                <version>1.2.1</version>
+                <version>1.14.0</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
@@ -323,7 +323,7 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-storage</artifactId>
-                <version>4.0.0</version>
+                <version>6.1.0</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
@@ -338,7 +338,7 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-mgmt-storage</artifactId>
-                <version>1.2.1</version>
+                <version>1.14.0</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>

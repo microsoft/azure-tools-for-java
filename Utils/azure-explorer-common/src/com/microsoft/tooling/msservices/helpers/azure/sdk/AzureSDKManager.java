@@ -36,7 +36,6 @@ import com.microsoft.azure.management.network.PublicIPAddress;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.fluentcore.model.Creatable;
 import com.microsoft.azure.management.storage.AccessTier;
-import com.microsoft.azure.management.storage.Encryption;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuName;
 import com.microsoft.azure.management.storage.StorageAccount;
@@ -70,7 +69,7 @@ public class AzureSDKManager {
         }
 
         if (enableEncription) {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withEncryption(new Encryption());
+            newStorageAccountWithGroup = newStorageAccountWithGroup.withEncryption();
         }
 
         return newStorageAccountWithGroup.withSku(SkuName.fromString(skuName)).create();

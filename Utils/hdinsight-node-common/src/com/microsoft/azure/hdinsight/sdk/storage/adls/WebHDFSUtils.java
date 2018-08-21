@@ -30,7 +30,6 @@ import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSCertificateInfo;
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.management.dns.HttpStatusCode;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.io.IOUtils;
 
@@ -92,7 +91,7 @@ public class WebHDFSUtils {
             //          the adls was attached to HDInsight by Service Principle (hdi sp).
             //          Currently we don't have a better way to use hdi sp to grant write access to ADLS, so we just
             //          try to write adls directly use the login sp account(may have no access to target ADLS)
-            if (e.httpResponseCode == 403 || HttpStatusCode.valueOf(e.httpResponseMessage) == HttpStatusCode.FORBIDDEN) {
+            if (e.httpResponseCode == 403) {
                 throw new HDIException("Forbidden. " +
                         "This problem could be: " +
                         "1. Attached Azure DataLake Store is not supported in Automated login model. Please logout first and try Interactive login model" +

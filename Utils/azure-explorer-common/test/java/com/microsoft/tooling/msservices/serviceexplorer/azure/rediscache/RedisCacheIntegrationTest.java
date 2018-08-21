@@ -37,6 +37,7 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -70,7 +71,7 @@ import junit.framework.Assert;
     SubscriptionManager.class,
     DefaultLoader.class
 })
-
+@Ignore
 public class RedisCacheIntegrationTest extends IntegrationTestBase {
     
     @Mock

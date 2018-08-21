@@ -133,8 +133,6 @@
                     <artifactId>azure-client-runtime</artifactId>
                 </exclusion>
             </exclusions>
-            <!--<scope>system</scope>-->
-            <!--<systemPath>${project.basedir}/lib/azure-keyvault-1.0.0-beta5-SNAPSHOT.jar</systemPath>-->
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
