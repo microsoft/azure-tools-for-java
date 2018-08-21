@@ -27,7 +27,6 @@ import com.microsoft.azure.management.containerregistry.AccessKeyType;
 import com.microsoft.azure.management.containerregistry.Registries;
 import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azure.management.containerregistry.RegistryCredentials;
-import com.microsoft.azure.management.containerregistry.RegistryPassword;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -108,7 +107,7 @@ public class ContainerRegistryMvpModel {
         }
         String username = credentials.username();
         final Map<AccessKeyType, String> passwords = credentials.accessKeys();
-        if (Utils.isEmptyString(username) || passwords == null || passwords.size() == 0) {
+        if (Utils.isEmptyString(username) || passwords == null || !passwords.containsKey(AccessKeyType.PRIMARY)) {
             throw new Exception(CANNOT_GET_CREDENTIAL);
         }
         return new PrivateRegistryImageSetting(registry.loginServerUrl(), username, passwords.get(AccessKeyType.PRIMARY), IMAGE_TAG,
