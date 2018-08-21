@@ -92,7 +92,7 @@ public class WebHDFSUtils {
             //          Currently we don't have a better way to use hdi sp to grant write access to ADLS, so we just
             //          try to write adls directly use the login sp account(may have no access to target ADLS)
             if (e.httpResponseCode == 403) {
-                throw new HDIException("Forbidden. " +
+                throw new HDIException("Forbidden: " + e.httpResponseMessage + "\n" +
                         "This problem could be: " +
                         "1. Attached Azure DataLake Store is not supported in Automated login model. Please logout first and try Interactive login model" +
                         "2. Login account have no write permission on attached ADLS storage. " +
