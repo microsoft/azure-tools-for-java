@@ -48,10 +48,22 @@ class SparkScalaLocalConsoleRunConfiguration(
         params.classPath.clear()
         params.classPath.addAll(localRunParams.classPath.pathList)
         params.mainClass = mainClass()
+
+        params.vmParametersList.addAll(localRunParams.vmParametersList.parameters)
+
+        // FIXME!!! To support local mock filesystem
+        // params.mainClass = localRunParams.mainClass
+        //
+        // localRunParams.programParametersList.parameters.takeWhile { it.trim().startsWith("--master") }
+        //         .forEach { params.programParametersList.add(it) }
+        // params.programParametersList.add(mainClass())
+
         params.programParametersList.add("--class", "org.apache.spark.repl.Main")
         params.programParametersList.add("--name", "Spark shell")
         params.programParametersList.add("spark-shell")
+
         params.addEnv("SPARK_SUBMIT_OPTS", "-Dscala.usejavacp=true")
+        localRunParams.env.forEach { name, value -> params.addEnv(name, value) }
 
         return params
     }
