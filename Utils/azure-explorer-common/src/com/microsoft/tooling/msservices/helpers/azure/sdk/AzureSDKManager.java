@@ -39,6 +39,7 @@ import com.microsoft.azure.management.storage.AccessTier;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuName;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.management.storage.StorageAccountSkuType;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -69,10 +70,10 @@ public class AzureSDKManager {
         }
 
         if (enableEncription) {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withEncryption();
+            newStorageAccountWithGroup = newStorageAccountWithGroup.withBlobEncryption();
         }
 
-        return newStorageAccountWithGroup.withSku(SkuName.fromString(skuName)).create();
+        return newStorageAccountWithGroup.withSku(StorageAccountSkuType.fromSkuName(SkuName.fromString(skuName))).create();
     }
 
     public static VirtualMachine createVirtualMachine(String subscriptionId, @NotNull String name, @NotNull String resourceGroup, boolean withNewResourceGroup,
