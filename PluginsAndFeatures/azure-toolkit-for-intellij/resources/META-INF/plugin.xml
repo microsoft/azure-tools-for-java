@@ -233,6 +233,7 @@
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
     <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
     <projectTaskRunner implementation="com.microsoft.azure.hdinsight.spark.console.SparkScalaLocalConsoleProjectTaskRunner" />
+    <projectTaskRunner implementation="com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleProjectTaskRunner" />
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
   </extensions>
 
@@ -308,6 +309,11 @@
     </action>
     <action id="Spark.RunScalaLocalConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLocalConsoleAction"
             text="Run Spark Local Console(Scala)" description="Run Spark Local Console (Scala language)">
+      <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </action>
+    <action id="Spark.RunScalaLivyConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLivyConsoleAction"
+            text="Run Spark Livy Interactive Session Console(Scala)" description="Run Spark Livy Interactive Session Console (Scala language)">
       <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
       <add-to-group group-id="ToolsMenu" anchor="last"/>
     </action>
