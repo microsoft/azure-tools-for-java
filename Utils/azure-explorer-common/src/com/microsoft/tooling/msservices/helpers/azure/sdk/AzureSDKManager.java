@@ -63,10 +63,18 @@ public class AzureSDKManager {
         } else {
             newStorageAccountWithGroup = newStorageAccountBlank.withExistingResourceGroup(resourceGroup);
         }
-        if (kind == Kind.BLOB_STORAGE) {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withBlobStorageAccountKind().withAccessTier(accessTier);
-        } else {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKind();
+        switch (kind) {
+	        case STORAGE:
+		        	newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKind();
+		        	break;
+	        case STORAGE_V2:
+		        	newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKindV2();
+		        	break;
+	        case BLOB_STORAGE:
+		        	newStorageAccountWithGroup = newStorageAccountWithGroup.withBlobStorageAccountKind().withAccessTier(accessTier);
+		        	break;
+		    default:
+		    	    throw new Exception("Unknown Storage Account Kind:" + kind.toString());
         }
 
         if (enableEncription) {

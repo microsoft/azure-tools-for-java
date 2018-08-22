@@ -1,7 +1,5 @@
 package com.microsoft.azuretools.azureexplorer.forms;
 
-import java.io.FileInputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -11,12 +9,7 @@ import java.util.TreeMap;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
@@ -32,7 +25,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
@@ -57,13 +49,13 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.storage.AccessTier;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuTier;
-import com.microsoft.azure.management.storage.StorageAccount;
 
 public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
     private static final String PRICING_LINK = "<a href=\"http://go.microsoft.com/fwlink/?LinkID=400838\">Read more about replication services and pricing details</a>";
     private static Map<String, Kind> ACCOUNT_KIND = new TreeMap<>();
     static {
-    	ACCOUNT_KIND.put("General purpose", Kind.STORAGE);
+    	ACCOUNT_KIND.put("General purpose v1", Kind.STORAGE);
+    	ACCOUNT_KIND.put("General purpose v2", Kind.STORAGE_V2);
     	ACCOUNT_KIND.put("Blob storage", Kind.BLOB_STORAGE);
     }
     
@@ -89,8 +81,6 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
     private Combo replicationComboBox;
     private Label accessTierLabel;
     private Combo accessTierComboBox;
-    private Label encriptionLabel;
-    private Combo encriptionCombo;
     private Link pricingLabel;
 
     private ComboViewer resourceGroupViewer;
