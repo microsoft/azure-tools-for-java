@@ -143,6 +143,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // add the tree to the window
         toolWindow.getComponent().add(new JBScrollPane(tree));
 
+        // set tree and tree path to expand the node later
+        azureModule.setTree(tree);
+        azureModule.setTreePath(tree.getPathForRow(0));
+
         // setup toolbar icons
         addToolbarItems(toolWindow, azureModule);
 
@@ -169,6 +173,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         SortableTreeNode treeNode = (SortableTreeNode) treePath.getLastPathComponent();
         Node node = (Node) treeNode.getUserObject();
+
+        // set tree and tree path to expand the node later
+        node.setTree(tree);
+        node.setTreePath(treePath);
 
         // delegate click to the node's click action if this is a left button click
         if (SwingUtilities.isLeftMouseButton(e)) {
