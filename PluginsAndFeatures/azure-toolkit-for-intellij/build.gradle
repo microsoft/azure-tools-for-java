@@ -92,7 +92,7 @@ dependencies {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
     }
-    compile 'com.spotify:docker-client:8.6.2'
+    compile 'com.spotify:docker-client:8.11.7'
 
     testCompile 'junit:junit:4.12'
     testCompile 'info.cukes:cucumber-junit:1.2.5'
