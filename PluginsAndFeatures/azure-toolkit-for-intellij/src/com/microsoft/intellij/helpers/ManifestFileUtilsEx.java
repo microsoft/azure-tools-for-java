@@ -98,12 +98,12 @@ public class ManifestFileUtilsEx implements ILogger {
             @Override
             public void windowOpened(WindowEvent e) {
                 // remove old jar and add new jar to project dependency
-                WriteAction.runAndWait(() -> addJarToModuleDependency(jarFile));
+                WriteAction.run(() -> addJarToModuleDependency(jarFile));
                 super.windowOpened(e);
             }
             @Override
             public void windowClosed(WindowEvent e) {
-                WriteAction.runAndWait(() -> removeModuleAndJar());
+                WriteAction.run(() -> removeModuleAndJar());
                 super.windowClosed(e);
             }
 
