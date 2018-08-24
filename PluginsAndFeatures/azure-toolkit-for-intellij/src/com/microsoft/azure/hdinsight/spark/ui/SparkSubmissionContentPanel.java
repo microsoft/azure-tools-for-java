@@ -40,9 +40,9 @@ import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel;
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveRenderer;
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveTableModel;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import rx.subjects.BehaviorSubject;
 
 import javax.swing.*;
@@ -357,7 +357,7 @@ public class SparkSubmissionContentPanel extends JPanel{
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     selectedArtifactComboBox.setEnabled(false);
                     selectedArtifactTextField.setEnabled(true);
-                    mainClassTextField.setButtonEnabled(false);
+                    mainClassTextField.setButtonEnabled(true);
 
                     setVisibleForFixedErrorMessageLabel(1, false);
 
