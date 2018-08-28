@@ -43,6 +43,7 @@ import com.intellij.openapi.roots.ui.configuration.projectRoot.LibrariesContaine
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.PsiMethodUtil;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -54,14 +55,17 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ManifestFileUtilsEx implements ILogger {
-    private static class JarClassFilter implements ClassFilter {
+    private static class MainClassFilter implements ClassFilter {
         final private String filePath;
-        public JarClassFilter(@NotNull String filePath) {
+        public MainClassFilter(@NotNull String filePath) {
             this.filePath = filePath;
         }
         public boolean isAccepted(final PsiClass aClass) {
             return ReadAction.compute(() ->
-                    aClass.getContainingFile().getVirtualFile().getPath().startsWith(filePath));
+                    aClass.getContainingFile().getVirtualFile().getPath().startsWith(filePath) &&
+                            PsiMethodUtil.MAIN_CLASS.value(aClass) &&
+                            !aClass.getName().endsWith("$") &&
+                            aClass.findMethodsByName("main", true).length > 0);
         }
     }
 
@@ -86,7 +90,7 @@ public class ManifestFileUtilsEx implements ILogger {
         // should be the initialClass. Currently we don't enable this method since exception happens with the following code.
         // final PsiClass aClass = initialClassName != null ? JavaPsiFacade.getInstance(project).findClass(initialClassName, searchScope) : null;
         final TreeClassChooser chooser =
-                chooserFactory.createWithInnerClassesScopeChooser("Select Main Class", searchScope, new JarClassFilter(jarFile.getPath()), null);
+                chooserFactory.createWithInnerClassesScopeChooser("Select Main Class", searchScope, new MainClassFilter(jarFile.getPath()), null);
 
         ((TreeJavaClassChooserDialog) chooser).getWindow().addWindowListener(new WindowAdapter() {
             // These fields are recorded to help remove the artifact and the module.
