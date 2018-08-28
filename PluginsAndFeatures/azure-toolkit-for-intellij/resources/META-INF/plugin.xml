@@ -21,10 +21,10 @@
     <html>
       <h3>[3.11.0]</h3>
       <ul>
-        <li>Added main class hint when users choose to submit Spark job using local artifact file.</li>
+        <li>Added the main class hint when users choose to submit a Spark job using a local artifact file.</li>
         <li>Added Spark cluster GUID for Spark cluster provision failure investigation.</li>
-        <li>Added AU not enough warning message in Spark cluster provision.</li>
-        <li>Added job queue to check AU consumption in Spark cluster provision.</li>
+        <li>Added the "AU not enough" warning message in Azure Data Lake Spark resource pool provision.</li>
+        <li>Added the job queue query to check AU consumption in Azure Data Lake Spark resource pool provision.</li>
         <li>Fixed cluster total AU by using systemMaxAU instead of maxAU.</li>
         <li>Refresh node automatically when node is clicked in Azure explorer.</li>
         <li>Updated the Azure SDK to 1.14.0.</li>
