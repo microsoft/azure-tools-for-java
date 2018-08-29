@@ -22,9 +22,7 @@
 
 package com.microsoft.azure.sparkserverless.serverexplore.ui;
 
-import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azure.sparkserverless.serverexplore.SparkServerlessClusterProvisionSettingsModel;
 import com.microsoft.azure.sparkserverless.serverexplore.SparkServerlessClusterUpdateCtrlProvider;
@@ -36,11 +34,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.time.LocalDateTime;
 
-public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvisionDialog implements ILogger {
-    @NotNull
-    private final AzureSparkServerlessCluster cluster;
+public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvisionDialog {
 
     private void disableUneditableFields() {
         clusterNameField.setEditable(false);
@@ -56,17 +51,21 @@ public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvision
     private SparkServerlessClusterUpdateCtrlProvider ctrlProvider;
     public SparkServerlessClusterUpdateDialog(@NotNull SparkServerlessClusterNode clusterNode,
                                               @NotNull AzureSparkServerlessCluster cluster) {
+
         super((SparkServerlessADLAccountNode) clusterNode.getParent(), cluster.getAccount());
-        this.cluster = cluster;
         this.setTitle("Update Cluster");
         disableUneditableFields();
+        getOKAction().setEnabled(false);
         ctrlProvider = new SparkServerlessClusterUpdateCtrlProvider(
                 this, new IdeaSchedulers((Project)clusterNode.getProject()), cluster);
         this.getWindow().addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
                 ctrlProvider.initialize()
-                        .subscribe(complete -> {}, err -> log().warn("Error initialize update dialog. " + err.toString()));
+                        .subscribe(complete -> {}, err -> {
+                            log().warn(String.format("Can't get the cluster %s details: %s", cluster.getName(), err));
+                            errorMessageField.setText("Error Loading cluster details");
+                        });
                 super.windowOpened(e);
             }
         });
@@ -74,7 +73,7 @@ public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvision
 
 
     @Override
-    protected void enableClusterNameUniquenessCheck() {
+    protected void setClusterNameSets() {
         // To avoid cluster already exists tooltips
         clusterNameField.setNotAllowedValues(null);
 
@@ -113,13 +112,6 @@ public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvision
         workerMemoryField.setText(String.valueOf(data.getWorkerMemory()));
         workerNumberOfContainersField.setText(String.valueOf(data.getWorkerNumberOfContainers()));
 
-        if (!StringUtils.isEmpty(data.getErrorMessage())) {
-            if (!errorMessageDecorator.isExpanded()) {
-                errorMessageDecorator.setOn(true);
-            }
-
-            printLogLine(ConsoleViewContentType.ERROR_OUTPUT, data.getErrorMessage());
-        }
-        printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "Cluster guid: " + cluster.getGuid());
+        errorMessageField.setText(data.getErrorMessage());
     }
 }

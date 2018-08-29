@@ -786,18 +786,13 @@ public class AzureSparkServerlessCluster extends SparkCluster
     @Nullable
     public Observable<Boolean> prepareStorageFolder(@NotNull String path) {
         return Observable.fromCallable(() -> {
-            try {
-                String accessToken = getHttp().getAccessToken();
-                ADLStoreClient storeClient = ADLStoreClient.createClient(
-                        URI.create(this.getStorageAccount().getDefaultContainerOrRootPath()).getHost(), accessToken);
-                if (storeClient.checkExists(path)) {
-                    return true;
-                } else {
-                    return storeClient.createDirectory(path);
-                }
-            } catch (Exception ex) {
-                throw new Exception("Failed to create or access spark events log path", ex);
+            String accessToken = getHttp().getAccessToken();
+            ADLStoreClient storeClient = ADLStoreClient.createClient(
+                    URI.create(this.getStorageAccount().getDefaultContainerOrRootPath()).getHost(), accessToken);
+            if (!storeClient.checkExists(path)) {
+                return storeClient.createDirectory(path);
             }
+            return true;
         });
     }
 }

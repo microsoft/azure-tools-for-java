@@ -109,17 +109,28 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
     }
 
     @NotNull
-    private Observable<AzureSparkServerlessCluster> buildCluster(@NotNull SparkServerlessClusterProvisionSettingsModel toUpdate) {
-        return Observable.just(new AzureSparkServerlessCluster.Builder(account)
-                .name(toUpdate.getClusterName())
-                .masterPerInstanceCores(toUpdate.getMasterCores())
-                .masterPerInstanceMemory(toUpdate.getMasterMemory())
-                .workerPerInstanceCores(toUpdate.getWorkerCores())
-                .workerPerInstanceMemory(toUpdate.getWorkerMemory())
-                .workerInstances(toUpdate.getWorkerNumberOfContainers())
-                .sparkEventsPath(toUpdate.getSparkEvents())
-                .userStorageAccount(account.getDetailResponse().defaultDataLakeStoreAccount())
-                .build());
+    private SparkServerlessClusterProvisionSettingsModel provisionCluster(
+            @NotNull SparkServerlessClusterProvisionSettingsModel toUpdate) {
+        if (!StringUtils.isEmpty(toUpdate.getErrorMessage())) {
+            return toUpdate;
+        }
+
+        try {
+            AzureSparkServerlessCluster cluster =
+                    (AzureSparkServerlessCluster) new AzureSparkServerlessCluster.Builder(account)
+                            .name(toUpdate.getClusterName())
+                            .masterPerInstanceCores(toUpdate.getMasterCores())
+                            .masterPerInstanceMemory(toUpdate.getMasterMemory())
+                            .workerPerInstanceCores(toUpdate.getWorkerCores())
+                            .workerPerInstanceMemory(toUpdate.getWorkerMemory())
+                            .workerInstances(toUpdate.getWorkerNumberOfContainers())
+                            .sparkEventsPath(toUpdate.getSparkEvents())
+                            .userStorageAccount(account.getDetailResponse().defaultDataLakeStoreAccount())
+                            .build().provision().toBlocking().single();
+        } catch (Exception e) {
+            return toUpdate.setErrorMessage("Provision failed: " + e.getMessage());
+        }
+        return toUpdate;
     }
 
         public Observable<SparkServerlessClusterProvisionSettingsModel> validateAndProvision() {
@@ -128,16 +139,7 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
                 .doOnNext(controllableView::getData)
                 .observeOn(ideSchedulers.processBarVisibleAsync("Provisioning cluster..."))
                 .map(toUpdate -> toUpdate.setErrorMessage(null))
-                .flatMap(toUpdate ->
-                        buildCluster(toUpdate)
-                                .doOnNext(cluster -> toUpdate.setClusterGuid(cluster.getGuid()))
-                                .flatMap(cluster -> cluster.provision())
-                                .map(cluster -> toUpdate)
-                                .onErrorReturn(err -> {
-                                    log().warn("Error provision a cluster. " + err.toString());
-                                    return toUpdate.setErrorMessage(err.getMessage());
-                                })
-                )
+                .map(toUpdate -> provisionCluster(toUpdate))
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData)
                 .filter(data -> StringUtils.isEmpty(data.getErrorMessage()));
