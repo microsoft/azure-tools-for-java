@@ -23,7 +23,6 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
-import org.joda.time.DateTime;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -32,43 +31,43 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class JobStatistics {
     /**
-     * the last update time for the statistics.
+     * The last update time for the statistics.
      */
     @JsonProperty(value = "lastUpdateTimeUtc", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime lastUpdateTimeUtc;
+    private String lastUpdateTimeUtc;
 
     /**
-     * the job finalizing start time.
+     * The job finalizing start time.
      */
     @JsonProperty(value = "finalizingTimeUtc", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime finalizingTimeUtc;
+    private String finalizingTimeUtc;
 
     /**
-     * the list of stages for the job.
+     * The list of stages for the job.
      */
     @JsonProperty(value = "stages", access = JsonProperty.Access.WRITE_ONLY)
     private List<JobStatisticsVertexStage> stages;
 
     /**
-     * Get the lastUpdateTimeUtc value.
+     * Get the last update time for the statistics.
      *
      * @return the lastUpdateTimeUtc value
      */
-    public DateTime lastUpdateTimeUtc() {
+    public String lastUpdateTimeUtc() {
         return this.lastUpdateTimeUtc;
     }
 
     /**
-     * Get the finalizingTimeUtc value.
+     * Get the job finalizing start time.
      *
      * @return the finalizingTimeUtc value
      */
-    public DateTime finalizingTimeUtc() {
+    public String finalizingTimeUtc() {
         return this.finalizingTimeUtc;
     }
 
     /**
-     * Get the stages value.
+     * Get the list of stages for the job.
      *
      * @return the stages value
      */

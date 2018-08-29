@@ -27,6 +27,9 @@ import com.wacommon.utils.WACommonException;
 import java.io.File;
 
 public class PluginHelper {
+
+    private static final String AZURE_ARTIFACT = "azure-1.14.0.jar";
+
     /**
      * @return resource filename in plugin's directory
      */
@@ -39,7 +42,7 @@ public class PluginHelper {
         try {
             String pluginInstLoc = PluginUtil.getPluginRootDirectory();
             libLocation = String.format(pluginInstLoc + "%s%s", File.separator, "lib");
-            File file = new File(String.format(libLocation + "%s%s", File.separator, "azure-1.2.1.jar"));
+            File file = new File(String.format(libLocation + "%s%s", File.separator, AZURE_ARTIFACT));
             if (!file.exists()) {
                 throw new WACommonException(AzureBundle.message("SDKLocErrMsg"));
             }

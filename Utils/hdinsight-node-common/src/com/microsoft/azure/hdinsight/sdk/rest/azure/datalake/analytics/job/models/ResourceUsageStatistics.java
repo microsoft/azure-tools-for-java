@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
@@ -18,15 +18,60 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.api;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
-import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccountBasic;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.PageImpl;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class GetAccountsListResponse extends PageImpl<DataLakeAnalyticsAccountBasic>
-                                     implements IConvertible {
+/**
+ * The statistics information for resource usage.
+ */
+public class ResourceUsageStatistics {
+    /**
+     * The average value.
+     */
+    @JsonProperty(value = "average", access = JsonProperty.Access.WRITE_ONLY)
+    private Double average;
+
+    /**
+     * The minimum value.
+     */
+    @JsonProperty(value = "minimum", access = JsonProperty.Access.WRITE_ONLY)
+    private Long minimum;
+
+    /**
+     * The maximum value.
+     */
+    @JsonProperty(value = "maximum", access = JsonProperty.Access.WRITE_ONLY)
+    private Long maximum;
+
+    /**
+     * Get the average value.
+     *
+     * @return the average value
+     */
+    public Double average() {
+        return this.average;
+    }
+
+    /**
+     * Get the minimum value.
+     *
+     * @return the minimum value
+     */
+    public Long minimum() {
+        return this.minimum;
+    }
+
+    /**
+     * Get the maximum value.
+     *
+     * @return the maximum value
+     */
+    public Long maximum() {
+        return this.maximum;
+    }
 
 }

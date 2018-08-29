@@ -55,7 +55,7 @@ class ServerlessSparkBatchRunner : SparkBatchJobRunner() {
                     .findCluster(accountName, clusterId)
                     .map { it.get().toBlocking().singleOrDefault(it).livyUri }
                     .toBlocking()
-                    .first()
+                    .firstOrDefault(null)
 
             return ServerlessSparkBatchJob(
                     submitModel.submissionParameter,

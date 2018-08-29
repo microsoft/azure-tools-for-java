@@ -31,40 +31,40 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class CreateJobParameters extends BaseJobParameters {
     /**
-     * the friendly name of the job to submit.
+     * The friendly name of the job to submit.
      */
     @JsonProperty(value = "name", required = true)
     private String name;
 
     /**
-     * the degree of parallelism to use for this job. This must be greater than 0, if set to less than 0 it will
+     * The degree of parallelism to use for this job. This must be greater than 0, if set to less than 0 it will
      * default to 1.
      */
     @JsonProperty(value = "degreeOfParallelism")
     private Integer degreeOfParallelism;
 
     /**
-     * the priority value to use for the current job. Lower numbers have a higher priority. By default, a job has a
+     * The priority value to use for the current job. Lower numbers have a higher priority. By default, a job has a
      * priority of 1000. This must be greater than 0.
      */
     @JsonProperty(value = "priority")
     private Integer priority;
 
     /**
-     * the list of log file name patterns to find in the logFolder. '*' is the only matching character allowed. Example
+     * The list of log file name patterns to find in the logFolder. '*' is the only matching character allowed. Example
      * format: jobExecution*.log or *mylog*.txt.
      */
     @JsonProperty(value = "logFilePatterns")
     private List<String> logFilePatterns;
 
     /**
-     * the recurring job relationship information properties.
+     * The recurring job relationship information properties.
      */
     @JsonProperty(value = "related")
     private JobRelationshipProperties related;
 
     /**
-     * Get the name value.
+     * Get the friendly name of the job to submit.
      *
      * @return the name value
      */
@@ -73,7 +73,7 @@ public class CreateJobParameters extends BaseJobParameters {
     }
 
     /**
-     * Set the name value.
+     * Set the friendly name of the job to submit.
      *
      * @param name the name value to set
      * @return the CreateJobParameters object itself.
@@ -84,7 +84,7 @@ public class CreateJobParameters extends BaseJobParameters {
     }
 
     /**
-     * Get the degreeOfParallelism value.
+     * Get the degree of parallelism to use for this job. This must be greater than 0, if set to less than 0 it will default to 1.
      *
      * @return the degreeOfParallelism value
      */
@@ -93,7 +93,7 @@ public class CreateJobParameters extends BaseJobParameters {
     }
 
     /**
-     * Set the degreeOfParallelism value.
+     * Set the degree of parallelism to use for this job. This must be greater than 0, if set to less than 0 it will default to 1.
      *
      * @param degreeOfParallelism the degreeOfParallelism value to set
      * @return the CreateJobParameters object itself.
@@ -104,7 +104,7 @@ public class CreateJobParameters extends BaseJobParameters {
     }
 
     /**
-     * Get the priority value.
+     * Get the priority value to use for the current job. Lower numbers have a higher priority. By default, a job has a priority of 1000. This must be greater than 0.
      *
      * @return the priority value
      */
@@ -113,7 +113,7 @@ public class CreateJobParameters extends BaseJobParameters {
     }
 
     /**
-     * Set the priority value.
+     * Set the priority value to use for the current job. Lower numbers have a higher priority. By default, a job has a priority of 1000. This must be greater than 0.
      *
      * @param priority the priority value to set
      * @return the CreateJobParameters object itself.
@@ -124,7 +124,7 @@ public class CreateJobParameters extends BaseJobParameters {
     }
 
     /**
-     * Get the logFilePatterns value.
+     * Get the list of log file name patterns to find in the logFolder. '*' is the only matching character allowed. Example format: jobExecution*.log or *mylog*.txt.
      *
      * @return the logFilePatterns value
      */
@@ -133,7 +133,7 @@ public class CreateJobParameters extends BaseJobParameters {
     }
 
     /**
-     * Set the logFilePatterns value.
+     * Set the list of log file name patterns to find in the logFolder. '*' is the only matching character allowed. Example format: jobExecution*.log or *mylog*.txt.
      *
      * @param logFilePatterns the logFilePatterns value to set
      * @return the CreateJobParameters object itself.
@@ -144,7 +144,7 @@ public class CreateJobParameters extends BaseJobParameters {
     }
 
     /**
-     * Get the related value.
+     * Get the recurring job relationship information properties.
      *
      * @return the related value
      */
@@ -153,7 +153,7 @@ public class CreateJobParameters extends BaseJobParameters {
     }
 
     /**
-     * Set the related value.
+     * Set the recurring job relationship information properties.
      *
      * @param related the related value to set
      * @return the CreateJobParameters object itself.

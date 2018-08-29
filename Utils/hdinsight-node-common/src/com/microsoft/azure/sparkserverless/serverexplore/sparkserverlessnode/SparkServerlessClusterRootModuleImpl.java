@@ -34,7 +34,7 @@ public class SparkServerlessClusterRootModuleImpl extends HDInsightRootModule {
     // TODO: Update icon path
     private static final String ICON_PATH = CommonConst.AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH;
     // TODO: determine root node name
-    private static final String BASE_MODULE_NAME = "Azure Data Lake Spark";
+    private static final String BASE_MODULE_NAME = "Azure Data Lake Spark Pool";
 
     public SparkServerlessClusterRootModuleImpl(@NotNull Node parent) {
         super(SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH, true);
@@ -47,10 +47,9 @@ public class SparkServerlessClusterRootModuleImpl extends HDInsightRootModule {
             return;
         }
 
-        AzureSparkServerlessClusterManager.getInstance().get().subscribe(cluster -> {
-            cluster.getAccounts().forEach(account -> {
-                addChildNode(new SparkServerlessADLAccountNode(this, account));
-            });
+        AzureSparkServerlessClusterManager.getInstance().refresh();
+        AzureSparkServerlessClusterManager.getInstance().getAccounts().forEach(account -> {
+            addChildNode(new SparkServerlessADLAccountNode(this, account));
         });
     }
 

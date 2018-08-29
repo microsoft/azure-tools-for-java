@@ -27,6 +27,7 @@ import com.microsoft.azure.datalake.store.IfExists;
 import com.microsoft.azure.hdinsight.sdk.cluster.DestroyableCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.ProvisionableCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
+import com.microsoft.azure.hdinsight.sdk.common.AzureDataLakeHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
@@ -308,6 +309,9 @@ public class AzureSparkServerlessCluster extends SparkCluster
     @Nullable
     private SparkResource worker;
 
+    @NotNull
+    private final AzureHttpObservable http;
+
     private boolean isConfigInfoAvailable = false;
 
     public AzureSparkServerlessCluster(@NotNull AzureSparkServerlessAccount azureSparkServerlessAccount, @NotNull String guid) {
@@ -319,6 +323,8 @@ public class AzureSparkServerlessCluster extends SparkCluster
                 azureSparkServerlessAccount.getName(),
                 storageRootPath,
                 azureSparkServerlessAccount.getSubscription().getSubscriptionId());
+
+        this.http = new AzureDataLakeHttpObservable(azureSparkServerlessAccount.getSubscription().getTenantId(), ApiVersion.VERSION);
 
         // FIXME with Enum type
         this.state = "unknown";
@@ -381,6 +387,22 @@ public class AzureSparkServerlessCluster extends SparkCluster
     @Nullable
     public String getWorkerState() {
         return this.worker == null || this.worker.state == null ? null : this.worker.state.toString();
+    }
+
+    public int getMasterPerInstanceCoreCount() {
+        return this.master == null ? 0 : this.master.coresPerInstance;
+    }
+
+    public int getWorkerPerInstanceCoreCount() {
+        return this.worker == null ? 0 : this.worker.coresPerInstance;
+    }
+
+    public int getMasterPerInstanceMemoryInGB() {
+        return this.master == null ? 0 : this.master.memoryGBSizePerInstance;
+    }
+
+    public int getWorkerPerInstanceMemoryInGB() {
+        return this.worker == null ? 0 : this.worker.memoryGBSizePerInstance;
     }
 
     public int getMasterTargetInstanceCount() {
@@ -508,13 +530,53 @@ public class AzureSparkServerlessCluster extends SparkCluster
 
     @NotNull
     public AzureHttpObservable getHttp() {
-        return account.getHttp();
+        return http;
     }
 
     public Observable<AzureSparkServerlessCluster> get() {
         return getResourcePoolRequest()
                 .map(this::updateWithResponse)
                 .defaultIfEmpty(this);
+    }
+
+    @NotNull
+    private UpdateSparkResourcePool preparePatchResourcePool(int workerTargetInstanceCount) {
+        UpdateSparkResourcePool patchBody = new UpdateSparkResourcePool();
+
+        return patchBody
+                .withName(getName())
+                .withProperties(new UpdateSparkResourcePoolParameters()
+                        .withSparkResourceCollection(Arrays.asList(
+                                new UpdateSparkResourcePoolItemParameters()
+                                        .withName(SparkNodeType.SPARK_WORKER)
+                                        .withTargetInstanceCount(workerTargetInstanceCount)
+                        )));
+    }
+
+    private Observable<SparkResourcePool> patchResourcePoolRequest(int workerTargetInstanceCount) {
+        if (master == null || worker == null) {
+            return Observable.error(new AzureSparkResourcePoolNotReadyException(
+                    "Spark master and worker are not stable yet. Please retry until they are stable."));
+        }
+
+        URI uri = getUri();
+
+        UpdateSparkResourcePool patchBody = preparePatchResourcePool(workerTargetInstanceCount);
+
+        String json = patchBody.convertToJson()
+                .orElseThrow(() -> new IllegalArgumentException("Bad Spark resource pool arguments to patch"));
+
+        StringEntity entity = new StringEntity(json, StandardCharsets.UTF_8);
+        entity.setContentType("application/json");
+
+        return getHttp()
+                .withUuidUserAgent()
+                .patch(uri.toString(), entity, null, null, SparkResourcePool.class);
+    }
+
+    public Observable<AzureSparkServerlessCluster> update(int workerTargetInstanceCount) {
+        return patchResourcePoolRequest(workerTargetInstanceCount)
+                .flatMap(resourcePoolResp -> this.get());
     }
 
     private Observable<SparkResourcePool> getResourcePoolRequest() {
@@ -613,7 +675,8 @@ public class AzureSparkServerlessCluster extends SparkCluster
     @NotNull
     @Override
     public Observable<? extends ProvisionableCluster> provision() {
-        return createResourcePoolRequest()
+        return prepareStorageFolder(this.sparkEventsPath)
+                .flatMap(resp -> createResourcePoolRequest())
                 .map(this::updateWithResponse)
                 .defaultIfEmpty(this);
     }
@@ -653,7 +716,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
                        .withResourcePoolVersion(this.resourcePoolVersion)
                        .withSparkVersion(this.sparkVersion)
                        // FIXME!! UserStorageAccount is missing
-                       .withSparkEventsDirectoryPath(this.sparkEventsPath)
+                       .withSparkEventsDirectoryPath(this.getAccount().getStorageRootPath() + this.sparkEventsPath)
                        .withSparkResourceCollection(Arrays.asList(
                                new CreateSparkResourcePoolItemParameters()
                                        .withName(SparkNodeType.SPARK_MASTER)
@@ -717,6 +780,19 @@ public class AzureSparkServerlessCluster extends SparkCluster
 
                 return size;
             }
+        });
+    }
+
+    @Nullable
+    public Observable<Boolean> prepareStorageFolder(@NotNull String path) {
+        return Observable.fromCallable(() -> {
+            String accessToken = getHttp().getAccessToken();
+            ADLStoreClient storeClient = ADLStoreClient.createClient(
+                    URI.create(this.getStorageAccount().getDefaultContainerOrRootPath()).getHost(), accessToken);
+            if (!storeClient.checkExists(path)) {
+                return storeClient.createDirectory(path);
+            }
+            return true;
         });
     }
 }

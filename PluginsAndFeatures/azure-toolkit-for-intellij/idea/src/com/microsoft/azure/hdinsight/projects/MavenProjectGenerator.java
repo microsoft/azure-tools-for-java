@@ -114,6 +114,9 @@ public class MavenProjectGenerator {
             case SPARK_2_2_0:
                 file = StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_2_2_0_pom.xml");
                 break;
+            case SPARK_2_3_0:
+                file = StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_2_3_0_pom.xml");
+                break;
         }
 
         if (null == file) {

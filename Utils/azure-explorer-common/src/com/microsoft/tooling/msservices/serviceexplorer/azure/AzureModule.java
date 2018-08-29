@@ -165,6 +165,7 @@ public class AzureModule extends AzureRefreshableNode {
 
     @Override
     protected void onNodeClick(NodeActionEvent e) {
+        super.onNodeClick(e);
     }
 
     @Override

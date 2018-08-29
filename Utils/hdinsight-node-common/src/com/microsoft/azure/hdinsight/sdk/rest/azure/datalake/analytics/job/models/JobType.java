@@ -34,7 +34,10 @@ public enum JobType {
     USQL("USql"),
 
     /** Enum value Hive. */
-    HIVE("Hive");
+    HIVE("Hive"),
+
+    /** Enum value Scope. */
+    SCOPE("Scope");
 
     /** The actual serialized value for a JobType instance. */
     private String value;

@@ -158,7 +158,17 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
         accoountKindCombo.setRenderer(new ListCellRendererWrapper<Kind>() {
             @Override
             public void customize(JList jList, Kind kind, int i, boolean b, boolean b1) {
-                setText(kind == Kind.STORAGE ? "General purpose" : "Blob storage");
+                switch (kind) {
+                    case STORAGE:
+                        setText("General Purpose v1");
+                        break;
+                    case STORAGE_V2:
+                        setText("General Purpose v2");
+                        break;
+                    case BLOB_STORAGE:
+                        setText("Blob Storage");
+                        break;
+                }
             }
         });
 

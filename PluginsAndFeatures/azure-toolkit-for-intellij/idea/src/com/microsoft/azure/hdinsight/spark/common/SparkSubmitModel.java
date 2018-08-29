@@ -41,18 +41,20 @@ import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveTableModel;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.utils.Pair;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang.StringUtils;
 import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.Text;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -424,10 +426,15 @@ public class SparkSubmitModel {
         return tableModel.getJobConfigMap();
     }
 
+    @NotNull
+    protected Pair<String, String>[] getDefaultParameters() {
+        return SparkSubmissionParameter.defaultParameters;
+    }
+
     private void initializeTableModel(final InteractiveTableModel tableModel) {
         if (submissionParameter.getJobConfig().isEmpty()) {
-            for (int i = 0; i < SparkSubmissionParameter.defaultParameters.length; ++i) {
-                tableModel.addRow(SparkSubmissionParameter.defaultParameters[i].first(), "");
+            for (int i = 0; i < getDefaultParameters().length; ++i) {
+                tableModel.addRow(getDefaultParameters()[i].first(), "");
             }
         } else {
             Map<String, Object> configs = submissionParameter.getJobConfig();
@@ -466,6 +473,12 @@ public class SparkSubmitModel {
         if (!tableModel.hasEmptyRow()) {
             tableModel.addEmptyRow();
         }
+
+        tableModel.addTableModelListener(e -> {
+            if (e.getType() == TableModelEvent.UPDATE && (e.getLastRow() + 1) == tableModel.getRowCount()) {
+                tableModel.addEmptyRow();
+            }
+        });
     }
 
     public Element exportToElement() {

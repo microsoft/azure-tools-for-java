@@ -199,12 +199,24 @@ public class AdAuthManager {
                 }
             }
 
-            ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable);
+            try {
+                ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable);
+            } catch (AuthException e) {
+                if (CommonSettings.getEnvironment() instanceof ProvidedEnvironment) {
+                    // Swallow the exception since some provided environments are not full featured
+                    LOGGER.warning("Can't get " + env.graphEndpoint() + " access token from environment " +
+                            CommonSettings.getEnvironment().getName());
+                } else {
+                    throw e;
+                }
+            }
 
             // ADL account access token
             try {
                 ac1.acquireToken(env.dataLakeEndpointResourceId(), false, userId, isDisplayable);
-            } catch (AuthException ignored) {
+            } catch (AuthException e) {
+                LOGGER.warning("Can't get " + env.dataLakeEndpointResourceId() + " access token from environment " +
+                        CommonSettings.getEnvironment().getName() + "for user " + userId);
             }
 
             // TODO: remove later

@@ -29,6 +29,8 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
     private URI sparkMasterUri;
     @NotNull
     private String clusterState = "";
+    @NotNull
+    private String clusterID = "";
 
     @NotNull
     public String getMasterState() {
@@ -162,6 +164,16 @@ public class SparkServerlessClusterStatesModel implements Cloneable{
     @NotNull
     public SparkServerlessClusterStatesModel setClusterState(@NotNull String clusterState) {
         this.clusterState = clusterState;
+        return this;
+    }
+
+    @NotNull
+    public String getClusterID() {
+        return clusterID;
+    }
+
+    public SparkServerlessClusterStatesModel setClusterID(@NotNull String clusterID) {
+        this.clusterID = clusterID;
         return this;
     }
 

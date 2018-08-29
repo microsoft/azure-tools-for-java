@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.rest.serializer.JsonFlatten;
 
@@ -29,20 +30,30 @@ import com.microsoft.rest.serializer.JsonFlatten;
  * The parameters used to create a new firewall rule.
  */
 @JsonFlatten
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CreateOrUpdateFirewallRuleParameters {
-    /**
-     * The start IP address for the firewall rule. This can be either ipv4 or
-     * ipv6. Start and End should be in the same protocol.
-     */
-    @JsonProperty(value = "properties.startIpAddress", required = true)
-    private String startIpAddress;
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class Properties {
+        /**
+         * The start IP address for the firewall rule. This can be either ipv4 or
+         * ipv6. Start and End should be in the same protocol.
+         */
+        @JsonProperty(value = "startIpAddress", required = true)
+        private String startIpAddress;
+
+        /**
+         * The end IP address for the firewall rule. This can be either ipv4 or
+         * ipv6. Start and End should be in the same protocol.
+         */
+        @JsonProperty(value = "endIpAddress", required = true)
+        private String endIpAddress;
+    }
 
     /**
-     * The end IP address for the firewall rule. This can be either ipv4 or
-     * ipv6. Start and End should be in the same protocol.
+     * The properties
      */
-    @JsonProperty(value = "properties.endIpAddress", required = true)
-    private String endIpAddress;
+    @JsonProperty(value = "properties")
+    private Properties properties;
 
     /**
      * Get the startIpAddress value.
@@ -50,7 +61,7 @@ public class CreateOrUpdateFirewallRuleParameters {
      * @return the startIpAddress value
      */
     public String startIpAddress() {
-        return this.startIpAddress;
+        return this.properties == null ? null : properties.startIpAddress;
     }
 
     /**
@@ -60,7 +71,11 @@ public class CreateOrUpdateFirewallRuleParameters {
      * @return the CreateOrUpdateFirewallRuleParameters object itself.
      */
     public CreateOrUpdateFirewallRuleParameters withStartIpAddress(String startIpAddress) {
-        this.startIpAddress = startIpAddress;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.startIpAddress = startIpAddress;
         return this;
     }
 
@@ -70,7 +85,7 @@ public class CreateOrUpdateFirewallRuleParameters {
      * @return the endIpAddress value
      */
     public String endIpAddress() {
-        return this.endIpAddress;
+        return this.properties == null ? null : properties.endIpAddress;
     }
 
     /**
@@ -80,7 +95,11 @@ public class CreateOrUpdateFirewallRuleParameters {
      * @return the CreateOrUpdateFirewallRuleParameters object itself.
      */
     public CreateOrUpdateFirewallRuleParameters withEndIpAddress(String endIpAddress) {
-        this.endIpAddress = endIpAddress;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.endIpAddress = endIpAddress;
         return this;
     }
 

@@ -29,7 +29,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.8.0</version>
+        <version>3.11.0</version>
     </parent>
     <artifactId>azuretools-core</artifactId>
     <properties>
@@ -133,8 +133,6 @@
                     <artifactId>azure-client-runtime</artifactId>
                 </exclusion>
             </exclusions>
-            <!--<scope>system</scope>-->
-            <!--<systemPath>${project.basedir}/lib/azure-keyvault-1.0.0-beta5-SNAPSHOT.jar</systemPath>-->
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>

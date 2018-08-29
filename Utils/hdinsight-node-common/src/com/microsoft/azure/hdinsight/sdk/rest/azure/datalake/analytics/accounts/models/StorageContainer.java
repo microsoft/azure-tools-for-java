@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models;
 
-import org.joda.time.DateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.rest.serializer.JsonFlatten;
 import com.microsoft.azure.SubResource;
@@ -31,12 +31,22 @@ import com.microsoft.azure.SubResource;
  * Azure Storage blob container information.
  */
 @JsonFlatten
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class StorageContainer extends SubResource {
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class Properties {
+        /**
+         * The last modified time of the blob container.
+         */
+        @JsonProperty(value = "lastModifiedTime", access = JsonProperty.Access.WRITE_ONLY)
+        private String lastModifiedTime;
+    }
+
     /**
-     * The last modified time of the blob container.
+     * The properties
      */
-    @JsonProperty(value = "properties.lastModifiedTime", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime lastModifiedTime;
+    @JsonProperty(value = "properties")
+    private Properties properties;
 
     /**
      * The resource name.
@@ -55,8 +65,8 @@ public class StorageContainer extends SubResource {
      *
      * @return the lastModifiedTime value
      */
-    public DateTime lastModifiedTime() {
-        return this.lastModifiedTime;
+    public String lastModifiedTime() {
+        return this.properties == null ? null : properties.lastModifiedTime;
     }
 
     /**

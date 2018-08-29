@@ -30,10 +30,11 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureManagementHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.ODataParam;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.api.GetAccountsListResponse;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.api.GetAccountsListResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccountBasic;
+import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -72,7 +73,9 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
     private static final String REST_SEGMENT_ADL_ACCOUNT = "providers/Microsoft.DataLakeAnalytics/accounts";
 
     // FIXME!!!
-    private static final String ACCOUNT_FILTER = CommonSettings.getAdEnvironment().endpoints().getOrDefault("dataLakeSparkAccountFilter", "");
+    private static final String ACCOUNT_FILTER = CommonSettings.getAdEnvironment().endpoints()
+            .getOrDefault("dataLakeSparkAccountFilter",
+                    "length(name) gt 4 and substring(name, length(name) sub 4) ge '-c00' and substring(name, length(name) sub 4) le '-c99'");
 
     @NotNull
     private final HashMap<String, AzureHttpObservable> httpMap = new HashMap<>();
@@ -86,7 +89,11 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
     public AzureSparkServerlessClusterManager() {
         this.httpMap.put("common", new AzureHttpObservable(ApiVersion.VERSION));
 
+        // Invalid cached accounts when signing out or changing subscription selection
         AuthMethodManager.getInstance().addSignOutEventListener(() -> accounts = ImmutableSortedSet.of());
+        if (getAzureManager() != null) {
+            getAzureManager().getSubscriptionManager().addListener(ev -> accounts = ImmutableSortedSet.of());
+        }
     }
 
     //
@@ -114,6 +121,11 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
         }
     }
 
+    /**
+     * Get the cached clusters, non-block
+     *
+     * @return Immutable sorted IClusterDetail set
+     */
     @NotNull
     @Override
     public ImmutableSortedSet<? extends IClusterDetail> getClusters() {
@@ -133,7 +145,13 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
             return this;
         }
 
-        return get().toBlocking().singleOrDefault(this);
+        try {
+            return get().toBlocking().singleOrDefault(this);
+        } catch (Exception ex) {
+            log().warn("Got exceptions when refresh Azure Data Lake Spark pool: " + ex);
+
+            return this;
+        }
     }
 
     public Observable<AzureSparkServerlessClusterManager> get() {
@@ -142,15 +160,27 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
                 .defaultIfEmpty(this);
     }
 
+    /**
+     * Deep fetch all accounts' clusters
+     *
+     * @return Chained call result of this
+     */
     public Observable<AzureSparkServerlessClusterManager> fetchClusters() {
         return get()
                 .map(AzureSparkServerlessClusterManager::getAccounts)
                 .flatMap(Observable::from)
-                .observeOn(Schedulers.io())
-                .flatMap(AzureSparkServerlessAccount::get)
+                .flatMap(account -> account.get().onErrorReturn(err -> {
+                    log().warn(String.format("Can't get the account %s details: %s", account.getName(), err));
+
+                    return account;
+                }))
                 .map(account -> account.getClusters())
                 .flatMap(Observable::from)
-                .flatMap(cluster -> ((AzureSparkServerlessCluster)cluster).get())
+                .flatMap(cluster -> ((AzureSparkServerlessCluster)cluster).get().onErrorReturn(err -> {
+                    log().warn(String.format("Can't get the cluster %s details: %s", cluster.getName(), err));
+
+                    return (AzureSparkServerlessCluster) cluster;
+                }))
                 .toSortedList()
                 .map(clusters -> this)
                 .defaultIfEmpty(this);
@@ -159,12 +189,13 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
     private Observable<List<Triple<SubscriptionDetail, DataLakeAnalyticsAccountBasic, DataLakeAnalyticsAccount>>>
     getAzureDataLakeAccountsRequest() {
         if (getAzureManager() == null) {
-            return Observable.empty();
+            return Observable.error(new AuthException(
+                    "Can't get Azure Data Lake account since the user isn't signed in, please sign in by Azure Explorer."));
         }
 
         // Loop subscriptions to get all accounts
         return Observable
-                .fromCallable(() -> getAzureManager().getSubscriptionManager().getSubscriptionDetails())
+                .fromCallable(() -> getAzureManager().getSubscriptionManager().getSelectedSubscriptionDetails())
                 .flatMap(Observable::from)             // Get Subscription details one by one
                 .map(sub -> Pair.of(
                         sub,
@@ -256,6 +287,10 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
         return concat(from(getAccounts()), get().flatMap(manager -> from(manager.getAccounts())))
                 .isEmpty()
                 .map(isEmpty -> !isEmpty)
-                .onErrorReturn(err -> false);
+                .onErrorReturn(err -> {
+                    log().warn("Checking Azure Data Lake Spark pool got error: " + err);
+
+                    return false;
+                });
     }
 }

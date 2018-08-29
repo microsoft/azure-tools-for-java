@@ -36,10 +36,10 @@ import com.microsoft.azure.management.network.PublicIPAddress;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.fluentcore.model.Creatable;
 import com.microsoft.azure.management.storage.AccessTier;
-import com.microsoft.azure.management.storage.Encryption;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuName;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.management.storage.StorageAccountSkuType;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -63,17 +63,25 @@ public class AzureSDKManager {
         } else {
             newStorageAccountWithGroup = newStorageAccountBlank.withExistingResourceGroup(resourceGroup);
         }
-        if (kind == Kind.BLOB_STORAGE) {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withBlobStorageAccountKind().withAccessTier(accessTier);
-        } else {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKind();
+        switch (kind) {
+	        case STORAGE:
+		        	newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKind();
+		        	break;
+	        case STORAGE_V2:
+		        	newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKindV2();
+		        	break;
+	        case BLOB_STORAGE:
+		        	newStorageAccountWithGroup = newStorageAccountWithGroup.withBlobStorageAccountKind().withAccessTier(accessTier);
+		        	break;
+		    default:
+		    	    throw new Exception("Unknown Storage Account Kind:" + kind.toString());
         }
 
         if (enableEncription) {
-            newStorageAccountWithGroup = newStorageAccountWithGroup.withEncryption(new Encryption());
+            newStorageAccountWithGroup = newStorageAccountWithGroup.withBlobEncryption();
         }
 
-        return newStorageAccountWithGroup.withSku(SkuName.fromString(skuName)).create();
+        return newStorageAccountWithGroup.withSku(StorageAccountSkuType.fromSkuName(SkuName.fromString(skuName))).create();
     }
 
     public static VirtualMachine createVirtualMachine(String subscriptionId, @NotNull String name, @NotNull String resourceGroup, boolean withNewResourceGroup,

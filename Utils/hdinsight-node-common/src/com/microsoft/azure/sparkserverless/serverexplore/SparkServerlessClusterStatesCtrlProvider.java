@@ -1,5 +1,6 @@
 package com.microsoft.azure.sparkserverless.serverexplore;
 
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
@@ -10,7 +11,7 @@ import rx.schedulers.Schedulers;
 import java.net.URI;
 import java.util.Optional;
 
-public class SparkServerlessClusterStatesCtrlProvider {
+public class SparkServerlessClusterStatesCtrlProvider implements ILogger {
     @NotNull
     private SettableControl<SparkServerlessClusterStatesModel> controllableView;
     @NotNull
@@ -27,14 +28,10 @@ public class SparkServerlessClusterStatesCtrlProvider {
         this.cluster = cluster;
     }
 
-    public Observable<SparkServerlessClusterStatesModel> updateAll() {
-        // refresh cluster property
-        return cluster.get()
-                .observeOn(ideSchedulers.processBarVisibleAsync("Updating cluster status..."))
-                .map(clusterUpdated -> {
-                    SparkServerlessClusterStatesModel toUpdate = new SparkServerlessClusterStatesModel();
-                    controllableView.getData(toUpdate);
+    public Observable<AzureSparkServerlessCluster> updateAll() {
 
+        return Observable.just(new SparkServerlessClusterStatesModel())
+                .map(toUpdate -> {
                     String suffix = "/?adlaAccountName=" + cluster.getAccount().getName();
                     return toUpdate
                             .setMasterState(
@@ -55,10 +52,16 @@ public class SparkServerlessClusterStatesCtrlProvider {
                                     ? URI.create(String.valueOf(cluster.getSparkMasterUiUri() + suffix)) : null)
                             // cluster state here is set to align with cluster node state
                             .setClusterState(cluster.getMasterState() != null
-                                    ? cluster.getMasterState().toUpperCase() : cluster.getState().toUpperCase());
+                                    ? cluster.getMasterState().toUpperCase() : cluster.getState().toUpperCase())
+                            .setClusterID(cluster.getGuid());
                 })
-                .observeOn(ideSchedulers.dispatchUIThread())
-                .doOnNext(controllableView::setData);
+                .doOnNext(controllableView::setData)
+                .observeOn(Schedulers.io())
+                .flatMap(data -> cluster.get())
+                .onErrorReturn(err -> {
+                    log().warn(String.format("Can't get the cluster %s details: %s", cluster.getName(), err));
+                    return cluster;
+                });
     }
 
 }

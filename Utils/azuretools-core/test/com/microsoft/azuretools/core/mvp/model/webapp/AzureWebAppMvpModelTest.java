@@ -70,7 +70,6 @@ public class AzureWebAppMvpModelTest {
     private AppServicePlans appSrvPlans;
 
     private static final String MOCK_SUBSCRIPTION = "00000000-0000-0000-0000-000000000000";
-    private static final String MOCK_REDIS_ID = "test-id";
 
     @Before
     public void setUp() throws IOException {
@@ -426,7 +425,7 @@ public class AzureWebAppMvpModelTest {
 
     @Test
     public void testListJdks() {
-        assertEquals(JavaVersion.values().size() - 1, azureWebAppMvpModel.listJdks().size());
+        assertEquals(JdkModel.values().length, azureWebAppMvpModel.listJdks().size());
     }
 
     private void printException(Exception e) {

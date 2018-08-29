@@ -29,6 +29,8 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 
+import javax.swing.*;
+import javax.swing.tree.TreePath;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +72,8 @@ public abstract class RefreshableNode extends Node {
     protected void onNodeClick(NodeActionEvent e) {
         if (!initialized) {
             this.load(false);
+        } else {
+            expandNodeAfterLoading();
         }
     }
 
@@ -106,6 +110,12 @@ public abstract class RefreshableNode extends Node {
     protected void updateNodeNameAfterLoading() {
     }
 
+    protected void expandNodeAfterLoading() {
+        if (tree != null && treePath != null) {
+            tree.expandPath(treePath);
+        }
+    }
+
     public ListenableFuture<List<Node>> load(boolean forceRefresh) {
         initialized = true;
         final RefreshableNode node = this;
@@ -125,12 +135,14 @@ public abstract class RefreshableNode extends Node {
                                 public void onSuccess(List<Node> nodes) {
                                     updateName(nodeName, null);
                                     updateNodeNameAfterLoading();
+                                    expandNodeAfterLoading();
                                 }
 
                                 @Override
                                 public void onFailure(Throwable throwable) {
                                     updateName(nodeName, throwable);
                                     updateNodeNameAfterLoading();
+                                    expandNodeAfterLoading();
                                 }
                             });
                             node.refreshItems(future, forceRefresh);

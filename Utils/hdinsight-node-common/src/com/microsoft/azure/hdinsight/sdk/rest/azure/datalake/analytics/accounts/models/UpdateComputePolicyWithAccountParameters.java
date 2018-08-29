@@ -23,6 +23,8 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models;
 
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.rest.serializer.JsonFlatten;
 
@@ -31,6 +33,7 @@ import com.microsoft.rest.serializer.JsonFlatten;
  * Analytics account.
  */
 @JsonFlatten
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UpdateComputePolicyWithAccountParameters {
     /**
      * The unique name of the compute policy to update.
@@ -38,34 +41,43 @@ public class UpdateComputePolicyWithAccountParameters {
     @JsonProperty(value = "name", required = true)
     private String name;
 
-    /**
-     * The AAD object identifier for the entity to create a policy for.
-     */
-    @JsonProperty(value = "properties.objectId")
-    private UUID objectId;
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class Properties {
+        /**
+         * The AAD object identifier for the entity to create a policy for.
+         */
+        @JsonProperty(value = "objectId")
+        private UUID objectId;
+
+        /**
+         * The type of AAD object the object identifier refers to. Possible values
+         * include: 'User', 'Group', 'ServicePrincipal'.
+         */
+        @JsonProperty(value = "objectType")
+        private AADObjectType objectType;
+
+        /**
+         * The maximum degree of parallelism per job this user can use to submit
+         * jobs. This property, the min priority per job property, or both must be
+         * passed.
+         */
+        @JsonProperty(value = "maxDegreeOfParallelismPerJob")
+        private Integer maxDegreeOfParallelismPerJob;
+
+        /**
+         * The minimum priority per job this user can use to submit jobs. This
+         * property, the max degree of parallelism per job property, or both must
+         * be passed.
+         */
+        @JsonProperty(value = "minPriorityPerJob")
+        private Integer minPriorityPerJob;
+    }
 
     /**
-     * The type of AAD object the object identifier refers to. Possible values
-     * include: 'User', 'Group', 'ServicePrincipal'.
+     * The properties
      */
-    @JsonProperty(value = "properties.objectType")
-    private AADObjectType objectType;
-
-    /**
-     * The maximum degree of parallelism per job this user can use to submit
-     * jobs. This property, the min priority per job property, or both must be
-     * passed.
-     */
-    @JsonProperty(value = "properties.maxDegreeOfParallelismPerJob")
-    private Integer maxDegreeOfParallelismPerJob;
-
-    /**
-     * The minimum priority per job this user can use to submit jobs. This
-     * property, the max degree of parallelism per job property, or both must
-     * be passed.
-     */
-    @JsonProperty(value = "properties.minPriorityPerJob")
-    private Integer minPriorityPerJob;
+    @JsonProperty(value = "properties")
+    private Properties properties;
 
     /**
      * Get the name value.
@@ -93,7 +105,7 @@ public class UpdateComputePolicyWithAccountParameters {
      * @return the objectId value
      */
     public UUID objectId() {
-        return this.objectId;
+        return this.properties == null ? null : properties.objectId;
     }
 
     /**
@@ -103,7 +115,11 @@ public class UpdateComputePolicyWithAccountParameters {
      * @return the UpdateComputePolicyWithAccountParameters object itself.
      */
     public UpdateComputePolicyWithAccountParameters withObjectId(UUID objectId) {
-        this.objectId = objectId;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.objectId = objectId;
         return this;
     }
 
@@ -113,7 +129,7 @@ public class UpdateComputePolicyWithAccountParameters {
      * @return the objectType value
      */
     public AADObjectType objectType() {
-        return this.objectType;
+        return this.properties == null ? null : properties.objectType;
     }
 
     /**
@@ -123,7 +139,11 @@ public class UpdateComputePolicyWithAccountParameters {
      * @return the UpdateComputePolicyWithAccountParameters object itself.
      */
     public UpdateComputePolicyWithAccountParameters withObjectType(AADObjectType objectType) {
-        this.objectType = objectType;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.objectType = objectType;
         return this;
     }
 
@@ -133,7 +153,7 @@ public class UpdateComputePolicyWithAccountParameters {
      * @return the maxDegreeOfParallelismPerJob value
      */
     public Integer maxDegreeOfParallelismPerJob() {
-        return this.maxDegreeOfParallelismPerJob;
+        return this.properties == null ? null : properties.maxDegreeOfParallelismPerJob;
     }
 
     /**
@@ -143,7 +163,11 @@ public class UpdateComputePolicyWithAccountParameters {
      * @return the UpdateComputePolicyWithAccountParameters object itself.
      */
     public UpdateComputePolicyWithAccountParameters withMaxDegreeOfParallelismPerJob(Integer maxDegreeOfParallelismPerJob) {
-        this.maxDegreeOfParallelismPerJob = maxDegreeOfParallelismPerJob;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.maxDegreeOfParallelismPerJob = maxDegreeOfParallelismPerJob;
         return this;
     }
 
@@ -153,7 +177,7 @@ public class UpdateComputePolicyWithAccountParameters {
      * @return the minPriorityPerJob value
      */
     public Integer minPriorityPerJob() {
-        return this.minPriorityPerJob;
+        return this.properties == null ? null : properties.minPriorityPerJob;
     }
 
     /**
@@ -163,7 +187,11 @@ public class UpdateComputePolicyWithAccountParameters {
      * @return the UpdateComputePolicyWithAccountParameters object itself.
      */
     public UpdateComputePolicyWithAccountParameters withMinPriorityPerJob(Integer minPriorityPerJob) {
-        this.minPriorityPerJob = minPriorityPerJob;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.minPriorityPerJob = minPriorityPerJob;
         return this;
     }
 

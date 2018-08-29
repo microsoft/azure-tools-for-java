@@ -23,26 +23,41 @@
 package com.microsoft.azure.hdinsight.sdk.common.azure.serverless;
 
 import com.google.common.collect.ImmutableSortedSet;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureDataLakeHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
+import com.microsoft.azure.hdinsight.sdk.common.ODataParam;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccountBasic;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeStoreAccountInformation;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.JobInfoListResult;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.JobState;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ResourcePoolState;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkResourcePoolList;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.NameValuePair;
 import rx.Observable;
 
+import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
-public class AzureSparkServerlessAccount implements ClusterContainer {
+public class AzureSparkServerlessAccount implements ClusterContainer, Comparable<AzureSparkServerlessAccount>, ILogger {
     private static final String REST_SEGMENT_SPARK_RESOURCEPOOLS = "/activityTypes/spark/resourcePools";
+    private static final String REST_SEGMENT_JOB_LIST = "/Jobs";
+    private static final String REST_SEGMENT_JOB_MANAGEMENT_TENANTID = "/#@";
+    private static final String REST_SEGMENT_JOB_MANAGEMENT_RESOURCE = "/resource";
+
+    private static final String REST_SEGMENT_JOB_MANAGEMENT_SUFFIX = "/jobManagement";
 
     @NotNull
     private final SubscriptionDetail subscription;
@@ -97,9 +112,67 @@ public class AzureSparkServerlessAccount implements ClusterContainer {
         return uri;
     }
 
+    @Nullable
+    public URI getJobManagementURI() {
+        if (getId() == null || subscription.getTenantId() == null) {
+            log().warn(String.format("Can't get account ID or tenantID. AccountID:%s, tenantID:%s", getId(),
+                    subscription.getTenantId()));
+            return null;
+        }
+
+        try {
+            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+            if (azureManager == null) {
+                log().warn("Azure manager is null");
+                return null;
+            }
+
+            String url = azureManager.getPortalUrl()
+                    + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
+                    + subscription.getTenantId()
+                    + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
+                    + getId()
+                    + REST_SEGMENT_JOB_MANAGEMENT_SUFFIX;
+            return URI.create(url);
+        } catch (IOException ex) {
+            log().warn("Can't get Azure Manager now. Error: " + ex);
+            return null;
+        }
+    }
+
+    @Nullable
+    public String getId() {
+        return id;
+    }
+
+    public AzureSparkServerlessAccount setId(@Nullable String id) {
+        this.id = id;
+        return this;
+    }
+
     //
     // RestFUL API operations
     //
+
+    public Observable<Integer> getJobDegreeOfParallelism() {
+        return getJobs()
+                .flatMap(jobList -> Observable.from(jobList.value()))
+                .map(jobInfo -> jobInfo.degreeOfParallelism())
+                .defaultIfEmpty(0)
+                .reduce((a, b) -> a + b);
+    }
+
+    // TODO: handle job list pagination
+    public Observable<JobInfoListResult> getJobs() {
+        URI uri = getUri().resolve(REST_SEGMENT_JOB_LIST);
+        List<NameValuePair> parameters = Collections.singletonList(
+                ODataParam.filter(String.format("state eq '%s'",JobState.RUNNING.toString())));
+
+        return new AzureDataLakeHttpObservable(subscription.getTenantId(),
+                com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.ApiVersion.VERSION)
+                .withUuidUserAgent()
+                .get(uri.toString(), parameters, null, JobInfoListResult.class);
+    }
 
     @NotNull
     public Observable<AzureSparkServerlessAccount> get() {
@@ -170,7 +243,7 @@ public class AzureSparkServerlessAccount implements ClusterContainer {
 
     public AzureSparkServerlessAccount setBasicResponse(@Nullable DataLakeAnalyticsAccountBasic basicResponse) {
         this.basicResponse = basicResponse;
-
+        setId(this.basicResponse != null ? this.basicResponse.id() : null);
         return this;
     }
 
@@ -179,8 +252,8 @@ public class AzureSparkServerlessAccount implements ClusterContainer {
         return name;
     }
 
-    public int getMaxDegreeOfParallelism() {
-        return this.detailResponse != null ? this.detailResponse.maxDegreeOfParallelism() : 0;
+    public int getSystemMaxDegreeOfParallelism() {
+        return this.detailResponse != null ? this.detailResponse.systemMaxDegreeOfParallelism() : 0;
     }
 
     public AzureSparkServerlessAccount setDetailResponse(@Nullable DataLakeAnalyticsAccount detailResponse) {
@@ -210,5 +283,14 @@ public class AzureSparkServerlessAccount implements ClusterContainer {
                     .orElse(null);
         }
         return storageRootPath;
+    }
+
+    @Override
+    public int compareTo(@NotNull AzureSparkServerlessAccount other) {
+        if (this == other) {
+            return 0;
+        }
+
+        return getName().compareTo(other.getName());
     }
 }

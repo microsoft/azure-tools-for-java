@@ -24,6 +24,8 @@ package com.microsoft.intellij.forms;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.intellij.feedback.GithubIssue;
+import com.microsoft.intellij.feedback.ReportableError;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,6 +42,8 @@ public class ErrorMessageForm extends AzureDialogWrapper {
     private JCheckBox showAdvancedInfoCheckBox;
     private JTextArea detailTextArea;
     private JScrollPane detailScroll;
+    private JButton buttonFireIssue;
+    private String errorMessageDetail = "";
 
     public ErrorMessageForm(String title) {
         super((Project) null, true);
@@ -62,10 +66,16 @@ public class ErrorMessageForm extends AzureDialogWrapper {
 
         showAdvancedInfoCheckBox.setText(advancedInfoText);
 
+        buttonFireIssue.addActionListener(event -> {
+            new GithubIssue<>(new ReportableError(title, errorMessageDetail)).withLabel("bug").report();
+        });
+
         init();
     }
 
     public void showErrorMessageForm(String errorMessage, String details) {
+        this.errorMessageDetail = details;
+
         lblError.setText("<html><p>" + (errorMessage.length() > 260 ? errorMessage.substring(0, 260) + "..." : errorMessage) + "</p></html>");
         detailTextArea.setText(details);
         showAdvancedInfoCheckBox.setEnabled(!StringHelper.isNullOrWhiteSpace(details));

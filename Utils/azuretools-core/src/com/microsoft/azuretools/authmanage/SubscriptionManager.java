@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Created by shch on 10/3/2016.
@@ -74,6 +75,15 @@ public class SubscriptionManager {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
         return subscriptionDetails;
+    }
+
+    public synchronized List<SubscriptionDetail> getSelectedSubscriptionDetails() throws IOException {
+        System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSelectedSubscriptionDetails()");
+        updateSubscriptionDetailsIfNull();
+
+        return getAccountSidList().stream()
+                .map(sid -> subscriptionIdToSubscriptionDetailMap.get(sid))
+                .collect(Collectors.toList());
     }
 
     private void updateSubscriptionDetailsIfNull() throws IOException {

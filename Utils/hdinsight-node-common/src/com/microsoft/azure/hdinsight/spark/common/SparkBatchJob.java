@@ -509,11 +509,11 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                         ob.onNext(jobResp.getAppId());
                     }
                 }
+
+                ob.onCompleted();
             } catch (IOException ex) {
                 log().warn("Got exception " + ex.toString());
                 ob.onError(ex);
-            } finally {
-                ob.onCompleted();
             }
         });
     }
@@ -663,12 +663,11 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         return Observable.create(ob -> {
             try {
                 ob.onNext(HTTP_WEB_CLIENT.getPage(url));
+                ob.onCompleted();
             } catch (ScriptException e) {
                 log().debug("get Spark job Yarn attempts detail browser rendering Error", e);
             } catch (IOException e) {
                 ob.onError(e);
-            } finally {
-                ob.onCompleted();
             }
         });
     }

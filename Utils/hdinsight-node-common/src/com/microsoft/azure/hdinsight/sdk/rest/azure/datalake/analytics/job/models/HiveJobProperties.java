@@ -34,31 +34,31 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 @JsonTypeName("Hive")
 public class HiveJobProperties extends JobProperties {
     /**
-     * the Hive logs location.
+     * The Hive logs location.
      */
     @JsonProperty(value = "logsLocation", access = JsonProperty.Access.WRITE_ONLY)
     private String logsLocation;
 
     /**
-     * the location of Hive job output files (both execution output and results).
+     * The location of Hive job output files (both execution output and results).
      */
     @JsonProperty(value = "outputLocation", access = JsonProperty.Access.WRITE_ONLY)
     private String outputLocation;
 
     /**
-     * the number of statements that will be run based on the script.
+     * The number of statements that will be run based on the script.
      */
     @JsonProperty(value = "statementCount", access = JsonProperty.Access.WRITE_ONLY)
     private Integer statementCount;
 
     /**
-     * the number of statements that have been run based on the script.
+     * The number of statements that have been run based on the script.
      */
     @JsonProperty(value = "executedStatementCount", access = JsonProperty.Access.WRITE_ONLY)
     private Integer executedStatementCount;
 
     /**
-     * Get the logsLocation value.
+     * Get the Hive logs location.
      *
      * @return the logsLocation value
      */
@@ -67,7 +67,7 @@ public class HiveJobProperties extends JobProperties {
     }
 
     /**
-     * Get the outputLocation value.
+     * Get the location of Hive job output files (both execution output and results).
      *
      * @return the outputLocation value
      */
@@ -76,7 +76,7 @@ public class HiveJobProperties extends JobProperties {
     }
 
     /**
-     * Get the statementCount value.
+     * Get the number of statements that will be run based on the script.
      *
      * @return the statementCount value
      */
@@ -85,7 +85,7 @@ public class HiveJobProperties extends JobProperties {
     }
 
     /**
-     * Get the executedStatementCount value.
+     * Get the number of statements that have been run based on the script.
      *
      * @return the executedStatementCount value
      */

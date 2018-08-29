@@ -30,117 +30,81 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class JobInnerError {
     /**
-     * the diagnostic error code.
+     * The specific identifier for the type of error encountered in the job.
      */
-    @JsonProperty(value = "diagnosticCode", access = JsonProperty.Access.WRITE_ONLY)
-    private Integer diagnosticCode;
+    @JsonProperty(value = "errorId", access = JsonProperty.Access.WRITE_ONLY)
+    private String errorId;
 
     /**
-     * the severity level of the failure. Possible values include: 'Warning', 'Error', 'Info', 'SevereWarning',
+     * The severity level of the failure. Possible values include: 'Warning', 'Error', 'Info', 'SevereWarning',
      * 'Deprecated', 'UserWarning'.
      */
     @JsonProperty(value = "severity", access = JsonProperty.Access.WRITE_ONLY)
     private SeverityTypes severity;
 
     /**
-     * the details of the error message.
+     * The ultimate source of the failure (usually either SYSTEM or USER).
+     */
+    @JsonProperty(value = "source", access = JsonProperty.Access.WRITE_ONLY)
+    private String source;
+
+    /**
+     * The user friendly error message for the failure.
+     */
+    @JsonProperty(value = "message", access = JsonProperty.Access.WRITE_ONLY)
+    private String message;
+
+    /**
+     * The error message description.
+     */
+    @JsonProperty(value = "description", access = JsonProperty.Access.WRITE_ONLY)
+    private String description;
+
+    /**
+     * The details of the error message.
      */
     @JsonProperty(value = "details", access = JsonProperty.Access.WRITE_ONLY)
     private String details;
 
     /**
-     * the component that failed.
+     * The diagnostic error code.
+     */
+    @JsonProperty(value = "diagnosticCode", access = JsonProperty.Access.WRITE_ONLY)
+    private Integer diagnosticCode;
+
+    /**
+     * The component that failed.
      */
     @JsonProperty(value = "component", access = JsonProperty.Access.WRITE_ONLY)
     private String component;
 
     /**
-     * the specific identifier for the type of error encountered in the job.
+     * The recommended resolution for the failure, if any.
      */
-    @JsonProperty(value = "errorId", access = JsonProperty.Access.WRITE_ONLY)
-    private String errorId;
+    @JsonProperty(value = "resolution", access = JsonProperty.Access.WRITE_ONLY)
+    private String resolution;
 
     /**
-     * the link to MSDN or Azure help for this type of error, if any.
+     * The link to MSDN or Azure help for this type of error, if any.
      */
     @JsonProperty(value = "helpLink", access = JsonProperty.Access.WRITE_ONLY)
     private String helpLink;
 
     /**
-     * the internal diagnostic stack trace if the user requesting the job error details has sufficient permissions it
+     * The internal diagnostic stack trace if the user requesting the job error details has sufficient permissions it
      * will be retrieved, otherwise it will be empty.
      */
     @JsonProperty(value = "internalDiagnostics", access = JsonProperty.Access.WRITE_ONLY)
     private String internalDiagnostics;
 
     /**
-     * the user friendly error message for the failure.
-     */
-    @JsonProperty(value = "message", access = JsonProperty.Access.WRITE_ONLY)
-    private String message;
-
-    /**
-     * the recommended resolution for the failure, if any.
-     */
-    @JsonProperty(value = "resolution", access = JsonProperty.Access.WRITE_ONLY)
-    private String resolution;
-
-    /**
-     * the ultimate source of the failure (usually either SYSTEM or USER).
-     */
-    @JsonProperty(value = "source", access = JsonProperty.Access.WRITE_ONLY)
-    private String source;
-
-    /**
-     * the error message description.
-     */
-    @JsonProperty(value = "description", access = JsonProperty.Access.WRITE_ONLY)
-    private String description;
-
-    /**
-     * the inner error of this specific job error message, if any.
+     * The inner error of this specific job error message, if any.
      */
     @JsonProperty(value = "innerError", access = JsonProperty.Access.WRITE_ONLY)
     private JobInnerError innerError;
 
     /**
-     * Get the diagnosticCode value.
-     *
-     * @return the diagnosticCode value
-     */
-    public Integer diagnosticCode() {
-        return this.diagnosticCode;
-    }
-
-    /**
-     * Get the severity value.
-     *
-     * @return the severity value
-     */
-    public SeverityTypes severity() {
-        return this.severity;
-    }
-
-    /**
-     * Get the details value.
-     *
-     * @return the details value
-     */
-    public String details() {
-        return this.details;
-    }
-
-    /**
-     * Get the component value.
-     *
-     * @return the component value
-     */
-    public String component() {
-        return this.component;
-    }
-
-    /**
-     * Get the errorId value.
+     * Get the specific identifier for the type of error encountered in the job.
      *
      * @return the errorId value
      */
@@ -149,43 +113,16 @@ public class JobInnerError {
     }
 
     /**
-     * Get the helpLink value.
+     * Get the severity level of the failure. Possible values include: 'Warning', 'Error', 'Info', 'SevereWarning', 'Deprecated', 'UserWarning'.
      *
-     * @return the helpLink value
+     * @return the severity value
      */
-    public String helpLink() {
-        return this.helpLink;
+    public SeverityTypes severity() {
+        return this.severity;
     }
 
     /**
-     * Get the internalDiagnostics value.
-     *
-     * @return the internalDiagnostics value
-     */
-    public String internalDiagnostics() {
-        return this.internalDiagnostics;
-    }
-
-    /**
-     * Get the message value.
-     *
-     * @return the message value
-     */
-    public String message() {
-        return this.message;
-    }
-
-    /**
-     * Get the resolution value.
-     *
-     * @return the resolution value
-     */
-    public String resolution() {
-        return this.resolution;
-    }
-
-    /**
-     * Get the source value.
+     * Get the ultimate source of the failure (usually either SYSTEM or USER).
      *
      * @return the source value
      */
@@ -194,7 +131,16 @@ public class JobInnerError {
     }
 
     /**
-     * Get the description value.
+     * Get the user friendly error message for the failure.
+     *
+     * @return the message value
+     */
+    public String message() {
+        return this.message;
+    }
+
+    /**
+     * Get the error message description.
      *
      * @return the description value
      */
@@ -203,7 +149,61 @@ public class JobInnerError {
     }
 
     /**
-     * Get the innerError value.
+     * Get the details of the error message.
+     *
+     * @return the details value
+     */
+    public String details() {
+        return this.details;
+    }
+
+    /**
+     * Get the diagnostic error code.
+     *
+     * @return the diagnosticCode value
+     */
+    public Integer diagnosticCode() {
+        return this.diagnosticCode;
+    }
+
+    /**
+     * Get the component that failed.
+     *
+     * @return the component value
+     */
+    public String component() {
+        return this.component;
+    }
+
+    /**
+     * Get the recommended resolution for the failure, if any.
+     *
+     * @return the resolution value
+     */
+    public String resolution() {
+        return this.resolution;
+    }
+
+    /**
+     * Get the link to MSDN or Azure help for this type of error, if any.
+     *
+     * @return the helpLink value
+     */
+    public String helpLink() {
+        return this.helpLink;
+    }
+
+    /**
+     * Get the internal diagnostic stack trace if the user requesting the job error details has sufficient permissions it will be retrieved, otherwise it will be empty.
+     *
+     * @return the internalDiagnostics value
+     */
+    public String internalDiagnostics() {
+        return this.internalDiagnostics;
+    }
+
+    /**
+     * Get the inner error of this specific job error message, if any.
      *
      * @return the innerError value
      */

@@ -1,9 +1,32 @@
-<idea-plugin>
-  <version>3.8.0</version>
+<idea-plugin url="https://github.com/JetBrains/azure-tools-for-intellij">
+  <version>3.11.0</version>
 
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.11.0]</h3>
+      <ul>
+        <li>Added the main class hint when users choose to submit a Spark job using a local artifact file.</li>
+        <li>Added Spark cluster GUID for Spark cluster provision failure investigation.</li>
+        <li>Added the "AU not enough" warning message in Azure Data Lake Spark resource pool provision.</li>
+        <li>Added the job queue query to check AU consumption in Azure Data Lake Spark resource pool provision.</li>
+        <li>Fixed cluster total AU by using systemMaxAU instead of maxAU.</li>
+        <li>Refresh node automatically when node is clicked in Azure explorer.</li>
+        <li>Updated the Azure SDK to 1.14.0.</li>
+        <li>Fixed some bugs.</li>
+      </ul>
+      <h3>[3.10.0]</h3>
+      <ul>
+        <li>Supported to fix Spark job configuration in run configuration before Spark job submission.</li>
+        <li>Updated Application Insights library to v2.1.2.</li>
+        <li>Fixed some bugs.</li>
+      <ul>
+      <h3>[3.9.0]</h3>
+      <ul>
+        <li>Added Spark 2.3 support.</li>
+        <li>Spark in Azure Data Lake private preview refresh and bug fix.</li>
+        <li>Fixed some bugs.</li>
+      <ul>
       <h3>[3.8.0]</h3>
       <ul>
         <li>Supported to run Spark jobs in Azure Data Lake cluster (in private preview).</li>

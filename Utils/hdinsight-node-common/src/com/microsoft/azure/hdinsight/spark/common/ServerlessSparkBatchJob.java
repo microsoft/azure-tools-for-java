@@ -35,6 +35,7 @@ import rx.Observer;
 import java.io.File;
 import java.net.URI;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public class ServerlessSparkBatchJob extends SparkBatchJob {
@@ -47,7 +48,14 @@ public class ServerlessSparkBatchJob extends SparkBatchJob {
     @NotNull
     private Observable<? extends AzureSparkServerlessCluster> getCluster() {
         return AzureSparkServerlessClusterManager.getInstance()
-                .findCluster(getAzureSubmission().getAccountName(), getAzureSubmission().getClusterId());
+                .findCluster(getAzureSubmission().getAccountName(), getAzureSubmission().getClusterId())
+                .onErrorResumeNext(err -> Observable.error(err instanceof NoSuchElementException ?
+                        new SparkJobNotConfiguredException(String.format(
+                                "Can't find the target cluster %s(ID: %s) from account %s",
+                                getSubmissionParameter().getClusterName(),
+                                getAzureSubmission().getClusterId(),
+                                getAzureSubmission().getAccountName())) :
+                        err));
     }
 
 

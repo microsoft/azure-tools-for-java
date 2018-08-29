@@ -34,18 +34,23 @@ public class JobInfoListResult {
      * the list of JobInfo items..
      */
     @JsonProperty(value = "value", access = JsonProperty.Access.WRITE_ONLY)
-    private List<JobInformationBasic> value;
+    private List<JobInformation> value;
     /**
      * the link (url) to the next page of results.
      */
     @JsonProperty(value = "nextLink", access = JsonProperty.Access.WRITE_ONLY)
     private String nextLink;
+    /**
+     * the count of jobs in the result.
+     */
+    @JsonProperty(value = "count", access = JsonProperty.Access.WRITE_ONLY)
+    private String count;
 
     /**
      * Get the properties.
      * @return the properties value
      */
-    public List<JobInformationBasic> value() {
+    public List<JobInformation> value() {
         return this.value;
     }
 
@@ -55,5 +60,13 @@ public class JobInfoListResult {
      */
     public String nextLink() {
         return this.nextLink;
+    }
+
+    /**
+     * Get the count
+     * @return the count value
+     */
+    public String count() {
+        return this.count;
     }
 }

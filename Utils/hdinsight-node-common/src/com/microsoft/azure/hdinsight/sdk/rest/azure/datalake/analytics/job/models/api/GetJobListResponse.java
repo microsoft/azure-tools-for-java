@@ -21,10 +21,7 @@
  */
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.api;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.JobInfoListResult;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import java.util.Map;
 
@@ -35,17 +32,4 @@ import java.util.Map;
 public class GetJobListResponse {
     public static final Map<Integer, String> successfulResponses = ImmutableMap.of(
             200, "Successfully retrieved the list of jobs.");
-
-    @NotNull
-    @JsonProperty(value = "sparkResourcePoolList")
-    private JobInfoListResult jobInfoListResult;
-
-    /**
-     * Get the list of job information
-     * @return the jobInfoListResult value
-     */
-    @NotNull
-    public JobInfoListResult jobInfoListResult() {
-        return this.jobInfoListResult;
-    }
 }

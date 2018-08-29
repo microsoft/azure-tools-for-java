@@ -34,6 +34,7 @@ import java.util.Map;
 import com.microsoft.azure.management.resources.Subscription;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.junit.Test;
@@ -69,7 +70,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 @PowerMockIgnore("javax.net.ssl.*")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ AuthMethodManager.class, AzureManager.class, SubscriptionManager.class, DefaultLoader.class })
-
+@Ignore
 public class RedisCacheCreateIntegrationTest extends IntegrationTestBase {
 
     @Mock

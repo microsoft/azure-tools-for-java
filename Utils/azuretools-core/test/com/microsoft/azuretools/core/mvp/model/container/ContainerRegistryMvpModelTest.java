@@ -27,11 +27,11 @@ import com.microsoft.azure.Page;
 import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.implementation.AppServiceManager;
+import com.microsoft.azure.management.containerregistry.AccessKeyType;
 import com.microsoft.azure.management.containerregistry.Registries;
 import com.microsoft.azure.management.containerregistry.Registry;
-import com.microsoft.azure.management.containerregistry.RegistryPassword;
+import com.microsoft.azure.management.containerregistry.RegistryCredentials;
 import com.microsoft.azure.management.containerregistry.implementation.RegistryInner;
-import com.microsoft.azure.management.containerregistry.implementation.RegistryListCredentials;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
@@ -51,7 +51,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.anyString;
@@ -202,15 +204,15 @@ public class ContainerRegistryMvpModelTest {
     @Test(expected = Exception.class)
     public void testCreateImageSettingWithRegistryWhenCredentialIsNull() throws Exception {
         when(registryMock1.adminUserEnabled()).thenReturn(true);
-        when(registryMock1.listCredentials()).thenReturn(null);
+        when(registryMock1.getCredentials()).thenReturn(null);
         containerRegistryMvpModel.createImageSettingWithRegistry(registryMock1);
     }
 
     @Test(expected = Exception.class)
     public void testCreateImageSettingWithRegistryWhenUserNameIsEmpty() throws Exception {
         when(registryMock1.adminUserEnabled()).thenReturn(true);
-        RegistryListCredentials credentials = mock(RegistryListCredentials.class);
-        when(registryMock1.listCredentials()).thenReturn(credentials);
+        RegistryCredentials credentials = mock(RegistryCredentials.class);
+        when(registryMock1.getCredentials()).thenReturn(credentials);
         when(credentials.username()).thenReturn("");
         containerRegistryMvpModel.createImageSettingWithRegistry(registryMock1);
     }
@@ -218,35 +220,35 @@ public class ContainerRegistryMvpModelTest {
     @Test(expected = Exception.class)
     public void testCreateImageSettingWithRegistryWhenPasswordIsNull() throws Exception {
         when(registryMock1.adminUserEnabled()).thenReturn(true);
-        RegistryListCredentials credentials = mock(RegistryListCredentials.class);
-        when(registryMock1.listCredentials()).thenReturn(credentials);
-        when(credentials.passwords()).thenReturn(null);
+        RegistryCredentials credentials = mock(RegistryCredentials.class);
+        when(registryMock1.getCredentials()).thenReturn(credentials);
+        when(credentials.accessKeys()).thenReturn(null);
         containerRegistryMvpModel.createImageSettingWithRegistry(registryMock1);
     }
 
     @Test(expected = Exception.class)
     public void testCreateImageSettingWithRegistryWhenPasswordIsEmpty() throws Exception {
         when(registryMock1.adminUserEnabled()).thenReturn(true);
-        RegistryListCredentials credentials = mock(RegistryListCredentials.class);
-        when(registryMock1.listCredentials()).thenReturn(credentials);
-        List<RegistryPassword> passwords = new ArrayList<>();
-        when(credentials.passwords()).thenReturn(passwords);
+        RegistryCredentials credentials = mock(RegistryCredentials.class);
+        when(registryMock1.getCredentials()).thenReturn(credentials);
+        Map<AccessKeyType, String> passwords = new HashMap<>();
+        when(credentials.accessKeys()).thenReturn(passwords);
         containerRegistryMvpModel.createImageSettingWithRegistry(registryMock1);
     }
 
     @Test
     public void testCreateImageSettingWithRegistry() throws Exception {
         when(registryMock1.adminUserEnabled()).thenReturn(true);
-        RegistryListCredentials credentials = mock(RegistryListCredentials.class);
-        when(registryMock1.listCredentials()).thenReturn(credentials);
+        RegistryCredentials credentials = mock(RegistryCredentials.class);
+        when(registryMock1.getCredentials()).thenReturn(credentials);
         when(registryMock1.loginServerUrl()).thenReturn("url");
         when(credentials.username()).thenReturn("Alice");
-        List<RegistryPassword> passwords = new ArrayList<>();
-        passwords.add(new RegistryPassword().withValue("111"));
-        when(credentials.passwords()).thenReturn(passwords);
+        Map<AccessKeyType, String> passwords = new HashMap<>();
+        passwords.put(AccessKeyType.PRIMARY, "primaryKey");
+        when(credentials.accessKeys()).thenReturn(passwords);
         PrivateRegistryImageSetting setting = containerRegistryMvpModel.createImageSettingWithRegistry(registryMock1);
         assertEquals(setting.getUsername(), "Alice");
-        assertEquals(setting.getPassword(), "111");
+        assertEquals(setting.getPassword(), "primaryKey");
         assertEquals(setting.getServerUrl(), "url");
         assertEquals(setting.getImageNameWithTag(), "image:tag");
     }

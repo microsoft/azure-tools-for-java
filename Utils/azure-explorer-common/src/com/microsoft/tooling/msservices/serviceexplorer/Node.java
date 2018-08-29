@@ -30,6 +30,8 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 
+import javax.swing.*;
+import javax.swing.tree.TreePath;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Constructor;
@@ -51,7 +53,9 @@ public class Node implements MvpView {
     protected Object viewData;
     protected NodeAction clickAction = new NodeAction(this, CLICK_ACTION);
     protected List<NodeAction> nodeActions = new ArrayList<NodeAction>();
-    
+    protected JTree tree;
+    protected TreePath treePath;
+
     // marks this node as being in a "loading" state; when this field is true
     // the following consequences apply:
     //  [1] all actions associated with this node get disabled
@@ -81,6 +85,22 @@ public class Node implements MvpView {
     
     public String getId() {
         return id;
+    }
+
+    public JTree getTree() {
+        return tree;
+    }
+
+    public void setTree(JTree tree) {
+        this.tree = tree;
+    }
+
+    public TreePath getTreePath() {
+        return treePath;
+    }
+
+    public void setTreePath(TreePath treePath) {
+        this.treePath = treePath;
     }
 
     public String getName() {

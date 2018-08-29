@@ -23,6 +23,8 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models;
 
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.rest.serializer.JsonFlatten;
 import com.microsoft.azure.SubResource;
@@ -31,32 +33,42 @@ import com.microsoft.azure.SubResource;
  * Data Lake Analytics compute policy information.
  */
 @JsonFlatten
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ComputePolicy extends SubResource {
-    /**
-     * The AAD object identifier for the entity to create a policy for.
-     */
-    @JsonProperty(value = "properties.objectId", access = JsonProperty.Access.WRITE_ONLY)
-    private UUID objectId;
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class Properties {
+        /**
+         * The AAD object identifier for the entity to create a policy for.
+         */
+        @JsonProperty(value = "objectId", access = JsonProperty.Access.WRITE_ONLY)
+        private UUID objectId;
+
+        /**
+         * The type of AAD object the object identifier refers to. Possible values
+         * include: 'User', 'Group', 'ServicePrincipal'.
+         */
+        @JsonProperty(value = "objectType", access = JsonProperty.Access.WRITE_ONLY)
+        private AADObjectType objectType;
+
+        /**
+         * The maximum degree of parallelism per job this user can use to submit
+         * jobs.
+         */
+        @JsonProperty(value = "maxDegreeOfParallelismPerJob", access = JsonProperty.Access.WRITE_ONLY)
+        private Integer maxDegreeOfParallelismPerJob;
+
+        /**
+         * The minimum priority per job this user can use to submit jobs.
+         */
+        @JsonProperty(value = "minPriorityPerJob", access = JsonProperty.Access.WRITE_ONLY)
+        private Integer minPriorityPerJob;
+    }
 
     /**
-     * The type of AAD object the object identifier refers to. Possible values
-     * include: 'User', 'Group', 'ServicePrincipal'.
+     * The properties
      */
-    @JsonProperty(value = "properties.objectType", access = JsonProperty.Access.WRITE_ONLY)
-    private AADObjectType objectType;
-
-    /**
-     * The maximum degree of parallelism per job this user can use to submit
-     * jobs.
-     */
-    @JsonProperty(value = "properties.maxDegreeOfParallelismPerJob", access = JsonProperty.Access.WRITE_ONLY)
-    private Integer maxDegreeOfParallelismPerJob;
-
-    /**
-     * The minimum priority per job this user can use to submit jobs.
-     */
-    @JsonProperty(value = "properties.minPriorityPerJob", access = JsonProperty.Access.WRITE_ONLY)
-    private Integer minPriorityPerJob;
+    @JsonProperty(value = "properties")
+    private Properties properties;
 
     /**
      * The resource name.
@@ -76,7 +88,7 @@ public class ComputePolicy extends SubResource {
      * @return the objectId value
      */
     public UUID objectId() {
-        return this.objectId;
+        return properties == null ? null : properties.objectId;
     }
 
     /**
@@ -85,7 +97,7 @@ public class ComputePolicy extends SubResource {
      * @return the objectType value
      */
     public AADObjectType objectType() {
-        return this.objectType;
+        return properties == null ? null : properties.objectType;
     }
 
     /**
@@ -94,7 +106,7 @@ public class ComputePolicy extends SubResource {
      * @return the maxDegreeOfParallelismPerJob value
      */
     public Integer maxDegreeOfParallelismPerJob() {
-        return this.maxDegreeOfParallelismPerJob;
+        return properties == null ? null : properties.maxDegreeOfParallelismPerJob;
     }
 
     /**
@@ -103,7 +115,7 @@ public class ComputePolicy extends SubResource {
      * @return the minPriorityPerJob value
      */
     public Integer minPriorityPerJob() {
-        return this.minPriorityPerJob;
+        return properties == null ? null : properties.minPriorityPerJob;
     }
 
     /**
