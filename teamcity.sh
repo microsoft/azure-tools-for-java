@@ -1,1 +1,2 @@
-PATH=%teamcity.tool.maven.3.5.2%/bin:$PATH ./BuildDevint -B
+echo "127.0.0.1 $(hostname)" >> /etc/hosts # without this spark-tools tests will fail in docker
+./BuildDevint -B
