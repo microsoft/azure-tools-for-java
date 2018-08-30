@@ -74,9 +74,11 @@ allprojects {
         switch (build_common_code_with) {
             case "rider":
                 version = rider_version
+                logger.lifecycle("COMMON_SDK=$rider_version")
                 break
             case "idea":
                 version = idea_version
+                logger.lifecycle("COMMON_SDK=$idea_version")
                 break
             default:
                 throw new Exception("Unsupported value for build_common_code_with: " + build_common_code_with)
