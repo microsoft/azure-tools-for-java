@@ -1,5 +1,12 @@
 import org.apache.tools.ant.filters.*
 
+buildscript {
+    repositories {
+        maven { url "https://cache-redirector.jetbrains.com/intellij-repository/snapshots" }
+        maven { url "https://cache-redirector.jetbrains.com/maven-central" }
+    }
+}
+
 plugins {
     id "org.jetbrains.intellij" version "0.3.4"
     id "org.jetbrains.kotlin.jvm" version "1.2.50"
@@ -9,6 +16,11 @@ processResources {
     filesMatching('**/ApplicationInsights.xml') {
         filter(ReplaceTokens, tokens: ["applicationinsights.key": project.property("applicationinsights.key")])
     }
+}
+
+repositories {
+    maven { url "https://cache-redirector.jetbrains.com/intellij-repository/snapshots" }
+    maven { url "https://cache-redirector.jetbrains.com/maven-central" }
 }
 
 dependencies {
