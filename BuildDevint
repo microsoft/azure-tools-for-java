@@ -8,11 +8,12 @@ cd "$SCRIPTPATH"
 MAVEN_QUIET=""
 INTELLIJ_VERSION=false
 
-while getopts ":hqv" option; do
+while getopts ":hqvB" option; do
     case $option in
-        h) echo "usage: $0 [-h] [-q] [-v]"; exit ;;
+        h) echo "usage: $0 [-h] [-q] [-v] [-B]"; exit ;;
         q) MAVEN_QUIET="-q" ;;
         v) INTELLIJ_VERSION=true ;;
+        B) MAVEN_QUIET="--batch-mode" ;;
         ?) echo "error: option -$OPTARG is not implemented"; exit ;;
     esac
 done
