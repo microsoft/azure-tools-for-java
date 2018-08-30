@@ -1,0 +1,1 @@
+PATH=%teamcity.tool.maven.3.5.2%/bin:$PATH ./BuildDevint -B
