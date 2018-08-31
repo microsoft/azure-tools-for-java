@@ -38,30 +38,20 @@ cp ./PluginsAndFeatures/azure-toolkit-for-eclipse/WindowsAzurePlugin4EJ/target/W
 
 chmod +x ./tools/IntellijVersionHelper
 
-# Build intellij 2018.1 plugin
-if [ $INTELLIJ_VERSION == "true" ] ; then
-    ./tools/IntellijVersionHelper 2018.1
-fi
-
-(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Pidea_version=IC-2018.1 -Pdep_plugins=org.intellij.scala:2018.1.8 -Pbuild_common_code_with=idea)
-
-cp ./PluginsAndFeatures/azure-toolkit-for-intellij/idea/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.1.zip
-
 # Build intellij 2018.2 compatible plugin
 if [ $INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper 2018.2
 fi
 
-(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Pbuild_common_code_with=idea)
+(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info clean)
+(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :idea:buildPlugin -s -Pbuild_common_code_with=idea)
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/idea/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.2.zip
+
+# Build JetBrains Rider 2018.2 plugin
+(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider)
+cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-2018.2.zip
 
 # Remove extracted IDEs to get more disk space
 # rm -fr $HOME/.gradle/caches/modules-2/files-*/com.jetbrains.intellij.idea/
-
-# Build JetBrains Rider 2018.1 plugin
-(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --stacktrace clean -s)
-(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --stacktrace :rider:buildPlugin -s -Pbuild_common_code_with=rider)
-
-cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-2018.1.zip
 
 echo "ALL BUILD SUCCESSFUL"
