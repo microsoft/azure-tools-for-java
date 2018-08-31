@@ -3,6 +3,7 @@ package com.microsoft.azure.sparkserverless.serverexplore;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
+import com.microsoft.azure.hdinsight.sdk.common.HttpResponseWithRequestIdException;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
@@ -64,6 +65,9 @@ public class SparkServerlessClusterUpdateCtrlProvider implements ILogger {
                         cluster.update(toUpdate.getWorkerNumberOfContainers())
                                 .map(cluster -> toUpdate)
                                 .onErrorReturn(err -> {
+                                    if (err instanceof HttpResponseWithRequestIdException) {
+                                        toUpdate.setRequestId(((HttpResponseWithRequestIdException) err).getRequestId());
+                                    }
                                     log().warn("Error update a cluster. " + err.toString());
                                     return toUpdate.setErrorMessage(err.getMessage());
                                 }))

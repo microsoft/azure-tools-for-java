@@ -229,7 +229,8 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
             }
             printLogLine(ConsoleViewContentType.ERROR_OUTPUT, data.getErrorMessage());
         }
-        printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "Cluster guid: " + data.getClusterGuid());
+        printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "x-ms-request-id: " + data.getRequestId());
+        printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "cluster guid: " + data.getClusterGuid());
     }
 
     // Components -> Data

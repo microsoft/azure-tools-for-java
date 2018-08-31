@@ -237,8 +237,10 @@ public class HttpObservable {
                         StatusLine status = streamResp.getStatusLine();
 
                         if (status.getStatusCode() >= 300) {
-                            return Observable.error(new HttpResponseException(status.getStatusCode(),
-                                                                              status.getReasonPhrase()));
+                            Header requestIdHeader = streamResp.getFirstHeader("x-ms-request-id");
+                            return Observable.error(new HttpResponseWithRequestIdException(status.getStatusCode(),
+                                    status.getReasonPhrase(),
+                                    requestIdHeader != null ? requestIdHeader.getValue() : ""));
                         }
 
                         return Observable.just(StreamUtil.getResultFromHttpResponse(streamResp));

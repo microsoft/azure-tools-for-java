@@ -55,6 +55,18 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
 
     @Nullable
     private String errorMessage;
+    @Nullable
+    private String requestId;
+
+    @Nullable
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public SparkServerlessClusterProvisionSettingsModel setRequestId(@Nullable String requestId) {
+        this.requestId = requestId;
+        return this;
+    }
 
     @NotNull
     public String getClusterName() {

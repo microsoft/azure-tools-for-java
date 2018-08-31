@@ -117,9 +117,9 @@ public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvision
             if (!errorMessageDecorator.isExpanded()) {
                 errorMessageDecorator.setOn(true);
             }
-
             printLogLine(ConsoleViewContentType.ERROR_OUTPUT, data.getErrorMessage());
         }
-        printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "Cluster guid: " + cluster.getGuid());
+        printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "x-ms-request-id: " + data.getRequestId());
+        printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "cluster guid: " + cluster.getGuid());
     }
 }
