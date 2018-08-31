@@ -1,10 +1,10 @@
 #!/bin/bash
 
-tc_open {
+tc_open() {
     echo "##teamcity[blockOpened name='$1' description='$1']"
 }
 
-tc_close {
+tc_close() {
     echo "##teamcity[blockClosed name='$1']"
 }
 
