@@ -1,14 +1,19 @@
 #!/bin/bash
 
-function tc-open { echo "##teamcity[blockOpened name='$1' description='$1']" }
-function tc-close { echo "##teamcity[blockClosed name='$name']" }
+tc_open {
+    echo "##teamcity[blockOpened name='$1' description='$1']"
+}
+
+tc_close {
+    echo "##teamcity[blockClosed name='$1']"
+}
 
 set -e
 
 # echo shell commands when they are executed.
 set -x
 
-tc-open "Initializing build script"
+tc_open "Initializing build script"
 {
     SCRIPTPATH=$(pwd -P)
     cd "$SCRIPTPATH"
@@ -33,26 +38,26 @@ tc-open "Initializing build script"
         mkdir -p $ARTIFACTS_DIR
     fi
 }
-tc-close "Initializing build script"
+tc_close "Initializing build script"
 
 # Build Utils
-tc-open "Building Utils"
+tc_open "Building Utils"
 {    
     mvn install -f $SCRIPTPATH/Utils/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
     mvn install -f $SCRIPTPATH/PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
 }
-tc-close "Building Utils"
+tc_close "Building Utils"
 
 # Build eclipse plugin
-tc-open "Building Eclipse plugin"
+tc_open "Building Eclipse plugin"
 {    
     mvn clean install -f $SCRIPTPATH/PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml $MAVEN_QUIET
     cp ./PluginsAndFeatures/azure-toolkit-for-eclipse/WindowsAzurePlugin4EJ/target/WindowsAzurePlugin4EJ*.zip ./$ARTIFACTS_DIR/WindowsAzurePlugin4EJ.zip
 }
-tc-close "Building Eclipse plugin"
+tc_close "Building Eclipse plugin"
 
 # Build intellij 2018.2 compatible plugin
-tc-open "Building IDEA plugin"
+tc_open "Building IDEA plugin"
 {    
     if [ $INTELLIJ_VERSION == "true" ] ; then
         ./tools/IntellijVersionHelper 2018.2
@@ -62,14 +67,14 @@ tc-open "Building IDEA plugin"
     (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :idea:buildPlugin -s -Pbuild_common_code_with=idea)
     cp ./PluginsAndFeatures/azure-toolkit-for-intellij/idea/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.2.zip
 }
-tc-close "Building IDEA plugin"
+tc_close "Building IDEA plugin"
 
 # Build JetBrains Rider 2018.2 plugin
-tc-open "Building Rider plugin"
+tc_open "Building Rider plugin"
 {
     (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider)
     cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-2018.2.zip
 }
-tc-close "Building Rider plugin"
+tc_close "Building Rider plugin"
 
 echo "ALL BUILD SUCCESSFUL"
