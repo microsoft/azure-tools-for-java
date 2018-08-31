@@ -16,7 +16,11 @@
 
   <depends>com.intellij.modules.rider</depends>
 
-  <extensions defaultExtensionNs="com.intellij"/>
+  <extensions defaultExtensionNs="com.intellij">
+    <configurationType implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfigurationType"/>
+    <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppRunner"/>
+    <rider.publishConfigurationProvider implementation="com.microsoft.intellij.runner.webapp.AzureDotNetWebAppContextPublishProvider" />
+  </extensions>
 
   <application-components>
     <component>
@@ -31,6 +35,21 @@
     </component>
   </project-components>
 
-  <actions/>
+  <actions>
+    <group id="RiderPublishToAzureGroup"
+           text="Publish Group"
+           description="Publish Group"
+           popup="true"
+           icon="/icons/Publish_16.png">
+      <add-to-group group-id="AzureToolbarGroup" anchor="first" />
+    </group>
+    <group id="AzureRiderPopupGroup"
+           class="com.microsoft.intellij.actions.AzureRiderPopupGroup"
+           text="Azure"
+           description="Azure"
+           icon="/icons/azure.png"
+           popup="true">
+    </group>
+  </actions>
 
 </idea-plugin>
