@@ -1,16 +1,21 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.ui
 
+import com.intellij.openapi.project.Project
+import com.jetbrains.rider.model.PublishableProjectModel
+import com.jetbrains.rider.model.publishableProjectsModel
+import com.jetbrains.rider.projectView.solution
 import com.microsoft.azure.management.appservice.AppServicePlan
-import com.microsoft.azure.management.appservice.RuntimeStack
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
+import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
-import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
+import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory
+import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
 import rx.Observable
 
@@ -25,6 +30,7 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
         private const val CANNOT_LIST_LOCATION = "Failed to list locations."
         private const val CANNOT_LIST_PRICING_TIER = "Failed to list pricing tier."
         private const val CANNOT_LIST_RUNTIME_STACK = "Failed to list runtime stack."
+        private const val CANNOT_LIST_SQL_DATABASE = "Failed to list SQL Database."
     }
 
     fun onRefresh() {
@@ -119,6 +125,17 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
             errorHandler(CANNOT_LIST_RUNTIME_STACK, e)
         }
     }
+
+    fun onLoadSqlDatabase() {
+Observable.fromCallable<List<SqlDatabase>> { AzureDatabaseMvpModel.listSqlDatabases() }
+.subscribeOn(schedulerProvider.io())
+.subscribe( { databases ->
+DefaultLoader.getIdeHelper().invokeLater {
+if (isViewDetached) return@invokeLater
+mvpView.fillSqlDatabase(databases)
+}
+}, { e -> errorHandler(CANNOT_LIST_SQL_DATABASE, e as Exception) })
+}
 
     private fun loadWebApps(forceRefresh: Boolean) {
         Observable.fromCallable<List<ResourceEx<WebApp>>> { AzureDotNetWebAppMvpModel.listWebApps(forceRefresh) }

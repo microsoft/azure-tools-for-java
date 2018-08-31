@@ -16,6 +16,7 @@ import com.jetbrains.rider.util.firstOrNull
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.appservice.RuntimeStack
+import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.AzureRunConfigurationBase
@@ -73,6 +74,13 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
 
         private const val RUNTIME_MISSING = "Runtime not provided"
 
+        private const val CONNECTION_STRING_NAME_MISSING = "Connection string name not provided"
+        private const val CONNECTION_STRING_NAME_ALREADY_EXISTS = "Connection String with name '%s' already exists"
+
+        private const val DATABASE_MISSING = "Database not provided"
+        private const val DATABASE_ADMIN_LOGIN_MISSING = "SQL Database admin login name not provided"
+        private const val DATABASE_ADMIN_PASSWORD_MISSING = "SQL Database admin password not provided"
+
         private const val WEB_APP_TARGET_NAME = "Microsoft.WebApplication.targets"
     }
 
@@ -120,6 +128,13 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         validateSignIn()
         validateProject()
 
+        if (myModel.isDatabaseConnectionEnabled) {
+            validateDatabase(myModel.database)
+            checkValueSet(myModel.sqlDatabaseAdminLogin, DATABASE_ADMIN_LOGIN_MISSING)
+            checkValueSet(myModel.sqlDatabaseAdminPassword, DATABASE_ADMIN_PASSWORD_MISSING)
+            // validateSqlDbAdminPassword("aaa", charArrayOf())
+        }
+
         if (myModel.isCreatingWebApp) {
             validateWebAppName(myModel.webAppName)
             checkValueIsSet(myModel.subscriptionId, SUBSCRIPTION_MISSING)
@@ -146,6 +161,9 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
 
         } else {
             checkValueIsSet(myModel.webAppId, WEB_APP_MISSING)
+
+            if (myModel.isDatabaseConnectionEnabled)
+                checkConnectionStringNameExistence(myModel.connectionStringName, myModel.webAppId)
         }
     }
 
@@ -293,6 +311,36 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
 
     //endregion App Service Plan
 
+    //region Database Connection
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun validateDatabase(database: SqlDatabase?) {
+        if (database == null) throw RuntimeConfigurationError(DATABASE_MISSING)
+    }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun checkConnectionStringNameExistence(name: String?, webAppId: String) {
+
+        val connectionStringName = checkValueSet(name, CONNECTION_STRING_NAME_MISSING)
+
+        val webApp = AzureModel.getInstance().resourceGroupToWebAppMap
+                .flatMap { it.value }
+                .firstOrNull { it.id() == webAppId } ?: return
+
+        if (webApp.connectionStrings.containsKey(connectionStringName))
+            throw RuntimeConfigurationError(String.format(CONNECTION_STRING_NAME_ALREADY_EXISTS, connectionStringName))
+    }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun validateSqlDbAdminPassword(login: String?, password: CharArray?) {
+        val sqlDbAdminLogin = checkValueSet(login, "AAAAA")
+        val sqlDbAdminPassword = checkValueSet(password, "BBBBB")
+    }
+
+    //endregion Database Connection
+
+    //region Private Methods and Operators
+
     /**
      * Validate Azure resource name against Azure requirements
      * Please see for details - https://docs.microsoft.com/en-us/azure/architecture/best-practices/naming-conventions
@@ -344,4 +392,12 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     private fun checkValueIsSet(value: RuntimeStack?, message: String) {
         if (value == null) throw RuntimeConfigurationError(message)
     }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun checkValueSet(value: CharArray?, message: String): CharArray {
+        if (value == null || value.isEmpty()) throw RuntimeConfigurationError(message)
+        return value
+    }
+
+    //endregion Private Methods and Operators
 }

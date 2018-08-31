@@ -1,9 +1,13 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.ui
 
-import com.microsoft.azure.management.appservice.*
+import com.jetbrains.rider.model.PublishableProjectModel
+import com.microsoft.azure.management.appservice.AppServicePlan
+import com.microsoft.azure.management.appservice.PricingTier
+import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
+import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView
 
@@ -24,4 +28,8 @@ interface DotNetWebAppDeployMvpView : MvpView {
     fun fillPricingTier(prices: List<PricingTier>)
 
     fun fillRuntime(runtimes: List<RuntimeStack>)
+
+    fun fillSqlDatabase(database: List<SqlDatabase>)
+
+    fun fillPublishableProject(publishableProjects: List<PublishableProjectModel>)
 }

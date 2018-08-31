@@ -18,7 +18,9 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <configurationType implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfigurationType"/>
+    <configurationType implementation="com.microsoft.intellij.runner.db.dbconfig.RiderDatabaseConfigurationType"/>
     <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppRunner"/>
+    <programRunner implementation="com.microsoft.intellij.runner.db.dbconfig.RiderDatabaseRunner"/>
     <rider.publishConfigurationProvider implementation="com.microsoft.intellij.runner.webapp.AzureDotNetWebAppContextPublishProvider" />
   </extensions>
 
@@ -36,6 +38,11 @@
   </project-components>
 
   <actions>
+    <action id="Actions.RiderDatabaseDeployAction"
+            class="com.microsoft.intellij.actions.RiderDatabaseDeployAction"
+            text="Publish SQL Database"
+            description="Publish Azure SQL Database"
+            icon="/icons/PublishWebApp_16.png" />
     <group id="RiderPublishToAzureGroup"
            text="Publish Group"
            description="Publish Group"

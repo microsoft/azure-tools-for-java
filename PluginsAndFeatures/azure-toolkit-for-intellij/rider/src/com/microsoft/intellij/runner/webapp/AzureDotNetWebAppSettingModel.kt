@@ -4,6 +4,7 @@ import com.jetbrains.rider.model.PublishableProjectModel
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.appservice.RuntimeStack
+import com.microsoft.azure.management.sql.SqlDatabase
 
 class AzureDotNetWebAppSettingModel {
     var subscriptionId: String = ""
@@ -21,6 +22,12 @@ class AzureDotNetWebAppSettingModel {
     var operatingSystem: OperatingSystem = defaultOperatingSystem
     var location: String = ""
     var pricingTier: PricingTier = defaultPricingTier
+
+    var isDatabaseConnectionEnabled: Boolean = false
+    var connectionStringName: String? = null
+    var database: SqlDatabase? = null
+    var sqlDatabaseAdminLogin: String? = null
+    var sqlDatabaseAdminPassword = charArrayOf()
 
     var runtime: RuntimeStack = defaultRuntime
 

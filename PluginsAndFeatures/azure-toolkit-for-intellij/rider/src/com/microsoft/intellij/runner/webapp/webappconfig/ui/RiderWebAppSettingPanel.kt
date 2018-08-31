@@ -13,6 +13,8 @@ import com.intellij.ui.AnActionButton
 import com.intellij.ui.HideableDecorator
 import com.intellij.ui.ListCellRendererWrapper
 import com.intellij.ui.ToolbarDecorator
+import com.intellij.ui.components.JBPasswordField
+import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.table.JBTable
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.model.publishableProjectsModel
@@ -25,13 +27,16 @@ import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
+import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
+import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfiguration
+import icons.RiderIcons
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -72,6 +77,8 @@ class RiderWebAppSettingPanel(project: Project,
         private const val TABLE_EMPTY_MESSAGE = "No available Web Apps."
         private const val PROJECTS_EMPTY_MESSAGE = "No projects to publish"
 
+        private const val DATABASES_EMPTY_MESSAGE = "No Azure SQL database"
+
         private const val DEFAULT_APP_NAME = "webapp-"
         private const val DEFAULT_PLAN_NAME = "appsp-"
         private const val DEFAULT_RGP_NAME = "rg-webapp-"
@@ -97,9 +104,14 @@ class RiderWebAppSettingPanel(project: Project,
 
     private var lastSelectedRuntime: RuntimeStack = AzureDotNetWebAppSettingModel.defaultRuntime
 
+    private var lastSelectedDatabase: SqlDatabase? = null
+
     // Panels
     override var mainPanel: JPanel = pnlRoot
     private lateinit var pnlRoot: JPanel
+    private lateinit var tpRoot: JBTabbedPane
+    private lateinit var pnlWebAppConfigTab: JPanel
+    private lateinit var pnlDbConnectionTab: JPanel
 
     // Existing Web App
     private lateinit var rdoUseExistingWebApp: JRadioButton
@@ -157,6 +169,14 @@ class RiderWebAppSettingPanel(project: Project,
     private lateinit var pnlProject: JPanel
     private lateinit var cbProject: JComboBox<PublishableProjectModel>
 
+    private lateinit var pnlDbConnection: JPanel
+    private lateinit var checkBoxEnableDbConnection: JCheckBox
+    private lateinit var pnlDbConnectionStringSettings: JPanel
+    private lateinit var txtConnectionStringName: JTextField
+    private lateinit var cbDatabase: JComboBox<SqlDatabase>
+    private lateinit var lblSqlDbAdminLogin: JLabel
+    private lateinit var passSqlDbAdminPassword: JBPasswordField
+
     override val panelName: String
         get() = WEB_APP_SETTINGS_PANEL_NAME
 
@@ -201,6 +221,7 @@ class RiderWebAppSettingPanel(project: Project,
         } else {
             rdoUseExistingWebApp.doClick()
         }
+
         btnRefresh.isEnabled = false
 
         myView.onLoadSubscription()
@@ -208,6 +229,7 @@ class RiderWebAppSettingPanel(project: Project,
         myView.onLoadPricingTier()
         myView.onLoadOperatingSystem()
         myView.onLoadRuntime()
+        myView.onLoadSqlDatabase()
     }
 
     /**
@@ -270,6 +292,13 @@ class RiderWebAppSettingPanel(project: Project,
             // runtime only makes sense for linux
             if (model.operatingSystem == OperatingSystem.WINDOWS) model.runtime = AzureDotNetWebAppSettingModel.defaultRuntime
             else model.runtime = lastSelectedRuntime
+        }
+
+        if (checkBoxEnableDbConnection.isSelected) {
+            model.connectionStringName = txtConnectionStringName.text
+            model.database = lastSelectedDatabase
+            model.sqlDatabaseAdminLogin = lblSqlDbAdminLogin.text
+            model.sqlDatabaseAdminPassword = passSqlDbAdminPassword.password
         }
     }
 
@@ -487,6 +516,25 @@ class RiderWebAppSettingPanel(project: Project,
         }
     }
 
+/**
+* Fill [cbDatabase] with available Azure SQL Databases
+*/
+override fun fillSqlDatabase(database: List<SqlDatabase>) {
+cbDatabase.removeAllItems()
+
+if (database.isEmpty()) {
+lastSelectedDatabase = null
+return
+}
+database.sortedBy { it.name() }
+.forEach {
+cbDatabase.addItem(it)
+if (it == configuration.model.database) {
+cbDatabase.selectedItem = it
+}
+}
+}
+
     /**
      * Let the presenter release the view. Will be called by:
      * [com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppSettingEditor.disposeEditor].
@@ -640,6 +688,10 @@ class RiderWebAppSettingPanel(project: Project,
         }
     }
 
+    private fun initDbConnectionEnableCheckbox() {
+        checkBoxEnableDbConnection.addActionListener { toggleDbConnectionEnable(checkBoxEnableDbConnection.isSelected) }
+    }
+
     private fun toggleDeployPanel(isUsingExisting: Boolean) {
         pnlExistingWebApp.isVisible = isUsingExisting
         pnlCreateWebApp.isVisible = !isUsingExisting
@@ -684,6 +736,12 @@ class RiderWebAppSettingPanel(project: Project,
         }
     }
 
+    private fun toggleDbConnectionEnable(isSelected: Boolean) {
+        txtConnectionStringName.isEnabled = isSelected
+        cbDatabase.isEnabled = isSelected
+        passSqlDbAdminPassword.isEnabled = isSelected
+    }
+
     //endregion Button Groups Behavior
 
     //region Configure UI Components
@@ -704,6 +762,9 @@ class RiderWebAppSettingPanel(project: Project,
 
         initProjectsComboBox()
         setProjectsComboBox(project)
+
+        initDbConnectionEnableCheckbox()
+        setSqlDatabaseComboBox()
 
         setHeaderDecorators()
     }
@@ -886,12 +947,46 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     /**
-     * Reset Subscription combo box values from selected item
+     * Configure SQL Database combo box
      */
+    private fun setSqlDatabaseComboBox() {
+
+        cbDatabase.renderer = object : ListCellRendererWrapper<SqlDatabase>() {
+            override fun customize(list: JList<*>?,
+                                   sqlDatabase: SqlDatabase?,
+                                   index: Int,
+                                   selected: Boolean,
+                                   hasFocus: Boolean) {
+                // Text
+                if (sqlDatabase == null) {
+                    setText(DATABASES_EMPTY_MESSAGE)
+                    return
+                }
+
+                setText("${sqlDatabase.name()} (${sqlDatabase.resourceGroupName()})")
+
+                // Icon
+                setIcon(RiderIcons.Publish.PublishAzure)
+            }
+        }
+
+        cbDatabase.addActionListener {
+            val database = cbDatabase.getItemAt(cbDatabase.selectedIndex) ?: return@addActionListener
+            if (lastSelectedDatabase != database) {
+                AzureDatabaseMvpModel.getSqlServerAdminLoginAsync(database).subscribe { lblSqlDbAdminLogin.text = it }
+                lastSelectedDatabase = database
+            }
+        }
+    }
+
+    /**
+    * Reset Subscription combo box values from selected item
+    */
     private fun resetSubscriptionComboBoxValues() {
         resetResourceGroupComboBoxValues()
         resetLocationComboBoxValues()
         resetAppServicePlanComboBoxValues()
+        resetSqlDatabaseComboBoxValues()
     }
 
     /**
@@ -915,6 +1010,12 @@ class RiderWebAppSettingPanel(project: Project,
      */
     private fun resetLocationComboBoxValues() {
         cbLocation.removeAllItems()
+    }
+
+    private fun resetSqlDatabaseComboBoxValues() {
+        cbDatabase.removeAllItems()
+        lblSqlDbAdminLogin.text = NOT_APPLICABLE
+        passSqlDbAdminPassword.text = ""
     }
 
     /**
