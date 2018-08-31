@@ -2,7 +2,6 @@ import org.apache.tools.ant.filters.*
 
 buildscript {
     repositories {
-        mavenLocal()
         maven { url "https://cache-redirector.jetbrains.com/intellij-repository/snapshots" }
         maven { url "https://cache-redirector.jetbrains.com/maven-central" }
     }
@@ -20,7 +19,6 @@ processResources {
 }
 
 repositories {
-    mavenLocal()
     maven { url "https://cache-redirector.jetbrains.com/intellij-repository/snapshots" }
     maven { url "https://cache-redirector.jetbrains.com/maven-central" }
 }
@@ -61,9 +59,9 @@ allprojects {
     group 'com.microsoft.azuretools'
 
     repositories {
+        maven { url new File(rootProject.projectDir, '../../.repository').toURI() } // to snap to the private maven repo on Jenkins if any
         mavenLocal()
-        maven { url "https://cache-redirector.jetbrains.com/intellij-repository/snapshots" }
-        maven { url "https://cache-redirector.jetbrains.com/maven-central" }
+        mavenCentral()
     }
 
     compileJava {
