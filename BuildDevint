@@ -56,7 +56,7 @@ fi
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/idea/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.2.zip
 
 # Remove extracted IDEs to get more disk space
-rm -fr $HOME/.gradle/caches/modules-2/files-*/com.jetbrains.intellij.idea/
+# rm -fr $HOME/.gradle/caches/modules-2/files-*/com.jetbrains.intellij.idea/
 
 # Build JetBrains Rider 2018.1 plugin
 (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --stacktrace clean -s)
