@@ -33,7 +33,7 @@ class RiderWebAppRunState(project: Project,
         private const val TARGET_NAME = "WebApp"
 
         // Subscription
-        private const val SUBSCRIPTION_ID_NOT_DEFIED = "Subscription ID is not defined"
+        private const val SUBSCRIPTION_ID_NOT_DEFINED = "Subscription ID is not defined"
 
         private const val PROJECT_NOT_DEFINED = "Project is not defined"
 
@@ -49,8 +49,7 @@ class RiderWebAppRunState(project: Project,
 
         private const val APP_SERVICE_PLAN_ID_NOT_DEFINED = "App Service Plan ID is not defined"
         private const val APP_SERVICE_PLAN_NAME_NOT_DEFINED = "App Service Plan Name is not defined"
-        private const val APP_SERVICE_PLAN_REGION_NOT_DEFINED = "App Service Plan Region is not defined"
-        private const val APP_SERVICE_PLAN_PRICING_TIER_NOT_DEFINED = "App Service Plan Pricing Tier is not defined"
+        private const val APP_SERVICE_PLAN_LOCATION_NOT_DEFINED = "App Service Plan Location is not defined"
 
         private const val DEPLOY_SUCCESSFUL = "Deploy successfully!"
         private const val DEPLOY_FAILED = "Deploy failed"
@@ -71,8 +70,8 @@ class RiderWebAppRunState(project: Project,
         private const val URL_KUDU_BASE = ".scm$URL_AZURE_BASE"
         private const val URL_KUDU_ZIP_DEPLOY = "$URL_KUDU_BASE/api/zipdeploy"
 
-        private const val COLLECT_ARTIFACTS_TIMEOUT = 180000L
-        private const val DEPLOY_TIMEOUT = 180000L
+        private const val COLLECT_ARTIFACTS_TIMEOUT_MS = 180000L
+        private const val DEPLOY_TIMEOUT_MS = 180000L
         private const val SLEEP_TIME_MS = 5000L
         private const val UPLOADING_MAX_TRY = 3
     }
@@ -112,7 +111,7 @@ class RiderWebAppRunState(project: Project,
         if (myModel.isCreatingWebApp && AzureUIRefreshCore.listeners != null) {
             AzureUIRefreshCore.execute(AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null))
         }
-        updateConfigurationDataModel(result)
+        resetModelAfterDeploy(result)
         AzureWebAppMvpModel.getInstance().listWebApps(true)
     }
 
@@ -147,35 +146,34 @@ class RiderWebAppRunState(project: Project,
     private fun getOrCreateWebAppFromConfiguration(model: AzureDotNetWebAppSettingModel,
                                                    processHandler: RunProcessHandler): WebApp {
 
-        val subscriptionId = model.subscriptionId ?: throw Exception(SUBSCRIPTION_ID_NOT_DEFIED)
+        if (model.subscriptionId.isEmpty()) throw Exception(SUBSCRIPTION_ID_NOT_DEFINED)
 
         if (model.isCreatingWebApp) {
             processHandler.setText(String.format(WEB_APP_CREATE, myModel.webAppName))
 
-            val webAppName = model.webAppName ?: throw Exception(WEB_APP_NAME_NOT_DEFINED)
-            val resourceGroupName = model.resourceGroupName ?: throw Exception(RESOURCE_GROUP_NAME_NOT_DEFINED)
+            if (model.webAppName.isEmpty()) throw Exception(WEB_APP_NAME_NOT_DEFINED)
+            if (model.resourceGroupName.isEmpty()) throw Exception(RESOURCE_GROUP_NAME_NOT_DEFINED)
 
             val webApp =
                     if (model.isCreatingAppServicePlan) {
-                        val appServicePlanName = model.appServicePlanName ?: throw Exception(APP_SERVICE_PLAN_NAME_NOT_DEFINED)
-                        val pricingTier = model.pricingTier ?: throw Exception(APP_SERVICE_PLAN_PRICING_TIER_NOT_DEFINED)
-                        val region = model.region ?: throw Exception(APP_SERVICE_PLAN_REGION_NOT_DEFINED)
+                        if (model.appServicePlanName.isEmpty()) throw Exception(APP_SERVICE_PLAN_NAME_NOT_DEFINED)
+                        if (model.location.isEmpty()) throw Exception(APP_SERVICE_PLAN_LOCATION_NOT_DEFINED)
                         AzureDotNetWebAppMvpModel.createWebAppWithNewAppServicePlan(
-                                subscriptionId,
-                                webAppName,
-                                appServicePlanName,
-                                pricingTier,
-                                region,
+                                model.subscriptionId,
+                                model.webAppName,
+                                model.appServicePlanName,
+                                model.pricingTier,
+                                model.location,
                                 model.isCreatingResourceGroup,
-                                resourceGroupName)
+                                model.resourceGroupName)
                     } else {
-                        val appServicePlanId = model.appServicePlanId ?: throw Exception(APP_SERVICE_PLAN_ID_NOT_DEFINED)
+                        if (model.appServicePlanId.isEmpty()) throw Exception(APP_SERVICE_PLAN_ID_NOT_DEFINED)
                         AzureDotNetWebAppMvpModel.createWebAppWithExistingAppServicePlan(
-                                subscriptionId,
-                                webAppName,
-                                appServicePlanId,
+                                model.subscriptionId,
+                                model.webAppName,
+                                model.appServicePlanId,
                                 model.isCreatingResourceGroup,
-                                resourceGroupName)
+                                model.resourceGroupName)
                     }
 
             processHandler.setText(String.format(WEB_APP_CREATE_SUCCESSFUL, webApp.id()))
@@ -184,8 +182,8 @@ class RiderWebAppRunState(project: Project,
 
         processHandler.setText(String.format(WEB_APP_GET_EXISTING, model.webAppId))
 
-        val webAppId = model.webAppId ?: throw Exception(WEB_APP_ID_NOT_DEFINED)
-        return AzureDotNetWebAppMvpModel.getDotNetWebApp(subscriptionId, webAppId)
+        if (model.webAppId.isEmpty()) throw Exception(WEB_APP_ID_NOT_DEFINED)
+        return AzureDotNetWebAppMvpModel.getDotNetWebApp(model.subscriptionId, model.webAppId)
     }
 
     /**
@@ -204,17 +202,17 @@ class RiderWebAppRunState(project: Project,
      *
      * @param webApp - [WebApp] instance that was deployed
      */
-    private fun updateConfigurationDataModel(webApp: WebApp) {
+    private fun resetModelAfterDeploy(webApp: WebApp) {
         myModel.isCreatingWebApp = false
         myModel.webAppId = webApp.id()
-        myModel.webAppName = null
+        myModel.webAppName = ""
 
         myModel.isCreatingResourceGroup = false
         myModel.resourceGroupName = webApp.resourceGroupName()
 
         myModel.isCreatingAppServicePlan = false
         myModel.appServicePlanId = webApp.appServicePlanId()
-        myModel.appServicePlanName = null
+        myModel.appServicePlanName = ""
     }
 
     //endregion Web App
@@ -302,7 +300,7 @@ class RiderWebAppRunState(project: Project,
                 publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, false, onFinish)
             }
         }
-        event.wait(COLLECT_ARTIFACTS_TIMEOUT)
+        event.wait(COLLECT_ARTIFACTS_TIMEOUT_MS)
 
         return outPath.toFile()
     }
@@ -312,26 +310,29 @@ class RiderWebAppRunState(project: Project,
      *
      * @param fromFile - file to be added to ZIP archive
      * @param processHandler - a process handler to show a process message
-     * @param deleteOriginal - delete original file that is used for compression
+     * @param deleteOriginal - delete original file
      *
      * @return [File] Zip archive file
      */
-    @Throws(IOException::class)
+    @Throws(FileNotFoundException::class)
     private fun zipProjectArtifacts(fromFile: File,
                                     processHandler: RunProcessHandler,
                                     deleteOriginal: Boolean = true): File {
+
+        if (!fromFile.exists()) throw FileNotFoundException("Original file '${fromFile.path}' not found")
+
         try {
             val toZip = FileUtil.createTempFile(fromFile.nameWithoutExtension, ".zip", true)
             packToZip(fromFile, toZip)
-
             processHandler.setText(String.format(ZIP_FILE_CREATE_SUCCESSFUL, toZip.path))
+
+            if (deleteOriginal)
+                FileUtil.delete(fromFile)
+
             return toZip
-        } catch (e: IOException) {
+        } catch (e: Throwable) {
             processHandler.setText("$ZIP_FILE_NOT_CREATED: $e")
             throw e
-        } finally {
-            if (fromFile.exists() && deleteOriginal)
-                FileUtil.delete(fromFile)
         }
     }
 
@@ -378,7 +379,7 @@ class RiderWebAppRunState(project: Project,
         session.setCredentials(profile.gitUsername(), profile.gitPassword())
 
         var success = false
-        var count = 0
+        var uploadCount = 0
         var response: Response? = null
 
         try {
@@ -387,14 +388,14 @@ class RiderWebAppRunState(project: Project,
                     response = session.publishZip(
                             "https://" + webAppName.toLowerCase() + URL_KUDU_ZIP_DEPLOY,
                             zipFile,
-                            DEPLOY_TIMEOUT)
+                            DEPLOY_TIMEOUT_MS)
                     success = response.isSuccessful
                 } catch (e: Throwable) {
-                    processHandler.setText("Attempt ${count + 1} of $UPLOADING_MAX_TRY. $ZIP_DEPLOY_PUBLISH_FAIL: $e")
+                    processHandler.setText("Attempt ${uploadCount + 1} of $UPLOADING_MAX_TRY. $ZIP_DEPLOY_PUBLISH_FAIL: $e")
                     e.printStackTrace()
                 }
 
-            } while (!success && ++count < UPLOADING_MAX_TRY && isWaitFinished())
+            } while (!success && ++uploadCount < UPLOADING_MAX_TRY && isWaitFinished())
 
             if (response == null || !success) {
                 val message = "$ZIP_DEPLOY_PUBLISH_FAIL: Response code: ${response?.code()}. Response message: ${response?.message()}"
@@ -432,8 +433,8 @@ class RiderWebAppRunState(project: Project,
                 if (window != null && window.isAvailable)
                     window.show(null)
             }
-        } catch (e: Exception) {
-            // Intentional catch all
+        } catch (e: Throwable) {
+            // Ignore if we unable to switch back to Run tool window (it is not alive and we cannot log the error)
         }
     }
 

@@ -10,7 +10,7 @@ class RiderWebAppConfigurationType : ConfigurationType {
 
     companion object {
 
-        private const val RUN_CONFIG_TYPE_ID = "RiderAzurePublish"
+        private const val RUN_CONFIG_TYPE_ID = "AzureDotNetWebAppPublish"
         private const val RUN_CONFIG_TYPE_NAME = "Azure Publish to Web App"
         private const val RUN_CONFIG_TYPE_DESCRIPTION = "Azure Publish to Web App configuration"
     }
@@ -30,7 +30,7 @@ class RiderWebAppConfigurationType : ConfigurationType {
     }
 
     override fun getIcon(): Icon {
-        // TODO: SD -- This should be replaced with a custom icon
+        // TODO: This should be replaced with a custom icon (RIDER-18401)
         return RiderIcons.Publish.PublishAzure
     }
 

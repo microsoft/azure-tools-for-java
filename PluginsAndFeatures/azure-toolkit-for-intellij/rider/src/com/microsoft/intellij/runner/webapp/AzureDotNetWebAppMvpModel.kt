@@ -1,9 +1,7 @@
 package com.microsoft.intellij.runner.webapp
 
 import com.microsoft.azure.management.Azure
-import com.microsoft.azure.management.appservice.OperatingSystem
-import com.microsoft.azure.management.appservice.PricingTier
-import com.microsoft.azure.management.appservice.WebApp
+import com.microsoft.azure.management.appservice.*
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory
@@ -31,7 +29,8 @@ object AzureDotNetWebAppMvpModel {
                                                resourceGroupName: String): WebApp {
 
         val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-        return webAppWithExistingAppServicePlan(azure, webAppName, appServicePlanId, isCreatingResourceGroup, resourceGroupName).create()
+        return webAppWithExistingAppServicePlan(azure, webAppName, appServicePlanId, isCreatingResourceGroup, resourceGroupName)
+                .create()
     }
 
     fun getDotNetWebApp(subscriptionId: String, webAppId: String): WebApp {
@@ -42,14 +41,16 @@ object AzureDotNetWebAppMvpModel {
 
     //region Check Existence
 
+    /**
+     * Check an Azure Resource Group name existence over azure portal
+     *
+     * Note: Method should be used in configuration validation logic.
+     *       Suppress for now, because current configuration validation mechanism does not allow to easily make async call for validation
+     */
+    @Suppress("unused")
     fun checkResourceGroupExistence(subscriptionId: String, resourceGroupName: String): Boolean {
         val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-        return azure.resourceGroups().checkExistence(resourceGroupName)
-    }
-
-    fun checkResourceGroupExistenceAsync(subscriptionId: String, resourceGroupName: String): Observable<Boolean> {
-        return Observable.fromCallable<Boolean> { checkResourceGroupExistence(subscriptionId, resourceGroupName) }
-                .subscribeOn(SchedulerProviderFactory.getInstance().schedulerProvider.io())
+        return azure.resourceGroups().contain(resourceGroupName)
     }
 
     //endregion Check Existence

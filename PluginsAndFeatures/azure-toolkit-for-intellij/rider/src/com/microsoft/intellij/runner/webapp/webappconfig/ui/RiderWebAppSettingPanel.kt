@@ -79,10 +79,10 @@ class RiderWebAppSettingPanel(project: Project,
     // cache variable
     private var selectedWebApp: ResourceEx<WebApp>? = null
     private var cachedWebAppList = listOf<ResourceEx<WebApp>>()
-    private var lastSelectedSubscriptionId: String? = null
-    private var lastSelectedResourceGroupName: String? = null
-    private var lastSelectedLocation: String? = null
-    private var lastSelectedPriceTier: PricingTier? = null
+    private var lastSelectedSubscriptionId: String = ""
+    private var lastSelectedResourceGroupName: String = ""
+    private var lastSelectedLocation: String = ""
+    private var lastSelectedPriceTier: PricingTier = PricingTier.STANDARD_S1
 
     // widgets
     override var mainPanel: JPanel = pnlRoot
@@ -142,9 +142,9 @@ class RiderWebAppSettingPanel(project: Project,
 
         val model = configuration.model
 
-        txtWebAppName.text = model.webAppName ?: "$DEFAULT_APP_NAME$dateString"
-        txtCreateAppServicePlan.text = model.appServicePlanName ?: "$DEFAULT_PLAN_NAME$dateString"
-        txtNewResGrp.text = model.resourceGroupName ?: "$DEFAULT_RGP_NAME$dateString"
+        txtWebAppName.text = if (model.webAppName.isEmpty()) "$DEFAULT_APP_NAME$dateString" else model.webAppName
+        txtCreateAppServicePlan.text = if (model.appServicePlanName.isEmpty()) "$DEFAULT_PLAN_NAME$dateString" else model.appServicePlanName
+        txtNewResGrp.text = if (model.resourceGroupName.isEmpty()) "$DEFAULT_RGP_NAME$dateString" else model.resourceGroupName
 
         if (model.isCreatingWebApp) {
             rdoCreateNew.doClick()
@@ -182,8 +182,8 @@ class RiderWebAppSettingPanel(project: Project,
 
         if (rdoUseExist.isSelected) {
             model.isCreatingWebApp = false
-            model.subscriptionId = selectedWebApp?.subscriptionId
-            model.webAppId = selectedWebApp?.resource?.id()
+            model.subscriptionId = selectedWebApp?.subscriptionId ?: ""
+            model.webAppId = selectedWebApp?.resource?.id() ?: ""
         } else if (rdoCreateNew.isSelected) {
             model.isCreatingWebApp = true
 
@@ -204,7 +204,7 @@ class RiderWebAppSettingPanel(project: Project,
                 model.isCreatingAppServicePlan = true
                 model.appServicePlanName = txtCreateAppServicePlan.text
 
-                model.region = lastSelectedLocation
+                model.location = lastSelectedLocation
                 model.pricingTier = lastSelectedPriceTier
             } else {
                 model.isCreatingAppServicePlan = false
@@ -229,32 +229,26 @@ class RiderWebAppSettingPanel(project: Project,
         btnRefresh.isEnabled = true
         table.emptyText.text = TABLE_EMPTY_MESSAGE
 
-        val sortedList = webAppLists.sortedWith(Comparator { left, right ->
+        val sortedWebApps = webAppLists.sortedWith(Comparator { left, right ->
             left.subscriptionId.compareTo(right.subscriptionId, ignoreCase = true)
         })
 
-        cachedWebAppList = sortedList
-        if (sortedList.isNotEmpty()) {
-            val model = table.model as DefaultTableModel
-            model.dataVector.clear()
+        cachedWebAppList = sortedWebApps
 
-            var subscriptions: List<Subscription> = ArrayList()
-            try {
-                subscriptions = AuthMethodManager.getInstance().azureManager.subscriptions
-            } catch (exception: Exception) {
-                exception.printStackTrace()
-            }
+        if (sortedWebApps.isEmpty()) return
 
-            for (i in sortedList.indices) {
-                val app = sortedList[i].resource
-                val subscriptionName = subscriptions
-                        .filter { it.subscriptionId() == app.manager().subscriptionId() }
-                        .map { it.displayName() }
-                        .firstOrNull() ?: ""
-                model.addRow(arrayOf(app.name(), app.resourceGroupName(), app.region().name(), subscriptionName))
-                if (app.id() == configuration.model.webAppId) {
-                    table.setRowSelectionInterval(i, i)
-                }
+        val model = table.model as DefaultTableModel
+        model.dataVector.clear()
+
+        val subscriptionManager = AuthMethodManager.getInstance().azureManager.subscriptionManager
+
+        for (i in sortedWebApps.indices) {
+            val webApp = sortedWebApps[i].resource
+            val subscription = subscriptionManager.subscriptionIdToSubscriptionMap[webApp.manager().subscriptionId()] ?: continue
+
+            model.addRow(arrayOf(webApp.name(), webApp.resourceGroupName(), webApp.region().name(), subscription.displayName()))
+            if (webApp.id() == configuration.model.webAppId) {
+                table.setRowSelectionInterval(i, i)
             }
         }
     }
@@ -262,7 +256,7 @@ class RiderWebAppSettingPanel(project: Project,
     override fun fillSubscription(subscriptions: List<Subscription>) {
         cbSubscription.removeAllItems()
         if (subscriptions.isEmpty()) {
-            lastSelectedSubscriptionId = null
+            lastSelectedSubscriptionId = ""
             return
         }
 
@@ -277,7 +271,7 @@ class RiderWebAppSettingPanel(project: Project,
     override fun fillResourceGroup(resourceGroups: List<ResourceGroup>) {
         cbExistResGrp.removeAllItems()
         if (resourceGroups.isEmpty()) {
-            lastSelectedResourceGroupName = null
+            lastSelectedResourceGroupName = ""
             return
         }
 
@@ -310,13 +304,13 @@ class RiderWebAppSettingPanel(project: Project,
     override fun fillLocation(locations: List<Location>) {
         cbLocation.removeAllItems()
         if (locations.isEmpty()) {
-            lastSelectedLocation = null
+            lastSelectedLocation = ""
             return
         }
         locations.sortedWith(compareBy { it.displayName() })
                 .forEach { location ->
                     cbLocation.addItem(location)
-                    if (location.name() == configuration.model.region) {
+                    if (location.name() == configuration.model.location) {
                         cbLocation.selectedItem = location
                     }
                 }
