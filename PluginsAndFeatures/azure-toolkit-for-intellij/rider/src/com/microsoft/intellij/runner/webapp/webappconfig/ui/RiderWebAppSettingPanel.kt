@@ -9,7 +9,10 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.ui.*
+import com.intellij.ui.AnActionButton
+import com.intellij.ui.HideableDecorator
+import com.intellij.ui.ListCellRendererWrapper
+import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.table.JBTable
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.model.publishableProjectsModel
@@ -18,19 +21,14 @@ import com.jetbrains.rider.projectView.nodes.isProject
 import com.jetbrains.rider.projectView.nodes.isUnloadedProject
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.util.idea.lifetime
-import com.microsoft.azure.management.appservice.AppServicePlan
-import com.microsoft.azure.management.appservice.OperatingSystem
-import com.microsoft.azure.management.appservice.PricingTier
-import com.microsoft.azure.management.appservice.WebApp
+import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
-import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
-import com.microsoft.azuretools.utils.WebAppUtils
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
 import com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfiguration
 import java.io.File
@@ -44,7 +42,7 @@ import javax.swing.table.DefaultTableModel
  */
 class RiderWebAppSettingPanel(project: Project,
                               private val configuration: RiderWebAppConfiguration)
-    : AzureRiderSettingPanel<RiderWebAppConfiguration>(project), WebAppDeployMvpView {
+    : AzureRiderSettingPanel<RiderWebAppConfiguration>(project), DotNetWebAppDeployMvpView {
 
     companion object {
 
@@ -55,11 +53,15 @@ class RiderWebAppSettingPanel(project: Project,
 
         private const val HEADER_RESOURCE_GROUP = "Resource Group"
         private const val HEADER_APP_SERVICE_PLAN = "App Service Plan"
+        private const val HEADER_OPERATING_SYSTEM = "Operating System"
+        private const val HEADER_RUNTIME = "Runtime"
 
         private const val WEB_APP_TABLE_COLUMN_SUBSCRIPTION = "Subscription"
         private const val WEB_APP_TABLE_COLUMN_NAME = "Name"
         private const val WEB_APP_TABLE_COLUMN_RESOURCE_GROUP = "Resource group"
         private const val WEB_APP_TABLE_COLUMN_LOCATION = "Location"
+        private const val WEB_APP_TABLE_COLUMN_OS = "OS"
+        private const val WEB_APP_TABLE_COLUMN_DOTNET_VERSION = ".Net Version"
 
         private const val BUTTON_REFRESH_NAME = "Refresh"
 
@@ -74,48 +76,84 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     // presenter
-    private val myView = WebAppDeployViewPresenter<RiderWebAppSettingPanel>()
+    private val myView = DotNetWebAppDeployViewPresenter<RiderWebAppSettingPanel>()
 
     // cache variable
     private var selectedWebApp: ResourceEx<WebApp>? = null
     private var cachedWebAppList = listOf<ResourceEx<WebApp>>()
-    private var lastSelectedSubscriptionId: String = ""
-    private var lastSelectedResourceGroupName: String = ""
-    private var lastSelectedLocation: String = ""
-    private var lastSelectedPriceTier: PricingTier = PricingTier.STANDARD_S1
 
-    // widgets
+    private var lastSelectedSubscriptionId: String = ""
+
+    private var lastSelectedResourceGroupName: String = ""
+
+    private var lastSelectedOperatingSystem: OperatingSystem? = null
+
+    private var cachedAppServicePlan = listOf<AppServicePlan>()
+    private var lastSelectedLocation: String = ""
+    private var cachedPricingTier = listOf<PricingTier>()
+    private var lastSelectedPriceTier: PricingTier? = null
+
+    private var lastSelectedRuntime: RuntimeStack? = null
+
+    // Panels
     override var mainPanel: JPanel = pnlRoot
     private lateinit var pnlRoot: JPanel
-    private lateinit var pnlExist: JPanel
-    private lateinit var pnlCreate: JPanel
-    private lateinit var pnlWebAppTable: JPanel
-    private lateinit var rdoUseExist: JRadioButton
-    private lateinit var rdoCreateNew: JRadioButton
-    private lateinit var rdoCreateAppServicePlan: JRadioButton
-    private lateinit var rdoUseExistAppServicePlan: JRadioButton
-    private lateinit var rdoCreateResGrp: JRadioButton
-    private lateinit var rdoUseExistResGrp: JRadioButton
-    private lateinit var txtWebAppName: JTextField
-    private lateinit var txtCreateAppServicePlan: JTextField
-    private lateinit var txtNewResGrp: JTextField
-    private lateinit var txtSelectedWebApp: JTextField
-    private lateinit var cbSubscription: JComboBox<Subscription>
-    private lateinit var cbLocation: JComboBox<Location>
-    private lateinit var cbPricing: JComboBox<PricingTier>
-    private lateinit var cbExistAppServicePlan: JComboBox<AppServicePlan>
-    private lateinit var cbExistResGrp: JComboBox<ResourceGroup>
-    private lateinit var lblLocation: JLabel
-    private lateinit var lblPricing: JLabel
-    private lateinit var lblProject: JLabel
-    private lateinit var pnlResourceGroupHolder: JPanel
-    private lateinit var pnlResourceGroup: JPanel
-    private lateinit var pnlAppServicePlanHolder: JPanel
-    private lateinit var pnlAppServicePlan: JPanel
-    private lateinit var pnlProject: JPanel
-    private lateinit var cbProject: JComboBox<PublishableProjectModel>
+
+    // Existing Web App
+    private lateinit var rdoUseExistingWebApp: JRadioButton
+    private lateinit var pnlExistingWebApp: JPanel
+
     private lateinit var table: JBTable
     private lateinit var btnRefresh: AnActionButton
+
+    // New Web App
+    private lateinit var rdoCreateNewWebApp: JRadioButton
+    private lateinit var pnlCreateWebApp: JPanel
+
+    private lateinit var pnlWebAppTable: JPanel
+    private lateinit var txtSelectedWebApp: JTextField
+
+    private lateinit var txtWebAppName: JTextField
+    private lateinit var cbSubscription: JComboBox<Subscription>
+
+    // Resource Group
+    private lateinit var pnlResourceGroupHolder: JPanel
+    private lateinit var pnlResourceGroup: JPanel
+
+    private lateinit var rdoUseExistResGrp: JRadioButton
+    private lateinit var cbResourceGroup: JComboBox<ResourceGroup>
+
+    private lateinit var rdoCreateResGrp: JRadioButton
+    private lateinit var txtResourceGroupName: JTextField
+
+    // Operating System
+    private lateinit var pnlOperatingSystemHolder: JPanel
+    private lateinit var pnlOperatingSystem: JPanel
+
+    private lateinit var cbOperatingSystem: JComboBox<OperatingSystem>
+
+    // App Service Plan
+    private lateinit var pnlAppServicePlanHolder: JPanel
+    private lateinit var pnlAppServicePlan: JPanel
+
+    private lateinit var rdoCreateAppServicePlan: JRadioButton
+    private lateinit var txtAppServicePlanName: JTextField
+    private lateinit var cbLocation: JComboBox<Location>
+    private lateinit var cbPricingTier: JComboBox<PricingTier>
+
+    private lateinit var rdoUseExistAppServicePlan: JRadioButton
+    private lateinit var cbAppServicePlan: JComboBox<AppServicePlan>
+    private lateinit var lblLocation: JLabel
+    private lateinit var lblPricingTier: JLabel
+
+    // Runtime
+    private lateinit var pnlRuntimeHolder: JPanel
+    private lateinit var pnlRuntime: JPanel
+    private lateinit var cbRuntime: JComboBox<RuntimeStack>
+
+    // Project
+    private lateinit var pnlProject: JPanel
+    private lateinit var cbProject: JComboBox<PublishableProjectModel>
 
     override val panelName: String
         get() = WEB_APP_SETTINGS_PANEL_NAME
@@ -143,11 +181,11 @@ class RiderWebAppSettingPanel(project: Project,
         val model = configuration.model
 
         txtWebAppName.text = if (model.webAppName.isEmpty()) "$DEFAULT_APP_NAME$dateString" else model.webAppName
-        txtCreateAppServicePlan.text = if (model.appServicePlanName.isEmpty()) "$DEFAULT_PLAN_NAME$dateString" else model.appServicePlanName
-        txtNewResGrp.text = if (model.resourceGroupName.isEmpty()) "$DEFAULT_RGP_NAME$dateString" else model.resourceGroupName
+        txtAppServicePlanName.text = if (model.appServicePlanName.isEmpty()) "$DEFAULT_PLAN_NAME$dateString" else model.appServicePlanName
+        txtResourceGroupName.text = if (model.resourceGroupName.isEmpty()) "$DEFAULT_RGP_NAME$dateString" else model.resourceGroupName
 
         if (model.isCreatingWebApp) {
-            rdoCreateNew.doClick()
+            rdoCreateNewWebApp.doClick()
             if (model.isCreatingResourceGroup) {
                 rdoCreateResGrp.doClick()
             } else {
@@ -159,13 +197,15 @@ class RiderWebAppSettingPanel(project: Project,
                 rdoUseExistAppServicePlan.doClick()
             }
         } else {
-            rdoUseExist.doClick()
+            rdoUseExistingWebApp.doClick()
         }
         btnRefresh.isEnabled = false
 
         myView.onLoadSubscription()
         myView.onLoadWebApps()
         myView.onLoadPricingTier()
+        myView.onLoadOperatingSystem()
+        myView.onLoadRuntime()
     }
 
     /**
@@ -180,11 +220,21 @@ class RiderWebAppSettingPanel(project: Project,
         val publishableProject = cbProject.getItemAt(cbProject.selectedIndex)
         model.publishableProject = publishableProject
 
-        if (rdoUseExist.isSelected) {
+        if (rdoUseExistingWebApp.isSelected) {
             model.isCreatingWebApp = false
             model.subscriptionId = selectedWebApp?.subscriptionId ?: ""
             model.webAppId = selectedWebApp?.resource?.id() ?: ""
-        } else if (rdoCreateNew.isSelected) {
+            model.operatingSystem = selectedWebApp?.resource?.operatingSystem()
+            if (model.operatingSystem == OperatingSystem.LINUX) {
+                val dotNetCoreVersionArray = selectedWebApp?.resource?.linuxFxVersion()?.split('|')
+                val runtime =
+                        if (dotNetCoreVersionArray != null && dotNetCoreVersionArray.size == 2) RuntimeStack(dotNetCoreVersionArray[0], dotNetCoreVersionArray[1])
+                        else RuntimeStack("DOTNETCORE", "2.1")
+                // TODO: Add a warning for a user when publishing to an Linux instance with runtime that mismatch with
+                // TODO: required for a publishable project
+                model.runtime = runtime
+            }
+        } else if (rdoCreateNewWebApp.isSelected) {
             model.isCreatingWebApp = true
 
             model.webAppName = txtWebAppName.text
@@ -193,7 +243,7 @@ class RiderWebAppSettingPanel(project: Project,
             // Resource group
             if (rdoCreateResGrp.isSelected) {
                 model.isCreatingResourceGroup = true
-                model.resourceGroupName = txtNewResGrp.text
+                model.resourceGroupName = txtResourceGroupName.text
             } else {
                 model.isCreatingResourceGroup = false
                 model.resourceGroupName = lastSelectedResourceGroupName
@@ -202,17 +252,23 @@ class RiderWebAppSettingPanel(project: Project,
             // App service plan
             if (rdoCreateAppServicePlan.isSelected) {
                 model.isCreatingAppServicePlan = true
-                model.appServicePlanName = txtCreateAppServicePlan.text
-
+                model.appServicePlanName = txtAppServicePlanName.text
                 model.location = lastSelectedLocation
                 model.pricingTier = lastSelectedPriceTier
             } else {
                 model.isCreatingAppServicePlan = false
-                val appServicePlan = cbExistAppServicePlan.getItemAt(cbExistAppServicePlan.selectedIndex)
+                val appServicePlan = cbAppServicePlan.getItemAt(cbAppServicePlan.selectedIndex)
                 if (appServicePlan != null) {
                     model.appServicePlanId = appServicePlan.id()
                 }
             }
+
+            // Operating System
+            model.operatingSystem = lastSelectedOperatingSystem
+
+            // Runtime
+            if (model.operatingSystem == OperatingSystem.WINDOWS) model.runtime = null
+            else model.runtime = lastSelectedRuntime
         }
     }
 
@@ -229,28 +285,14 @@ class RiderWebAppSettingPanel(project: Project,
         btnRefresh.isEnabled = true
         table.emptyText.text = TABLE_EMPTY_MESSAGE
 
-        val sortedWebApps = webAppLists.sortedWith(Comparator { left, right ->
-            left.subscriptionId.compareTo(right.subscriptionId, ignoreCase = true)
-        })
+        val sortedWebApps = webAppLists.sortedWith(compareBy (
+                { it.resource.operatingSystem() },
+                { it.subscriptionId },
+                { it.resource.resourceGroupName() }))
 
         cachedWebAppList = sortedWebApps
 
-        if (sortedWebApps.isEmpty()) return
-
-        val model = table.model as DefaultTableModel
-        model.dataVector.clear()
-
-        val subscriptionManager = AuthMethodManager.getInstance().azureManager.subscriptionManager
-
-        for (i in sortedWebApps.indices) {
-            val webApp = sortedWebApps[i].resource
-            val subscription = subscriptionManager.subscriptionIdToSubscriptionMap[webApp.manager().subscriptionId()] ?: continue
-
-            model.addRow(arrayOf(webApp.name(), webApp.resourceGroupName(), webApp.region().name(), subscription.displayName()))
-            if (webApp.id() == configuration.model.webAppId) {
-                table.setRowSelectionInterval(i, i)
-            }
-        }
+        setWebAppTableContent(sortedWebApps)
     }
 
     override fun fillSubscription(subscriptions: List<Subscription>) {
@@ -269,7 +311,7 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     override fun fillResourceGroup(resourceGroups: List<ResourceGroup>) {
-        cbExistResGrp.removeAllItems()
+        cbResourceGroup.removeAllItems()
         if (resourceGroups.isEmpty()) {
             lastSelectedResourceGroupName = ""
             return
@@ -277,28 +319,38 @@ class RiderWebAppSettingPanel(project: Project,
 
         resourceGroups.sortedWith(compareBy { it.name() })
                 .forEach {
-                    cbExistResGrp.addItem(it)
+                    cbResourceGroup.addItem(it)
                     if (it.name() == configuration.model.resourceGroupName) {
-                        cbExistResGrp.selectedItem = it
+                        cbResourceGroup.selectedItem = it
                     }
                 }
     }
 
     override fun fillAppServicePlan(appServicePlans: List<AppServicePlan>) {
-        cbExistAppServicePlan.removeAllItems()
+
+        cachedAppServicePlan = appServicePlans
+
         if (appServicePlans.isEmpty()) {
             lblLocation.text = NOT_APPLICABLE
-            lblPricing.text = NOT_APPLICABLE
+            lblPricingTier.text = NOT_APPLICABLE
             return
         }
-        appServicePlans.filter { it.operatingSystem() == OperatingSystem.WINDOWS }
-                .sortedWith(compareBy { it.name() })
-                .forEach {
-                    cbExistAppServicePlan.addItem(it)
-                    if (it.id() == configuration.model.appServicePlanId) {
-                        cbExistAppServicePlan.selectedItem = it
-                    }
-                }
+
+        val filteredPlans =
+                if (lastSelectedOperatingSystem != null) filterAppServicePlans(lastSelectedOperatingSystem!!, appServicePlans)
+                else appServicePlans
+
+        setAppServicePlanContent(filteredPlans)
+    }
+
+    override fun fillOperatingSystem(operatingSystems: List<OperatingSystem>) {
+        cbOperatingSystem.removeAllItems()
+        operatingSystems.forEach {
+            cbOperatingSystem.addItem(it)
+            if (it == configuration.model.operatingSystem) {
+                cbOperatingSystem.selectedItem = it
+            }
+        }
     }
 
     override fun fillLocation(locations: List<Location>) {
@@ -317,42 +369,124 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     override fun fillPricingTier(prices: List<PricingTier>) {
-        cbPricing.removeAllItems()
-        prices.forEach {
-            cbPricing.addItem(it)
-            if (it == configuration.model.pricingTier) {
-                cbPricing.selectedItem = it
+        cachedPricingTier = prices
+
+        val filteredPrices =
+                if (lastSelectedOperatingSystem != null) filterPricingTiers(lastSelectedOperatingSystem!!, prices)
+                else prices
+
+        setPricingTierContent(filteredPrices)
+    }
+
+    override fun fillRuntime(runtimes: List<RuntimeStack>) {
+        cbRuntime.removeAllItems()
+        runtimes.forEach {
+            cbRuntime.addItem(it)
+            if (it == configuration.model.runtime) {
+                cbRuntime.selectedItem = it
             }
         }
     }
 
-    override fun fillWebContainer(webContainers: List<WebAppUtils.WebContainerMod>) {}
-
-    override fun fillJdkVersion(jdks: List<JdkModel>) {}
-
-    /**
-     * File cbProject with available projects in a solution
-     *
-     * @param publishableProjects - publishable projects in a current solution
-     */
     private fun fillPublishableProject(publishableProjects: List<PublishableProjectModel>) {
         cbProject.removeAllItems()
 
-        filterProjects(publishableProjects).sortedBy { it.projectName }
-                .forEach { cbProject.addItem(it)
+        filterProjects(publishableProjects)
+                publishableProjects.sortedBy { it.projectName }
+                .forEach {
+                    cbProject.addItem(it)
                     if (it == configuration.model.publishableProject) {
                         cbProject.selectedItem = it
+                        toggleProjectComboBox(it.isDotNetCore)
                     }
                 }
     }
 
     /**
-     * Filter all non-core apps or non-web apps on full .Net framework
+     * Set the table rows for web apps table
      *
-     * @param publishableProjects list of all available publishable projects
+     * @param webAppLists list of web app to display
      */
-    private fun filterProjects(publishableProjects: Collection<PublishableProjectModel>): List<PublishableProjectModel> {
-        return publishableProjects.filter { it.isWeb && (it.isDotNetCore || SystemInfo.isWindows) }
+    private fun setWebAppTableContent(webAppLists: List<ResourceEx<WebApp>>) {
+        if (webAppLists.isEmpty()) return
+
+        val model = table.model as DefaultTableModel
+        model.dataVector.clear()
+
+        val subscriptionManager = AuthMethodManager.getInstance().azureManager.subscriptionManager
+
+        for (i in webAppLists.indices) {
+            val webApp = webAppLists[i].resource
+            val subscription = subscriptionManager.subscriptionIdToSubscriptionMap[webApp.manager().subscriptionId()] ?: continue
+
+            model.addRow(arrayOf(
+                    webApp.name(),
+                    webApp.resourceGroupName(),
+                    webApp.region().label(),
+                    webApp.operatingSystem().name.toLowerCase().capitalize(),
+                    getNetFrameworkVersion(webApp),
+                    subscription.displayName())
+            )
+
+            if (webApp.id() == configuration.model.webAppId) {
+                table.setRowSelectionInterval(i, i)
+            }
+        }
+    }
+
+    /**
+     * Set the App Service Plan Combo Box content
+     *
+     * @param appServicePlans list of App Service Plans to display
+     */
+    private fun setAppServicePlanContent(appServicePlans: List<AppServicePlan>) {
+        cbAppServicePlan.removeAllItems()
+
+        appServicePlans
+                .sortedWith(compareBy({ it.operatingSystem() }, { it.name() }))
+                .forEach {
+                    cbAppServicePlan.addItem(it)
+                    if (it.id() == configuration.model.appServicePlanId) {
+                        cbAppServicePlan.selectedItem = it
+                    }
+                }
+    }
+
+    /**
+     * Set the Pricing Tier Combo Box content
+     *
+     * @param pricingTiers list of Pricing Tiers to display
+     */
+    private fun setPricingTierContent(pricingTiers: List<PricingTier>) {
+        cbPricingTier.removeAllItems()
+
+        pricingTiers.forEach {
+            cbPricingTier.addItem(it)
+            if (it == configuration.model.pricingTier) {
+                cbPricingTier.selectedItem = it
+            }
+        }
+    }
+
+    /**
+     * Get the valid text for net framework
+     *
+     * Note: For .NET Framework there are two valid values for version (v4.7 and v3.5). Azure SDK
+     *       does not set the right values. They set the "v4.0" for "v4.7" and "v2.0" for "v3.5" instances
+     *       For .Net Core Framework we get the correct runtime value from the linux fx version that store
+     *       a instance name representation
+     *
+     * @param webApp web app instance
+     * @return [String] with a .Net Framework version for a web app instance
+     */
+    private fun getNetFrameworkVersion(webApp: WebApp): String {
+        return if (webApp.operatingSystem() == OperatingSystem.LINUX) {
+            "Core v${webApp.linuxFxVersion().split('|')[1]}"
+        } else {
+            val version = webApp.netFrameworkVersion().toString()
+            if (version.startsWith("v4")) "v4.7"
+            else "v3.5"
+        }
     }
 
     /**
@@ -364,6 +498,38 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     //endregion MVP View
+
+    //region Filters
+
+    /**
+     * Filter all non-core apps or non-web apps on full .Net framework
+     *
+     * @param publishableProjects list of all available publishable projects
+     */
+    private fun filterProjects(publishableProjects: Collection<PublishableProjectModel>): List<PublishableProjectModel> {
+        return publishableProjects.filter { it.isWeb && (it.isDotNetCore || SystemInfo.isWindows) }
+    }
+
+    /**
+     * Filter App Service Plans to Operating System related values
+     */
+    private fun filterAppServicePlans(operatingSystem: OperatingSystem,
+                                      appServicePlans: List<AppServicePlan>): List<AppServicePlan> {
+        return appServicePlans.filter { it.operatingSystem() == operatingSystem }
+    }
+
+    /**
+     * Filter Pricing Tier based on Operating System
+     *
+     * Note: We should hide "Free" and "Shared" Pricing Tiers for Linux OS
+     */
+    private fun filterPricingTiers(operatingSystem: OperatingSystem,
+                                   prices: List<PricingTier>): List<PricingTier> {
+        if (operatingSystem == OperatingSystem.WINDOWS) return prices
+        return prices.filter { it != PricingTier.FREE_F1 && it != PricingTier.SHARED_D1 }
+    }
+
+    //endregion Filters
 
     //region Editing Web App Table
 
@@ -390,6 +556,8 @@ class RiderWebAppSettingPanel(project: Project,
         tableModel.addColumn(WEB_APP_TABLE_COLUMN_NAME)
         tableModel.addColumn(WEB_APP_TABLE_COLUMN_RESOURCE_GROUP)
         tableModel.addColumn(WEB_APP_TABLE_COLUMN_LOCATION)
+        tableModel.addColumn(WEB_APP_TABLE_COLUMN_OS)
+        tableModel.addColumn(WEB_APP_TABLE_COLUMN_DOTNET_VERSION)
         tableModel.addColumn(WEB_APP_TABLE_COLUMN_SUBSCRIPTION)
 
         table = JBTable(tableModel)
@@ -443,10 +611,10 @@ class RiderWebAppSettingPanel(project: Project,
 
     private fun initWebAppDeployButtonGroup() {
         val btnGrpForDeploy = ButtonGroup()
-        btnGrpForDeploy.add(rdoUseExist)
-        btnGrpForDeploy.add(rdoCreateNew)
-        rdoUseExist.addActionListener { toggleDeployPanel(true) }
-        rdoCreateNew.addActionListener { toggleDeployPanel(false) }
+        btnGrpForDeploy.add(rdoUseExistingWebApp)
+        btnGrpForDeploy.add(rdoCreateNewWebApp)
+        rdoUseExistingWebApp.addActionListener { toggleDeployPanel(true) }
+        rdoCreateNewWebApp.addActionListener { toggleDeployPanel(false) }
         toggleDeployPanel(true)
     }
 
@@ -475,22 +643,47 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     private fun toggleDeployPanel(isUsingExisting: Boolean) {
-        pnlExist.isVisible = isUsingExisting
-        pnlCreate.isVisible = !isUsingExisting
+        pnlExistingWebApp.isVisible = isUsingExisting
+        pnlCreateWebApp.isVisible = !isUsingExisting
     }
 
     private fun toggleResGrpPanel(isCreatingNew: Boolean) {
-        txtNewResGrp.isEnabled = isCreatingNew
-        cbExistResGrp.isEnabled = !isCreatingNew
+        txtResourceGroupName.isEnabled = isCreatingNew
+        cbResourceGroup.isEnabled = !isCreatingNew
     }
 
     private fun toggleAppServicePlanPanel(isCreatingNew: Boolean) {
-        txtCreateAppServicePlan.isEnabled = isCreatingNew
+        txtAppServicePlanName.isEnabled = isCreatingNew
         cbLocation.isEnabled = isCreatingNew
-        cbPricing.isEnabled = isCreatingNew
-        cbExistAppServicePlan.isEnabled = !isCreatingNew
+        cbPricingTier.isEnabled = isCreatingNew
+        cbAppServicePlan.isEnabled = !isCreatingNew
         lblLocation.isEnabled = !isCreatingNew
-        lblPricing.isEnabled = !isCreatingNew
+        lblPricingTier.isEnabled = !isCreatingNew
+    }
+
+    private fun toggleRuntimePanel(isLinux: Boolean) {
+        pnlRuntimeHolder.isVisible = isLinux
+    }
+
+    private fun toggleOperatingSystemComboBox(operatingSystem: OperatingSystem) {
+        setAppServicePlanContent(filterAppServicePlans(operatingSystem, cachedAppServicePlan))
+        setPricingTierContent(filterPricingTiers(operatingSystem, cachedPricingTier))
+        toggleRuntimePanel(operatingSystem == OperatingSystem.LINUX)
+    }
+
+    private fun toggleProjectComboBox(isDotNetCore: Boolean) {
+        cbOperatingSystem.isEnabled = isDotNetCore
+
+        if (isDotNetCore) {
+            setWebAppTableContent(cachedWebAppList)
+        } else {
+            // OS combo box
+            cbOperatingSystem.selectedItem = OperatingSystem.WINDOWS
+
+            // Filter table with Windows only web apps
+            setWebAppTableContent(
+                    cachedWebAppList.filter { it.resource.operatingSystem() == OperatingSystem.WINDOWS })
+        }
     }
 
     //endregion Button Groups Behavior
@@ -503,9 +696,13 @@ class RiderWebAppSettingPanel(project: Project,
     private fun setUIComponents(project: Project) {
         setSubscriptionComboBox()
         setResourceGroupComboBox()
+        setOperatingSystemComboBox()
+
         setAppServicePlanComboBox()
         setLocationComboBox()
         setPricingTierComboBox()
+
+        setRuntimeComboBox()
 
         initProjectsComboBox()
         setProjectsComboBox(project)
@@ -543,15 +740,15 @@ class RiderWebAppSettingPanel(project: Project,
      * Configure Resource Group combo box
      */
     private fun setResourceGroupComboBox() {
-        cbExistResGrp.renderer = object : ListCellRendererWrapper<ResourceGroup>() {
+        cbResourceGroup.renderer = object : ListCellRendererWrapper<ResourceGroup>() {
             override fun customize(list: JList<*>, resourceGroup: ResourceGroup?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
                 resourceGroup ?: return
                 setText(resourceGroup.name())
             }
         }
 
-        cbExistResGrp.addActionListener {
-            val selectedResourceGroup = cbExistResGrp.getItemAt(cbExistResGrp.selectedIndex) ?: return@addActionListener
+        cbResourceGroup.addActionListener {
+            val selectedResourceGroup = cbResourceGroup.getItemAt(cbResourceGroup.selectedIndex) ?: return@addActionListener
             val groupName = selectedResourceGroup.name()
             if (lastSelectedResourceGroupName != groupName) {
                 lastSelectedResourceGroupName = groupName
@@ -563,18 +760,36 @@ class RiderWebAppSettingPanel(project: Project,
      * Configure App Service Plan combo box
      */
     private fun setAppServicePlanComboBox() {
-        cbExistAppServicePlan.renderer = object : ListCellRendererWrapper<AppServicePlan>() {
+        cbAppServicePlan.renderer = object : ListCellRendererWrapper<AppServicePlan>() {
             override fun customize(list: JList<*>, appServicePlan: AppServicePlan?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
-                if (appServicePlan != null) {
-                    setText(appServicePlan.name())
-                }
+                appServicePlan ?: return
+                setText(appServicePlan.name())
             }
         }
 
-        cbExistAppServicePlan.addActionListener {
-            val plan = cbExistAppServicePlan.getItemAt(cbExistAppServicePlan.selectedIndex) ?: return@addActionListener
+        cbAppServicePlan.addActionListener {
+            val plan = cbAppServicePlan.getItemAt(cbAppServicePlan.selectedIndex) ?: return@addActionListener
             lblLocation.text = plan.regionName()
-            lblPricing.text = plan.pricingTier().toString()
+            val skuDescription = plan.pricingTier().toSkuDescription()
+            lblPricingTier.text = "${skuDescription.name()} (${skuDescription.tier()})"
+        }
+    }
+
+    /**
+     * Configure Operating System combo box
+     */
+    private fun setOperatingSystemComboBox() {
+        cbOperatingSystem.renderer = object : ListCellRendererWrapper<OperatingSystem>() {
+            override fun customize(list: JList<*>, operatingSystem: OperatingSystem?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
+                operatingSystem ?: return
+                setText(operatingSystem.name.toLowerCase().capitalize())
+            }
+        }
+
+        cbOperatingSystem.addActionListener {
+            val operatingSystem = cbOperatingSystem.getItemAt(cbOperatingSystem.selectedIndex) ?: return@addActionListener
+            toggleOperatingSystemComboBox(operatingSystem)
+            lastSelectedOperatingSystem = operatingSystem
         }
     }
 
@@ -600,9 +815,33 @@ class RiderWebAppSettingPanel(project: Project,
      * Configure Pricing Tier combo box
      */
     private fun setPricingTierComboBox() {
-        cbPricing.addActionListener {
-            val pricingTier = cbPricing.getItemAt(cbPricing.selectedIndex) ?: return@addActionListener
+        cbPricingTier.renderer = object : ListCellRendererWrapper<PricingTier>() {
+            override fun customize(list: JList<*>?, pricingTier: PricingTier?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
+                pricingTier ?: return
+                val skuDescription = pricingTier.toSkuDescription()
+                setText("${skuDescription.name()} (${skuDescription.tier()})")
+            }
+        }
+
+        cbPricingTier.addActionListener {
+            val pricingTier = cbPricingTier.getItemAt(cbPricingTier.selectedIndex) ?: return@addActionListener
             lastSelectedPriceTier = pricingTier
+        }
+    }
+
+    /**
+     * Configure Runtime combo box
+     */
+    private fun setRuntimeComboBox() {
+        cbRuntime.renderer = object : ListCellRendererWrapper<RuntimeStack>() {
+            override fun customize(list: JList<*>, runtimeStack: RuntimeStack?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
+                runtimeStack ?: return
+                setText(".Net Core ${runtimeStack.version()}")
+            }
+        }
+        cbRuntime.addActionListener {
+            val runtime = cbRuntime.getItemAt(cbRuntime.selectedIndex) ?: return@addActionListener
+            lastSelectedRuntime = runtime
         }
     }
 
@@ -643,6 +882,8 @@ class RiderWebAppSettingPanel(project: Project,
             val publishableProject = cbProject.getItemAt(cbProject.selectedIndex) ?: return@addActionListener
             configuration.model.publishableProject = publishableProject
             configuration.name = "$RUN_CONFIG_PREFIX: ${publishableProject.projectName}"
+
+            toggleProjectComboBox(publishableProject.isDotNetCore)
         }
     }
 
@@ -659,16 +900,16 @@ class RiderWebAppSettingPanel(project: Project,
      * Reset Resource Group combo box values
      */
     private fun resetResourceGroupComboBoxValues() {
-        cbExistResGrp.removeAllItems()
+        cbResourceGroup.removeAllItems()
     }
 
     /**
      * Reset App Service Plan combo box values
      */
     private fun resetAppServicePlanComboBoxValues() {
-        cbExistAppServicePlan.removeAllItems()
+        cbAppServicePlan.removeAllItems()
         lblLocation.text = NOT_APPLICABLE
-        lblPricing.text = NOT_APPLICABLE
+        lblPricingTier.text = NOT_APPLICABLE
     }
 
     /**
@@ -684,6 +925,8 @@ class RiderWebAppSettingPanel(project: Project,
     private fun setHeaderDecorators() {
         setResourceGroupDecorator()
         setAppServicePlanDecorator()
+        setOperatingSystemDecorator()
+        setRuntimeDecorator()
     }
 
     /**
@@ -698,6 +941,14 @@ class RiderWebAppSettingPanel(project: Project,
      */
     private fun setAppServicePlanDecorator() {
         setDecorator(HEADER_APP_SERVICE_PLAN, pnlAppServicePlanHolder, pnlAppServicePlan)
+    }
+
+    private fun setOperatingSystemDecorator() {
+        setDecorator(HEADER_OPERATING_SYSTEM, pnlOperatingSystemHolder, pnlOperatingSystem)
+    }
+
+    private fun setRuntimeDecorator() {
+        setDecorator(HEADER_RUNTIME, pnlRuntimeHolder, pnlRuntime)
     }
 
     /**

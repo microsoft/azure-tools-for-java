@@ -13,6 +13,9 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.util.firstOrNull
+import com.microsoft.azure.management.appservice.OperatingSystem
+import com.microsoft.azure.management.appservice.PricingTier
+import com.microsoft.azure.management.appservice.RuntimeStack
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.AzureRunConfigurationBase
@@ -62,7 +65,13 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         private const val APP_SERVICE_PLAN_NAME_LENGTH_ERROR =
                 "Web App name should be from $WEB_APP_NAME_MIN_LENGTH to $WEB_APP_NAME_MAX_LENGTH characters"
         private const val APP_SERVICE_PLAN_NAME_INVALID = "App Service Plan name cannot contain characters: %s"
+
+        private const val PRICING_TIER_MISSING = "Pricing Tier not provided"
         private const val LOCATION_MISSING = "Location not provided"
+
+        private const val OPERATING_SYSTEM_MISSING = "Operating System not provided"
+
+        private const val RUNTIME_MISSING = "Runtime not provided"
 
         private const val WEB_APP_TARGET_NAME = "Microsoft.WebApplication.targets"
     }
@@ -122,12 +131,19 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
             }
 
             if (myModel.isCreatingAppServicePlan) {
-                checkValueIsSet(myModel.location, LOCATION_MISSING)
-                // No need to validate pricing tier
                 validateAppServicePlanName(myModel.appServicePlanName)
+                checkValueIsSet(myModel.pricingTier, PRICING_TIER_MISSING)
+                checkValueIsSet(myModel.location, LOCATION_MISSING)
             } else {
                 checkValueIsSet(myModel.appServicePlanId, APP_SERVICE_PLAN_MISSING)
             }
+
+            checkValueIsSet(myModel.operatingSystem, OPERATING_SYSTEM_MISSING)
+
+            if (myModel.operatingSystem == OperatingSystem.LINUX) {
+                checkValueIsSet(myModel.runtime, RUNTIME_MISSING)
+            }
+
         } else {
             checkValueIsSet(myModel.webAppId, WEB_APP_MISSING)
         }
@@ -312,5 +328,20 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     @Throws(RuntimeConfigurationError::class)
     private fun checkValueIsSet(value: String, message: String) {
         if (value.isEmpty()) throw RuntimeConfigurationError(message)
+    }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun checkValueIsSet(value: PricingTier?, message: String) {
+        if (value == null) throw RuntimeConfigurationError(message)
+    }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun checkValueIsSet(value: OperatingSystem?, message: String) {
+        if (value == null) throw RuntimeConfigurationError(message)
+    }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun checkValueIsSet(value: RuntimeStack?, message: String) {
+        if (value == null) throw RuntimeConfigurationError(message)
     }
 }

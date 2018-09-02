@@ -1,11 +1,10 @@
-package com.microsoft.intellij.util
+package com.microsoft.intellij.runner.utils
 
 import com.microsoft.azure.AzureEnvironment
 import com.microsoft.azure.AzureResponseBuilder
 import com.microsoft.azure.serializer.AzureJacksonAdapter
 import com.microsoft.rest.RestClient
 import com.microsoft.rest.credentials.BasicAuthenticationCredentials
-import com.microsoft.rest.credentials.ServiceClientCredentials
 import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -14,19 +13,9 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-object WebAppDeploySession {
+class WebAppDeploySession(username: String, password: String) {
 
-    private var credentials: ServiceClientCredentials? = null
-
-    /**
-     * Set http request credential using username and password
-     *
-     * @param username - user name to make a REST request
-     * @param password - password to make a REST request
-     */
-    fun setCredentials(username: String, password: String) {
-        credentials = BasicAuthenticationCredentials(username, password)
-    }
+    private val credentials = BasicAuthenticationCredentials(username, password)
 
     /**
      * Publish a ZIP file using Azure KUDU Service through REST API
@@ -40,11 +29,8 @@ object WebAppDeploySession {
     @Throws(IOException::class)
     fun publishZip(connectUrl: String, zipFile: File, readTimeoutMs: Long): Response {
 
-        if (this.credentials == null)
-            throw RuntimeException("User not signed in")
-
         val client = RestClient.Builder()
-                .withCredentials(this.credentials!!)
+                .withCredentials(credentials)
                 .withBaseUrl(AzureEnvironment.AZURE, AzureEnvironment.Endpoint.RESOURCE_MANAGER)
                 .withResponseBuilderFactory(AzureResponseBuilder.Factory())
                 .withSerializerAdapter(AzureJacksonAdapter())

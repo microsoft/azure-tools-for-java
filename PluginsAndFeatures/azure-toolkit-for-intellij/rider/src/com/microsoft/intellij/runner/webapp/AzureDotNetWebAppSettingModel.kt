@@ -3,11 +3,10 @@ package com.microsoft.intellij.runner.webapp
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.PricingTier
+import com.microsoft.azure.management.appservice.RuntimeStack
 
 class AzureDotNetWebAppSettingModel {
     var subscriptionId: String = ""
-
-    var publishableProject: PublishableProjectModel? = null
 
     var isCreatingWebApp = false
     var webAppId: String = ""
@@ -19,7 +18,11 @@ class AzureDotNetWebAppSettingModel {
     var isCreatingAppServicePlan = false
     var appServicePlanId: String = ""
     var appServicePlanName: String = ""
-    var operatingSystem: OperatingSystem = OperatingSystem.WINDOWS
+    var operatingSystem: OperatingSystem? = null
     var location: String = ""
-    var pricingTier: PricingTier = PricingTier.STANDARD_S1
+    var pricingTier: PricingTier? = null
+
+    var runtime: RuntimeStack? = null
+
+    var publishableProject: PublishableProjectModel? = null
 }

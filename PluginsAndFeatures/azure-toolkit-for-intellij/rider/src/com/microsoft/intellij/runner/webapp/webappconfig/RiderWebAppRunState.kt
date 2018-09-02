@@ -11,7 +11,7 @@ import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
 import com.jetbrains.rider.util.concurrent.SyncEvent
 import com.jetbrains.rider.util.idea.application
-import com.microsoft.azure.management.appservice.PublishingProfile
+import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel
@@ -19,11 +19,14 @@ import com.microsoft.azuretools.utils.AzureUIRefreshCore
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent
 import com.microsoft.intellij.runner.AzureRunProfileState
 import com.microsoft.intellij.runner.RunProcessHandler
+import com.microsoft.intellij.runner.utils.WebAppDeploySession
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
-import com.microsoft.intellij.util.WebAppDeploySession
 import okhttp3.Response
-import java.io.*
+import java.io.File
+import java.io.FileFilter
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
 import java.util.zip.ZipOutputStream
 
 class RiderWebAppRunState(project: Project,
@@ -44,16 +47,22 @@ class RiderWebAppRunState(project: Project,
         private const val WEB_APP_GET_EXISTING = "Get existing Web App with Id '%s'"
         private const val WEB_APP_ID_NOT_DEFINED = "Web App ID is not defined"
         private const val WEB_APP_NAME_NOT_DEFINED = "Web App Name is not defined"
+        private const val WEB_APP_SET_STARTUP_FILE = "Set Startup File for a web app: '%s'"
+        private const val WEB_APP_STARTUP_COMMAND_TEMPLATE = "dotnet %s"
+        private const val WEB_APP_SETTING_DOCKER_CUSTOM_IMAGE_NAME = "DOCKER_CUSTOM_IMAGE_NAME"
 
         private const val RESOURCE_GROUP_NAME_NOT_DEFINED = "Resource Group Name is not defined"
 
         private const val APP_SERVICE_PLAN_ID_NOT_DEFINED = "App Service Plan ID is not defined"
         private const val APP_SERVICE_PLAN_NAME_NOT_DEFINED = "App Service Plan Name is not defined"
         private const val APP_SERVICE_PLAN_LOCATION_NOT_DEFINED = "App Service Plan Location is not defined"
+        private const val APP_SERVICE_PLAN_PRICING_TIER_NOT_DEFINED = "App Service Plan Pricing Tier is not defined"
+
+        private const val OPERATING_SYSTEM_NOT_DEFINED = "Operating System is not defined"
+
+        private const val RUNTIME_NOT_DEFINED = "Runtime is not defined"
 
         private const val DEPLOY_SUCCESSFUL = "Deploy successfully!"
-        private const val DEPLOY_FAILED = "Deploy failed"
-        private const val DEPLOY_GET_CREDENTIAL = "Getting deployment credential..."
 
         private const val PROJECT_ARTIFACTS_COLLECTING = "Collecting '%s' project artifacts..."
         private const val PROJECT_ARTIFACTS_COLLECTING_FAILED = "Failed collecting project artifacts. Please see Build output"
@@ -64,11 +73,12 @@ class RiderWebAppRunState(project: Project,
         private const val ZIP_FILE_DELETING = "Deleting ZIP file '%s'"
         private const val ZIP_DEPLOY_START_PUBLISHING = "Publishing ZIP file..."
         private const val ZIP_DEPLOY_PUBLISH_SUCCESS = "Published ZIP file successfully"
-        private const val ZIP_DEPLOY_PUBLISH_FAIL = "Fail publishing ZIP file"
+        private const val ZIP_DEPLOY_PUBLISH_FAIL = "Fail publishing ZIP file: %s"
 
         private const val URL_AZURE_BASE = ".azurewebsites.net"
         private const val URL_KUDU_BASE = ".scm$URL_AZURE_BASE"
         private const val URL_KUDU_ZIP_DEPLOY = "$URL_KUDU_BASE/api/zipdeploy"
+        private const val URL_WEB_APP_WWWROOT = "/home/site/wwwroot"
 
         private const val COLLECT_ARTIFACTS_TIMEOUT_MS = 180000L
         private const val DEPLOY_TIMEOUT_MS = 180000L
@@ -90,17 +100,18 @@ class RiderWebAppRunState(project: Project,
     public override fun executeSteps(processHandler: RunProcessHandler,
                                      telemetryMap: MutableMap<String, String>): WebApp? {
 
-        val publishableProject = myModel.publishableProject
-                ?: throw Exception(String.format(PROJECT_NOT_DEFINED))
+        val publishableProject = myModel.publishableProject ?: throw Exception(PROJECT_NOT_DEFINED)
 
         val webApp = getOrCreateWebAppFromConfiguration(myModel, processHandler)
 
         webAppStop(webApp, processHandler)
         deployToAzureWebApp(publishableProject, webApp, processHandler)
+        if (myModel.operatingSystem == OperatingSystem.LINUX && publishableProject.isDotNetCore) {
+            setStartupCommand(webApp, publishableProject.projectName, processHandler)
+        }
         webAppStart(webApp, processHandler)
 
         val url = getWebAppUrl(webApp)
-        processHandler.setText(DEPLOY_SUCCESSFUL)
         processHandler.setText("URL: $url")
 
         return webApp
@@ -153,27 +164,55 @@ class RiderWebAppRunState(project: Project,
 
             if (model.webAppName.isEmpty()) throw Exception(WEB_APP_NAME_NOT_DEFINED)
             if (model.resourceGroupName.isEmpty()) throw Exception(RESOURCE_GROUP_NAME_NOT_DEFINED)
+            val operatingSystem = myModel.operatingSystem ?: throw Exception(OPERATING_SYSTEM_NOT_DEFINED)
 
             val webApp =
                     if (model.isCreatingAppServicePlan) {
                         if (model.appServicePlanName.isEmpty()) throw Exception(APP_SERVICE_PLAN_NAME_NOT_DEFINED)
                         if (model.location.isEmpty()) throw Exception(APP_SERVICE_PLAN_LOCATION_NOT_DEFINED)
-                        AzureDotNetWebAppMvpModel.createWebAppWithNewAppServicePlan(
-                                model.subscriptionId,
-                                model.webAppName,
-                                model.appServicePlanName,
-                                model.pricingTier,
-                                model.location,
-                                model.isCreatingResourceGroup,
-                                model.resourceGroupName)
+                        val pricingTier = myModel.pricingTier ?: throw Exception(APP_SERVICE_PLAN_PRICING_TIER_NOT_DEFINED)
+
+                        if (operatingSystem == OperatingSystem.WINDOWS) {
+                            AzureDotNetWebAppMvpModel.createWebAppWithNewWindowsAppServicePlan(
+                                    model.subscriptionId,
+                                    model.webAppName,
+                                    model.appServicePlanName,
+                                    pricingTier,
+                                    model.location,
+                                    model.isCreatingResourceGroup,
+                                    model.resourceGroupName)
+                        } else {
+                            val runtime = myModel.runtime ?: throw Exception(RUNTIME_NOT_DEFINED)
+                            AzureDotNetWebAppMvpModel.createWebAppWithNewLinuxAppServicePlan(
+                                    model.subscriptionId,
+                                    model.webAppName,
+                                    model.appServicePlanName,
+                                    pricingTier,
+                                    model.location,
+                                    runtime,
+                                    model.isCreatingResourceGroup,
+                                    model.resourceGroupName)
+                        }
                     } else {
                         if (model.appServicePlanId.isEmpty()) throw Exception(APP_SERVICE_PLAN_ID_NOT_DEFINED)
-                        AzureDotNetWebAppMvpModel.createWebAppWithExistingAppServicePlan(
-                                model.subscriptionId,
-                                model.webAppName,
-                                model.appServicePlanId,
-                                model.isCreatingResourceGroup,
-                                model.resourceGroupName)
+
+                        if (operatingSystem == OperatingSystem.WINDOWS) {
+                            AzureDotNetWebAppMvpModel.createWebAppWithExistingWindowsAppServicePlan(
+                                    model.subscriptionId,
+                                    model.webAppName,
+                                    model.appServicePlanId,
+                                    model.isCreatingResourceGroup,
+                                    model.resourceGroupName)
+                        } else {
+                            val runtime = myModel.runtime ?: throw Exception(RUNTIME_NOT_DEFINED)
+                            AzureDotNetWebAppMvpModel.createWebAppWithExistingLinuxAppServicePlan(
+                                    model.subscriptionId,
+                                    model.webAppName,
+                                    model.appServicePlanId,
+                                    runtime,
+                                    model.isCreatingResourceGroup,
+                                    model.resourceGroupName)
+                        }
                     }
 
             processHandler.setText(String.format(WEB_APP_CREATE_SUCCESSFUL, webApp.id()))
@@ -198,9 +237,35 @@ class RiderWebAppRunState(project: Project,
     }
 
     /**
+     * Set Startup File for a web app
+     *
+     * Note: Use this method on Azure Linux instances to set up a Startup File command.
+     *       SDK support Startup command for public and private Docker images. So, we access the setting through the
+     *       [WithPublicDockerHubImage] API. Then we roll back to use a build-in images.
+     *       [WithPublicDockerHubImage] API produce an extra App Setting "DOCKER_CUSTOM_IMAGE_NAME".
+     *       So, we need to delete it afterwords
+     *
+     * @param webApp web app instance to update with Startup File
+     * @param projectName published project name
+     * @param processHandler a process handler to show a process message
+     */
+    private fun setStartupCommand(webApp: WebApp,
+                                  projectName: String,
+                                  processHandler: RunProcessHandler) {
+        processHandler.setText(String.format(WEB_APP_SET_STARTUP_FILE, webApp.name()))
+        webApp.update()
+                .withPublicDockerHubImage("") // Hack to access .withStartUpCommand() API
+                .withStartUpCommand(String.format(WEB_APP_STARTUP_COMMAND_TEMPLATE, "$URL_WEB_APP_WWWROOT/$projectName.dll"))
+                .withBuiltInImage(myModel.runtime)
+                .apply()
+
+        webApp.update().withoutAppSetting(WEB_APP_SETTING_DOCKER_CUSTOM_IMAGE_NAME).apply()
+    }
+
+    /**
      * Reset [WebAppSettingModel] after web app deployment is succeed
      *
-     * @param webApp - [WebApp] instance that was deployed
+     * @param webApp a [WebApp] instance that was deployed
      */
     private fun resetModelAfterDeploy(webApp: WebApp) {
         myModel.isCreatingWebApp = false
@@ -222,7 +287,6 @@ class RiderWebAppRunState(project: Project,
     /**
      * Deploy an artifacts to a created web app
      *
-     * @param publishableProject - a web app project to be published to Azure
      * @param webApp - Web App instance to use for deployment
      * @param processHandler - a process handler to show a process message
      */
@@ -230,40 +294,40 @@ class RiderWebAppRunState(project: Project,
                                     webApp: WebApp,
                                     processHandler: RunProcessHandler) {
 
-        processHandler.setText(DEPLOY_GET_CREDENTIAL)
-        zipDeploy(publishableProject, webApp.name(), webApp.publishingProfile, processHandler)
+        zipDeploy(publishableProject, webApp, processHandler)
+        processHandler.setText(DEPLOY_SUCCESSFUL)
     }
+
 
     /**
      * Deploy to Web App using KUDU Zip-Deploy
      *
-     * @param webAppName - web app to deploy at
-     * @param profile - publish profile with credentials
+     * @param publishableProject - a project to publish
+     * @param webApp - web app to deploy
      * @param processHandler - a process handler to show a process message
      */
     private fun zipDeploy(publishableProject: PublishableProjectModel,
-                          webAppName: String,
-                          profile: PublishingProfile,
+                          webApp: WebApp,
                           processHandler: RunProcessHandler) {
 
-        var zipFile: File? = null
         try {
-            processHandler.setText(String.format(PROJECT_ARTIFACTS_COLLECTING, myModel.publishableProject?.projectName))
+            processHandler.setText(String.format(PROJECT_ARTIFACTS_COLLECTING, publishableProject.projectName))
             val outDir = collectProjectArtifacts(project, publishableProject, processHandler)
 
-            processHandler.setText(String.format(ZIP_FILE_CREATE_FOR_PROJECT, myModel.publishableProject?.projectName))
-            zipFile = zipProjectArtifacts(outDir, processHandler)
+            processHandler.setText(String.format(ZIP_FILE_CREATE_FOR_PROJECT, publishableProject.projectName))
+            val zipFile = zipProjectArtifacts(outDir, processHandler)
 
             processHandler.setText(ZIP_DEPLOY_START_PUBLISHING)
-            publishZipToAzure(webAppName, zipFile, profile, processHandler)
-        } catch (e: Throwable) {
-            processHandler.setText("$DEPLOY_FAILED: $e")
-            throw e
-        } finally {
-            if (zipFile != null && zipFile.exists()) {
+            webApp.kuduZipDeploy(zipFile, processHandler)
+            processHandler.setText(ZIP_DEPLOY_PUBLISH_SUCCESS)
+
+            if (zipFile.exists()) {
                 processHandler.setText(String.format(ZIP_FILE_DELETING, zipFile.path))
                 FileUtil.delete(zipFile)
             }
+        } catch (e: Throwable) {
+            processHandler.setText(String.format(ZIP_DEPLOY_PUBLISH_FAIL, e))
+            throw e
         }
     }
 
@@ -302,7 +366,7 @@ class RiderWebAppRunState(project: Project,
         }
         event.wait(COLLECT_ARTIFACTS_TIMEOUT_MS)
 
-        return outPath.toFile()
+        return outPath.toFile().canonicalFile
     }
 
     /**
@@ -362,21 +426,18 @@ class RiderWebAppRunState(project: Project,
     /**
      * Method to publish specified ZIP file to Azure server. We make up to 3 tries for uploading a ZIP file.
      *
-     * @param webAppName - Azure web app name
+     * Note: Azure SDK support a native [WebApp.zipDeploy(File)] method. Hoverer, we cannot use it for files with BOM
+     *       Method throws an exception while reading the JSON file that contains BOM. Use our own implementation until fixed
+     *
      * @param zipFile - zip file instance to be published
-     * @param profile - publish profile with FTP and Git credentials
      * @param processHandler - a process handler to show a process message
      *
      * @throws [Exception] in case REST request was not succeed or timed out after 3 attempts
      */
     @Throws(Exception::class)
-    private fun publishZipToAzure(webAppName: String,
-                                  zipFile: File,
-                                  profile: PublishingProfile,
-                                  processHandler: RunProcessHandler) {
+    private fun WebApp.kuduZipDeploy(zipFile: File, processHandler: RunProcessHandler) {
 
-        val session = WebAppDeploySession
-        session.setCredentials(profile.gitUsername(), profile.gitPassword())
+        val session = WebAppDeploySession(publishingProfile.gitUsername(), publishingProfile.gitPassword())
 
         var success = false
         var uploadCount = 0
@@ -386,7 +447,7 @@ class RiderWebAppRunState(project: Project,
             do {
                 try {
                     response = session.publishZip(
-                            "https://" + webAppName.toLowerCase() + URL_KUDU_ZIP_DEPLOY,
+                            "https://" + name().toLowerCase() + URL_KUDU_ZIP_DEPLOY,
                             zipFile,
                             DEPLOY_TIMEOUT_MS)
                     success = response.isSuccessful
