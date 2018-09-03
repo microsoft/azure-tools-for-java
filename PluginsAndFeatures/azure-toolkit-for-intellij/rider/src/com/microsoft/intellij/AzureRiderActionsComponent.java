@@ -22,6 +22,19 @@
 
 package com.microsoft.intellij;
 
-public class AzureRiderActionsComponent extends AzureActionsComponent {
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.IdeActions;
+import com.intellij.util.PlatformUtils;
 
+public class AzureRiderActionsComponent extends AzureActionsComponent {
+    @Override
+    public void initComponent() {
+        if (PlatformUtils.isRider()) {
+            ActionManager am = ActionManager.getInstance();
+            DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
+            popupGroup.add(am.getAction("AzureRiderPopupGroup"));
+        }
+        super.initComponent();
+    }
 }

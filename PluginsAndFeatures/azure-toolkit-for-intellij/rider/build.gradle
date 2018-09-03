@@ -7,3 +7,7 @@ intellij {
     pluginName = 'azure-toolkit-for-rider'
     version = rider_version
 }
+
+instrumentCode {
+    javac2(file("libs/javac2.jar"))
+}
