@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.sdk.common.livy.interactive;
 
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.SessionNotStartException;
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.StatementNotStartException;
@@ -41,24 +42,30 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-public class Statement {
+public class Statement implements ILogger {
     public static final String REST_SEGMENT_STATEMENTS = "statements";
 
     @NotNull
     private Session session;            // Statement owner session
 
-    private int id;                     // Statement ID of server
+    private int id = -1;                // Statement ID of server
 
     @Nullable
     private StatementOutput output;     // Statement outputs
 
-    @NotNull
+    @Nullable
     private InputStream codeStream;     // Codes to run
 
     @Nullable
     private StatementState lastState;   // Last statement state gotten
 
-    public Statement(@NotNull Session session, @NotNull InputStream codeStream) {
+    public Statement(@NotNull Session session, int id) {
+        this(session, null);
+
+        this.id = id;
+    }
+
+    public Statement(@NotNull Session session, @Nullable InputStream codeStream) {
         this.session = session;
         this.codeStream = codeStream;
     }
@@ -67,7 +74,7 @@ public class Statement {
      * Getter / Setter
      */
 
-    @NotNull
+    @Nullable
     public InputStream getCodeInputStream() {
         return codeStream;
     }
@@ -87,8 +94,8 @@ public class Statement {
     }
 
     public int getId() throws StatementNotStartException {
-        if (getLastState() == null) {
-            throw new StatementNotStartException("The statement isn't created. Call run() firstly before getting ID.");
+        if (id < 0) {
+            throw new StatementNotStartException("The statement isn't created. Call run() or get() firstly before getting ID.");
         }
 
         return id;
@@ -160,6 +167,13 @@ public class Statement {
     }
 
     private Observable<com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Statement> runStatementRequest() {
+        if (getCodeInputStream() == null) {
+            assert false : "Shouldn't run statement without codes input stream";
+            log().warn("Execute empty statement.");
+
+            return Observable.empty();
+        }
+
         URI uri;
         PostStatements postBody = new PostStatements();
 

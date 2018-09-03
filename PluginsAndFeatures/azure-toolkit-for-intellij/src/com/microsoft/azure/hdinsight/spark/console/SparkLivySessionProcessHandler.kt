@@ -26,19 +26,15 @@ import com.intellij.execution.process.ProcessHandler
 import java.io.OutputStream
 
 class SparkLivySessionProcessHandler(val process: SparkLivySessionProcess) : ProcessHandler() {
-    override fun getProcessInput(): OutputStream? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getProcessInput(): OutputStream? = process.outputStream
 
-    override fun detachIsDefault(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun detachIsDefault(): Boolean = false
 
     override fun detachProcessImpl() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        destroyProcessImpl()
     }
 
     override fun destroyProcessImpl() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        process.destroy()
     }
 }

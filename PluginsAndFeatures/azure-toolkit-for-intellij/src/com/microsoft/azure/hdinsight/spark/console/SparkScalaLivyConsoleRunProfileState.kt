@@ -22,32 +22,29 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
-import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.intellij.execution.DefaultExecutionResult
+import com.intellij.execution.ExecutionException
+import com.intellij.execution.ExecutionResult
+import com.intellij.execution.Executor
+import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.runners.ProgramRunner
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
-import com.microsoft.azure.hdinsight.spark.console.SparkLivySessionInputReader.OutputType.STDERR
-import com.microsoft.azure.hdinsight.spark.console.SparkLivySessionInputReader.OutputType.STDOUT
-import org.apache.commons.io.input.ReaderInputStream
-import java.io.InputStream
-import java.io.OutputStream
-import java.nio.charset.StandardCharsets.UTF_8
 
-class SparkLivySessionProcess(val session: Session) : Process(), ILogger {
-    private val stdOutStream: InputStream = ReaderInputStream(SparkLivySessionInputReader(session, STDOUT), UTF_8)
-    private val stdErrStream: InputStream = ReaderInputStream(SparkLivySessionInputReader(session, STDERR), UTF_8)
-    private val stdInStream: OutputStream = SparkLivySessionOutputStream(session)
+class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScalaConsoleBuilder, val session: Session): RunProfileState {
+    override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult? {
+        try {
+            session.awaitReady()
+                    .toBlocking()
+                    .single()
+        } catch (ex: Exception) {
+            throw ExecutionException("Can't start Livy interactive session: ${ex.message}")
+        }
 
-    override fun waitFor(): Int = 0
+        val console = consoleBuilder.console
+        val livySessionProcessHandler = SparkLivySessionProcessHandler(SparkLivySessionProcess(session))
 
-    override fun destroy() = session.close()
+        console.attachToProcess(livySessionProcessHandler)
 
-    override fun getOutputStream(): OutputStream = stdInStream
-
-    override fun getErrorStream(): InputStream = stdErrStream
-
-    override fun exitValue(): Int {
-        // FIXME!!! return -1 for exceptions got
-        return 0
+        return DefaultExecutionResult(console, livySessionProcessHandler)
     }
-
-    override fun getInputStream(): InputStream = stdOutStream
 }

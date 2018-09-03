@@ -359,7 +359,7 @@ public abstract class Session implements AutoCloseable, Closeable {
                     }));
     }
 
-    private Observable<Session> awaitReady() {
+    public Observable<Session> awaitReady() {
         return get()
                 .repeatWhen(ob -> ob.delay(1, TimeUnit.SECONDS))
                 .takeUntil(Session::isStatementRunnable)

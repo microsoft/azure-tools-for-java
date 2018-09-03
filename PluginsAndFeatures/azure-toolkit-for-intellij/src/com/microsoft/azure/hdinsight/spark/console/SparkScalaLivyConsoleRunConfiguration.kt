@@ -23,63 +23,44 @@
 package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.Executor
-import com.intellij.execution.configurations.JavaCommandLineState
-import com.intellij.execution.configurations.JavaParameters
-import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.spark.run.SparkBatchLocalRunState
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx
+import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession
+import com.microsoft.azure.hdinsight.spark.jobs.JobUtils
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfiguration
+import java.net.URI
 
 class SparkScalaLivyConsoleRunConfiguration(
         project: Project,
         configurationFactory: SparkScalaLivyConsoleRunConfigurationFactory,
+        private val batchRunConfiguration: RemoteDebugRunConfiguration?,
         name: String)
-    : ScalaConsoleRunConfiguration(project, configurationFactory, name) {
-
-    lateinit var batchRunConfiguration: RemoteDebugRunConfiguration
-
-    override fun mainClass(): String = "org.apache.spark.deploy.SparkSubmit"
-
-    override fun createParams(): JavaParameters {
-        val localRunParams = SparkBatchLocalRunState(project, batchRunConfiguration.model.localRunConfigurableModel).createParams()
-        val params = super.createParams()
-        params.classPath.clear()
-        params.classPath.addAll(localRunParams.classPath.pathList)
-        params.mainClass = mainClass()
-
-        params.vmParametersList.addAll(localRunParams.vmParametersList.parameters)
-
-        // FIXME!!! To support local mock filesystem
-        // params.mainClass = localRunParams.mainClass
-        //
-        // localRunParams.programParametersList.parameters.takeWhile { it.trim().startsWith("--master") }
-        //         .forEach { params.programParametersList.add(it) }
-        // params.programParametersList.add(mainClass())
-
-        params.programParametersList.add("--class", "org.apache.spark.repl.Main")
-        params.programParametersList.add("--name", "Spark shell")
-        params.programParametersList.add("spark-shell")
-
-        params.addEnv("SPARK_SUBMIT_OPTS", "-Dscala.usejavacp=true")
-        localRunParams.env.forEach { name, value -> params.addEnv(name, value) }
-
-        return params
-    }
+    : RemoteDebugRunConfiguration(
+        project,
+        configurationFactory,
+        batchRunConfiguration?.configurationModule ?: RunConfigurationModule(project),
+        name
+) {
+    lateinit var cluster: IClusterDetail
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
-        val state = object : JavaCommandLineState(env) {
-            override fun createJavaParameters() : JavaParameters {
-                val params = createParams()
+        val session = SparkSession(name, URI.create(JobUtils.getLivyBaseUri(cluster).toString()))
 
-                params.programParametersList.addParametersString(consoleArgs())
-                return params
-            }
-        }
+        return SparkScalaLivyConsoleRunProfileState(SparkScalaConsoleBuilder(project), session)
+    }
 
-        state.consoleBuilder = SparkScalaConsoleBuilder(project)
+    override fun checkRunnerSettings(runner: ProgramRunner<*>,
+                                     runnerSettings: RunnerSettings?,
+                                     configurationPerRunnerSettings: ConfigurationPerRunnerSettings?) {
+        super.checkRunnerSettings(runner, runnerSettings, configurationPerRunnerSettings)
 
-        return state
+        val clusterName = batchRunConfiguration?.submitModel?.submissionParameter?.clusterName
+                ?: throw RuntimeConfigurationWarning("A Spark Run Configuration should be selected to start a console")
+        cluster = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
+                .orElseThrow { RuntimeConfigurationError("Can't find the target cluster $clusterName") }
     }
 }

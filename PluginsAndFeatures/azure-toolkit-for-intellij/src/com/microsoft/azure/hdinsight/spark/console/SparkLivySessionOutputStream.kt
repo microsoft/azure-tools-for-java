@@ -22,32 +22,26 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
-import com.microsoft.azure.hdinsight.spark.console.SparkLivySessionInputReader.OutputType.STDERR
-import com.microsoft.azure.hdinsight.spark.console.SparkLivySessionInputReader.OutputType.STDOUT
-import org.apache.commons.io.input.ReaderInputStream
-import java.io.InputStream
-import java.io.OutputStream
-import java.nio.charset.StandardCharsets.UTF_8
+import org.apache.commons.io.output.ByteArrayOutputStream
+import java.nio.charset.Charset
 
-class SparkLivySessionProcess(val session: Session) : Process(), ILogger {
-    private val stdOutStream: InputStream = ReaderInputStream(SparkLivySessionInputReader(session, STDOUT), UTF_8)
-    private val stdErrStream: InputStream = ReaderInputStream(SparkLivySessionInputReader(session, STDERR), UTF_8)
-    private val stdInStream: OutputStream = SparkLivySessionOutputStream(session)
+class SparkLivySessionOutputStream(val session: Session) : ByteArrayOutputStream(), ILogger {
+    override fun flush() {
+        // Send the buffered statements into Livy services
+        if (!session.isStarted) {
+            throw SparkConsoleExceptions.LivyNotConnected("The Livy session to ${session.name} is not connected")
+        }
 
-    override fun waitFor(): Int = 0
+        val codes = toString(Charset.defaultCharset())
 
-    override fun destroy() = session.close()
-
-    override fun getOutputStream(): OutputStream = stdInStream
-
-    override fun getErrorStream(): InputStream = stdErrStream
-
-    override fun exitValue(): Int {
-        // FIXME!!! return -1 for exceptions got
-        return 0
+        log().debug("Send those codes to Livy: $codes")
+        session.runCodes(codes)
+                .subscribe(
+                        { result -> log().debug("Livy running results: ${ObjectMapper().writeValueAsString(result)}") },
+                        { err -> throw SparkConsoleExceptions.LivySessionExecuteError("Got error in Livy execution:", err) }
+                )
     }
-
-    override fun getInputStream(): InputStream = stdOutStream
 }

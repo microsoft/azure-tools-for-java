@@ -309,13 +309,9 @@
     </action>
     <action id="Spark.RunScalaLocalConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLocalConsoleAction"
             text="Run Spark Local Console(Scala)" description="Run Spark Local Console (Scala language)">
-      <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
-      <add-to-group group-id="ToolsMenu" anchor="last"/>
     </action>
     <action id="Spark.RunScalaLivyConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLivyConsoleAction"
             text="Run Spark Livy Interactive Session Console(Scala)" description="Run Spark Livy Interactive Session Console (Scala language)">
-      <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
-      <add-to-group group-id="ToolsMenu" anchor="last"/>
     </action>
 
     <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/azure.png" popup="true"
@@ -355,6 +351,12 @@
       <reference ref="AzureToolkit.AzureSignIn"/>
     </group>
 
+    <group id="SparkConsoleGroup" text="Spark Console" description="Spark Console" popup="true">
+      <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+      <reference ref="Spark.RunScalaLocalConsole"/>
+      <reference ref="Spark.RunScalaLivyConsole"/>
+    </group>
   </actions>
 
     <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>

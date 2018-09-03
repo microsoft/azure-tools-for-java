@@ -22,24 +22,9 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.configurations.RunConfigurationModule
-import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
+import com.microsoft.azure.hdinsight.sdk.common.HDIException
 
-class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaLivyConsoleConfigurationType)
-    : ScalaConsoleRunConfigurationFactory(sparkConsoleType) {
-    override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return SparkScalaLivyConsoleRunConfiguration(project, this, null, "")
-    }
-
-    override fun createConfiguration(name: String, template: RunConfiguration): RunConfiguration {
-        // Create a Spark Scala Livy run configuration based on Spark Batch run configuration
-        return SparkScalaLivyConsoleRunConfiguration(
-                template.project,
-                this,
-                template as? RemoteDebugRunConfiguration,
-                "${template.name} >> Spark Livy Interactive Session Console(Scala)")
-    }
+class SparkConsoleExceptions {
+    class LivyNotConnected(message: String) : HDIException(message)
+    class LivySessionExecuteError(message: String, throwable: Throwable?) : HDIException(message, throwable)
 }
