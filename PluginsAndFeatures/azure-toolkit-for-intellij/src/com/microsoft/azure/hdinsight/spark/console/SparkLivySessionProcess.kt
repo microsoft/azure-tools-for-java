@@ -22,18 +22,22 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
+import com.google.common.net.HostAndPort
+import com.intellij.remote.RemoteProcess
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
-import com.microsoft.azure.hdinsight.spark.console.SparkLivySessionInputReader.OutputType.STDERR
-import com.microsoft.azure.hdinsight.spark.console.SparkLivySessionInputReader.OutputType.STDOUT
-import org.apache.commons.io.input.ReaderInputStream
 import java.io.InputStream
 import java.io.OutputStream
-import java.nio.charset.StandardCharsets.UTF_8
 
-class SparkLivySessionProcess(val session: Session) : Process(), ILogger {
-    private val stdOutStream: InputStream = ReaderInputStream(SparkLivySessionInputReader(session, STDOUT), UTF_8)
-    private val stdErrStream: InputStream = ReaderInputStream(SparkLivySessionInputReader(session, STDERR), UTF_8)
+class SparkLivySessionProcess(val session: Session) : RemoteProcess(), ILogger {
+    override fun isDisconnected(): Boolean = false
+
+    override fun getLocalTunnel(remotePort: Int): HostAndPort? = null
+
+    override fun killProcessTree(): Boolean = true
+
+    private val stdOutStream: InputStream = SparkLivySessionStdOutStream(session)
+    private val stdErrStream: InputStream = SparkLivySessionStdErrStream(session)
     private val stdInStream: OutputStream = SparkLivySessionOutputStream(session)
 
     override fun waitFor(): Int = 0

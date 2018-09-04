@@ -20,25 +20,33 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.console
+package com.microsoft.azure.hdinsight.spark.console;
 
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
+import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.options.SettingsEditor;
+import org.jetbrains.annotations.NotNull;
 
-class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaLivyConsoleConfigurationType)
-    : ScalaConsoleRunConfigurationFactory(sparkConsoleType) {
-    override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return SparkScalaLivyConsoleRunConfiguration(project, this, null, "")
+import javax.swing.*;
+
+public class SparkScalaLivyConsoleRunConfigurationEditor extends SettingsEditor<SparkScalaLivyConsoleRunConfiguration> {
+    private JTextField clusterNameField;
+    private JPanel mainPanel;
+
+    @Override
+    protected void resetEditorFrom(@NotNull SparkScalaLivyConsoleRunConfiguration srcConf) {
+        // Reset the panel from the RunConfiguration
+        clusterNameField.setText(srcConf.getClusterName());
     }
 
-    override fun createConfiguration(name: String, template: RunConfiguration): RunConfiguration {
-        // Create a Spark Scala Livy run configuration based on Spark Batch run configuration
-        return SparkScalaLivyConsoleRunConfiguration(
-                template.project,
-                this,
-                template as? RemoteDebugRunConfiguration,
-                "${template.name} >> Spark Livy Interactive Session Console(Scala)")
+    @Override
+    protected void applyEditorTo(@NotNull SparkScalaLivyConsoleRunConfiguration destConf) throws ConfigurationException {
+        // Apply the panel's setting to RunConfiguration
+        destConf.setClusterName(clusterNameField.getText());
+    }
+
+    @NotNull
+    @Override
+    protected JComponent createEditor() {
+        return mainPanel;
     }
 }

@@ -37,10 +37,14 @@ class SparkLivySessionOutputStream(val session: Session) : ByteArrayOutputStream
 
         val codes = toString(Charset.defaultCharset())
 
-        log().debug("Send those codes to Livy: $codes")
+//        log().debug("Send those codes to Livy: $codes")
+        log().info("Send those codes to Livy: $codes")
         session.runCodes(codes)
                 .subscribe(
-                        { result -> log().debug("Livy running results: ${ObjectMapper().writeValueAsString(result)}") },
+                        { result ->
+//                            log().debug("Livy running results: ${ObjectMapper().writeValueAsString(result)}")
+                            log().info("Livy running results: ${ObjectMapper().writeValueAsString(result)}")
+                        },
                         { err -> throw SparkConsoleExceptions.LivySessionExecuteError("Got error in Livy execution:", err) }
                 )
     }

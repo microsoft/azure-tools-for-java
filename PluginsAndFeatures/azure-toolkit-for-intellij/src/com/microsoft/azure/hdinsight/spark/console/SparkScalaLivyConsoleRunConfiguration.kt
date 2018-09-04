@@ -26,6 +26,9 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
@@ -34,32 +37,40 @@ import com.microsoft.azure.hdinsight.spark.jobs.JobUtils
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
 import java.net.URI
 
-class SparkScalaLivyConsoleRunConfiguration(
-        project: Project,
-        configurationFactory: SparkScalaLivyConsoleRunConfigurationFactory,
-        private val batchRunConfiguration: RemoteDebugRunConfiguration?,
-        name: String)
-    : RemoteDebugRunConfiguration(
-        project,
-        configurationFactory,
-        batchRunConfiguration?.configurationModule ?: RunConfigurationModule(project),
-        name
-) {
-    lateinit var cluster: IClusterDetail
+class SparkScalaLivyConsoleRunConfiguration(project: Project,
+                                            configurationFactory: SparkScalaLivyConsoleRunConfigurationFactory,
+                                            batchRunConfiguration: RemoteDebugRunConfiguration?,
+                                            name: String)
+    : ModuleBasedConfiguration<RunConfigurationModule>(
+        name, batchRunConfiguration?.configurationModule ?: RunConfigurationModule(project), configurationFactory)
+{
+
+    var clusterName = batchRunConfiguration?.submitModel?.submissionParameter?.clusterName
+            ?: throw RuntimeConfigurationWarning("A Spark Run Configuration should be selected to start a console")
+
+    private lateinit var cluster: IClusterDetail
+
+    override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> =
+            SparkScalaLivyConsoleRunConfigurationEditor()
+
+    override fun getValidModules(): MutableCollection<Module> {
+        return ModuleManager.getInstance(project).findModuleByName(project.name)?.let { mutableListOf(it) }
+                ?: mutableListOf()
+    }
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
-        val session = SparkSession(name, URI.create(JobUtils.getLivyBaseUri(cluster).toString()))
+        val session = SparkSession(
+                name,
+                URI.create(JobUtils.getLivyBaseUri(cluster).toString()),
+                cluster.httpUserName,
+                cluster.httpPassword)
 
         return SparkScalaLivyConsoleRunProfileState(SparkScalaConsoleBuilder(project), session)
     }
 
-    override fun checkRunnerSettings(runner: ProgramRunner<*>,
-                                     runnerSettings: RunnerSettings?,
-                                     configurationPerRunnerSettings: ConfigurationPerRunnerSettings?) {
-        super.checkRunnerSettings(runner, runnerSettings, configurationPerRunnerSettings)
+    override fun checkSettingsBeforeRun() {
+        super.checkSettingsBeforeRun()
 
-        val clusterName = batchRunConfiguration?.submitModel?.submissionParameter?.clusterName
-                ?: throw RuntimeConfigurationWarning("A Spark Run Configuration should be selected to start a console")
         cluster = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
                 .orElseThrow { RuntimeConfigurationError("Can't find the target cluster $clusterName") }
     }

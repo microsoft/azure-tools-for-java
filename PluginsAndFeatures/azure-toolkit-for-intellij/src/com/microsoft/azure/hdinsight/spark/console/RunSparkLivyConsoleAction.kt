@@ -59,7 +59,10 @@ class RunSparkLivyConsoleAction
         val batchConfigurationType = findConfigurationType(RemoteDebugRunConfigurationType::class.java)
         val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
 
-        batchConfigSettings.forEach { runExisting(it, runManagerEx, project) }
+        batchConfigSettings.forEach {
+            runExisting(it, runManagerEx, project)
+            return
+        }
 
         createAndRun(batchConfigurationType, runManagerEx, project, newSettingName, runConfigurationHandler)
 
@@ -100,12 +103,14 @@ class RunSparkLivyConsoleAction
                     return
                 }
 
-                val environmentBuilder = ExecutionEnvironmentBuilder.create(
+                val environment = ExecutionEnvironmentBuilder.create(
                         runExecutor,
                         SparkScalaLivyConsoleConfigurationType().confFactory().createConfiguration(
-                                "${batchRunConfiguration.name} Spark livy console(Scala)", batchRunConfiguration))
+                                batchRunConfiguration.name, batchRunConfiguration)).build()
 
-                runner.execute(environmentBuilder.build())
+                (environment.runProfile as? SparkScalaLivyConsoleRunConfiguration)?.checkSettingsBeforeRun()
+
+                runner.execute(environment)
             } catch (e: ExecutionException) {
                 Messages.showErrorDialog(project, e.message, ExecutionBundle.message("error.common.title"))
             }

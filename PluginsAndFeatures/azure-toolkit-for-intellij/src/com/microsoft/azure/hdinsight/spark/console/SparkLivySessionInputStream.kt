@@ -25,53 +25,55 @@ package com.microsoft.azure.hdinsight.spark.console
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Statement
-import java.io.Reader
+import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.StatementOutput
+import java.io.InputStream
+import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
 
-class SparkLivySessionInputReader(val session: Session, val type: OutputType) : Reader(), ILogger {
-    var nextStatementId = 0
+abstract class SparkLivySessionInputStream(val session: Session) : InputStream(), ILogger {
+    private var nextStatementId = 0
+    private var statementOutputQueue: ArrayDeque<Byte>? = null
 
-    private var statementOutputQueue: ArrayDeque<Char>? = null
-
-    enum class OutputType {
-        STDOUT, STDERR
+    override fun read(): Int {
+        return statementOutputQueue?.pollFirst()?.toInt() ?: -1
     }
 
     override fun close() {
     }
 
-    // Can block
-    override fun read(cbuf: CharArray, off: Int, len: Int): Int {
-        if (statementOutputQueue == null || statementOutputQueue!!.isEmpty()) {
-            // Fetch statement output
-            val statement = Statement(session, nextStatementId)
+    override fun available(): Int {
+        if (isOutputEmpty()) {
+            fetchNextStatementOutput()
 
-            try {
-                statementOutputQueue = statement.get()
-                        .map { stm -> stm.output.data[type.name]?.let { ArrayDeque(it.toList()) } }
-                        .toBlocking()
-                        .singleOrDefault(null)
-
-                nextStatementId++
-            } catch (err: Exception) {
-                log().warn("Can't get the $nextStatementId output", err)
-
-                if (session.isStop) {
-                    return -1
-                }
+            if (isOutputEmpty()) {
+                Thread.sleep(1000)
             }
         }
 
-        val actualSizeToRead = minOf(statementOutputQueue?.size ?: 0, len, cbuf.size - off)
-
-        if (actualSizeToRead <= 0) {
-            return 0
-        }
-
-        for (i in off..off + actualSizeToRead) {
-            cbuf[i] = statementOutputQueue!!.pollFirst()
-        }
-
-        return actualSizeToRead
+        return statementOutputQueue?.size ?: 0
     }
+
+    abstract fun createStatementBytesQueue(output: StatementOutput): String?
+
+    private fun fetchNextStatementOutput() {
+        val statement = Statement(session, nextStatementId)
+
+        try {
+            statementOutputQueue = statement.get()
+                    .map { stm ->
+                        createStatementBytesQueue(stm.output)?.let {
+                            log().debug("Statement $nextStatementId result $it")
+                            ArrayDeque(it.toByteArray(UTF_8).toList())
+                        }
+                    }
+                    .toBlocking()
+                    .singleOrDefault(null)
+
+            nextStatementId++
+        } catch (err: Exception) {
+            log().debug("Can't get the $nextStatementId output", err)
+        }
+    }
+
+    private fun isOutputEmpty(): Boolean = (statementOutputQueue?.isEmpty() ?: true)
 }

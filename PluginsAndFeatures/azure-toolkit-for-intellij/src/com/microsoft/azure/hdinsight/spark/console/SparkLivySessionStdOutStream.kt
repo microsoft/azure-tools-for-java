@@ -22,30 +22,12 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
-import com.intellij.execution.DefaultExecutionResult
-import com.intellij.execution.ExecutionException
-import com.intellij.execution.ExecutionResult
-import com.intellij.execution.Executor
-import com.intellij.execution.configurations.RunProfileState
-import com.intellij.execution.runners.ProgramRunner
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
+import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.StatementOutput
 
-class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScalaConsoleBuilder, val session: Session): RunProfileState {
-    override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult? {
-        try {
-            session.create()
-                    .flatMap { it.awaitReady() }
-                    .toBlocking()
-                    .single()
-        } catch (ex: Exception) {
-            throw ExecutionException("Can't start Livy interactive session: ${ex.message}")
-        }
-
-        val console = consoleBuilder.console
-        val livySessionProcessHandler = SparkLivySessionProcessHandler(SparkLivySessionProcess(session))
-
-        console.attachToProcess(livySessionProcessHandler)
-
-        return DefaultExecutionResult(console, livySessionProcessHandler)
+class SparkLivySessionStdOutStream(session: Session) : SparkLivySessionInputStream(session) {
+    override fun createStatementBytesQueue(output: StatementOutput): String? = when (output.status.toLowerCase()) {
+        "ok" -> output.data["text/plain"]
+        else -> null
     }
 }
