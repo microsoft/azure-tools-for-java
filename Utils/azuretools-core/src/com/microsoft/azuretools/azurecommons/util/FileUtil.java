@@ -26,9 +26,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 public class FileUtil {
 	
@@ -104,5 +106,38 @@ public class FileUtil {
 		}
 		return isValid;
 	}
+
+    /**
+     * Utility method to zip a file.
+     * @param inputStream
+     * @param fileName
+     * @return zip file
+     * @throws IOException
+     */
+    public static File zipFile(InputStream inputStream, String fileName) throws IOException {
+        final File tempZip = File.createTempFile(String.valueOf(new Date().getTime()), ".zip");
+        final FileOutputStream fos = new FileOutputStream(tempZip);
+        final ZipOutputStream zipOut = new ZipOutputStream(fos);
+        try {
+            final ZipEntry zipEntry = new ZipEntry(fileName);
+            zipOut.putNextEntry(zipEntry);
+            final byte[] bytes = new byte[BUFF_SIZE];
+            int length;
+            while ((length = inputStream.read(bytes)) >= 0) {
+                zipOut.write(bytes, 0, length);
+            }
+        } finally {
+            if(zipOut != null) {
+                zipOut.close();
+            }
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            if (fos != null) {
+                fos.close();
+            }
+        }
+        return tempZip;
+    }
 
 }
