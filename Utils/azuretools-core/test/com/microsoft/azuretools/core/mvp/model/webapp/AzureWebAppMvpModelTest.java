@@ -294,7 +294,7 @@ public class AzureWebAppMvpModelTest {
         mockWebAppModel.listAllWebApps(false);
         List<ResourceEx<WebApp>> resultList = azureWebAppMvpModel.listAllWebApps(false);
 
-        verify(mockWebAppModel, times(1)).listWebApps("1");
+        verify(mockWebAppModel, times(1)).listWebApps("1", false);
         assertEquals(2, resultList.size());
 
         final WebApp app3 = mock(WebApp.class);
@@ -313,10 +313,10 @@ public class AzureWebAppMvpModelTest {
 
         when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
 
-        final List<ResourceEx<WebApp>> webAppList = azureWebAppMvpModel.listWebAppsOnLinux(MOCK_SUBSCRIPTION);
+        final List<ResourceEx<WebApp>> webAppList = azureWebAppMvpModel.listWebAppsOnLinux(MOCK_SUBSCRIPTION, true);
         final AzureWebAppMvpModel mockWebAppModel = spy(azureWebAppMvpModel);
-        mockWebAppModel.listWebAppsOnLinux(MOCK_SUBSCRIPTION);
-        verify(mockWebAppModel, times(1)).listWebAppsOnLinux(MOCK_SUBSCRIPTION);
+        mockWebAppModel.listWebAppsOnLinux(MOCK_SUBSCRIPTION, true);
+        verify(mockWebAppModel, times(1)).listWebAppsOnLinux(MOCK_SUBSCRIPTION, true);
         assertEquals(1, webAppList.size());
     }
 
@@ -362,10 +362,10 @@ public class AzureWebAppMvpModelTest {
 
         when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
 
-        final List<ResourceEx<WebApp>> rstList = azureWebAppMvpModel.listWebAppsOnWindows(MOCK_SUBSCRIPTION);
+        final List<ResourceEx<WebApp>> rstList = azureWebAppMvpModel.listWebAppsOnWindows(MOCK_SUBSCRIPTION, true);
         final AzureWebAppMvpModel mockWebAppModel = spy(azureWebAppMvpModel);
-        mockWebAppModel.listWebAppsOnWindows(MOCK_SUBSCRIPTION);
-        verify(mockWebAppModel, times(1)).listWebAppsOnWindows(MOCK_SUBSCRIPTION);
+        mockWebAppModel.listWebAppsOnWindows(MOCK_SUBSCRIPTION, true);
+        verify(mockWebAppModel, times(1)).listWebAppsOnWindows(MOCK_SUBSCRIPTION, true);
         assertEquals(2, rstList.size());
     }
 

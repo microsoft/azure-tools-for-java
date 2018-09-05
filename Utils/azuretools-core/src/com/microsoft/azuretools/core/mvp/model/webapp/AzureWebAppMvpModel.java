@@ -35,10 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import com.microsoft.azure.PagedList;
 import org.apache.commons.io.IOUtils;
 
 import com.microsoft.azure.management.Azure;
@@ -59,12 +57,10 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 public class AzureWebAppMvpModel {
 
     public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
-    private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsOnWindowsMap;
-    private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsOnLinuxMap;
+    private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebApps;
 
     private AzureWebAppMvpModel() {
-        subscriptionIdToWebAppsOnLinuxMap = new ConcurrentHashMap<>();
-        subscriptionIdToWebAppsOnWindowsMap = new ConcurrentHashMap<>();
+        subscriptionIdToWebApps = new ConcurrentHashMap<>();
     }
 
     public static AzureWebAppMvpModel getInstance() {
@@ -329,6 +325,38 @@ public class AzureWebAppMvpModel {
     }
 
     /**
+     * List Web Apps by Subscription ID.
+     */
+    @Deprecated
+    public List<ResourceEx<WebApp>> listWebAppsOnWindowsBySubscriptionId(String sid, boolean force) {
+        return this.listWebAppsOnWindows(sid, force);
+    }
+
+    /**
+     * List all the Web Apps on Windows in selected subscriptions.
+     */
+    public List<ResourceEx<WebApp>> listAllWebAppsOnWindows(final boolean force) {
+        final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
+        for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
+            final String sid = sub.subscriptionId();
+            webApps.addAll(listWebAppsOnWindows(sid, force));
+        }
+        return webApps;
+    }
+
+    /**
+     * List Web App on Linux by Subscription ID.
+     *
+     * @param sid   subscription Id
+     * @param force flag indicating whether force to fetch most updated data from server
+     * @return list of Web App on Linux
+     */
+    @Deprecated
+    public List<ResourceEx<WebApp>> listWebAppsOnLinuxBySubscriptionId(String sid, boolean force) {
+        return this.listWebAppsOnLinux(sid, force);
+    }
+
+    /**
      * List all the Web Apps in selected subscriptions.
      *
      * @param force flag indicating whether force to fetch most updated data from server
@@ -338,54 +366,7 @@ public class AzureWebAppMvpModel {
         final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
         for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
             final String sid = sub.subscriptionId();
-            List<ResourceEx<WebApp>> cacheWebApps = subscriptionIdToWebAppsOnWindowsMap.get(sid);
-            if (cacheWebApps == null) {
-                cacheWebApps = subscriptionIdToWebAppsOnLinuxMap.get(sid);
-            }
-            if (!force && cacheWebApps != null) {
-                webApps.addAll(cacheWebApps);
-            } else {
-                webApps.addAll(
-                    listWebApps(sid).stream().map(app -> new ResourceEx<>(app, sid)).collect(Collectors.toList()));
-            }
-        }
-        return webApps;
-    }
-
-    /**
-     * List all the Web Apps on Windows in selected subscriptions.
-     */
-    public List<ResourceEx<WebApp>> listAllWebAppsOnWindows(boolean force) {
-        final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
-        for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-            final String sid = sub.subscriptionId();
-            if (!force && subscriptionIdToWebAppsOnWindowsMap.get(sid) != null) {
-                webApps.addAll(subscriptionIdToWebAppsOnWindowsMap.get(sid));
-            } else {
-                final List<ResourceEx<WebApp>> linuxWebApps = listWebAppsOnWindows(sid);
-                webApps.addAll(linuxWebApps);
-                subscriptionIdToWebAppsOnWindowsMap.put(sid, linuxWebApps);
-            }
-        }
-        return webApps;
-    }
-
-    /**
-     * List all the Web Apps on Linux in selected subscriptions.
-     * @param force flag indicating whether force to fetch most updated data from server
-     * @return list of Web App on Linux
-     */
-    public List<ResourceEx<WebApp>> listAllWebAppsOnLinux(boolean force) {
-        final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
-        for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-            final String sid = sub.subscriptionId();
-            if (!force && subscriptionIdToWebAppsOnLinuxMap.get(sid) != null) {
-                webApps.addAll(subscriptionIdToWebAppsOnLinuxMap.get(sid));
-            } else {
-                final List<ResourceEx<WebApp>> linuxWebApps = listWebAppsOnLinux(sid);
-                webApps.addAll(linuxWebApps);
-                subscriptionIdToWebAppsOnLinuxMap.put(sid, linuxWebApps);
-            }
+            webApps.addAll(listWebApps(sid, force));
         }
         return webApps;
     }
@@ -393,43 +374,42 @@ public class AzureWebAppMvpModel {
     /**
      * List web apps on linux by subscription id.
      */
-    public List<ResourceEx<WebApp>> listWebAppsOnLinux(@NotNull final String subscriptionId) {
-        final PagedList<WebApp> webApps = listWebApps(subscriptionId);
-        if (webApps == null || webApps.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        }
-        return webApps.stream()
-            .filter(app -> OperatingSystem.LINUX.equals(app.operatingSystem()))
-            .map(app -> new ResourceEx<>(app, subscriptionId))
+    public List<ResourceEx<WebApp>> listWebAppsOnLinux(@NotNull final String subscriptionId, final boolean force) {
+        return listWebApps(subscriptionId, force)
+            .stream()
+            .filter(resourceEx -> OperatingSystem.LINUX.equals(resourceEx.getResource().operatingSystem()))
             .collect(Collectors.toList());
     }
 
     /**
      * List web apps on windows by subscription id.
      */
-    public List<ResourceEx<WebApp>> listWebAppsOnWindows(@NotNull final String subscriptionId) {
-        final PagedList<WebApp> webApps = listWebApps(subscriptionId);
-        if (webApps == null || webApps.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        }
-        return webApps.stream()
-            .filter(app -> OperatingSystem.WINDOWS.equals(app.operatingSystem()))
-            .map(app -> new ResourceEx<>(app, subscriptionId))
+    public List<ResourceEx<WebApp>> listWebAppsOnWindows(@NotNull final String subscriptionId, final boolean force) {
+        return listWebApps(subscriptionId, force).stream()
+            .filter(resourceEx -> OperatingSystem.WINDOWS.equals((resourceEx.getResource().operatingSystem())))
             .collect(Collectors.toList());
     }
 
     /**
      * List all web apps by subscription id.
      */
-    protected PagedList<WebApp> listWebApps(final String subscriptionId) {
-        PagedList<WebApp> webAppPageList = null;
+    @NotNull
+    public List<ResourceEx<WebApp>> listWebApps(final String subscriptionId, final boolean force) {
+        if (!force && subscriptionIdToWebApps.get(subscriptionId) != null) {
+            return subscriptionIdToWebApps.get(subscriptionId);
+        }
+
+        List<ResourceEx<WebApp>> webApps = new ArrayList<>();
         try {
             final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
-            webAppPageList = azure.webApps().list();
+            webApps = azure.webApps().list().stream()
+                .map(app -> new ResourceEx<WebApp>(app, subscriptionId))
+                .collect(Collectors.toList());
+            subscriptionIdToWebApps.put(subscriptionId, webApps);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return webAppPageList;
+        return webApps;
     }
 
     /**
@@ -448,6 +428,20 @@ public class AzureWebAppMvpModel {
         List<JdkModel> jdkModels = new ArrayList<>();
         Collections.addAll(jdkModels, JdkModel.values());
         return jdkModels;
+    }
+
+    /**
+     * List all the Web Apps on Linux in selected subscriptions.
+     * @param force flag indicating whether force to fetch most updated data from server
+     * @return list of Web App on Linux
+     */
+    public List<ResourceEx<WebApp>> listAllWebAppsOnLinux(final boolean force) {
+        final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
+        for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
+            final String sid = sub.subscriptionId();
+            webApps.addAll(listWebAppsOnLinux(sid, force));
+        }
+        return webApps;
     }
 
     /**
@@ -478,11 +472,13 @@ public class AzureWebAppMvpModel {
     }
 
     public void cleanWebAppsOnWindows() {
-        subscriptionIdToWebAppsOnWindowsMap.clear();
+        // todo
+        // subscriptionIdToWebAppsOnWindowsMap.clear();
     }
 
     public void cleanWebAppsOnLinux() {
-        subscriptionIdToWebAppsOnLinuxMap.clear();
+        // todo
+        // subscriptionIdToWebAppsOnLinuxMap.clear();
     }
 
     /**
