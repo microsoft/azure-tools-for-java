@@ -29,6 +29,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ProgramRunner
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
+import org.jetbrains.plugins.scala.console.ScalaLanguageConsole
 
 class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScalaConsoleBuilder, val session: Session): RunProfileState {
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult? {
@@ -42,6 +43,7 @@ class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScal
         }
 
         val console = consoleBuilder.console
+        (console as? ScalaLanguageConsole)?.prompt = "\nSpark>"
         val livySessionProcessHandler = SparkLivySessionProcessHandler(SparkLivySessionProcess(session))
 
         console.attachToProcess(livySessionProcessHandler)

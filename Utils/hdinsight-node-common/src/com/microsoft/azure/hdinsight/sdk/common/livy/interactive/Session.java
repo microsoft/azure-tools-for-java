@@ -302,7 +302,10 @@ public abstract class Session implements AutoCloseable, Closeable {
      */
     public Observable<Session> kill() {
         return deleteSessionRequest()
-                .map(resp -> this)
+                .map(resp -> {
+                    lastState = SessionState.SHUTTING_DOWN;
+                    return this;
+                })
                 .defaultIfEmpty(this);
     }
 

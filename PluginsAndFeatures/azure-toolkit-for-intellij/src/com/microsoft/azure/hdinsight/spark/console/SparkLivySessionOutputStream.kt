@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.spark.console
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
+import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.StatementExecutionError
 import org.apache.commons.io.output.ByteArrayOutputStream
 import java.nio.charset.Charset
 
@@ -36,16 +37,18 @@ class SparkLivySessionOutputStream(val session: Session) : ByteArrayOutputStream
         }
 
         val codes = toString(Charset.defaultCharset())
+        log().debug("Send those codes to Livy: $codes")
 
-//        log().debug("Send those codes to Livy: $codes")
-        log().info("Send those codes to Livy: $codes")
         session.runCodes(codes)
+                .doOnEach { reset() }
                 .subscribe(
                         { result ->
-//                            log().debug("Livy running results: ${ObjectMapper().writeValueAsString(result)}")
-                            log().info("Livy running results: ${ObjectMapper().writeValueAsString(result)}")
+                            log().debug("Livy running results: ${ObjectMapper().writeValueAsString(result)}")
                         },
-                        { err -> throw SparkConsoleExceptions.LivySessionExecuteError("Got error in Livy execution:", err) }
+                        { err -> when (err.cause) {
+                            is StatementExecutionError -> log().debug(err.message)
+                            else -> throw SparkConsoleExceptions.LivySessionExecuteError("Got $codes execution error:", err)
+                        }}
                 )
     }
 }

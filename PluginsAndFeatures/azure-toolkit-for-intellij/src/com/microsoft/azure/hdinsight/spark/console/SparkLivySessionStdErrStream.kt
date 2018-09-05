@@ -28,10 +28,11 @@ import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.StatementOutput
 class SparkLivySessionStdErrStream(session: Session) : SparkLivySessionInputStream(session) {
     override fun createStatementBytesQueue(output: StatementOutput): String? = when (output.status.toLowerCase()) {
         "error" -> output.let {
+            // TODO: Should we add `ename` into the message? Currently, just align the output with Jupyter
             val errorLines = """
-                |[${it.ename}] ${it.evalue}
+                |${it.evalue}
                 |Traceback:
-                |${it.traceback.joinToString()}
+                |${it.traceback.joinToString("")}
                 """.trimMargin()
             errorLines
         }

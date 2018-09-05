@@ -30,7 +30,7 @@ import java.io.InputStream
 import java.io.OutputStream
 
 class SparkLivySessionProcess(val session: Session) : RemoteProcess(), ILogger {
-    override fun isDisconnected(): Boolean = false
+    override fun isDisconnected(): Boolean = session.isStop
 
     override fun getLocalTunnel(remotePort: Int): HostAndPort? = null
 
