@@ -48,6 +48,9 @@ class SparkScalaConsoleBuilder(project: Project) : TextConsoleBuilderImpl(projec
                 ?.let { (name) -> SparkSessionValueInfo(name) }
     }
 
+    fun getSparkContextDeclareStatement(scVal: String) = "val $scVal: org.apache.spark.SparkContext\n"
+    fun getSparkSessionDeclareStatement(sparkVal: String) = "val $sparkVal: org.apache.spark.sql.SparkSession\n"
+
     override fun getConsole(): ConsoleView {
         val consoleView = ScalaLanguageConsole(project, ScalaLanguageConsoleView.SCALA_CONSOLE())
 
@@ -56,9 +59,9 @@ class SparkScalaConsoleBuilder(project: Project) : TextConsoleBuilderImpl(projec
         consoleView.addMessageFilter { line, _ ->
             when {
                 sparkContextRegex.matches(line) -> parseSparkContext(line)
-                        ?.apply { consoleView.textSent("val ${this.name}: org.apache.spark.SparkContext\n") }
+                        ?.apply { consoleView.textSent(getSparkContextDeclareStatement(name)) }
                 sparkSessionRegex.matches(line) -> parseSparkSession(line)
-                        ?.apply { consoleView.textSent("val ${this.name}: org.apache.spark.sql.SparkSession\n") }
+                        ?.apply { consoleView.textSent(getSparkSessionDeclareStatement(name)) }
             }
 
             // No highlight result

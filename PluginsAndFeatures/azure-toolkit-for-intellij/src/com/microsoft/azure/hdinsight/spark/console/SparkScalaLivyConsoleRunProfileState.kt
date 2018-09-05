@@ -43,7 +43,15 @@ class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScal
         }
 
         val console = consoleBuilder.console
-        (console as? ScalaLanguageConsole)?.prompt = "\nSpark>"
+        (console as? ScalaLanguageConsole)?.apply {
+            // Customize the Spark Livy interactive console
+            prompt = "\nSpark>"
+
+            // Prepare pre-defined values
+            textSent(consoleBuilder.getSparkContextDeclareStatement("sc"))
+            textSent(consoleBuilder.getSparkSessionDeclareStatement("spark"))
+        }
+
         val livySessionProcessHandler = SparkLivySessionProcessHandler(SparkLivySessionProcess(session))
 
         console.attachToProcess(livySessionProcessHandler)
