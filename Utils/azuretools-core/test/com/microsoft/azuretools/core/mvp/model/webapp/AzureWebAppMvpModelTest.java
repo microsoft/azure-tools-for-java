@@ -26,7 +26,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -278,7 +281,7 @@ public class AzureWebAppMvpModelTest {
     }
 
     @Test
-    public void testListWebAppsBySubscriptionId() {
+    public void testListWebAppsBySidAndOS() throws IOException {
         List<WebApp> storedList = new PagedList<WebApp>() {
             @Override
             public Page<WebApp> nextPage(String nextPageLink) throws RestException, IOException {
@@ -286,134 +289,193 @@ public class AzureWebAppMvpModelTest {
             }
         };
 
-        WebApp app1 = mock(WebApp.class); when(app1.operatingSystem()).thenReturn(OperatingSystem.LINUX);
-        WebApp app2 = mock(WebApp.class); when(app2.operatingSystem()).thenReturn(OperatingSystem.LINUX);
-        WebApp app3 = mock(WebApp.class); when(app3.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
+        WebApp app1 = mock(WebApp.class);
+        when(app1.operatingSystem()).thenReturn(OperatingSystem.LINUX);
+        WebApp app2 = mock(WebApp.class);
+        when(app2.operatingSystem()).thenReturn(OperatingSystem.LINUX);
+        WebApp app3 = mock(WebApp.class);
+        when(app3.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
         storedList.add(app1);
         storedList.add(app2);
         when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
 
-        List<ResourceEx<WebApp>> rstList = azureWebAppMvpModel.listWebAppsOnWindowsBySubscriptionId(MOCK_SUBSCRIPTION, false);
-        verify(webAppsMock, times(1)).list();
-        assertEquals(0, rstList.size());
-        reset(webAppsMock);
-
-        storedList.add(app3);
-        rstList = azureWebAppMvpModel.listWebAppsOnWindowsBySubscriptionId(MOCK_SUBSCRIPTION, false);
-        verify(webAppsMock, times(0)).list();
-        assertEquals(0, rstList.size());
-        reset(webAppsMock);
-
-        when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
-        rstList = azureWebAppMvpModel.listWebAppsOnWindowsBySubscriptionId(MOCK_SUBSCRIPTION, true);
-        verify(webAppsMock, times(1)).list();
-        assertEquals(1, rstList.size());
-        reset(webAppsMock);
-    }
-
-    @Test
-    public void testListWebApps() {
-        List<Subscription> subscriptions = new ArrayList<Subscription>();
-        Subscription sub1 = mock(Subscription.class); when(sub1.subscriptionId()).thenReturn("1");
-        Subscription sub2 = mock(Subscription.class); when(sub2.subscriptionId()).thenReturn("2");
-        Subscription sub3 = mock(Subscription.class); when(sub3.subscriptionId()).thenReturn("3");
-        when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);
-
-        AzureWebAppMvpModel mockWebAppModel = spy(azureWebAppMvpModel);
-        try {
-            when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
-            when(webAppsMock.list()).thenReturn(new PagedList<WebApp>() {
-                @Override
-                public Page<WebApp> nextPage(String nextPageLink) throws RestException, IOException {
-                    return null;
-                }
-            });
-        }catch (Exception e){
-            printException(e);
-        }
-
-        mockWebAppModel.listAllWebAppsOnWindows(false);
-        verify(mockWebAppModel, times(0)).listWebAppsOnWindowsBySubscriptionId(anyString(), eq(false));
-
-        subscriptions.add(sub1);
-        subscriptions.add(sub2);
-        subscriptions.add(sub3);
-        mockWebAppModel.listAllWebAppsOnWindows(false);
-        verify(mockWebAppModel, times(3)).listWebAppsOnWindowsBySubscriptionId(anyString(), eq(false));
-        reset(mockWebAppModel);
-
-        mockWebAppModel.listAllWebAppsOnWindows(true);
-        verify(mockWebAppModel, times(3)).listWebAppsOnWindowsBySubscriptionId(anyString(), eq(true));
-    }
-
-    @Test
-    public void testListWebAppsOnLinuxBySubscriptionId() {
-        List<WebApp> storedList = new PagedList<WebApp>() {
+        when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
+        when(webAppsMock.list()).thenReturn(new PagedList<WebApp>() {
             @Override
             public Page<WebApp> nextPage(String nextPageLink) throws RestException, IOException {
                 return null;
             }
-        };
+        });
+        List<ResourceEx<WebApp>> rstList = azureWebAppMvpModel.listWebAppsBySidAndOS(MOCK_SUBSCRIPTION,
+            new ConcurrentHashMap<>(), false, OperatingSystem.WINDOWS);
+        verify(webAppsMock, times(1)).list();
+        assertEquals(0, rstList.size());
 
-        WebApp app1 = mock(WebApp.class); when(app1.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
-        WebApp app2 = mock(WebApp.class); when(app2.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
-        WebApp app3 = mock(WebApp.class); when(app3.operatingSystem()).thenReturn(OperatingSystem.LINUX);
+        storedList.add(app3);
+        rstList = azureWebAppMvpModel.listWebAppsBySidAndOS(MOCK_SUBSCRIPTION, new ConcurrentHashMap<>(),
+            false, OperatingSystem.WINDOWS);
+        verify(webAppsMock, times(2)).list();
+        assertEquals(0, rstList.size());
+
+        when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
+        rstList = azureWebAppMvpModel.listWebAppsBySidAndOS(MOCK_SUBSCRIPTION, new ConcurrentHashMap<>(),
+            true, OperatingSystem.LINUX);
+        verify(webAppsMock, times(3)).list();
+        assertEquals(2, rstList.size());
+
+        reset(webAppsMock);
+    }
+
+    @Test
+    public void testListWebApps() throws IOException {
+        List<Subscription> subscriptions = new ArrayList<Subscription>();
+        when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);
+
+        AzureWebAppMvpModel mockWebAppModel = spy(azureWebAppMvpModel);
+        when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
+        when(webAppsMock.list()).thenReturn(new PagedList<WebApp>() {
+            @Override
+            public Page<WebApp> nextPage(String nextPageLink) throws RestException {
+                return null;
+            }
+        });
+
+        mockWebAppModel.listAllWebApps(false);
+        verify(mockWebAppModel, times(0)).listWebAppsBySidAndOS("", new ConcurrentHashMap<>(),
+            false, OperatingSystem.WINDOWS);
+
+        mockSubscriptions(subscriptions);
+
+        final Map<String, List<ResourceEx<WebApp>>> cacheMap = mockCacheMap();
+
+        mockWebAppModel.listAllWebApps(false);
+        verify(mockWebAppModel, times(1)).listWebAppsBySidAndOS("1", cacheMap, false, null);
+
+        reset(mockWebAppModel);
+        mockWebAppModel.listAllWebApps(true);
+        verify(mockWebAppModel, times(1)).listWebAppsBySidAndOS("2", cacheMap, true, null);
+
+        reset(mockWebAppModel);
+        mockWebAppModel.listAllWebApps(true);
+        verify(mockWebAppModel, times(1)).listWebAppsBySidAndOS("3", cacheMap, true, null);
+    }
+
+    @Test
+    public void testListWebAppsOnLinuxBySubscriptionId() throws IOException {
+        List<WebApp> storedList = new PagedList<WebApp>() {
+            @Override
+            public Page<WebApp> nextPage(String nextPageLink) throws RestException {
+                return null;
+            }
+        };
+        when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
+        when(webAppsMock.list()).thenReturn(new PagedList<WebApp>() {
+            @Override
+            public Page<WebApp> nextPage(String nextPageLink) throws RestException, IOException {
+                return null;
+            }
+        });
+        WebApp app1 = mock(WebApp.class);
+        when(app1.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
+        WebApp app2 = mock(WebApp.class);
+        when(app2.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
+        WebApp app3 = mock(WebApp.class);
+        when(app3.operatingSystem()).thenReturn(OperatingSystem.LINUX);
         storedList.add(app1);
         storedList.add(app2);
         when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
 
-        List<ResourceEx<WebApp>> rstList = azureWebAppMvpModel.listWebAppsOnLinuxBySubscriptionId(MOCK_SUBSCRIPTION, false);
+        List<ResourceEx<WebApp>> rstList = azureWebAppMvpModel.listWebAppsBySidAndOS(MOCK_SUBSCRIPTION,
+            new ConcurrentHashMap<>(), false, OperatingSystem.LINUX);
         verify(webAppsMock, times(1)).list();
         assertEquals(0, rstList.size());
-        reset(webAppsMock);
 
         storedList.add(app3);
-        rstList = azureWebAppMvpModel.listWebAppsOnLinuxBySubscriptionId(MOCK_SUBSCRIPTION, false);
-        verify(webAppsMock, times(0)).list();
-        assertEquals(0, rstList.size());
-        reset(webAppsMock);
+        rstList = azureWebAppMvpModel.listWebAppsBySidAndOS(MOCK_SUBSCRIPTION, new ConcurrentHashMap<>(),
+            false, OperatingSystem.LINUX);
+        verify(webAppsMock, times(2)).list();
+        assertEquals(1, rstList.size());
 
         when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
-        rstList = azureWebAppMvpModel.listWebAppsOnLinuxBySubscriptionId(MOCK_SUBSCRIPTION, true);
-        verify(webAppsMock, times(1)).list();
+        rstList = azureWebAppMvpModel.listWebAppsBySidAndOS(MOCK_SUBSCRIPTION, new ConcurrentHashMap<>(),
+            true, OperatingSystem.LINUX);
+        verify(webAppsMock, times(3)).list();
         assertEquals(1, rstList.size());
         reset(webAppsMock);
     }
 
     @Test
-    public void testListAllWebAppsOnLinux() {
-
+    public void testListAllWebAppsOnLinux() throws IOException {
         List<Subscription> subscriptions = new ArrayList<Subscription>();
-        Subscription sub1 = mock(Subscription.class); when(sub1.subscriptionId()).thenReturn("1");
-        Subscription sub2 = mock(Subscription.class); when(sub2.subscriptionId()).thenReturn("2");
-        Subscription sub3 = mock(Subscription.class); when(sub3.subscriptionId()).thenReturn("3");
         when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);
 
         AzureWebAppMvpModel mockWebAppModel = spy(azureWebAppMvpModel);
-        try {
-            when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
-            when(webAppsMock.list()).thenReturn(new PagedList<WebApp>() {
-                @Override
-                public Page<WebApp> nextPage(String nextPageLink) throws RestException, IOException {
-                    return null;
-                }
-            });
-        }catch (Exception e){
-            printException(e);
-        }
+        when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
+        when(webAppsMock.list()).thenReturn(new PagedList<WebApp>() {
+            @Override
+            public Page<WebApp> nextPage(String nextPageLink) throws RestException, IOException {
+                return null;
+            }
+        });
 
         mockWebAppModel.listAllWebAppsOnLinux(false);
-        verify(mockWebAppModel, times(0)).listWebAppsOnLinuxBySubscriptionId(anyString(), eq(false));
+        verify(mockWebAppModel, times(0)).listWebAppsBySidAndOS("",
+            new ConcurrentHashMap<>(), false, OperatingSystem.LINUX);
 
-        subscriptions.add(sub1);
-        subscriptions.add(sub2);
-        subscriptions.add(sub3);
+        mockSubscriptions(subscriptions);
+
+        final Map<String, List<ResourceEx<WebApp>>> cacheMap = mockCacheMap();
+
         mockWebAppModel.listAllWebAppsOnLinux(false);
-        verify(mockWebAppModel, times(3)).listWebAppsOnLinuxBySubscriptionId(anyString(), eq(false));
+        verify(mockWebAppModel, times(1)).listWebAppsBySidAndOS("1", cacheMap,
+            false, OperatingSystem.LINUX);
+
         reset(mockWebAppModel);
-
         mockWebAppModel.listAllWebAppsOnLinux(true);
-        verify(mockWebAppModel, times(3)).listWebAppsOnLinuxBySubscriptionId(anyString(), eq(true));
+        verify(mockWebAppModel, times(1)).listWebAppsBySidAndOS("2", cacheMap,
+            true, OperatingSystem.LINUX);
+
+        reset(mockWebAppModel);
+        mockWebAppModel.listAllWebAppsOnLinux(true);
+        verify(mockWebAppModel, times(1)).listWebAppsBySidAndOS("3", cacheMap,
+            true, OperatingSystem.LINUX);
+    }
+
+    @Test
+    public void testListAllWebAppsOnWindows() throws IOException {
+        List<Subscription> subscriptions = new ArrayList<>();
+        when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);
+
+        AzureWebAppMvpModel mockWebAppModel = spy(azureWebAppMvpModel);
+        when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
+        when(webAppsMock.list()).thenReturn(new PagedList<WebApp>() {
+            @Override
+            public Page<WebApp> nextPage(String nextPageLink) throws RestException, IOException {
+                return null;
+            }
+        });
+
+        mockWebAppModel.listAllWebAppsOnWindows(false);
+        verify(mockWebAppModel, times(0)).listWebAppsBySidAndOS("",
+            new ConcurrentHashMap<>(), false, OperatingSystem.WINDOWS);
+
+        mockSubscriptions(subscriptions);
+
+        final Map<String, List<ResourceEx<WebApp>>> cacheMap = mockCacheMap();
+
+        mockWebAppModel.listAllWebAppsOnWindows(false);
+        verify(mockWebAppModel, times(1)).listWebAppsBySidAndOS("1", cacheMap,
+            false, OperatingSystem.WINDOWS);
+
+        reset(mockWebAppModel);
+        mockWebAppModel.listAllWebAppsOnWindows(true);
+        verify(mockWebAppModel, times(1)).listWebAppsBySidAndOS("2", cacheMap,
+            true, OperatingSystem.WINDOWS);
+
+        reset(mockWebAppModel);
+        mockWebAppModel.listAllWebAppsOnWindows(true);
+        verify(mockWebAppModel, times(1)).listWebAppsBySidAndOS("3", cacheMap,
+            true, OperatingSystem.WINDOWS);
     }
 
     @Test
@@ -426,6 +488,30 @@ public class AzureWebAppMvpModelTest {
     @Test
     public void testListJdks() {
         assertEquals(JdkModel.values().length, azureWebAppMvpModel.listJdks().size());
+    }
+
+    private void mockSubscriptions(List<Subscription> subscriptions) {
+        if (subscriptions == null) {
+            subscriptions = new ArrayList<>();
+        }
+        Subscription sub1 = mock(Subscription.class);
+        when(sub1.subscriptionId()).thenReturn("1");
+        Subscription sub2 = mock(Subscription.class);
+        when(sub2.subscriptionId()).thenReturn("2");
+        Subscription sub3 = mock(Subscription.class);
+        when(sub3.subscriptionId()).thenReturn("3");
+
+        subscriptions.add(sub1);
+        subscriptions.add(sub2);
+        subscriptions.add(sub3);
+    }
+
+    private Map<String, List<ResourceEx<WebApp>>> mockCacheMap() {
+        Map<String, List<ResourceEx<WebApp>>> cacheMap = new ConcurrentHashMap<>();
+        cacheMap.put("1", Collections.EMPTY_LIST);
+        cacheMap.put("2", Collections.EMPTY_LIST);
+        cacheMap.put("3", Collections.EMPTY_LIST);
+        return cacheMap;
     }
 
     private void printException(Exception e) {
