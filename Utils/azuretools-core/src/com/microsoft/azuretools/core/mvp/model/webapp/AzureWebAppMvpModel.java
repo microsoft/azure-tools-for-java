@@ -328,7 +328,7 @@ public class AzureWebAppMvpModel {
      * List Web Apps by Subscription ID.
      */
     @Deprecated
-    public List<ResourceEx<WebApp>> listWebAppsOnWindowsBySubscriptionId(String sid, boolean force) {
+    public List<ResourceEx<WebApp>> listWebAppsOnWindowsBySubscriptionId(final String sid, final boolean force) {
         return this.listWebAppsOnWindows(sid, force);
     }
 
@@ -352,7 +352,7 @@ public class AzureWebAppMvpModel {
      * @return list of Web App on Linux
      */
     @Deprecated
-    public List<ResourceEx<WebApp>> listWebAppsOnLinuxBySubscriptionId(String sid, boolean force) {
+    public List<ResourceEx<WebApp>> listWebAppsOnLinuxBySubscriptionId(final String sid, final boolean force) {
         return this.listWebAppsOnLinux(sid, force);
     }
 
@@ -362,7 +362,7 @@ public class AzureWebAppMvpModel {
      * @param force flag indicating whether force to fetch most updated data from server
      * @return list of Web App
      */
-    public List<ResourceEx<WebApp>> listAllWebApps(boolean force) {
+    public List<ResourceEx<WebApp>> listAllWebApps(final boolean force) {
         final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
         for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
             final String sid = sub.subscriptionId();
