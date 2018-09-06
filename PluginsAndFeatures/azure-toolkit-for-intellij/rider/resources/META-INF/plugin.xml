@@ -43,13 +43,6 @@
            icon="/icons/Publish_16.png">
       <add-to-group group-id="AzureToolbarGroup" anchor="first" />
     </group>
-    <group id="AzureRiderPopupGroup"
-           class="com.microsoft.intellij.actions.AzureRiderPopupGroup"
-           text="Azure"
-           description="Azure"
-           icon="/icons/azure.png"
-           popup="true">
-    </group>
   </actions>
 
 </idea-plugin>

@@ -13,7 +13,9 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.util.firstOrNull
+import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.PricingTier
+import com.microsoft.azure.management.appservice.RuntimeStack
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.AzureRunConfigurationBase
@@ -63,29 +65,34 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         private const val APP_SERVICE_PLAN_NAME_LENGTH_ERROR =
                 "Web App name should be from $WEB_APP_NAME_MIN_LENGTH to $WEB_APP_NAME_MAX_LENGTH characters"
         private const val APP_SERVICE_PLAN_NAME_INVALID = "App Service Plan name cannot contain characters: %s"
-        private const val LOCATION_MISSING = "Location not provided"
+
         private const val PRICING_TIER_MISSING = "Pricing Tier not provided"
+        private const val LOCATION_MISSING = "Location not provided"
+
+        private const val OPERATING_SYSTEM_MISSING = "Operating System not provided"
+
+        private const val RUNTIME_MISSING = "Runtime not provided"
 
         private const val WEB_APP_TARGET_NAME = "Microsoft.WebApplication.targets"
     }
 
     private val myModel: AzureDotNetWebAppSettingModel = AzureDotNetWebAppSettingModel()
 
-    override fun getSubscriptionId(): String? {
-        return myModel.subscriptionId
-    }
-
-    override fun getTargetPath(): String? {
-        return myModel.publishableProject?.projectFilePath
-    }
-
-    override fun getTargetName(): String? {
-        return myModel.publishableProject?.projectName
-    }
-
     init {
         myModel.publishableProject = project.solution.publishableProjectsModel.publishableProjects.values
                 .sortedWith(compareBy({ it.isWeb }, { it.projectName })).firstOrNull()
+    }
+
+    override fun getSubscriptionId(): String {
+        return myModel.subscriptionId
+    }
+
+    override fun getTargetPath(): String {
+        return myModel.publishableProject?.projectFilePath ?: ""
+    }
+
+    override fun getTargetName(): String {
+        return myModel.publishableProject?.projectName ?: ""
     }
 
     override fun getModel(): AzureDotNetWebAppSettingModel {
@@ -115,23 +122,30 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
 
         if (myModel.isCreatingWebApp) {
             validateWebAppName(myModel.webAppName)
-            checkValueSet(myModel.subscriptionId, SUBSCRIPTION_MISSING)
+            checkValueIsSet(myModel.subscriptionId, SUBSCRIPTION_MISSING)
 
             if (myModel.isCreatingResourceGroup) {
                 validateResourceGroupName(myModel.resourceGroupName)
             } else {
-                checkValueSet(myModel.resourceGroupName, RESOURCE_GROUP_MISSING)
+                checkValueIsSet(myModel.resourceGroupName, RESOURCE_GROUP_MISSING)
             }
 
             if (myModel.isCreatingAppServicePlan) {
-                checkValueSet(myModel.region, LOCATION_MISSING)
-                checkValueSet(myModel.pricingTier, PRICING_TIER_MISSING)
                 validateAppServicePlanName(myModel.appServicePlanName)
+                checkValueIsSet(myModel.pricingTier, PRICING_TIER_MISSING)
+                checkValueIsSet(myModel.location, LOCATION_MISSING)
             } else {
-                checkValueSet(myModel.appServicePlanId, APP_SERVICE_PLAN_MISSING)
+                checkValueIsSet(myModel.appServicePlanId, APP_SERVICE_PLAN_MISSING)
             }
+
+            checkValueIsSet(myModel.operatingSystem, OPERATING_SYSTEM_MISSING)
+
+            if (myModel.operatingSystem == OperatingSystem.LINUX) {
+                checkValueIsSet(myModel.runtime, RUNTIME_MISSING)
+            }
+
         } else {
-            checkValueSet(myModel.webAppId, WEB_APP_MISSING)
+            checkValueIsSet(myModel.webAppId, WEB_APP_MISSING)
         }
     }
 
@@ -158,8 +172,10 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     //region Project
 
     /**
-     * Validate publishable project selection in the config
-     * Check for the WebApplication targets that contains tasks for generating publishable package on Windows only
+     * Validate publishable project in the config
+     *
+     * Note: for .NET web apps we ned to check for the "WebApplication" targets
+     *       that contains tasks for generating publishable package
      *
      * @throws [ConfigurationException] in case validation is failed
      */
@@ -176,6 +192,8 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
      * Check whether necessary targets exists in a project that are necessary for web app deployment
      * Note: On Windows only
      *
+     * TODO: We should replace this method with a target validation on a backend (RIDER-18500)
+     *
      * @return [Boolean] whether WebApplication targets are present in publishable project
      */
     private fun isWebTargetsPresent(csprojFile: File): Boolean = csprojFile.readText().contains(WEB_APP_TARGET_NAME, true)
@@ -185,11 +203,10 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     //region Resource Group
 
     @Throws(RuntimeConfigurationError::class)
-    private fun validateResourceGroupName(name: String?) {
+    private fun validateResourceGroupName(name: String) {
 
-        if (name == null || name.isEmpty()) throw RuntimeConfigurationError(RESOURCE_GROUP_NAME_MISSING)
-        val subscriptionId = myModel.subscriptionId
-        if (subscriptionId != null) checkResourceGroupExistence(subscriptionId, name)
+        checkValueIsSet(name, RESOURCE_GROUP_NAME_MISSING)
+        checkResourceGroupExistence(myModel.subscriptionId, name)
 
         if (name.endsWith('.')) throw RuntimeConfigurationError(RESOURCE_GROUP_NAME_CANNOT_ENDS_WITH_PERIOD)
 
@@ -201,9 +218,6 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
                 RESOURCE_GROUP_NAME_INVALID)
     }
 
-    // TODO: There is a method in [azure.resourceGroups().checkExistence()]
-    // TODO: It might be better to call this method async
-    // TODO: We cannot do it easily, because we cannot throw from the async result
     @Throws(RuntimeConfigurationError::class)
     private fun checkResourceGroupExistence(subscriptionId: String, resourceGroupName: String) {
         val subscriptionToResourceGroupMap = AzureModel.getInstance().subscriptionToResourceGroupMap
@@ -213,10 +227,6 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
             if (resourceGroups != null && resourceGroups.any { it.name().equals(resourceGroupName, true) })
                 throw RuntimeConfigurationError(String.format(RESOURCE_GROUP_ALREADY_EXISTS, resourceGroupName))
         }
-
-//        AzureDotNetWebAppMvpModel.checkResourceGroupExistenceAsync(subscriptionId, resourceGroupName)
-//                .subscribe { if (it) throw RuntimeConfigurationError(String.format(RESOURCE_GROUP_ALREADY_EXISTS, resourceGroupName)) }
-
     }
 
     //endregion Resource Group
@@ -226,14 +236,14 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     // Please see for details -
     // https://docs.microsoft.com/en-us/azure/app-service/app-service-web-get-started-dotnet?toc=%2Fen-us%2Fdotnet%2Fapi%2Fazure_ref_toc%2Ftoc.json&bc=%2Fen-us%2Fdotnet%2Fazure_breadcrumb%2Ftoc.json&view=azure-dotnet#create-an-app-service-plan
     @Throws(RuntimeConfigurationError::class)
-    private fun validateWebAppName(name: String?) {
+    private fun validateWebAppName(name: String) {
 
-        val webAppName = checkValueSet(name, WEB_APP_NAME_MISSING)
-        checkWebAppExistence(webAppName)
+        checkValueIsSet(name, WEB_APP_NAME_MISSING)
+        checkWebAppExistence(name)
 
-        if (webAppName.startsWith('-') || webAppName.endsWith('-')) throw RuntimeConfigurationError(WEB_APP_NAME_CANNOT_START_END_WITH_DASH)
+        if (name.startsWith('-') || name.endsWith('-')) throw RuntimeConfigurationError(WEB_APP_NAME_CANNOT_START_END_WITH_DASH)
 
-        validateResourceName(webAppName,
+        validateResourceName(name,
                 WEB_APP_NAME_MIN_LENGTH,
                 WEB_APP_NAME_MAX_LENGTH,
                 WEB_APP_NAME_LENGTH_ERROR,
@@ -257,12 +267,12 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     //region App Service Plan
 
     @Throws(RuntimeConfigurationError::class)
-    private fun validateAppServicePlanName(name: String?) {
+    private fun validateAppServicePlanName(name: String) {
 
-        val planName = checkValueSet(name, APP_SERVICE_PLAN_NAME_MISSING)
-        checkAppServicePlanExistence(planName)
+        checkValueIsSet(name, APP_SERVICE_PLAN_NAME_MISSING)
+        checkAppServicePlanExistence(name)
 
-        validateResourceName(planName,
+        validateResourceName(name,
                 APP_SERVICE_PLAN_NAME_MIN_LENGTH,
                 APP_SERVICE_PLAN_NAME_MAX_LENGTH,
                 APP_SERVICE_PLAN_NAME_LENGTH_ERROR,
@@ -316,14 +326,22 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
      * @throws [RuntimeConfigurationError] if field value is not set
      */
     @Throws(RuntimeConfigurationError::class)
-    private fun checkValueSet(value: String?, message: String): String {
-        if (value == null || value.isEmpty()) throw RuntimeConfigurationError(message)
-        return value
+    private fun checkValueIsSet(value: String, message: String) {
+        if (value.isEmpty()) throw RuntimeConfigurationError(message)
     }
 
     @Throws(RuntimeConfigurationError::class)
-    private fun checkValueSet(value: PricingTier?, message: String): PricingTier {
+    private fun checkValueIsSet(value: PricingTier?, message: String) {
         if (value == null) throw RuntimeConfigurationError(message)
-        return value
+    }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun checkValueIsSet(value: OperatingSystem?, message: String) {
+        if (value == null) throw RuntimeConfigurationError(message)
+    }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun checkValueIsSet(value: RuntimeStack?, message: String) {
+        if (value == null) throw RuntimeConfigurationError(message)
     }
 }

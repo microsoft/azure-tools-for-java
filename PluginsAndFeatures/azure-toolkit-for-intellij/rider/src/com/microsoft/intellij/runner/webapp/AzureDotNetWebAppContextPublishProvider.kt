@@ -18,7 +18,8 @@ class AzureDotNetWebAppContextPublishProvider : RiderContextPublishProvider {
     }
 
     override val icon: Icon
-        get() = RiderIcons.Publish.PublishAzure // TODO: SD -- RiderIcons.Publish.AzureWebApp
+        // TODO: Replace with a custom icon (RIDER-18401)
+        get() = RiderIcons.Publish.PublishAzure
 
     override val name: String
         get() = "Publish to Azure"
@@ -27,7 +28,7 @@ class AzureDotNetWebAppContextPublishProvider : RiderContextPublishProvider {
                                          projectModelNode: ProjectModelNode): Pair<RunConfiguration, ConfigurationFactory> {
 
         val projectData = RiderContextPublishProvider.getProjectDataRecursive(project, projectModelNode)
-                ?: error("Unexpected project node type. Bug?")
+                ?: error("Unexpected project node type. Cannot get project data for node ${projectModelNode.location}")
 
         val configurationFactory = RiderWebAppConfigurationType().configurationFactories.single()
         val configuration = RiderWebAppConfiguration(project, configurationFactory, String.format(RUN_CONFIG_NAME, projectData.value.projectName))
