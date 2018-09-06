@@ -22,21 +22,8 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
-import com.intellij.remote.ColoredRemoteProcessHandler
-import java.io.OutputStream
-import java.nio.charset.StandardCharsets.UTF_8
+import com.intellij.execution.console.LanguageConsoleView
 
-class SparkLivySessionProcessHandler(val process: SparkLivySessionProcess) :
-        ColoredRemoteProcessHandler<SparkLivySessionProcess>(process, "Start Spark Livy Interactive Session Console...", UTF_8) {
-    override fun getProcessInput(): OutputStream? = process.outputStream
-
-    override fun detachIsDefault(): Boolean = false
-
-    override fun detachProcessImpl() {
-        destroyProcessImpl()
-    }
-
-    override fun destroyProcessImpl() {
-        process.destroy()
-    }
+interface SparkConsole : LanguageConsoleView {
+    fun indexCodes(codes: String)
 }

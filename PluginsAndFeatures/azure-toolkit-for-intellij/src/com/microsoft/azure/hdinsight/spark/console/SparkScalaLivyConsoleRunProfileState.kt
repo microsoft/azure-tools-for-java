@@ -27,6 +27,7 @@ import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.execution.runners.ProgramRunner
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
 import org.jetbrains.plugins.scala.console.ScalaLanguageConsole
@@ -55,6 +56,9 @@ class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScal
         val livySessionProcessHandler = SparkLivySessionProcessHandler(SparkLivySessionProcess(session))
 
         console.attachToProcess(livySessionProcessHandler)
+
+        livySessionProcessHandler.notifyTextAvailable("Spark context available as 'sc'.\n", ProcessOutputTypes.SYSTEM)
+        livySessionProcessHandler.notifyTextAvailable("Spark session available as 'spark'.\n", ProcessOutputTypes.SYSTEM)
 
         return DefaultExecutionResult(console, livySessionProcessHandler)
     }

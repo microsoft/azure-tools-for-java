@@ -39,7 +39,7 @@ import org.jetbrains.plugins.scala.console.RunConsoleAction
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
-import org.jetbrains.plugins.scala.extensions.`package`.inReadAction
+import com.microsoft.intellij.util.runInReadAction
 import scala.Function1
 import scala.runtime.BoxedUnit
 
@@ -74,7 +74,7 @@ class RunSparkLivyConsoleAction
             project: Project,
             name: String,
             handler: Function1<RunConfiguration, BoxedUnit>) {
-        inReadAction {
+        runInReadAction {
             val factory = configurationType.configurationFactories[0]
             val setting = RunManager.getInstance(project).createConfiguration(name, factory)
             handler.apply(setting.configuration)
@@ -83,7 +83,7 @@ class RunSparkLivyConsoleAction
     }
 
     private fun runExisting(setting: RunnerAndConfigurationSettings, runManagerEx: RunManagerEx, project: Project) {
-        inReadAction {
+        runInReadAction {
             runFromSetting(project, setting, runManagerEx)
         }
     }

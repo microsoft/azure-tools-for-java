@@ -20,23 +20,27 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.console
+package com.microsoft.intellij.util
 
-import com.intellij.remote.ColoredRemoteProcessHandler
-import java.io.OutputStream
-import java.nio.charset.StandardCharsets.UTF_8
+import com.intellij.openapi.application.ApplicationManager
 
-class SparkLivySessionProcessHandler(val process: SparkLivySessionProcess) :
-        ColoredRemoteProcessHandler<SparkLivySessionProcess>(process, "Start Spark Livy Interactive Session Console...", UTF_8) {
-    override fun getProcessInput(): OutputStream? = process.outputStream
 
-    override fun detachIsDefault(): Boolean = false
+fun <T: Any> runInWriteAction(codes: () -> T): T {
+    val application = ApplicationManager.getApplication()
 
-    override fun detachProcessImpl() {
-        destroyProcessImpl()
+    return if (application.isWriteAccessAllowed) {
+        codes.invoke()
+    } else {
+        application.runWriteAction<T> { codes.invoke() }
     }
+}
 
-    override fun destroyProcessImpl() {
-        process.destroy()
+fun <T: Any> runInReadAction(codes: () -> T): T {
+    val application = ApplicationManager.getApplication()
+
+    return if (application.isReadAccessAllowed) {
+        codes.invoke()
+    } else {
+        application.runReadAction<T> { codes.invoke() }
     }
 }

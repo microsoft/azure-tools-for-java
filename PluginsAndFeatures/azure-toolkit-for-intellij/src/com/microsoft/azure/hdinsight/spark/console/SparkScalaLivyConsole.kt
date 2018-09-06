@@ -22,21 +22,24 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
-import com.intellij.remote.ColoredRemoteProcessHandler
-import java.io.OutputStream
-import java.nio.charset.StandardCharsets.UTF_8
+import com.intellij.execution.console.ConsoleHistoryController
+import com.intellij.execution.process.ProcessHandler
+import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.scala.console.ScalaConsoleInfo
+import org.jetbrains.plugins.scala.console.ScalaLanguageConsole
 
-class SparkLivySessionProcessHandler(val process: SparkLivySessionProcess) :
-        ColoredRemoteProcessHandler<SparkLivySessionProcess>(process, "Start Spark Livy Interactive Session Console...", UTF_8) {
-    override fun getProcessInput(): OutputStream? = process.outputStream
-
-    override fun detachIsDefault(): Boolean = false
-
-    override fun detachProcessImpl() {
-        destroyProcessImpl()
+class SparkScalaLivyConsole(project: Project, title: String) : ScalaLanguageConsole(project, title), SparkConsole {
+    override fun indexCodes(codes: String) {
+        super.textSent(codes)
     }
 
-    override fun destroyProcessImpl() {
-        process.destroy()
+    override fun attachToProcess(processHandler: ProcessHandler?) {
+        super.attachToProcess(processHandler)
+
+        // Remove self from ScalaConsoleInfo
+        ScalaConsoleInfo.disposeConsole(this)
+
+        // Add to Spark Console Manager
+        SparkConsoleManager.add(this, ConsoleHistoryController.getController(this), processHandler)
     }
 }
