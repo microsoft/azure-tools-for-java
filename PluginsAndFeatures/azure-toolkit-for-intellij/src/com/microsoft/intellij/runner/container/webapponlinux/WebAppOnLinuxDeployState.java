@@ -108,7 +108,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
             // create new WebApp
             processHandler.setText(String.format("Creating new WebApp ... [%s]",
                     deployModel.getWebAppName()));
-            WebApp app = AzureWebAppMvpModel.getInstance().createWebAppOnDocker(deployModel);
+            WebApp app = AzureWebAppMvpModel.getInstance().createWebAppWithPrivateRegistryImage(deployModel);
             if (app != null && app.name() != null) {
                 processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
                 updateConfigurationDataModel(app);

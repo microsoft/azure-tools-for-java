@@ -175,7 +175,7 @@ public class AzureWebAppMvpModel {
      * @return instance of created WebApp
      * @throws IOException IOExceptions
      */
-    public WebApp createWebAppOnDocker(@NotNull WebAppOnLinuxDeployModel model)
+    public WebApp createWebAppWithPrivateRegistryImage(@NotNull WebAppOnLinuxDeployModel model)
             throws IOException {
         PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
         WebApp app;

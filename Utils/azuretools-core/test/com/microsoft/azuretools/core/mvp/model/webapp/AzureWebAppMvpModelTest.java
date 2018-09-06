@@ -199,7 +199,7 @@ public class AzureWebAppMvpModelTest {
         when(def.withExistingLinuxPlan(srvPlan)).thenReturn(withGrp);
 
         try{
-            azureWebAppMvpModel.createWebAppOnDocker(model);
+            azureWebAppMvpModel.createWebAppWithPrivateRegistryImage(model);
         } catch(Exception e) {
         }
 
