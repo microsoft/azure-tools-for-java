@@ -38,11 +38,6 @@
   </project-components>
 
   <actions>
-    <action id="Actions.RiderDatabaseDeployAction"
-            class="com.microsoft.intellij.actions.RiderDatabaseDeployAction"
-            text="Publish SQL Database"
-            description="Publish Azure SQL Database"
-            icon="/icons/PublishWebApp_16.png" />
     <group id="RiderPublishToAzureGroup"
            text="Publish Group"
            description="Publish Group"

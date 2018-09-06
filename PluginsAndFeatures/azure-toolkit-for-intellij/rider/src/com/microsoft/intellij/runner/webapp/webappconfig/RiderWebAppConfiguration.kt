@@ -13,9 +13,6 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.util.firstOrNull
-import com.microsoft.azure.management.appservice.OperatingSystem
-import com.microsoft.azure.management.appservice.PricingTier
-import com.microsoft.azure.management.appservice.RuntimeStack
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.utils.AzureModel
@@ -55,7 +52,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         private const val WEB_APP_NAME_LENGTH_ERROR =
                 "Web App name should be from $WEB_APP_NAME_MIN_LENGTH to $WEB_APP_NAME_MAX_LENGTH characters"
         private const val WEB_APP_NAME_INVALID = "Web App name cannot contain characters: %s"
-        private const val WEB_APP_NAME_CANNOT_START_END_WITH_DASH = "Web App name cannot begin or end with dash symbol"
+        private const val WEB_APP_NAME_CANNOT_START_END_WITH_DASH = "Web App name cannot begin or end with '-' symbol"
 
         private const val APP_SERVICE_PLAN_MISSING = "Please select an App Service Plan"
         private const val APP_SERVICE_PLAN_ALREADY_EXISTS = "App Service Plan with name '%s' already exists"
@@ -67,12 +64,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
                 "Web App name should be from $WEB_APP_NAME_MIN_LENGTH to $WEB_APP_NAME_MAX_LENGTH characters"
         private const val APP_SERVICE_PLAN_NAME_INVALID = "App Service Plan name cannot contain characters: %s"
 
-        private const val PRICING_TIER_MISSING = "Pricing Tier not provided"
         private const val LOCATION_MISSING = "Location not provided"
-
-        private const val OPERATING_SYSTEM_MISSING = "Operating System not provided"
-
-        private const val RUNTIME_MISSING = "Runtime not provided"
 
         private const val CONNECTION_STRING_NAME_MISSING = "Connection string name not provided"
         private const val CONNECTION_STRING_NAME_ALREADY_EXISTS = "Connection String with name '%s' already exists"
@@ -130,8 +122,8 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
 
         if (myModel.isDatabaseConnectionEnabled) {
             validateDatabase(myModel.database)
-            checkValueSet(myModel.sqlDatabaseAdminLogin, DATABASE_ADMIN_LOGIN_MISSING)
-            checkValueSet(myModel.sqlDatabaseAdminPassword, DATABASE_ADMIN_PASSWORD_MISSING)
+            checkValueIsSet(myModel.sqlDatabaseAdminLogin, DATABASE_ADMIN_LOGIN_MISSING)
+            checkValueIsSet(myModel.sqlDatabaseAdminPassword, DATABASE_ADMIN_PASSWORD_MISSING)
             // validateSqlDbAdminPassword("aaa", charArrayOf())
         }
 
@@ -140,23 +132,16 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
             checkValueIsSet(myModel.subscriptionId, SUBSCRIPTION_MISSING)
 
             if (myModel.isCreatingResourceGroup) {
-                validateResourceGroupName(myModel.resourceGroupName)
+                validateResourceGroupName(myModel.subscriptionId, myModel.resourceGroupName)
             } else {
                 checkValueIsSet(myModel.resourceGroupName, RESOURCE_GROUP_MISSING)
             }
 
             if (myModel.isCreatingAppServicePlan) {
                 validateAppServicePlanName(myModel.appServicePlanName)
-                checkValueIsSet(myModel.pricingTier, PRICING_TIER_MISSING)
                 checkValueIsSet(myModel.location, LOCATION_MISSING)
             } else {
                 checkValueIsSet(myModel.appServicePlanId, APP_SERVICE_PLAN_MISSING)
-            }
-
-            checkValueIsSet(myModel.operatingSystem, OPERATING_SYSTEM_MISSING)
-
-            if (myModel.operatingSystem == OperatingSystem.LINUX) {
-                checkValueIsSet(myModel.runtime, RUNTIME_MISSING)
             }
 
         } else {
@@ -221,10 +206,10 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     //region Resource Group
 
     @Throws(RuntimeConfigurationError::class)
-    private fun validateResourceGroupName(name: String) {
+    private fun validateResourceGroupName(subscriptionId: String, name: String) {
 
         checkValueIsSet(name, RESOURCE_GROUP_NAME_MISSING)
-        checkResourceGroupExistence(myModel.subscriptionId, name)
+        checkResourceGroupExistence(subscriptionId, name)
 
         if (name.endsWith('.')) throw RuntimeConfigurationError(RESOURCE_GROUP_NAME_CANNOT_ENDS_WITH_PERIOD)
 
@@ -319,22 +304,20 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     }
 
     @Throws(RuntimeConfigurationError::class)
-    private fun checkConnectionStringNameExistence(name: String?, webAppId: String) {
-
-        val connectionStringName = checkValueSet(name, CONNECTION_STRING_NAME_MISSING)
-
+    private fun checkConnectionStringNameExistence(name: String, webAppId: String) {
+        checkValueIsSet(name, CONNECTION_STRING_NAME_MISSING)
         val webApp = AzureModel.getInstance().resourceGroupToWebAppMap
                 .flatMap { it.value }
                 .firstOrNull { it.id() == webAppId } ?: return
 
-        if (webApp.connectionStrings.containsKey(connectionStringName))
-            throw RuntimeConfigurationError(String.format(CONNECTION_STRING_NAME_ALREADY_EXISTS, connectionStringName))
+        if (webApp.connectionStrings.containsKey(name))
+            throw RuntimeConfigurationError(String.format(CONNECTION_STRING_NAME_ALREADY_EXISTS, name))
     }
 
     @Throws(RuntimeConfigurationError::class)
-    private fun validateSqlDbAdminPassword(login: String?, password: CharArray?) {
-        val sqlDbAdminLogin = checkValueSet(login, "AAAAA")
-        val sqlDbAdminPassword = checkValueSet(password, "BBBBB")
+    private fun validateSqlDbAdminPassword(login: String, password: CharArray) {
+        checkValueIsSet(login, "AAAAA")
+        checkValueIsSet(password, "BBBBB")
     }
 
     //endregion Database Connection
@@ -379,24 +362,8 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     }
 
     @Throws(RuntimeConfigurationError::class)
-    private fun checkValueIsSet(value: PricingTier?, message: String) {
-        if (value == null) throw RuntimeConfigurationError(message)
-    }
-
-    @Throws(RuntimeConfigurationError::class)
-    private fun checkValueIsSet(value: OperatingSystem?, message: String) {
-        if (value == null) throw RuntimeConfigurationError(message)
-    }
-
-    @Throws(RuntimeConfigurationError::class)
-    private fun checkValueIsSet(value: RuntimeStack?, message: String) {
-        if (value == null) throw RuntimeConfigurationError(message)
-    }
-
-    @Throws(RuntimeConfigurationError::class)
-    private fun checkValueSet(value: CharArray?, message: String): CharArray {
-        if (value == null || value.isEmpty()) throw RuntimeConfigurationError(message)
-        return value
+    private fun checkValueIsSet(value: CharArray, message: String) {
+        if (value.isEmpty()) throw RuntimeConfigurationError(message)
     }
 
     //endregion Private Methods and Operators

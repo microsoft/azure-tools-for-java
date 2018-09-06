@@ -1,13 +1,11 @@
 package com.microsoft.intellij.runner.db
 
 import com.jetbrains.rider.util.concurrentMapOf
-import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.sql.DatabaseEditions
 import com.microsoft.azure.management.sql.ServiceObjectiveName
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory
 import rx.Observable
@@ -16,29 +14,38 @@ import java.lang.reflect.Modifier
 
 object AzureDatabaseMvpModel {
 
-    private const val CANNOT_GET_WEB_APP_WITH_ID = "Cannot get SQL Database with ID: "
+    //region Caching
 
     private val subscriptionIdToSqlServersMap = concurrentMapOf<String, List<ResourceEx<SqlServer>>>()
-    private val subscriptionIdToSqlDatabasesMap = concurrentMapOf<String, List<ResourceEx<SqlDatabase>>>()
+    private val sqlServerToSqlDatabasesMap = concurrentMapOf<SqlServer, List<SqlDatabase>>()
 
-    fun cleanSqlDatabases() = subscriptionIdToSqlDatabasesMap.clear()
+    fun cleanSubscriptionIdToSqlServersMap() = subscriptionIdToSqlServersMap.clear()
+    fun cleanSqlServerToSqlDatabasesMap() = sqlServerToSqlDatabasesMap.clear()
 
-    fun cleanSqlServers() = subscriptionIdToSqlServersMap.clear()
+    fun refreshSubscriptionToSqlServerMap() {
+        val azureManager = AuthMethodManager.getInstance().azureManager
+        val subscriptions = azureManager.subscriptions
 
-    // -------------------[GET]--------------------
-
-    fun getSqlServersBySubscriptionId(subscriptionId: String): List<SqlServer> {
-        return AuthMethodManager.getInstance().getAzureClient(subscriptionId).sqlServers().list()
+        subscriptions.forEach {
+            listSqlServersBySubscriptionId(it.subscriptionId(), true)
+        }
     }
 
-    // TODO: Probably, we should not use this method - use the one above instead. We should list all servers independent from resource group.
-    fun getSqlServersBySubscriptionIdAndResourceGroup(subscriptionId: String, resourceGroupName: String): List<SqlServer> {
-        return AuthMethodManager.getInstance().getAzureClient(subscriptionId).sqlServers().listByResourceGroup(resourceGroupName)
+    fun refreshSqlDatabaseToSqlDatabaseMap() {
+        refreshSubscriptionToSqlServerMap()
+        subscriptionIdToSqlServersMap.forEach {
+            val sqlServers = it.value
+            sqlServers.forEach {
+                listSqlDatabasesBySqlServer(it.resource, true)
+            }
+        }
     }
 
-    //region List
+    //endregion Caching
 
-    fun listSqlServersBySubscriptionId(subscriptionId: String, force: Boolean): List<ResourceEx<SqlServer>> {
+    //region SQL Server
+
+    fun listSqlServersBySubscriptionId(subscriptionId: String, force: Boolean = false): List<ResourceEx<SqlServer>> {
         if (!force && subscriptionIdToSqlServersMap.containsKey(subscriptionId)) {
             return subscriptionIdToSqlServersMap.getValue(subscriptionId)
         }
@@ -46,8 +53,7 @@ object AzureDatabaseMvpModel {
         val sqlServerList = mutableListOf<ResourceEx<SqlServer>>()
 
         try {
-            val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-            val sqlServersIterator = azure.sqlServers().list().iterator()
+            val sqlServersIterator = listSqlServersBySubscriptionId(subscriptionId).iterator()
 
             while (sqlServersIterator.hasNext()) {
                 val sqlServer = sqlServersIterator.next() as SqlServer
@@ -62,54 +68,26 @@ object AzureDatabaseMvpModel {
         return sqlServerList
     }
 
-    fun listSqlDatabases(force: Boolean): List<ResourceEx<SqlDatabase>> {
-        val sqlDatabases = mutableListOf<ResourceEx<SqlDatabase>>()
-        val subscriptions = AzureMvpModel.getInstance().selectedSubscriptions
-        val subscriptionIterator = subscriptions.iterator()
-
-        while (subscriptionIterator.hasNext()) {
-            val subscription = subscriptionIterator.next() as Subscription
-            sqlDatabases.addAll(listSqlDatabasesBySubscriptionId(subscription.subscriptionId(), force))
-        }
-
-        return sqlDatabases
+    fun listSqlServersBySubscriptionIdAndResourceGroup(subscriptionId: String, resourceGroupName: String): List<SqlServer> {
+        val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
+        return azure.sqlServers().listByResourceGroup(resourceGroupName)
     }
 
-    fun listSqlDatabases(): List<SqlDatabase> {
-        val sqlDatabases = mutableListOf<SqlDatabase>()
-        val subscriptions = AzureMvpModel.getInstance().selectedSubscriptions
-        val subscriptionIterator = subscriptions.iterator()
-
-        while (subscriptionIterator.hasNext()) {
-            val subscription = subscriptionIterator.next() as Subscription
-            sqlDatabases.addAll(listSqlDatabasesBySubscriptionId(subscription.subscriptionId()))
-        }
-
-        return sqlDatabases
-    }
-
-    fun listDatabaseEditions(): List<DatabaseEditions> {
-        val ret = mutableListOf<DatabaseEditions>()
-        val editions = DatabaseEditions::class.java.declaredFields
-        val editionsArraySize = editions.size
-
-        for (editionIndex in 0 until editionsArraySize) {
-            val field = editions[editionIndex]
-            val modifier = field.modifiers
-            if (Modifier.isPublic(modifier) && Modifier.isStatic(modifier) && Modifier.isFinal(modifier)) {
-                val pt = field.get(null as Any?) as DatabaseEditions
-                ret.add(pt)
-            }
-        }
-
-        return ret
-    }
-
-    //endregion List
-
-    fun getSqlServer(subscriptionId: String, sqlServerId: String): SqlServer {
+    fun getSqlServerById(subscriptionId: String, sqlServerId: String): SqlServer {
         val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
         return azure.sqlServers().getById(sqlServerId)
+    }
+
+    fun getSqlServerByName(subscriptionId: String,
+                           name: String,
+                           force: Boolean = false): SqlServer? {
+
+        if (!force && subscriptionIdToSqlServersMap.containsKey(subscriptionId)) {
+            return subscriptionIdToSqlServersMap.getValue(subscriptionId)
+                    .find { it.resource.name() == name }?.resource
+        }
+
+        return listSqlServersBySubscriptionId(subscriptionId, true).find { it.resource.name() == name }?.resource
     }
 
     /**
@@ -137,6 +115,39 @@ object AzureDatabaseMvpModel {
                 .create()
     }
 
+    /**
+     * Async call to get SQL Server Admin login name
+     */
+    fun getSqlServerAdminLoginAsync(subscriptionId: String, database: SqlDatabase): Observable<String> {
+        return Observable.fromCallable<String> {
+            val sqlServer =
+                    AzureDatabaseMvpModel.listSqlServersBySubscriptionId(subscriptionId)
+                            .first { it.name() == database.sqlServerName() }
+            sqlServer.administratorLogin()
+        }.subscribeOn(SchedulerProviderFactory.getInstance().schedulerProvider.io())
+    }
+
+    //endregion SQL Server
+
+    //region SQL Database
+
+    fun listSqlDatabasesBySqlServer(sqlServer: SqlServer,
+                                    force: Boolean = false): List<SqlDatabase> {
+        if (!force && sqlServerToSqlDatabasesMap.containsKey(sqlServer)) {
+            return sqlServerToSqlDatabasesMap.getValue(sqlServer)
+        }
+
+        val databases = sqlServer.databases().list()
+        sqlServerToSqlDatabasesMap[sqlServer] = databases
+
+        return databases
+    }
+
+    fun listSqlDatabasesBySubscriptionId(subscriptionId: String): List<SqlDatabase> {
+        val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
+        return azure.sqlServers().list().flatMap { it.databases().list() }
+    }
+
     fun createSqlDatabase(sqlServer: SqlServer, databaseName: String, collation: String): SqlDatabase {
 
         return sqlServer.databases()
@@ -148,50 +159,33 @@ object AzureDatabaseMvpModel {
                 .create()
     }
 
-    // TODO: Probably, move all to AsyncPromise instead of Observable
-    fun getSqlServerAdminLoginAsync(database: SqlDatabase): Observable<String> {
-        return Observable.fromCallable<String> {
-            database.parent().manager().sqlServers()
-                    .getByResourceGroup(database.resourceGroupName(), database.sqlServerName())
-                    .administratorLogin()
-        }.subscribeOn(SchedulerProviderFactory.getInstance().schedulerProvider.io())
+    //endregion SQL Database
 
+    //region Database Editions
+
+    fun listDatabaseEditions(): List<DatabaseEditions> {
+        val databaseEditions = mutableListOf<DatabaseEditions>()
+        val editions = DatabaseEditions::class.java.declaredFields
+        val editionsArraySize = editions.size
+
+        for (editionIndex in 0 until editionsArraySize) {
+            val field = editions[editionIndex]
+            val modifier = field.modifiers
+            if (Modifier.isPublic(modifier) && Modifier.isStatic(modifier) && Modifier.isFinal(modifier)) {
+                val pt = field.get(null as Any?) as DatabaseEditions
+                databaseEditions.add(pt)
+            }
+        }
+
+        return databaseEditions
     }
+
+    //endregion Database Editions
 
     //region Private Methods and Operators
 
-    private fun listSqlDatabasesBySubscriptionId(subscriptionId: String): List<SqlDatabase> {
-        return AuthMethodManager.getInstance().getAzureClient(subscriptionId).sqlServers().list().flatMap { it.databases().list() }
-    }
-
-    private fun listSqlDatabasesBySubscriptionId(subscriptionId: String, force: Boolean): List<ResourceEx<SqlDatabase>> {
-
-        if (!force && subscriptionIdToSqlDatabasesMap.containsKey(subscriptionId)) {
-            return subscriptionIdToSqlDatabasesMap.getValue(subscriptionId)
-        }
-
-        val sqlDatabaseList = mutableListOf<ResourceEx<SqlDatabase>>()
-
-        try {
-            val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-            val sqlServersIterator = azure.sqlServers().list().iterator()
-
-            while (sqlServersIterator.hasNext()) {
-                val sqlServer = sqlServersIterator.next() as SqlServer
-
-                val sqlDatabaseIterator = sqlServer.databases().list().iterator()
-                while (sqlDatabaseIterator.hasNext()) {
-                    val sqlDatabase = sqlDatabaseIterator.next() as SqlDatabase
-                    sqlDatabaseList.add(ResourceEx(sqlDatabase, subscriptionId))
-                }
-            }
-
-            subscriptionIdToSqlDatabasesMap[subscriptionId] = sqlDatabaseList
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-
-        return sqlDatabaseList
+    private fun listSqlServersBySubscriptionId(subscriptionId: String): List<SqlServer> {
+        return AuthMethodManager.getInstance().getAzureClient(subscriptionId).sqlServers().list()
     }
 
     //endregion Private Methods and Operators

@@ -45,6 +45,7 @@ import javax.swing.table.DefaultTableModel
 
 /**
  * The setting panel for web app deployment run configuration.
+ *
  * TODO: refactor this, almost 1k lines as of 2018-09-06
  */
 class RiderWebAppSettingPanel(project: Project,
@@ -169,6 +170,7 @@ class RiderWebAppSettingPanel(project: Project,
     private lateinit var pnlProject: JPanel
     private lateinit var cbProject: JComboBox<PublishableProjectModel>
 
+    // SQL Database
     private lateinit var pnlDbConnection: JPanel
     private lateinit var checkBoxEnableDbConnection: JCheckBox
     private lateinit var pnlDbConnectionStringSettings: JPanel
@@ -176,6 +178,7 @@ class RiderWebAppSettingPanel(project: Project,
     private lateinit var cbDatabase: JComboBox<SqlDatabase>
     private lateinit var lblSqlDbAdminLogin: JLabel
     private lateinit var passSqlDbAdminPassword: JBPasswordField
+    private lateinit var lblLinkToCreateDbRunConfig: JLabel
 
     override val panelName: String
         get() = WEB_APP_SETTINGS_PANEL_NAME
@@ -229,7 +232,6 @@ class RiderWebAppSettingPanel(project: Project,
         myView.onLoadPricingTier()
         myView.onLoadOperatingSystem()
         myView.onLoadRuntime()
-        myView.onLoadSqlDatabase()
     }
 
     /**
@@ -413,16 +415,32 @@ class RiderWebAppSettingPanel(project: Project,
         }
     }
 
-    private fun fillPublishableProject(publishableProjects: List<PublishableProjectModel>) {
+    override fun fillPublishableProject(publishableProjects: List<PublishableProjectModel>) {
         cbProject.removeAllItems()
 
-        filterProjects(publishableProjects)
-                publishableProjects.sortedBy { it.projectName }
+        val filteredProjects = filterProjects(publishableProjects)
+        filteredProjects.sortedBy { it.projectName }
                 .forEach {
                     cbProject.addItem(it)
                     if (it == configuration.model.publishableProject) {
                         cbProject.selectedItem = it
                         toggleProjectComboBox(it.isDotNetCore)
+                    }
+                }
+    }
+
+    override fun fillSqlDatabase(database: List<SqlDatabase>) {
+        cbDatabase.removeAllItems()
+
+        if (database.isEmpty()) {
+            lastSelectedDatabase = null
+            return
+        }
+        database.sortedBy { it.name() }
+                .forEach {
+                    cbDatabase.addItem(it)
+                    if (it == configuration.model.database) {
+                        cbDatabase.selectedItem = it
                     }
                 }
     }
@@ -515,25 +533,6 @@ class RiderWebAppSettingPanel(project: Project,
             else "v3.5"
         }
     }
-
-/**
-* Fill [cbDatabase] with available Azure SQL Databases
-*/
-override fun fillSqlDatabase(database: List<SqlDatabase>) {
-cbDatabase.removeAllItems()
-
-if (database.isEmpty()) {
-lastSelectedDatabase = null
-return
-}
-database.sortedBy { it.name() }
-.forEach {
-cbDatabase.addItem(it)
-if (it == configuration.model.database) {
-cbDatabase.selectedItem = it
-}
-}
-}
 
     /**
      * Let the presenter release the view. Will be called by:
@@ -659,17 +658,17 @@ cbDatabase.selectedItem = it
         val btnGrpForDeploy = ButtonGroup()
         btnGrpForDeploy.add(rdoUseExistingWebApp)
         btnGrpForDeploy.add(rdoCreateNewWebApp)
-        rdoUseExistingWebApp.addActionListener { toggleDeployPanel(true) }
-        rdoCreateNewWebApp.addActionListener { toggleDeployPanel(false) }
-        toggleDeployPanel(true)
+        rdoCreateNewWebApp.addActionListener { toggleDeployPanel(true) }
+        rdoUseExistingWebApp.addActionListener { toggleDeployPanel(false) }
+        toggleDeployPanel(false)
     }
 
     private fun initResourceGroupButtonGroup() {
         val btnGrpForResGrp = ButtonGroup()
         btnGrpForResGrp.add(rdoUseExistResGrp)
         btnGrpForResGrp.add(rdoCreateResGrp)
-        rdoCreateResGrp.addActionListener { toggleResGrpPanel(true) }
-        rdoUseExistResGrp.addActionListener { toggleResGrpPanel(false) }
+        rdoCreateResGrp.addActionListener { toggleResourceGroupPanel(true) }
+        rdoUseExistResGrp.addActionListener { toggleResourceGroupPanel(false) }
     }
 
     private fun initAppServicePlanButtonsGroup() {
@@ -692,12 +691,12 @@ cbDatabase.selectedItem = it
         checkBoxEnableDbConnection.addActionListener { toggleDbConnectionEnable(checkBoxEnableDbConnection.isSelected) }
     }
 
-    private fun toggleDeployPanel(isUsingExisting: Boolean) {
-        pnlExistingWebApp.isVisible = isUsingExisting
-        pnlCreateWebApp.isVisible = !isUsingExisting
+    private fun toggleDeployPanel(isCreatingNew: Boolean) {
+        pnlCreateWebApp.isVisible = isCreatingNew
+        pnlExistingWebApp.isVisible = !isCreatingNew
     }
 
-    private fun toggleResGrpPanel(isCreatingNew: Boolean) {
+    private fun toggleResourceGroupPanel(isCreatingNew: Boolean) {
         txtResourceGroupName.isEnabled = isCreatingNew
         cbResourceGroup.isEnabled = !isCreatingNew
     }
@@ -727,10 +726,7 @@ cbDatabase.selectedItem = it
         if (isDotNetCore) {
             setWebAppTableContent(cachedWebAppList)
         } else {
-            // OS combo box
             cbOperatingSystem.selectedItem = OperatingSystem.WINDOWS
-
-            // Filter table with Windows only web apps
             setWebAppTableContent(
                     cachedWebAppList.filter { it.resource.operatingSystem() == OperatingSystem.WINDOWS })
         }
@@ -789,6 +785,7 @@ cbDatabase.selectedItem = it
                 myView.onLoadResourceGroups(selectedSid)
                 myView.onLoadLocation(selectedSid)
                 myView.onLoadAppServicePlan(selectedSid)
+                myView.onLoadSqlDatabase(selectedSid)
 
                 lastSelectedSubscriptionId = selectedSid
             }
@@ -973,7 +970,7 @@ cbDatabase.selectedItem = it
         cbDatabase.addActionListener {
             val database = cbDatabase.getItemAt(cbDatabase.selectedIndex) ?: return@addActionListener
             if (lastSelectedDatabase != database) {
-                AzureDatabaseMvpModel.getSqlServerAdminLoginAsync(database).subscribe { lblSqlDbAdminLogin.text = it }
+                AzureDatabaseMvpModel.getSqlServerAdminLoginAsync(lastSelectedSubscriptionId, database).subscribe { lblSqlDbAdminLogin.text = it }
                 lastSelectedDatabase = database
             }
         }

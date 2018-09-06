@@ -1,7 +1,9 @@
 package com.microsoft.intellij.runner.db.dbconfig.ui
 
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Comparing
 import com.intellij.ui.HideableDecorator
 import com.intellij.ui.ListCellRendererWrapper
 import com.intellij.ui.components.JBPasswordField
@@ -11,6 +13,8 @@ import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.sql.DatabaseEditions
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
+import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
+import com.microsoft.intellij.runner.db.AzureDatabaseSettingModel
 import com.microsoft.intellij.runner.db.dbconfig.RiderDatabaseConfiguration
 import java.text.SimpleDateFormat
 import java.util.*
@@ -32,32 +36,32 @@ class RiderDatabaseSettingPanel(project: Project,
 
         private const val DATABASE_SETTINGS_PANEL_NAME = "Deploy to SQL Database"
         private const val NOT_APPLICABLE = "N/A"
-
-        private const val RUN_CONFIG_PREFIX = "Azure SQL Database"
     }
 
-    // cache variable
-    private var lastSelectedSubscriptionId: String? = null
-    private var lastSelectedResourceGroupName: String? = null
-    private var lastSelectedSqlServer: String? = null
-    private var lastSelectedLocation: String? = null
-    private var lastSelectedDatabaseEdition: DatabaseEditions? = null
+    private var cachedResourceGroups = listOf<ResourceGroup>()
+    private var lastSelectedSubscriptionId = ""
+    private var lastSelectedResourceGroupName = ""
+    private var lastSelectedSqlServer = ""
+    private var lastSelectedLocation = ""
+    private var lastSelectedDatabaseEdition = AzureDatabaseSettingModel.defaultDatabaseEditions
 
-    // presenter
     private val myView: DatabaseDeployViewPresenter<RiderDatabaseSettingPanel> = DatabaseDeployViewPresenter()
 
-    // Widgets
     override val mainPanel: JPanel = pnlRoot
     private lateinit var pnlRoot: JPanel
+
     private lateinit var pnlCreate: JPanel
     private lateinit var txtDbName: JTextField
+
     private lateinit var cbSubscription: JComboBox<Subscription>
+
     private lateinit var pnlResourceGroupHolder: JPanel
     private lateinit var pnlResourceGroup: JPanel
     private lateinit var rdoUseExistResGrp: JRadioButton
     private lateinit var cbExistResGrp: JComboBox<ResourceGroup>
     private lateinit var rdoCreateResGrp: JRadioButton
     private lateinit var txtNewResGrp: JTextField
+
     private lateinit var pnlSqlServerHolder: JPanel
     private lateinit var pnlSqlServer: JPanel
     private lateinit var rdoUseExistSqlServer: JRadioButton
@@ -67,7 +71,7 @@ class RiderDatabaseSettingPanel(project: Project,
     private lateinit var txtNewSqlServerName: JTextField
     private lateinit var txtNewSqlServerAdminLogin: JTextField
     private lateinit var passNewSqlServerAdminPass: JBPasswordField
-    private lateinit var lblSqlServerUrlSuffix: JLabel
+
     private lateinit var pnlPricingTierHolder: JPanel
     private lateinit var cbDatabaseEdition: JComboBox<DatabaseEditions>
     private lateinit var passNewSqlServerAdminPassConfirm: JBPasswordField
@@ -84,6 +88,8 @@ class RiderDatabaseSettingPanel(project: Project,
 
     init {
         myView.onAttachView(this)
+
+        updateAzureDatabaseModelInBackground()
 
         initButtonGroupsState()
         setUIComponents()
@@ -104,9 +110,9 @@ class RiderDatabaseSettingPanel(project: Project,
         val dateFormat = SimpleDateFormat("yyMMddHHmmss")
         val date = dateFormat.format(Date())
 
-        txtDbName.text = model.databaseName ?: String.format(DEFAULT_SQL_DATABASE_NAME, date)
-        txtNewResGrp.text = model.resourceGroupName ?: "$DEFAULT_RESOURCE_GROUP_NAME$date"
-        txtNewSqlServerName.text = model.sqlServerName ?: "$DEFAULT_SQL_SERVER_NAME$date"
+        txtDbName.text = if (model.databaseName.isEmpty()) String.format(DEFAULT_SQL_DATABASE_NAME, date) else model.databaseName
+        txtNewResGrp.text = if (model.resourceGroupName.isEmpty()) "$DEFAULT_RESOURCE_GROUP_NAME$date" else model.resourceGroupName
+        txtNewSqlServerName.text = if (model.sqlServerName.isEmpty()) "$DEFAULT_SQL_SERVER_NAME$date" else model.sqlServerName
         txtCollationValue.text = model.collation
 
         if (model.isCreatingResourceGroup) {
@@ -183,7 +189,7 @@ class RiderDatabaseSettingPanel(project: Project,
     override fun fillSubscription(subscriptions: List<Subscription>) {
         cbSubscription.removeAllItems()
         if (subscriptions.isEmpty()) {
-            lastSelectedSubscriptionId = null
+            lastSelectedSubscriptionId = ""
             return
         }
         subscriptions.forEach {
@@ -197,13 +203,16 @@ class RiderDatabaseSettingPanel(project: Project,
     override fun fillResourceGroup(resourceGroups: List<ResourceGroup>) {
         cbExistResGrp.removeAllItems()
         if (resourceGroups.isEmpty()) {
-            lastSelectedResourceGroupName = null
+            lastSelectedResourceGroupName = ""
             return
         }
+
+        cachedResourceGroups = resourceGroups
+
         resourceGroups.sortedWith(compareBy { it.name() })
                 .forEach {
                     cbExistResGrp.addItem(it)
-                    if (Comparing.equal(it.name(), configuration.model.resourceGroupName)) {
+                    if (it.name() == configuration.model.resourceGroupName) {
                         cbExistResGrp.selectedItem = it
                     }
                 }
@@ -213,14 +222,14 @@ class RiderDatabaseSettingPanel(project: Project,
         cbExistSqlServer.removeAllItems()
 
         if (sqlServers.isEmpty()) {
-            lastSelectedSqlServer = null
+            lastSelectedSqlServer = ""
             return
         }
 
         sqlServers.sortedWith(compareBy { it.name() })
                 .forEach {
                     cbExistSqlServer.addItem(it)
-                    if (it.name() ==  configuration.model.sqlServerName) {
+                    if (it.name() == configuration.model.sqlServerName) {
                         cbExistSqlServer.selectedItem = it
                     }
                 }
@@ -230,7 +239,7 @@ class RiderDatabaseSettingPanel(project: Project,
         cbLocation.removeAllItems()
 
         if (locations.isEmpty()) {
-            lastSelectedLocation = null
+            lastSelectedLocation = ""
             return
         }
 
@@ -260,18 +269,6 @@ class RiderDatabaseSettingPanel(project: Project,
 
     //endregion MVP View
 
-    //region Editing SQL Database Table
-
-    /**
-     * Make original components initialization:
-     * - database table
-     * - ...
-     * TODO: Maybe DELETE!!!
-     */
-    private fun createUIComponents() { }
-
-    //endregion Editing SQL Database Table
-
     //region Button Groups Behavior
 
     private fun initButtonGroupsState() {
@@ -281,14 +278,23 @@ class RiderDatabaseSettingPanel(project: Project,
 
     /**
      * Button groups - Resource Group
+     *
+     * Note: If user choose to create a new Resource Group, then we restrict him from choosing existing SQL servers,
+     *       because SQL Database cannot exists outside of SQL Server Resource Group
      */
     private fun initResourceGroupButtonGroup() {
         val btnGroupResourceGroup = ButtonGroup()
         btnGroupResourceGroup.add(rdoCreateResGrp)
         btnGroupResourceGroup.add(rdoUseExistResGrp)
-        rdoCreateResGrp.addActionListener { toggleResourceGroupPanel(true) }
-        rdoUseExistResGrp.addActionListener { toggleResourceGroupPanel(false) }
-        toggleResourceGroupPanel(false)
+        rdoCreateResGrp.addActionListener {
+            toggleResourceGroupPanel(true)
+            rdoCreateSqlServer.doClick()
+        }
+        rdoUseExistResGrp.addActionListener {
+            if (rdoUseExistSqlServer.isSelected) return@addActionListener
+            toggleResourceGroupPanel(false)
+        }
+        toggleResourceGroupPanel(true)
     }
 
     /**
@@ -303,14 +309,25 @@ class RiderDatabaseSettingPanel(project: Project,
 
     /**
      * Button groups - SQL Server
+     *
+     * Note: Existing SQL Server is already defined in some Resource Group. User has no option to choose
+     *       a Resource Group if he selecting from existing SQL Servers.
      */
     private fun initSqlServerButtonsGroup() {
         val btnGroupSqlServer = ButtonGroup()
         btnGroupSqlServer.add(rdoCreateSqlServer)
         btnGroupSqlServer.add(rdoUseExistSqlServer)
-        rdoCreateSqlServer.addActionListener { toggleSqlServerPanel(true) }
-        rdoUseExistSqlServer.addActionListener { toggleSqlServerPanel(false) }
-        toggleSqlServerPanel(false)
+        rdoCreateSqlServer.addActionListener {
+            toggleSqlServerPanel(true)
+            toggleResourceGroupPanel(rdoCreateResGrp.isSelected)
+        }
+        rdoUseExistSqlServer.addActionListener {
+            toggleSqlServerPanel(false)
+            toggleSqlServerComboBox(cbExistSqlServer.getItemAt(cbExistSqlServer.selectedIndex))
+            rdoUseExistResGrp.doClick()
+            cbExistResGrp.isEnabled = false
+        }
+        toggleSqlServerPanel(true)
     }
 
     /**
@@ -328,18 +345,24 @@ class RiderDatabaseSettingPanel(project: Project,
         cbLocation.isEnabled = isCreatingNew
     }
 
+    private fun toggleSqlServerComboBox(selectedSqlServer: SqlServer) {
+        val resourceGroupToSet =
+                cachedResourceGroups.find { it.name() == selectedSqlServer.resourceGroupName() } ?: return
+
+        cbExistResGrp.selectedItem = resourceGroupToSet
+    }
+
     //endregion Button Groups Behavior
 
     //region Configure UI Components
 
     /**
      * Configure renderer and listeners for all UI Components
-     * TODO: SD -- Probably could be merged with {createUIComponents} method above !!!
      */
     private fun setUIComponents() {
         setSubscriptionComboBox()
         setResourceGroupComboBox()
-        setDbServerComboBox()
+        setSqlServerComboBox()
         setLocationComboBox()
         setDatabaseEditionComboBox()
 
@@ -365,6 +388,7 @@ class RiderDatabaseSettingPanel(project: Project,
                 resetSubscriptionComboBoxValues()
 
                 myView.onLoadResourceGroups(selectedSid)
+                myView.onLoadSqlServers(selectedSid)
                 myView.onLoadLocation(selectedSid)
 
                 lastSelectedSubscriptionId = selectedSid
@@ -385,19 +409,9 @@ class RiderDatabaseSettingPanel(project: Project,
 
         cbExistResGrp.addActionListener {
             val resourceGroup = cbExistResGrp.getItemAt(cbExistResGrp.selectedIndex) ?: return@addActionListener
-
             val resourceGroupName = resourceGroup.name()
 
             if (resourceGroupName != lastSelectedResourceGroupName) {
-                resetResourceGroupComboBoxValues()
-
-                // TODO: Here we should use cached values to not wait until every time until we make a request
-                // TODO: to the azure to get the relevant list again and again. Similar to AzureModel
-                // TODO: (whether extend or write our own or make this inside [AzureDatabaseMvpModel] ???)
-                val subscriptionSid = lastSelectedSubscriptionId
-                if (subscriptionSid != null)
-                    myView.onLoadSqlServers(subscriptionSid, resourceGroupName)
-
                 lastSelectedResourceGroupName = resourceGroupName
             }
         }
@@ -406,11 +420,11 @@ class RiderDatabaseSettingPanel(project: Project,
     /**
      * Configure SQL Server combo box
      */
-    private fun setDbServerComboBox() {
+    private fun setSqlServerComboBox() {
         cbExistSqlServer.renderer = object : ListCellRendererWrapper<SqlServer>() {
             override fun customize(list: JList<*>, sqlServer: SqlServer?, index: Int, selected: Boolean, hasFocus: Boolean) {
                 sqlServer ?: return
-                setText(sqlServer.name())
+                setText("${sqlServer.name()} (${sqlServer.resourceGroupName()})")
             }
         }
 
@@ -420,8 +434,9 @@ class RiderDatabaseSettingPanel(project: Project,
             if (sqlServer.name() != lastSelectedSqlServer) {
                 lblExistingSqlServerLocation.text = sqlServer.region().label()
                 lblExistingSqlServerAdminLogin.text = sqlServer.administratorLogin()
-
                 lastSelectedSqlServer = sqlServer.name()
+
+                toggleSqlServerComboBox(sqlServer)
             }
         }
     }
@@ -540,4 +555,20 @@ class RiderDatabaseSettingPanel(project: Project,
     }
 
     //endregion Configure UI Components
+
+    //region Azure Model
+
+    /**
+     * Update cached values in [com.microsoft.azuretools.utils.AzureModel] in a background to use for fields validation on client side
+     */
+    private fun updateAzureDatabaseModelInBackground() {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Updating Azure model", false) {
+            override fun run(indicator: ProgressIndicator) {
+                indicator.isIndeterminate = true
+                AzureDatabaseMvpModel.refreshSqlDatabaseToSqlDatabaseMap()
+            }
+        })
+    }
+
+    //endregion Azure Model
 }

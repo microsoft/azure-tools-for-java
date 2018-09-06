@@ -4,38 +4,43 @@ import com.microsoft.azure.management.sql.DatabaseEditions
 
 class AzureDatabaseSettingModel {
 
-    var subscriptionId: String? = null
+    var subscriptionId: String = ""
 
-    var databaseName: String? = null
+    var databaseName: String = ""
 
-    var isCreatingResourceGroup = false
-    var resourceGroupName: String? = null
+    var isCreatingResourceGroup = true
+    var resourceGroupName: String = ""
 
-    var isCreatingSqlServer = false
-    var sqlServerId: String? = null
-    var sqlServerName: String? = null
-    var sqlServerAdminLogin: String? = null
-    var sqlServerAdminPassword: CharArray? = null
-    var sqlServerAdminPasswordConfirm: CharArray? = null
+    var isCreatingSqlServer = true
+    var sqlServerId: String = ""
+    var sqlServerName: String = ""
+    var sqlServerAdminLogin: String = ""
+    var sqlServerAdminPassword: CharArray = charArrayOf()
+    var sqlServerAdminPasswordConfirm: CharArray = charArrayOf()
 
-    var region: String? = null
-    var databaseEdition: DatabaseEditions? = null
+    var region: String = ""
+    var databaseEdition: DatabaseEditions = defaultDatabaseEditions
 
-    var collation: String = "SQL_Latin1_General_CP1_CI_AS"
+    var collation: String = defaultCollation
 
     fun reset() {
-        subscriptionId = null
-        databaseName = null
+        subscriptionId = ""
+        databaseName = ""
         isCreatingResourceGroup = false
-        resourceGroupName = null
+        resourceGroupName = ""
         isCreatingSqlServer = false
-        sqlServerId = null
-        sqlServerName = null
-        sqlServerAdminLogin = null
-        sqlServerAdminPassword = null
-        sqlServerAdminPasswordConfirm = null
-        region = null
-        databaseEdition = null
-        collation = "SQL_Latin1_General_CP1_CI_AS"
+        sqlServerId = ""
+        sqlServerName = ""
+        sqlServerAdminLogin = ""
+        sqlServerAdminPassword = charArrayOf()
+        sqlServerAdminPasswordConfirm = charArrayOf()
+        region = ""
+        databaseEdition = defaultDatabaseEditions
+        collation = defaultCollation
+    }
+
+    companion object {
+        const val defaultCollation = "SQL_Latin1_General_CP1_CI_AS"
+        val defaultDatabaseEditions: DatabaseEditions = DatabaseEditions.STANDARD
     }
 }

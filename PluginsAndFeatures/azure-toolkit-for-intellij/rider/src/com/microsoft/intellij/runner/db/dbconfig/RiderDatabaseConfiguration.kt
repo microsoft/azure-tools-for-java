@@ -10,9 +10,11 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.jetbrains.rider.util.firstOrNull
+import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.AzureRunConfigurationBase
+import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.db.AzureDatabaseSettingModel
 import java.io.IOException
 
@@ -27,13 +29,21 @@ class RiderDatabaseConfiguration(project: Project,
 
         private const val SUBSCRIPTION_MISSING = "Subscription not provided"
 
-        private const val SQL_DATABASE_MISSING = "Please select a SQL Database"
-        private const val SQL_DATABASE_NAME_REGEX_STRING = "^[-_].+[-_]$"
-        private const val SQL_DATABASE_NAME_MISSING = "Database name not provided"
-        private const val SQL_DATABASE_NAME_INVALID = "Database name cannot contain characters: %s"
+        private const val SQL_DATABASE_NAME_MISSING = "SQL Database name not provided"
+        private const val SQL_DATABASE_NAME_ALREADY_EXISTS = "SQL Database name '%s' already exists"
+
+        private const val SQL_DATABASE_COLLATION_MISSING = "SQL Database Collation not provided"
 
         private const val SQL_SERVER_MISSING = "Please select a SQL Server"
-        private const val SQL_SERVER_NAME_REGEX_STRING = "^[-_].+[-_]$"
+        private const val SQL_SERVER_NAME_ALREADY_EXISTS = "SQL Server name '%s' already exists"
+        private const val SQL_SERVER_NAME_REGEX_STRING = "[^a-z0-9-]"
+        private const val SQL_SERVER_NAME_MIN_LENGTH = 1
+        private const val SQL_SERVER_NAME_MAX_LENGTH = 63
+        private const val SQL_SERVER_NAME_MISSING = "SQL Server name not provided"
+        private const val SQL_SERVER_NAME_LENGTH_ERROR =
+                "SQL Server name should be from $SQL_SERVER_NAME_MIN_LENGTH to $SQL_SERVER_NAME_MAX_LENGTH characters"
+        private const val SQL_SERVER_NAME_INVALID = "SQL Server name cannot contain characters: %s"
+        private const val SQL_SERVER_NAME_CANNOT_START_END_WITH_DASH = "SQL Server name cannot begin or end with '-' symbol"
 
         private const val RESOURCE_GROUP_MISSING = "Please select a Resource Group"
         private const val RESOURCE_GROUP_ALREADY_EXISTS = "Resource Group with name '%s' already exists"
@@ -46,13 +56,33 @@ class RiderDatabaseConfiguration(project: Project,
         private const val RESOURCE_GROUP_NAME_INVALID = "Resource Group name cannot contain characters: %s"
         private const val RESOURCE_GROUP_NAME_CANNOT_ENDS_WITH_PERIOD = "Resource Group name cannot ends with period symbol"
 
-        private const val LOCATION_MISSING = "Location not provided"
+        private const val ADMIN_LOGIN_MISSING = "Administrator login not provided"
+        private val sqlServerRestrictedAdminLoginNames =
+                arrayOf("admin", "administrator", "sa", "root", "dbmanager", "loginmanager", "dbo", "guest", "public")
+        private const val ADMIN_LOGIN_FROM_RESTRICTED_LIST =
+                "SQL Server Admin login '%s' is from list of restricted SQL Admin names: %s"
+        private const val ADMIN_LOGIN_REGEX_WHITESPACE_STRING = "\\s"
+        private const val ADMIN_LOGIN_CANNOT_CONTAIN_WHITESPACES = "SQL Server Admin login cannot contain whitespaces"
+        private const val ADMIN_LOGIN_REGEX_START_WITH_DIGIT_NONWORD_STRING = "^(\\d|\\W)"
+        private const val ADMIN_LOGIN_CANNOT_BEGIN_WITH_DIGIT_NONWORD = "SQL Server Admin login must not begin with numbers or symbols"
+        private const val ADMIN_LOGIN_REGEX_STRING = "[^\\p{L}0-9]"
+        private const val ADMIN_LOGIN_INVALID = "SQL Server Admin login should not unicode characters, or nonalphabetic characters."
 
-        private const val PRICING_TIER_MISSING = "Pricing Tier not provided"
-
-        private const val PROJECT_MISSING = "Please select a project to deploy"
         private const val ADMIN_PASSWORD_MISSING = "Administrator password not provided"
-        private const val ADMIN_PASSWORD_CONFIRM_MISSING = "Administrator password confirmation not provided"
+        // Note: this is not an inverse regex and must be validated accordingly
+        private const val ADMIN_PASSWORD_REGEX_CATEGORY_LOWER_STRING = "[a-z]"
+        private const val ADMIN_PASSWORD_REGEX_CATEGORY_UPPER_STRING = "[A-Z]"
+        private const val ADMIN_PASSWORD_REGEX_CATEGORY_DIGIT_STRING = "[0-9]"
+        private const val ADMIN_PASSWORD_REGEX_CATEGORY_NONALPHANUMERIC_STRING = "[\\W]"
+        private const val ADMIN_PASSWORD_MIN_LENGTH = 8
+        private const val ADMIN_PASSWORD_MAX_LENGTH = 128
+        private const val ADMIN_PASSWORD_LENGTH_ERROR =
+                "Your password must be from $ADMIN_PASSWORD_MIN_LENGTH to $ADMIN_PASSWORD_MAX_LENGTH characters"
+        private const val ADMIN_PASSWORD_CATEGORY_CHECK_FAILED =
+                "Your password must contain characters from three of the following categories – English uppercase letters, " +
+                "English lowercase letters, numbers (0-9), and non-alphanumeric characters (!, \$, #, %, etc.)."
+        private const val ADMIN_PASSWORD_CANNOT_CONTAIN_PART_OF_LOGIN =
+                "Your password cannot contain all or part of the login name. Part of a login name is defined as three or more consecutive alphanumeric characters."
         private const val ADMIN_PASSWORD_DOES_NOT_MATCH = "Passwords do not match"
     }
 
@@ -82,7 +112,6 @@ class RiderDatabaseConfiguration(project: Project,
     override fun validate() { }
 
     /**
-     * TODO: ...
      * Validate the configuration to run
      *
      * @throws [RuntimeConfigurationError] when configuration miss expected fields
@@ -91,22 +120,27 @@ class RiderDatabaseConfiguration(project: Project,
     override fun checkConfiguration() {
 
         validateSignIn()
+        validateSubscription(myModel.subscriptionId)
+        validateDatabaseName(myModel.subscriptionId, myModel.databaseName, myModel.sqlServerName)
 
-        checkValueSet(myModel.subscriptionId, SUBSCRIPTION_MISSING)
-
-        validateDatabaseName(myModel.databaseName)
-
+        // Resource Group
         if (myModel.isCreatingResourceGroup) {
             validateResourceGroupName(myModel.resourceGroupName)
+        } else {
+            checkValueIsSet(myModel.resourceGroupName, RESOURCE_GROUP_MISSING)
         }
 
+        // SQL Server
         if (myModel.isCreatingSqlServer) {
-            validateSqlServerName(myModel.sqlServerName)
-
-            val adminPassword = validatePassword(myModel.sqlServerAdminPassword)
-            val adminPasswordConfirm = validatePassword(myModel.sqlServerAdminPasswordConfirm)
-            checkPasswordsMatch(adminPassword, adminPasswordConfirm)
+            validateSqlServerName(myModel.subscriptionId, myModel.sqlServerName)
+            validateAdminLogin(myModel.sqlServerAdminLogin)
+            validateAdminPassword(myModel.sqlServerAdminLogin, myModel.sqlServerAdminPassword)
+            checkPasswordsMatch(myModel.sqlServerAdminPassword, myModel.sqlServerAdminPasswordConfirm)
+        } else {
+            checkValueIsSet(myModel.sqlServerId, SQL_SERVER_MISSING)
         }
+
+        validateCollation(myModel.collation)
     }
 
     //region Sign In
@@ -127,25 +161,62 @@ class RiderDatabaseConfiguration(project: Project,
 
     //endregion Sign In
 
+    //region Subscription
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun validateSubscription(subscriptionId: String) {
+        checkValueIsSet(myModel.subscriptionId, SUBSCRIPTION_MISSING)
+    }
+
+    //endregion Subscription
+
     //region SQL Server
 
-    // TODO: SD -- Add validation
-    private fun validateSqlServerName(name: String?) {
+    @Throws(RuntimeConfigurationError::class)
+    private fun validateSqlServerName(subscriptionId: String, name: String) {
+
+        checkValueIsSet(name, SQL_SERVER_NAME_MISSING)
+        checkSqlServerExistence(subscriptionId, name)
+
+        if (name.startsWith('-') || name.endsWith('-'))
+            throw RuntimeConfigurationError(SQL_SERVER_NAME_CANNOT_START_END_WITH_DASH)
+
+        validateResourceName(name,
+                SQL_SERVER_NAME_MIN_LENGTH,
+                SQL_SERVER_NAME_MAX_LENGTH,
+                SQL_SERVER_NAME_LENGTH_ERROR,
+                SQL_SERVER_NAME_REGEX_STRING.toRegex(),
+                SQL_SERVER_NAME_INVALID)
+    }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun checkSqlServerExistence(subscriptionId: String, name: String) {
+        if (AzureDatabaseMvpModel.getSqlServerByName(subscriptionId, name) != null)
+            throw RuntimeConfigurationError(String.format(SQL_SERVER_NAME_ALREADY_EXISTS, name))
     }
 
     //endregion SQL Server
 
     //region SQL Database
 
-    private fun validateDatabaseName(name: String?) {
-        if (name == null || name.isEmpty()) throw RuntimeConfigurationError(SQL_DATABASE_NAME_MISSING)
+    /**
+     * Validate SQL Database name
+     *
+     * Note: There are no any specific rules to validate SQL Database name
+     *       Azure allows to create SQL Database with any name I've tested
+     */
+    @Throws(RuntimeConfigurationError::class)
+    private fun validateDatabaseName(subscriptionId: String, name: String, sqlServerName: String) {
+        checkValueIsSet(name, SQL_DATABASE_NAME_MISSING)
 
-        val regex = SQL_DATABASE_NAME_REGEX_STRING.toRegex()
-        val matches = regex.findAll(name)
-        if (matches.count() > 0) {
-            val invalidChars = matches.map { it.value }.distinct().joinToString("', '", "'", "'")
-            throw RuntimeConfigurationError(String.format(SQL_DATABASE_NAME_INVALID, invalidChars))
-        }
+        val sqlServer = AzureDatabaseMvpModel.getSqlServerByName(subscriptionId, sqlServerName) ?: return
+        checkSqlDatabaseNameExistence(name, sqlServer)
+    }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun checkSqlDatabaseNameExistence(name: String, sqlServer: SqlServer) {
+        if (AzureDatabaseMvpModel.listSqlDatabasesBySqlServer(sqlServer).any { it.name() == name })
+            throw RuntimeConfigurationError(String.format(SQL_DATABASE_NAME_ALREADY_EXISTS, name))
     }
 
     //endregion SQL Database
@@ -153,11 +224,10 @@ class RiderDatabaseConfiguration(project: Project,
     //region Resource Group
 
     @Throws(RuntimeConfigurationError::class)
-    private fun validateResourceGroupName(name: String?) {
+    private fun validateResourceGroupName(name: String) {
 
-        if (name == null || name.isEmpty()) throw RuntimeConfigurationError(RESOURCE_GROUP_NAME_MISSING)
-        val subscriptionId = myModel.subscriptionId
-        if (subscriptionId != null) checkResourceGroupExistence(subscriptionId, name)
+        checkValueIsSet(name, RESOURCE_GROUP_NAME_MISSING)
+        checkResourceGroupExistence(myModel.subscriptionId, name)
 
         if (name.endsWith('.')) throw RuntimeConfigurationError(RESOURCE_GROUP_NAME_CANNOT_ENDS_WITH_PERIOD)
 
@@ -171,16 +241,86 @@ class RiderDatabaseConfiguration(project: Project,
 
     @Throws(RuntimeConfigurationError::class)
     private fun checkResourceGroupExistence(subscriptionId: String, resourceGroupName: String) {
-        val subscriptionToResourceGroupMap = AzureModel.getInstance().subscriptionToResourceGroupMap
+        val subscriptionToResourceGroupMap =
+                AzureModel.getInstance().subscriptionToResourceGroupMap ?: return
 
-        if (subscriptionToResourceGroupMap != null) {
-            val resourceGroups = subscriptionToResourceGroupMap.filter { it.key.subscriptionId == subscriptionId }.firstOrNull()?.value
-            if (resourceGroups != null && resourceGroups.any { it.name().equals(resourceGroupName, true) })
-                throw RuntimeConfigurationError(String.format(RESOURCE_GROUP_ALREADY_EXISTS, resourceGroupName))
-        }
+        val resourceGroups =
+                subscriptionToResourceGroupMap.filter { it.key.subscriptionId == subscriptionId }.firstOrNull()?.value
+
+        if (resourceGroups != null && resourceGroups.any { it.name().equals(resourceGroupName, true) })
+            throw RuntimeConfigurationError(String.format(RESOURCE_GROUP_ALREADY_EXISTS, resourceGroupName))
     }
 
     //endregion Resource Group
+
+    //region Admin Login/Password
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun validateAdminLogin(username: String) {
+        checkValueIsSet(username, ADMIN_LOGIN_MISSING)
+
+        if (sqlServerRestrictedAdminLoginNames.contains(username))
+            throw RuntimeConfigurationError(String.format(
+                    ADMIN_LOGIN_FROM_RESTRICTED_LIST,
+                    username,
+                    sqlServerRestrictedAdminLoginNames.joinToString("', '", "'", "'")))
+
+        if (username.contains(ADMIN_LOGIN_REGEX_WHITESPACE_STRING.toRegex()))
+            throw RuntimeConfigurationError(ADMIN_LOGIN_CANNOT_CONTAIN_WHITESPACES)
+
+        if (username.contains(ADMIN_LOGIN_REGEX_START_WITH_DIGIT_NONWORD_STRING.toRegex()))
+            throw RuntimeConfigurationError(ADMIN_LOGIN_REGEX_START_WITH_DIGIT_NONWORD_STRING)
+
+        validateResourceNameRegex(username, ADMIN_LOGIN_REGEX_STRING.toRegex(), ADMIN_LOGIN_INVALID)
+    }
+
+    /**
+     * Validate a SQL Server Admin Password according to Azure rules
+     *
+     * @param username SQL Server admin login
+     * @param password original password to validate
+     */
+    @Throws(RuntimeConfigurationError::class)
+    private fun validateAdminPassword(username: String, password: CharArray) {
+        if (password.isEmpty()) throw RuntimeConfigurationError(ADMIN_PASSWORD_MISSING)
+
+        val passwordString = password.contentToString()
+        if (passwordString.contains(username)) throw RuntimeConfigurationError(ADMIN_PASSWORD_CANNOT_CONTAIN_PART_OF_LOGIN)
+
+        if (password.size < ADMIN_PASSWORD_MIN_LENGTH || password.size > ADMIN_PASSWORD_MAX_LENGTH)
+            throw RuntimeConfigurationError(ADMIN_PASSWORD_LENGTH_ERROR)
+
+        var passCategoriesCount = 0
+        if (ADMIN_PASSWORD_REGEX_CATEGORY_LOWER_STRING.toRegex().matches(passwordString)) passCategoriesCount++
+        if (ADMIN_PASSWORD_REGEX_CATEGORY_UPPER_STRING.toRegex().matches(passwordString)) passCategoriesCount++
+        if (ADMIN_PASSWORD_REGEX_CATEGORY_DIGIT_STRING.toRegex().matches(passwordString)) passCategoriesCount++
+        if (ADMIN_PASSWORD_REGEX_CATEGORY_NONALPHANUMERIC_STRING.toRegex().matches(passwordString)) passCategoriesCount++
+
+        if (passCategoriesCount < 3) throw RuntimeConfigurationError(ADMIN_PASSWORD_CATEGORY_CHECK_FAILED)
+    }
+
+    /**
+     * Validate if password matches the confirmation password value
+     */
+    @Throws(RuntimeConfigurationError::class)
+    private fun checkPasswordsMatch(password: CharArray, confirmPassword: CharArray) {
+        if (!password.contentEquals(confirmPassword))
+            throw RuntimeConfigurationError(ADMIN_PASSWORD_DOES_NOT_MATCH)
+    }
+
+    //endregion Admin Login/Password
+
+    //region Collation
+
+    /**
+     * Validate SQL Database Collation setting
+     */
+    @Throws(RuntimeConfigurationError::class)
+    private fun validateCollation(collation: String) {
+        checkValueIsSet(collation, SQL_DATABASE_COLLATION_MISSING)
+    }
+
+    //endregion Collation
 
     /**
      * Validate Azure resource name against Azure requirements
@@ -196,14 +336,21 @@ class RiderDatabaseConfiguration(project: Project,
                                      nameRegex: Regex,
                                      nameInvalidCharsMessage: String) {
 
+        validateResourceNameRegex(name, nameRegex, nameInvalidCharsMessage)
+
+        if (name.length < nameLengthMin || name.length > nameLengthMax)
+            throw RuntimeConfigurationError(nameLengthErrorMessage)
+    }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun validateResourceNameRegex(name: String,
+                                          nameRegex: Regex,
+                                          nameInvalidCharsMessage: String) {
         val matches = nameRegex.findAll(name)
         if (matches.count() > 0) {
             val invalidChars = matches.map { it.value }.distinct().joinToString("', '", "'", "'")
             throw RuntimeConfigurationError(String.format(nameInvalidCharsMessage, invalidChars))
         }
-
-        if (name.length < nameLengthMin || name.length > nameLengthMax)
-            throw RuntimeConfigurationError(nameLengthErrorMessage)
     }
 
     /**
@@ -215,27 +362,7 @@ class RiderDatabaseConfiguration(project: Project,
      * @throws [RuntimeConfigurationError] if field value is not set
      */
     @Throws(RuntimeConfigurationError::class)
-    private fun checkValueSet(value: String?, message: String): String {
-        if (value == null || value.isEmpty()) throw RuntimeConfigurationError(message)
-        return value
-    }
-
-    @Throws(RuntimeConfigurationError::class)
-    private fun validatePassword(password: CharArray?): CharArray {
-        // TODO: There should be some set of rules that define the "good" password
-        // TODO: Check azure
-        if (password == null || password.isEmpty()) throw RuntimeConfigurationError(ADMIN_PASSWORD_MISSING)
-        return password
-    }
-
-    @Throws(RuntimeConfigurationError::class)
-    private fun validateUserLogin(username: String?, password: CharArray?) {
-        // TODO: Check that we can authenticate with those credentials
-    }
-
-    @Throws(RuntimeConfigurationError::class)
-    private fun checkPasswordsMatch(password: CharArray, confirmPassword: CharArray) {
-        if (!password.contentEquals(confirmPassword))
-            throw RuntimeConfigurationError(ADMIN_PASSWORD_DOES_NOT_MATCH)
+    private fun checkValueIsSet(value: String, message: String) {
+        if (value.isEmpty()) throw RuntimeConfigurationError(message)
     }
 }

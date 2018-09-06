@@ -23,19 +23,19 @@ class AzureDotNetWebAppSettingModel {
     var location: String = ""
     var pricingTier: PricingTier = defaultPricingTier
 
-    var isDatabaseConnectionEnabled: Boolean = false
-    var connectionStringName: String? = null
-    var database: SqlDatabase? = null
-    var sqlDatabaseAdminLogin: String? = null
-    var sqlDatabaseAdminPassword = charArrayOf()
-
     var runtime: RuntimeStack = defaultRuntime
+
+    var isDatabaseConnectionEnabled: Boolean = false
+    var connectionStringName: String = ""
+    var database: SqlDatabase? = null
+    var sqlDatabaseAdminLogin: String = ""
+    var sqlDatabaseAdminPassword = charArrayOf()
 
     var publishableProject: PublishableProjectModel? = null
 
     companion object {
         val defaultOperatingSystem = OperatingSystem.WINDOWS
-        val defaultPricingTier = PricingTier.BASIC_B1!!
+        val defaultPricingTier: PricingTier = PricingTier.STANDARD_S1
         val defaultRuntime = RuntimeStack("DOTNETCORE", "2.1")
     }
 }

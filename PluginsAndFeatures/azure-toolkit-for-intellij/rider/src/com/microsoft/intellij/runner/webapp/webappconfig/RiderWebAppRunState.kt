@@ -13,7 +13,6 @@ import com.jetbrains.rider.util.concurrent.SyncEvent
 import com.jetbrains.rider.util.idea.application
 import com.microsoft.azure.management.appservice.ConnectionStringType
 import com.microsoft.azure.management.appservice.OperatingSystem
-import com.microsoft.azure.management.appservice.PublishingProfile
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel
@@ -58,11 +57,6 @@ class RiderWebAppRunState(project: Project,
         private const val APP_SERVICE_PLAN_ID_NOT_DEFINED = "App Service Plan ID is not defined"
         private const val APP_SERVICE_PLAN_NAME_NOT_DEFINED = "App Service Plan Name is not defined"
         private const val APP_SERVICE_PLAN_LOCATION_NOT_DEFINED = "App Service Plan Location is not defined"
-        private const val APP_SERVICE_PLAN_PRICING_TIER_NOT_DEFINED = "App Service Plan Pricing Tier is not defined"
-
-        private const val OPERATING_SYSTEM_NOT_DEFINED = "Operating System is not defined"
-
-        private const val RUNTIME_NOT_DEFINED = "Runtime is not defined"
 
         private const val DEPLOY_SUCCESSFUL = "Deploy successfully!"
 
@@ -300,7 +294,7 @@ class RiderWebAppRunState(project: Project,
 
     private fun addConnectionString(webApp: WebApp, processHandler: RunProcessHandler) {
 
-        val connectionStringName = myModel.connectionStringName ?: throw Exception(CONNECTION_STRING_NAME_NOT_SET)
+        if (myModel.connectionStringName.isEmpty()) throw Exception(CONNECTION_STRING_NAME_NOT_SET)
         val database = myModel.database ?: throw Exception(DATABASE_NOT_SET)
 
         val sqlServer = database.parent().manager().sqlServers().getByResourceGroup(database.resourceGroupName(), database.sqlServerName())
@@ -315,7 +309,7 @@ class RiderWebAppRunState(project: Project,
                         "User Id=$adminLogin@${sqlServer.name()};" +
                         "Password=${adminPass.joinToString("")}"
 
-        updateWithConnectionString(webApp, connectionStringName, connectionStringValue, processHandler)
+        updateWithConnectionString(webApp, myModel.connectionStringName, connectionStringValue, processHandler)
     }
 
     //endregion Database Connection

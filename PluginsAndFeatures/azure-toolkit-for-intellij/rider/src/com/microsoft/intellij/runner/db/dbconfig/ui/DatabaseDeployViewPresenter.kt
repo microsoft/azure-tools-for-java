@@ -20,9 +20,6 @@ class DatabaseDeployViewPresenter<V : DatabaseDeployMvpView> : MvpPresenter<V>()
         private const val CANNOT_LIST_DATABASE_EDITION = "Failed to list database editions."
     }
 
-    /**
-     * Load subscriptions from model.
-     */
     fun onLoadSubscription() {
         Observable.fromCallable<List<Subscription>> { AzureMvpModel.getInstance().selectedSubscriptions }
                 .subscribeOn(schedulerProvider.io())
@@ -36,9 +33,6 @@ class DatabaseDeployViewPresenter<V : DatabaseDeployMvpView> : MvpPresenter<V>()
                 }, { e -> errorHandler(CANNOT_LIST_SUBSCRIPTION, e as Exception) })
     }
 
-    /**
-     * Load resource groups from model.
-     */
     fun onLoadResourceGroups(subscriptionId: String) {
         Observable.fromCallable<List<ResourceGroup>> { AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId) }
                 .subscribeOn(schedulerProvider.io())
@@ -52,11 +46,8 @@ class DatabaseDeployViewPresenter<V : DatabaseDeployMvpView> : MvpPresenter<V>()
                 }, { e -> errorHandler(CANNOT_LIST_RES_GRP, e as Exception) })
     }
 
-    /**
-     * Load SQL Servers from model.
-     */
-    fun onLoadSqlServers(subscriptionId: String, resourceGroupName: String) {
-        Observable.fromCallable<List<SqlServer>> { AzureDatabaseMvpModel.getSqlServersBySubscriptionIdAndResourceGroup(subscriptionId, resourceGroupName) }
+    fun onLoadSqlServers(subscriptionId: String) {
+        Observable.fromCallable<List<SqlServer>> { AzureDatabaseMvpModel.listSqlServersBySubscriptionId(subscriptionId, true).map { it.resource } }
                 .subscribeOn(schedulerProvider.io())
                 .subscribe({ sqlServers ->
                     DefaultLoader.getIdeHelper().invokeLater {
@@ -68,9 +59,6 @@ class DatabaseDeployViewPresenter<V : DatabaseDeployMvpView> : MvpPresenter<V>()
                 }, { e -> errorHandler(CANNOT_LIST_SQL_SERVER, e as Exception) })
     }
 
-    /**
-     * Load locations from model.
-     */
     fun onLoadLocation(sid: String) {
         Observable.fromCallable<List<Location>> { AzureMvpModel.getInstance().listLocationsBySubscriptionId(sid) }
                 .subscribeOn(schedulerProvider.io())
@@ -84,9 +72,6 @@ class DatabaseDeployViewPresenter<V : DatabaseDeployMvpView> : MvpPresenter<V>()
                 }, { e -> errorHandler(CANNOT_LIST_LOCATION, e as Exception) })
     }
 
-    /**
-     * Load Database edition.
-     */
     fun onLoadDatabaseEdition() {
         try {
             mvpView.fillDatabaseEdition(AzureDatabaseMvpModel.listDatabaseEditions())

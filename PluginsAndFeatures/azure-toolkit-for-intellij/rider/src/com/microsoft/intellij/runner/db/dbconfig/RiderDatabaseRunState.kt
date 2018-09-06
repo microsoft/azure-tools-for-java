@@ -20,16 +20,13 @@ class RiderDatabaseRunState(project: Project,
     companion object {
         private const val TARGET_NAME = "SqlDatabase"
 
-        // Subscription
         private const val SUBSCRIPTION_ID_NOT_DEFIED = "Subscription ID is not defined"
 
-        // SQL Database
         private const val SQL_DATABASE_CREATE = "Creating SQL Database '%s'..."
         private const val SQL_DATABASE_CREATE_SUCCESSFUL = "SQL Database is created successfully!"
         private const val SQL_DATABASE_NAME_NOT_DEFINED = "SQL Database Name is not defined"
         private const val SQL_DATABASE_URL = "Please see SQL Database details by URL: %s"
 
-        // SQL Server
         private const val SQL_SERVER_CREATE = "Creating SQL Server '%s'..."
         private const val SQL_SERVER_GET_EXISTING = "Get existing SQL Server with Id: '%s'"
         private const val SQL_SERVER_CREATE_SUCCESSFUL = "SQL Server is created, id: '%s'"
@@ -63,8 +60,9 @@ class RiderDatabaseRunState(project: Project,
 
         val sqlServer = getOrCreateSqlServerFromConfiguration(myModel, processHandler)
         val database = createDatabase(sqlServer, myModel, processHandler)
+        val subscriptionId = myModel.subscriptionId
 
-        val databaseUri = getSqlDatabaseUri(database)
+        val databaseUri = getSqlDatabaseUri(subscriptionId, database)
         if (databaseUri != null)
             processHandler.setText(String.format(SQL_DATABASE_URL, databaseUri))
 
@@ -79,10 +77,9 @@ class RiderDatabaseRunState(project: Project,
             AzureUIRefreshCore.execute(AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null))
         }
 
-        if (result != null) updateConfigurationDataModel()
-
-        // TODO: Probably remove
-        AzureDatabaseMvpModel.listSqlDatabases(true)
+        if (result != null) {
+            updateConfigurationDataModel()
+        }
     }
 
     override fun onFail(errorMessage: String, processHandler: RunProcessHandler) {
@@ -105,25 +102,25 @@ class RiderDatabaseRunState(project: Project,
     private fun getOrCreateSqlServerFromConfiguration(model: AzureDatabaseSettingModel,
                                                       processHandler: RunProcessHandler): SqlServer {
 
-        val subscriptionId = model.subscriptionId ?: throw Exception(SUBSCRIPTION_ID_NOT_DEFIED)
+        if (model.subscriptionId.isEmpty()) throw Exception(SUBSCRIPTION_ID_NOT_DEFIED)
 
-        if (myModel.isCreatingSqlServer) {
+        if (model.isCreatingSqlServer) {
             processHandler.setText(String.format(SQL_SERVER_CREATE, model.sqlServerName))
 
-            val sqlServerName = myModel.sqlServerName ?: throw Exception(SQL_SERVER_NAME_NOT_DEFINED)
-            val region = myModel.region ?: throw Exception(SQL_SERVER_REGION_NOT_DEFINED)
-            val resourceGroupName = myModel.resourceGroupName ?: throw Exception(SQL_SERVER_RESOURCE_GROUP_NAME_NOT_DEFINED)
-            val sqlServerAdminLogin = myModel.sqlServerAdminLogin ?: throw Exception(SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
-            val sqlServerAdminPassword = myModel.sqlServerAdminPassword ?: throw Exception(SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
+            if (model.sqlServerName.isEmpty()) throw Exception(SQL_SERVER_NAME_NOT_DEFINED)
+            if (model.region.isEmpty()) throw Exception(SQL_SERVER_REGION_NOT_DEFINED)
+            if (model.resourceGroupName.isEmpty()) throw Exception(SQL_SERVER_RESOURCE_GROUP_NAME_NOT_DEFINED)
+            if (model.sqlServerAdminLogin.isEmpty()) throw Exception(SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
+            if (model.sqlServerAdminPassword.isEmpty()) throw Exception(SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
 
             val sqlServer = AzureDatabaseMvpModel.createSqlServer(
-                    subscriptionId,
-                    sqlServerName,
-                    region,
+                    model.subscriptionId,
+                    model.sqlServerName,
+                    model.region,
                     model.isCreatingResourceGroup,
-                    resourceGroupName,
-                    sqlServerAdminLogin,
-                    sqlServerAdminPassword)
+                    model.resourceGroupName,
+                    model.sqlServerAdminLogin,
+                    model.sqlServerAdminPassword)
 
             processHandler.setText(String.format(SQL_SERVER_CREATE_SUCCESSFUL, sqlServer.id()))
 
@@ -132,8 +129,8 @@ class RiderDatabaseRunState(project: Project,
 
         processHandler.setText(String.format(SQL_SERVER_GET_EXISTING, model.sqlServerId))
 
-        val sqlServerId = myModel.sqlServerId ?: throw Exception(SQL_SERVER_ID_NOT_DEFINED)
-        return AzureDatabaseMvpModel.getSqlServer(subscriptionId, sqlServerId)
+        if (model.sqlServerId.isEmpty()) throw Exception(SQL_SERVER_ID_NOT_DEFINED)
+        return AzureDatabaseMvpModel.getSqlServerById(model.subscriptionId, model.sqlServerId)
     }
 
     //endregion SQL Server
@@ -155,8 +152,8 @@ class RiderDatabaseRunState(project: Project,
 
         processHandler.setText(String.format(SQL_DATABASE_CREATE, model.databaseName))
 
-        val databaseName = model.databaseName ?: throw Exception(SQL_DATABASE_NAME_NOT_DEFINED)
-        val database = AzureDatabaseMvpModel.createSqlDatabase(sqlServer, databaseName, model.collation)
+        if (model.databaseName.isEmpty()) throw Exception(SQL_DATABASE_NAME_NOT_DEFINED)
+        val database = AzureDatabaseMvpModel.createSqlDatabase(sqlServer, model.databaseName, model.collation)
 
         processHandler.setText(String.format(SQL_DATABASE_CREATE_SUCCESSFUL, database.id()))
         return database
@@ -168,14 +165,14 @@ class RiderDatabaseRunState(project: Project,
      * @param database published database instance
      * @return [java.net.URI] to a SQL Database on Azure portal
      */
-    private fun getSqlDatabaseUri(database: SqlDatabase): URI? {
+    private fun getSqlDatabaseUri(subscriptionId: String, database: SqlDatabase): URI? {
         val azureManager = AuthMethodManager.getInstance().azureManager
         val portalUrl = azureManager.portalUrl
 
         // Note: [SubscriptionManager.getSubscriptionTenant()] method does not update Subscription to TenantId map while
         //       [SubscriptionManager.getSubscriptionDetails()] force to update and get the correct value
         val tenantId = azureManager.subscriptionManager.subscriptionDetails
-                .find { it.subscriptionId == database.parent().manager().subscriptionId() }?.tenantId ?: return null
+                .find { it.subscriptionId == subscriptionId }?.tenantId ?: return null
 
         val path = "/#@$tenantId/resource/${database.id()}/overview".replace("/+".toRegex(), "/")
         return URI.create("$portalUrl/$path").normalize()

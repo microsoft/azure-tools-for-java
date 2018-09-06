@@ -1,9 +1,7 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.ui
 
 import com.jetbrains.rider.model.PublishableProjectModel
-import com.microsoft.azure.management.appservice.AppServicePlan
-import com.microsoft.azure.management.appservice.PricingTier
-import com.microsoft.azure.management.appservice.WebApp
+import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
