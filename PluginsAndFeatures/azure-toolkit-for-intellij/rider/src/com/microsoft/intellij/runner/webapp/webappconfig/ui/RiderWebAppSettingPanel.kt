@@ -30,6 +30,7 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
+import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfiguration
 import java.io.File
 import java.text.SimpleDateFormat
@@ -86,14 +87,14 @@ class RiderWebAppSettingPanel(project: Project,
 
     private var lastSelectedResourceGroupName: String = ""
 
-    private var lastSelectedOperatingSystem: OperatingSystem? = null
+    private var lastSelectedOperatingSystem: OperatingSystem = AzureDotNetWebAppSettingModel.defaultOperatingSystem
 
     private var cachedAppServicePlan = listOf<AppServicePlan>()
     private var lastSelectedLocation: String = ""
     private var cachedPricingTier = listOf<PricingTier>()
-    private var lastSelectedPriceTier: PricingTier? = null
+    private var lastSelectedPriceTier: PricingTier = AzureDotNetWebAppSettingModel.defaultPricingTier
 
-    private var lastSelectedRuntime: RuntimeStack? = null
+    private var lastSelectedRuntime: RuntimeStack = AzureDotNetWebAppSettingModel.defaultRuntime
 
     // Panels
     override var mainPanel: JPanel = pnlRoot
@@ -224,7 +225,7 @@ class RiderWebAppSettingPanel(project: Project,
             model.isCreatingWebApp = false
             model.subscriptionId = selectedWebApp?.subscriptionId ?: ""
             model.webAppId = selectedWebApp?.resource?.id() ?: ""
-            model.operatingSystem = selectedWebApp?.resource?.operatingSystem()
+            model.operatingSystem = selectedWebApp?.resource?.operatingSystem() ?: OperatingSystem.WINDOWS
             if (model.operatingSystem == OperatingSystem.LINUX) {
                 val dotNetCoreVersionArray = selectedWebApp?.resource?.linuxFxVersion()?.split('|')
                 val runtime =
@@ -263,11 +264,10 @@ class RiderWebAppSettingPanel(project: Project,
                 }
             }
 
-            // Operating System
             model.operatingSystem = lastSelectedOperatingSystem
 
-            // Runtime
-            if (model.operatingSystem == OperatingSystem.WINDOWS) model.runtime = null
+            // runtime only makes sense for linux
+            if (model.operatingSystem == OperatingSystem.WINDOWS) model.runtime = AzureDotNetWebAppSettingModel.defaultRuntime
             else model.runtime = lastSelectedRuntime
         }
     }
@@ -336,10 +336,7 @@ class RiderWebAppSettingPanel(project: Project,
             return
         }
 
-        val filteredPlans =
-                if (lastSelectedOperatingSystem != null) filterAppServicePlans(lastSelectedOperatingSystem!!, appServicePlans)
-                else appServicePlans
-
+        val filteredPlans = filterAppServicePlans(lastSelectedOperatingSystem, appServicePlans)
         setAppServicePlanContent(filteredPlans)
     }
 
@@ -371,9 +368,7 @@ class RiderWebAppSettingPanel(project: Project,
     override fun fillPricingTier(prices: List<PricingTier>) {
         cachedPricingTier = prices
 
-        val filteredPrices =
-                if (lastSelectedOperatingSystem != null) filterPricingTiers(lastSelectedOperatingSystem!!, prices)
-                else prices
+        val filteredPrices = filterPricingTiers(lastSelectedOperatingSystem, prices)
 
         setPricingTierContent(filteredPrices)
     }

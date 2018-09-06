@@ -164,14 +164,14 @@ class RiderWebAppRunState(project: Project,
 
             if (model.webAppName.isEmpty()) throw Exception(WEB_APP_NAME_NOT_DEFINED)
             if (model.resourceGroupName.isEmpty()) throw Exception(RESOURCE_GROUP_NAME_NOT_DEFINED)
-            val operatingSystem = myModel.operatingSystem ?: throw Exception(OPERATING_SYSTEM_NOT_DEFINED)
+            val operatingSystem = myModel.operatingSystem
 
             val webAppDefinition = AzureDotNetWebAppMvpModel.WebAppDefinition(model.webAppName, model.isCreatingResourceGroup, model.resourceGroupName)
             val webApp =
                     if (model.isCreatingAppServicePlan) {
                         if (model.appServicePlanName.isEmpty()) throw Exception(APP_SERVICE_PLAN_NAME_NOT_DEFINED)
                         if (model.location.isEmpty()) throw Exception(APP_SERVICE_PLAN_LOCATION_NOT_DEFINED)
-                        val pricingTier = myModel.pricingTier ?: throw Exception(APP_SERVICE_PLAN_PRICING_TIER_NOT_DEFINED)
+                        val pricingTier = myModel.pricingTier
                         val appServicePlanDefinition = AzureDotNetWebAppMvpModel.AppServicePlanDefinition(model.appServicePlanName, pricingTier, model.location)
 
                         if (operatingSystem == OperatingSystem.WINDOWS) {
@@ -180,7 +180,7 @@ class RiderWebAppRunState(project: Project,
                                     webAppDefinition,
                                     appServicePlanDefinition)
                         } else {
-                            val runtime = myModel.runtime ?: throw Exception(RUNTIME_NOT_DEFINED)
+                            val runtime = myModel.runtime
                             AzureDotNetWebAppMvpModel.createWebAppWithNewLinuxAppServicePlan(
                                     model.subscriptionId,
                                     webAppDefinition,
@@ -196,7 +196,7 @@ class RiderWebAppRunState(project: Project,
                                     webAppDefinition,
                                     model.appServicePlanId)
                         } else {
-                            val runtime = myModel.runtime ?: throw Exception(RUNTIME_NOT_DEFINED)
+                            val runtime = myModel.runtime
                             AzureDotNetWebAppMvpModel.createWebAppWithExistingLinuxAppServicePlan(
                                     model.subscriptionId,
                                     webAppDefinition,
