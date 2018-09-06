@@ -40,6 +40,7 @@ import javax.swing.table.DefaultTableModel
 
 /**
  * The setting panel for web app deployment run configuration.
+ * TODO: refactor this, almost 1k lines as of 2018-09-06
  */
 class RiderWebAppSettingPanel(project: Project,
                               private val configuration: RiderWebAppConfiguration)
@@ -230,7 +231,7 @@ class RiderWebAppSettingPanel(project: Project,
                 val dotNetCoreVersionArray = selectedWebApp?.resource?.linuxFxVersion()?.split('|')
                 val runtime =
                         if (dotNetCoreVersionArray != null && dotNetCoreVersionArray.size == 2) RuntimeStack(dotNetCoreVersionArray[0], dotNetCoreVersionArray[1])
-                        else RuntimeStack("DOTNETCORE", "2.1")
+                        else AzureDotNetWebAppSettingModel.defaultRuntime
                 // TODO: Add a warning for a user when publishing to an Linux instance with runtime that mismatch with
                 // TODO: required for a publishable project
                 model.runtime = runtime
@@ -470,6 +471,8 @@ class RiderWebAppSettingPanel(project: Project,
      *       does not set the right values. They set the "v4.0" for "v4.7" and "v2.0" for "v3.5" instances
      *       For .Net Core Framework we get the correct runtime value from the linux fx version that store
      *       a instance name representation
+     *
+     * Note: 2.0 and 4.0 are CLR versions most likely
      *
      * @param webApp web app instance
      * @return [String] with a .Net Framework version for a web app instance

@@ -35,9 +35,6 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
         loadWebApps(false)
     }
 
-    /**
-     * Load subscriptions from model.
-     */
     fun onLoadSubscription() {
         Observable.fromCallable<List<Subscription>> { AzureMvpModel.getInstance().selectedSubscriptions }
                 .subscribeOn(schedulerProvider.io())
@@ -51,9 +48,6 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
                 }, { e -> errorHandler(CANNOT_LIST_SUBSCRIPTION, e as Exception) })
     }
 
-    /**
-     * Load resource groups from model.
-     */
     fun onLoadResourceGroups(subscriptionId: String) {
         Observable.fromCallable<List<ResourceGroup>> { AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId) }
                 .subscribeOn(schedulerProvider.io())
@@ -67,9 +61,6 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
                 }, { e -> errorHandler(CANNOT_LIST_RESOURCE_GROUP, e as Exception) })
     }
 
-    /**
-     * Load app service plan from model.
-     */
     fun onLoadAppServicePlan(subscriptionId: String) {
         Observable.fromCallable<List<AppServicePlan>> { AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionId(subscriptionId) }
                 .subscribeOn(schedulerProvider.io())
@@ -83,9 +74,6 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
                 }, { e -> errorHandler(CANNOT_LIST_APP_SERVICE_PLAN, e as Exception) })
     }
 
-    /**
-     * Load App Service Plan Operating Systems from model.
-     */
     fun onLoadOperatingSystem() {
         try {
             val operatingSystems = AzureDotNetWebAppMvpModel.listOperatingSystem()
@@ -95,9 +83,6 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
         }
     }
 
-    /**
-     * Load locations from model.
-     */
     fun onLoadLocation(subscriptionId: String) {
         Observable.fromCallable<List<Location>> { AzureMvpModel.getInstance().listLocationsBySubscriptionId(subscriptionId) }
                 .subscribeOn(schedulerProvider.io())
@@ -111,9 +96,6 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
                 }, { e -> errorHandler(CANNOT_LIST_LOCATION, e as Exception) })
     }
 
-    /**
-     * Load pricing tier from model.
-     */
     fun onLoadPricingTier() {
         try {
             mvpView.fillPricingTier(AzureMvpModel.getInstance().listPricingTier())
@@ -122,9 +104,6 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
         }
     }
 
-    /**
-     * Load runtime from model.
-     */
     fun onLoadRuntime() {
         try {
             val runtimeList = AzureDotNetWebAppMvpModel.listRuntimeStack().filter { it.stack().equals("DOTNETCORE", true) }
@@ -132,15 +111,14 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
                     *runtimeList.toTypedArray(),
                     RuntimeStack("DOTNETCORE", "2.0"),
                     RuntimeStack("DOTNETCORE", "2.1")
-            ).sortedBy { it.version() }
+            ).distinctBy { it.stack() + it.version() }
+             .sortedBy { it.version() }
 
             mvpView.fillRuntime(updatedRuntimeList)
         } catch (e: IllegalAccessException) {
             errorHandler(CANNOT_LIST_RUNTIME_STACK, e)
         }
     }
-
-    //region Private Methods and Operators
 
     private fun loadWebApps(forceRefresh: Boolean) {
         Observable.fromCallable<List<ResourceEx<WebApp>>> { AzureDotNetWebAppMvpModel.listWebApps(forceRefresh) }
@@ -163,6 +141,4 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
             mvpView.onErrorWithException(msg, e)
         }
     }
-
-    //endregion Private Methods and Operators
 }
