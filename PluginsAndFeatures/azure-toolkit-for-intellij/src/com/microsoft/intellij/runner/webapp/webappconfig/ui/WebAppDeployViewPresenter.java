@@ -128,6 +128,13 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
         getMvpView().fillJdkVersion(AzureWebAppMvpModel.getInstance().listJdks());
     }
 
+    /**
+     * Load Java Linux runtimes from model.
+     */
+    public void onLoadLinuxRuntimes() {
+        getMvpView().fillLinuxRuntime(AzureWebAppMvpModel.getInstance().getLinuxRuntimes());
+    }
+
     private void loadWebApps(boolean forceRefresh) {
         Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listAllWebApps(forceRefresh))
                 .subscribeOn(getSchedulerProvider().io())
