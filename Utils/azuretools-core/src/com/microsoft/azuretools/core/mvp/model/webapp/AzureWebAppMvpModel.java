@@ -81,17 +81,21 @@ public class AzureWebAppMvpModel {
         return app;
     }
 
-    /**
-     * Create an Azure web app service.
+     /**
+     * API to create Web App on Windows .
+     *
+     * @param model parameters
+     * @return instance of created WebApp
+     * @throws IOException IOExceptions
      */
-    public WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
+    public WebApp createWebAppOnWindows(@NotNull WebAppSettingModel model) throws Exception {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
 
         WebApp.DefinitionStages.WithCreate withCreate;
         if (model.isCreatingAppServicePlan()) {
-            withCreate = withCreateNewSPlan(azure, model);
+            withCreate = withCreateNewWindowsServicePlan(azure, model);
         } else {
-            withCreate = withCreateExistingSPlan(azure, model);
+            withCreate = withExistingWindowsServicePlan(azure, model);
         }
 
         return withCreate
@@ -100,9 +104,9 @@ public class AzureWebAppMvpModel {
                 .create();
     }
 
-    private WebApp.DefinitionStages.WithCreate withCreateNewSPlan(
-            @NotNull Azure azure,
-            @NotNull WebAppSettingModel model) throws Exception {
+    private WebApp.DefinitionStages.WithCreate withCreateNewWindowsServicePlan(
+            @NotNull Azure azure, @NotNull WebAppSettingModel model) throws Exception {
+
         String[] tierSize = model.getPricing().split("_");
         if (tierSize.length != 2) {
             throw new Exception("Cannot get valid price tier");
@@ -137,7 +141,7 @@ public class AzureWebAppMvpModel {
         return withCreateWebApp;
     }
 
-    private WebApp.DefinitionStages.WithCreate withCreateExistingSPlan(
+    private WebApp.DefinitionStages.WithCreate withExistingWindowsServicePlan(
             @NotNull Azure azure,
             @NotNull WebAppSettingModel model) {
         AppServicePlan servicePlan = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
@@ -171,7 +175,7 @@ public class AzureWebAppMvpModel {
      * @return instance of created WebApp
      * @throws IOException IOExceptions
      */
-    public WebApp createWebAppOnLinux(WebAppOnLinuxDeployModel model)
+    public WebApp createWebAppOnDocker(@NotNull WebAppOnLinuxDeployModel model)
             throws IOException {
         PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
         WebApp app;
@@ -246,7 +250,7 @@ public class AzureWebAppMvpModel {
      * @param imageSetting new container settings
      * @return instance of the updated Web App on Linux
      */
-    public WebApp updateWebAppOnLinux(String sid, String webAppId, ImageSetting imageSetting) throws Exception {
+    public WebApp updateWebAppOnDocker(String sid, String webAppId, ImageSetting imageSetting) throws Exception {
         WebApp app = getWebAppById(sid, webAppId);
         clearTags(app);
         if (imageSetting instanceof PrivateRegistryImageSetting) {

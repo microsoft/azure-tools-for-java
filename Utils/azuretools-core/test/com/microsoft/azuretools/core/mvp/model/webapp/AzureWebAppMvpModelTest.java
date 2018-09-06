@@ -140,7 +140,7 @@ public class AzureWebAppMvpModelTest {
         when(withGrp.withNewResourceGroup(settingModel.getResourceGroup())).thenReturn(with);
 
         try {
-            azureWebAppMvpModel.createWebApp(settingModel);
+            azureWebAppMvpModel.createWebAppOnWindows(settingModel);
         }catch (Exception e) {
         }
 
@@ -166,7 +166,7 @@ public class AzureWebAppMvpModelTest {
         when(def.withExistingWindowsPlan(srvPlan)).thenReturn(withGrp);
 
         try{
-            azureWebAppMvpModel.createWebApp(settingModel);
+            azureWebAppMvpModel.createWebAppOnWindows(settingModel);
         } catch (Exception e) {
         }
 
@@ -199,7 +199,7 @@ public class AzureWebAppMvpModelTest {
         when(def.withExistingLinuxPlan(srvPlan)).thenReturn(withGrp);
 
         try{
-            azureWebAppMvpModel.createWebAppOnLinux(model);
+            azureWebAppMvpModel.createWebAppOnDocker(model);
         } catch(Exception e) {
         }
 
