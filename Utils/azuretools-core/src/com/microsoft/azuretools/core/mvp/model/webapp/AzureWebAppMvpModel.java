@@ -86,7 +86,7 @@ public class AzureWebAppMvpModel {
      *
      * @param model parameters
      * @return instance of created WebApp
-     * @throws IOException IOExceptions
+     * @throws Exception exception
      */
     public WebApp createWebAppOnWindows(@NotNull WebAppSettingModel model) throws Exception {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
@@ -169,7 +169,7 @@ public class AzureWebAppMvpModel {
     }
 
     /**
-     * API to create Web App on Linux.
+     * API to create Web App on Docker.
      *
      * @param model parameters
      * @return instance of created WebApp
