@@ -51,6 +51,7 @@ import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.intellij.util.PluginUtil;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -461,7 +462,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         btnRefresh.setEnabled(true);
         table.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
         List<ResourceEx<WebApp>> sortedList = webAppLists.stream()
-                .filter(resource -> resource.getResource().javaVersion() != JavaVersion.OFF)
+                .filter(resource -> PluginUtil.isLinuxOrWindowsJavaWebApp(resource))
                 .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
                 .collect(Collectors.toList());
         cachedWebAppList = sortedList;
@@ -472,8 +473,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
                 WebApp app = sortedList.get(i).getResource();
                 model.addRow(new String[]{
                         app.name(),
-                        app.javaVersion().toString(),
-                        app.javaContainer() + " " + app.javaContainerVersion(),
+                        PluginUtil.getJavaJDKVersion(app),
+                        PluginUtil.getJavaWebContainer(app),
                         app.resourceGroupName(),
                 });
                 if (Comparing.equal(app.id(), webAppConfiguration.getWebAppId())) {
