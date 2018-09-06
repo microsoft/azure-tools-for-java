@@ -59,65 +59,37 @@ object AzureDotNetWebAppMvpModel {
         }
     }
 
-    fun createWebAppWithNewWindowsAppServicePlan(subscriptionId: String,
-                                                 webAppName: String,
-                                                 appServicePlanName: String,
-                                                 pricingTier: PricingTier,
-                                                 region: String,
-                                                 isCreatingResourceGroup: Boolean,
-                                                 resourceGroupName: String): WebApp {
+    class WebAppDefinition(val name: String, val isCreatingResourceGroup: Boolean, val resourceGroupName: String)
+    class AppServicePlanDefinition(val name: String, val pricingTier: PricingTier, val region: String)
+
+    fun createWebAppWithNewWindowsAppServicePlan(subscriptionId: String, webApp: WebAppDefinition, appServicePlan:AppServicePlanDefinition): WebApp {
         val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-        return webAppWithNewWindowsAppServicePlan(
-                azure,
-                webAppName,
-                appServicePlanName,
-                pricingTier,
-                region,
-                isCreatingResourceGroup,
-                resourceGroupName).create()
+        return webAppWithNewWindowsAppServicePlan(azure, webApp, appServicePlan).create()
     }
 
     fun createWebAppWithNewLinuxAppServicePlan(subscriptionId: String,
-                                               webAppName: String,
-                                               appServicePlanName: String,
-                                               pricingTier: PricingTier,
-                                               region: String,
-                                               runtime: RuntimeStack,
-                                               isCreatingResourceGroup: Boolean,
-                                               resourceGroupName: String): WebApp {
+                                               webApp: WebAppDefinition,
+                                               appServicePlan: AppServicePlanDefinition,
+                                               runtime: RuntimeStack): WebApp {
         val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-        return webAppWithNewLinuxAppServicePlan(
-                azure,
-                webAppName,
-                appServicePlanName,
-                pricingTier,
-                region,
-                runtime,
-                isCreatingResourceGroup,
-                resourceGroupName)
-                .create()
+        return webAppWithNewLinuxAppServicePlan(azure, webApp, appServicePlan, runtime).create()
     }
 
     fun createWebAppWithExistingWindowsAppServicePlan(subscriptionId: String,
-                                                      webAppName: String,
-                                                      appServicePlanId: String,
-                                                      isCreatingResourceGroup: Boolean,
-                                                      resourceGroupName: String): WebApp {
+                                                      webApp: WebAppDefinition,
+                                                      appServicePlanId: String): WebApp {
 
         val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-        return webAppWithExistingWindowsAppServicePlan(azure, webAppName, appServicePlanId, isCreatingResourceGroup, resourceGroupName)
-                .create()
+        return webAppWithExistingWindowsAppServicePlan(azure, webApp, appServicePlanId).create()
     }
 
     fun createWebAppWithExistingLinuxAppServicePlan(subscriptionId: String,
-                                                    webAppName: String,
+                                                    webApp: WebAppDefinition,
                                                     appServicePlanId: String,
-                                                    runtime: RuntimeStack,
-                                                    isCreatingResourceGroup: Boolean,
-                                                    resourceGroupName: String): WebApp {
+                                                    runtime: RuntimeStack): WebApp {
 
         val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-        return webAppWithExistingLinuxAppServicePlan(azure, webAppName, appServicePlanId, runtime, isCreatingResourceGroup, resourceGroupName)
+        return webAppWithExistingLinuxAppServicePlan(azure, webApp, appServicePlanId, runtime)
                 .create()
     }
 
@@ -168,42 +140,34 @@ object AzureDotNetWebAppMvpModel {
     //region Private Methods and Operators
 
     private fun webAppWithNewWindowsAppServicePlan(azure: Azure,
-                                                   webAppName: String,
-                                                   appServicePlanName: String,
-                                                   pricingTier: PricingTier,
-                                                   region: String,
-                                                   isCreatingResourceGroup: Boolean,
-                                                   resourceGroupName: String) : WebApp.DefinitionStages.WithCreate {
+                                                   webApp: WebAppDefinition,
+                                                   appServicePlan: AppServicePlanDefinition) : WebApp.DefinitionStages.WithCreate {
 
         val withAppServicePlan = withCreateAppServicePlan(
-                azure, appServicePlanName, region, pricingTier, isCreatingResourceGroup, resourceGroupName, OperatingSystem.WINDOWS)
+                azure, appServicePlan.name, appServicePlan.region, appServicePlan.pricingTier, webApp.isCreatingResourceGroup, webApp.resourceGroupName, OperatingSystem.WINDOWS)
 
-        val appWithRegion = azure.webApps().define(webAppName).withRegion(region)
+        val appWithRegion = azure.webApps().define(webApp.name).withRegion(appServicePlan.region)
 
         val appWithGroup =
-                if (isCreatingResourceGroup) appWithRegion.withNewResourceGroup(resourceGroupName)
-                else appWithRegion.withExistingResourceGroup(resourceGroupName)
+                if (webApp.isCreatingResourceGroup) appWithRegion.withNewResourceGroup(webApp.resourceGroupName)
+                else appWithRegion.withExistingResourceGroup(webApp.resourceGroupName)
 
         return appWithGroup.withNewWindowsPlan(withAppServicePlan)
     }
 
     private fun webAppWithNewLinuxAppServicePlan(azure: Azure,
-                                                 webAppName: String,
-                                                 appServicePlanName: String,
-                                                 pricingTier: PricingTier,
-                                                 region: String,
-                                                 runtime: RuntimeStack,
-                                                 isCreatingResourceGroup: Boolean,
-                                                 resourceGroupName: String): WebApp.DefinitionStages.WithCreate {
+                                                 webApp: WebAppDefinition,
+                                                 appServicePlan: AppServicePlanDefinition,
+                                                 runtime: RuntimeStack): WebApp.DefinitionStages.WithCreate {
 
         val withAppServicePlan = withCreateAppServicePlan(
-                azure, appServicePlanName, region, pricingTier, isCreatingResourceGroup, resourceGroupName, OperatingSystem.LINUX)
+                azure, appServicePlan.name, appServicePlan.region, appServicePlan.pricingTier, webApp.isCreatingResourceGroup, webApp.resourceGroupName, OperatingSystem.LINUX)
 
-        val appWithRegion = azure.webApps().define(webAppName).withRegion(region)
+        val appWithRegion = azure.webApps().define(webApp.name).withRegion(appServicePlan.region)
 
         val appWithGroup =
-                if (isCreatingResourceGroup) appWithRegion.withNewResourceGroup(resourceGroupName)
-                else appWithRegion.withExistingResourceGroup(resourceGroupName)
+                if (webApp.isCreatingResourceGroup) appWithRegion.withNewResourceGroup(webApp.resourceGroupName)
+                else appWithRegion.withExistingResourceGroup(webApp.resourceGroupName)
 
         return appWithGroup.withNewLinuxPlan(withAppServicePlan).withBuiltInImage(runtime)
     }
@@ -229,39 +193,34 @@ object AzureDotNetWebAppMvpModel {
     }
 
     private fun webAppWithExistingWindowsAppServicePlan(azure: Azure,
-                                                        webAppName: String,
-                                                        appServicePlanId: String,
-                                                        isCreatingResourceGroup: Boolean,
-                                                        resourceGroupName: String) : WebApp.DefinitionStages.WithCreate {
+                                                        webApp: WebAppDefinition,
+                                                        appServicePlanId: String) : WebApp.DefinitionStages.WithCreate {
 
         val windowsPlan = withExistingAppServicePlan(azure, appServicePlanId)
 
-        val withExistingWindowsPlan = azure.webApps().define(webAppName).withExistingWindowsPlan(windowsPlan)
+        val withExistingWindowsPlan = azure.webApps().define(webApp.name).withExistingWindowsPlan(windowsPlan)
 
-        return if (isCreatingResourceGroup) withExistingWindowsPlan.withNewResourceGroup(resourceGroupName)
-        else withExistingWindowsPlan.withExistingResourceGroup(resourceGroupName)
+        return if (webApp.isCreatingResourceGroup) withExistingWindowsPlan.withNewResourceGroup(webApp.resourceGroupName)
+        else withExistingWindowsPlan.withExistingResourceGroup(webApp.resourceGroupName)
     }
 
     private fun webAppWithExistingLinuxAppServicePlan(azure: Azure,
-                                                      webAppName: String,
+                                                      webApp: WebAppDefinition,
                                                       appServicePlanId: String,
-                                                      runtime: RuntimeStack,
-                                                      isCreatingResourceGroup: Boolean,
-                                                      resourceGroupName: String) : WebApp.DefinitionStages.WithCreate {
+                                                      runtime: RuntimeStack) : WebApp.DefinitionStages.WithCreate {
 
         val linuxPlan = withExistingAppServicePlan(azure, appServicePlanId)
 
-        val withExistingLinuxPlan = azure.webApps().define(webAppName).withExistingLinuxPlan(linuxPlan)
+        val withExistingLinuxPlan = azure.webApps().define(webApp.name).withExistingLinuxPlan(linuxPlan)
 
         val withResourceGroup =
-                if (isCreatingResourceGroup) withExistingLinuxPlan.withNewResourceGroup(resourceGroupName)
-                else withExistingLinuxPlan.withExistingResourceGroup(resourceGroupName)
+                if (webApp.isCreatingResourceGroup) withExistingLinuxPlan.withNewResourceGroup(webApp.resourceGroupName)
+                else withExistingLinuxPlan.withExistingResourceGroup(webApp.resourceGroupName)
 
         return withResourceGroup.withBuiltInImage(runtime)
     }
 
-    private fun withExistingAppServicePlan(azure: Azure,
-                                           appServicePlanId: String): AppServicePlan {
+    private fun withExistingAppServicePlan(azure: Azure, appServicePlanId: String): AppServicePlan {
         return azure.appServices().appServicePlans().getById(appServicePlanId)
     }
 

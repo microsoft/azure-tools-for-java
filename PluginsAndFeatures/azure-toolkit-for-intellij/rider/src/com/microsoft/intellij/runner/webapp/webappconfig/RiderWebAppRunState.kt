@@ -166,32 +166,26 @@ class RiderWebAppRunState(project: Project,
             if (model.resourceGroupName.isEmpty()) throw Exception(RESOURCE_GROUP_NAME_NOT_DEFINED)
             val operatingSystem = myModel.operatingSystem ?: throw Exception(OPERATING_SYSTEM_NOT_DEFINED)
 
+            val webAppDefinition = AzureDotNetWebAppMvpModel.WebAppDefinition(model.webAppName, model.isCreatingResourceGroup, model.resourceGroupName)
             val webApp =
                     if (model.isCreatingAppServicePlan) {
                         if (model.appServicePlanName.isEmpty()) throw Exception(APP_SERVICE_PLAN_NAME_NOT_DEFINED)
                         if (model.location.isEmpty()) throw Exception(APP_SERVICE_PLAN_LOCATION_NOT_DEFINED)
                         val pricingTier = myModel.pricingTier ?: throw Exception(APP_SERVICE_PLAN_PRICING_TIER_NOT_DEFINED)
+                        val appServicePlanDefinition = AzureDotNetWebAppMvpModel.AppServicePlanDefinition(model.appServicePlanName, pricingTier, model.location)
 
                         if (operatingSystem == OperatingSystem.WINDOWS) {
                             AzureDotNetWebAppMvpModel.createWebAppWithNewWindowsAppServicePlan(
                                     model.subscriptionId,
-                                    model.webAppName,
-                                    model.appServicePlanName,
-                                    pricingTier,
-                                    model.location,
-                                    model.isCreatingResourceGroup,
-                                    model.resourceGroupName)
+                                    webAppDefinition,
+                                    appServicePlanDefinition)
                         } else {
                             val runtime = myModel.runtime ?: throw Exception(RUNTIME_NOT_DEFINED)
                             AzureDotNetWebAppMvpModel.createWebAppWithNewLinuxAppServicePlan(
                                     model.subscriptionId,
-                                    model.webAppName,
-                                    model.appServicePlanName,
-                                    pricingTier,
-                                    model.location,
-                                    runtime,
-                                    model.isCreatingResourceGroup,
-                                    model.resourceGroupName)
+                                    webAppDefinition,
+                                    appServicePlanDefinition,
+                                    runtime)
                         }
                     } else {
                         if (model.appServicePlanId.isEmpty()) throw Exception(APP_SERVICE_PLAN_ID_NOT_DEFINED)
@@ -199,19 +193,15 @@ class RiderWebAppRunState(project: Project,
                         if (operatingSystem == OperatingSystem.WINDOWS) {
                             AzureDotNetWebAppMvpModel.createWebAppWithExistingWindowsAppServicePlan(
                                     model.subscriptionId,
-                                    model.webAppName,
-                                    model.appServicePlanId,
-                                    model.isCreatingResourceGroup,
-                                    model.resourceGroupName)
+                                    webAppDefinition,
+                                    model.appServicePlanId)
                         } else {
                             val runtime = myModel.runtime ?: throw Exception(RUNTIME_NOT_DEFINED)
                             AzureDotNetWebAppMvpModel.createWebAppWithExistingLinuxAppServicePlan(
                                     model.subscriptionId,
-                                    model.webAppName,
+                                    webAppDefinition,
                                     model.appServicePlanId,
-                                    runtime,
-                                    model.isCreatingResourceGroup,
-                                    model.resourceGroupName)
+                                    runtime)
                         }
                     }
 
