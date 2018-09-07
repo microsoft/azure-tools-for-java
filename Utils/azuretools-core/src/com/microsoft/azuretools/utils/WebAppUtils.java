@@ -375,20 +375,20 @@ public class WebAppUtils {
      * It returns values like "Tomcat|8.5-jre8" if it is a Linux with the web container Tomcat.
      */
     public static String getJDKVersion(@NotNull final WebApp webApp) {
-        final OperatingSystem operatingSystem = webApp.operatingSystem();
-        if (operatingSystem == OperatingSystem.WINDOWS) {
-            return webApp.javaVersion().toString();
-        }
-        if (operatingSystem == OperatingSystem.LINUX) {
-            final String linuxVersion = webApp.linuxFxVersion();
-            if (linuxVersion == null) {
-                return DEFAULT_VALUE_WHEN_VERSION_INVALID;
-            }
+        switch(webApp.operatingSystem()) {
+            case WINDOWS:
+                return webApp.javaVersion().toString();
+            case LINUX:
+                final String linuxVersion = webApp.linuxFxVersion();
+                if (linuxVersion == null) {
+                    return DEFAULT_VALUE_WHEN_VERSION_INVALID;
+                }
 
-            final String[] versions = linuxVersion.split("-");
-            return versions.length == 2 ? versions[1] : DEFAULT_VALUE_WHEN_VERSION_INVALID;
+                final String[] versions = linuxVersion.split("-");
+                return versions.length != 2 ? linuxVersion : versions[1];
+            default:
+                return DEFAULT_VALUE_WHEN_VERSION_INVALID;
         }
-        return DEFAULT_VALUE_WHEN_VERSION_INVALID;
     }
 
     /**
@@ -399,23 +399,23 @@ public class WebAppUtils {
      * And we will return N/A for those kind of web apps.
      */
     public static String getWebContainer(@NotNull final WebApp webApp) {
-        final OperatingSystem operatingSystem = webApp.operatingSystem();
-        if (operatingSystem == OperatingSystem.WINDOWS) {
-            return String.join(" ", webApp.javaContainer(), webApp.javaContainerVersion());
-        }
-        if (operatingSystem == OperatingSystem.LINUX) {
-            final String linuxVersion = webApp.linuxFxVersion();
-            final String[] versions = linuxVersion.split("-");
-            if (versions.length != 2) {
+        switch(webApp.operatingSystem()) {
+            case WINDOWS:
+                String.join(" ", webApp.javaContainer(), webApp.javaContainerVersion());
+            case LINUX:
+                final String linuxVersion = webApp.linuxFxVersion();
+                final String[] versions = linuxVersion.split("-");
+                if (versions.length != 2) {
+                    return linuxVersion;
+                }
+                if (StringUtils.containsIgnoreCase(versions[0], "tomcat")) {
+                    return versions[0].replace("|", " ");
+                } else {
+                    return "N/A";
+                }
+            default:
                 return DEFAULT_VALUE_WHEN_VERSION_INVALID;
-            }
-            if (StringUtils.containsIgnoreCase(versions[0], "tomcat")) {
-                return versions[0].replace("|", " ");
-            } else {
-                return "N/A";
-            }
         }
-        return DEFAULT_VALUE_WHEN_VERSION_INVALID;
     }
 
     /**
