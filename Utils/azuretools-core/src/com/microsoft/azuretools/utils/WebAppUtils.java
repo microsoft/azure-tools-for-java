@@ -401,7 +401,7 @@ public class WebAppUtils {
     public static String getWebContainer(@NotNull final WebApp webApp) {
         switch(webApp.operatingSystem()) {
             case WINDOWS:
-                String.join(" ", webApp.javaContainer(), webApp.javaContainerVersion());
+                return String.join(" ", webApp.javaContainer(), webApp.javaContainerVersion());
             case LINUX:
                 final String linuxVersion = webApp.linuxFxVersion();
                 final String[] versions = linuxVersion.split("-");
