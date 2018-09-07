@@ -162,7 +162,6 @@ class RiderDatabaseSettingPanel(project: Project,
             model.sqlServerAdminPasswordConfirm = passNewSqlServerAdminPassConfirm.password
 
             model.region = lastSelectedLocation
-            model.databaseEdition = lastSelectedDatabaseEdition
         } else {
             model.isCreatingSqlServer = false
             val sqlServer = cbExistSqlServer.getItemAt(cbExistSqlServer.selectedIndex)
@@ -175,10 +174,7 @@ class RiderDatabaseSettingPanel(project: Project,
             }
         }
 
-        // Pricing Tier
-        // TODO: ...
-
-        // Collation
+        model.databaseEdition = lastSelectedDatabaseEdition
         model.collation = txtCollationValue.text
     }
 
@@ -192,6 +188,7 @@ class RiderDatabaseSettingPanel(project: Project,
             lastSelectedSubscriptionId = ""
             return
         }
+
         subscriptions.forEach {
             cbSubscription.addItem(it)
             if (it.subscriptionId() == configuration.subscriptionId) {
@@ -286,14 +283,17 @@ class RiderDatabaseSettingPanel(project: Project,
         val btnGroupResourceGroup = ButtonGroup()
         btnGroupResourceGroup.add(rdoCreateResGrp)
         btnGroupResourceGroup.add(rdoUseExistResGrp)
+
         rdoCreateResGrp.addActionListener {
             toggleResourceGroupPanel(true)
             rdoCreateSqlServer.doClick()
         }
+
         rdoUseExistResGrp.addActionListener {
             if (rdoUseExistSqlServer.isSelected) return@addActionListener
             toggleResourceGroupPanel(false)
         }
+
         toggleResourceGroupPanel(true)
     }
 
@@ -317,16 +317,19 @@ class RiderDatabaseSettingPanel(project: Project,
         val btnGroupSqlServer = ButtonGroup()
         btnGroupSqlServer.add(rdoCreateSqlServer)
         btnGroupSqlServer.add(rdoUseExistSqlServer)
+
         rdoCreateSqlServer.addActionListener {
             toggleSqlServerPanel(true)
             toggleResourceGroupPanel(rdoCreateResGrp.isSelected)
         }
+
         rdoUseExistSqlServer.addActionListener {
             toggleSqlServerPanel(false)
             toggleSqlServerComboBox(cbExistSqlServer.getItemAt(cbExistSqlServer.selectedIndex))
             rdoUseExistResGrp.doClick()
             cbExistResGrp.isEnabled = false
         }
+
         toggleSqlServerPanel(true)
     }
 
@@ -453,10 +456,8 @@ class RiderDatabaseSettingPanel(project: Project,
         }
 
         cbLocation.addActionListener {
-            val location = cbLocation.getItemAt(cbLocation.selectedIndex)
-            if (location != null) {
-                lastSelectedLocation = location.name()
-            }
+            val location = cbLocation.getItemAt(cbLocation.selectedIndex) ?: return@addActionListener
+            lastSelectedLocation = location.name()
         }
     }
 
@@ -465,10 +466,8 @@ class RiderDatabaseSettingPanel(project: Project,
      */
     private fun setDatabaseEditionComboBox() {
         cbDatabaseEdition.addActionListener {
-            val databaseEdition = cbDatabaseEdition.getItemAt(cbDatabaseEdition.selectedIndex)
-            if (databaseEdition != null) {
-                lastSelectedDatabaseEdition = databaseEdition
-            }
+            val databaseEdition = cbDatabaseEdition.getItemAt(cbDatabaseEdition.selectedIndex) ?: return@addActionListener
+            lastSelectedDatabaseEdition = databaseEdition
         }
     }
 

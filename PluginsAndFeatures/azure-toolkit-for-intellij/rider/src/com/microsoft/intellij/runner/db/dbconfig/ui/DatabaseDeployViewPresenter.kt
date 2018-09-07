@@ -1,9 +1,5 @@
 package com.microsoft.intellij.runner.db.dbconfig.ui
 
-import com.microsoft.azure.management.resources.Location
-import com.microsoft.azure.management.resources.ResourceGroup
-import com.microsoft.azure.management.resources.Subscription
-import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
@@ -21,55 +17,31 @@ class DatabaseDeployViewPresenter<V : DatabaseDeployMvpView> : MvpPresenter<V>()
     }
 
     fun onLoadSubscription() {
-        Observable.fromCallable<List<Subscription>> { AzureMvpModel.getInstance().selectedSubscriptions }
-                .subscribeOn(schedulerProvider.io())
-                .subscribe({ subscriptions ->
-                    DefaultLoader.getIdeHelper().invokeLater {
-                        if (isViewDetached) {
-                            return@invokeLater
-                        }
-                        mvpView.fillSubscription(subscriptions)
-                    }
-                }, { e -> errorHandler(CANNOT_LIST_SUBSCRIPTION, e as Exception) })
+        subscribe(
+                { AzureMvpModel.getInstance().selectedSubscriptions },
+                { mvpView.fillSubscription(it) },
+                CANNOT_LIST_SUBSCRIPTION)
     }
 
     fun onLoadResourceGroups(subscriptionId: String) {
-        Observable.fromCallable<List<ResourceGroup>> { AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId) }
-                .subscribeOn(schedulerProvider.io())
-                .subscribe({ resourceGroups ->
-                    DefaultLoader.getIdeHelper().invokeLater {
-                        if (isViewDetached) {
-                            return@invokeLater
-                        }
-                        mvpView.fillResourceGroup(resourceGroups)
-                    }
-                }, { e -> errorHandler(CANNOT_LIST_RES_GRP, e as Exception) })
+        subscribe(
+                { AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId) },
+                { mvpView.fillResourceGroup(it) },
+                CANNOT_LIST_RES_GRP)
     }
 
     fun onLoadSqlServers(subscriptionId: String) {
-        Observable.fromCallable<List<SqlServer>> { AzureDatabaseMvpModel.listSqlServersBySubscriptionId(subscriptionId, true).map { it.resource } }
-                .subscribeOn(schedulerProvider.io())
-                .subscribe({ sqlServers ->
-                    DefaultLoader.getIdeHelper().invokeLater {
-                        if (isViewDetached) {
-                            return@invokeLater
-                        }
-                        mvpView.fillSqlServer(sqlServers)
-                    }
-                }, { e -> errorHandler(CANNOT_LIST_SQL_SERVER, e as Exception) })
+        subscribe(
+                { AzureDatabaseMvpModel.listSqlServersBySubscriptionId(subscriptionId, true).map { it.resource } },
+                { mvpView.fillSqlServer(it) },
+                CANNOT_LIST_SQL_SERVER)
     }
 
     fun onLoadLocation(sid: String) {
-        Observable.fromCallable<List<Location>> { AzureMvpModel.getInstance().listLocationsBySubscriptionId(sid) }
-                .subscribeOn(schedulerProvider.io())
-                .subscribe({ locations ->
-                    DefaultLoader.getIdeHelper().invokeLater {
-                        if (isViewDetached) {
-                            return@invokeLater
-                        }
-                        mvpView.fillLocation(locations)
-                    }
-                }, { e -> errorHandler(CANNOT_LIST_LOCATION, e as Exception) })
+        subscribe(
+                { AzureMvpModel.getInstance().listLocationsBySubscriptionId(sid) },
+                { mvpView.fillLocation(it) },
+                CANNOT_LIST_LOCATION)
     }
 
     fun onLoadDatabaseEdition() {
@@ -79,6 +51,19 @@ class DatabaseDeployViewPresenter<V : DatabaseDeployMvpView> : MvpPresenter<V>()
             errorHandler(CANNOT_LIST_DATABASE_EDITION, e)
         }
 
+    }
+
+    private fun <T>subscribe(callableFunc: () -> T, invokeLaterCallback: (T) -> Unit, msg: String) {
+        Observable.fromCallable<T> { callableFunc() }
+                .subscribeOn(schedulerProvider.io())
+                .subscribe({ values ->
+                    DefaultLoader.getIdeHelper().invokeLater {
+                        if (isViewDetached) {
+                            return@invokeLater
+                        }
+                        invokeLaterCallback(values)
+                    }
+                }, { e -> errorHandler(msg, e as Exception) })
     }
 
     private fun errorHandler(msg: String, e: Exception) {

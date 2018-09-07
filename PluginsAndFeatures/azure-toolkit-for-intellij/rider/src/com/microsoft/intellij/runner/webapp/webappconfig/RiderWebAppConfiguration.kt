@@ -117,14 +117,14 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
      */
     @Throws(RuntimeConfigurationError::class)
     override fun checkConfiguration() {
-        validateSignIn()
+        validateAzureAccountIsSignedIn()
         validateProject()
 
         if (myModel.isDatabaseConnectionEnabled) {
             validateDatabase(myModel.database)
             checkValueIsSet(myModel.sqlDatabaseAdminLogin, DATABASE_ADMIN_LOGIN_MISSING)
             checkValueIsSet(myModel.sqlDatabaseAdminPassword, DATABASE_ADMIN_PASSWORD_MISSING)
-            // validateSqlDbAdminPassword("aaa", charArrayOf())
+            // TODO: understand how to check that the password is valid
         }
 
         if (myModel.isCreatingWebApp) {
@@ -160,7 +160,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
      * @throws [ConfigurationException] in case validation is failed
      */
     @Throws(RuntimeConfigurationError::class)
-    private fun validateSignIn() {
+    private fun validateAzureAccountIsSignedIn() {
         try {
             if (!AuthMethodManager.getInstance().isSignedIn) {
                 throw RuntimeConfigurationError(SIGN_IN_REQUIRED)
@@ -312,12 +312,6 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
 
         if (webApp.connectionStrings.containsKey(name))
             throw RuntimeConfigurationError(String.format(CONNECTION_STRING_NAME_ALREADY_EXISTS, name))
-    }
-
-    @Throws(RuntimeConfigurationError::class)
-    private fun validateSqlDbAdminPassword(login: String, password: CharArray) {
-        checkValueIsSet(login, "AAAAA")
-        checkValueIsSet(password, "BBBBB")
     }
 
     //endregion Database Connection

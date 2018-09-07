@@ -19,7 +19,7 @@ class RiderDatabaseConfigurationType : ConfigurationType {
             get() = ConfigurationTypeUtil.findConfigurationType(RiderDatabaseConfigurationType::class.java)
     }
 
-    val databaseConfigurationFactory: RiderDatabaseConfigurationFactory
+    private val databaseConfigurationFactory: RiderDatabaseConfigurationFactory
         get() = RiderDatabaseConfigurationFactory(this)
 
     override fun getId(): String {
@@ -37,7 +37,7 @@ class RiderDatabaseConfigurationType : ConfigurationType {
     }
 
     override fun getIcon(): Icon {
-        // TODO: SD -- This should be replaced with a custom icon
+        // TODO: This should be replaced with a custom icon (RIDER-18401)
         return RiderIcons.Publish.PublishAzure
     }
 

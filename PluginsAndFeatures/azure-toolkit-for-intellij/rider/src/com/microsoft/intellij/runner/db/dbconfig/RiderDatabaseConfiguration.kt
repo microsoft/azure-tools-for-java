@@ -119,7 +119,7 @@ class RiderDatabaseConfiguration(project: Project,
     @Throws(RuntimeConfigurationError::class)
     override fun checkConfiguration() {
 
-        validateSignIn()
+        validateAzureAccountIsSignedIn()
         validateSubscription(myModel.subscriptionId)
         validateDatabaseName(myModel.subscriptionId, myModel.databaseName, myModel.sqlServerName)
 
@@ -151,7 +151,7 @@ class RiderDatabaseConfiguration(project: Project,
      * @throws [RuntimeConfigurationError] in case validation is failed
      */
     @Throws(RuntimeConfigurationError::class)
-    private fun validateSignIn() {
+    private fun validateAzureAccountIsSignedIn() {
         try {
             if (!AuthMethodManager.getInstance().isSignedIn) { throw RuntimeConfigurationError(SIGN_IN_REQUIRED) }
         } catch (e: IOException) {
@@ -165,7 +165,7 @@ class RiderDatabaseConfiguration(project: Project,
 
     @Throws(RuntimeConfigurationError::class)
     private fun validateSubscription(subscriptionId: String) {
-        checkValueIsSet(myModel.subscriptionId, SUBSCRIPTION_MISSING)
+        checkValueIsSet(subscriptionId, SUBSCRIPTION_MISSING)
     }
 
     //endregion Subscription
