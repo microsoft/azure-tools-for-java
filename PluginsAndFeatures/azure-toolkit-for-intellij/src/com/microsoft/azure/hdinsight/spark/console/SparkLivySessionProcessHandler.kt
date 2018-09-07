@@ -39,4 +39,9 @@ class SparkLivySessionProcessHandler(val process: SparkLivySessionProcess) :
     override fun destroyProcessImpl() {
         process.destroy()
     }
+
+    fun execute(codes: String) {
+        process.outputStream.write("$codes\n".toByteArray(UTF_8))
+        process.outputStream.flush()
+    }
 }

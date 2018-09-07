@@ -27,12 +27,22 @@ import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
-import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.execution.runners.ProgramRunner
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
 import org.jetbrains.plugins.scala.console.ScalaLanguageConsole
 
 class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScalaConsoleBuilder, val session: Session): RunProfileState {
+    private val postStartCodes = """
+        val welcome = List(
+            "Spark context available as 'sc' (master = " + sc.master + ", app id = " + sc.getConf.getAppId + ").",
+            "Spark session available as 'spark'.",
+            "Spark Version: " + sc.version,
+            util.Properties.versionMsg
+        ).mkString("\n")
+
+        println(welcome)
+    """.trimIndent()
+
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult? {
         try {
             session.create()
@@ -47,18 +57,12 @@ class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScal
         (console as? ScalaLanguageConsole)?.apply {
             // Customize the Spark Livy interactive console
             prompt = "\nSpark>"
-
-            // Prepare pre-defined values
-            textSent(consoleBuilder.getSparkContextDeclareStatement("sc"))
-            textSent(consoleBuilder.getSparkSessionDeclareStatement("spark"))
         }
 
         val livySessionProcessHandler = SparkLivySessionProcessHandler(SparkLivySessionProcess(session))
 
         console.attachToProcess(livySessionProcessHandler)
-
-        livySessionProcessHandler.notifyTextAvailable("Spark context available as 'sc'.\n", ProcessOutputTypes.SYSTEM)
-        livySessionProcessHandler.notifyTextAvailable("Spark session available as 'spark'.\n", ProcessOutputTypes.SYSTEM)
+        livySessionProcessHandler.execute(postStartCodes)
 
         return DefaultExecutionResult(console, livySessionProcessHandler)
     }
