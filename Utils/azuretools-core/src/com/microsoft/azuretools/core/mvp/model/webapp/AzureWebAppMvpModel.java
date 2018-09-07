@@ -385,7 +385,8 @@ public class AzureWebAppMvpModel {
      * List web apps on windows by subscription id.
      */
     public List<ResourceEx<WebApp>> listWebAppsOnWindows(@NotNull final String subscriptionId, final boolean force) {
-        return listWebApps(subscriptionId, force).stream()
+        return listWebApps(subscriptionId, force)
+            .stream()
             .filter(resourceEx -> OperatingSystem.WINDOWS.equals((resourceEx.getResource().operatingSystem())))
             .collect(Collectors.toList());
     }
@@ -402,7 +403,8 @@ public class AzureWebAppMvpModel {
         List<ResourceEx<WebApp>> webApps = new ArrayList<>();
         try {
             final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
-            webApps = azure.webApps().list().stream()
+            webApps = azure.webApps().list()
+                .stream()
                 .map(app -> new ResourceEx<WebApp>(app, subscriptionId))
                 .collect(Collectors.toList());
             subscriptionIdToWebApps.put(subscriptionId, webApps);
@@ -471,14 +473,19 @@ public class AzureWebAppMvpModel {
         }
     }
 
+    @Deprecated
     public void cleanWebAppsOnWindows() {
-        // todo
+        // todo: remove the function
+        // todo: create a new function clearWebAppsCache clear cache web apps
         // subscriptionIdToWebAppsOnWindowsMap.clear();
+        subscriptionIdToWebApps.clear();
     }
 
+    @Deprecated
     public void cleanWebAppsOnLinux() {
-        // todo
+        // todo: remove the function
         // subscriptionIdToWebAppsOnLinuxMap.clear();
+        subscriptionIdToWebApps.clear();
     }
 
     /**
