@@ -25,6 +25,7 @@ package com.microsoft.azuretools.utils;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebContainer;
@@ -33,8 +34,10 @@ import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -364,5 +367,62 @@ public class WebAppUtils {
         public ResourceGroup getRg() {
             return rg;
         }
+    }
+
+    /**
+     * app.linuxFxVersion() is the only API we could get the version info of a linux web app
+     * It returns values like this "Tomcat|8.5-jre8" if it is a linux with web container Tomcat
+     * @param webApp
+     * @return jdk version
+     */
+    public static String getJDKVersion(@NotNull final WebApp webApp) {
+        try {
+            if (StringUtils.isEmpty(webApp.linuxFxVersion())) {
+                return webApp.javaVersion().toString();
+            }
+
+            final String[] linuxVersion = webApp.linuxFxVersion().split("-");
+            return linuxVersion[1];
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    /**
+     * app.linuxFxVersion() is the only API we could get the version info of a linux web app
+     * It returns "Tomcat|8.5-jre8" if it is a linux web app with web container Tomcat
+     * The only web container supported is Tomcat
+     * If the web app is a Java SE web app, linuxFxVersion() returns "Java|8-jre8"
+     * @param webApp
+     * @return web container
+     */
+    public static String getWebContainer(@NotNull final WebApp webApp) {
+        try {
+            if (StringUtils.isEmpty(webApp.linuxFxVersion())) {
+                return webApp.javaContainer() + " " + webApp.javaContainerVersion();
+            }
+
+            final String[] linuxVersion = webApp.linuxFxVersion().split("-");
+            if (linuxVersion[0].toLowerCase().contains("tomcat")) {
+                return "N/A";
+            }
+            return linuxVersion[0].replace("\\|", " ");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    /**
+     * Check if the web app is windows or linux java configured web app.
+     * Docker web apps are not included.
+     * @param webApp
+     * @return
+     */
+    public static boolean isJavaWebApp(@NotNull WebApp webApp) {
+        return webApp.javaVersion() != JavaVersion.OFF ||
+            webApp.linuxFxVersion() != null &&
+                webApp.linuxFxVersion().toLowerCase().contains("jre8");
     }
 }

@@ -41,14 +41,9 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
-import com.microsoft.azure.management.appservice.JavaVersion;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.intellij.IToolWindowProcessor;
 import com.microsoft.intellij.ToolWindowKey;
 import com.microsoft.intellij.common.CommonConst;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.io.File;
@@ -187,54 +182,5 @@ public class PluginUtil {
         }
 
         DialogEarthquakeShaker.shake(dialogWrapper.getPeer().getWindow());
-    }
-
-    public static String getJavaJDKVersion(@NotNull final WebApp app) {
-        try {
-            if (StringUtils.isEmpty(app.linuxFxVersion())) {
-                return app.javaVersion().toString();
-            }
-
-            final String[] linuxVersion = app.linuxFxVersion().split("-");
-            return linuxVersion[1];
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-    public static String getJavaWebContainer(@NotNull final WebApp app) {
-        try {
-            if (StringUtils.isEmpty(app.linuxFxVersion())) {
-                return app.javaContainer() + " " + app.javaContainerVersion();
-            }
-
-            final String[] linuxVersion = app.linuxFxVersion().split("-");
-            if (!isJavaLinuxVersionWithWebContainer(linuxVersion[0])) {
-                return "N/A";
-            }
-            final String[] container = linuxVersion[0].split("\\|");
-            return container[0] + " " + container[1];
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-    public static boolean isJavaLinuxVersionWithWebContainer(@NotNull final String version) {
-        return version.toLowerCase().contains("tomcat");
-    }
-
-    /**
-     * Check if the web app is windows or linux java configured web app.
-     * Docker web apps are not included.
-     * @param resourceEx
-     * @return
-     */
-    public static boolean isLinuxOrWindowsJavaWebApp(@NotNull ResourceEx<WebApp> resourceEx) {
-        final WebApp webApp = resourceEx.getResource();
-        return webApp.javaVersion() != JavaVersion.OFF ||
-                webApp.linuxFxVersion() != null &&
-                        webApp.linuxFxVersion().toLowerCase().contains("jre8");
     }
 }
