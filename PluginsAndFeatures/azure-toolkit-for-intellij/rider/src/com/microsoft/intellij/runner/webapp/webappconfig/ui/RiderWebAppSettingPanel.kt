@@ -17,6 +17,7 @@ import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.table.JBTable
 import com.jetbrains.rider.model.PublishableProjectModel
+import com.jetbrains.rider.model.projectModelTasks
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.ProjectModelViewHost
 import com.jetbrains.rider.projectView.nodes.isProject
@@ -34,6 +35,7 @@ import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
+import com.microsoft.intellij.runner.db.dbconfig.RiderDatabaseConfigurationType
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfiguration
 import icons.RiderIcons
@@ -42,6 +44,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
+import javax.swing.table.TableModel
+import javax.swing.table.TableRowSorter
 
 /**
  * The setting panel for web app deployment run configuration.
@@ -89,21 +93,23 @@ class RiderWebAppSettingPanel(project: Project,
     private val myView = DotNetWebAppDeployViewPresenter<RiderWebAppSettingPanel>()
 
     // cache variable
-    private var selectedWebApp: ResourceEx<WebApp>? = null
+    private var lastSelectedProject: PublishableProjectModel? = null
+
+    private var lastSelectedWebApp: ResourceEx<WebApp>? = null
     private var cachedWebAppList = listOf<ResourceEx<WebApp>>()
 
-    private var lastSelectedSubscriptionId: String = ""
+    private var lastSelectedSubscriptionId = ""
 
-    private var lastSelectedResourceGroupName: String = ""
+    private var lastSelectedResourceGroupName = ""
 
-    private var lastSelectedOperatingSystem: OperatingSystem = AzureDotNetWebAppSettingModel.defaultOperatingSystem
+    private var lastSelectedOperatingSystem = AzureDotNetWebAppSettingModel.defaultOperatingSystem
 
     private var cachedAppServicePlan = listOf<AppServicePlan>()
-    private var lastSelectedLocation: String = ""
+    private var lastSelectedLocation = ""
     private var cachedPricingTier = listOf<PricingTier>()
-    private var lastSelectedPriceTier: PricingTier = AzureDotNetWebAppSettingModel.defaultPricingTier
+    private var lastSelectedPriceTier = AzureDotNetWebAppSettingModel.defaultPricingTier
 
-    private var lastSelectedRuntime: RuntimeStack = AzureDotNetWebAppSettingModel.defaultRuntime
+    private var lastSelectedRuntime = AzureDotNetWebAppSettingModel.defaultRuntime
 
     private var lastSelectedDatabase: SqlDatabase? = null
 
@@ -178,7 +184,11 @@ class RiderWebAppSettingPanel(project: Project,
     private lateinit var cbDatabase: JComboBox<SqlDatabase>
     private lateinit var lblSqlDbAdminLogin: JLabel
     private lateinit var passSqlDbAdminPassword: JBPasswordField
-    private lateinit var lblLinkToCreateDbRunConfig: JLabel
+
+    private lateinit var pnlSqlDatabaseRunConfigInfo: JPanel
+    private lateinit var lblSqlDatabaseRunConfigInfo: JLabel
+
+    private lateinit var lblRuntimeMismatchWarning: JLabel
 
     override val panelName: String
         get() = WEB_APP_SETTINGS_PANEL_NAME
@@ -205,6 +215,8 @@ class RiderWebAppSettingPanel(project: Project,
 
         val model = configuration.model
 
+        cbProject.selectedItem = model.publishableProject
+
         txtWebAppName.text = if (model.webAppName.isEmpty()) "$DEFAULT_APP_NAME$dateString" else model.webAppName
         txtAppServicePlanName.text = if (model.appServicePlanName.isEmpty()) "$DEFAULT_PLAN_NAME$dateString" else model.appServicePlanName
         txtResourceGroupName.text = if (model.resourceGroupName.isEmpty()) "$DEFAULT_RGP_NAME$dateString" else model.resourceGroupName
@@ -227,6 +239,8 @@ class RiderWebAppSettingPanel(project: Project,
 
         btnRefresh.isEnabled = false
 
+        // TODO: Reset checkBoxEnableDbConnection from configuration
+
         myView.onLoadSubscription()
         myView.onLoadWebApps()
         myView.onLoadPricingTier()
@@ -243,21 +257,18 @@ class RiderWebAppSettingPanel(project: Project,
 
         val model = configuration.model
 
-        val publishableProject = cbProject.getItemAt(cbProject.selectedIndex)
-        model.publishableProject = publishableProject
+        model.publishableProject = lastSelectedProject
 
         if (rdoUseExistingWebApp.isSelected) {
             model.isCreatingWebApp = false
-            model.subscriptionId = selectedWebApp?.subscriptionId ?: ""
-            model.webAppId = selectedWebApp?.resource?.id() ?: ""
-            model.operatingSystem = selectedWebApp?.resource?.operatingSystem() ?: OperatingSystem.WINDOWS
+            model.subscriptionId = lastSelectedWebApp?.subscriptionId ?: ""
+            model.webAppId = lastSelectedWebApp?.resource?.id() ?: ""
+            model.operatingSystem = lastSelectedWebApp?.resource?.operatingSystem() ?: OperatingSystem.WINDOWS
             if (model.operatingSystem == OperatingSystem.LINUX) {
-                val dotNetCoreVersionArray = selectedWebApp?.resource?.linuxFxVersion()?.split('|')
+                val dotNetCoreVersionArray = lastSelectedWebApp?.resource?.linuxFxVersion()?.split('|')
                 val runtime =
                         if (dotNetCoreVersionArray != null && dotNetCoreVersionArray.size == 2) RuntimeStack(dotNetCoreVersionArray[0], dotNetCoreVersionArray[1])
                         else AzureDotNetWebAppSettingModel.defaultRuntime
-                // TODO: Add a warning for a user when publishing to an Linux instance with runtime that mismatch with
-                // TODO: required for a publishable project
                 model.runtime = runtime
             }
         } else if (rdoCreateNewWebApp.isSelected) {
@@ -297,6 +308,7 @@ class RiderWebAppSettingPanel(project: Project,
         }
 
         if (checkBoxEnableDbConnection.isSelected) {
+            model.isDatabaseConnectionEnabled = true
             model.connectionStringName = txtConnectionStringName.text
             model.database = lastSelectedDatabase
             model.sqlDatabaseAdminLogin = lblSqlDbAdminLogin.text
@@ -324,7 +336,32 @@ class RiderWebAppSettingPanel(project: Project,
 
         cachedWebAppList = sortedWebApps
 
-        setWebAppTableContent(sortedWebApps)
+        if (sortedWebApps.isEmpty()) return
+
+        val model = table.model as DefaultTableModel
+        model.dataVector.clear()
+        model.fireTableDataChanged()
+
+        val subscriptionManager = AuthMethodManager.getInstance().azureManager.subscriptionManager
+
+        for (i in sortedWebApps.indices) {
+            val webApp = sortedWebApps[i].resource
+            val subscription = subscriptionManager.subscriptionIdToSubscriptionMap[webApp.manager().subscriptionId()] ?: continue
+
+            model.addRow(arrayOf(
+                    webApp.name(),
+                    webApp.resourceGroupName(),
+                    webApp.region().label(),
+                    webApp.operatingSystem().name.toLowerCase().capitalize(),
+                    getNetFrameworkVersion(webApp),
+                    subscription.displayName())
+            )
+
+            if (webApp.id() == configuration.model.webAppId ||
+                    (lastSelectedWebApp != null && lastSelectedWebApp?.resource?.id() == webApp.id())) {
+                table.setRowSelectionInterval(i, i)
+            }
+        }
     }
 
     override fun fillSubscription(subscriptions: List<Subscription>) {
@@ -424,6 +461,7 @@ class RiderWebAppSettingPanel(project: Project,
                     cbProject.addItem(it)
                     if (it == configuration.model.publishableProject) {
                         cbProject.selectedItem = it
+                        lastSelectedProject = it
                         toggleProjectComboBox(it.isDotNetCore)
                     }
                 }
@@ -443,38 +481,6 @@ class RiderWebAppSettingPanel(project: Project,
                         cbDatabase.selectedItem = it
                     }
                 }
-    }
-
-    /**
-     * Set the table rows for web apps table
-     *
-     * @param webAppLists list of web app to display
-     */
-    private fun setWebAppTableContent(webAppLists: List<ResourceEx<WebApp>>) {
-        if (webAppLists.isEmpty()) return
-
-        val model = table.model as DefaultTableModel
-        model.dataVector.clear()
-
-        val subscriptionManager = AuthMethodManager.getInstance().azureManager.subscriptionManager
-
-        for (i in webAppLists.indices) {
-            val webApp = webAppLists[i].resource
-            val subscription = subscriptionManager.subscriptionIdToSubscriptionMap[webApp.manager().subscriptionId()] ?: continue
-
-            model.addRow(arrayOf(
-                    webApp.name(),
-                    webApp.resourceGroupName(),
-                    webApp.region().label(),
-                    webApp.operatingSystem().name.toLowerCase().capitalize(),
-                    getNetFrameworkVersion(webApp),
-                    subscription.displayName())
-            )
-
-            if (webApp.id() == configuration.model.webAppId) {
-                table.setRowSelectionInterval(i, i)
-            }
-        }
     }
 
     /**
@@ -574,6 +580,23 @@ class RiderWebAppSettingPanel(project: Project,
         return prices.filter { it != PricingTier.FREE_F1 && it != PricingTier.SHARED_D1 }
     }
 
+    /**
+     * Filter Web App table content based on selected project
+     *
+     * @param publishableProject a selected project
+     */
+    private fun filterWebAppTableContent(publishableProject: PublishableProjectModel) {
+        val sorter = table.rowSorter as? TableRowSorter<*> ?: return
+
+        if (publishableProject.isDotNetCore) {
+            sorter.rowFilter = null
+            return
+        }
+
+        // "3" - is the 0-based index of "Operating System" column in the Web App table
+        sorter.rowFilter = javax.swing.RowFilter.regexFilter(OperatingSystem.WINDOWS.name.toLowerCase().capitalize(), 3)
+    }
+
     //endregion Filters
 
     //region Editing Web App Table
@@ -614,16 +637,25 @@ class RiderWebAppSettingPanel(project: Project,
             if (event.valueIsAdjusting) {
                 return@addListSelectionListener
             }
+
             val selectedRow = table.selectedRow
             if (cachedWebAppList.isEmpty() || selectedRow < 0 || selectedRow >= cachedWebAppList.size) {
-                selectedWebApp = null
+                lastSelectedWebApp = null
+                txtSelectedWebApp.text = ""
                 return@addListSelectionListener
             }
+
             val webApp = cachedWebAppList[selectedRow]
-            selectedWebApp = webApp
+            lastSelectedWebApp = webApp
+
             // This is not visible on the UI, but is used to preform a re-validation over selected web app from the table
             txtSelectedWebApp.text = webApp.resource.name()
+
+            val publishableProject = cbProject.getItemAt(cbProject.selectedIndex) ?: return@addListSelectionListener
+            checkSelectedProjectAgainstWebAppRuntime(webApp.resource, publishableProject)
         }
+
+        table.rowSorter = TableRowSorter<TableModel>(table.model)
     }
 
     private fun initRefreshButton() {
@@ -642,6 +674,26 @@ class RiderWebAppSettingPanel(project: Project,
         model.fireTableDataChanged()
         table.emptyText.text = TABLE_LOADING_MESSAGE
         txtSelectedWebApp.text = ""
+        setRuntimeMismatchWarning(false)
+    }
+
+    private fun setRuntimeMismatchWarning(show: Boolean) {
+        lblRuntimeMismatchWarning.isVisible = show
+    }
+
+    private fun checkSelectedProjectAgainstWebAppRuntime(webApp: WebApp, publishableProject: PublishableProjectModel) {
+        if (webApp.operatingSystem() == OperatingSystem.LINUX) {
+            // Get Project Runtime
+            val webAppTargetFramework = webApp.linuxFxVersion().split('|').getOrNull(1)
+
+            val targetFramework =
+                    project.solution.projectModelTasks.targetFrameworks[publishableProject.projectModelId]?.currentTargetFrameworkId?.valueOrNull ?: return
+            val projectFramework = targetFramework.split(',').getOrNull(1)?.split('=')?.getOrNull(1)?.drop(1)
+
+            setRuntimeMismatchWarning(webAppTargetFramework != projectFramework)
+        } else {
+            setRuntimeMismatchWarning(false)
+        }
     }
 
     //endregion Editing Web App Table
@@ -722,14 +774,7 @@ class RiderWebAppSettingPanel(project: Project,
 
     private fun toggleProjectComboBox(isDotNetCore: Boolean) {
         cbOperatingSystem.isEnabled = isDotNetCore
-
-        if (isDotNetCore) {
-            setWebAppTableContent(cachedWebAppList)
-        } else {
-            cbOperatingSystem.selectedItem = OperatingSystem.WINDOWS
-            setWebAppTableContent(
-                    cachedWebAppList.filter { it.resource.operatingSystem() == OperatingSystem.WINDOWS })
-        }
+        if (!isDotNetCore) { cbOperatingSystem.selectedItem = OperatingSystem.WINDOWS }
     }
 
     private fun toggleDbConnectionEnable(isSelected: Boolean) {
@@ -761,6 +806,9 @@ class RiderWebAppSettingPanel(project: Project,
 
         initDbConnectionEnableCheckbox()
         setSqlDatabaseComboBox()
+        setSqlDatabaseRunConfigInfoLabel()
+
+        setRuntimeMismatchWarningLabel()
 
         setHeaderDecorators()
     }
@@ -805,10 +853,7 @@ class RiderWebAppSettingPanel(project: Project,
 
         cbResourceGroup.addActionListener {
             val selectedResourceGroup = cbResourceGroup.getItemAt(cbResourceGroup.selectedIndex) ?: return@addActionListener
-            val groupName = selectedResourceGroup.name()
-            if (lastSelectedResourceGroupName != groupName) {
-                lastSelectedResourceGroupName = groupName
-            }
+            lastSelectedResourceGroupName = selectedResourceGroup.name()
         }
     }
 
@@ -844,6 +889,8 @@ class RiderWebAppSettingPanel(project: Project,
 
         cbOperatingSystem.addActionListener {
             val operatingSystem = cbOperatingSystem.getItemAt(cbOperatingSystem.selectedIndex) ?: return@addActionListener
+            if (operatingSystem == lastSelectedOperatingSystem) return@addActionListener
+
             toggleOperatingSystemComboBox(operatingSystem)
             lastSelectedOperatingSystem = operatingSystem
         }
@@ -936,11 +983,21 @@ class RiderWebAppSettingPanel(project: Project,
 
         cbProject.addActionListener {
             val publishableProject = cbProject.getItemAt(cbProject.selectedIndex) ?: return@addActionListener
-            configuration.model.publishableProject = publishableProject
-            configuration.name = "$RUN_CONFIG_PREFIX: ${publishableProject.projectName}"
+            if (publishableProject == lastSelectedProject) return@addActionListener
 
             toggleProjectComboBox(publishableProject.isDotNetCore)
+            filterWebAppTableContent(publishableProject)
+
+            val webApp = lastSelectedWebApp?.resource
+            if (webApp != null) checkSelectedProjectAgainstWebAppRuntime(webApp, publishableProject)
+
+            lastSelectedProject = publishableProject
+            setConfigurationName("$RUN_CONFIG_PREFIX: ${publishableProject.projectName}")
         }
+    }
+
+    private fun setConfigurationName(name: String) {
+        configuration.name = name
     }
 
     /**
@@ -974,6 +1031,15 @@ class RiderWebAppSettingPanel(project: Project,
                 lastSelectedDatabase = database
             }
         }
+    }
+
+    private fun setSqlDatabaseRunConfigInfoLabel() {
+        lblSqlDatabaseRunConfigInfo.text = "Please see '${RiderDatabaseConfigurationType.instance.displayName}' run configuration to create a new Azure SQL Database"
+        lblSqlDatabaseRunConfigInfo.icon = com.intellij.icons.AllIcons.General.BalloonInformation
+    }
+
+    private fun setRuntimeMismatchWarningLabel() {
+        lblRuntimeMismatchWarning.icon = com.intellij.icons.AllIcons.General.BalloonWarning
     }
 
     /**

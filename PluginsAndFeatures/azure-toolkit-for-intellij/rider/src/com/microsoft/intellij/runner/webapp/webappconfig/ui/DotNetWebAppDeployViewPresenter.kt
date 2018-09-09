@@ -124,7 +124,7 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
     }
 
     fun onLoadSqlDatabase(subscriptionId: String) {
-        Observable.fromCallable<List<SqlDatabase>> { AzureDatabaseMvpModel.listSqlDatabasesBySubscriptionId(subscriptionId) }
+        Observable.fromCallable<List<SqlDatabase>> { AzureDatabaseMvpModel.listSqlDatabasesBySubscriptionId(subscriptionId).filter { it.name() != "master" } }
                 .subscribeOn(schedulerProvider.io())
                 .subscribe({ databases ->
                     DefaultLoader.getIdeHelper().invokeLater {

@@ -41,7 +41,7 @@ class RiderDatabaseSettingPanel(project: Project,
     private var cachedResourceGroups = listOf<ResourceGroup>()
     private var lastSelectedSubscriptionId = ""
     private var lastSelectedResourceGroupName = ""
-    private var lastSelectedSqlServer = ""
+    private var lastSelectedSqlServer: SqlServer? = null
     private var lastSelectedLocation = ""
     private var lastSelectedDatabaseEdition = AzureDatabaseSettingModel.defaultDatabaseEditions
 
@@ -165,13 +165,8 @@ class RiderDatabaseSettingPanel(project: Project,
         } else {
             model.isCreatingSqlServer = false
             val sqlServer = cbExistSqlServer.getItemAt(cbExistSqlServer.selectedIndex)
-            if (sqlServer != null) {
-                model.sqlServerId = sqlServer.id()
-            }
-            val adminLogin = lblExistingSqlServerAdminLogin.text
-            if (adminLogin != null) {
-                model.sqlServerAdminLogin = adminLogin
-            }
+            model.sqlServerId = sqlServer?.id() ?: ""
+            model.sqlServerAdminLogin = lblExistingSqlServerAdminLogin.text
         }
 
         model.databaseEdition = lastSelectedDatabaseEdition
@@ -219,7 +214,7 @@ class RiderDatabaseSettingPanel(project: Project,
         cbExistSqlServer.removeAllItems()
 
         if (sqlServers.isEmpty()) {
-            lastSelectedSqlServer = ""
+            lastSelectedSqlServer = null
             return
         }
 
@@ -228,6 +223,7 @@ class RiderDatabaseSettingPanel(project: Project,
                     cbExistSqlServer.addItem(it)
                     if (it.name() == configuration.model.sqlServerName) {
                         cbExistSqlServer.selectedItem = it
+                        lastSelectedSqlServer = it
                     }
                 }
     }
@@ -325,7 +321,10 @@ class RiderDatabaseSettingPanel(project: Project,
 
         rdoUseExistSqlServer.addActionListener {
             toggleSqlServerPanel(false)
-            toggleSqlServerComboBox(cbExistSqlServer.getItemAt(cbExistSqlServer.selectedIndex))
+
+            val sqlServer = lastSelectedSqlServer
+            if (sqlServer != null) toggleSqlServerComboBox(sqlServer)
+
             rdoUseExistResGrp.doClick()
             cbExistResGrp.isEnabled = false
         }
@@ -434,10 +433,10 @@ class RiderDatabaseSettingPanel(project: Project,
         cbExistSqlServer.addActionListener {
             val sqlServer = cbExistSqlServer.getItemAt(cbExistSqlServer.selectedIndex) ?: return@addActionListener
 
-            if (sqlServer.name() != lastSelectedSqlServer) {
+            if (sqlServer != lastSelectedSqlServer) {
                 lblExistingSqlServerLocation.text = sqlServer.region().label()
                 lblExistingSqlServerAdminLogin.text = sqlServer.administratorLogin()
-                lastSelectedSqlServer = sqlServer.name()
+                lastSelectedSqlServer = sqlServer
 
                 toggleSqlServerComboBox(sqlServer)
             }
