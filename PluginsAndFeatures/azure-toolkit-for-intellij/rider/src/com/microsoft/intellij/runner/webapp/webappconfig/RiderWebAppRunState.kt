@@ -11,6 +11,7 @@ import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
 import com.jetbrains.rider.util.concurrent.SyncEvent
 import com.jetbrains.rider.util.idea.application
+import com.microsoft.azure.management.appservice.ConnectionStringType
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
@@ -43,8 +44,8 @@ class RiderWebAppRunState(project: Project,
         private const val WEB_APP_START = "Start Web App '%s'..."
         private const val WEB_APP_STOP = "Stop Web App '%s'..."
         private const val WEB_APP_CREATE = "Creating Web App '%s'..."
-        private const val WEB_APP_CREATE_SUCCESSFUL = "Web App  is created successfully, id '%s'"
-        private const val WEB_APP_GET_EXISTING = "Get existing Web App with Id '%s'"
+        private const val WEB_APP_CREATE_SUCCESSFUL = "Web App  is created, id: '%s'"
+        private const val WEB_APP_GET_EXISTING = "Get existing Web App with Id: '%s'"
         private const val WEB_APP_ID_NOT_DEFINED = "Web App ID is not defined"
         private const val WEB_APP_NAME_NOT_DEFINED = "Web App Name is not defined"
         private const val WEB_APP_SET_STARTUP_FILE = "Set Startup File for a web app: '%s'"
@@ -56,13 +57,12 @@ class RiderWebAppRunState(project: Project,
         private const val APP_SERVICE_PLAN_ID_NOT_DEFINED = "App Service Plan ID is not defined"
         private const val APP_SERVICE_PLAN_NAME_NOT_DEFINED = "App Service Plan Name is not defined"
         private const val APP_SERVICE_PLAN_LOCATION_NOT_DEFINED = "App Service Plan Location is not defined"
-        private const val APP_SERVICE_PLAN_PRICING_TIER_NOT_DEFINED = "App Service Plan Pricing Tier is not defined"
-
-        private const val OPERATING_SYSTEM_NOT_DEFINED = "Operating System is not defined"
-
-        private const val RUNTIME_NOT_DEFINED = "Runtime is not defined"
 
         private const val DEPLOY_SUCCESSFUL = "Deploy successfully!"
+
+        private const val CONNECTION_STRING_NAME_NOT_SET = "Connection string not set"
+        private const val CONNECTION_STRING_CREATING = "Creating connection string with name '%s'..."
+        private const val DATABASE_NOT_SET = "Database not set"
 
         private const val PROJECT_ARTIFACTS_COLLECTING = "Collecting '%s' project artifacts..."
         private const val PROJECT_ARTIFACTS_COLLECTING_FAILED = "Failed collecting project artifacts. Please see Build output"
@@ -109,6 +109,11 @@ class RiderWebAppRunState(project: Project,
         if (myModel.operatingSystem == OperatingSystem.LINUX && publishableProject.isDotNetCore) {
             setStartupCommand(webApp, publishableProject.projectName, processHandler)
         }
+
+        if (myModel.isDatabaseConnectionEnabled) {
+            addConnectionString(webApp, processHandler)
+        }
+
         webAppStart(webApp, processHandler)
 
         val url = getWebAppUrl(webApp)
@@ -216,6 +221,19 @@ class RiderWebAppRunState(project: Project,
     }
 
     /**
+     * Update a created web app with a connection string
+     *
+     * @param webApp to set connection string for
+     * @param name connection string name
+     * @param value connection string value
+     * @param processHandler a process handler to show a process message
+     */
+    private fun updateWithConnectionString(webApp: WebApp, name: String, value: String, processHandler: RunProcessHandler) {
+        processHandler.setText(String.format(CONNECTION_STRING_CREATING, name))
+        webApp.update().withConnectionString(name, value, ConnectionStringType.SQLAZURE).apply()
+    }
+
+    /**
      * Get an active URL for web app
      *
      * @param webApp - a web app instance to get URL for
@@ -271,6 +289,30 @@ class RiderWebAppRunState(project: Project,
     }
 
     //endregion Web App
+
+    //region Database Connection
+
+    private fun addConnectionString(webApp: WebApp, processHandler: RunProcessHandler) {
+
+        if (myModel.connectionStringName.isEmpty()) throw Exception(CONNECTION_STRING_NAME_NOT_SET)
+        val database = myModel.database ?: throw Exception(DATABASE_NOT_SET)
+
+        val sqlServer = database.parent().manager().sqlServers().getByResourceGroup(database.resourceGroupName(), database.sqlServerName())
+        val fullyQualifiedDomainName = sqlServer.fullyQualifiedDomainName()
+
+        val adminLogin = sqlServer.administratorLogin()
+        val adminPass = myModel.sqlDatabaseAdminPassword
+
+        val connectionStringValue =
+                "Data Source=tcp:$fullyQualifiedDomainName,1433;" +
+                        "Initial Catalog=${database.name()};" +
+                        "User Id=$adminLogin@${sqlServer.name()};" +
+                        "Password=${adminPass.joinToString("")}"
+
+        updateWithConnectionString(webApp, myModel.connectionStringName, connectionStringValue, processHandler)
+    }
+
+    //endregion Database Connection
 
     //region Deploy
 

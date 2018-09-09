@@ -12,6 +12,14 @@ import java.lang.reflect.Modifier
 
 object AzureDotNetWebAppMvpModel {
 
+    class WebAppDefinition(val name: String,
+                           val isCreatingResourceGroup: Boolean,
+                           val resourceGroupName: String)
+
+    class AppServicePlanDefinition(val name: String,
+                                   val pricingTier: PricingTier,
+                                   val region: String)
+
     //region Web App
 
     private val subscriptionIdToWebAppsMap = concurrentMapOf<String, List<ResourceEx<WebApp>>>()
@@ -58,9 +66,6 @@ object AzureDotNetWebAppMvpModel {
             return webAppList
         }
     }
-
-    class WebAppDefinition(val name: String, val isCreatingResourceGroup: Boolean, val resourceGroupName: String)
-    class AppServicePlanDefinition(val name: String, val pricingTier: PricingTier, val region: String)
 
     fun createWebAppWithNewWindowsAppServicePlan(subscriptionId: String, webApp: WebAppDefinition, appServicePlan:AppServicePlanDefinition): WebApp {
         val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
