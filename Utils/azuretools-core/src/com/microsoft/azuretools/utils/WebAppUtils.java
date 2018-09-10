@@ -375,7 +375,8 @@ public class WebAppUtils {
      * Docker web apps are not included.
      */
     public static boolean isJavaWebApp(@NotNull WebApp webApp) {
-        return webApp.javaVersion() != JavaVersion.OFF || StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "jre8");
+        return (webApp.operatingSystem() == OperatingSystem.WINDOWS && webApp.javaVersion() != JavaVersion.OFF)
+         || (webApp.operatingSystem() == OperatingSystem.LINUX && StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "jre8"));
     }
 
     /**
@@ -385,17 +386,31 @@ public class WebAppUtils {
      * We return a combined and refactored information as Java Runtime.
      */
     public static String getJavaRuntime(@NotNull final WebApp webApp) {
-        final String delimiter = "  ";
+        String webContainer;
         switch (webApp.operatingSystem()) {
             case WINDOWS:
-                final String refactoredJavaVersion = "Java" + webApp.javaVersion().toString();
-                return String.join(delimiter, webApp.javaContainer(), webApp.javaContainerVersion(), refactoredJavaVersion);
+                webContainer = webApp.javaContainer() == null ? null : webApp.javaContainer().toLowerCase();
+                return String.format("%s %s (Java%s)",
+                    StringUtils.capitalize(webContainer), webApp.javaContainerVersion(), webApp.javaVersion().toString());
             case LINUX:
                 final String linuxVersion = webApp.linuxFxVersion();
                 if (linuxVersion == null) {
                     return DEFAULT_VALUE_WHEN_VERSION_INVALID;
+                }
+
+                // TOMCAT|8.5-jre8 -> Tomcat 8.5 (JRE8)
+                final String[] versions = linuxVersion.split("\\||-");
+                if (versions == null && versions.length != 3) {
+                    return linuxVersion;
+                }
+
+                webContainer = versions[0].toLowerCase();
+                final String webContainerVersion = versions[1];
+                final String jreVersion = versions[2];
+                if (webContainer.contains("tomcat")) {
+                    return String.format("%s %s (%s)", StringUtils.capitalize(webContainer), webContainerVersion, jreVersion.toUpperCase());
                 } else {
-                    return linuxVersion.replace("|", delimiter).replace("-", delimiter);
+                    return jreVersion.toUpperCase();
                 }
             default:
                 return DEFAULT_VALUE_WHEN_VERSION_INVALID;
