@@ -87,6 +87,8 @@ class RiderWebAppSettingPanel(project: Project,
         private const val DEFAULT_APP_NAME = "webapp-"
         private const val DEFAULT_PLAN_NAME = "appsp-"
         private const val DEFAULT_RGP_NAME = "rg-webapp-"
+
+        private val netCoreAppVersionRegex = Regex("\\.NETCoreApp,Version=v([0-9](?:\\.[0-9])*)", RegexOption.IGNORE_CASE)
     }
 
     // presenter
@@ -593,8 +595,9 @@ class RiderWebAppSettingPanel(project: Project,
             return
         }
 
-        // "3" - is the 0-based index of "Operating System" column in the Web App table
-        sorter.rowFilter = javax.swing.RowFilter.regexFilter(OperatingSystem.WINDOWS.name.toLowerCase().capitalize(), 3)
+        val osColumnIndex = (table.model as DefaultTableModel).findColumn(WEB_APP_TABLE_COLUMN_OS)
+        assert(osColumnIndex >= 0)
+        sorter.rowFilter = javax.swing.RowFilter.regexFilter(OperatingSystem.WINDOWS.name.toLowerCase().capitalize(), osColumnIndex)
     }
 
     //endregion Filters
@@ -621,6 +624,7 @@ class RiderWebAppSettingPanel(project: Project,
                 return false
             }
         }
+
         tableModel.addColumn(WEB_APP_TABLE_COLUMN_NAME)
         tableModel.addColumn(WEB_APP_TABLE_COLUMN_RESOURCE_GROUP)
         tableModel.addColumn(WEB_APP_TABLE_COLUMN_LOCATION)
@@ -682,18 +686,20 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     private fun checkSelectedProjectAgainstWebAppRuntime(webApp: WebApp, publishableProject: PublishableProjectModel) {
-        if (webApp.operatingSystem() == OperatingSystem.LINUX) {
-            // Get Project Runtime
-            val webAppTargetFramework = webApp.linuxFxVersion().split('|').getOrNull(1)
-
-            val targetFramework =
-                    project.solution.projectModelTasks.targetFrameworks[publishableProject.projectModelId]?.currentTargetFrameworkId?.valueOrNull ?: return
-            val projectFramework = targetFramework.split(',').getOrNull(1)?.split('=')?.getOrNull(1)?.drop(1)
-
-            setRuntimeMismatchWarning(webAppTargetFramework != projectFramework)
-        } else {
+        if (webApp.operatingSystem() == OperatingSystem.WINDOWS) {
             setRuntimeMismatchWarning(false)
+            return
         }
+
+        // DOTNETCORE|2.0 -> 2.0
+        val webAppTargetFramework = webApp.linuxFxVersion().split('|').getOrNull(1)
+
+        val targetFramework = project.solution.projectModelTasks.targetFrameworks[publishableProject.projectModelId]
+        val targetFrameworkId = targetFramework?.currentTargetFrameworkId?.valueOrNull ?: return
+
+        // .NETCoreApp,Version=v2.0 -> 2.0
+        val netCoreVersion = netCoreAppVersionRegex.find(targetFrameworkId)?.groups?.get(1)?.value
+        setRuntimeMismatchWarning(webAppTargetFramework != netCoreVersion)
     }
 
     //endregion Editing Web App Table

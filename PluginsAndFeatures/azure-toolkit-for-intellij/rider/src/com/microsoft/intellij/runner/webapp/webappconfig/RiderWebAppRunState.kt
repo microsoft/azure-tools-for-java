@@ -60,7 +60,7 @@ class RiderWebAppRunState(project: Project,
         private const val APP_SERVICE_PLAN_NAME_NOT_DEFINED = "App Service Plan Name is not defined"
         private const val APP_SERVICE_PLAN_LOCATION_NOT_DEFINED = "App Service Plan Location is not defined"
 
-        private const val DEPLOY_SUCCESSFUL = "Deploy successfully!"
+        private const val DEPLOY_SUCCESSFUL = "Deploy succeeded."
 
         private const val CONNECTION_STRING_NAME_NOT_SET = "Connection string not set"
         private const val CONNECTION_STRING_CREATING = "Creating connection string with name '%s'..."
