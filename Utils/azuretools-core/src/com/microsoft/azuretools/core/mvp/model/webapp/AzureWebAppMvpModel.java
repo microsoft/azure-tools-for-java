@@ -105,10 +105,7 @@ public class AzureWebAppMvpModel {
     }
 
     /**
-     * API to create Web App on Linux
-     * @param model
-     * @return instance of created WebApp
-     * @throws Exception exception
+     * API to create Web App on Linux.
      */
     public WebApp createWebAppOnLinux(@NotNull WebAppSettingModel model) throws Exception {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
@@ -123,76 +120,70 @@ public class AzureWebAppMvpModel {
         return withCreate.withBuiltInImage(model.getLinuxRuntime()).create();
     }
 
-    private AppServicePlan.DefinitionStages.WithOperatingSystem prepareWithOperatingSystem(
+    private AppServicePlan.DefinitionStages.WithCreate prepareWithCreate(
         @NotNull Azure azure, @NotNull WebAppSettingModel model) throws Exception {
 
-        String[] tierSize = model.getPricing().split("_");
+        final String[] tierSize = model.getPricing().split("_");
         if (tierSize.length != 2) {
             throw new Exception("Cannot get valid price tier");
         }
-        PricingTier pricingTier = new PricingTier(tierSize[0], tierSize[1]);
+        final PricingTier pricingTier = new PricingTier(tierSize[0], tierSize[1]);
 
-        boolean isCreatingNewResourceGroup = model.isCreatingResGrp();
-        AppServicePlan.DefinitionStages.WithGroup withGroup = azure
+        final AppServicePlan.DefinitionStages.WithGroup withGroup = azure
             .appServices()
             .appServicePlans()
             .define(model.getAppServicePlanName())
             .withRegion(model.getRegion());
 
-        AppServicePlan.DefinitionStages.WithPricingTier withPricingTier;
-        String resourceGroup = model.getResourceGroup();
-        if (isCreatingNewResourceGroup) {
+        final AppServicePlan.DefinitionStages.WithPricingTier withPricingTier;
+        final String resourceGroup = model.getResourceGroup();
+        if (model.isCreatingResGrp()) {
             withPricingTier = withGroup.withNewResourceGroup(resourceGroup);
         } else {
             withPricingTier = withGroup.withExistingResourceGroup(resourceGroup);
         }
 
-        return withPricingTier.withPricingTier(pricingTier);
+        return withPricingTier.withPricingTier(pricingTier).withOperatingSystem(model.getOS());
+    }
+
+    private WebApp.DefinitionStages.WithNewAppServicePlan prepareServicePlan(
+        @NotNull Azure azure, @NotNull WebAppSettingModel model) {
+
+        final WebApp.DefinitionStages.NewAppServicePlanWithGroup appWithGroup = azure
+            .webApps()
+            .define(model.getWebAppName())
+            .withRegion(model.getRegion());
+
+        final String resourceGroup = model.getResourceGroup();
+        if (model.isCreatingResGrp()) {
+            return appWithGroup.withNewResourceGroup(resourceGroup);
+        }
+        return appWithGroup.withExistingResourceGroup(resourceGroup);
     }
 
     private WebApp.DefinitionStages.WithCreate withCreateNewWindowsServicePlan(
             @NotNull Azure azure, @NotNull WebAppSettingModel model) throws Exception {
 
-        boolean isCreatingNewResGrp = model.isCreatingResGrp();
-        String resourceGroup = model.getResourceGroup();
-
-        AppServicePlan.DefinitionStages.WithCreate withCreatePlan = prepareWithOperatingSystem(azure, model)
-            .withOperatingSystem(OperatingSystem.WINDOWS);
-        WebApp.DefinitionStages.NewAppServicePlanWithGroup appWithGroup = azure
-            .webApps()
-            .define(model.getWebAppName())
-            .withRegion(model.getRegion());
-
-        if (isCreatingNewResGrp) {
-            return appWithGroup.withNewResourceGroup(resourceGroup).withNewWindowsPlan(withCreatePlan);
-        }
-        return appWithGroup.withExistingResourceGroup(resourceGroup).withNewWindowsPlan(withCreatePlan);
+        final AppServicePlan.DefinitionStages.WithCreate withCreate = prepareWithCreate(azure, model);
+        final WebApp.DefinitionStages.WithNewAppServicePlan withNewAppServicePlan = prepareServicePlan(azure, model);
+        return withNewAppServicePlan.withNewWindowsPlan(withCreate);
     }
 
     private WebApp.DefinitionStages.WithDockerContainerImage withCreateNewLinuxServicePlan(
         @NotNull Azure azure, @NotNull WebAppSettingModel model) throws Exception {
 
-        boolean isCreatingNewResGrp = model.isCreatingResGrp();
-        String resourceGroup = model.getResourceGroup();
-
-        AppServicePlan.DefinitionStages.WithCreate withCreatePlan = prepareWithOperatingSystem(azure, model)
-            .withOperatingSystem(OperatingSystem.LINUX);
-        WebApp.DefinitionStages.NewAppServicePlanWithGroup appWithGroup = azure
-            .webApps()
-            .define(model.getWebAppName())
-            .withRegion(model.getRegion());
-
-        if (isCreatingNewResGrp) {
-            return appWithGroup.withNewResourceGroup(resourceGroup).withNewLinuxPlan(withCreatePlan);
-        }
-        return appWithGroup.withExistingResourceGroup(resourceGroup).withNewLinuxPlan(withCreatePlan);
+        final AppServicePlan.DefinitionStages.WithCreate withCreate = prepareWithCreate(azure, model);
+        final WebApp.DefinitionStages.WithNewAppServicePlan withNewAppServicePlan = prepareServicePlan(azure, model);
+        return withNewAppServicePlan.withNewLinuxPlan(withCreate);
     }
 
     private WebApp.DefinitionStages.WithCreate withExistingWindowsServicePlan(
             @NotNull Azure azure, @NotNull WebAppSettingModel model) {
 
         AppServicePlan servicePlan = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
-        WebApp.DefinitionStages.ExistingWindowsPlanWithGroup withGroup = azure.webApps().define(model.getWebAppName())
+        WebApp.DefinitionStages.ExistingWindowsPlanWithGroup withGroup = azure
+            .webApps()
+            .define(model.getWebAppName())
             .withExistingWindowsPlan(servicePlan);
 
         if (model.isCreatingResGrp()) {
@@ -205,7 +196,9 @@ public class AzureWebAppMvpModel {
         @NotNull Azure azure, @NotNull WebAppSettingModel model) {
 
         AppServicePlan servicePlan = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
-        WebApp.DefinitionStages.ExistingLinuxPlanWithGroup withGroup = azure.webApps().define(model.getWebAppName())
+        WebApp.DefinitionStages.ExistingLinuxPlanWithGroup withGroup = azure
+            .webApps()
+            .define(model.getWebAppName())
             .withExistingLinuxPlan(servicePlan);
 
         if (model.isCreatingResGrp()) {
