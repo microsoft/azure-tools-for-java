@@ -22,9 +22,6 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig.ui;
 
-import com.microsoft.intellij.runner.AzureSettingPanel;
-import icons.MavenIcons;
-
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -38,7 +35,6 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
@@ -49,20 +45,16 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.model.MavenConstants;
-import org.jetbrains.idea.maven.project.MavenProject;
-
+import icons.MavenIcons;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -73,6 +65,9 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.idea.maven.model.MavenConstants;
+import org.jetbrains.idea.maven.project.MavenProject;
 
 public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> implements WebAppDeployMvpView {
 
@@ -461,7 +456,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         btnRefresh.setEnabled(true);
         table.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
         List<ResourceEx<WebApp>> sortedList = webAppLists.stream()
-                .filter(resource -> resource.getResource().javaVersion() != JavaVersion.OFF)
+                .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
                 .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
                 .collect(Collectors.toList());
         cachedWebAppList = sortedList;
@@ -471,10 +466,10 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             for (int i = 0; i < sortedList.size(); i++) {
                 WebApp app = sortedList.get(i).getResource();
                 model.addRow(new String[]{
-                        app.name(),
-                        app.javaVersion().toString(),
-                        app.javaContainer() + " " + app.javaContainerVersion(),
-                        app.resourceGroupName(),
+                    app.name(),
+                    WebAppUtils.getJDKVersion(app),
+                    WebAppUtils.getWebContainer(app),
+                    app.resourceGroupName(),
                 });
                 if (Comparing.equal(app.id(), webAppConfiguration.getWebAppId())) {
                     table.setRowSelectionInterval(i, i);

@@ -129,7 +129,7 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
     }
 
     private void loadWebApps(boolean forceRefresh) {
-        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listAllWebAppsOnWindows(forceRefresh))
+        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listAllWebApps(forceRefresh))
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(webAppList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {
