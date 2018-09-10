@@ -317,6 +317,15 @@
       <keyboard-shortcut first-keystroke="control ENTER" keymap="$default"/>
       <keyboard-shortcut keymap="Mac OS X" first-keystroke="meta shift ENTER"/>
     </action>
+    <action id="Spark.SendSelectionToConsole" class="com.microsoft.azure.hdinsight.spark.console.SparkSendSelectionToConsoleAction"
+            text="Send Selection To Spark Console" description="Send selection to Spark console">
+      <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
+      <keyboard-shortcut first-keystroke="control shift S" keymap="$default"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="ctrl shift S"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="meta shift S" remove="true"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="ctrl shift S"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="meta shift S" remove="true"/>
+    </action>
 
     <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/azure.png" popup="true"
            class="com.microsoft.intellij.actions.AzurePopupGroup">

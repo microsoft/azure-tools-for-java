@@ -52,7 +52,7 @@ object SparkConsoleManager {
         }
     }
 
-    fun get(project: Project, predicate: (SparkConsoleDetail) -> Boolean): SparkConsoleDetail? {
+    fun get(project: Project, predicate: (SparkConsoleDetail) -> Boolean = { true }): SparkConsoleDetail? {
         synchronized(allProjectConsoles) {
             return allProjectConsoles[project]?.find(predicate)
         }
