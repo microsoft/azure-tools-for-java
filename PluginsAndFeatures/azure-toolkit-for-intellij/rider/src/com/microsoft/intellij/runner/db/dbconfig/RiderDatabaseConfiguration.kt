@@ -284,17 +284,17 @@ class RiderDatabaseConfiguration(project: Project,
     private fun validateAdminPassword(username: String, password: CharArray) {
         if (password.isEmpty()) throw RuntimeConfigurationError(ADMIN_PASSWORD_MISSING)
 
-        val passwordString = password.contentToString()
+        val passwordString = password.joinToString("")
         if (passwordString.contains(username)) throw RuntimeConfigurationError(ADMIN_PASSWORD_CANNOT_CONTAIN_PART_OF_LOGIN)
 
         if (password.size < ADMIN_PASSWORD_MIN_LENGTH || password.size > ADMIN_PASSWORD_MAX_LENGTH)
             throw RuntimeConfigurationError(ADMIN_PASSWORD_LENGTH_ERROR)
 
         var passCategoriesCount = 0
-        if (ADMIN_PASSWORD_REGEX_CATEGORY_LOWER_STRING.toRegex().matches(passwordString)) passCategoriesCount++
-        if (ADMIN_PASSWORD_REGEX_CATEGORY_UPPER_STRING.toRegex().matches(passwordString)) passCategoriesCount++
-        if (ADMIN_PASSWORD_REGEX_CATEGORY_DIGIT_STRING.toRegex().matches(passwordString)) passCategoriesCount++
-        if (ADMIN_PASSWORD_REGEX_CATEGORY_NONALPHANUMERIC_STRING.toRegex().matches(passwordString)) passCategoriesCount++
+        if (ADMIN_PASSWORD_REGEX_CATEGORY_LOWER_STRING.toRegex().containsMatchIn(passwordString)) passCategoriesCount++
+        if (ADMIN_PASSWORD_REGEX_CATEGORY_UPPER_STRING.toRegex().containsMatchIn(passwordString)) passCategoriesCount++
+        if (ADMIN_PASSWORD_REGEX_CATEGORY_DIGIT_STRING.toRegex().containsMatchIn(passwordString)) passCategoriesCount++
+        if (ADMIN_PASSWORD_REGEX_CATEGORY_NONALPHANUMERIC_STRING.toRegex().containsMatchIn(passwordString)) passCategoriesCount++
 
         if (passCategoriesCount < 3) throw RuntimeConfigurationError(ADMIN_PASSWORD_CATEGORY_CHECK_FAILED)
     }
