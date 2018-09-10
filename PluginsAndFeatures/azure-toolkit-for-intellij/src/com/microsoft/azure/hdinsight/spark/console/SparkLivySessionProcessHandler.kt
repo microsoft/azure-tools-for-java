@@ -27,7 +27,8 @@ import java.io.OutputStream
 import java.nio.charset.StandardCharsets.UTF_8
 
 class SparkLivySessionProcessHandler(val process: SparkLivySessionProcess) :
-        ColoredRemoteProcessHandler<SparkLivySessionProcess>(process, "Start Spark Livy Interactive Session Console...", UTF_8) {
+        ColoredRemoteProcessHandler<SparkLivySessionProcess>(
+                process, "Start Spark Livy Interactive Session Console in cluster ${process.session.uri.host}...", UTF_8) {
     override fun getProcessInput(): OutputStream? = process.outputStream
 
     override fun detachIsDefault(): Boolean = false

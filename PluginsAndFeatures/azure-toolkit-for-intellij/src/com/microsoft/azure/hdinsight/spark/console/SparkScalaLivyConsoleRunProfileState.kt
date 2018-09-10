@@ -33,14 +33,14 @@ import org.jetbrains.plugins.scala.console.ScalaLanguageConsole
 
 class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScalaConsoleBuilder, val session: Session): RunProfileState {
     private val postStartCodes = """
-        val welcome = List(
+        val __welcome = List(
             "Spark context available as 'sc' (master = " + sc.master + ", app id = " + sc.getConf.getAppId + ").",
             "Spark session available as 'spark'.",
             "Spark Version: " + sc.version,
             util.Properties.versionMsg
         ).mkString("\n")
 
-        println(welcome)
+        println(__welcome)
     """.trimIndent()
 
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult? {

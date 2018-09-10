@@ -26,6 +26,7 @@ import com.intellij.execution.*
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.ConfigurationTypeUtil.findConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -43,7 +44,6 @@ import com.microsoft.intellij.util.runInReadAction
 import scala.Function1
 import scala.runtime.BoxedUnit
 
-
 class RunSparkLivyConsoleAction
     : AzureAnAction(), RunConsoleAction.RunActionBase<RemoteDebugRunConfigurationType>, ILogger {
     override fun onActionPerformed(event: AnActionEvent) {
@@ -56,16 +56,25 @@ class RunSparkLivyConsoleAction
         }
 
         val runManagerEx = RunManagerEx.getInstanceEx(project)
+        val selectedConfigSettings = runManagerEx.selectedConfiguration
+
+        // Try current selected Configuration
+        (selectedConfigSettings?.configuration as? RemoteDebugRunConfiguration)?.run {
+            runExisting(selectedConfigSettings, runManagerEx, project)
+            return
+        }
+
         val batchConfigurationType = findConfigurationType(RemoteDebugRunConfigurationType::class.java)
         val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
 
+        // Try to find one from the same type list
         batchConfigSettings.forEach {
             runExisting(it, runManagerEx, project)
             return
         }
 
+        // Create a new one to run
         createAndRun(batchConfigurationType, runManagerEx, project, newSettingName, runConfigurationHandler)
-
     }
 
     private fun createAndRun(
@@ -108,7 +117,7 @@ class RunSparkLivyConsoleAction
                         SparkScalaLivyConsoleConfigurationType().confFactory().createConfiguration(
                                 batchRunConfiguration.name, batchRunConfiguration)).build()
 
-                (environment.runProfile as? SparkScalaLivyConsoleRunConfiguration)?.checkSettingsBeforeRun()
+                (environment.runProfile as? RunConfigurationBase)?.checkSettingsBeforeRun()
 
                 runner.execute(environment)
             } catch (e: ExecutionException) {
