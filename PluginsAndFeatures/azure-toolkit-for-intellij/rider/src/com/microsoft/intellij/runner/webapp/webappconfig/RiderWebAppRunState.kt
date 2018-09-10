@@ -9,7 +9,6 @@ import com.intellij.util.io.ZipUtil
 import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
-import com.jetbrains.rider.util.concurrent.SyncEvent
 import com.jetbrains.rider.util.idea.application
 import com.microsoft.azure.management.appservice.ConnectionStringType
 import com.microsoft.azure.management.appservice.OperatingSystem
@@ -26,10 +25,12 @@ import com.microsoft.intellij.runner.utils.WebAppDeploySession
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import okhttp3.Response
+import org.jetbrains.concurrency.AsyncPromise
 import java.io.File
 import java.io.FileFilter
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
+import java.util.concurrent.TimeUnit
 import java.util.zip.ZipOutputStream
 
 class RiderWebAppRunState(project: Project,
@@ -369,7 +370,7 @@ class RiderWebAppRunState(project: Project,
 
         try {
             processHandler.setText(String.format(PROJECT_ARTIFACTS_COLLECTING, publishableProject.projectName))
-            val outDir = collectProjectArtifacts(project, publishableProject, processHandler)
+            val outDir = collectProjectArtifacts(project, publishableProject)
 
             processHandler.setText(String.format(ZIP_FILE_CREATE_FOR_PROJECT, publishableProject.projectName))
             val zipFile = zipProjectArtifacts(outDir, processHandler)
@@ -397,20 +398,21 @@ class RiderWebAppRunState(project: Project,
      * @return [File] to project content to be published
      */
     private fun collectProjectArtifacts(project: Project,
-                                        publishableProject: PublishableProjectModel,
-                                        processHandler: RunProcessHandler): File {
+                                        publishableProject: PublishableProjectModel): File {
 
         // Get out parameters
         val publishService = MsBuildPublishingService.getInstance(project)
         val (targetProperties, outPath) = publishService.getPublishToTempDirParameterAndPath()
 
-        val event = SyncEvent()
+        val event = AsyncPromise<BuildResultKind>()
         application.invokeLater {
 
             val onFinish: (result: BuildResultKind) -> Unit = {
-                if (it != BuildResultKind.Successful) processHandler.setText(PROJECT_ARTIFACTS_COLLECTING_FAILED)
-                requestRunWindowFocus()
-                event.set()
+                if (it == BuildResultKind.Successful || it == BuildResultKind.HasWarnings) {
+                    requestRunWindowFocus()
+                }
+
+                event.setResult(it)
             }
 
             if (publishableProject.isDotNetCore) {
@@ -419,7 +421,11 @@ class RiderWebAppRunState(project: Project,
                 publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, false, onFinish)
             }
         }
-        event.wait(COLLECT_ARTIFACTS_TIMEOUT_MS)
+
+        val buildResult = event.get(COLLECT_ARTIFACTS_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+        if (buildResult != BuildResultKind.Successful && buildResult != BuildResultKind.HasWarnings) {
+            throw Exception(PROJECT_ARTIFACTS_COLLECTING_FAILED)
+        }
 
         return outPath.toFile().canonicalFile
     }

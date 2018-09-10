@@ -23,7 +23,7 @@ class RiderDatabaseRunState(project: Project,
         private const val SUBSCRIPTION_ID_NOT_DEFIED = "Subscription ID is not defined"
 
         private const val SQL_DATABASE_CREATE = "Creating SQL Database '%s'..."
-        private const val SQL_DATABASE_CREATE_SUCCESSFUL = "SQL Database is created successfully!"
+        private const val SQL_DATABASE_CREATE_SUCCESSFUL = "SQL Database is created successfully."
         private const val SQL_DATABASE_NAME_NOT_DEFINED = "SQL Database Name is not defined"
         private const val SQL_DATABASE_URL = "Please see SQL Database details by URL: %s"
 
