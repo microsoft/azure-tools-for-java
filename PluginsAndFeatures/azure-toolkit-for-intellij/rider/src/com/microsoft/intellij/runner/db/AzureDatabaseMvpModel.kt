@@ -94,7 +94,7 @@ object AzureDatabaseMvpModel {
 
         return serverWithResourceGroup
                 .withAdministratorLogin(sqlServerAdminLogin)
-                .withAdministratorPassword(sqlServerAdminPass.toString())
+                .withAdministratorPassword(sqlServerAdminPass.joinToString(""))
                 .create()
     }
 
