@@ -22,11 +22,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -36,21 +31,27 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtualInterface {
-    static final String STATUS_RUNNING = "Running";
-    static final String STATUS_STOPPED = "Stopped";
+    public static final String STATUS_RUNNING = "Running";
+    public static final String STATUS_STOPPED = "Stopped";
+    public static final String WEB_RUN_ICON = "WebAppRunning_16.png";
+    public static final String WEB_STOP_ICON = "WebAppStopped_16.png";
+
     private static final String ACTION_START = "Start";
     private static final String ACTION_STOP = "Stop";
     private static final String ACTION_DELETE = "Delete";
     private static final String ACTION_RESTART = "Restart";
     private static final String ACTION_OPEN_IN_BROWSER = "Open In Browser";
     private static final String ACTION_SHOW_PROPERTY = "Show Properties";
-    private static final String WEB_RUN_ICON = "WebAppRunning_16.png";
-    private static final String WEB_STOP_ICON = "WebAppStopped_16.png";
     private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete Web App %s.\n"
             + "Are you sure you want to continue?";
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
+    private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
 
     protected String subscriptionId;
     protected String webAppName;
@@ -71,6 +72,8 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
         this.runState = runState;
         this.hostName = hostName;
         this.propertyMap = propertyMap;
+        webAppNodePresenter = new WebAppNodePresenter<>();
+        webAppNodePresenter.onAttachView(WebAppNode.this);
         loadActions();
     }
 
@@ -165,9 +168,7 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
     @Override
     public void startWebApp() {
         try {
-            WebAppModulePresenter.onStartWebApp(getSubscriptionId(), getWebAppId());
-            setRunState(STATUS_RUNNING);
-            setIconPath(WEB_RUN_ICON);
+            webAppNodePresenter.onStartWebApp(getSubscriptionId(), getWebAppId());
         } catch (IOException e) {
             e.printStackTrace();
             // TODO: Error handling
@@ -177,9 +178,7 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
     @Override
     public void restartWebApp() {
         try {
-            WebAppModulePresenter.onRestartWebApp(getSubscriptionId(), getWebAppId());
-            setRunState(STATUS_RUNNING);
-            setIconPath(WEB_RUN_ICON);
+            webAppNodePresenter.onRestartWebApp(getSubscriptionId(), getWebAppId());
         } catch (IOException e) {
             e.printStackTrace();
             // TODO: Error handling
@@ -189,9 +188,7 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
     @Override
     public void stopWebApp() {
         try {
-            WebAppModulePresenter.onStopWebApp(getSubscriptionId(), getWebAppId());
-            setRunState(STATUS_STOPPED);
-            setIconPath(WEB_STOP_ICON);
+            webAppNodePresenter.onStopWebApp(getSubscriptionId(), getWebAppId());
         } catch (IOException e) {
             e.printStackTrace();
             // TODO: Error handling
