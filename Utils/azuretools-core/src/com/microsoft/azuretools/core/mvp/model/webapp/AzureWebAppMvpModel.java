@@ -23,6 +23,21 @@
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
+import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
+import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.PublishingProfileFormat;
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebContainer;
+import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.utils.WebAppUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -36,23 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
 import org.apache.commons.io.IOUtils;
-
-import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.PublishingProfileFormat;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.appservice.WebContainer;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.utils.WebAppUtils;
 
 public class AzureWebAppMvpModel {
 
@@ -300,6 +299,16 @@ public class AzureWebAppMvpModel {
 
     public void stopWebApp(String sid, String appid) throws IOException {
         AuthMethodManager.getInstance().getAzureClient(sid).webApps().getById(appid).stop();
+    }
+
+    /**
+     * Get all the deployment slots of a web app by the subscription id and web app id.
+     */
+    public List<DeploymentSlot> getDeploymentSlots(final String subscriptionId, final String appId) throws IOException {
+        final List<DeploymentSlot> deploymentSlots = new ArrayList<>();
+        final WebApp webApp = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        deploymentSlots.addAll(webApp.deploymentSlots().list());
+        return deploymentSlots;
     }
 
     /**
