@@ -26,6 +26,7 @@ checkstyle {
     toolVersion = '7.7'
     configFile = new File('config/checkstyle/checkstyle.xml')
     showViolations = false
+    ignoreFailures = true
 }
 
 findbugs {
@@ -141,7 +142,7 @@ task cucumber() {
 
 test.dependsOn cucumber
 
-defaultTasks 'buildPlugin', 'test'
+defaultTasks 'checkstyleMain', 'buildPlugin', 'test'
 
 task wrapper(type: Wrapper) {
     gradleVersion = '4.8'
