@@ -29,7 +29,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 public class RedisCacheModule extends AzureRefreshableNode {
     private static final String REDIS_SERVICE_MODULE_ID = RedisCacheModule.class.getName();
-    private static final String ICON_PATH = "RedisCache.png";
+    private static final String ICON_PATH = "RedisCache.svg";
     private static final String BASE_MODULE_NAME = "Redis Caches";
     private final RedisCacheModulePresenter<RedisCacheModule> redisCachePresenter;
 

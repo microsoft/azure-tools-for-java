@@ -33,8 +33,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 
 public class ManageSubscriptionsAction extends NodeAction {
-    private static final String ICON_DARK = "ConnectAccountsDark_16.png";
-    private static final String ICON_LIGHT = "ConnectAccountsLight_16.png";
+    private static final String ICON_DARK = "ConnectAccountsDark.svg";
+    private static final String ICON_LIGHT = "ConnectAccountsLight.svg";
 
     public ManageSubscriptionsAction(AzureModule azureModule) {
         super(azureModule, "Select Subscriptions");

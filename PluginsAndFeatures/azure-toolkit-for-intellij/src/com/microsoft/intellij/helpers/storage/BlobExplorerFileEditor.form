@@ -80,7 +80,7 @@
                   <contentAreaFilled value="false"/>
                   <defaultCapable value="true"/>
                   <hideActionText value="false"/>
-                  <icon value="icons/storagerefresh.png"/>
+                  <icon value="icons/storagerefresh.svg"/>
                   <iconTextGap value="0"/>
                   <inheritsPopupMenu value="true"/>
                   <margin top="2" left="2" bottom="2" right="2"/>
@@ -105,7 +105,7 @@
                   <contentAreaFilled value="false"/>
                   <defaultCapable value="true"/>
                   <hideActionText value="false"/>
-                  <icon value="icons/storageupload.png"/>
+                  <icon value="icons/storageupload.svg"/>
                   <iconTextGap value="0"/>
                   <inheritsPopupMenu value="true"/>
                   <margin top="2" left="2" bottom="2" right="2"/>
@@ -131,7 +131,7 @@
                   <defaultCapable value="true"/>
                   <enabled value="false"/>
                   <hideActionText value="false"/>
-                  <icon value="icons/storagedelete.png"/>
+                  <icon value="icons/storagedelete.svg"/>
                   <iconTextGap value="0"/>
                   <inheritsPopupMenu value="true"/>
                   <margin top="2" left="2" bottom="2" right="2"/>
@@ -157,7 +157,7 @@
                   <defaultCapable value="true"/>
                   <enabled value="false"/>
                   <hideActionText value="false"/>
-                  <icon value="icons/storageopen.png"/>
+                  <icon value="icons/storageopen.svg"/>
                   <iconTextGap value="0"/>
                   <inheritsPopupMenu value="true"/>
                   <margin top="2" left="2" bottom="2" right="2"/>
@@ -183,7 +183,7 @@
                   <defaultCapable value="true"/>
                   <enabled value="false"/>
                   <hideActionText value="false"/>
-                  <icon value="icons/storagesaveas.png"/>
+                  <icon value="icons/storagesaveas.svg"/>
                   <iconTextGap value="0"/>
                   <inheritsPopupMenu value="true"/>
                   <margin top="2" left="2" bottom="2" right="2"/>
@@ -227,7 +227,7 @@
                   <enabled value="false"/>
                   <focusPainted value="true"/>
                   <hideActionText value="false"/>
-                  <icon value="icons/storageback.png"/>
+                  <icon value="icons/storageback.svg"/>
                   <iconTextGap value="0"/>
                   <inheritsPopupMenu value="true"/>
                   <margin top="0" left="0" bottom="0" right="0"/>

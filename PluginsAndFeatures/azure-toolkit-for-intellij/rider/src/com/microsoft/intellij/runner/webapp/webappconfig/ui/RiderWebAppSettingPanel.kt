@@ -7,6 +7,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.ui.AnActionButton
@@ -39,7 +40,6 @@ import com.microsoft.intellij.runner.db.dbconfig.RiderDatabaseConfigurationType
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfiguration
-import icons.RiderIcons
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -1037,7 +1037,7 @@ class RiderWebAppSettingPanel(project: Project,
                 setText("${sqlDatabase.name()} (${sqlDatabase.resourceGroupName()})")
 
                 // Icon
-                setIcon(RiderIcons.Publish.PublishAzure)
+                setIcon(IconLoader.getIcon("icons/Database.svg"))
             }
         }
 

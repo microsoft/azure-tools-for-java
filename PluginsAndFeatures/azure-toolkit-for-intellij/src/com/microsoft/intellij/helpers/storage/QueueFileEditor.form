@@ -27,7 +27,7 @@
             </constraints>
             <properties>
               <borderPainted value="false"/>
-              <icon value="icons/refresh_queue.png"/>
+              <icon value="icons/refresh_queue.svg"/>
               <text value=""/>
             </properties>
           </component>
@@ -37,7 +37,7 @@
             </constraints>
             <properties>
               <borderPainted value="false"/>
-              <icon value="icons/newmessage_queue.png"/>
+              <icon value="icons/newmessage_queue.svg"/>
               <text value=""/>
             </properties>
           </component>
@@ -47,7 +47,7 @@
             </constraints>
             <properties>
               <borderPainted value="false"/>
-              <icon value="icons/dequeue.png"/>
+              <icon value="icons/dequeue.svg"/>
               <text value=""/>
             </properties>
           </component>
@@ -57,7 +57,7 @@
             </constraints>
             <properties>
               <borderPainted value="false"/>
-              <icon value="icons/clearqueue.png"/>
+              <icon value="icons/clearqueue.svg"/>
               <text value=""/>
             </properties>
           </component>

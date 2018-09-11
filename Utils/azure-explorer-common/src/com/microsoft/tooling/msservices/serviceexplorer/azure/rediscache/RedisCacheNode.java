@@ -39,7 +39,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPro
 public class RedisCacheNode extends Node implements TelemetryProperties {
 
     public static final String TYPE = "Microsoft.Cache/Redis";
-    public static final String REDISCACHE_ICON_PATH = "RedisCache.png";
+    public static final String REDISCACHE_ICON_PATH = "RedisCache.svg";
 
     private final String name;
     private final String resourceId;

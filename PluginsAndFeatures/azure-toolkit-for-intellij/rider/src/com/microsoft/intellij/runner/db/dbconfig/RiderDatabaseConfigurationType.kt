@@ -3,7 +3,6 @@ package com.microsoft.intellij.runner.db.dbconfig
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.ConfigurationTypeUtil
-import icons.RiderIcons
 import org.jetbrains.annotations.Nls
 import javax.swing.Icon
 
@@ -37,8 +36,7 @@ class RiderDatabaseConfigurationType : ConfigurationType {
     }
 
     override fun getIcon(): Icon {
-        // TODO: This should be replaced with a custom icon (RIDER-18401)
-        return RiderIcons.Publish.PublishAzure
+        return get() = IconLoader.getIcon("icons/Database.svg")
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {

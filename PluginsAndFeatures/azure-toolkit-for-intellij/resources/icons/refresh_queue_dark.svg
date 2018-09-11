@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <title>Refresh_dark</title>
+  <g>
+    <rect width="16" height="16" fill="#ffdbff" opacity="0"/>
+    <path d="M14,8H12A4,4,0,0,0,8,4,3.945,3.945,0,0,0,5.185,5.185L7,7H2V2L3.775,3.775A5.975,5.975,0,0,1,14,8Zm0,1H9l1.815,1.815A3.945,3.945,0,0,1,8,12,4,4,0,0,1,4,8H2a5.975,5.975,0,0,0,10.225,4.225L14,14Z" fill="#afb1b3"/>
+  </g>
+</svg>
