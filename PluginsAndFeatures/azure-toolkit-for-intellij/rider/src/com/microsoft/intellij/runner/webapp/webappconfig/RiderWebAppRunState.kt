@@ -319,7 +319,7 @@ class RiderWebAppRunState(project: Project,
                                     adminPassword: CharArray,
                                     processHandler: RunProcessHandler) {
 
-        val sqlServer = AzureDatabaseMvpModel.getSqlServerByName(subscriptionId, database.sqlServerName())
+        val sqlServer = AzureDatabaseMvpModel.getSqlServerByName(subscriptionId, database.sqlServerName(), true)
 
         if (sqlServer == null) {
             val message = String.format(SQL_SERVER_CANNOT_GET, database.sqlServerName())
