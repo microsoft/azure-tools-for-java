@@ -17,6 +17,7 @@ import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.AzureRunConfigurationBase
+import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import java.io.File
 import java.io.IOException
@@ -310,7 +311,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
                 .flatMap { it.value }
                 .firstOrNull { it.id() == webAppId } ?: return
 
-        if (webApp.connectionStrings.containsKey(name))
+        if (AzureDotNetWebAppMvpModel.checkConnectionStringNameExists(webApp, name))
             throw RuntimeConfigurationError(String.format(CONNECTION_STRING_NAME_ALREADY_EXISTS, name))
     }
 

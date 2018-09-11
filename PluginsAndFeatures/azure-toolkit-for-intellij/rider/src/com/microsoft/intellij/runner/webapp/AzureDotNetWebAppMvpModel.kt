@@ -23,6 +23,7 @@ object AzureDotNetWebAppMvpModel {
     //region Web App
 
     private val subscriptionIdToWebAppsMap = concurrentMapOf<String, List<ResourceEx<WebApp>>>()
+    private val webAppToConnectionStringsMap = concurrentMapOf<WebApp, List<ConnectionString>>()
 
     fun listWebApps(force: Boolean): List<ResourceEx<WebApp>> {
         val webAppList = arrayListOf<ResourceEx<WebApp>>()
@@ -100,6 +101,27 @@ object AzureDotNetWebAppMvpModel {
 
     fun getDotNetWebApp(subscriptionId: String, webAppId: String): WebApp {
         return AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppId)
+    }
+
+    fun getConnectionStrings(webApp: WebApp, force: Boolean = false): List<ConnectionString> {
+        if (!force && webAppToConnectionStringsMap.containsKey(webApp)) {
+            return webAppToConnectionStringsMap.getValue(webApp)
+        }
+
+        val connectionStrings = webApp.connectionStrings.values.toList()
+        webAppToConnectionStringsMap[webApp] = connectionStrings
+
+        return connectionStrings
+    }
+
+    fun checkConnectionStringNameExists(webApp: WebApp, connectionStringName: String, force: Boolean = false): Boolean {
+        if (!force) {
+            if (!webAppToConnectionStringsMap.containsKey(webApp)) return false
+            return webAppToConnectionStringsMap.getValue(webApp).any { it.name() == connectionStringName }
+        }
+
+        val connectionStrings = getConnectionStrings(webApp, true)
+        return connectionStrings.any { it.name() == connectionStringName }
     }
 
     //endregion Web App

@@ -36,6 +36,7 @@ import com.microsoft.azuretools.utils.AzureModelController
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.db.dbconfig.RiderDatabaseConfigurationType
+import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfiguration
 import icons.RiderIcons
@@ -340,9 +341,10 @@ class RiderWebAppSettingPanel(project: Project,
 
         if (sortedWebApps.isEmpty()) return
 
+        collectConnectionStringsInBackground(webAppLists.map { it.resource })
+
         val model = table.model as DefaultTableModel
         model.dataVector.clear()
-        model.fireTableDataChanged()
 
         val subscriptionManager = AuthMethodManager.getInstance().azureManager.subscriptionManager
 
@@ -1145,6 +1147,17 @@ class RiderWebAppSettingPanel(project: Project,
                 indicator.isIndeterminate = true
                 AzureModelController.updateSubscriptionMaps(UpdateProgressIndicator(indicator))
                 AzureModelController.updateResourceGroupMaps(UpdateProgressIndicator(indicator))
+            }
+        })
+    }
+
+    private fun collectConnectionStringsInBackground(webApps: List<WebApp>) {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Updating Web App connection strings map", false) {
+            override fun run(indicator: ProgressIndicator) {
+                indicator.isIndeterminate = true
+                webApps.forEach {
+                    AzureDotNetWebAppMvpModel.getConnectionStrings(it, true)
+                }
             }
         })
     }
