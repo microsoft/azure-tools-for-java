@@ -107,7 +107,7 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     public void projectOpened() {
         initializeAIRegistry();
-        initializeFeedbackNotification();
+        // initializeFeedbackNotification();
     }
 
     private void initializeFeedbackNotification() {
