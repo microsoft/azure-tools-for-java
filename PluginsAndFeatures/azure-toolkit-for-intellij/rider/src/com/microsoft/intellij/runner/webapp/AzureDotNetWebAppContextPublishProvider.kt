@@ -21,7 +21,7 @@ class AzureDotNetWebAppContextPublishProvider : RiderContextPublishProvider {
         get() = IconLoader.getIcon("icons/WebApp.svg")
 
     override val name: String
-        get() = "Publish to Azure Web App"
+        get() = "Publish to Azure"
 
     override fun getConfigurationForNode(project: Project,
                                          projectModelNode: ProjectModelNode): Pair<RunConfiguration, ConfigurationFactory> {

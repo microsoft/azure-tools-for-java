@@ -11,7 +11,7 @@ class RiderWebAppConfigurationType : ConfigurationType {
 
     companion object {
         private const val RUN_CONFIG_TYPE_ID = "AzureDotNetWebAppPublish"
-        private const val RUN_CONFIG_TYPE_NAME = "Publish to Azure Web App"
+        private const val RUN_CONFIG_TYPE_NAME = "Azure Publish to Web App"
         private const val RUN_CONFIG_TYPE_DESCRIPTION = "Azure Publish to Web App configuration"
     }
 

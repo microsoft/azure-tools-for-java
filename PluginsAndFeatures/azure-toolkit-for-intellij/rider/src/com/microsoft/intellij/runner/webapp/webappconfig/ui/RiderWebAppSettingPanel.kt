@@ -194,6 +194,7 @@ class RiderWebAppSettingPanel(project: Project,
     private lateinit var lblSqlDatabaseRunConfigInfo: JLabel
 
     private lateinit var lblRuntimeMismatchWarning: JLabel
+    private lateinit var lblNewWebAppRuntimeMismatchWarning: JLabel
 
     override val panelName: String
         get() = WEB_APP_SETTINGS_PANEL_NAME
@@ -690,6 +691,11 @@ class RiderWebAppSettingPanel(project: Project,
         lblRuntimeMismatchWarning.isVisible = show
     }
 
+    private fun setNewWebAppRuntimeMismatchWarning(show: Boolean, message: String = "") {
+        lblNewWebAppRuntimeMismatchWarning.toolTipText = message
+        lblNewWebAppRuntimeMismatchWarning.isVisible = show
+    }
+
     private fun checkSelectedProjectAgainstWebAppRuntime(webApp: WebApp, publishableProject: PublishableProjectModel) {
         if (webApp.operatingSystem() == OperatingSystem.WINDOWS) {
             setRuntimeMismatchWarning(false)
@@ -966,6 +972,14 @@ class RiderWebAppSettingPanel(project: Project,
         cbRuntime.addActionListener {
             val runtime = cbRuntime.getItemAt(cbRuntime.selectedIndex) ?: return@addActionListener
             lastSelectedRuntime = runtime
+
+            val webAppRuntime = runtime.version()
+
+            val publishableProject = cbProject.getItemAt(cbProject.selectedIndex) ?: return@addActionListener
+            val projectFrameworkVersion = getProjectTargetFramework(publishableProject)
+            setNewWebAppRuntimeMismatchWarning(
+                    webAppRuntime != projectFrameworkVersion,
+                    String.format(WEB_APP_RUNTIME_MISMATCH_WARNING, webAppRuntime, projectFrameworkVersion))
         }
     }
 
@@ -1062,6 +1076,7 @@ class RiderWebAppSettingPanel(project: Project,
 
     private fun setRuntimeMismatchWarningLabel() {
         lblRuntimeMismatchWarning.icon = com.intellij.icons.AllIcons.General.BalloonWarning
+        lblNewWebAppRuntimeMismatchWarning.icon = com.intellij.icons.AllIcons.General.BalloonWarning
     }
 
     /**
