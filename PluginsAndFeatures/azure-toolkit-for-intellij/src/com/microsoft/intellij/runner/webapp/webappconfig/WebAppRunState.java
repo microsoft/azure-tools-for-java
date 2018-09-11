@@ -36,17 +36,17 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
-import org.apache.commons.net.ftp.FTPClient;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.maven.model.MavenConstants;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Map;
+import org.apache.commons.net.ftp.FTPClient;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.idea.maven.model.MavenConstants;
 
 public class WebAppRunState extends AzureRunProfileState<WebApp> {
 
@@ -70,6 +70,7 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
     private static final String BASE_PATH = "/site/wwwroot/";
     private static final String WEB_APP_BASE_PATH = BASE_PATH + "webapps/";
     private static final String CONTAINER_ROOT_PATH = WEB_APP_BASE_PATH + "ROOT";
+    private static final String TEMP_FILE_PREFIX = "azuretoolkit";
 
     private static final int SLEEP_TIME = 5000; // milliseconds
     private static final int UPLOADING_MAX_TRY = 3;
@@ -114,9 +115,7 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
                     telemetryMap.put("webConfigCount", "0");
                 }
 
-                try (FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath())) {
-                    uploadJarArtifact(input, webApp, processHandler, telemetryMap);
-                }
+                uploadJarArtifact(webAppSettingModel.getTargetPath(), webApp, processHandler, telemetryMap);
                 break;
             default:
                 break;
@@ -184,10 +183,13 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
     }
 
     private void prepareWebConfig(@NotNull final WebApp webApp, @NotNull final RunProcessHandler processHandler,
-                                  @NotNull final Map<String, String> telemetryMap) throws IOException {
+                                  @NotNull final Map<String, String> telemetryMap) throws Exception {
         processHandler.setText(UPLOADING_WEB_CONFIG);
-        try (InputStream webConfigInputStream = getClass().getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
-            int count = uploadFileViaZipDeploy(webApp, webConfigInputStream, "web.config", processHandler);
+        try (InputStream inputStream = getClass().getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
+            final File tempFolder = Files.createTempDirectory(TEMP_FILE_PREFIX).toFile();
+            final File tempWebConfigFile = new File(tempFolder.getPath() + "/web.config");
+            Files.copy(inputStream, tempWebConfigFile.toPath());
+            int count = uploadFileViaZipDeploy(webApp, tempWebConfigFile, processHandler);
             telemetryMap.put("webConfigCount", String.valueOf(count));
         }
     }
@@ -221,25 +223,30 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         }
     }
 
-    private void uploadJarArtifact(@NotNull InputStream inputStream, @NotNull WebApp webApp,
+    private void uploadJarArtifact(@NotNull String file, @NotNull WebApp webApp,
                                   @NotNull RunProcessHandler processHandler,
-                                  @NotNull Map<String, String> telemetryMap) throws IOException {
-        final String rootJarFile = "ROOT.jar";
-        processHandler.setText(String.format(UPLOADING_ARTIFACT, BASE_PATH + rootJarFile));
-        final int uploadCount = uploadFileViaZipDeploy(webApp, inputStream, rootJarFile, processHandler);
+                                  @NotNull Map<String, String> telemetryMap) throws Exception {
+        final File originalJarFile = new File(file);
+        final String jarFileName = "ROOT.jar";
+        final File jarFile = new File(originalJarFile.getPath().replace(originalJarFile.getName(), jarFileName));
+        originalJarFile.renameTo(jarFile);
+        processHandler.setText(String.format(UPLOADING_ARTIFACT, BASE_PATH + jarFileName));
+        final int uploadCount = uploadFileViaZipDeploy(webApp, jarFile, processHandler);
         telemetryMap.put("artifactUploadCount", String.valueOf(uploadCount));
     }
 
     // Add retry logic here to avoid Kudu's socket timeout issue.
     // More details: https://github.com/Microsoft/azure-maven-plugins/issues/339
-    private int uploadFileViaZipDeploy(@NotNull WebApp webapp, @NotNull InputStream inputStream,
-                                       @NotNull String fileName,
-                                       @NotNull RunProcessHandler processHandler) throws IOException {
+    private int uploadFileViaZipDeploy(@NotNull WebApp webapp, @NotNull File sourceFile,
+                                       @NotNull RunProcessHandler processHandler) throws Exception {
         int uploadCount = 0;
+        final File targetZipFile = File.createTempFile(TEMP_FILE_PREFIX, ".zip");
+        FileUtil.zipFile(sourceFile, targetZipFile);
+
         while (uploadCount < UPLOADING_MAX_TRY) {
             uploadCount += 1;
             try {
-                webapp.zipDeploy(FileUtil.zipFile(inputStream, fileName));
+                webapp.zipDeploy(targetZipFile);
                 processHandler.setText(UPLOADING_SUCCESSFUL);
                 return uploadCount;
             } catch (Exception e) {
@@ -247,7 +254,7 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
                     String.format("Upload file via zip deploy met exception: %s, retry immediately...", e.getMessage()));
             }
         }
-        throw new IOException(String.format("Upload failed after %d times of retry.", UPLOADING_MAX_TRY));
+        throw new Exception(String.format("Upload failed after %d times of retry.", UPLOADING_MAX_TRY));
     }
 
     /**

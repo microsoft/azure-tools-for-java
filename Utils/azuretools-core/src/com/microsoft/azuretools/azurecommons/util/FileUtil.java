@@ -20,13 +20,14 @@
 
 package com.microsoft.azuretools.azurecommons.util;
 
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -108,18 +109,26 @@ public class FileUtil {
 	}
 
     /**
-     * Utility method to zip a file.
-     * @param inputStream
-     * @param fileName
-     * @return zip file
-     * @throws IOException
+     * Utility method to zip the given source file to the destination file.
+     * @param sourceFile source file
+     * @param targetZipFile ZIP file that will be created or overwritten
      */
-    public static File zipFile(InputStream inputStream, String fileName) throws IOException {
-        final File tempZip = File.createTempFile(String.valueOf(new Date().getTime()), ".zip");
-        final FileOutputStream fos = new FileOutputStream(tempZip);
+    public static void zipFile(final @NotNull File sourceFile, final @NotNull File targetZipFile) throws Exception {
+        if (!sourceFile.exists()) {
+            throw new Exception("The source file to zip does not exist.");
+        }
+
+        final String targetZipFileName = targetZipFile.getName();
+        final String targetZipFileExtension = targetZipFileName.substring(targetZipFileName.lastIndexOf(".")+1);
+        if (!targetZipFileExtension.equalsIgnoreCase("zip")) {
+            throw new Exception("The target file should be a .zip file.");
+        }
+
+        final FileOutputStream fos = new FileOutputStream(targetZipFile);
         final ZipOutputStream zipOut = new ZipOutputStream(fos);
+        final FileInputStream inputStream = new FileInputStream(sourceFile);
         try {
-            final ZipEntry zipEntry = new ZipEntry(fileName);
+            final ZipEntry zipEntry = new ZipEntry(sourceFile.getName());
             zipOut.putNextEntry(zipEntry);
             final byte[] bytes = new byte[BUFF_SIZE];
             int length;
@@ -137,7 +146,6 @@ public class FileUtil {
                 fos.close();
             }
         }
-        return tempZip;
     }
 
 }
