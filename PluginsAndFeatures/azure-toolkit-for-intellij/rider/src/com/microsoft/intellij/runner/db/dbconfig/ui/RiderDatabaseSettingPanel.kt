@@ -161,7 +161,7 @@ class RiderDatabaseSettingPanel(project: Project,
             model.sqlServerAdminPassword = passNewSqlServerAdminPass.password
             model.sqlServerAdminPasswordConfirm = passNewSqlServerAdminPassConfirm.password
 
-            model.region = lastSelectedLocation
+            model.location = lastSelectedLocation
         } else {
             model.isCreatingSqlServer = false
             val sqlServer = cbExistSqlServer.getItemAt(cbExistSqlServer.selectedIndex)
@@ -239,7 +239,7 @@ class RiderDatabaseSettingPanel(project: Project,
         locations.sortedWith(compareBy { it.displayName() })
                 .forEach {
                     cbLocation.addItem(it)
-                    if (it.name() == configuration.model.region) {
+                    if (it.name() == configuration.model.location) {
                         cbLocation.selectedItem = it
                     }
                 }

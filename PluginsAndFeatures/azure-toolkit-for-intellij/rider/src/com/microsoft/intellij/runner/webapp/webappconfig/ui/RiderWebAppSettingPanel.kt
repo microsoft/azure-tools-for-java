@@ -466,7 +466,7 @@ class RiderWebAppSettingPanel(project: Project,
                     if (it == configuration.model.publishableProject) {
                         cbProject.selectedItem = it
                         lastSelectedProject = it
-                        toggleProjectComboBox(it.isDotNetCore)
+                        setOperatingSystemComboBoxState(it)
                     }
                 }
     }
@@ -696,12 +696,15 @@ class RiderWebAppSettingPanel(project: Project,
         // DOTNETCORE|2.0 -> 2.0
         val webAppTargetFramework = webApp.linuxFxVersion().split('|').getOrNull(1)
 
-        val targetFramework = project.solution.projectModelTasks.targetFrameworks[publishableProject.projectModelId]
-        val targetFrameworkId = targetFramework?.currentTargetFrameworkId?.valueOrNull ?: return
-
         // .NETCoreApp,Version=v2.0 -> 2.0
-        val netCoreVersion = netCoreAppVersionRegex.find(targetFrameworkId)?.groups?.get(1)?.value
+        val netCoreVersion = getProjectTargetFramework(publishableProject)
         setRuntimeMismatchWarning(webAppTargetFramework != netCoreVersion)
+    }
+
+    private fun getProjectTargetFramework(publishableProject: PublishableProjectModel): String {
+        val targetFramework = project.solution.projectModelTasks.targetFrameworks[publishableProject.projectModelId]
+        val targetFrameworkId = targetFramework?.currentTargetFrameworkId?.valueOrNull ?: return ""
+        return netCoreAppVersionRegex.find(targetFrameworkId)?.groups?.get(1)?.value ?: ""
     }
 
     //endregion Editing Web App Table
@@ -770,19 +773,22 @@ class RiderWebAppSettingPanel(project: Project,
         lblPricingTier.isEnabled = !isCreatingNew
     }
 
-    private fun toggleRuntimePanel(isLinux: Boolean) {
+    private fun showRuntimePanel(isLinux: Boolean) {
         pnlRuntimeHolder.isVisible = isLinux
     }
 
-    private fun toggleOperatingSystemComboBox(operatingSystem: OperatingSystem) {
-        setAppServicePlanContent(filterAppServicePlans(operatingSystem, cachedAppServicePlan))
-        setPricingTierContent(filterPricingTiers(operatingSystem, cachedPricingTier))
-        toggleRuntimePanel(operatingSystem == OperatingSystem.LINUX)
+    private fun setOperatingSystemComboBoxState(publishableProject: PublishableProjectModel) {
+        cbOperatingSystem.isEnabled = publishableProject.isDotNetCore
+        if (!publishableProject.isDotNetCore) { cbOperatingSystem.selectedItem = OperatingSystem.WINDOWS }
     }
 
-    private fun toggleProjectComboBox(isDotNetCore: Boolean) {
-        cbOperatingSystem.isEnabled = isDotNetCore
-        if (!isDotNetCore) { cbOperatingSystem.selectedItem = OperatingSystem.WINDOWS }
+    private fun setRuntimeComboBoxState(publishableProject: PublishableProjectModel) {
+        if (publishableProject.isDotNetCore) {
+            val netCoreVersion = getProjectTargetFramework(publishableProject)
+            val runtimeIndex = (cbRuntime.model as? DefaultComboBoxModel)?.getIndexOf(RuntimeStack("DOTNETCORE", netCoreVersion)) ?: return
+            val desiredRuntime = cbRuntime.getItemAt(runtimeIndex) ?: return
+            cbRuntime.selectedItem = desiredRuntime
+        }
     }
 
     private fun toggleDbConnectionEnable(isSelected: Boolean) {
@@ -897,9 +903,11 @@ class RiderWebAppSettingPanel(project: Project,
 
         cbOperatingSystem.addActionListener {
             val operatingSystem = cbOperatingSystem.getItemAt(cbOperatingSystem.selectedIndex) ?: return@addActionListener
-            if (operatingSystem == lastSelectedOperatingSystem) return@addActionListener
 
-            toggleOperatingSystemComboBox(operatingSystem)
+            setAppServicePlanContent(filterAppServicePlans(operatingSystem, cachedAppServicePlan))
+            setPricingTierContent(filterPricingTiers(operatingSystem, cachedPricingTier))
+            showRuntimePanel(operatingSystem == OperatingSystem.LINUX)
+
             lastSelectedOperatingSystem = operatingSystem
         }
     }
@@ -993,7 +1001,8 @@ class RiderWebAppSettingPanel(project: Project,
             val publishableProject = cbProject.getItemAt(cbProject.selectedIndex) ?: return@addActionListener
             if (publishableProject == lastSelectedProject) return@addActionListener
 
-            toggleProjectComboBox(publishableProject.isDotNetCore)
+            setOperatingSystemComboBoxState(publishableProject)
+            setRuntimeComboBoxState(publishableProject)
             filterWebAppTableContent(publishableProject)
 
             val webApp = lastSelectedWebApp?.resource

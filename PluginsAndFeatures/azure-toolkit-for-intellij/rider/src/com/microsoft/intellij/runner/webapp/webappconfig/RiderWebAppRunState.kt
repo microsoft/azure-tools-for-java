@@ -78,7 +78,7 @@ class RiderWebAppRunState(project: Project,
         private const val ZIP_FILE_CREATE_SUCCESSFUL = "Project ZIP is created: '%s'"
         private const val ZIP_FILE_NOT_CREATED = "Unable to create a ZIP file"
         private const val ZIP_FILE_DELETING = "Deleting ZIP file '%s'"
-        private const val ZIP_DEPLOY_START_PUBLISHING = "Publishing ZIP file..."
+        private const val ZIP_DEPLOY_START_PUBLISHING = "Publishing ZIP file. Attempt %s of %s..."
         private const val ZIP_DEPLOY_PUBLISH_SUCCESS = "Published ZIP file successfully"
         private const val ZIP_DEPLOY_PUBLISH_FAIL = "Fail publishing ZIP file: %s"
 
@@ -498,8 +498,6 @@ class RiderWebAppRunState(project: Project,
     @Throws(Exception::class)
     private fun WebApp.kuduZipDeploy(zipFile: File, processHandler: RunProcessHandler) {
 
-        processHandler.setText(ZIP_DEPLOY_START_PUBLISHING)
-
         val session = WebAppDeploySession(publishingProfile.gitUsername(), publishingProfile.gitPassword())
 
         var success = false
@@ -508,6 +506,8 @@ class RiderWebAppRunState(project: Project,
 
         try {
             do {
+                processHandler.setText(String.format(ZIP_DEPLOY_START_PUBLISHING, uploadCount + 1, UPLOADING_MAX_TRY))
+
                 try {
                     response = session.publishZip(
                             "https://" + name().toLowerCase() + URL_KUDU_ZIP_DEPLOY,
@@ -515,7 +515,7 @@ class RiderWebAppRunState(project: Project,
                             DEPLOY_TIMEOUT_MS)
                     success = response.isSuccessful
                 } catch (e: Throwable) {
-                    processHandler.setText("Attempt ${uploadCount + 1} of $UPLOADING_MAX_TRY. $ZIP_DEPLOY_PUBLISH_FAIL: $e")
+                    processHandler.setText(String.format(ZIP_DEPLOY_PUBLISH_FAIL, e))
                     e.printStackTrace()
                 }
 

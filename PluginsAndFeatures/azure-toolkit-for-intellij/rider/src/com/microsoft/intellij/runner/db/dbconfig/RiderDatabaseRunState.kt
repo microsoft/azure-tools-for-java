@@ -108,7 +108,7 @@ class RiderDatabaseRunState(project: Project,
             processHandler.setText(String.format(SQL_SERVER_CREATE, model.sqlServerName))
 
             if (model.sqlServerName.isEmpty()) throw Exception(SQL_SERVER_NAME_NOT_DEFINED)
-            if (model.region.isEmpty()) throw Exception(SQL_SERVER_REGION_NOT_DEFINED)
+            if (model.location.isEmpty()) throw Exception(SQL_SERVER_REGION_NOT_DEFINED)
             if (model.resourceGroupName.isEmpty()) throw Exception(SQL_SERVER_RESOURCE_GROUP_NAME_NOT_DEFINED)
             if (model.sqlServerAdminLogin.isEmpty()) throw Exception(SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
             if (model.sqlServerAdminPassword.isEmpty()) throw Exception(SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
@@ -116,7 +116,7 @@ class RiderDatabaseRunState(project: Project,
             val sqlServer = AzureDatabaseMvpModel.createSqlServer(
                     model.subscriptionId,
                     model.sqlServerName,
-                    model.region,
+                    model.location,
                     model.isCreatingResourceGroup,
                     model.resourceGroupName,
                     model.sqlServerAdminLogin,

@@ -1,27 +1,28 @@
 package com.microsoft.intellij.runner.db
 
+import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.sql.DatabaseEditions
 
 class AzureDatabaseSettingModel {
 
-    var subscriptionId: String = ""
+    var subscriptionId = ""
 
-    var databaseName: String = ""
+    var databaseName = ""
 
     var isCreatingResourceGroup = true
-    var resourceGroupName: String = ""
+    var resourceGroupName = ""
 
     var isCreatingSqlServer = true
-    var sqlServerId: String = ""
-    var sqlServerName: String = ""
-    var sqlServerAdminLogin: String = ""
-    var sqlServerAdminPassword: CharArray = charArrayOf()
-    var sqlServerAdminPasswordConfirm: CharArray = charArrayOf()
+    var sqlServerId = ""
+    var sqlServerName = ""
+    var sqlServerAdminLogin = ""
+    var sqlServerAdminPassword = charArrayOf()
+    var sqlServerAdminPasswordConfirm = charArrayOf()
 
-    var region: String = ""
-    var databaseEdition: DatabaseEditions = defaultDatabaseEditions
+    var location = defaultLocation
+    var databaseEdition = defaultDatabaseEditions
 
-    var collation: String = defaultCollation
+    var collation = defaultCollation
 
     fun reset() {
         subscriptionId = ""
@@ -34,12 +35,13 @@ class AzureDatabaseSettingModel {
         sqlServerAdminLogin = ""
         sqlServerAdminPassword = charArrayOf()
         sqlServerAdminPasswordConfirm = charArrayOf()
-        region = ""
+        location = defaultLocation
         databaseEdition = defaultDatabaseEditions
         collation = defaultCollation
     }
 
     companion object {
+        val defaultLocation: String = Region.US_EAST.name()
         const val defaultCollation = "SQL_Latin1_General_CP1_CI_AS"
         val defaultDatabaseEditions: DatabaseEditions = DatabaseEditions.STANDARD
     }
