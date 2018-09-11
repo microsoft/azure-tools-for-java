@@ -41,7 +41,7 @@ import java.util.Map;
 
 public class DockerImageNode extends AzureRefreshableNode implements TelemetryProperties{
   //TODO: Replace the icons with the real Docker host icons
-  private static final String DOCKER_IMAGE_ICON_PATH = "DockerInstance_16.png";
+  private static final String DOCKER_IMAGE_ICON_PATH = "DockerInstance.svg";
 
   public static final String ACTION_DELETE = "Delete";
   public static final String ACTION_PUSH2REGISTRY = "Push";

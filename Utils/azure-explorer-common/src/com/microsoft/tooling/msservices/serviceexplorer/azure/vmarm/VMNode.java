@@ -146,9 +146,9 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         }
     }
 
-    private static final String WAIT_ICON_PATH = "VirtualMachineUpdating_16.png";
-    private static final String STOP_ICON_PATH = "VirtualMachineStopped_16.png";
-    private static final String RUN_ICON_PATH = "VirtualMachineRunning_16.png";
+    private static final String WAIT_ICON_PATH = "VirtualMachineUpdating.svg";
+    private static final String STOP_ICON_PATH = "VirtualMachineStopped.svg";
+    private static final String RUN_ICON_PATH = "VirtualMachineRunning.svg";
     private static final String ACTION_DELETE = "Delete";
     public static final String ACTION_DOWNLOAD_RDP_FILE = "Connect Remote Desktop";
     private static final String ACTION_SHUTDOWN = "Shutdown";

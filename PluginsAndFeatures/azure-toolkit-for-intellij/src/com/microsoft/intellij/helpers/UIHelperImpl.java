@@ -29,6 +29,7 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -473,9 +474,8 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @NotNull
-    public static ImageIcon loadIcon(@Nullable String name) {
-        java.net.URL url = UIHelperImpl.class.getResource("/icons/" + name);
-        return new ImageIcon(url);
+    public static Icon loadIcon(@Nullable String name) {
+        return IconLoader.getIcon("icons/" + name);
     }
 
     private LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String fileType, String resourceId) {

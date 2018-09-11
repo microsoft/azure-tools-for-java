@@ -3,12 +3,12 @@ package com.microsoft.intellij.runner.webapp
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.SystemInfo
 import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.run.configurations.publishing.RiderContextPublishProvider
 import com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfiguration
 import com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfigurationType
-import icons.RiderIcons
 import javax.swing.Icon
 
 class AzureDotNetWebAppContextPublishProvider : RiderContextPublishProvider {
@@ -18,8 +18,7 @@ class AzureDotNetWebAppContextPublishProvider : RiderContextPublishProvider {
     }
 
     override val icon: Icon
-        // TODO: Replace with a custom icon (RIDER-18401)
-        get() = RiderIcons.Publish.PublishAzure
+        get() = IconLoader.getIcon("icons/WebApp.svg")
 
     override val name: String
         get() = "Publish to Azure"

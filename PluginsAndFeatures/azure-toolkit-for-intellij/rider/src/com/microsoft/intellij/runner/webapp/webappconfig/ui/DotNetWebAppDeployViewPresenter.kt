@@ -1,14 +1,7 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.ui
 
-import com.microsoft.azure.management.appservice.AppServicePlan
 import com.microsoft.azure.management.appservice.RuntimeStack
-import com.microsoft.azure.management.appservice.WebApp
-import com.microsoft.azure.management.resources.Location
-import com.microsoft.azure.management.resources.ResourceGroup
-import com.microsoft.azure.management.resources.Subscription
-import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
-import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
@@ -39,42 +32,24 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
     }
 
     fun onLoadSubscription() {
-        Observable.fromCallable<List<Subscription>> { AzureMvpModel.getInstance().selectedSubscriptions }
-                .subscribeOn(schedulerProvider.io())
-                .subscribe({ subscriptions ->
-                    DefaultLoader.getIdeHelper().invokeLater {
-                        if (isViewDetached) {
-                            return@invokeLater
-                        }
-                        mvpView.fillSubscription(subscriptions)
-                    }
-                }, { e -> errorHandler(CANNOT_LIST_SUBSCRIPTION, e as Exception) })
+        subscribe(
+                { AzureMvpModel.getInstance().selectedSubscriptions },
+                { mvpView.fillSubscription(it) },
+                CANNOT_LIST_SUBSCRIPTION)
     }
 
     fun onLoadResourceGroups(subscriptionId: String) {
-        Observable.fromCallable<List<ResourceGroup>> { AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId) }
-                .subscribeOn(schedulerProvider.io())
-                .subscribe({ resourceGroups ->
-                    DefaultLoader.getIdeHelper().invokeLater {
-                        if (isViewDetached) {
-                            return@invokeLater
-                        }
-                        mvpView.fillResourceGroup(resourceGroups)
-                    }
-                }, { e -> errorHandler(CANNOT_LIST_RESOURCE_GROUP, e as Exception) })
+        subscribe(
+                { AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId) },
+                { mvpView.fillResourceGroup(it) },
+                CANNOT_LIST_RESOURCE_GROUP)
     }
 
     fun onLoadAppServicePlan(subscriptionId: String) {
-        Observable.fromCallable<List<AppServicePlan>> { AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionId(subscriptionId) }
-                .subscribeOn(schedulerProvider.io())
-                .subscribe({ appServicePlans ->
-                    DefaultLoader.getIdeHelper().invokeLater {
-                        if (isViewDetached) {
-                            return@invokeLater
-                        }
-                        mvpView.fillAppServicePlan(appServicePlans)
-                    }
-                }, { e -> errorHandler(CANNOT_LIST_APP_SERVICE_PLAN, e as Exception) })
+        subscribe(
+                { AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionId(subscriptionId) },
+                { mvpView.fillAppServicePlan(it) },
+                CANNOT_LIST_APP_SERVICE_PLAN)
     }
 
     fun onLoadOperatingSystem() {
@@ -87,16 +62,10 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
     }
 
     fun onLoadLocation(subscriptionId: String) {
-        Observable.fromCallable<List<Location>> { AzureMvpModel.getInstance().listLocationsBySubscriptionId(subscriptionId) }
-                .subscribeOn(schedulerProvider.io())
-                .subscribe({ locations ->
-                    DefaultLoader.getIdeHelper().invokeLater {
-                        if (isViewDetached) {
-                            return@invokeLater
-                        }
-                        mvpView.fillLocation(locations)
-                    }
-                }, { e -> errorHandler(CANNOT_LIST_LOCATION, e as Exception) })
+        subscribe(
+                { AzureMvpModel.getInstance().listLocationsBySubscriptionId(subscriptionId) },
+                { mvpView.fillLocation(it) },
+                CANNOT_LIST_LOCATION)
     }
 
     fun onLoadPricingTier() {
@@ -124,27 +93,30 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
     }
 
     fun onLoadSqlDatabase(subscriptionId: String) {
-        Observable.fromCallable<List<SqlDatabase>> { AzureDatabaseMvpModel.listSqlDatabasesBySubscriptionId(subscriptionId) }
-                .subscribeOn(schedulerProvider.io())
-                .subscribe({ databases ->
-                    DefaultLoader.getIdeHelper().invokeLater {
-                        if (isViewDetached) return@invokeLater
-                        mvpView.fillSqlDatabase(databases)
-                    }
-                }, { e -> errorHandler(CANNOT_LIST_SQL_DATABASE, e as Exception) })
+        subscribe(
+                { AzureDatabaseMvpModel.listSqlDatabasesBySubscriptionId(subscriptionId).filter { it.name() != "master" } },
+                { mvpView.fillSqlDatabase(it) },
+                CANNOT_LIST_SQL_DATABASE)
     }
 
     private fun loadWebApps(forceRefresh: Boolean) {
-        Observable.fromCallable<List<ResourceEx<WebApp>>> { AzureDotNetWebAppMvpModel.listWebApps(forceRefresh) }
+        subscribe(
+                { AzureDotNetWebAppMvpModel.listWebApps(forceRefresh) },
+                { mvpView.renderWebAppsTable(it) },
+                CANNOT_LIST_WEB_APP)
+    }
+
+    private fun <T>subscribe(callableFunc: () -> T, invokeLaterCallback: (T) -> Unit, msg: String) {
+        Observable.fromCallable<T> { callableFunc() }
                 .subscribeOn(schedulerProvider.io())
-                .subscribe({ webAppList ->
+                .subscribe({ values ->
                     DefaultLoader.getIdeHelper().invokeLater {
                         if (isViewDetached) {
                             return@invokeLater
                         }
-                        mvpView.renderWebAppsTable(webAppList)
+                        invokeLaterCallback(values)
                     }
-                }, { e -> errorHandler(CANNOT_LIST_WEB_APP, e as Exception) })
+                }, { e -> errorHandler(msg, e as Exception) })
     }
 
     private fun errorHandler(msg: String, e: Exception) {

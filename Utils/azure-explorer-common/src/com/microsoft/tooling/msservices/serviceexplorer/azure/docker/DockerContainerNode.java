@@ -41,9 +41,9 @@ import static com.microsoft.azure.docker.ops.utils.AzureDockerUtils.checkDockerC
 
 public class DockerContainerNode extends AzureRefreshableNode implements TelemetryProperties {
   //TODO: Replace the icons with the real Docker host icons
-  private static final String DOCKER_CONTAINER_ICON_PATH = "DockerInstance2_16.png";
-  private static final String DOCKER_CONTAINER_WEB_RUN_ICON = "DockerInstanceRunning2_16.png";
-  private static final String DOCKER_CONTAINER_WEB_STOP_ICON = "DockerInstanceStopped2_16.png";
+  private static final String DOCKER_CONTAINER_ICON_PATH = "DockerInstance2.svg";
+  private static final String DOCKER_CONTAINER_WEB_RUN_ICON = "DockerInstanceRunning2.svg";
+  private static final String DOCKER_CONTAINER_WEB_STOP_ICON = "DockerInstanceStopped2.svg";
 
   private static final String ACTION_STOP_ICON = "Stop.png";
   private static final String ACTION_START_ICON = "Start.png";

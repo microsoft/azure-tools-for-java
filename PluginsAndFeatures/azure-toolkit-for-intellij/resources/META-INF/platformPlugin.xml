@@ -168,7 +168,7 @@
           factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"
           id="Azure Explorer"
           canCloseContents="false"
-          icon="/icons/AzureExplorer_16.png"/>
+          icon="/icons/AzureExplorer.svg"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.microsoft.intellij">
@@ -181,7 +181,7 @@
             icon="/icons/PublishDockerContainer_16.png">
     </action>
     <action class="com.microsoft.intellij.actions.AzureExplorerOpenAction" id="Actions.AzureExplorerOpenAction"
-            text="Show Azure Explorer" description="Show Azure Explorer" icon="/icons/AzureExplorer_16.png"/>
+            text="Show Azure Explorer" description="Show Azure Explorer" icon="/icons/AzureExplorer.svg"/>
     <action id="Actions.AzureCodeSamples"
             class="com.microsoft.intellij.actions.AzureCodeSamples"
             text="Azure Code Samples"

@@ -2,14 +2,14 @@ package com.microsoft.intellij.runner.webapp.webappconfig
 
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
-import icons.RiderIcons
+import com.intellij.openapi.util.IconLoader
+import com.microsoft.tooling.msservices.components.DefaultLoader
 import org.jetbrains.annotations.Nls
 import javax.swing.Icon
 
 class RiderWebAppConfigurationType : ConfigurationType {
 
     companion object {
-
         private const val RUN_CONFIG_TYPE_ID = "AzureDotNetWebAppPublish"
         private const val RUN_CONFIG_TYPE_NAME = "Azure Publish to Web App"
         private const val RUN_CONFIG_TYPE_DESCRIPTION = "Azure Publish to Web App configuration"
@@ -29,10 +29,7 @@ class RiderWebAppConfigurationType : ConfigurationType {
         return RUN_CONFIG_TYPE_DESCRIPTION
     }
 
-    override fun getIcon(): Icon {
-        // TODO: This should be replaced with a custom icon (RIDER-18401)
-        return RiderIcons.Publish.PublishAzure
-    }
+    override fun getIcon(): Icon = IconLoader.getIcon("icons/publishAzure.svg")
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {
         return arrayOf(RiderWebAppConfigurationFactory(this))

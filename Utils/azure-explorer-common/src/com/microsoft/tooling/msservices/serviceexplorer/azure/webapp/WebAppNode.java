@@ -46,8 +46,8 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
     private static final String ACTION_RESTART = "Restart";
     private static final String ACTION_OPEN_IN_BROWSER = "Open In Browser";
     private static final String ACTION_SHOW_PROPERTY = "Show Properties";
-    private static final String WEB_RUN_ICON = "WebAppRunning_16.png";
-    private static final String WEB_STOP_ICON = "WebAppStopped_16.png";
+    private static final String WEB_RUN_ICON = "WebAppRunning.svg";
+    private static final String WEB_STOP_ICON = "WebAppStopped.svg";
     private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete Web App %s.\n"
             + "Are you sure you want to continue?";
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";

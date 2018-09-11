@@ -23,15 +23,15 @@ package com.microsoft.azure.hdinsight.common;
 
 public class CommonConst {
     public static final String ProductIConPath = "/icons/Product.png";
-    public static final String RefreshIConPath = "/icons/Refresh.png";
+    public static final String RefreshIConPath = "/icons/Refresh.svg";
     public static final String BlobFileIConPath = "/icons/BlobFile.png";
     public static final String HDExplorerIconPath = "HdExplorer.png";
     public static final String HDInsightIConPath = "HdInsight.png";
     public static final String HDInsightGrayIconPath = "HdInsight_gray.png";
     public static final String ClusterIConPath = "Cluster.png";
-    public static final String StorageAccountIConPath = "StorageAccount_16.png";
+    public static final String StorageAccountIConPath = "StorageAccount.svg";
     public static final String ADLS_STORAGE_ACCOUNT_ICON_PATH = "adls_storageaccount.png";
-    public static final String StorageAccountFoldIConPath = "StorageAccountFolder.png";
+    public static final String StorageAccountFoldIConPath = "StorageAccountFolder.svg";
     public static final String BlobContainerIConPath = "BlobFile_16.png";
     public static final String JavaProjectIconPath = "/icons/Spark-Java.png";
     public static final String ScalaProjectIconPath = "/icons/Spark-Scala.png";

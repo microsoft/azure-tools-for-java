@@ -14,7 +14,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 public class WebAppModule extends AzureRefreshableNode {
     private static final String REDIS_SERVICE_MODULE_ID = WebAppModule.class.getName();
-    private static final String ICON_PATH = "WebApp_16.png";
+    private static final String ICON_PATH = "WebApp.svg";
     private static final String BASE_MODULE_NAME = "Web Apps";
     private final WebAppModulePresenter<WebAppModule> webAppModulePresenter;
 

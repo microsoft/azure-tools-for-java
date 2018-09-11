@@ -9,25 +9,28 @@ import com.intellij.util.io.ZipUtil
 import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
-import com.jetbrains.rider.util.concurrent.SyncEvent
 import com.jetbrains.rider.util.idea.application
 import com.microsoft.azure.management.appservice.ConnectionStringType
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.WebApp
+import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel
 import com.microsoft.azuretools.utils.AzureUIRefreshCore
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent
 import com.microsoft.intellij.runner.AzureRunProfileState
 import com.microsoft.intellij.runner.RunProcessHandler
+import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.utils.WebAppDeploySession
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import okhttp3.Response
+import org.jetbrains.concurrency.AsyncPromise
 import java.io.File
 import java.io.FileFilter
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
+import java.util.concurrent.TimeUnit
 import java.util.zip.ZipOutputStream
 
 class RiderWebAppRunState(project: Project,
@@ -58,11 +61,15 @@ class RiderWebAppRunState(project: Project,
         private const val APP_SERVICE_PLAN_NAME_NOT_DEFINED = "App Service Plan Name is not defined"
         private const val APP_SERVICE_PLAN_LOCATION_NOT_DEFINED = "App Service Plan Location is not defined"
 
-        private const val DEPLOY_SUCCESSFUL = "Deploy successfully!"
+        private const val DEPLOY_SUCCESSFUL = "Deploy succeeded."
 
         private const val CONNECTION_STRING_NAME_NOT_SET = "Connection string not set"
         private const val CONNECTION_STRING_CREATING = "Creating connection string with name '%s'..."
+        private const val CONNECTION_STRING_CREATE_FAILED = "Failed to create Connection String to web app: %s"
         private const val DATABASE_NOT_SET = "Database not set"
+        private const val SQL_SERVER_ADMIN_LOGIN_NOT_SET = "SQL Server Admin Login is not set"
+        private const val SQL_SERVER_ADMIN_PASSWORD_NOT_SET = "SQL Server Admin Password is not set"
+        private const val SQL_SERVER_CANNOT_GET = "Unable to find SQL Server with name '%s'"
 
         private const val PROJECT_ARTIFACTS_COLLECTING = "Collecting '%s' project artifacts..."
         private const val PROJECT_ARTIFACTS_COLLECTING_FAILED = "Failed collecting project artifacts. Please see Build output"
@@ -71,7 +78,7 @@ class RiderWebAppRunState(project: Project,
         private const val ZIP_FILE_CREATE_SUCCESSFUL = "Project ZIP is created: '%s'"
         private const val ZIP_FILE_NOT_CREATED = "Unable to create a ZIP file"
         private const val ZIP_FILE_DELETING = "Deleting ZIP file '%s'"
-        private const val ZIP_DEPLOY_START_PUBLISHING = "Publishing ZIP file..."
+        private const val ZIP_DEPLOY_START_PUBLISHING = "Publishing ZIP file. Attempt %s of %s..."
         private const val ZIP_DEPLOY_PUBLISH_SUCCESS = "Published ZIP file successfully"
         private const val ZIP_DEPLOY_PUBLISH_FAIL = "Fail publishing ZIP file: %s"
 
@@ -102,6 +109,8 @@ class RiderWebAppRunState(project: Project,
 
         val publishableProject = myModel.publishableProject ?: throw Exception(PROJECT_NOT_DEFINED)
 
+        if (myModel.subscriptionId.isEmpty()) throw Exception(SUBSCRIPTION_ID_NOT_DEFINED)
+
         val webApp = getOrCreateWebAppFromConfiguration(myModel, processHandler)
 
         webAppStop(webApp, processHandler)
@@ -111,7 +120,19 @@ class RiderWebAppRunState(project: Project,
         }
 
         if (myModel.isDatabaseConnectionEnabled) {
-            addConnectionString(webApp, processHandler)
+            val database = myModel.database ?: throw Exception(DATABASE_NOT_SET)
+            if (myModel.connectionStringName.isEmpty()) throw Exception(CONNECTION_STRING_NAME_NOT_SET)
+            if (myModel.sqlDatabaseAdminLogin.isEmpty()) throw Exception(SQL_SERVER_ADMIN_LOGIN_NOT_SET)
+            if (myModel.sqlDatabaseAdminPassword.isEmpty()) throw Exception(SQL_SERVER_ADMIN_PASSWORD_NOT_SET)
+
+            addConnectionString(
+                    myModel.subscriptionId,
+                    webApp,
+                    database,
+                    myModel.connectionStringName,
+                    myModel.sqlDatabaseAdminLogin,
+                    myModel.sqlDatabaseAdminPassword,
+                    processHandler)
         }
 
         webAppStart(webApp, processHandler)
@@ -161,8 +182,6 @@ class RiderWebAppRunState(project: Project,
      */
     private fun getOrCreateWebAppFromConfiguration(model: AzureDotNetWebAppSettingModel,
                                                    processHandler: RunProcessHandler): WebApp {
-
-        if (model.subscriptionId.isEmpty()) throw Exception(SUBSCRIPTION_ID_NOT_DEFINED)
 
         if (model.isCreatingWebApp) {
             processHandler.setText(String.format(WEB_APP_CREATE, myModel.webAppName))
@@ -292,24 +311,31 @@ class RiderWebAppRunState(project: Project,
 
     //region Database Connection
 
-    private fun addConnectionString(webApp: WebApp, processHandler: RunProcessHandler) {
+    private fun addConnectionString(subscriptionId: String,
+                                    webApp: WebApp,
+                                    database: SqlDatabase,
+                                    connectionStringName: String,
+                                    adminLogin: String,
+                                    adminPassword: CharArray,
+                                    processHandler: RunProcessHandler) {
 
-        if (myModel.connectionStringName.isEmpty()) throw Exception(CONNECTION_STRING_NAME_NOT_SET)
-        val database = myModel.database ?: throw Exception(DATABASE_NOT_SET)
+        val sqlServer = AzureDatabaseMvpModel.getSqlServerByName(subscriptionId, database.sqlServerName(), true)
 
-        val sqlServer = database.parent().manager().sqlServers().getByResourceGroup(database.resourceGroupName(), database.sqlServerName())
+        if (sqlServer == null) {
+            val message = String.format(SQL_SERVER_CANNOT_GET, database.sqlServerName())
+            processHandler.setText(String.format(CONNECTION_STRING_CREATE_FAILED, message))
+            return
+        }
+
         val fullyQualifiedDomainName = sqlServer.fullyQualifiedDomainName()
-
-        val adminLogin = sqlServer.administratorLogin()
-        val adminPass = myModel.sqlDatabaseAdminPassword
 
         val connectionStringValue =
                 "Data Source=tcp:$fullyQualifiedDomainName,1433;" +
                         "Initial Catalog=${database.name()};" +
-                        "User Id=$adminLogin@${sqlServer.name()};" +
-                        "Password=${adminPass.joinToString("")}"
+                        "User Id=$adminLogin@${database.sqlServerName()};" +
+                        "Password=${adminPassword.joinToString("")}"
 
-        updateWithConnectionString(webApp, myModel.connectionStringName, connectionStringValue, processHandler)
+        updateWithConnectionString(webApp, connectionStringName, connectionStringValue, processHandler)
     }
 
     //endregion Database Connection
@@ -344,14 +370,12 @@ class RiderWebAppRunState(project: Project,
 
         try {
             processHandler.setText(String.format(PROJECT_ARTIFACTS_COLLECTING, publishableProject.projectName))
-            val outDir = collectProjectArtifacts(project, publishableProject, processHandler)
+            val outDir = collectProjectArtifacts(project, publishableProject)
 
             processHandler.setText(String.format(ZIP_FILE_CREATE_FOR_PROJECT, publishableProject.projectName))
             val zipFile = zipProjectArtifacts(outDir, processHandler)
 
-            processHandler.setText(ZIP_DEPLOY_START_PUBLISHING)
             webApp.kuduZipDeploy(zipFile, processHandler)
-            processHandler.setText(ZIP_DEPLOY_PUBLISH_SUCCESS)
 
             if (zipFile.exists()) {
                 processHandler.setText(String.format(ZIP_FILE_DELETING, zipFile.path))
@@ -374,20 +398,21 @@ class RiderWebAppRunState(project: Project,
      * @return [File] to project content to be published
      */
     private fun collectProjectArtifacts(project: Project,
-                                        publishableProject: PublishableProjectModel,
-                                        processHandler: RunProcessHandler): File {
+                                        publishableProject: PublishableProjectModel): File {
 
         // Get out parameters
         val publishService = MsBuildPublishingService.getInstance(project)
         val (targetProperties, outPath) = publishService.getPublishToTempDirParameterAndPath()
 
-        val event = SyncEvent()
+        val event = AsyncPromise<BuildResultKind>()
         application.invokeLater {
 
             val onFinish: (result: BuildResultKind) -> Unit = {
-                if (it != BuildResultKind.Successful) processHandler.setText(PROJECT_ARTIFACTS_COLLECTING_FAILED)
-                requestRunWindowFocus()
-                event.set()
+                if (it == BuildResultKind.Successful || it == BuildResultKind.HasWarnings) {
+                    requestRunWindowFocus()
+                }
+
+                event.setResult(it)
             }
 
             if (publishableProject.isDotNetCore) {
@@ -396,7 +421,11 @@ class RiderWebAppRunState(project: Project,
                 publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, false, onFinish)
             }
         }
-        event.wait(COLLECT_ARTIFACTS_TIMEOUT_MS)
+
+        val buildResult = event.get(COLLECT_ARTIFACTS_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+        if (buildResult != BuildResultKind.Successful && buildResult != BuildResultKind.HasWarnings) {
+            throw Exception(PROJECT_ARTIFACTS_COLLECTING_FAILED)
+        }
 
         return outPath.toFile().canonicalFile
     }
@@ -477,6 +506,8 @@ class RiderWebAppRunState(project: Project,
 
         try {
             do {
+                processHandler.setText(String.format(ZIP_DEPLOY_START_PUBLISHING, uploadCount + 1, UPLOADING_MAX_TRY))
+
                 try {
                     response = session.publishZip(
                             "https://" + name().toLowerCase() + URL_KUDU_ZIP_DEPLOY,
@@ -484,7 +515,7 @@ class RiderWebAppRunState(project: Project,
                             DEPLOY_TIMEOUT_MS)
                     success = response.isSuccessful
                 } catch (e: Throwable) {
-                    processHandler.setText("Attempt ${uploadCount + 1} of $UPLOADING_MAX_TRY. $ZIP_DEPLOY_PUBLISH_FAIL: $e")
+                    processHandler.setText(String.format(ZIP_DEPLOY_PUBLISH_FAIL, e))
                     e.printStackTrace()
                 }
 

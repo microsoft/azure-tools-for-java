@@ -35,7 +35,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 public class DockerHostModule extends AzureRefreshableNode {
   private static final String DOCKER_HOST_MODULE_ID = DockerHostModule.class.getName();
-  private static final String DOCKER_HOST_ICON = "DockerContainer_16.png";
+  private static final String DOCKER_HOST_ICON = "DockerContainer.svg";
   private static final String BASE_MODULE_NAME = "Docker Hosts";
 
   private AzureDockerHostsManager dockerManager;

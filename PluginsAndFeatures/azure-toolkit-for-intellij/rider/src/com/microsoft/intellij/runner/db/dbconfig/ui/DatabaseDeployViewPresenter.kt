@@ -10,7 +10,7 @@ class DatabaseDeployViewPresenter<V : DatabaseDeployMvpView> : MvpPresenter<V>()
 
     companion object {
         private const val CANNOT_LIST_SUBSCRIPTION = "Failed to list subscriptions."
-        private const val CANNOT_LIST_RES_GRP = "Failed to list resource groups."
+        private const val CANNOT_LIST_RESOURCE_GROUP = "Failed to list resource groups."
         private const val CANNOT_LIST_SQL_SERVER = "Failed to list SQL Servers."
         private const val CANNOT_LIST_LOCATION = "Failed to list locations."
         private const val CANNOT_LIST_DATABASE_EDITION = "Failed to list database editions."
@@ -27,7 +27,7 @@ class DatabaseDeployViewPresenter<V : DatabaseDeployMvpView> : MvpPresenter<V>()
         subscribe(
                 { AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId) },
                 { mvpView.fillResourceGroup(it) },
-                CANNOT_LIST_RES_GRP)
+                CANNOT_LIST_RESOURCE_GROUP)
     }
 
     fun onLoadSqlServers(subscriptionId: String) {
