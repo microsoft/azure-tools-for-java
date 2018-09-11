@@ -398,7 +398,6 @@ public class WebAppUtils {
                     return DEFAULT_VALUE_WHEN_VERSION_INVALID;
                 }
 
-                // TOMCAT|8.5-jre8 -> Tomcat 8.5 (JRE8)
                 final String[] versions = linuxVersion.split("\\||-");
                 if (versions == null && versions.length != 3) {
                     return linuxVersion;
@@ -408,8 +407,10 @@ public class WebAppUtils {
                 final String webContainerVersion = versions[1];
                 final String jreVersion = versions[2];
                 if (webContainer.contains("tomcat")) {
+                    // TOMCAT|8.5-jre8 -> Tomcat 8.5 (JRE8)
                     return String.format("%s %s (%s)", StringUtils.capitalize(webContainer), webContainerVersion, jreVersion.toUpperCase());
                 } else {
+                    // JAVA|8-jre8 -> JRE8
                     return jreVersion.toUpperCase();
                 }
             default:
