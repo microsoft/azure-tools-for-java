@@ -193,8 +193,12 @@ class RiderDatabaseSettingPanel(project: Project,
     }
 
     override fun fillResourceGroup(resourceGroups: List<ResourceGroup>) {
+
+        allowExistingResourceGroups(resourceGroups.isNotEmpty())
+
         cbExistResGrp.removeAllItems()
         if (resourceGroups.isEmpty()) {
+            toggleResourceGroupPanel(true)
             lastSelectedResourceGroupName = ""
             return
         }
@@ -211,9 +215,12 @@ class RiderDatabaseSettingPanel(project: Project,
     }
 
     override fun fillSqlServer(sqlServers: List<SqlServer>) {
+
+        allowExistingSqlServers(sqlServers.isNotEmpty())
         cbExistSqlServer.removeAllItems()
 
         if (sqlServers.isEmpty()) {
+            toggleSqlServerPanel(true)
             lastSelectedSqlServer = null
             return
         }
@@ -499,6 +506,16 @@ class RiderDatabaseSettingPanel(project: Project,
     private fun resetSqlServerComboBoxValues() {
         lblExistingSqlServerLocation.text = NOT_APPLICABLE
         lblExistingSqlServerAdminLogin.text = NOT_APPLICABLE
+    }
+
+    private fun allowExistingResourceGroups(isAllowed: Boolean) {
+        rdoUseExistResGrp.isEnabled = isAllowed
+        cbExistResGrp.isEnabled = isAllowed
+    }
+
+    private fun allowExistingSqlServers(isAllowed: Boolean) {
+        rdoUseExistSqlServer.isEnabled = isAllowed
+        cbExistSqlServer.isEnabled = isAllowed
     }
 
     /**

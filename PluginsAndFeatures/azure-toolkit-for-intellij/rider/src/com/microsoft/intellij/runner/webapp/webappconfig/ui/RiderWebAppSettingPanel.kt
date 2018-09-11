@@ -387,8 +387,12 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     override fun fillResourceGroup(resourceGroups: List<ResourceGroup>) {
+
+        allowExistingResourceGroups(resourceGroups.isNotEmpty())
+
         cbResourceGroup.removeAllItems()
         if (resourceGroups.isEmpty()) {
+            toggleResourceGroupPanel(true)
             lastSelectedResourceGroupName = ""
             return
         }
@@ -405,8 +409,10 @@ class RiderWebAppSettingPanel(project: Project,
     override fun fillAppServicePlan(appServicePlans: List<AppServicePlan>) {
 
         cachedAppServicePlan = appServicePlans
+        allowExistingAppServicePlans(appServicePlans.isNotEmpty())
 
         if (appServicePlans.isEmpty()) {
+            toggleAppServicePlanPanel(true)
             lblLocation.text = NOT_APPLICABLE
             lblPricingTier.text = NOT_APPLICABLE
             return
@@ -1116,6 +1122,16 @@ class RiderWebAppSettingPanel(project: Project,
         cbDatabase.removeAllItems()
         lblSqlDbAdminLogin.text = NOT_APPLICABLE
         passSqlDbAdminPassword.text = ""
+    }
+
+    private fun allowExistingResourceGroups(isAllowed: Boolean) {
+        rdoUseExistResGrp.isEnabled = isAllowed
+        cbResourceGroup.isEnabled = isAllowed
+    }
+
+    private fun allowExistingAppServicePlans(isAllowed: Boolean) {
+        rdoUseExistAppServicePlan.isEnabled = isAllowed
+        cbAppServicePlan.isEnabled = isAllowed
     }
 
     /**
