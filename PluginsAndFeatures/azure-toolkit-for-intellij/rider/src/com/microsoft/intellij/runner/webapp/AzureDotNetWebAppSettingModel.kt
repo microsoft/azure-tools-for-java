@@ -4,6 +4,7 @@ import com.jetbrains.rider.model.PublishableProjectModel
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.appservice.RuntimeStack
+import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.sql.SqlDatabase
 
@@ -33,6 +34,19 @@ class AzureDotNetWebAppSettingModel {
     var sqlDatabaseAdminPassword = charArrayOf()
 
     var publishableProject: PublishableProjectModel? = null
+
+    fun reset(webApp: WebApp) {
+        isCreatingWebApp = false
+        webAppId = webApp.id()
+        webAppName = ""
+
+        isCreatingResourceGroup = false
+        resourceGroupName = webApp.resourceGroupName()
+
+        isCreatingAppServicePlan = false
+        appServicePlanId = webApp.appServicePlanId()
+        appServicePlanName = ""
+    }
 
     companion object {
         val defaultOperatingSystem = OperatingSystem.WINDOWS

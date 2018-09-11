@@ -75,6 +75,8 @@ class RiderWebAppSettingPanel(project: Project,
         private const val WEB_APP_TABLE_COLUMN_LOCATION = "Location"
         private const val WEB_APP_TABLE_COLUMN_OS = "OS"
         private const val WEB_APP_TABLE_COLUMN_DOTNET_VERSION = ".Net Version"
+        private const val WEB_APP_RUNTIME_MISMATCH_WARNING =
+                "Selected Azure WebApp runtime '%s' mismatch with Project .Net Core Framework '%s'"
 
         private const val BUTTON_REFRESH_NAME = "Refresh"
 
@@ -683,7 +685,8 @@ class RiderWebAppSettingPanel(project: Project,
         setRuntimeMismatchWarning(false)
     }
 
-    private fun setRuntimeMismatchWarning(show: Boolean) {
+    private fun setRuntimeMismatchWarning(show: Boolean, message: String = "") {
+        lblRuntimeMismatchWarning.text = message
         lblRuntimeMismatchWarning.isVisible = show
     }
 
@@ -694,11 +697,13 @@ class RiderWebAppSettingPanel(project: Project,
         }
 
         // DOTNETCORE|2.0 -> 2.0
-        val webAppTargetFramework = webApp.linuxFxVersion().split('|').getOrNull(1)
+        val webAppFrameworkVersion = webApp.linuxFxVersion().split('|').getOrNull(1)
 
         // .NETCoreApp,Version=v2.0 -> 2.0
-        val netCoreVersion = getProjectTargetFramework(publishableProject)
-        setRuntimeMismatchWarning(webAppTargetFramework != netCoreVersion)
+        val projectNetCoreVersion = getProjectTargetFramework(publishableProject)
+        setRuntimeMismatchWarning(
+                webAppFrameworkVersion != projectNetCoreVersion,
+                String.format(WEB_APP_RUNTIME_MISMATCH_WARNING, webAppFrameworkVersion, projectNetCoreVersion))
     }
 
     private fun getProjectTargetFramework(publishableProject: PublishableProjectModel): String {
