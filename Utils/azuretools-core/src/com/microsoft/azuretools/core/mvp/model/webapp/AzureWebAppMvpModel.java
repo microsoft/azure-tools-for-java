@@ -493,24 +493,20 @@ public class AzureWebAppMvpModel {
     }
 
     /**
-<<<<<<< HEAD
-     * List all the Web Apps on Linux in selected subscriptions.
-=======
-     * List available Java linux RuntimeStacks
-     * @return
+     * List all available Java linux RuntimeStacks.
+     * todo: For those unchanged list, like jdk versions, web containers,
+     * linux runtimes, do we really need to get the values from Mvp model every time?
      */
     public List<RuntimeStack> getLinuxRuntimes() {
         final List<RuntimeStack> runtimes = new ArrayList<>();
-       runtimes.add(RuntimeStack.TOMCAT_8_5_JRE8);
-       runtimes.add(RuntimeStack.TOMCAT_9_0_JRE8);
+        runtimes.add(RuntimeStack.TOMCAT_8_5_JRE8);
+        runtimes.add(RuntimeStack.TOMCAT_9_0_JRE8);
         runtimes.add(RuntimeStack.JAVA_8_JRE8);
-       return runtimes;
+        return runtimes;
     }
 
     /**
-     * List Web App on Linux in all selected subscriptions.
-     *
->>>>>>> Add Linux option (UI part) when users create new web app
+     * List all the Web Apps on Linux in selected subscriptions.
      * @param force flag indicating whether force to fetch most updated data from server
      * @return list of Web App on Linux
      */
