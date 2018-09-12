@@ -27,6 +27,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -34,19 +35,17 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
-
 import com.microsoft.intellij.util.MavenRunTaskUtil;
-import org.apache.commons.net.ftp.FTPClient;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Map;
-
+import org.apache.commons.net.ftp.FTPClient;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
 
 public class WebAppRunState extends AzureRunProfileState<WebApp> {
@@ -70,9 +69,8 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
     private static final String WEB_CONFIG_PACKAGE_PATH = "/webapp/web.config";
     private static final String BASE_PATH = "/site/wwwroot/";
     private static final String WEB_APP_BASE_PATH = BASE_PATH + "webapps/";
-    private static final String WEB_CONFIG_FTP_PATH = "/site/wwwroot/web.config";
-    private static final String ROOT_PATH = BASE_PATH + "ROOT";
     private static final String CONTAINER_ROOT_PATH = WEB_APP_BASE_PATH + "ROOT";
+    private static final String TEMP_FILE_PREFIX = "azuretoolkit";
 
     private static final int SLEEP_TIME = 5000; // milliseconds
     private static final int UPLOADING_MAX_TRY = 3;
@@ -99,32 +97,32 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         processHandler.setText(STOP_WEB_APP);
         webApp.stop();
 
-        processHandler.setText(GETTING_DEPLOYMENT_CREDENTIAL);
-        PublishingProfile profile = webApp.getPublishingProfile();
-
-        processHandler.setText(CONNECTING_FTP);
-        FTPClient ftp = WebAppUtils.getFtpConnection(profile);
-
         int indexOfDot = webAppSettingModel.getTargetName().lastIndexOf(".");
         String fileName = webAppSettingModel.getTargetName().substring(0, indexOfDot);
         String fileType = webAppSettingModel.getTargetName().substring(indexOfDot + 1);
 
-        int webConfigUploadCount = uploadWebConfigFile(ftp, fileType, processHandler);
-        telemetryMap.put("webConfigCount", String.valueOf(webConfigUploadCount));
+        switch (fileType) {
+            case MavenConstants.TYPE_WAR:
+                try (FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath())) {
+                    uploadWarArtifact(input, webApp, fileName, processHandler, telemetryMap);
+                }
+                break;
+            case MavenConstants.TYPE_JAR:
+                if (webAppSettingModel.isCreatingNew()) {
+                    prepareWebConfig(webApp, processHandler, telemetryMap);
+                } else {
+                    // to align with previous behavior, always track the count of uploading web config
+                    telemetryMap.put("webConfigCount", "0");
+                }
 
-        try (FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath())) {
-            int artifactUploadCount = uploadArtifact(input, webApp, ftp, fileName, fileType, processHandler);
-            telemetryMap.put("artifactUploadCount", String.valueOf(artifactUploadCount));
+                uploadJarArtifact(webAppSettingModel.getTargetPath(), webApp, processHandler, telemetryMap);
+                break;
+            default:
+                break;
         }
 
         processHandler.setText(START_WEB_APP);
         webApp.start();
-
-        processHandler.setText(LOGGING_OUT);
-        ftp.logout();
-        if (ftp.isConnected()) {
-            ftp.disconnect();
-        }
 
         String url = getUrl(webApp, fileName, fileType);
         processHandler.setText(DEPLOY_SUCCESSFUL);
@@ -184,41 +182,79 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         return webApp;
     }
 
-    private int uploadWebConfigFile(@NotNull FTPClient ftp, @NotNull String fileType,
-                                    @NotNull RunProcessHandler processHandler) throws IOException {
-        if (webAppSettingModel.isCreatingNew() && Comparing.equal(fileType, MavenConstants.TYPE_JAR)) {
-            processHandler.setText(UPLOADING_WEB_CONFIG);
-            try (InputStream webConfigInput = getClass()
-                    .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
-                return uploadFileToFtp(ftp, WEB_CONFIG_FTP_PATH, webConfigInput, processHandler);
-            }
+    private void prepareWebConfig(@NotNull final WebApp webApp, @NotNull final RunProcessHandler processHandler,
+                                  @NotNull final Map<String, String> telemetryMap) throws Exception {
+        processHandler.setText(UPLOADING_WEB_CONFIG);
+        try (InputStream inputStream = getClass().getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
+            final File tempFolder = Files.createTempDirectory(TEMP_FILE_PREFIX).toFile();
+            final File tempWebConfigFile = new File(tempFolder.getPath() + "/web.config");
+            Files.copy(inputStream, tempWebConfigFile.toPath());
+            int count = uploadFileViaZipDeploy(webApp, tempWebConfigFile, processHandler);
+            telemetryMap.put("webConfigCount", String.valueOf(count));
         }
-        return 0;
     }
 
-    private int uploadArtifact(@NotNull FileInputStream input, @NotNull WebApp webApp, @NotNull FTPClient ftp,
-                               @NotNull String fileName, @NotNull String fileType,
-                               @NotNull RunProcessHandler processHandler)
-            throws IOException {
-        switch (fileType) {
-            case MavenConstants.TYPE_WAR:
-                if (webAppSettingModel.isDeployToRoot()) {
-                    WebAppUtils.removeFtpDirectory(ftp, CONTAINER_ROOT_PATH, processHandler);
-                    processHandler.setText(String.format(UPLOADING_ARTIFACT, CONTAINER_ROOT_PATH + "." + fileType));
-                    return uploadFileToFtp(ftp, CONTAINER_ROOT_PATH + "." + fileType, input, processHandler);
-                } else {
-                    WebAppUtils.removeFtpDirectory(ftp, WEB_APP_BASE_PATH + fileName, processHandler);
-                    processHandler.setText(String.format(UPLOADING_ARTIFACT,
-                            WEB_APP_BASE_PATH + webAppSettingModel.getTargetName()));
-                    return uploadFileToFtp(ftp, WEB_APP_BASE_PATH + webAppSettingModel.getTargetName(),
-                            input, processHandler);
-                }
-            case MavenConstants.TYPE_JAR:
-                processHandler.setText(String.format(UPLOADING_ARTIFACT, ROOT_PATH + "." + fileType));
-                return uploadFileToFtp(ftp, ROOT_PATH + "." + fileType, input, processHandler);
-            default:
-                return 0;
+    private void uploadWarArtifact(@NotNull final FileInputStream input, @NotNull final WebApp webApp,
+                                   @NotNull final String fileName, @NotNull final RunProcessHandler processHandler,
+                                   @NotNull final Map<String, String> telemetryMap) throws IOException {
+        processHandler.setText(GETTING_DEPLOYMENT_CREDENTIAL);
+        final PublishingProfile profile = webApp.getPublishingProfile();
+        processHandler.setText(CONNECTING_FTP);
+        final FTPClient ftp = WebAppUtils.getFtpConnection(profile);
+        int uploadCount;
+
+        if (webAppSettingModel.isDeployToRoot()) {
+            WebAppUtils.removeFtpDirectory(ftp, CONTAINER_ROOT_PATH, processHandler);
+            processHandler.setText(String.format(UPLOADING_ARTIFACT, CONTAINER_ROOT_PATH + ".war"));
+            uploadCount = uploadFileToFtp(ftp, CONTAINER_ROOT_PATH + ".war", input, processHandler);
+        } else {
+            WebAppUtils.removeFtpDirectory(ftp, WEB_APP_BASE_PATH + fileName, processHandler);
+            processHandler.setText(String.format(UPLOADING_ARTIFACT,
+                WEB_APP_BASE_PATH + webAppSettingModel.getTargetName()));
+            uploadCount = uploadFileToFtp(ftp, WEB_APP_BASE_PATH + webAppSettingModel.getTargetName(),
+                input, processHandler);
         }
+        telemetryMap.put("artifactUploadCount", String.valueOf(uploadCount));
+
+        processHandler.setText(LOGGING_OUT);
+        ftp.logout();
+        if (ftp.isConnected()) {
+            ftp.disconnect();
+        }
+    }
+
+    private void uploadJarArtifact(@NotNull String file, @NotNull WebApp webApp,
+                                  @NotNull RunProcessHandler processHandler,
+                                  @NotNull Map<String, String> telemetryMap) throws Exception {
+        final File originalJarFile = new File(file);
+        final String jarFileName = "ROOT.jar";
+        final File jarFile = new File(originalJarFile.getPath().replace(originalJarFile.getName(), jarFileName));
+        originalJarFile.renameTo(jarFile);
+        processHandler.setText(String.format(UPLOADING_ARTIFACT, BASE_PATH + jarFileName));
+        final int uploadCount = uploadFileViaZipDeploy(webApp, jarFile, processHandler);
+        telemetryMap.put("artifactUploadCount", String.valueOf(uploadCount));
+    }
+
+    // Add retry logic here to avoid Kudu's socket timeout issue.
+    // More details: https://github.com/Microsoft/azure-maven-plugins/issues/339
+    private int uploadFileViaZipDeploy(@NotNull WebApp webapp, @NotNull File sourceFile,
+                                       @NotNull RunProcessHandler processHandler) throws Exception {
+        int uploadCount = 0;
+        final File targetZipFile = File.createTempFile(TEMP_FILE_PREFIX, ".zip");
+        FileUtil.zipFile(sourceFile, targetZipFile);
+
+        while (uploadCount < UPLOADING_MAX_TRY) {
+            uploadCount += 1;
+            try {
+                webapp.zipDeploy(targetZipFile);
+                processHandler.setText(UPLOADING_SUCCESSFUL);
+                return uploadCount;
+            } catch (Exception e) {
+                processHandler.setText(
+                    String.format("Upload file via zip deploy met exception: %s, retry immediately...", e.getMessage()));
+            }
+        }
+        throw new Exception(String.format("Upload failed after %d times of retry.", UPLOADING_MAX_TRY));
     }
 
     /**
