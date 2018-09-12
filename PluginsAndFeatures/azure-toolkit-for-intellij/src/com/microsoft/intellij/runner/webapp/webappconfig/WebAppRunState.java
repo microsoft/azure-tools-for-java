@@ -25,6 +25,7 @@ package com.microsoft.intellij.runner.webapp.webappconfig;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
@@ -219,7 +220,12 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
     private void uploadJarArtifact(@NotNull String file, @NotNull WebApp webApp,
                                   @NotNull RunProcessHandler processHandler,
                                   @NotNull Map<String, String> telemetryMap) throws Exception {
-        prepareWebConfig(webApp, processHandler, telemetryMap);
+        if (webApp.operatingSystem() == OperatingSystem.WINDOWS) {
+            prepareWebConfig(webApp, processHandler, telemetryMap);
+        } else {
+            // to align with previous telemetry date, always track the count of uploading web config
+            telemetryMap.put("webConfigCount", "0");
+        }
 
         final File originalJarFile = new File(file);
         final String jarFileName = "ROOT.jar";
