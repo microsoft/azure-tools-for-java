@@ -20,8 +20,10 @@
 
 package com.microsoft.azuretools.azurecommons.util;
 
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +31,7 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 public class FileUtil {
 	
@@ -104,5 +107,45 @@ public class FileUtil {
 		}
 		return isValid;
 	}
+
+    /**
+     * Utility method to zip the given source file to the destination file.
+     * @param sourceFile source file
+     * @param targetZipFile ZIP file that will be created or overwritten
+     */
+    public static void zipFile(final @NotNull File sourceFile, final @NotNull File targetZipFile) throws Exception {
+        if (!sourceFile.exists()) {
+            throw new Exception("The source file to zip does not exist.");
+        }
+
+        final String targetZipFileName = targetZipFile.getName();
+        final String targetZipFileExtension = targetZipFileName.substring(targetZipFileName.lastIndexOf(".")+1);
+        if (!targetZipFileExtension.equalsIgnoreCase("zip")) {
+            throw new Exception("The target file should be a .zip file.");
+        }
+
+        final FileOutputStream fos = new FileOutputStream(targetZipFile);
+        final ZipOutputStream zipOut = new ZipOutputStream(fos);
+        final FileInputStream inputStream = new FileInputStream(sourceFile);
+        try {
+            final ZipEntry zipEntry = new ZipEntry(sourceFile.getName());
+            zipOut.putNextEntry(zipEntry);
+            final byte[] bytes = new byte[BUFF_SIZE];
+            int length;
+            while ((length = inputStream.read(bytes)) >= 0) {
+                zipOut.write(bytes, 0, length);
+            }
+        } finally {
+            if(zipOut != null) {
+                zipOut.close();
+            }
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            if (fos != null) {
+                fos.close();
+            }
+        }
+    }
 
 }
