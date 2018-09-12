@@ -92,6 +92,10 @@ class RiderWebAppSettingPanel(project: Project,
         private const val DEFAULT_RGP_NAME = "rg-webapp-"
 
         private val netCoreAppVersionRegex = Regex("\\.NETCoreApp,Version=v([0-9](?:\\.[0-9])*)", RegexOption.IGNORE_CASE)
+
+        private val informationIcon = com.intellij.icons.AllIcons.General.BalloonInformation
+        private val warningIcon = com.intellij.icons.AllIcons.General.BalloonWarning
+        private val commitIcon = com.intellij.icons.AllIcons.Actions.Commit
     }
 
     // presenter
@@ -194,7 +198,6 @@ class RiderWebAppSettingPanel(project: Project,
     private lateinit var lblSqlDatabaseRunConfigInfo: JLabel
 
     private lateinit var lblRuntimeMismatchWarning: JLabel
-    private lateinit var lblNewWebAppRuntimeMismatchWarning: JLabel
 
     override val panelName: String
         get() = WEB_APP_SETTINGS_PANEL_NAME
@@ -697,11 +700,6 @@ class RiderWebAppSettingPanel(project: Project,
         lblRuntimeMismatchWarning.isVisible = show
     }
 
-    private fun setNewWebAppRuntimeMismatchWarning(show: Boolean, message: String = "") {
-        lblNewWebAppRuntimeMismatchWarning.toolTipText = message
-        lblNewWebAppRuntimeMismatchWarning.isVisible = show
-    }
-
     private fun checkSelectedProjectAgainstWebAppRuntime(webApp: WebApp, publishableProject: PublishableProjectModel) {
         if (webApp.operatingSystem() == OperatingSystem.WINDOWS) {
             setRuntimeMismatchWarning(false)
@@ -800,13 +798,33 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     private fun setRuntimeComboBoxState(publishableProject: PublishableProjectModel) {
-        if (publishableProject.isDotNetCore) {
-            val netCoreVersion = getProjectTargetFramework(publishableProject)
-            val runtimeIndex = (cbRuntime.model as? DefaultComboBoxModel)?.getIndexOf(RuntimeStack("DOTNETCORE", netCoreVersion)) ?: return
-            val desiredRuntime = cbRuntime.getItemAt(runtimeIndex) ?: return
-            cbRuntime.selectedItem = desiredRuntime
-        }
+        if (!publishableProject.isDotNetCore) return
+
+        val netCoreVersion = getProjectTargetFramework(publishableProject)
+        val runtimeIndex = (cbRuntime.model as? DefaultComboBoxModel)?.getIndexOf(RuntimeStack("DOTNETCORE", netCoreVersion)) ?: return
+        val desiredRuntime = cbRuntime.getItemAt(runtimeIndex) ?: return
+        cbRuntime.selectedItem = desiredRuntime
     }
+
+//    private fun setRuntimeComboBoxRenderer(publishableProject: PublishableProjectModel) {
+//        if (!publishableProject.isDotNetCore) return
+//
+//        cbRuntime.renderer = object : ListCellRendererWrapper<RuntimeStack>() {
+//            override fun customize(list: JList<*>?, runtimeStack: RuntimeStack?, index: Int, selected: Boolean, hasFocus: Boolean) {
+//
+//                val selectedRuntime = cbRuntime.getItemAt(cbRuntime.selectedIndex) ?: return
+//                val webAppRuntime = selectedRuntime.version()
+//
+//                val projectFrameworkVersion = getProjectTargetFramework(publishableProject)
+//                setIcon(warningIcon)
+//                setToolTipText(String.format(WEB_APP_RUNTIME_MISMATCH_WARNING, webAppRuntime, projectFrameworkVersion))
+//
+//                setNewWebAppRuntimeMismatchWarning(
+//                        webAppRuntime != projectFrameworkVersion,
+//                        )
+//            }
+//        }
+//    }
 
     private fun toggleDbConnectionEnable(isSelected: Boolean) {
         txtConnectionStringName.isEnabled = isSelected
@@ -973,19 +991,24 @@ class RiderWebAppSettingPanel(project: Project,
             override fun customize(list: JList<*>, runtimeStack: RuntimeStack?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
                 runtimeStack ?: return
                 setText(".Net Core ${runtimeStack.version()}")
+
+                val webAppRuntime = runtimeStack.version()
+
+                val publishableProject = cbProject.getItemAt(cbProject.selectedIndex)
+                val projectFrameworkVersion = getProjectTargetFramework(publishableProject)
+
+                if (projectFrameworkVersion != webAppRuntime) {
+                    setIcon(warningIcon)
+                    setToolTipText(String.format(WEB_APP_RUNTIME_MISMATCH_WARNING, webAppRuntime, projectFrameworkVersion))
+                } else {
+                    setIcon(commitIcon)
+                    setToolTipText(null)
+                }
             }
         }
         cbRuntime.addActionListener {
             val runtime = cbRuntime.getItemAt(cbRuntime.selectedIndex) ?: return@addActionListener
             lastSelectedRuntime = runtime
-
-            val webAppRuntime = runtime.version()
-
-            val publishableProject = cbProject.getItemAt(cbProject.selectedIndex) ?: return@addActionListener
-            val projectFrameworkVersion = getProjectTargetFramework(publishableProject)
-            setNewWebAppRuntimeMismatchWarning(
-                    webAppRuntime != projectFrameworkVersion,
-                    String.format(WEB_APP_RUNTIME_MISMATCH_WARNING, webAppRuntime, projectFrameworkVersion))
         }
     }
 
@@ -1028,6 +1051,7 @@ class RiderWebAppSettingPanel(project: Project,
 
             setOperatingSystemComboBoxState(publishableProject)
             setRuntimeComboBoxState(publishableProject)
+//            setRuntimeComboBoxRenderer(publishableProject)
             filterWebAppTableContent(publishableProject)
 
             val webApp = lastSelectedWebApp?.resource
@@ -1048,20 +1072,13 @@ class RiderWebAppSettingPanel(project: Project,
     private fun setSqlDatabaseComboBox() {
 
         cbDatabase.renderer = object : ListCellRendererWrapper<SqlDatabase>() {
-            override fun customize(list: JList<*>?,
-                                   sqlDatabase: SqlDatabase?,
-                                   index: Int,
-                                   selected: Boolean,
-                                   hasFocus: Boolean) {
-                // Text
+            override fun customize(list: JList<*>?, sqlDatabase: SqlDatabase?, index: Int, selected: Boolean, hasFocus: Boolean) {
                 if (sqlDatabase == null) {
                     setText(DATABASES_EMPTY_MESSAGE)
                     return
                 }
 
                 setText("${sqlDatabase.name()} (${sqlDatabase.resourceGroupName()})")
-
-                // Icon
                 setIcon(IconLoader.getIcon("icons/Database.svg"))
             }
         }
@@ -1077,12 +1094,11 @@ class RiderWebAppSettingPanel(project: Project,
 
     private fun setSqlDatabaseRunConfigInfoLabel() {
         lblSqlDatabaseRunConfigInfo.text = "Please see '${RiderDatabaseConfigurationType.instance.displayName}' run configuration to create a new Azure SQL Database"
-        lblSqlDatabaseRunConfigInfo.icon = com.intellij.icons.AllIcons.General.BalloonInformation
+        lblSqlDatabaseRunConfigInfo.icon = informationIcon
     }
 
     private fun setRuntimeMismatchWarningLabel() {
-        lblRuntimeMismatchWarning.icon = com.intellij.icons.AllIcons.General.BalloonWarning
-        lblNewWebAppRuntimeMismatchWarning.icon = com.intellij.icons.AllIcons.General.BalloonWarning
+        lblRuntimeMismatchWarning.icon = warningIcon
     }
 
     /**
