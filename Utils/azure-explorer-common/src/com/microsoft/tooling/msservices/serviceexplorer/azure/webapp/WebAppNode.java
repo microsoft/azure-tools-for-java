@@ -22,6 +22,11 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -31,23 +36,18 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtualInterface {
-    public static final String STATUS_RUNNING = "Running";
-    public static final String STATUS_STOPPED = "Stopped";
-    public static final String WEB_RUN_ICON = "WebAppRunning_16.png";
-    public static final String WEB_STOP_ICON = "WebAppStopped_16.png";
-
+    static final String STATUS_RUNNING = "Running";
+    static final String STATUS_STOPPED = "Stopped";
     private static final String ACTION_START = "Start";
     private static final String ACTION_STOP = "Stop";
     private static final String ACTION_DELETE = "Delete";
     private static final String ACTION_RESTART = "Restart";
     private static final String ACTION_OPEN_IN_BROWSER = "Open In Browser";
     private static final String ACTION_SHOW_PROPERTY = "Show Properties";
+    private static final String ICON_RUNNING = "WebAppRunning_16.png";
+    private static final String ICON_STOPPED = "WebAppStopped_16.png";
     private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete Web App %s.\n"
             + "Are you sure you want to continue?";
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
@@ -65,7 +65,7 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
      */
     public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
             String runState, String hostName, Map<String, String> propertyMap) {
-        super(webAppId, webAppName, parent, STATUS_RUNNING.equals(runState) ? WEB_RUN_ICON : WEB_STOP_ICON, true);
+        super(webAppId, webAppName, parent, STATUS_RUNNING.equals(runState) ? ICON_RUNNING : ICON_STOPPED, true);
         this.subscriptionId = subscriptionId;
         this.webAppId = webAppId;
         this.webAppName = webAppName;
@@ -89,7 +89,7 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_STOP, WEB_STOP_ICON, new NodeActionListener() {
+        addAction(ACTION_STOP, ICON_STOPPED, new NodeActionListener() {
             @Override
             public void actionPerformed(NodeActionEvent e) {
                 DefaultLoader.getIdeHelper().runInBackground(null, "Stopping Web App", false, true,
@@ -193,6 +193,16 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
             e.printStackTrace();
             // TODO: Error handling
         }
+    }
+
+    public void setRunning() {
+        this.setRunState(this.STATUS_RUNNING);
+        this.setIconPath(this.ICON_RUNNING);
+    }
+
+    public void setStopped() {
+        this.setRunState(this.STATUS_STOPPED);
+        this.setIconPath(this.ICON_STOPPED);
     }
 
     private class DeleteWebAppAction extends AzureNodeActionPromptListener {

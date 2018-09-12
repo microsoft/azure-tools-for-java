@@ -11,8 +11,7 @@ public class WebAppNodePresenter<V extends WebAppNode> extends MvpPresenter<WebA
         if (view == null) {
             return;
         }
-        view.setRunState(view.STATUS_RUNNING);
-        view.setIconPath(view.WEB_RUN_ICON);
+        view.setRunning();
     }
 
     public void onRestartWebApp(String subscriptionId, String webAppId) throws IOException {
@@ -21,8 +20,7 @@ public class WebAppNodePresenter<V extends WebAppNode> extends MvpPresenter<WebA
         if (view == null) {
             return;
         }
-        view.setRunState(view.STATUS_RUNNING);
-        view.setIconPath(view.WEB_RUN_ICON);
+        view.setRunning();
     }
 
     public void onStopWebApp(String subscriptionId, String webAppId) throws IOException {
@@ -31,8 +29,7 @@ public class WebAppNodePresenter<V extends WebAppNode> extends MvpPresenter<WebA
         if (view == null) {
             return;
         }
-        view.setRunState(view.STATUS_STOPPED);
-        view.setIconPath(view.WEB_STOP_ICON);
+        view.setStopped();
     }
 
     public void onNodeRefresh() {
