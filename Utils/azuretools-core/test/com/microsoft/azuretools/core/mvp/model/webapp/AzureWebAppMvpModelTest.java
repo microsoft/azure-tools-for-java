@@ -15,6 +15,7 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.rest.RestException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -110,6 +111,7 @@ public class AzureWebAppMvpModelTest {
     }
 
     @Test
+    @Ignore
     public void testCreateWebAppNewSrvPlan() {
         WebAppSettingModel settingModel = new WebAppSettingModel();
         settingModel.setCreatingAppServicePlan(true);
