@@ -31,6 +31,8 @@ class RiderDatabaseConfiguration(project: Project,
 
         private const val SQL_DATABASE_NAME_MISSING = "SQL Database name not provided"
         private const val SQL_DATABASE_NAME_ALREADY_EXISTS = "SQL Database name '%s' already exists"
+        private const val SQL_DATABASE_NAME_REGEX_STRING = "[\\s]"
+        private const val SQL_DATABASE_NAME_INVALID = "SQL Database name cannot contain characters: %s"
 
         private const val SQL_DATABASE_COLLATION_MISSING = "SQL Database Collation not provided"
 
@@ -208,6 +210,12 @@ class RiderDatabaseConfiguration(project: Project,
     @Throws(RuntimeConfigurationError::class)
     private fun validateDatabaseName(subscriptionId: String, name: String, sqlServerName: String) {
         checkValueIsSet(name, SQL_DATABASE_NAME_MISSING)
+
+        val matches = SQL_DATABASE_NAME_REGEX_STRING.toRegex().findAll(name)
+        if (matches.count() > 0) {
+            val invalidChars = matches.map { it.value }.distinct().joinToString("', '", "'", "'")
+            throw RuntimeConfigurationError(String.format(SQL_DATABASE_NAME_INVALID, invalidChars))
+        }
 
         val sqlServer = AzureDatabaseMvpModel.getSqlServerByName(subscriptionId, sqlServerName) ?: return
         checkSqlDatabaseNameExistence(name, sqlServer)
