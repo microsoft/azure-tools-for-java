@@ -29,14 +29,16 @@ class RiderDatabaseConfiguration(project: Project,
 
         private const val SUBSCRIPTION_MISSING = "Subscription not provided"
 
+        private val sqlDatabaseNameRegex = "[\\s]".toRegex()
         private const val SQL_DATABASE_NAME_MISSING = "SQL Database name not provided"
         private const val SQL_DATABASE_NAME_ALREADY_EXISTS = "SQL Database name '%s' already exists"
+        private const val SQL_DATABASE_NAME_INVALID = "SQL Database name cannot contain characters: %s"
 
         private const val SQL_DATABASE_COLLATION_MISSING = "SQL Database Collation not provided"
 
+        private val sqlServerNameRegex = "[^a-z0-9-]".toRegex()
         private const val SQL_SERVER_MISSING = "Please select a SQL Server"
         private const val SQL_SERVER_NAME_ALREADY_EXISTS = "SQL Server name '%s' already exists"
-        private const val SQL_SERVER_NAME_REGEX_STRING = "[^a-z0-9-]"
         private const val SQL_SERVER_NAME_MIN_LENGTH = 1
         private const val SQL_SERVER_NAME_MAX_LENGTH = 63
         private const val SQL_SERVER_NAME_MISSING = "SQL Server name not provided"
@@ -45,9 +47,9 @@ class RiderDatabaseConfiguration(project: Project,
         private const val SQL_SERVER_NAME_INVALID = "SQL Server name cannot contain characters: %s"
         private const val SQL_SERVER_NAME_CANNOT_START_END_WITH_DASH = "SQL Server name cannot begin or end with '-' symbol"
 
+        private val resourceGroupNameRegex = "[^\\p{L}0-9-.()_]".toRegex()
         private const val RESOURCE_GROUP_MISSING = "Please select a Resource Group"
         private const val RESOURCE_GROUP_ALREADY_EXISTS = "Resource Group with name '%s' already exists"
-        private const val RESOURCE_GROUP_REGEX_STRING = "[^\\p{L}0-9-.()_]"
         private const val RESOURCE_GROUP_NAME_MIN_LENGTH = 1
         private const val RESOURCE_GROUP_NAME_MAX_LENGTH = 90
         private const val RESOURCE_GROUP_NAME_MISSING = "Resource Group name not provided"
@@ -56,24 +58,24 @@ class RiderDatabaseConfiguration(project: Project,
         private const val RESOURCE_GROUP_NAME_INVALID = "Resource Group name cannot contain characters: %s"
         private const val RESOURCE_GROUP_NAME_CANNOT_ENDS_WITH_PERIOD = "Resource Group name cannot ends with period symbol"
 
+        private val adminLoginWhitespaceRegex = "\\s".toRegex()
+        private val adminLoginStartWithDigitNonWordRegex = "^(\\d|\\W)".toRegex()
+        private val adminLoginRegex = "[^\\p{L}0-9]".toRegex()
         private const val ADMIN_LOGIN_MISSING = "Administrator login not provided"
         private val sqlServerRestrictedAdminLoginNames =
                 arrayOf("admin", "administrator", "sa", "root", "dbmanager", "loginmanager", "dbo", "guest", "public")
         private const val ADMIN_LOGIN_FROM_RESTRICTED_LIST =
                 "SQL Server Admin login '%s' is from list of restricted SQL Admin names: %s"
-        private const val ADMIN_LOGIN_REGEX_WHITESPACE_STRING = "\\s"
         private const val ADMIN_LOGIN_CANNOT_CONTAIN_WHITESPACES = "SQL Server Admin login cannot contain whitespaces"
-        private const val ADMIN_LOGIN_REGEX_START_WITH_DIGIT_NONWORD_STRING = "^(\\d|\\W)"
         private const val ADMIN_LOGIN_CANNOT_BEGIN_WITH_DIGIT_NONWORD = "SQL Server Admin login must not begin with numbers or symbols"
-        private const val ADMIN_LOGIN_REGEX_STRING = "[^\\p{L}0-9]"
         private const val ADMIN_LOGIN_INVALID = "SQL Server Admin login should not unicode characters, or nonalphabetic characters."
 
         private const val ADMIN_PASSWORD_MISSING = "Administrator password not provided"
         // Note: this is not an inverse regex and must be validated accordingly
-        private const val ADMIN_PASSWORD_REGEX_CATEGORY_LOWER_STRING = "[a-z]"
-        private const val ADMIN_PASSWORD_REGEX_CATEGORY_UPPER_STRING = "[A-Z]"
-        private const val ADMIN_PASSWORD_REGEX_CATEGORY_DIGIT_STRING = "[0-9]"
-        private const val ADMIN_PASSWORD_REGEX_CATEGORY_NONALPHANUMERIC_STRING = "[\\W]"
+        private val adminPasswordLowerCaseRegex = "[a-z]".toRegex()
+        private val adminPasswordUpperCaseRegex = "[A-Z]".toRegex()
+        private val adminPasswordDigitRegex = "[0-9]".toRegex()
+        private val adminPasswordNonAlphaNumericRegex = "[\\W]".toRegex()
         private const val ADMIN_PASSWORD_MIN_LENGTH = 8
         private const val ADMIN_PASSWORD_MAX_LENGTH = 128
         private const val ADMIN_PASSWORD_LENGTH_ERROR =
@@ -185,7 +187,7 @@ class RiderDatabaseConfiguration(project: Project,
                 SQL_SERVER_NAME_MIN_LENGTH,
                 SQL_SERVER_NAME_MAX_LENGTH,
                 SQL_SERVER_NAME_LENGTH_ERROR,
-                SQL_SERVER_NAME_REGEX_STRING.toRegex(),
+                sqlServerNameRegex,
                 SQL_SERVER_NAME_INVALID)
     }
 
@@ -208,6 +210,12 @@ class RiderDatabaseConfiguration(project: Project,
     @Throws(RuntimeConfigurationError::class)
     private fun validateDatabaseName(subscriptionId: String, name: String, sqlServerName: String) {
         checkValueIsSet(name, SQL_DATABASE_NAME_MISSING)
+
+        val matches = sqlDatabaseNameRegex.findAll(name)
+        if (matches.count() > 0) {
+            val invalidChars = matches.map { it.value }.distinct().joinToString("', '", "'", "'")
+            throw RuntimeConfigurationError(String.format(SQL_DATABASE_NAME_INVALID, invalidChars))
+        }
 
         val sqlServer = AzureDatabaseMvpModel.getSqlServerByName(subscriptionId, sqlServerName) ?: return
         checkSqlDatabaseNameExistence(name, sqlServer)
@@ -235,7 +243,7 @@ class RiderDatabaseConfiguration(project: Project,
                 RESOURCE_GROUP_NAME_MIN_LENGTH,
                 RESOURCE_GROUP_NAME_MAX_LENGTH,
                 RESOURCE_GROUP_NAME_LENGTH_ERROR,
-                RESOURCE_GROUP_REGEX_STRING.toRegex(),
+                resourceGroupNameRegex,
                 RESOURCE_GROUP_NAME_INVALID)
     }
 
@@ -265,13 +273,13 @@ class RiderDatabaseConfiguration(project: Project,
                     username,
                     sqlServerRestrictedAdminLoginNames.joinToString("', '", "'", "'")))
 
-        if (username.contains(ADMIN_LOGIN_REGEX_WHITESPACE_STRING.toRegex()))
+        if (username.contains(adminLoginWhitespaceRegex))
             throw RuntimeConfigurationError(ADMIN_LOGIN_CANNOT_CONTAIN_WHITESPACES)
 
-        if (username.contains(ADMIN_LOGIN_REGEX_START_WITH_DIGIT_NONWORD_STRING.toRegex()))
-            throw RuntimeConfigurationError(ADMIN_LOGIN_REGEX_START_WITH_DIGIT_NONWORD_STRING)
+        if (username.contains(adminLoginStartWithDigitNonWordRegex))
+            throw RuntimeConfigurationError(ADMIN_LOGIN_CANNOT_BEGIN_WITH_DIGIT_NONWORD)
 
-        validateResourceNameRegex(username, ADMIN_LOGIN_REGEX_STRING.toRegex(), ADMIN_LOGIN_INVALID)
+        validateResourceNameRegex(username, adminLoginRegex, ADMIN_LOGIN_INVALID)
     }
 
     /**
@@ -291,10 +299,10 @@ class RiderDatabaseConfiguration(project: Project,
             throw RuntimeConfigurationError(ADMIN_PASSWORD_LENGTH_ERROR)
 
         var passCategoriesCount = 0
-        if (ADMIN_PASSWORD_REGEX_CATEGORY_LOWER_STRING.toRegex().containsMatchIn(passwordString)) passCategoriesCount++
-        if (ADMIN_PASSWORD_REGEX_CATEGORY_UPPER_STRING.toRegex().containsMatchIn(passwordString)) passCategoriesCount++
-        if (ADMIN_PASSWORD_REGEX_CATEGORY_DIGIT_STRING.toRegex().containsMatchIn(passwordString)) passCategoriesCount++
-        if (ADMIN_PASSWORD_REGEX_CATEGORY_NONALPHANUMERIC_STRING.toRegex().containsMatchIn(passwordString)) passCategoriesCount++
+        if (adminPasswordLowerCaseRegex.containsMatchIn(passwordString)) passCategoriesCount++
+        if (adminPasswordUpperCaseRegex.containsMatchIn(passwordString)) passCategoriesCount++
+        if (adminPasswordDigitRegex.containsMatchIn(passwordString)) passCategoriesCount++
+        if (adminPasswordNonAlphaNumericRegex.containsMatchIn(passwordString)) passCategoriesCount++
 
         if (passCategoriesCount < 3) throw RuntimeConfigurationError(ADMIN_PASSWORD_CATEGORY_CHECK_FAILED)
     }

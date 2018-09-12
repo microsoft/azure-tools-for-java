@@ -143,13 +143,13 @@ class RiderWebAppRunState(project: Project,
         return webApp
     }
 
-    override fun onSuccess(result: WebApp, processHandler: RunProcessHandler) {
+    override fun onSuccess(webApp: WebApp, processHandler: RunProcessHandler) {
         processHandler.notifyComplete()
         if (myModel.isCreatingWebApp && AzureUIRefreshCore.listeners != null) {
             AzureUIRefreshCore.execute(AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null))
         }
-        resetModelAfterDeploy(result)
-        AzureWebAppMvpModel.getInstance().listWebApps(true)
+        myModel.reset(webApp)
+        AzureDotNetWebAppMvpModel.listWebApps(true)
     }
 
     override fun onFail(errMsg: String, processHandler: RunProcessHandler) {

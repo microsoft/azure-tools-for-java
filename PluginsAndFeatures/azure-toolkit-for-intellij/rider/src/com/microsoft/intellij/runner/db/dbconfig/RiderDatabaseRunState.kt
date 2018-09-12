@@ -78,7 +78,7 @@ class RiderDatabaseRunState(project: Project,
         }
 
         if (result != null) {
-            updateConfigurationDataModel()
+            updateConfigurationDataModel(result)
         }
     }
 
@@ -181,8 +181,8 @@ class RiderDatabaseRunState(project: Project,
     /**
      * Reset [AzureDatabaseSettingModel] after a SQL database was deployed
      */
-    private fun updateConfigurationDataModel() {
-        myModel.reset()
+    private fun updateConfigurationDataModel(sqlDatabase: SqlDatabase) {
+        myModel.reset(sqlDatabase)
     }
 
     //endregion SQL Database

@@ -75,6 +75,8 @@ class RiderWebAppSettingPanel(project: Project,
         private const val WEB_APP_TABLE_COLUMN_LOCATION = "Location"
         private const val WEB_APP_TABLE_COLUMN_OS = "OS"
         private const val WEB_APP_TABLE_COLUMN_DOTNET_VERSION = ".Net Version"
+        private const val WEB_APP_RUNTIME_MISMATCH_WARNING =
+                "Selected Azure WebApp runtime '%s' mismatch with Project .Net Core Framework '%s'"
 
         private const val BUTTON_REFRESH_NAME = "Refresh"
 
@@ -90,6 +92,10 @@ class RiderWebAppSettingPanel(project: Project,
         private const val DEFAULT_RGP_NAME = "rg-webapp-"
 
         private val netCoreAppVersionRegex = Regex("\\.NETCoreApp,Version=v([0-9](?:\\.[0-9])*)", RegexOption.IGNORE_CASE)
+
+        private val informationIcon = com.intellij.icons.AllIcons.General.BalloonInformation
+        private val warningIcon = com.intellij.icons.AllIcons.General.BalloonWarning
+        private val commitIcon = com.intellij.icons.AllIcons.Actions.Commit
     }
 
     // presenter
@@ -384,8 +390,11 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     override fun fillResourceGroup(resourceGroups: List<ResourceGroup>) {
+
         cbResourceGroup.removeAllItems()
         if (resourceGroups.isEmpty()) {
+            toggleResourceGroupPanel(true)
+            allowExistingResourceGroups(false)
             lastSelectedResourceGroupName = ""
             return
         }
@@ -404,6 +413,8 @@ class RiderWebAppSettingPanel(project: Project,
         cachedAppServicePlan = appServicePlans
 
         if (appServicePlans.isEmpty()) {
+            toggleAppServicePlanPanel(true)
+            allowExistingAppServicePlans(false)
             lblLocation.text = NOT_APPLICABLE
             lblPricingTier.text = NOT_APPLICABLE
             return
@@ -683,7 +694,8 @@ class RiderWebAppSettingPanel(project: Project,
         setRuntimeMismatchWarning(false)
     }
 
-    private fun setRuntimeMismatchWarning(show: Boolean) {
+    private fun setRuntimeMismatchWarning(show: Boolean, message: String = "") {
+        lblRuntimeMismatchWarning.text = message
         lblRuntimeMismatchWarning.isVisible = show
     }
 
@@ -694,11 +706,13 @@ class RiderWebAppSettingPanel(project: Project,
         }
 
         // DOTNETCORE|2.0 -> 2.0
-        val webAppTargetFramework = webApp.linuxFxVersion().split('|').getOrNull(1)
+        val webAppFrameworkVersion = webApp.linuxFxVersion().split('|').getOrNull(1)
 
         // .NETCoreApp,Version=v2.0 -> 2.0
-        val netCoreVersion = getProjectTargetFramework(publishableProject)
-        setRuntimeMismatchWarning(webAppTargetFramework != netCoreVersion)
+        val projectNetCoreVersion = getProjectTargetFramework(publishableProject)
+        setRuntimeMismatchWarning(
+                webAppFrameworkVersion != projectNetCoreVersion,
+                String.format(WEB_APP_RUNTIME_MISMATCH_WARNING, webAppFrameworkVersion, projectNetCoreVersion))
     }
 
     private fun getProjectTargetFramework(publishableProject: PublishableProjectModel): String {
@@ -783,12 +797,12 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     private fun setRuntimeComboBoxState(publishableProject: PublishableProjectModel) {
-        if (publishableProject.isDotNetCore) {
-            val netCoreVersion = getProjectTargetFramework(publishableProject)
-            val runtimeIndex = (cbRuntime.model as? DefaultComboBoxModel)?.getIndexOf(RuntimeStack("DOTNETCORE", netCoreVersion)) ?: return
-            val desiredRuntime = cbRuntime.getItemAt(runtimeIndex) ?: return
-            cbRuntime.selectedItem = desiredRuntime
-        }
+        if (!publishableProject.isDotNetCore) return
+
+        val netCoreVersion = getProjectTargetFramework(publishableProject)
+        val runtimeIndex = (cbRuntime.model as? DefaultComboBoxModel)?.getIndexOf(RuntimeStack("DOTNETCORE", netCoreVersion)) ?: return
+        val desiredRuntime = cbRuntime.getItemAt(runtimeIndex) ?: return
+        cbRuntime.selectedItem = desiredRuntime
     }
 
     private fun toggleDbConnectionEnable(isSelected: Boolean) {
@@ -956,6 +970,19 @@ class RiderWebAppSettingPanel(project: Project,
             override fun customize(list: JList<*>, runtimeStack: RuntimeStack?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
                 runtimeStack ?: return
                 setText(".Net Core ${runtimeStack.version()}")
+
+                val webAppRuntime = runtimeStack.version()
+
+                val publishableProject = cbProject.getItemAt(cbProject.selectedIndex)
+                val projectFrameworkVersion = getProjectTargetFramework(publishableProject)
+
+                if (projectFrameworkVersion != webAppRuntime) {
+                    setIcon(warningIcon)
+                    setToolTipText(String.format(WEB_APP_RUNTIME_MISMATCH_WARNING, webAppRuntime, projectFrameworkVersion))
+                } else {
+                    setIcon(commitIcon)
+                    setToolTipText(null)
+                }
             }
         }
         cbRuntime.addActionListener {
@@ -1023,20 +1050,13 @@ class RiderWebAppSettingPanel(project: Project,
     private fun setSqlDatabaseComboBox() {
 
         cbDatabase.renderer = object : ListCellRendererWrapper<SqlDatabase>() {
-            override fun customize(list: JList<*>?,
-                                   sqlDatabase: SqlDatabase?,
-                                   index: Int,
-                                   selected: Boolean,
-                                   hasFocus: Boolean) {
-                // Text
+            override fun customize(list: JList<*>?, sqlDatabase: SqlDatabase?, index: Int, selected: Boolean, hasFocus: Boolean) {
                 if (sqlDatabase == null) {
                     setText(DATABASES_EMPTY_MESSAGE)
                     return
                 }
 
                 setText("${sqlDatabase.name()} (${sqlDatabase.resourceGroupName()})")
-
-                // Icon
                 setIcon(IconLoader.getIcon("icons/Database.svg"))
             }
         }
@@ -1052,11 +1072,11 @@ class RiderWebAppSettingPanel(project: Project,
 
     private fun setSqlDatabaseRunConfigInfoLabel() {
         lblSqlDatabaseRunConfigInfo.text = "Please see '${RiderDatabaseConfigurationType.instance.displayName}' run configuration to create a new Azure SQL Database"
-        lblSqlDatabaseRunConfigInfo.icon = com.intellij.icons.AllIcons.General.BalloonInformation
+        lblSqlDatabaseRunConfigInfo.icon = informationIcon
     }
 
     private fun setRuntimeMismatchWarningLabel() {
-        lblRuntimeMismatchWarning.icon = com.intellij.icons.AllIcons.General.BalloonWarning
+        lblRuntimeMismatchWarning.icon = warningIcon
     }
 
     /**
@@ -1096,6 +1116,16 @@ class RiderWebAppSettingPanel(project: Project,
         cbDatabase.removeAllItems()
         lblSqlDbAdminLogin.text = NOT_APPLICABLE
         passSqlDbAdminPassword.text = ""
+    }
+
+    private fun allowExistingResourceGroups(isAllowed: Boolean) {
+        rdoUseExistResGrp.isEnabled = isAllowed
+        cbResourceGroup.isEnabled = isAllowed
+    }
+
+    private fun allowExistingAppServicePlans(isAllowed: Boolean) {
+        rdoUseExistAppServicePlan.isEnabled = isAllowed
+        cbAppServicePlan.isEnabled = isAllowed
     }
 
     /**

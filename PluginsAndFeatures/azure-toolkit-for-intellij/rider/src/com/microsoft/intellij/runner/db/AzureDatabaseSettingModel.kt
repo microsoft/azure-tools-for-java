@@ -1,7 +1,9 @@
 package com.microsoft.intellij.runner.db
 
+import com.intellij.util.xmlb.annotations.Transient
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.sql.DatabaseEditions
+import com.microsoft.azure.management.sql.SqlDatabase
 
 class AzureDatabaseSettingModel {
 
@@ -16,7 +18,11 @@ class AzureDatabaseSettingModel {
     var sqlServerId = ""
     var sqlServerName = ""
     var sqlServerAdminLogin = ""
+
+    @get:Transient
     var sqlServerAdminPassword = charArrayOf()
+
+    @get:Transient
     var sqlServerAdminPasswordConfirm = charArrayOf()
 
     var location = defaultLocation
@@ -24,18 +30,14 @@ class AzureDatabaseSettingModel {
 
     var collation = defaultCollation
 
-    fun reset() {
-        subscriptionId = ""
+    fun reset(sqlDatabase: SqlDatabase) {
         databaseName = ""
         isCreatingResourceGroup = false
-        resourceGroupName = ""
+        resourceGroupName = sqlDatabase.resourceGroupName()
         isCreatingSqlServer = false
-        sqlServerId = ""
-        sqlServerName = ""
-        sqlServerAdminLogin = ""
         sqlServerAdminPassword = charArrayOf()
         sqlServerAdminPasswordConfirm = charArrayOf()
-        location = defaultLocation
+        location = sqlDatabase.region().name()
         databaseEdition = defaultDatabaseEditions
         collation = defaultCollation
     }

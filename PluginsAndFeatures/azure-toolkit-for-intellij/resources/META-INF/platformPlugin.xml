@@ -145,7 +145,7 @@
           factoryClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactory"
           id="Azure Activity Log"
           canCloseContents="true"
-          icon="/icons/RoleFolder.gif"
+          icon="/icons/RoleFolder.svg"
           conditionClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactoryCondition"/>
     <projectConfigurable groupId="root"
                        id="com.microsoft.intellij.AzureConfigurable"
