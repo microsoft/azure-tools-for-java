@@ -108,13 +108,6 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
                 }
                 break;
             case MavenConstants.TYPE_JAR:
-                if (webAppSettingModel.isCreatingNew()) {
-                    prepareWebConfig(webApp, processHandler, telemetryMap);
-                } else {
-                    // to align with previous behavior, always track the count of uploading web config
-                    telemetryMap.put("webConfigCount", "0");
-                }
-
                 uploadJarArtifact(webAppSettingModel.getTargetPath(), webApp, processHandler, telemetryMap);
                 break;
             default:
@@ -226,6 +219,8 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
     private void uploadJarArtifact(@NotNull String file, @NotNull WebApp webApp,
                                   @NotNull RunProcessHandler processHandler,
                                   @NotNull Map<String, String> telemetryMap) throws Exception {
+        prepareWebConfig(webApp, processHandler, telemetryMap);
+
         final File originalJarFile = new File(file);
         final String jarFileName = "ROOT.jar";
         final File jarFile = new File(originalJarFile.getPath().replace(originalJarFile.getName(), jarFileName));
