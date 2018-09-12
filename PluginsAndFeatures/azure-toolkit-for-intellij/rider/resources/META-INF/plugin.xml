@@ -22,7 +22,6 @@
     <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppRunner"/>
     <programRunner implementation="com.microsoft.intellij.runner.db.dbconfig.RiderDatabaseRunner"/>
     <rider.publishConfigurationProvider implementation="com.microsoft.intellij.runner.webapp.AzureDotNetWebAppContextPublishProvider" />
-    <rider.publishConfigurationProvider implementation="com.microsoft.intellij.runner.db.AzureDatabaseContextPublishProvider" />
   </extensions>
 
   <application-components>

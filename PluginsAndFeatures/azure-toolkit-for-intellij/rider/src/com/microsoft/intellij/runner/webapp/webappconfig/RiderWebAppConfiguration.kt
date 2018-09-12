@@ -33,9 +33,9 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
 
         private const val SUBSCRIPTION_MISSING = "Subscription not provided"
 
+        private val resourceGroupRegex = "[^\\p{L}0-9-.()_]".toRegex()
         private const val RESOURCE_GROUP_MISSING = "Please select a Resource Group"
         private const val RESOURCE_GROUP_ALREADY_EXISTS = "Resource Group with name '%s' already exists"
-        private const val RESOURCE_GROUP_REGEX_STRING = "[^\\p{L}0-9-.()_]"
         private const val RESOURCE_GROUP_NAME_MIN_LENGTH = 1
         private const val RESOURCE_GROUP_NAME_MAX_LENGTH = 90
         private const val RESOURCE_GROUP_NAME_MISSING = "Resource Group name not provided"
@@ -44,9 +44,9 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         private const val RESOURCE_GROUP_NAME_INVALID = "Resource Group name cannot contain characters: %s"
         private const val RESOURCE_GROUP_NAME_CANNOT_ENDS_WITH_PERIOD = "Resource Group name cannot ends with period symbol"
 
+        private val webAppNameRegex = "[^\\p{L}0-9-]".toRegex()
         private const val WEB_APP_MISSING = "Please select an Azure Web App"
         private const val WEB_APP_ALREADY_EXISTS = "Web App with name '%s' already exists"
-        private const val WEB_APP_NAME_REGEX_STRING = "[^\\p{L}0-9-]"
         private const val WEB_APP_NAME_MIN_LENGTH = 2
         private const val WEB_APP_NAME_MAX_LENGTH = 60
         private const val WEB_APP_NAME_MISSING = "Web App name not provided"
@@ -55,9 +55,9 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         private const val WEB_APP_NAME_INVALID = "Web App name cannot contain characters: %s"
         private const val WEB_APP_NAME_CANNOT_START_END_WITH_DASH = "Web App name cannot begin or end with '-' symbol"
 
+        private val appServicePlanNameRegex = "[^\\p{L}0-9-]".toRegex()
         private const val APP_SERVICE_PLAN_MISSING = "Please select an App Service Plan"
         private const val APP_SERVICE_PLAN_ALREADY_EXISTS = "App Service Plan with name '%s' already exists"
-        private const val APP_SERVICE_PLAN_NAME_REGEX_STRING = "[^\\p{L}0-9-]"
         private const val APP_SERVICE_PLAN_NAME_MIN_LENGTH = 1
         private const val APP_SERVICE_PLAN_NAME_MAX_LENGTH = 40
         private const val APP_SERVICE_PLAN_NAME_MISSING = "App Service Plan name not provided"
@@ -218,7 +218,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
                 RESOURCE_GROUP_NAME_MIN_LENGTH,
                 RESOURCE_GROUP_NAME_MAX_LENGTH,
                 RESOURCE_GROUP_NAME_LENGTH_ERROR,
-                RESOURCE_GROUP_REGEX_STRING.toRegex(),
+                resourceGroupRegex,
                 RESOURCE_GROUP_NAME_INVALID)
     }
 
@@ -251,7 +251,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
                 WEB_APP_NAME_MIN_LENGTH,
                 WEB_APP_NAME_MAX_LENGTH,
                 WEB_APP_NAME_LENGTH_ERROR,
-                WEB_APP_NAME_REGEX_STRING.toRegex(),
+                webAppNameRegex,
                 WEB_APP_NAME_INVALID)
     }
 
@@ -280,7 +280,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
                 APP_SERVICE_PLAN_NAME_MIN_LENGTH,
                 APP_SERVICE_PLAN_NAME_MAX_LENGTH,
                 APP_SERVICE_PLAN_NAME_LENGTH_ERROR,
-                APP_SERVICE_PLAN_NAME_REGEX_STRING.toRegex(),
+                appServicePlanNameRegex,
                 APP_SERVICE_PLAN_NAME_INVALID)
     }
 

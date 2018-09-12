@@ -805,26 +805,6 @@ class RiderWebAppSettingPanel(project: Project,
         cbRuntime.selectedItem = desiredRuntime
     }
 
-//    private fun setRuntimeComboBoxRenderer(publishableProject: PublishableProjectModel) {
-//        if (!publishableProject.isDotNetCore) return
-//
-//        cbRuntime.renderer = object : ListCellRendererWrapper<RuntimeStack>() {
-//            override fun customize(list: JList<*>?, runtimeStack: RuntimeStack?, index: Int, selected: Boolean, hasFocus: Boolean) {
-//
-//                val selectedRuntime = cbRuntime.getItemAt(cbRuntime.selectedIndex) ?: return
-//                val webAppRuntime = selectedRuntime.version()
-//
-//                val projectFrameworkVersion = getProjectTargetFramework(publishableProject)
-//                setIcon(warningIcon)
-//                setToolTipText(String.format(WEB_APP_RUNTIME_MISMATCH_WARNING, webAppRuntime, projectFrameworkVersion))
-//
-//                setNewWebAppRuntimeMismatchWarning(
-//                        webAppRuntime != projectFrameworkVersion,
-//                        )
-//            }
-//        }
-//    }
-
     private fun toggleDbConnectionEnable(isSelected: Boolean) {
         txtConnectionStringName.isEnabled = isSelected
         cbDatabase.isEnabled = isSelected
@@ -1050,7 +1030,6 @@ class RiderWebAppSettingPanel(project: Project,
 
             setOperatingSystemComboBoxState(publishableProject)
             setRuntimeComboBoxState(publishableProject)
-//            setRuntimeComboBoxRenderer(publishableProject)
             filterWebAppTableContent(publishableProject)
 
             val webApp = lastSelectedWebApp?.resource
