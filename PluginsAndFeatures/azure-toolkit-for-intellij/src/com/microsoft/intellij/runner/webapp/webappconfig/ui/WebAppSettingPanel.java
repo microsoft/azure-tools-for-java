@@ -65,6 +65,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -467,8 +468,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
                 WebApp app = sortedList.get(i).getResource();
                 model.addRow(new String[]{
                     app.name(),
-                    WebAppUtils.getJDKVersion(app),
-                    WebAppUtils.getWebContainer(app),
+                    StringUtils.capitalize(app.operatingSystem().toString()),
+                    WebAppUtils.getJavaRuntime(app),
                     app.resourceGroupName(),
                 });
                 if (Comparing.equal(app.id(), webAppConfiguration.getWebAppId())) {
@@ -521,8 +522,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             }
         };
         tableModel.addColumn("Name");
-        tableModel.addColumn("JDK");
-        tableModel.addColumn("Web container");
+        tableModel.addColumn("OS");
+        tableModel.addColumn("Runtime");
         tableModel.addColumn("Resource group");
 
         table = new JBTable(tableModel);

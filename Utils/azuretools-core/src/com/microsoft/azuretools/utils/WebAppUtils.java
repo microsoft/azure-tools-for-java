@@ -371,60 +371,50 @@ public class WebAppUtils {
     }
 
     /**
-     * app.linuxFxVersion() is the only API we could get the version info of a Linux web app.
-     * It returns values like "Tomcat|8.5-jre8" if it is a Linux with the web container Tomcat.
+     * Check if the web app is a Windows or Linux Java configured web app.
+     * Docker web apps are not included.
      */
-    public static String getJDKVersion(@NotNull final WebApp webApp) {
-        switch(webApp.operatingSystem()) {
+    public static boolean isJavaWebApp(@NotNull WebApp webApp) {
+        return (webApp.operatingSystem() == OperatingSystem.WINDOWS && webApp.javaVersion() != JavaVersion.OFF)
+         || (webApp.operatingSystem() == OperatingSystem.LINUX && StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "jre8"));
+    }
+
+    /**
+     * For a Windows web app, APIs are separated to get jdk information and web container information.
+     * For a Linux web app, API app.linuxFxVersion() returns a combined information, like
+     * "Tomcat|8.5-jre8" if it is a Linux web app with the web container Tomcat.
+     * We return a combined and refactored information as Java Runtime.
+     */
+    public static String getJavaRuntime(@NotNull final WebApp webApp) {
+        String webContainer;
+        switch (webApp.operatingSystem()) {
             case WINDOWS:
-                return webApp.javaVersion().toString();
+                webContainer = webApp.javaContainer() == null ? null : webApp.javaContainer().toLowerCase();
+                return String.format("%s %s (Java%s)",
+                    StringUtils.capitalize(webContainer), webApp.javaContainerVersion(), webApp.javaVersion().toString());
             case LINUX:
                 final String linuxVersion = webApp.linuxFxVersion();
                 if (linuxVersion == null) {
                     return DEFAULT_VALUE_WHEN_VERSION_INVALID;
                 }
 
-                final String[] versions = linuxVersion.split("-");
-                return versions.length != 2 ? linuxVersion : versions[1];
-            default:
-                return DEFAULT_VALUE_WHEN_VERSION_INVALID;
-        }
-    }
-
-    /**
-     * app.linuxFxVersion() is the only API we could get the version info of a Linux web app.
-     * It returns "Tomcat|8.5-jre8" if it is a Linux web app with the web container Tomcat.
-     * Tomcat is the only supported web container.
-     * If the web app is a Java SE web app, which has no web container, linuxFxVersion() returns "Java|8-jre8".
-     * And we will return N/A for those kind of web apps.
-     */
-    public static String getWebContainer(@NotNull final WebApp webApp) {
-        switch(webApp.operatingSystem()) {
-            case WINDOWS:
-                return String.join(" ", webApp.javaContainer(), webApp.javaContainerVersion());
-            case LINUX:
-                final String linuxVersion = webApp.linuxFxVersion();
-                final String[] versions = linuxVersion.split("-");
-                if (versions.length != 2) {
+                final String[] versions = linuxVersion.split("\\||-");
+                if (versions == null && versions.length != 3) {
                     return linuxVersion;
                 }
-                if (StringUtils.containsIgnoreCase(versions[0], "tomcat")) {
-                    return versions[0].replace("|", " ");
+
+                webContainer = versions[0].toLowerCase();
+                final String webContainerVersion = versions[1];
+                final String jreVersion = versions[2];
+                if (webContainer.contains("tomcat")) {
+                    // TOMCAT|8.5-jre8 -> Tomcat 8.5 (JRE8)
+                    return String.format("%s %s (%s)", StringUtils.capitalize(webContainer), webContainerVersion, jreVersion.toUpperCase());
                 } else {
-                    return "N/A";
+                    // JAVA|8-jre8 -> JRE8
+                    return jreVersion.toUpperCase();
                 }
             default:
                 return DEFAULT_VALUE_WHEN_VERSION_INVALID;
         }
-    }
-
-    /**
-     * Check if the web app is a Windows or Linux Java configured web app.
-     * Docker web apps are not included.
-     */
-    public static boolean isJavaWebApp(@NotNull WebApp webApp) {
-        return webApp.javaVersion() != JavaVersion.OFF ||
-            webApp.linuxFxVersion() != null &&
-                webApp.linuxFxVersion().toLowerCase().contains("jre8");
     }
 }
