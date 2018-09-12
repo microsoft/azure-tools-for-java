@@ -195,12 +195,12 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
         }
     }
 
-    public void setRunning() {
+    public void updateStatusToRunning() {
         this.setRunState(this.STATUS_RUNNING);
         this.setIconPath(this.ICON_RUNNING);
     }
 
-    public void setStopped() {
+    public void updateStatusToStopped() {
         this.setRunState(this.STATUS_STOPPED);
         this.setIconPath(this.ICON_STOPPED);
     }
