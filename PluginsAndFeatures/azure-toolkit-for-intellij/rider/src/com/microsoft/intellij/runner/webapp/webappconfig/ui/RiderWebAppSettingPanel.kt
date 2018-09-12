@@ -391,11 +391,10 @@ class RiderWebAppSettingPanel(project: Project,
 
     override fun fillResourceGroup(resourceGroups: List<ResourceGroup>) {
 
-        allowExistingResourceGroups(resourceGroups.isNotEmpty())
-
         cbResourceGroup.removeAllItems()
         if (resourceGroups.isEmpty()) {
             toggleResourceGroupPanel(true)
+            allowExistingResourceGroups(false)
             lastSelectedResourceGroupName = ""
             return
         }
@@ -412,10 +411,10 @@ class RiderWebAppSettingPanel(project: Project,
     override fun fillAppServicePlan(appServicePlans: List<AppServicePlan>) {
 
         cachedAppServicePlan = appServicePlans
-        allowExistingAppServicePlans(appServicePlans.isNotEmpty())
 
         if (appServicePlans.isEmpty()) {
             toggleAppServicePlanPanel(true)
+            allowExistingAppServicePlans(false)
             lblLocation.text = NOT_APPLICABLE
             lblPricingTier.text = NOT_APPLICABLE
             return

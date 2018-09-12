@@ -194,11 +194,10 @@ class RiderDatabaseSettingPanel(project: Project,
 
     override fun fillResourceGroup(resourceGroups: List<ResourceGroup>) {
 
-        allowExistingResourceGroups(resourceGroups.isNotEmpty())
-
         cbExistResGrp.removeAllItems()
         if (resourceGroups.isEmpty()) {
             toggleResourceGroupPanel(true)
+            allowExistingResourceGroups(false)
             lastSelectedResourceGroupName = ""
             return
         }
@@ -216,11 +215,11 @@ class RiderDatabaseSettingPanel(project: Project,
 
     override fun fillSqlServer(sqlServers: List<SqlServer>) {
 
-        allowExistingSqlServers(sqlServers.isNotEmpty())
         cbExistSqlServer.removeAllItems()
 
         if (sqlServers.isEmpty()) {
             toggleSqlServerPanel(true)
+            allowExistingSqlServers(false)
             lastSelectedSqlServer = null
             return
         }
@@ -333,7 +332,8 @@ class RiderDatabaseSettingPanel(project: Project,
             if (sqlServer != null) toggleSqlServerComboBox(sqlServer)
 
             rdoUseExistResGrp.doClick()
-            cbExistResGrp.isEnabled = false
+            toggleResourceGroupPanel(false)
+            cbExistResGrp.isEnabled = false // Disable ability to select resource group - show related to SQL Server instead
         }
 
         toggleSqlServerPanel(true)
