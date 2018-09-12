@@ -179,7 +179,7 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeV
     }
 
     @Override
-    public void renderWebAppState(@NotNull WebAppState state) {
+    public void renderWebAppNode(@NotNull WebAppState state) {
         switch (state) {
             case RUNNING:
                 this.webAppState = state;
