@@ -1,5 +1,6 @@
 package com.microsoft.intellij.runner.webapp
 
+import com.intellij.util.xmlb.annotations.Transient
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.PricingTier
@@ -31,6 +32,8 @@ class AzureDotNetWebAppSettingModel {
     var connectionStringName = ""
     var database: SqlDatabase? = null
     var sqlDatabaseAdminLogin = ""
+
+    @get:Transient
     var sqlDatabaseAdminPassword = charArrayOf()
 
     var publishableProject: PublishableProjectModel? = null

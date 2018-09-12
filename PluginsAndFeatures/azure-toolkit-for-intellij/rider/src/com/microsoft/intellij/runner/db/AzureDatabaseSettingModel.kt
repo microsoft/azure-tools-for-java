@@ -1,5 +1,6 @@
 package com.microsoft.intellij.runner.db
 
+import com.intellij.util.xmlb.annotations.Transient
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.sql.DatabaseEditions
 
@@ -16,7 +17,11 @@ class AzureDatabaseSettingModel {
     var sqlServerId = ""
     var sqlServerName = ""
     var sqlServerAdminLogin = ""
+
+    @get:Transient
     var sqlServerAdminPassword = charArrayOf()
+
+    @get:Transient
     var sqlServerAdminPasswordConfirm = charArrayOf()
 
     var location = defaultLocation

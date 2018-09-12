@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 13 13">
+  <title>toolWindowAzureLog</title>
+  <g>
+    <rect width="13" height="13" fill="#ffdbff" opacity="0"/>
+    <g>
+      <path d="M5.541,7.6l2.4,2.738L3.11,12H11L6.457,3.457ZM6,2.5,2.49,11H0L2.757,5.581Z" fill="#40b6e0"/>
+      <path d="M8.41,5H13V6H8.942Zm1.6,3H13V7H9.474ZM6.283,1l.532,1H13V1ZM7.878,4H13V3H7.347Z" fill="#6e6e6e"/>
+    </g>
+  </g>
+</svg>
