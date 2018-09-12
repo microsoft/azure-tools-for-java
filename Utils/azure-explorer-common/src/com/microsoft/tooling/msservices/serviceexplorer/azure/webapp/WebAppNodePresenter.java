@@ -4,32 +4,32 @@ import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import java.io.IOException;
 
-public class WebAppNodePresenter<V extends WebAppNode> extends MvpPresenter<WebAppNode> {
+public class WebAppNodePresenter<V extends WebAppNodeView> extends MvpPresenter<V> {
     public void onStartWebApp(String subscriptionId, String webAppId) throws IOException {
         AzureWebAppMvpModel.getInstance().startWebApp(subscriptionId, webAppId);
-        final WebAppNode view = getMvpView();
+        final WebAppNodeView view = getMvpView();
         if (view == null) {
             return;
         }
-        view.updateStatusToRunning();
+        view.renderWebAppState(WebAppState.RUNNING);
     }
 
     public void onRestartWebApp(String subscriptionId, String webAppId) throws IOException {
         AzureWebAppMvpModel.getInstance().restartWebApp(subscriptionId, webAppId);
-        final WebAppNode view = getMvpView();
+        final WebAppNodeView view = getMvpView();
         if (view == null) {
             return;
         }
-        view.updateStatusToRunning();
+        view.renderWebAppState(WebAppState.RUNNING);
     }
 
     public void onStopWebApp(String subscriptionId, String webAppId) throws IOException {
         AzureWebAppMvpModel.getInstance().stopWebApp(subscriptionId, webAppId);
-        final WebAppNode view = getMvpView();
+        final WebAppNodeView view = getMvpView();
         if (view == null) {
             return;
         }
-        view.updateStatusToStopped();
+        view.renderWebAppState(WebAppState.STOPPED);
     }
 
     public void onNodeRefresh() {

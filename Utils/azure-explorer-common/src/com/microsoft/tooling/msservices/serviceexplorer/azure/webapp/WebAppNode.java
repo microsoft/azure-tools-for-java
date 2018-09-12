@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -37,9 +38,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
-public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtualInterface {
-    static final String STATUS_RUNNING = "Running";
-    static final String STATUS_STOPPED = "Stopped";
+public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeView {
     private static final String ACTION_START = "Start";
     private static final String ACTION_STOP = "Stop";
     private static final String ACTION_DELETE = "Delete";
@@ -49,13 +48,13 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
     private static final String ICON_RUNNING = "WebAppRunning_16.png";
     private static final String ICON_STOPPED = "WebAppStopped_16.png";
     private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete Web App %s.\n"
-            + "Are you sure you want to continue?";
+        + "Are you sure you want to continue?";
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
 
     protected String subscriptionId;
     protected String webAppName;
-    protected String runState;
+    protected WebAppState webAppState;
     protected String webAppId;
     protected String hostName;
     protected Map<String, String> propertyMap;
@@ -64,12 +63,12 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
      * Constructor.
      */
     public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
-            String runState, String hostName, Map<String, String> propertyMap) {
-        super(webAppId, webAppName, parent, STATUS_RUNNING.equals(runState) ? ICON_RUNNING : ICON_STOPPED, true);
+                      WebAppState state, String hostName, Map<String, String> propertyMap) {
+        super(webAppId, webAppName, parent, state == WebAppState.RUNNING ? ICON_RUNNING : ICON_STOPPED, true);
         this.subscriptionId = subscriptionId;
         this.webAppId = webAppId;
         this.webAppName = webAppName;
-        this.runState = runState;
+        this.webAppState = state;
         this.hostName = hostName;
         this.propertyMap = propertyMap;
         webAppNodePresenter = new WebAppNodePresenter<>();
@@ -79,7 +78,7 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
 
     @Override
     public List<NodeAction> getNodeActions() {
-        boolean running = STATUS_RUNNING.equals(getRunState());
+        boolean running = this.webAppState == WebAppState.RUNNING;
         getNodeActionByName(ACTION_START).setEnabled(!running);
         getNodeActionByName(ACTION_STOP).setEnabled(running);
         getNodeActionByName(ACTION_RESTART).setEnabled(running);
@@ -133,16 +132,6 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
     }
 
     @Override
-    public String getRunState() {
-        return this.runState;
-    }
-
-    @Override
-    public void setRunState(String runState) {
-        this.runState = runState;
-    }
-
-    @Override
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
@@ -150,35 +139,39 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
         return properties;
     }
 
-    @Override
     public String getSubscriptionId() {
         return this.subscriptionId;
     }
 
-    @Override
     public String getWebAppId() {
         return this.webAppId;
     }
 
-    @Override
     public String getWebAppName() {
         return this.webAppName;
     }
 
-    @Override
     public void startWebApp() {
         try {
-            webAppNodePresenter.onStartWebApp(getSubscriptionId(), getWebAppId());
+            webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webAppId);
         } catch (IOException e) {
             e.printStackTrace();
             // TODO: Error handling
         }
     }
 
-    @Override
     public void restartWebApp() {
         try {
-            webAppNodePresenter.onRestartWebApp(getSubscriptionId(), getWebAppId());
+            webAppNodePresenter.onRestartWebApp(this.subscriptionId, this.webAppId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            // TODO: Error handling
+        }
+    }
+
+    public void stopWebApp() {
+        try {
+            webAppNodePresenter.onStopWebApp(this.subscriptionId, this.webAppId);
         } catch (IOException e) {
             e.printStackTrace();
             // TODO: Error handling
@@ -186,23 +179,19 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppVirtu
     }
 
     @Override
-    public void stopWebApp() {
-        try {
-            webAppNodePresenter.onStopWebApp(getSubscriptionId(), getWebAppId());
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO: Error handling
+    public void renderWebAppState(@NotNull WebAppState state) {
+        switch (state) {
+            case RUNNING:
+                this.webAppState = state;
+                this.setIconPath(this.ICON_RUNNING);
+                break;
+            case STOPPED:
+                this.webAppState = state;
+                this.setIconPath(this.ICON_STOPPED);
+                break;
+            default:
+                break;
         }
-    }
-
-    public void updateStatusToRunning() {
-        this.setRunState(this.STATUS_RUNNING);
-        this.setIconPath(this.ICON_RUNNING);
-    }
-
-    public void updateStatusToStopped() {
-        this.setRunState(this.STATUS_STOPPED);
-        this.setIconPath(this.ICON_STOPPED);
     }
 
     private class DeleteWebAppAction extends AzureNodeActionPromptListener {

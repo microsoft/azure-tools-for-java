@@ -25,17 +25,17 @@ public class WebAppModulePresenter<V extends WebAppModule> extends MvpPresenter<
         }
 
         webapps.forEach(app -> getMvpView().addChildNode(new WebAppNode(
-                getMvpView(),
-                app.getSubscriptionId(),
-                app.getResource().id(),
-                app.getResource().name(),
-                app.getResource().state(),
-                app.getResource().defaultHostName(),
-                new HashMap<String, String>() {
-                    {
-                        put("regionName", app.getResource().regionName());
-                    }
+            getMvpView(),
+            app.getSubscriptionId(),
+            app.getResource().id(),
+            app.getResource().name(),
+            WebAppState.fromString(app.getResource().state()),
+            app.getResource().defaultHostName(),
+            new HashMap<String, String>() {
+                {
+                    put("regionName", app.getResource().regionName());
                 }
+            }
         )));
     }
 
