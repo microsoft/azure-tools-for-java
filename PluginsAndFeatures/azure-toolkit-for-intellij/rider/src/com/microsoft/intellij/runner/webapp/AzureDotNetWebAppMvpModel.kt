@@ -6,9 +6,7 @@ import com.microsoft.azure.management.appservice.*
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import java.io.IOException
-import java.lang.reflect.Modifier
 
 object AzureDotNetWebAppMvpModel {
 
@@ -34,6 +32,10 @@ object AzureDotNetWebAppMvpModel {
         }
 
         return webAppList
+    }
+
+    fun refreshSubscriptionToWebAppMap() {
+        listWebApps(true)
     }
 
     fun listWebApps(operatingSystem: OperatingSystem, force: Boolean): List<ResourceEx<WebApp>> {
@@ -68,9 +70,14 @@ object AzureDotNetWebAppMvpModel {
         }
     }
 
-    fun createWebAppWithNewWindowsAppServicePlan(subscriptionId: String, webApp: WebAppDefinition, appServicePlan:AppServicePlanDefinition): WebApp {
+    fun createWebAppWithNewWindowsAppServicePlan(subscriptionId: String,
+                                                 webApp: WebAppDefinition,
+                                                 appServicePlan:AppServicePlanDefinition,
+                                                 netFrameworkVersion: NetFrameworkVersion): WebApp {
         val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-        return webAppWithNewWindowsAppServicePlan(azure, webApp, appServicePlan).create()
+        return webAppWithNewWindowsAppServicePlan(azure, webApp, appServicePlan)
+                .withNetFrameworkVersion(netFrameworkVersion)
+                .create()
     }
 
     fun createWebAppWithNewLinuxAppServicePlan(subscriptionId: String,
@@ -78,15 +85,19 @@ object AzureDotNetWebAppMvpModel {
                                                appServicePlan: AppServicePlanDefinition,
                                                runtime: RuntimeStack): WebApp {
         val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-        return webAppWithNewLinuxAppServicePlan(azure, webApp, appServicePlan, runtime).create()
+        return webAppWithNewLinuxAppServicePlan(azure, webApp, appServicePlan, runtime)
+                .create()
     }
 
     fun createWebAppWithExistingWindowsAppServicePlan(subscriptionId: String,
                                                       webApp: WebAppDefinition,
-                                                      appServicePlanId: String): WebApp {
+                                                      appServicePlanId: String,
+                                                      netFrameworkVersion: NetFrameworkVersion): WebApp {
 
         val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-        return webAppWithExistingWindowsAppServicePlan(azure, webApp, appServicePlanId).create()
+        return webAppWithExistingWindowsAppServicePlan(azure, webApp, appServicePlanId)
+                .withNetFrameworkVersion(netFrameworkVersion)
+                .create()
     }
 
     fun createWebAppWithExistingLinuxAppServicePlan(subscriptionId: String,
@@ -97,10 +108,6 @@ object AzureDotNetWebAppMvpModel {
         val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
         return webAppWithExistingLinuxAppServicePlan(azure, webApp, appServicePlanId, runtime)
                 .create()
-    }
-
-    fun getDotNetWebApp(subscriptionId: String, webAppId: String): WebApp {
-        return AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppId)
     }
 
     fun getConnectionStrings(webApp: WebApp, force: Boolean = false): List<ConnectionString> {
@@ -141,28 +148,6 @@ object AzureDotNetWebAppMvpModel {
     }
 
     //endregion Check Existence
-
-    //region Operating System
-
-    fun listOperatingSystem(): List<OperatingSystem> {
-        return OperatingSystem::class.java.declaredFields
-                .filter { Modifier.isPublic(it.modifiers) && Modifier.isStatic(it.modifiers) && Modifier.isFinal(it.modifiers) }
-                .map { it.get(null as Any?) as OperatingSystem }
-                .toList()
-    }
-
-    //endregion Operating System
-
-    //region Runtime Stack
-
-    fun listRuntimeStack(): List<RuntimeStack> {
-        return RuntimeStack::class.java.declaredFields
-                .filter { Modifier.isPublic(it.modifiers) && Modifier.isStatic(it.modifiers) && Modifier.isFinal(it.modifiers) }
-                .map { it.get(null as Any?) as RuntimeStack }
-                .toList()
-    }
-
-    //endregion Runtime Stack
 
     //region Private Methods and Operators
 
@@ -250,8 +235,6 @@ object AzureDotNetWebAppMvpModel {
     private fun withExistingAppServicePlan(azure: Azure, appServicePlanId: String): AppServicePlan {
         return azure.appServices().appServicePlans().getById(appServicePlanId)
     }
-
-
 
     //endregion Private Methods and Operators
 }

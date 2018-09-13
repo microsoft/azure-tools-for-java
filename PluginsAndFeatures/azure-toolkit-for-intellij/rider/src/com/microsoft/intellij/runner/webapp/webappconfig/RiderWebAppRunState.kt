@@ -14,6 +14,8 @@ import com.microsoft.azure.management.appservice.ConnectionStringType
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.sql.SqlDatabase
+import com.microsoft.azure.management.sql.SqlServer
+import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel
 import com.microsoft.azuretools.utils.AzureUIRefreshCore
@@ -30,14 +32,17 @@ import java.io.File
 import java.io.FileFilter
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
+import java.net.URI
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipOutputStream
 
 class RiderWebAppRunState(project: Project,
-                          private val myModel: AzureDotNetWebAppSettingModel) : AzureRunProfileState<WebApp>(project) {
+                          private val myModel: AzureDotNetWebAppSettingModel) : AzureRunProfileState<Pair<WebApp, SqlDatabase?>>(project) {
 
     companion object {
         private const val TARGET_NAME = "WebApp"
+
+        private const val PUBLISH_DONE = "Done."
 
         // Subscription
         private const val SUBSCRIPTION_ID_NOT_DEFINED = "Subscription ID is not defined"
@@ -48,7 +53,7 @@ class RiderWebAppRunState(project: Project,
         private const val WEB_APP_STOP = "Stop Web App '%s'..."
         private const val WEB_APP_CREATE = "Creating Web App '%s'..."
         private const val WEB_APP_CREATE_SUCCESSFUL = "Web App  is created, id: '%s'"
-        private const val WEB_APP_GET_EXISTING = "Get existing Web App with Id: '%s'"
+        private const val WEB_APP_GET_EXISTING = "Got existing Web App with Id: '%s'"
         private const val WEB_APP_ID_NOT_DEFINED = "Web App ID is not defined"
         private const val WEB_APP_NAME_NOT_DEFINED = "Web App Name is not defined"
         private const val WEB_APP_SET_STARTUP_FILE = "Set Startup File for a web app: '%s'"
@@ -63,13 +68,27 @@ class RiderWebAppRunState(project: Project,
 
         private const val DEPLOY_SUCCESSFUL = "Deploy succeeded."
 
-        private const val CONNECTION_STRING_NAME_NOT_SET = "Connection string not set"
+        private const val SQL_DATABASE_NOT_DEFINED = "Database not set"
+        private const val SQL_DATABASE_GET_EXISTING = "Got existing SQL Database: %s"
+        private const val SQL_DATABASE_CREATE = "Creating SQL Database '%s'..."
+        private const val SQL_DATABASE_CREATE_SUCCESSFUL = "SQL Database is created successfully."
+        private const val SQL_DATABASE_NAME_NOT_DEFINED = "SQL Database Name is not defined"
+        private const val SQL_DATABASE_URL = "Please see SQL Database details by URL: %s"
+
+        private const val SQL_SERVER_CREATE = "Creating SQL Server '%s'..."
+        private const val SQL_SERVER_GET_EXISTING = "Get existing SQL Server with Id: '%s'"
+        private const val SQL_SERVER_CREATE_SUCCESSFUL = "SQL Server is created, id: '%s'"
+        private const val SQL_SERVER_NAME_NOT_DEFINED = "SQL Server Name is not defined"
+        private const val SQL_SERVER_REGION_NOT_DEFINED = "SQL Server Region is not defined"
+        private const val SQL_SERVER_RESOURCE_GROUP_NAME_NOT_DEFINED = "SQL Server Resource Group Name is not defined"
+        private const val SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED = "SQL Server Admin Login is not defined"
+        private const val SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED = "SQL Server Admin Password is not defined"
+        private const val SQL_SERVER_ID_NOT_DEFINED = "SQL Server ID is not defined"
+        private const val SQL_SERVER_CANNOT_GET = "Unable to find SQL Server with name '%s'"
+
+        private const val CONNECTION_STRING_NAME_NOT_DEFINED = "Connection string not set"
         private const val CONNECTION_STRING_CREATING = "Creating connection string with name '%s'..."
         private const val CONNECTION_STRING_CREATE_FAILED = "Failed to create Connection String to web app: %s"
-        private const val DATABASE_NOT_SET = "Database not set"
-        private const val SQL_SERVER_ADMIN_LOGIN_NOT_SET = "SQL Server Admin Login is not set"
-        private const val SQL_SERVER_ADMIN_PASSWORD_NOT_SET = "SQL Server Admin Password is not set"
-        private const val SQL_SERVER_CANNOT_GET = "Unable to find SQL Server with name '%s'"
 
         private const val PROJECT_ARTIFACTS_COLLECTING = "Collecting '%s' project artifacts..."
         private const val PROJECT_ARTIFACTS_COLLECTING_FAILED = "Failed collecting project artifacts. Please see Build output"
@@ -105,7 +124,7 @@ class RiderWebAppRunState(project: Project,
      */
     @Throws(Exception::class)
     public override fun executeSteps(processHandler: RunProcessHandler,
-                                     telemetryMap: MutableMap<String, String>): WebApp? {
+                                     telemetryMap: MutableMap<String, String>): Pair<WebApp, SqlDatabase?>? {
 
         val publishableProject = myModel.publishableProject ?: throw Exception(PROJECT_NOT_DEFINED)
 
@@ -119,19 +138,28 @@ class RiderWebAppRunState(project: Project,
             setStartupCommand(webApp, publishableProject.projectName, processHandler)
         }
 
+        var database: SqlDatabase? = null
+
         if (myModel.isDatabaseConnectionEnabled) {
-            val database = myModel.database ?: throw Exception(DATABASE_NOT_SET)
-            if (myModel.connectionStringName.isEmpty()) throw Exception(CONNECTION_STRING_NAME_NOT_SET)
-            if (myModel.sqlDatabaseAdminLogin.isEmpty()) throw Exception(SQL_SERVER_ADMIN_LOGIN_NOT_SET)
-            if (myModel.sqlDatabaseAdminPassword.isEmpty()) throw Exception(SQL_SERVER_ADMIN_PASSWORD_NOT_SET)
+
+            database = getOrCreateSqlDatabaseFromConfig(myModel, processHandler)
+
+            val subscriptionId = myModel.subscriptionId
+            val databaseUri = getSqlDatabaseUri(subscriptionId, database)
+            if (databaseUri != null)
+                processHandler.setText(String.format(SQL_DATABASE_URL, databaseUri))
+
+            if (myModel.connectionStringName.isEmpty()) throw Exception(CONNECTION_STRING_NAME_NOT_DEFINED)
+            if (myModel.sqlServerAdminLogin.isEmpty()) throw Exception(SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
+            if (myModel.sqlServerAdminPassword.isEmpty()) throw Exception(SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
 
             addConnectionString(
                     myModel.subscriptionId,
                     webApp,
                     database,
                     myModel.connectionStringName,
-                    myModel.sqlDatabaseAdminLogin,
-                    myModel.sqlDatabaseAdminPassword,
+                    myModel.sqlServerAdminLogin,
+                    myModel.sqlServerAdminPassword,
                     processHandler)
         }
 
@@ -139,17 +167,22 @@ class RiderWebAppRunState(project: Project,
 
         val url = getWebAppUrl(webApp)
         processHandler.setText("URL: $url")
+        processHandler.setText(PUBLISH_DONE)
 
-        return webApp
+        return Pair(webApp, database)
     }
 
-    override fun onSuccess(webApp: WebApp, processHandler: RunProcessHandler) {
+    override fun onSuccess(result: Pair<WebApp, SqlDatabase?>, processHandler: RunProcessHandler) {
         processHandler.notifyComplete()
         if (myModel.isCreatingWebApp && AzureUIRefreshCore.listeners != null) {
             AzureUIRefreshCore.execute(AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null))
         }
-        myModel.reset(webApp)
-        AzureDotNetWebAppMvpModel.listWebApps(true)
+
+        refreshWebAppAfterPublish(result.first, myModel)
+        val sqlDatabase = result.second
+        if (sqlDatabase != null) {
+            refreshDatabaseAfterPublish(sqlDatabase, myModel)
+        }
     }
 
     override fun onFail(errMsg: String, processHandler: RunProcessHandler) {
@@ -190,7 +223,9 @@ class RiderWebAppRunState(project: Project,
             if (model.resourceGroupName.isEmpty()) throw Exception(RESOURCE_GROUP_NAME_NOT_DEFINED)
             val operatingSystem = myModel.operatingSystem
 
-            val webAppDefinition = AzureDotNetWebAppMvpModel.WebAppDefinition(model.webAppName, model.isCreatingResourceGroup, model.resourceGroupName)
+            val webAppDefinition = AzureDotNetWebAppMvpModel.WebAppDefinition(
+                    model.webAppName, model.isCreatingResourceGroup, model.resourceGroupName)
+
             val webApp =
                     if (model.isCreatingAppServicePlan) {
                         if (model.appServicePlanName.isEmpty()) throw Exception(APP_SERVICE_PLAN_NAME_NOT_DEFINED)
@@ -202,14 +237,14 @@ class RiderWebAppRunState(project: Project,
                             AzureDotNetWebAppMvpModel.createWebAppWithNewWindowsAppServicePlan(
                                     model.subscriptionId,
                                     webAppDefinition,
-                                    appServicePlanDefinition)
+                                    appServicePlanDefinition,
+                                    myModel.netFrameworkVersion)
                         } else {
-                            val runtime = myModel.runtime
                             AzureDotNetWebAppMvpModel.createWebAppWithNewLinuxAppServicePlan(
                                     model.subscriptionId,
                                     webAppDefinition,
                                     appServicePlanDefinition,
-                                    runtime)
+                                    myModel.netCoreRuntime)
                         }
                     } else {
                         if (model.appServicePlanId.isEmpty()) throw Exception(APP_SERVICE_PLAN_ID_NOT_DEFINED)
@@ -218,14 +253,14 @@ class RiderWebAppRunState(project: Project,
                             AzureDotNetWebAppMvpModel.createWebAppWithExistingWindowsAppServicePlan(
                                     model.subscriptionId,
                                     webAppDefinition,
-                                    model.appServicePlanId)
+                                    model.appServicePlanId,
+                                    model.netFrameworkVersion)
                         } else {
-                            val runtime = myModel.runtime
                             AzureDotNetWebAppMvpModel.createWebAppWithExistingLinuxAppServicePlan(
                                     model.subscriptionId,
                                     webAppDefinition,
                                     model.appServicePlanId,
-                                    runtime)
+                                    myModel.netCoreRuntime)
                         }
                     }
 
@@ -236,7 +271,7 @@ class RiderWebAppRunState(project: Project,
         processHandler.setText(String.format(WEB_APP_GET_EXISTING, model.webAppId))
 
         if (model.webAppId.isEmpty()) throw Exception(WEB_APP_ID_NOT_DEFINED)
-        return AzureDotNetWebAppMvpModel.getDotNetWebApp(model.subscriptionId, model.webAppId)
+        return AzureWebAppMvpModel.getInstance().getWebAppById(model.subscriptionId, model.webAppId)
     }
 
     /**
@@ -283,31 +318,117 @@ class RiderWebAppRunState(project: Project,
         webApp.update()
                 .withPublicDockerHubImage("") // Hack to access .withStartUpCommand() API
                 .withStartUpCommand(String.format(WEB_APP_STARTUP_COMMAND_TEMPLATE, "$URL_WEB_APP_WWWROOT/$projectName.dll"))
-                .withBuiltInImage(myModel.runtime)
+                .withBuiltInImage(myModel.netCoreRuntime)
                 .apply()
 
         webApp.update().withoutAppSetting(WEB_APP_SETTING_DOCKER_CUSTOM_IMAGE_NAME).apply()
     }
 
-    /**
-     * Reset [WebAppSettingModel] after web app deployment is succeed
-     *
-     * @param webApp a [WebApp] instance that was deployed
-     */
-    private fun resetModelAfterDeploy(webApp: WebApp) {
-        myModel.isCreatingWebApp = false
-        myModel.webAppId = webApp.id()
-        myModel.webAppName = ""
+    //endregion Web App
 
-        myModel.isCreatingResourceGroup = false
-        myModel.resourceGroupName = webApp.resourceGroupName()
+    //region SQL Database
 
-        myModel.isCreatingAppServicePlan = false
-        myModel.appServicePlanId = webApp.appServicePlanId()
-        myModel.appServicePlanName = ""
+    private fun getOrCreateSqlDatabaseFromConfig(model: AzureDotNetWebAppSettingModel,
+                                                 processHandler: RunProcessHandler): SqlDatabase {
+        if (model.isCreatingSqlDatabase) {
+            val sqlServer = getOrCreateSqlServerFromConfiguration(myModel, processHandler)
+            return createDatabase(sqlServer, myModel, processHandler)
+        }
+
+        val database = model.database ?: throw Exception(SQL_DATABASE_NOT_DEFINED)
+
+        processHandler.setText(String.format(SQL_DATABASE_GET_EXISTING, database.name()))
+        return database
     }
 
-    //endregion Web App
+    /**
+     * Create a SQL database from a [AzureDotNetWebAppSettingModel] instance
+     *
+     * @param sqlServer instance of Azure SQL Server that will host a database
+     * @param model database model
+     * @param processHandler a process handler to show a process message
+     *
+     * @return [SqlDatabase] instance of a new or existing Azure SQL Database
+     */
+    private fun createDatabase(sqlServer: SqlServer,
+                               model: AzureDotNetWebAppSettingModel,
+                               processHandler: RunProcessHandler): SqlDatabase {
+
+        processHandler.setText(String.format(SQL_DATABASE_CREATE, model.databaseName))
+
+        if (model.databaseName.isEmpty()) throw Exception(SQL_DATABASE_NAME_NOT_DEFINED)
+        val database = AzureDatabaseMvpModel.createSqlDatabase(sqlServer, model.databaseName, model.collation)
+
+        processHandler.setText(String.format(SQL_DATABASE_CREATE_SUCCESSFUL, database.id()))
+        return database
+    }
+
+    /**
+     * Get database URI from a published SQL Database
+     *
+     * @param database published database instance
+     * @return [java.net.URI] to a SQL Database on Azure portal
+     */
+    private fun getSqlDatabaseUri(subscriptionId: String, database: SqlDatabase): URI? {
+        val azureManager = AuthMethodManager.getInstance().azureManager
+        val portalUrl = azureManager.portalUrl
+
+        // Note: [SubscriptionManager.getSubscriptionTenant()] method does not update Subscription to TenantId map while
+        //       [SubscriptionManager.getSubscriptionDetails()] force to update and get the correct value
+        val tenantId = azureManager.subscriptionManager.subscriptionDetails
+                .find { it.subscriptionId == subscriptionId }?.tenantId ?: return null
+
+        val path = "/#@$tenantId/resource/${database.id()}/overview".replace("/+".toRegex(), "/")
+        return URI.create("$portalUrl/$path").normalize()
+    }
+
+    //endregion SQL Database
+
+    //region SQL Server
+
+    /**
+     * Get or create an Azure SQL server based on database model [AzureDotNetWebAppSettingModel] parameters
+     *
+     * @param model database model
+     * @param processHandler a process handler to show a process message
+     *
+     * @return [SqlServer] instance of existing or a new Azure SQL Server
+     */
+    private fun getOrCreateSqlServerFromConfiguration(model: AzureDotNetWebAppSettingModel,
+                                                      processHandler: RunProcessHandler): SqlServer {
+
+        if (model.subscriptionId.isEmpty()) throw Exception(SUBSCRIPTION_ID_NOT_DEFINED)
+
+        if (model.isCreatingSqlServer) {
+            processHandler.setText(String.format(SQL_SERVER_CREATE, model.sqlServerName))
+
+            if (model.sqlServerName.isEmpty()) throw Exception(SQL_SERVER_NAME_NOT_DEFINED)
+            if (model.location.isEmpty()) throw Exception(SQL_SERVER_REGION_NOT_DEFINED)
+            if (model.dbResourceGroupName.isEmpty()) throw Exception(SQL_SERVER_RESOURCE_GROUP_NAME_NOT_DEFINED)
+            if (model.sqlServerAdminLogin.isEmpty()) throw Exception(SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
+            if (model.sqlServerAdminPassword.isEmpty()) throw Exception(SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
+
+            val sqlServer = AzureDatabaseMvpModel.createSqlServer(
+                    model.subscriptionId,
+                    model.sqlServerName,
+                    model.location,
+                    model.isCreatingDbResourceGroup,
+                    model.dbResourceGroupName,
+                    model.sqlServerAdminLogin,
+                    model.sqlServerAdminPassword)
+
+            processHandler.setText(String.format(SQL_SERVER_CREATE_SUCCESSFUL, sqlServer.id()))
+
+            return sqlServer
+        }
+
+        processHandler.setText(String.format(SQL_SERVER_GET_EXISTING, model.sqlServerId))
+
+        if (model.sqlServerId.isEmpty()) throw Exception(SQL_SERVER_ID_NOT_DEFINED)
+        return AzureDatabaseMvpModel.getSqlServerById(model.subscriptionId, model.sqlServerId)
+    }
+
+    //endregion SQL Server
 
     //region Database Connection
 
@@ -355,7 +476,6 @@ class RiderWebAppRunState(project: Project,
         zipDeploy(publishableProject, webApp, processHandler)
         processHandler.setText(DEPLOY_SUCCESSFUL)
     }
-
 
     /**
      * Deploy to Web App using KUDU Zip-Deploy
@@ -560,6 +680,16 @@ class RiderWebAppRunState(project: Project,
         } catch (e: Throwable) {
             // Ignore if we unable to switch back to Run tool window (it is not alive and we cannot log the error)
         }
+    }
+
+    private fun refreshWebAppAfterPublish(webApp: WebApp, model: AzureDotNetWebAppSettingModel) {
+        model.resetOnPublish(webApp)
+        AzureDotNetWebAppMvpModel.refreshSubscriptionToWebAppMap()
+    }
+
+    private fun refreshDatabaseAfterPublish(sqlDatabase: SqlDatabase, model: AzureDotNetWebAppSettingModel) {
+        model.resetOnPublish(sqlDatabase)
+        AzureDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
     }
 
     //endregion Deploy

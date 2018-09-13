@@ -119,7 +119,7 @@
       <add-to-group group-id="AzureToolbarGroup" anchor="first" />
     </group>
 
-    <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/azure.png" popup="true"
+    <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/Azure.svg" popup="true"
            class="com.microsoft.intellij.actions.AzurePopupGroup">
       <reference ref="Actions.WebDeployAction"/>
       <separator/>

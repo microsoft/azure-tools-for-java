@@ -186,7 +186,7 @@
             class="com.microsoft.intellij.actions.AzureCodeSamples"
             text="Azure Code Samples"
             description="Opens an Azure Code Samples page in your default browser"
-            icon="/icons/CodeSamples_16.png">
+            icon="/icons/CodeSamples.svg">
     </action>
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
@@ -202,7 +202,7 @@
            class="com.intellij.openapi.actionSystem.DefaultActionGroup"
            text="Azure"
            description="Contains Azure tools plugin actions"
-           icon="/icons/azure.png"
+           icon="/icons/Azure.svg"
            popup="true">
       <add-to-group group-id="ToolsMenu" anchor="first"/>
       <reference ref="AzureToolkit.SelectSubscriptions"/>

@@ -26,7 +26,7 @@ object AzureDatabaseMvpModel {
         }
     }
 
-    fun refreshSqlDatabaseToSqlDatabaseMap() {
+    fun refreshSqlServerToSqlDatabaseMap() {
         refreshSubscriptionToSqlServerMap()
         subscriptionIdToSqlServersMap.forEach {
             val sqlServers = it.value

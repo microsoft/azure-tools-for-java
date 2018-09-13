@@ -18,9 +18,7 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <configurationType implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfigurationType"/>
-    <configurationType implementation="com.microsoft.intellij.runner.db.dbconfig.RiderDatabaseConfigurationType"/>
     <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppRunner"/>
-    <programRunner implementation="com.microsoft.intellij.runner.db.dbconfig.RiderDatabaseRunner"/>
     <rider.publishConfigurationProvider implementation="com.microsoft.intellij.runner.webapp.AzureDotNetWebAppContextPublishProvider" />
   </extensions>
 

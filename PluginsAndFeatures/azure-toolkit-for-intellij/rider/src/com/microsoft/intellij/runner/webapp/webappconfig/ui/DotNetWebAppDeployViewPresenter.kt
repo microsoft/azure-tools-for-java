@@ -1,6 +1,9 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.ui
 
-import com.microsoft.azure.management.appservice.RuntimeStack
+import com.intellij.openapi.project.Project
+import com.jetbrains.rider.model.publishableProjectsModel
+import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.util.idea.lifetime
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
@@ -16,11 +19,11 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
         private const val CANNOT_LIST_WEB_APP = "Failed to list web apps."
         private const val CANNOT_LIST_RESOURCE_GROUP = "Failed to list resource groups."
         private const val CANNOT_LIST_APP_SERVICE_PLAN = "Failed to list app service plan."
-        private const val CANNOT_LIST_OPERATING_SYSTEM = "Failed to list operating system."
         private const val CANNOT_LIST_LOCATION = "Failed to list locations."
         private const val CANNOT_LIST_PRICING_TIER = "Failed to list pricing tier."
-        private const val CANNOT_LIST_RUNTIME_STACK = "Failed to list runtime stack."
         private const val CANNOT_LIST_SQL_DATABASE = "Failed to list SQL Database."
+        private const val CANNOT_LIST_SQL_SERVER = "Failed to list SQL Server."
+        private const val CANNOT_LIST_DATABASE_EDITION = "Failed to list SQL Database edition."
     }
 
     fun onRefresh() {
@@ -52,15 +55,6 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
                 CANNOT_LIST_APP_SERVICE_PLAN)
     }
 
-    fun onLoadOperatingSystem() {
-        try {
-            val operatingSystems = AzureDotNetWebAppMvpModel.listOperatingSystem()
-            mvpView.fillOperatingSystem(operatingSystems)
-        } catch (e: IllegalAccessException) {
-            errorHandler(CANNOT_LIST_OPERATING_SYSTEM, e)
-        }
-    }
-
     fun onLoadLocation(subscriptionId: String) {
         subscribe(
                 { AzureMvpModel.getInstance().listLocationsBySubscriptionId(subscriptionId) },
@@ -70,25 +64,10 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
 
     fun onLoadPricingTier() {
         try {
-            mvpView.fillPricingTier(AzureMvpModel.getInstance().listPricingTier())
+            val pricingTiers = AzureMvpModel.getInstance().listPricingTier()
+            mvpView.fillPricingTier(pricingTiers)
         } catch (e: IllegalAccessException) {
             errorHandler(CANNOT_LIST_PRICING_TIER, e)
-        }
-    }
-
-    fun onLoadRuntime() {
-        try {
-            val runtimeList = AzureDotNetWebAppMvpModel.listRuntimeStack().filter { it.stack().equals("DOTNETCORE", true) }
-            val updatedRuntimeList = listOf(
-                    *runtimeList.toTypedArray(),
-                    RuntimeStack("DOTNETCORE", "2.0"),
-                    RuntimeStack("DOTNETCORE", "2.1")
-            ).distinctBy { it.stack() + it.version() }
-             .sortedBy { it.version() }
-
-            mvpView.fillRuntime(updatedRuntimeList)
-        } catch (e: IllegalAccessException) {
-            errorHandler(CANNOT_LIST_RUNTIME_STACK, e)
         }
     }
 
@@ -97,6 +76,30 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
                 { AzureDatabaseMvpModel.listSqlDatabasesBySubscriptionId(subscriptionId).filter { it.name() != "master" } },
                 { mvpView.fillSqlDatabase(it) },
                 CANNOT_LIST_SQL_DATABASE)
+    }
+
+    fun onLoadSqlServers(subscriptionId: String) {
+        subscribe(
+                { AzureDatabaseMvpModel.listSqlServersBySubscriptionId(subscriptionId, true).map { it.resource } },
+                { mvpView.fillSqlServer(it) },
+                CANNOT_LIST_SQL_SERVER)
+    }
+
+    fun onLoadDatabaseEdition() {
+        try {
+            mvpView.fillDatabaseEdition(AzureDatabaseMvpModel.listDatabaseEditions())
+        } catch (e: IllegalAccessException) {
+            errorHandler(CANNOT_LIST_DATABASE_EDITION, e)
+        }
+
+    }
+
+    fun onLoadPublishableProjects(project: Project) {
+        project.solution.publishableProjectsModel.publishableProjects.advise(project.lifetime) {
+            if (it.newValueOpt != null) {
+                mvpView.fillPublishableProject(project.solution.publishableProjectsModel.publishableProjects.values.toList())
+            }
+        }
     }
 
     private fun loadWebApps(forceRefresh: Boolean) {
