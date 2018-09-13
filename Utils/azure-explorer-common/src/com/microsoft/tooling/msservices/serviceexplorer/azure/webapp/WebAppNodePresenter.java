@@ -31,4 +31,11 @@ public class WebAppNodePresenter<V extends WebAppNodeView> extends MvpPresenter<
         }
         view.renderWebAppNode(WebAppState.STOPPED);
     }
+
+    public void onNodeRefresh() {
+        final WebAppNodeView view = getMvpView();
+        if (view != null) {
+            view.renderDeploymentSlots();
+        }
+    }
 }

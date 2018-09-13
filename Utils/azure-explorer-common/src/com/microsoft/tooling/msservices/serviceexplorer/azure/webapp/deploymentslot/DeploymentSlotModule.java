@@ -1,9 +1,12 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
+import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
+import java.util.List;
 
 public class DeploymentSlotModule extends AzureRefreshableNode implements DeploymentSlotModuleView {
     private static final String MODULE_ID = WebAppModule.class.getName();
@@ -25,9 +28,15 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
     @Override
     protected void refreshItems() throws AzureCmdException {
         try {
-            presenter.onModuleRefresh(this.subscriptionId, this.webAppId);
+            presenter.onRefreshDeploymentSlotModule(this.subscriptionId, this.webAppId);
         } catch(Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    @Override
+    public void render(@NotNull final List<DeploymentSlot> slots) {
+        slots.forEach(slot -> addChildNode(
+            new DeploymentSlotNode(DeploymentSlotModule.this, slot.name(), slot.state(), this.subscriptionId)));
     }
 }

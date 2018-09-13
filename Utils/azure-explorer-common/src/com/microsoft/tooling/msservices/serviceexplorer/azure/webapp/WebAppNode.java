@@ -94,19 +94,13 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        if (!isDirectChild(deploymentSlotModule)) {
-            addChildNode(deploymentSlotModule);
-        }
+        webAppNodePresenter.onNodeRefresh();
     }
 
     @Override
-    protected void refreshFromAzure() throws AzureCmdException {
-        try {
-            if (AuthMethodManager.getInstance().isSignedIn()) {
-                deploymentSlotModule.load(true);
-            }
-        } catch (Exception e) {
-            throw new AzureCmdException("Error loading Azure Web App Explorer modules", e);
+    public void renderDeploymentSlots() {
+        if (!isDirectChild(deploymentSlotModule)) {
+            addChildNode(deploymentSlotModule);
         }
     }
 

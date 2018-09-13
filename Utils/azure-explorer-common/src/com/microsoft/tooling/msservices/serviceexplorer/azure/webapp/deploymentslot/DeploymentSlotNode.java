@@ -22,7 +22,7 @@ public class DeploymentSlotNode extends Node implements TelemetryProperties {
         return properties;
     }
 
-    public DeploymentSlotNode(final Node parent, final String name, final String state, final String subscriptionId) {
+    public DeploymentSlotNode(final DeploymentSlotModule parent, final String name, final String state, final String subscriptionId) {
         super(SLOT_NODE_ID,
             name,
             parent,
