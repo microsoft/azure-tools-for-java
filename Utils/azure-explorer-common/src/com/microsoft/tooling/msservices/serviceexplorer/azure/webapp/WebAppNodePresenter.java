@@ -33,6 +33,9 @@ public class WebAppNodePresenter<V extends WebAppNodeView> extends MvpPresenter<
     }
 
     public void onNodeRefresh() {
-        // todo
+        final WebAppNodeView view = getMvpView();
+        if (view != null) {
+            view.renderSubModules();
+        }
     }
 }

@@ -22,7 +22,10 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -32,13 +35,12 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
-public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeView {
+public class WebAppNode extends RefreshableNode implements TelemetryProperties, WebAppNodeView {
     private static final String ACTION_START = "Start";
     private static final String ACTION_STOP = "Stop";
     private static final String ACTION_DELETE = "Delete";
@@ -51,6 +53,9 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeV
         + "Are you sure you want to continue?";
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
+
+    @NotNull
+    private DeploymentSlotModule deploymentSlotModule;
 
     protected String subscriptionId;
     protected String webAppName;
@@ -73,6 +78,7 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeV
         this.propertyMap = propertyMap;
         webAppNodePresenter = new WebAppNodePresenter<>();
         webAppNodePresenter.onAttachView(WebAppNode.this);
+        this.deploymentSlotModule = new DeploymentSlotModule(this, subscriptionId, webAppId);
         loadActions();
     }
 
@@ -84,6 +90,18 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeV
         getNodeActionByName(ACTION_RESTART).setEnabled(running);
 
         return super.getNodeActions();
+    }
+
+    @Override
+    protected void refreshItems() throws AzureCmdException {
+        webAppNodePresenter.onNodeRefresh();
+    }
+
+    @Override
+    public void renderSubModules() {
+        if (!isDirectChild(deploymentSlotModule)) {
+            addChildNode(deploymentSlotModule);
+        }
     }
 
     @Override
