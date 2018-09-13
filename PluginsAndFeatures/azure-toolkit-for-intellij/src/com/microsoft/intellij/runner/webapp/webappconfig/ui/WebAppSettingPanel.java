@@ -527,10 +527,9 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         toggleRuntimePanel(os == OperatingSystem.WINDOWS);
         webAppConfiguration.setOS(os);
         final ResourceGroup resGrp = (ResourceGroup) cbExistResGrp.getSelectedItem();
-        if (resGrp == null) {
-            return;
+        if (resGrp != null) {
+            webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, resGrp.name());
         }
-        webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, resGrp.name());
     }
 
     private void toggleRuntimePanel(final boolean isWindows) {
