@@ -175,8 +175,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         final ButtonGroup btnGrpForOperatingSystem = new ButtonGroup();
         btnGrpForOperatingSystem.add(rdoLinuxOS);
         btnGrpForOperatingSystem.add(rdoWindowsOS);
-        rdoLinuxOS.addActionListener(e -> toggleRuntimePanel(false /*isWindows*/));
-        rdoWindowsOS.addActionListener(e -> toggleRuntimePanel(true /*isWindows*/));
+        rdoLinuxOS.addActionListener(e -> onOperatingSystemChange(OperatingSystem.LINUX));
+        rdoWindowsOS.addActionListener(e -> onOperatingSystemChange(OperatingSystem.WINDOWS));
         toggleRuntimePanel(false);
 
         cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
@@ -523,6 +523,15 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         lblPricing.setEnabled(!isCreatingNew);
     }
 
+    private void onOperatingSystemChange(final OperatingSystem os) {
+        toggleRuntimePanel(os == OperatingSystem.WINDOWS);
+        webAppConfiguration.setOS(os);
+        final ResourceGroup resGrp = (ResourceGroup) cbExistResGrp.getSelectedItem();
+        if (resGrp != null) {
+            webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, resGrp.name());
+        }
+    }
+
     private void toggleRuntimePanel(final boolean isWindows) {
         lblJavaVersion.setVisible(isWindows);
         cbJdkVersion.setVisible(isWindows);
@@ -645,7 +654,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             return;
         }
         appServicePlans.stream()
-                .filter(item -> Comparing.equal(item.operatingSystem(), OperatingSystem.WINDOWS))
+                .filter(item -> Comparing.equal(item.operatingSystem(), webAppConfiguration.getOS()))
                 .sorted(Comparator.comparing(AppServicePlan::name))
                 .forEach((plan) -> {
                     cbExistAppServicePlan.addItem(plan);
