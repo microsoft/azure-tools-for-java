@@ -51,7 +51,7 @@ public class WebAppSettingModel {
     private String pricing = "";
     private JavaVersion jdkVersion = JavaVersion.JAVA_8_NEWEST;
     private RuntimeStack linuxRuntime = RuntimeStack.TOMCAT_8_5_JRE8;
-    private OperatingSystem os;
+    private OperatingSystem os = OperatingSystem.LINUX;
 
     public String getWebAppId() {
         return webAppId;

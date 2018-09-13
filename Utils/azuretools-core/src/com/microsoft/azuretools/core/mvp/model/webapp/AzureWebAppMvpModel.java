@@ -45,6 +45,7 @@ import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.PublishingProfileFormat;
+import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.Subscription;
@@ -489,6 +490,19 @@ public class AzureWebAppMvpModel {
         List<JdkModel> jdkModels = new ArrayList<>();
         Collections.addAll(jdkModels, JdkModel.values());
         return jdkModels;
+    }
+
+    /**
+     * List all available Java linux RuntimeStacks.
+     * todo: For those unchanged list, like jdk versions, web containers,
+     * linux runtimes, do we really need to get the values from Mvp model every time?
+     */
+    public List<RuntimeStack> getLinuxRuntimes() {
+        final List<RuntimeStack> runtimes = new ArrayList<>();
+        runtimes.add(RuntimeStack.TOMCAT_8_5_JRE8);
+        runtimes.add(RuntimeStack.TOMCAT_9_0_JRE8);
+        runtimes.add(RuntimeStack.JAVA_8_JRE8);
+        return runtimes;
     }
 
     /**

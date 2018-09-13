@@ -73,7 +73,7 @@ public class WebAppModule extends AzureRefreshableNode {
                                             ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId(),
                                             webAppDetails.webApp.id(),
                                             webAppDetails.webApp.name(),
-                                            webAppDetails.webApp.state(),
+                                            WebAppState.fromString(webAppDetails.webApp.state()),
                                             webAppDetails.webApp.defaultHostName(),
                                             null));
                                 } catch (Exception ex) {
