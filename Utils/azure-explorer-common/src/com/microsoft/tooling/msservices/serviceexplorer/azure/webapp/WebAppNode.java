@@ -98,7 +98,7 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
     }
 
     @Override
-    public void renderDeploymentSlots() {
+    public void renderSubModules() {
         if (!isDirectChild(deploymentSlotModule)) {
             addChildNode(deploymentSlotModule);
         }

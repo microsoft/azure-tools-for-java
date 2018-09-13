@@ -5,5 +5,5 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 public interface WebAppNodeView extends MvpView {
     void renderWebAppNode(WebAppState state);
 
-    void renderDeploymentSlots();
+    void renderSubModules();
 }
