@@ -160,7 +160,7 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         if (webAppSettingModel.isCreatingNew()) {
             processHandler.setText(CREATE_WEBAPP);
             try {
-                webApp = AzureWebAppMvpModel.getInstance().createWebAppOnWindows(webAppSettingModel);
+                webApp = AzureWebAppMvpModel.getInstance().createWebApp(webAppSettingModel);
             } catch (Exception e) {
                 processHandler.setText(STOP_DEPLOY);
                 throw new Exception(String.format(CREATE_FAILED, e.getMessage()));

@@ -81,6 +81,20 @@ public class AzureWebAppMvpModel {
         return app;
     }
 
+    /**
+     * API to create new Web App by setting model.
+     */
+    public WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
+        switch (model.getOS()) {
+            case WINDOWS:
+                return createWebAppOnWindows(model);
+            case LINUX:
+                return createWebAppOnLinux(model);
+            default:
+                throw new Exception("Invalid operating system setting: " + model.getOS());
+        }
+    }
+
      /**
      * API to create Web App on Windows .
      *

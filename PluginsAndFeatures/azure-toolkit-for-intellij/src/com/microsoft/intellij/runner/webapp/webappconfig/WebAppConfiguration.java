@@ -100,7 +100,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
             if (Utils.isEmptyString(webAppSettingModel.getWebAppName())) {
                 throw new ConfigurationException(MISSING_WEB_APP_NAME);
             }
-            if (Utils.isEmptyString(webAppSettingModel.getWebContainer())) {
+            if (webAppSettingModel.getOS() == OperatingSystem.WINDOWS && Utils.isEmptyString(webAppSettingModel.getWebContainer())) {
                 throw new ConfigurationException(MISSING_WEB_CONTAINER);
             }
             if (Utils.isEmptyString(webAppSettingModel.getSubscriptionId())) {
