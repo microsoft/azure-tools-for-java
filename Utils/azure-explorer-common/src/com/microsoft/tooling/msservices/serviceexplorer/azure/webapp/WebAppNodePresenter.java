@@ -31,8 +31,4 @@ public class WebAppNodePresenter<V extends WebAppNodeView> extends MvpPresenter<
         }
         view.renderWebAppNode(WebAppState.STOPPED);
     }
-
-    public void onNodeRefresh() {
-        // todo
-    }
 }
