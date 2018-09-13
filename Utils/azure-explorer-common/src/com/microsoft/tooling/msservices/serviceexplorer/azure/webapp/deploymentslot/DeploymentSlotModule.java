@@ -22,7 +22,7 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
         this.subscriptionId = subscriptionId;
         this.webAppId = webAppId;
         presenter = new DeploymentSlotModulePresenter<>();
-        presenter.onAttachView(DeploymentSlotModule.this);
+        presenter.onAttachView(this);
     }
 
     @Override
@@ -35,8 +35,8 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
     }
 
     @Override
-    public void render(@NotNull final List<DeploymentSlot> slots) {
+    public void renderDeploymentSlots(@NotNull final List<DeploymentSlot> slots) {
         slots.forEach(slot -> addChildNode(
-            new DeploymentSlotNode(DeploymentSlotModule.this, slot.name(), slot.state(), this.subscriptionId)));
+            new DeploymentSlotNode(this, slot.name(), slot.state(), this.subscriptionId)));
     }
 }
