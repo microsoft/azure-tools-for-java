@@ -47,6 +47,7 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import icons.MavenIcons;
@@ -412,15 +413,14 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
      */
     @Override
     public void apply(@NotNull WebAppConfiguration webAppConfiguration) {
+        final String targetName = getTargetName();
+        final boolean isDeployingWar = MavenRunTaskUtil.getFileType(targetName).equalsIgnoreCase(MavenConstants.TYPE_WAR);
         webAppConfiguration.setTargetPath(getTargetPath());
-        webAppConfiguration.setTargetName(getTargetName());
+        webAppConfiguration.setTargetName(targetName);
 
-        String fileType = MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName());
-        if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)) {
-            toggleWebContainerSetting(true /*isWar*/);
-        } else {
-            toggleWebContainerSetting(false /*isWar*/);
-        }
+        toggleWebContainerSetting(isDeployingWar);
+        toggleDeployToRoot(isDeployingWar);
+        toggleJarDeployHint(isDeployingWar);
 
         if (rdoUseExist.isSelected()) {
             webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
@@ -474,7 +474,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             }
             webAppConfiguration.setCreatingNew(true);
         }
-        webAppConfiguration.setDeployToRoot(chkToRoot.isSelected());
+        webAppConfiguration.setDeployToRoot(chkToRoot.isVisible() && chkToRoot.isSelected());
     }
 
     @Override
@@ -539,18 +539,28 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         cbLinuxRuntime.setVisible(!isWindows);
     }
 
-
-    // todo: separate the ToRoot and JarDeployHint toggle from this function
-    private void toggleWebContainerSetting(boolean isWar) {
-        lblWebContainer.setVisible(isWar && rdoWindowsOS.isSelected());
-        cbWebContainer.setVisible(isWar && rdoWindowsOS.isSelected());
-        chkToRoot.setVisible(isWar && isWebContainerAvailable());
-        lblJarDeployHint.setVisible(!isWar && rdoUseExist.isSelected());
+    private void toggleWebContainerSetting(boolean isDeployingWar) {
+        lblWebContainer.setVisible(isDeployingWar && rdoWindowsOS.isSelected());
+        cbWebContainer.setVisible(isDeployingWar && rdoWindowsOS.isSelected());
     }
 
-    private boolean isWebContainerAvailable() {
+    private void toggleDeployToRoot(final boolean isDeployingWar) {
+        chkToRoot.setVisible(isDeployingWar && isAbleToDeployToRoot());
+    }
+
+    private void toggleJarDeployHint(final boolean isDeployingWar) {
+        lblJarDeployHint.setVisible(!isDeployingWar && rdoUseExist.isSelected());
+    }
+
+    private boolean isAbleToDeployToRoot() {
+        if (rdoUseExist.isSelected()) {
+            final WebApp app = selectedWebApp.getResource();
+            return app.operatingSystem() == OperatingSystem.WINDOWS ||
+                !Constant.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(app.linuxFxVersion());
+        }
+
         return rdoWindowsOS.isSelected() ||
-            rdoLinuxOS.isSelected() && cbLinuxRuntime.getSelectedItem() != RuntimeStack.JAVA_8_JRE8;
+            rdoLinuxOS.isSelected() && RuntimeStack.JAVA_8_JRE8 != cbLinuxRuntime.getSelectedItem();
     }
 
     private void resetWidget() {
