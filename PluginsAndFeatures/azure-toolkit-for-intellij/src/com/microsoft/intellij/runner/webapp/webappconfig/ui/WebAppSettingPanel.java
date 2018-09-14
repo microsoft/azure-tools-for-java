@@ -22,6 +22,28 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig.ui;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
+
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.idea.maven.model.MavenConstants;
+import org.jetbrains.idea.maven.project.MavenProject;
+
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -50,27 +72,8 @@ import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+
 import icons.MavenIcons;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.model.MavenConstants;
-import org.jetbrains.idea.maven.project.MavenProject;
 
 public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> implements WebAppDeployMvpView {
 
@@ -545,14 +548,17 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     }
 
     private void toggleDeployToRoot(final boolean isDeployingWar) {
-        chkToRoot.setVisible(isDeployingWar && isAbleToDeployToRoot());
+        chkToRoot.setVisible(isAbleToDeployToRoot(isDeployingWar));
     }
 
     private void toggleJarDeployHint(final boolean isDeployingWar) {
         lblJarDeployHint.setVisible(!isDeployingWar && rdoUseExist.isSelected());
     }
 
-    private boolean isAbleToDeployToRoot() {
+    private boolean isAbleToDeployToRoot(final boolean isDeployingWar) {
+        if (!isDeployingWar) {
+            return false;
+        }
         if (rdoUseExist.isSelected()) {
             final WebApp app = selectedWebApp.getResource();
             return app.operatingSystem() == OperatingSystem.WINDOWS ||
