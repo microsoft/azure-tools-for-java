@@ -108,39 +108,64 @@ public class FileUtil {
 		return isValid;
 	}
 
+    public static void addToZipFile(@NotNull final File file, @NotNull final ZipOutputStream zos) throws IOException {
+        final FileInputStream fis = new FileInputStream(file);
+        try {
+            final ZipEntry zipEntry = new ZipEntry(file.getName());
+            zos.putNextEntry(zipEntry);
+
+            final byte[] bytes = new byte[BUFF_SIZE];
+            int length;
+            while ((length = fis.read(bytes)) >= 0) {
+                zos.write(bytes, 0, length);
+            }
+        } finally {
+            zos.closeEntry();
+            fis.close();
+        }
+    }
+
+    private static void ensureValidZipSourceAndTarget(@NotNull final File[] sourceFiles,
+                                                      @NotNull final File targetZipFile) throws Exception {
+        final String targetZipFileName = targetZipFile.getName();
+        final String targetZipFileExtension = targetZipFileName.substring(targetZipFileName.lastIndexOf(".") + 1);
+        if (!targetZipFileExtension.equalsIgnoreCase("zip")) {
+            throw new Exception("The target file should be a .zip file.");
+        }
+
+        for (final File file : sourceFiles) {
+            if (!file.exists()) {
+                throw new Exception(String.format("The source file: %s does not exist.", file.getName()));
+            }
+        }
+    }
+
     /**
      * Utility method to zip the given source file to the destination file.
      * @param sourceFile source file
      * @param targetZipFile ZIP file that will be created or overwritten
      */
-    public static void zipFile(final @NotNull File sourceFile, final @NotNull File targetZipFile) throws Exception {
-        if (!sourceFile.exists()) {
-            throw new Exception("The source file to zip does not exist.");
-        }
+    public static void zipFile(@NotNull final File sourceFile, @NotNull final File targetZipFile) throws Exception {
+        zipFiles(new File[] {sourceFile}, targetZipFile);
+    }
 
-        final String targetZipFileName = targetZipFile.getName();
-        final String targetZipFileExtension = targetZipFileName.substring(targetZipFileName.lastIndexOf(".")+1);
-        if (!targetZipFileExtension.equalsIgnoreCase("zip")) {
-            throw new Exception("The target file should be a .zip file.");
-        }
-
+    /**
+     * Utility method to zip the given collection source files to the destination file.
+     * @param sourceFiles source files array
+     * @param targetZipFile ZIP file that will be created or overwritten
+     */
+    public static void zipFiles(@NotNull final File[] sourceFiles,
+                                @NotNull final File targetZipFile) throws Exception {
+        ensureValidZipSourceAndTarget(sourceFiles, targetZipFile);
         final FileOutputStream fos = new FileOutputStream(targetZipFile);
         final ZipOutputStream zipOut = new ZipOutputStream(fos);
-        final FileInputStream inputStream = new FileInputStream(sourceFile);
         try {
-            final ZipEntry zipEntry = new ZipEntry(sourceFile.getName());
-            zipOut.putNextEntry(zipEntry);
-            final byte[] bytes = new byte[BUFF_SIZE];
-            int length;
-            while ((length = inputStream.read(bytes)) >= 0) {
-                zipOut.write(bytes, 0, length);
+            for (final File file : sourceFiles) {
+                addToZipFile(file, zipOut);
             }
         } finally {
-            if(zipOut != null) {
+            if (zipOut != null) {
                 zipOut.close();
-            }
-            if (inputStream != null) {
-                inputStream.close();
             }
             if (fos != null) {
                 fos.close();

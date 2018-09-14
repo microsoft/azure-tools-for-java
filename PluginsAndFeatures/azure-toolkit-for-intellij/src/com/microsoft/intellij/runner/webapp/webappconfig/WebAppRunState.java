@@ -176,16 +176,20 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         return webApp;
     }
 
-    private void prepareWebConfig(@NotNull final WebApp webApp, @NotNull final RunProcessHandler processHandler,
-                                  @NotNull final Map<String, String> telemetryMap) throws Exception {
-        processHandler.setText(UPLOADING_WEB_CONFIG);
+    private File prepareWebConfig() throws Exception {
         try (InputStream inputStream = getClass().getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
             final File tempFolder = Files.createTempDirectory(TEMP_FILE_PREFIX).toFile();
             final File tempWebConfigFile = new File(tempFolder.getPath() + "/web.config");
             Files.copy(inputStream, tempWebConfigFile.toPath());
-            int count = uploadFileViaZipDeploy(webApp, tempWebConfigFile, processHandler);
-            telemetryMap.put("webConfigCount", String.valueOf(count));
+            return tempWebConfigFile;
         }
+    }
+
+    private File prepareJarArtifact(@NotNull final String fileName, @NotNull final String artifactName) {
+        final File originalJarFile = new File(fileName);
+        final File artifact = new File(originalJarFile.getPath().replace(originalJarFile.getName(), artifactName));
+        originalJarFile.renameTo(artifact);
+        return artifact;
     }
 
     private void uploadWarArtifact(@NotNull final FileInputStream input, @NotNull final WebApp webApp,
@@ -217,37 +221,36 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         }
     }
 
-    private void uploadJarArtifact(@NotNull String file, @NotNull WebApp webApp,
+    private void uploadJarArtifact(@NotNull String fileName, @NotNull WebApp webApp,
                                   @NotNull RunProcessHandler processHandler,
                                   @NotNull Map<String, String> telemetryMap) throws Exception {
+        final File targetZipFile = File.createTempFile(TEMP_FILE_PREFIX, ".zip");
+        // todo: Java SE web app needs the artifact named app.jar
+        final String artifactName = "ROOT.jar";
+        final File jarArtifact = prepareJarArtifact(fileName, artifactName);
+
+        final File[] files;
         if (webApp.operatingSystem() == OperatingSystem.WINDOWS) {
-            prepareWebConfig(webApp, processHandler, telemetryMap);
+            files = new File[]{jarArtifact, prepareWebConfig()};
         } else {
-            // to align with previous telemetry date, always track the count of uploading web config
-            telemetryMap.put("webConfigCount", "0");
+            files = new File[]{jarArtifact};
         }
 
-        final File originalJarFile = new File(file);
-        final String jarFileName = "ROOT.jar";
-        final File jarFile = new File(originalJarFile.getPath().replace(originalJarFile.getName(), jarFileName));
-        originalJarFile.renameTo(jarFile);
-        processHandler.setText(String.format(UPLOADING_ARTIFACT, BASE_PATH + jarFileName));
-        final int uploadCount = uploadFileViaZipDeploy(webApp, jarFile, processHandler);
+        FileUtil.zipFiles(files, targetZipFile);
+        processHandler.setText(String.format(UPLOADING_ARTIFACT, BASE_PATH + artifactName));
+        final int uploadCount = uploadFileViaZipDeploy(webApp, targetZipFile, processHandler);
         telemetryMap.put("artifactUploadCount", String.valueOf(uploadCount));
     }
 
     // Add retry logic here to avoid Kudu's socket timeout issue.
     // More details: https://github.com/Microsoft/azure-maven-plugins/issues/339
-    private int uploadFileViaZipDeploy(@NotNull WebApp webapp, @NotNull File sourceFile,
+    private int uploadFileViaZipDeploy(@NotNull WebApp webapp, @NotNull File zipFile,
                                        @NotNull RunProcessHandler processHandler) throws Exception {
         int uploadCount = 0;
-        final File targetZipFile = File.createTempFile(TEMP_FILE_PREFIX, ".zip");
-        FileUtil.zipFile(sourceFile, targetZipFile);
-
         while (uploadCount < UPLOADING_MAX_TRY) {
             uploadCount += 1;
             try {
-                webapp.zipDeploy(targetZipFile);
+                webapp.zipDeploy(zipFile);
                 processHandler.setText(UPLOADING_SUCCESSFUL);
                 return uploadCount;
             } catch (Exception e) {
