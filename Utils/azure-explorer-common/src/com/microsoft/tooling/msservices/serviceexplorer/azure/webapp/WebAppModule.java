@@ -2,8 +2,11 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import java.io.IOException;
 
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
@@ -12,6 +15,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class WebAppModule extends AzureRefreshableNode implements WebAppModuleView {
@@ -97,17 +101,24 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     }
 
     @Override
-    public void renderChildNode(final String subscriptionId, final String id, final String name,
-                                final String state, final String hostName, final String regionName) {
-        final Map<String, String> propertyMap = new HashMap<>();
-        propertyMap.put("regionName", regionName);
-        final WebAppNode node = new WebAppNode(this, subscriptionId, id, name, state, hostName, propertyMap);
-        addChildNode(node);
+    public void renderChildren(@NotNull final List<ResourceEx<WebApp>> resourceExes) {
+        for (final ResourceEx<WebApp> resourceEx : resourceExes) {
+            final WebApp app = resourceEx.getResource();
+            final WebAppNode node = new WebAppNode(this,
+                resourceEx.getSubscriptionId(), app.id(), app.name(), app.state(), app.defaultHostName(),
+                new HashMap<String, String>() {
+                    {
+                        put("regionName", app.regionName());
+                    }
+                });
 
-        try {
-            node.refreshItems();
-        } catch (Exception e) {
-            e.printStackTrace();
+            addChildNode(node);
+
+            try {
+                node.refreshItems();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }
