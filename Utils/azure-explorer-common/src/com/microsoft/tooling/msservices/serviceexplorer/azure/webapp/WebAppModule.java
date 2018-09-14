@@ -11,8 +11,10 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import java.util.HashMap;
+import java.util.Map;
 
-public class WebAppModule extends AzureRefreshableNode {
+public class WebAppModule extends AzureRefreshableNode implements WebAppModuleView {
     private static final String REDIS_SERVICE_MODULE_ID = WebAppModule.class.getName();
     private static final String ICON_PATH = "WebApp_16.png";
     private static final String BASE_MODULE_NAME = "Web Apps";
@@ -33,7 +35,6 @@ public class WebAppModule extends AzureRefreshableNode {
     @Override
     protected void refreshItems() throws AzureCmdException {
         webAppModulePresenter.onModuleRefresh();
-
     }
 
     @Override
@@ -73,7 +74,7 @@ public class WebAppModule extends AzureRefreshableNode {
                                             ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId(),
                                             webAppDetails.webApp.id(),
                                             webAppDetails.webApp.name(),
-                                            WebAppState.fromString(webAppDetails.webApp.state()),
+                                            webAppDetails.webApp.state(),
                                             webAppDetails.webApp.defaultHostName(),
                                             null));
                                 } catch (Exception ex) {
@@ -93,5 +94,20 @@ public class WebAppModule extends AzureRefreshableNode {
             }
         };
         AzureUIRefreshCore.addListener(id, listener);
+    }
+
+    @Override
+    public void renderChildNode(final String subscriptionId, final String id, final String name,
+                                final String state, final String hostName, final String regionName) {
+        final Map<String, String> propertyMap = new HashMap<>();
+        propertyMap.put("regionName", regionName);
+        final WebAppNode node = new WebAppNode(this, subscriptionId, id, name, state, hostName, propertyMap);
+        addChildNode(node);
+
+        try {
+            node.refreshItems();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
