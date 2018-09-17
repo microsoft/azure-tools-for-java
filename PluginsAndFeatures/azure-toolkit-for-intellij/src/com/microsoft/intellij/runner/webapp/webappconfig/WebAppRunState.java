@@ -226,10 +226,14 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         }
     }
 
-    private void ensureWebAppsFolderExist(@NotNull FTPClient ftp) throws IOException {
-        ftp.getStatus(WEB_APP_BASE_PATH);
-        if (!FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
-            ftp.makeDirectory(WEB_APP_BASE_PATH);
+    private void ensureWebAppsFolderExist(@NotNull FTPClient ftp) {
+        try {
+            ftp.getStatus(WEB_APP_BASE_PATH);
+            if (!FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
+                ftp.makeDirectory(WEB_APP_BASE_PATH);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
