@@ -192,20 +192,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             }
         });
 
-        cbExistResGrp.addActionListener(e -> {
-            ResourceGroup resGrp = (ResourceGroup) cbExistResGrp.getSelectedItem();
-            if (resGrp == null) {
-                return;
-            }
-            String selectedGrp = resGrp.name();
-            if (!Comparing.equal(lastSelectedResGrp, selectedGrp)) {
-                cbExistAppServicePlan.removeAllItems();
-                lblLocation.setText(NOT_APPLICABLE);
-                lblPricing.setText(NOT_APPLICABLE);
-                webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, selectedGrp);
-                lastSelectedResGrp = selectedGrp;
-            }
-        });
+        cbExistResGrp.addActionListener(e -> reloadAppServicePlanDropdownList());
 
         cbSubscription.setRenderer(new ListCellRendererWrapper<Subscription>() {
             @Override
@@ -571,6 +558,21 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
 
         return rdoWindowsOS.isSelected() ||
             rdoLinuxOS.isSelected() && RuntimeStack.JAVA_8_JRE8 != cbLinuxRuntime.getSelectedItem();
+    }
+
+    private void reloadAppServicePlanDropdownList() {
+        final ResourceGroup resGrp = (ResourceGroup) cbExistResGrp.getSelectedItem();
+        if (resGrp == null) {
+            return;
+        }
+        final String selectedGrp = resGrp.name();
+        if (!Comparing.equal(lastSelectedResGrp, selectedGrp)) {
+            cbExistAppServicePlan.removeAllItems();
+            lblLocation.setText(NOT_APPLICABLE);
+            lblPricing.setText(NOT_APPLICABLE);
+            webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, selectedGrp);
+            lastSelectedResGrp = selectedGrp;
+        }
     }
 
     private void resetWidget() {
