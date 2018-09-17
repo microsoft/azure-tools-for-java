@@ -22,12 +22,26 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.Map;
+
+import org.apache.commons.net.ftp.FTPClient;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.idea.maven.model.MavenConstants;
+
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
@@ -36,19 +50,7 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
-import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.util.Map;
-import org.apache.commons.net.ftp.FTPClient;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.maven.model.MavenConstants;
 
 public class WebAppRunState extends AzureRunProfileState<WebApp> {
 
@@ -227,7 +229,7 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
                                   @NotNull Map<String, String> telemetryMap) throws Exception {
         final File targetZipFile = File.createTempFile(TEMP_FILE_PREFIX, ".zip");
         // Java SE web app needs the artifact named app.jar
-        final String artifactName = Constant.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(webApp.linuxFxVersion())
+        final String artifactName = Constants.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(webApp.linuxFxVersion())
             ? "app.jar" : "ROOT.jar";
         final File jarArtifact = prepareJarArtifact(fileName, artifactName);
 

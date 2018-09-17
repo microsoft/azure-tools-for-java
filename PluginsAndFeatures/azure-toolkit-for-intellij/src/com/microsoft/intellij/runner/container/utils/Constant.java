@@ -62,5 +62,4 @@ public class Constant {
     public static final String MESSAGE_DOCKER_HOST_INFO = "Current docker host: %s";
     public static final String MESSAGE_EXECUTE_DOCKER_RUN = "Executing Docker Run...";
     public static final String DOCKERFILE_ARTIFACT_PLACEHOLDER = "<artifact>";
-    public static final String LINUX_JAVA_SE_RUNTIME = "JAVA|8-jre8";
 }
