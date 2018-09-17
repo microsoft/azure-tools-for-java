@@ -29,6 +29,7 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServe
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -135,10 +136,13 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
                                 .flatMap(cluster -> cluster.provision())
                                 .map(cluster -> toUpdate)
                                 .onErrorReturn(err -> {
+                                    log().warn("Error provision a cluster. " + ExceptionUtils.getStackTrace(err));
                                     if (err instanceof HttpResponseWithRequestIdException) {
-                                        toUpdate.setRequestId(((HttpResponseWithRequestIdException) err).getRequestId());
+                                        String requestId = ((HttpResponseWithRequestIdException) err).getRequestId();
+                                        toUpdate.setRequestId(requestId);
+                                        log().info("x-ms-request-id: " + requestId);
                                     }
-                                    log().warn("Error provision a cluster. " + err.toString());
+                                    log().info("Cluster guid: " + toUpdate.getClusterGuid());
                                     return toUpdate.setErrorMessage(err.getMessage());
                                 })
                 )

@@ -7,6 +7,7 @@ import com.microsoft.azure.hdinsight.sdk.common.HttpResponseWithRequestIdExcepti
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
 public class SparkServerlessClusterUpdateCtrlProvider implements ILogger {
@@ -65,10 +66,13 @@ public class SparkServerlessClusterUpdateCtrlProvider implements ILogger {
                         cluster.update(toUpdate.getWorkerNumberOfContainers())
                                 .map(cluster -> toUpdate)
                                 .onErrorReturn(err -> {
+                                    log().warn("Error update a cluster. " + ExceptionUtils.getStackTrace(err));
                                     if (err instanceof HttpResponseWithRequestIdException) {
-                                        toUpdate.setRequestId(((HttpResponseWithRequestIdException) err).getRequestId());
+                                        String requestId = ((HttpResponseWithRequestIdException) err).getRequestId();
+                                        toUpdate.setRequestId(requestId);
+                                        log().info("x-ms-request-id: " + requestId);
                                     }
-                                    log().warn("Error update a cluster. " + err.toString());
+                                    log().info("Cluster guid: " + cluster.getGuid());
                                     return toUpdate.setErrorMessage(err.getMessage());
                                 }))
                 .observeOn(ideSchedulers.dispatchUIThread())
