@@ -22,6 +22,28 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig.ui;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
+
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.idea.maven.model.MavenConstants;
+import org.jetbrains.idea.maven.project.MavenProject;
+
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -47,29 +69,11 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+
 import icons.MavenIcons;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.model.MavenConstants;
-import org.jetbrains.idea.maven.project.MavenProject;
 
 public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> implements WebAppDeployMvpView {
 
@@ -412,15 +416,14 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
      */
     @Override
     public void apply(@NotNull WebAppConfiguration webAppConfiguration) {
+        final String targetName = getTargetName();
+        final boolean isDeployingWar = MavenRunTaskUtil.getFileType(targetName).equalsIgnoreCase(MavenConstants.TYPE_WAR);
         webAppConfiguration.setTargetPath(getTargetPath());
-        webAppConfiguration.setTargetName(getTargetName());
+        webAppConfiguration.setTargetName(targetName);
 
-        String fileType = MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName());
-        if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)) {
-            toggleWebContainerSetting(true /*isWar*/);
-        } else {
-            toggleWebContainerSetting(false /*isWar*/);
-        }
+        toggleWebContainerSetting(isDeployingWar);
+        toggleDeployToRoot(isDeployingWar);
+        toggleJarDeployHint(isDeployingWar);
 
         if (rdoUseExist.isSelected()) {
             webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
@@ -474,7 +477,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             }
             webAppConfiguration.setCreatingNew(true);
         }
-        webAppConfiguration.setDeployToRoot(chkToRoot.isSelected());
+        webAppConfiguration.setDeployToRoot(chkToRoot.isVisible() && chkToRoot.isSelected());
     }
 
     @Override
@@ -539,18 +542,31 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         cbLinuxRuntime.setVisible(!isWindows);
     }
 
-
-    // todo: separate the ToRoot and JarDeployHint toggle from this function
-    private void toggleWebContainerSetting(boolean isWar) {
-        lblWebContainer.setVisible(isWar && rdoWindowsOS.isSelected());
-        cbWebContainer.setVisible(isWar && rdoWindowsOS.isSelected());
-        chkToRoot.setVisible(isWar && isWebContainerAvailable());
-        lblJarDeployHint.setVisible(!isWar && rdoUseExist.isSelected());
+    private void toggleWebContainerSetting(boolean isDeployingWar) {
+        lblWebContainer.setVisible(isDeployingWar && rdoWindowsOS.isSelected());
+        cbWebContainer.setVisible(isDeployingWar && rdoWindowsOS.isSelected());
     }
 
-    private boolean isWebContainerAvailable() {
+    private void toggleDeployToRoot(final boolean isDeployingWar) {
+        chkToRoot.setVisible(isAbleToDeployToRoot(isDeployingWar));
+    }
+
+    private void toggleJarDeployHint(final boolean isDeployingWar) {
+        lblJarDeployHint.setVisible(!isDeployingWar && rdoUseExist.isSelected());
+    }
+
+    private boolean isAbleToDeployToRoot(final boolean isDeployingWar) {
+        if (!isDeployingWar) {
+            return false;
+        }
+        if (rdoUseExist.isSelected()) {
+            final WebApp app = selectedWebApp.getResource();
+            return app.operatingSystem() == OperatingSystem.WINDOWS ||
+                !Constant.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(app.linuxFxVersion());
+        }
+
         return rdoWindowsOS.isSelected() ||
-            rdoLinuxOS.isSelected() && cbLinuxRuntime.getSelectedItem() != RuntimeStack.JAVA_8_JRE8;
+            rdoLinuxOS.isSelected() && RuntimeStack.JAVA_8_JRE8 != cbLinuxRuntime.getSelectedItem();
     }
 
     private void resetWidget() {
