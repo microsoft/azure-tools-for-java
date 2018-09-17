@@ -68,12 +68,14 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
      * Constructor.
      */
     public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
-                      WebAppState state, String hostName, Map<String, String> propertyMap) {
-        super(webAppId, webAppName, parent, state == WebAppState.RUNNING ? ICON_RUNNING : ICON_STOPPED, true);
+                      String state, String hostName, Map<String, String> propertyMap) {
+        super(webAppId, webAppName, parent,
+            WebAppState.fromString(state) == WebAppState.RUNNING ? ICON_RUNNING : ICON_STOPPED,
+            true);
         this.subscriptionId = subscriptionId;
         this.webAppId = webAppId;
         this.webAppName = webAppName;
-        this.webAppState = state;
+        this.webAppState = WebAppState.fromString(state);
         this.hostName = hostName;
         this.propertyMap = propertyMap;
         webAppNodePresenter = new WebAppNodePresenter<>();
@@ -93,7 +95,7 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected void refreshItems() {
         webAppNodePresenter.onNodeRefresh();
     }
 
