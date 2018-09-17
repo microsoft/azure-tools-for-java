@@ -181,7 +181,6 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         btnGrpForOperatingSystem.add(rdoWindowsOS);
         rdoLinuxOS.addActionListener(e -> onOperatingSystemChange(OperatingSystem.LINUX));
         rdoWindowsOS.addActionListener(e -> onOperatingSystemChange(OperatingSystem.WINDOWS));
-        toggleRuntimePanel(false);
 
         cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
             @Override
@@ -399,6 +398,11 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         } else {
             rdoUseExist.doClick();
             chkToRoot.setSelected(webAppConfiguration.isDeployToRoot());
+        }
+        if (webAppConfiguration.getOS() == OperatingSystem.WINDOWS) {
+            rdoWindowsOS.doClick();
+        } else {
+            rdoLinuxOS.doClick();
         }
         btnRefresh.setEnabled(false);
         this.webAppDeployViewPresenter.onLoadWebApps();
