@@ -22,6 +22,20 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.Map;
+
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.idea.maven.model.MavenConstants;
+
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
@@ -37,17 +51,6 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.util.Map;
-import org.apache.commons.net.ftp.FTPClient;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.maven.model.MavenConstants;
 
 public class WebAppRunState extends AzureRunProfileState<WebApp> {
 
@@ -197,6 +200,12 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         final FTPClient ftp = WebAppUtils.getFtpConnection(profile);
         int uploadCount;
 
+        // Workaround for Linux web apps, because unlike Windows ones, the webapps folder is not created in the
+        // beginning and thus cause ftp failure with reply code 550 when deploy directly.
+        // Issue https://github.com/Azure/azure-libraries-for-java/issues/584.
+        if (webApp.operatingSystem() == OperatingSystem.LINUX) {
+            ensureWebAppsFolderExist(ftp);
+        }
         if (webAppSettingModel.isDeployToRoot()) {
             WebAppUtils.removeFtpDirectory(ftp, CONTAINER_ROOT_PATH, processHandler);
             processHandler.setText(String.format(UPLOADING_ARTIFACT, CONTAINER_ROOT_PATH + ".war"));
@@ -214,6 +223,13 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         ftp.logout();
         if (ftp.isConnected()) {
             ftp.disconnect();
+        }
+    }
+
+    private void ensureWebAppsFolderExist(@NotNull FTPClient ftp) throws IOException {
+        ftp.getStatus(WEB_APP_BASE_PATH);
+        if (!FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
+            ftp.makeDirectory(WEB_APP_BASE_PATH);
         }
     }
 
