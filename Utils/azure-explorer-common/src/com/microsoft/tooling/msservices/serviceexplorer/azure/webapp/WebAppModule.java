@@ -113,12 +113,7 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
                 });
 
             addChildNode(node);
-
-            try {
-                node.refreshItems();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            node.refreshItems();
         }
     }
 }

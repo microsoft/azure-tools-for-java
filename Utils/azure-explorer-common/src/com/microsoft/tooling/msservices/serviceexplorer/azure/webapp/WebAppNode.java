@@ -95,7 +95,7 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected void refreshItems() {
         webAppNodePresenter.onNodeRefresh();
     }
 
