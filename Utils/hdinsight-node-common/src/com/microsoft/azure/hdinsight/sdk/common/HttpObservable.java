@@ -34,7 +34,6 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -238,7 +237,7 @@ public class HttpObservable {
 
                         if (status.getStatusCode() >= 300) {
                             Header requestIdHeader = streamResp.getFirstHeader("x-ms-request-id");
-                            return Observable.error(new HttpResponseWithRequestIdException(status.getStatusCode(),
+                            return Observable.error(new SparkAzureDataLakePoolServiceException(status.getStatusCode(),
                                     status.getReasonPhrase(),
                                     requestIdHeader != null ? requestIdHeader.getValue() : ""));
                         }

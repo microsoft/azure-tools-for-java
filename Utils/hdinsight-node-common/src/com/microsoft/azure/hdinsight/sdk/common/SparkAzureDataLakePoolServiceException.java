@@ -24,11 +24,11 @@ package com.microsoft.azure.hdinsight.sdk.common;
 
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
-public class HttpResponseWithRequestIdException extends AzureDataLakeException {
+public class SparkAzureDataLakePoolServiceException extends AzureDataLakeException {
     @Nullable
     private String requestId;
 
-    public HttpResponseWithRequestIdException(final int statusCode, final String s, @Nullable final String requestId) {
+    public SparkAzureDataLakePoolServiceException(final int statusCode, final String s, @Nullable final String requestId) {
         super(statusCode, s);
         this.requestId = requestId;
     }

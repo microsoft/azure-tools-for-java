@@ -24,7 +24,7 @@ package com.microsoft.azure.sparkserverless.serverexplore;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
-import com.microsoft.azure.hdinsight.sdk.common.HttpResponseWithRequestIdException;
+import com.microsoft.azure.hdinsight.sdk.common.SparkAzureDataLakePoolServiceException;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -137,8 +137,8 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
                                 .map(cluster -> toUpdate)
                                 .onErrorReturn(err -> {
                                     log().warn("Error provision a cluster. " + ExceptionUtils.getStackTrace(err));
-                                    if (err instanceof HttpResponseWithRequestIdException) {
-                                        String requestId = ((HttpResponseWithRequestIdException) err).getRequestId();
+                                    if (err instanceof SparkAzureDataLakePoolServiceException) {
+                                        String requestId = ((SparkAzureDataLakePoolServiceException) err).getRequestId();
                                         toUpdate.setRequestId(requestId);
                                         log().info("x-ms-request-id: " + requestId);
                                     }
