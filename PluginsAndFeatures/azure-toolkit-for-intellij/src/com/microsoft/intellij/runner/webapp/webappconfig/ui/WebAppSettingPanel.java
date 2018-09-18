@@ -450,7 +450,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
                 webAppConfiguration.setOS(OperatingSystem.LINUX);
                 RuntimeStack linuxRuntime = (RuntimeStack)cbLinuxRuntime.getSelectedItem();
                 if (linuxRuntime != null) {
-                    webAppConfiguration.setLinuxRuntime(linuxRuntime);
+                    webAppConfiguration.setStack(linuxRuntime.stack());
+                    webAppConfiguration.setVersion(linuxRuntime.version());
                 }
             }
             if (rdoWindowsOS.isSelected()) {
