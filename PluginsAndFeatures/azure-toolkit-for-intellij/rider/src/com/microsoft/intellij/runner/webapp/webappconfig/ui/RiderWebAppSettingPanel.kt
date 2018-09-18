@@ -280,8 +280,8 @@ class RiderWebAppSettingPanel(project: Project,
         val dateString = SimpleDateFormat("yyMMddHHmmss").format(Date())
         val model = configuration.model
 
-        resetWebAppFromConfig(model, dateString)
-        resetDatabaseFromConfig(model, dateString)
+        resetWebAppFromConfig(model.webAppModel, dateString)
+        resetDatabaseFromConfig(model.databaseModel, dateString)
 
         myView.onLoadPublishableProjects(project)
         myView.onLoadSubscription()
@@ -290,7 +290,7 @@ class RiderWebAppSettingPanel(project: Project,
         myView.onLoadDatabaseEdition()
     }
 
-    private fun resetWebAppFromConfig(model: AzureDotNetWebAppSettingModel, dateString: String) {
+    private fun resetWebAppFromConfig(model: AzureDotNetWebAppSettingModel.WebAppModel, dateString: String) {
         cbProject.model.selectedItem = model.publishableProject
 
         txtWebAppName.text = if (model.webAppName.isEmpty()) "$DEFAULT_APP_NAME$dateString" else model.webAppName
@@ -324,7 +324,7 @@ class RiderWebAppSettingPanel(project: Project,
         btnRefresh.isEnabled = false
     }
 
-    private fun resetDatabaseFromConfig(model: AzureDotNetWebAppSettingModel, dateString: String) {
+    private fun resetDatabaseFromConfig(model: AzureDotNetWebAppSettingModel.DatabaseModel, dateString: String) {
         checkBoxEnableDbConnection.isSelected = model.isDatabaseConnectionEnabled
         cbDatabase.model.selectedItem = model.database
 
@@ -354,17 +354,17 @@ class RiderWebAppSettingPanel(project: Project,
      * @param configuration configuration instance
      */
     override fun apply(configuration: RiderWebAppConfiguration) {
-        applyWebAppConfig(configuration.model)
-        applyDatabaseConfig(configuration.model)
+        applyWebAppConfig(configuration.model.webAppModel)
+        applyDatabaseConfig(configuration.model.databaseModel)
     }
 
-    private fun applyWebAppConfig(model: AzureDotNetWebAppSettingModel) {
+    private fun applyWebAppConfig(model: AzureDotNetWebAppSettingModel.WebAppModel) {
+        model.subscriptionId = getSelectedItem(cbSubscription)?.subscriptionId() ?: ""
         model.publishableProject = getSelectedItem(cbProject) ?: model.publishableProject
 
         model.isCreatingWebApp = rdoCreateNewWebApp.isSelected
         if (rdoCreateNewWebApp.isSelected) {
             model.webAppName = txtWebAppName.text
-            model.subscriptionId = getSelectedItem(cbSubscription)?.subscriptionId() ?: ""
 
             model.isCreatingResourceGroup = rdoCreateResGrp.isSelected
             if (rdoCreateResGrp.isSelected) {
@@ -401,8 +401,6 @@ class RiderWebAppSettingPanel(project: Project,
                 model.appServicePlanId = getSelectedItem(cbAppServicePlan)?.id() ?: model.appServicePlanId
             }
         } else {
-            model.subscriptionId = getSelectedItem(cbSubscription)?.subscriptionId() ?: ""
-
             val selectedWebApp = lastSelectedWebApp?.resource
             model.webAppId = selectedWebApp?.id() ?: ""
             model.operatingSystem = selectedWebApp?.operatingSystem() ?: OperatingSystem.WINDOWS
@@ -416,8 +414,10 @@ class RiderWebAppSettingPanel(project: Project,
         }
     }
 
-    private fun applyDatabaseConfig(model: AzureDotNetWebAppSettingModel) {
+    private fun applyDatabaseConfig(model: AzureDotNetWebAppSettingModel.DatabaseModel) {
+        model.subscriptionId = getSelectedItem(cbSubscription)?.subscriptionId() ?: ""
         model.isDatabaseConnectionEnabled = checkBoxEnableDbConnection.isSelected
+
         if (checkBoxEnableDbConnection.isSelected) {
             model.connectionStringName = txtConnectionStringName.text
 
@@ -497,7 +497,7 @@ class RiderWebAppSettingPanel(project: Project,
                     subscription.displayName())
             )
 
-            if (webApp.id() == configuration.model.webAppId ||
+            if (webApp.id() == configuration.model.webAppModel.webAppId ||
                     (lastSelectedWebApp != null && lastSelectedWebApp?.resource?.id() == webApp.id())) {
                 table.setRowSelectionInterval(i, i)
             }
@@ -524,12 +524,12 @@ class RiderWebAppSettingPanel(project: Project,
         resourceGroups.sortedWith(compareBy { it.name() })
                 .forEach {
                     cbResourceGroup.addItem(it)
-                    if (it.name() == configuration.model.resourceGroupName) {
+                    if (it.name() == configuration.model.webAppModel.resourceGroupName) {
                         cbResourceGroup.selectedItem = it
                     }
 
                     cbDbResourceGroup.addItem(it)
-                    if (it.name() == configuration.model.dbResourceGroupName) {
+                    if (it.name() == configuration.model.databaseModel.dbResourceGroupName) {
                         cbDbResourceGroup.selectedItem = it
                     }
                 }
@@ -565,12 +565,12 @@ class RiderWebAppSettingPanel(project: Project,
         locations.sortedWith(compareBy { it.displayName() })
                 .forEach {
                     cbLocation.addItem(it)
-                    if (it.name() == configuration.model.location) {
+                    if (it.name() == configuration.model.webAppModel.location) {
                         cbLocation.selectedItem = it
                     }
 
                     cbSqlServerLocation.addItem(it)
-                    if (it.name() == configuration.model.sqlServerLocation) {
+                    if (it.name() == configuration.model.databaseModel.sqlServerLocation) {
                         cbSqlServerLocation.selectedItem = it
                     }
                 }
@@ -591,7 +591,7 @@ class RiderWebAppSettingPanel(project: Project,
         databases.sortedBy { it.name() }
                 .forEach {
                     cbDatabase.addItem(it)
-                    if (it == configuration.model.database) {
+                    if (it == configuration.model.databaseModel.database) {
                         cbDatabase.selectedItem = it
                     }
                 }
@@ -607,7 +607,7 @@ class RiderWebAppSettingPanel(project: Project,
         cbDatabaseEdition.removeAllItems()
         prices.forEach {
             cbDatabaseEdition.addItem(it)
-            if (it == configuration.model.databaseEdition) {
+            if (it == configuration.model.databaseModel.databaseEdition) {
                 cbDatabaseEdition.selectedItem = it
             }
         }
@@ -618,7 +618,7 @@ class RiderWebAppSettingPanel(project: Project,
         sqlServers.sortedWith(compareBy { it.name() })
                 .forEach {
                     cbExistSqlServer.addItem(it)
-                    if (it.name() == configuration.model.sqlServerName) {
+                    if (it.name() == configuration.model.databaseModel.sqlServerName) {
                         cbExistSqlServer.selectedItem = it
                         lastSelectedSqlServer = it
                     }
@@ -639,7 +639,7 @@ class RiderWebAppSettingPanel(project: Project,
         filteredProjects.sortedBy { it.projectName }
                 .forEach {
                     cbProject.addItem(it)
-                    if (it == configuration.model.publishableProject) {
+                    if (it == configuration.model.webAppModel.publishableProject) {
                         cbProject.selectedItem = it
                         lastSelectedProject = it
                         setOperatingSystemRadioButtons(it)
@@ -659,7 +659,7 @@ class RiderWebAppSettingPanel(project: Project,
                 .sortedWith(compareBy({ it.operatingSystem() }, { it.name() }))
                 .forEach {
                     cbAppServicePlan.addItem(it)
-                    if (it.id() == configuration.model.appServicePlanId) {
+                    if (it.id() == configuration.model.webAppModel.appServicePlanId) {
                         cbAppServicePlan.selectedItem = it
                     }
                 }
@@ -674,7 +674,7 @@ class RiderWebAppSettingPanel(project: Project,
         cbPricingTier.removeAllItems()
         pricingTiers.forEach {
             cbPricingTier.addItem(it)
-            if (it == configuration.model.pricingTier) {
+            if (it == configuration.model.webAppModel.pricingTier) {
                 cbPricingTier.selectedItem = it
             }
         }
@@ -860,7 +860,7 @@ class RiderWebAppSettingPanel(project: Project,
         webAppDeployButtons.add(rdoCreateNewWebApp)
         rdoCreateNewWebApp.addActionListener { toggleWebAppPanel(true) }
         rdoUseExistingWebApp.addActionListener { toggleWebAppPanel(false) }
-        toggleWebAppPanel(configuration.model.isCreatingWebApp)
+        toggleWebAppPanel(configuration.model.webAppModel.isCreatingWebApp)
     }
 
     private fun initResourceGroupButtonGroup() {
@@ -869,7 +869,7 @@ class RiderWebAppSettingPanel(project: Project,
         resourceGroupButtons.add(rdoCreateResGrp)
         rdoCreateResGrp.addActionListener { toggleResourceGroupPanel(true) }
         rdoUseExistResGrp.addActionListener { toggleResourceGroupPanel(false) }
-        toggleResourceGroupPanel(configuration.model.isCreatingResourceGroup)
+        toggleResourceGroupPanel(configuration.model.webAppModel.isCreatingResourceGroup)
     }
 
     private fun initOperatingSystemButtonGroup() {
@@ -878,7 +878,7 @@ class RiderWebAppSettingPanel(project: Project,
         operatingSystemButtons.add(rdoOperatingSystemLinux)
         rdoOperatingSystemWindows.addActionListener { toggleOperatingSystem(OperatingSystem.WINDOWS) }
         rdoOperatingSystemLinux.addActionListener { toggleOperatingSystem(OperatingSystem.LINUX) }
-        toggleOperatingSystem(configuration.model.operatingSystem)
+        toggleOperatingSystem(configuration.model.webAppModel.operatingSystem)
     }
 
     private fun initAppServicePlanButtonsGroup() {
@@ -887,7 +887,7 @@ class RiderWebAppSettingPanel(project: Project,
         appServicePlanButtons.add(rdoCreateAppServicePlan)
         rdoCreateAppServicePlan.addActionListener { toggleAppServicePlanPanel(true) }
         rdoUseExistAppServicePlan.addActionListener { toggleAppServicePlanPanel(false) }
-        toggleAppServicePlanPanel(configuration.model.isCreatingAppServicePlan)
+        toggleAppServicePlanPanel(configuration.model.webAppModel.isCreatingAppServicePlan)
     }
 
     private fun initDatabaseDeployButtonGroup() {
@@ -896,7 +896,7 @@ class RiderWebAppSettingPanel(project: Project,
         databaseDeployButtons.add(rdoExistingDb)
         rdoNewDb.addActionListener { toggleDatabasePanel(true) }
         rdoExistingDb.addActionListener { toggleDatabasePanel(false) }
-        toggleDatabasePanel(configuration.model.isCreatingSqlDatabase)
+        toggleDatabasePanel(configuration.model.databaseModel.isCreatingSqlDatabase)
     }
 
     private fun initDbResourceGroupButtonGroup() {
@@ -914,7 +914,7 @@ class RiderWebAppSettingPanel(project: Project,
             toggleDbResourceGroupPanel(false)
         }
 
-        toggleDbResourceGroupPanel(configuration.model.isCreatingDbResourceGroup)
+        toggleDbResourceGroupPanel(configuration.model.databaseModel.isCreatingDbResourceGroup)
     }
 
     /**
@@ -944,7 +944,7 @@ class RiderWebAppSettingPanel(project: Project,
             cbDbResourceGroup.isEnabled = false // Disable ability to select resource group - show related to SQL Server instead
         }
 
-        toggleSqlServerPanel(configuration.model.isCreatingSqlServer)
+        toggleSqlServerPanel(configuration.model.databaseModel.isCreatingSqlServer)
     }
 
     /**
@@ -969,7 +969,7 @@ class RiderWebAppSettingPanel(project: Project,
 
     private fun initDbConnectionEnableCheckbox() {
         checkBoxEnableDbConnection.addActionListener { setDbConnectionPanel(checkBoxEnableDbConnection.isSelected) }
-        setDbConnectionPanel(configuration.model.isDatabaseConnectionEnabled)
+        setDbConnectionPanel(configuration.model.databaseModel.isDatabaseConnectionEnabled)
     }
 
     private fun toggleWebAppPanel(isCreatingNew: Boolean) {

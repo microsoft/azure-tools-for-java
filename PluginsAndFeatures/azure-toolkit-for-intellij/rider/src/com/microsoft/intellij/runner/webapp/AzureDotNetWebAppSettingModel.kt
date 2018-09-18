@@ -20,85 +20,88 @@ class AzureDotNetWebAppSettingModel {
         val defaultDatabaseEditions: DatabaseEditions = DatabaseEditions.STANDARD
     }
 
-    // Web App
-    var publishableProject: PublishableProjectModel? = null
+    val webAppModel = WebAppModel()
+    val databaseModel = DatabaseModel()
 
-    var subscriptionId = ""
+    class WebAppModel {
 
-    var isCreatingWebApp = false
-    var webAppId = ""
-    var webAppName = ""
+        var publishableProject: PublishableProjectModel? = null
 
-    var isCreatingResourceGroup = false
-    var resourceGroupName = ""
+        var subscriptionId = ""
 
-    var isCreatingAppServicePlan = false
-    var appServicePlanId = ""
-    var appServicePlanName = ""
-    var operatingSystem = defaultOperatingSystem
-    var location = defaultLocation
-    var pricingTier = defaultPricingTier
+        var isCreatingWebApp = false
+        var webAppId = ""
+        var webAppName = ""
 
-    var netFrameworkVersion = defaultNetFrameworkVersion
-    var netCoreRuntime = defaultRuntime
+        var isCreatingResourceGroup = false
+        var resourceGroupName = ""
 
-    // SQL Database
-    var isDatabaseConnectionEnabled = false
+        var isCreatingAppServicePlan = false
+        var appServicePlanId = ""
+        var appServicePlanName = ""
+        var operatingSystem = defaultOperatingSystem
+        var location = defaultLocation
+        var pricingTier = defaultPricingTier
 
-    var connectionStringName = ""
-    var database: SqlDatabase? = null
+        var netFrameworkVersion = defaultNetFrameworkVersion
+        var netCoreRuntime = defaultRuntime
 
-    var isCreatingSqlDatabase = false
+        /**
+         * Reset the model with values after creating a new instance
+         */
+        fun resetOnPublish(webApp: WebApp) {
+            isCreatingWebApp = false
+            webAppId = webApp.id()
+            webAppName = ""
 
-    var databaseName = ""
+            isCreatingResourceGroup = false
 
-    var isCreatingDbResourceGroup = true
-    var dbResourceGroupName = ""
-
-    var isCreatingSqlServer = true
-    var sqlServerId = ""
-    var sqlServerName = ""
-    var sqlServerAdminLogin = ""
-
-    @get:Transient
-    var sqlServerAdminPassword = charArrayOf()
-
-    @get:Transient
-    var sqlServerAdminPasswordConfirm = charArrayOf()
-
-    var sqlServerLocation = defaultLocation
-    var databaseEdition = defaultDatabaseEditions
-
-    var collation = defaultCollation
-
-    /**
-     * Reset the model with values after creating a new instance
-     */
-    fun resetOnPublish(webApp: WebApp) {
-        isCreatingWebApp = false
-        webAppId = webApp.id()
-        webAppName = ""
-
-        isCreatingResourceGroup = false
-
-        isCreatingAppServicePlan = false
-        appServicePlanId = webApp.appServicePlanId()
-        appServicePlanName = ""
+            isCreatingAppServicePlan = false
+            appServicePlanId = webApp.appServicePlanId()
+            appServicePlanName = ""
+        }
     }
 
-    /**
-     * Reset the model with values after creating a new instance
-     */
-    fun resetOnPublish(sqlDatabase: SqlDatabase) {
-        isDatabaseConnectionEnabled = true
+    class DatabaseModel {
 
-        isCreatingSqlDatabase = false
-        database = sqlDatabase
-    }
+        var subscriptionId = ""
 
-    class WebAppDefinition {
-    }
+        var isDatabaseConnectionEnabled = false
 
-    class DatabaseDefinition {
+        var connectionStringName = ""
+        var database: SqlDatabase? = null
+
+        var isCreatingSqlDatabase = false
+
+        var databaseName = ""
+
+        var isCreatingDbResourceGroup = true
+        var dbResourceGroupName = ""
+
+        var isCreatingSqlServer = true
+        var sqlServerId = ""
+        var sqlServerName = ""
+        var sqlServerAdminLogin = ""
+
+        @get:Transient
+        var sqlServerAdminPassword = charArrayOf()
+
+        @get:Transient
+        var sqlServerAdminPasswordConfirm = charArrayOf()
+
+        var sqlServerLocation = defaultLocation
+        var databaseEdition = defaultDatabaseEditions
+
+        var collation = defaultCollation
+
+        /**
+         * Reset the model with values after creating a new instance
+         */
+        fun resetOnPublish(sqlDatabase: SqlDatabase) {
+            isDatabaseConnectionEnabled = true
+
+            isCreatingSqlDatabase = false
+            database = sqlDatabase
+        }
     }
 }

@@ -32,7 +32,7 @@ class AzureDotNetWebAppContextPublishProvider : RiderContextPublishProvider {
         val configurationFactory = RiderWebAppConfigurationType().configurationFactories.single()
         val configuration = RiderWebAppConfiguration(project, configurationFactory, String.format(RUN_CONFIG_NAME, projectData.value.projectName))
 
-        configuration.model.publishableProject = projectData.value
+        configuration.model.webAppModel.publishableProject = projectData.value
 
         return Pair(configuration, configurationFactory)
     }

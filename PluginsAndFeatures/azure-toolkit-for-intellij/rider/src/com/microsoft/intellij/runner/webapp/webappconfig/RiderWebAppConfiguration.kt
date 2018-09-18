@@ -130,20 +130,20 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     private val myModel = AzureDotNetWebAppSettingModel()
 
     init {
-        myModel.publishableProject = project.solution.publishableProjectsModel.publishableProjects.values
+        myModel.webAppModel.publishableProject = project.solution.publishableProjectsModel.publishableProjects.values
                 .sortedWith(compareBy({ it.isWeb }, { it.projectName })).firstOrNull()
     }
 
     override fun getSubscriptionId(): String {
-        return myModel.subscriptionId
+        return myModel.webAppModel.subscriptionId
     }
 
     override fun getTargetPath(): String {
-        return myModel.publishableProject?.projectFilePath ?: ""
+        return myModel.webAppModel.publishableProject?.projectFilePath ?: ""
     }
 
     override fun getTargetName(): String {
-        return myModel.publishableProject?.projectName ?: ""
+        return myModel.webAppModel.publishableProject?.projectName ?: ""
     }
 
     override fun getModel(): AzureDotNetWebAppSettingModel {
@@ -169,12 +169,17 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     @Throws(RuntimeConfigurationError::class)
     override fun checkConfiguration() {
         validateAzureAccountIsSignedIn()
-        validateWebApp(myModel)
-        validateDatabaseConnection(myModel)
+
+        validateWebApp(myModel.webAppModel)
+        validateDatabaseConnection(myModel.databaseModel)
+
+        if (myModel.databaseModel.isDatabaseConnectionEnabled) {
+            checkConnectionStringNameExistence(myModel.databaseModel.connectionStringName, myModel.webAppModel.webAppId)
+        }
     }
 
     @Throws(RuntimeConfigurationError::class)
-    private fun validateWebApp(model: AzureDotNetWebAppSettingModel) {
+    private fun validateWebApp(model: AzureDotNetWebAppSettingModel.WebAppModel) {
         validateProject()
 
         if (model.isCreatingWebApp) {
@@ -196,36 +201,33 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
 
         } else {
             checkValueIsSet(model.webAppId, WEB_APP_MISSING)
-
-            if (model.isDatabaseConnectionEnabled)
-                checkConnectionStringNameExistence(model.connectionStringName, model.webAppId)
         }
     }
 
     @Throws(RuntimeConfigurationError::class)
-    private fun validateDatabaseConnection(model: AzureDotNetWebAppSettingModel) {
+    private fun validateDatabaseConnection(model: AzureDotNetWebAppSettingModel.DatabaseModel) {
         if (!model.isDatabaseConnectionEnabled) return
 
         if (model.isCreatingSqlDatabase) {
-            validateDatabaseName(myModel.subscriptionId, myModel.databaseName, myModel.sqlServerName)
+            validateDatabaseName(model.subscriptionId, model.databaseName, model.sqlServerName)
 
-            if (myModel.isCreatingDbResourceGroup) {
-                validateResourceGroupName(myModel.subscriptionId, myModel.dbResourceGroupName)
+            if (model.isCreatingDbResourceGroup) {
+                validateResourceGroupName(model.subscriptionId, model.dbResourceGroupName)
             } else {
-                checkValueIsSet(myModel.dbResourceGroupName, RESOURCE_GROUP_MISSING)
+                checkValueIsSet(model.dbResourceGroupName, RESOURCE_GROUP_MISSING)
             }
 
-            if (myModel.isCreatingSqlServer) {
-                validateSqlServerName(myModel.subscriptionId, myModel.sqlServerName)
-                validateAdminLogin(myModel.sqlServerAdminLogin)
-                validateAdminPassword(myModel.sqlServerAdminLogin, myModel.sqlServerAdminPassword)
-                checkPasswordsMatch(myModel.sqlServerAdminPassword, myModel.sqlServerAdminPasswordConfirm)
+            if (model.isCreatingSqlServer) {
+                validateSqlServerName(model.subscriptionId, model.sqlServerName)
+                validateAdminLogin(model.sqlServerAdminLogin)
+                validateAdminPassword(model.sqlServerAdminLogin, model.sqlServerAdminPassword)
+                checkPasswordsMatch(model.sqlServerAdminPassword, model.sqlServerAdminPasswordConfirm)
             } else {
                 checkValueIsSet(model.sqlServerAdminPassword, SQL_SERVER_ADMIN_PASSWORD_MISSING)
-                checkValueIsSet(myModel.sqlServerId, SQL_SERVER_MISSING)
+                checkValueIsSet(model.sqlServerId, SQL_SERVER_MISSING)
             }
 
-            validateCollation(myModel.collation)
+            validateCollation(model.collation)
         } else {
             validateDatabase(model.database)
 
@@ -267,7 +269,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     @Throws(RuntimeConfigurationError::class)
     private fun validateProject() {
 
-        val project = myModel.publishableProject ?: throw RuntimeConfigurationError(PROJECT_MISSING)
+        val project = myModel.webAppModel.publishableProject ?: throw RuntimeConfigurationError(PROJECT_MISSING)
 
         if (!project.isDotNetCore && !isWebTargetsPresent(File(project.projectFilePath)))
             throw RuntimeConfigurationError(String.format(PROJECT_TARGETS_MISSING, WEB_APP_TARGET_NAME))
