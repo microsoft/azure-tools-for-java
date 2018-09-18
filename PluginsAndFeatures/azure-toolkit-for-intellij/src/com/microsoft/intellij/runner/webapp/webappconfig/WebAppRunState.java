@@ -50,6 +50,7 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
+import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 public class WebAppRunState extends AzureRunProfileState<WebApp> {
@@ -61,8 +62,8 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
     private static final String UPLOADING_ARTIFACT = "Uploading artifact to: %s ...";
     private static final String UPLOADING_WEB_CONFIG = "Uploading web.config (check more details at: https://aka.ms/spring-boot)...";
     private static final String UPLOADING_SUCCESSFUL = "Uploading successfully...";
-    private static final String STOP_WEB_APP = "Stop Web App...";
-    private static final String START_WEB_APP = "Start Web App...";
+    private static final String STOP_WEB_APP = "Stopping Web App...";
+    private static final String START_WEB_APP = "Starting Web App...";
     private static final String LOGGING_OUT = "Logging out of FTP server...";
     private static final String DEPLOY_SUCCESSFUL = "Deploy successfully!";
     private static final String STOP_DEPLOY = "Deploy Failed!";
@@ -245,8 +246,9 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
                                    @NotNull RunProcessHandler processHandler,
                                    @NotNull Map<String, String> telemetryMap) throws Exception {
         final File targetZipFile = File.createTempFile(TEMP_FILE_PREFIX, ".zip");
-        // todo: Java SE web app needs the artifact named app.jar
-        final String artifactName = "ROOT.jar";
+        // Java SE web app needs the artifact named app.jar
+        final String artifactName = Constants.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(webApp.linuxFxVersion())
+            ? "app.jar" : "ROOT.jar";
         final File jarArtifact = prepareJarArtifact(fileName, artifactName);
 
         final File[] files;

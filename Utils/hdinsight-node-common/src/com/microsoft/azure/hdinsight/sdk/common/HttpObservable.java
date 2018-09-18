@@ -113,6 +113,7 @@ public class HttpObservable {
                 .build();
 
         this.httpClient = HttpClients.custom()
+                .useSystemProperties()
                 .setDefaultCookieStore(getCookieStore())
                 .setDefaultRequestConfig(getDefaultRequestConfig())
                 .build();
@@ -132,6 +133,7 @@ public class HttpObservable {
                 new AuthScope(AuthScope.ANY), new UsernamePasswordCredentials(username, password));
 
         this.httpClient = HttpClients.custom()
+                .useSystemProperties()
                 .setDefaultCookieStore(getCookieStore())
                 .setDefaultCredentialsProvider(credentialsProvider)
                 .setDefaultRequestConfig(getDefaultRequestConfig())

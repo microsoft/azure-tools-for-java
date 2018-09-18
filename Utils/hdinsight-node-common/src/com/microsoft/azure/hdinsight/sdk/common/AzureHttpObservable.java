@@ -64,6 +64,7 @@ public class AzureHttpObservable extends OAuthTokenHttpObservable {
         this.apiVersion = apiVersion;
 
         setHttpClient(HttpClients.custom()
+                .useSystemProperties()
                 .setDefaultCookieStore(getCookieStore())
                 .setDefaultRequestConfig(getDefaultRequestConfig())
                 .build());
