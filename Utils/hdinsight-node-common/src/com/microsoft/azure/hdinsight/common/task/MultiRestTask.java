@@ -57,7 +57,9 @@ public class MultiRestTask extends Task<List<String>> {
 
     @Override
     public List<String> call() throws Exception {
-        CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
+        CloseableHttpClient httpclient = HttpClients.custom()
+                .useSystemProperties()
+                .setDefaultCredentialsProvider(credentialsProvider).build();
         List<String> results = new ArrayList<>();
         for(String path: paths) {
             HttpGet httpGet = new HttpGet(path);
