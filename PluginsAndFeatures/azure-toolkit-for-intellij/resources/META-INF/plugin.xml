@@ -21,16 +21,12 @@
     <html>
       <h3>[3.12.0]</h3>
       <ul>
-        <li>Updated to list both Windows and Linux web apps in web apps explorer.</li>
-        <li>Added support to choose a Linux web app to deploy the application.</li>
-        <li>Added support to create a new Linux web app to deploy the application.</li>
+        <li>Added support to deploy applications to Linux web apps.</li>
         <li>Added support to show all the deployment slots for a web app.</li>
-        <li>Refactored web apps icons.</li>
-        <li>Refactored the use existing web apps UI when users click 'Run on Web App'.</li>
-        <li>Updated to list all app service plans of the selected subscription for users to choose to create a new web app.</li>
-        <li>Updated to use zipDeploy to upload none war files.</li>
-        <li>Updated to always deploy the web.config file when deploying jar artifacts to Windows web apps.</li>
-        <li>Refactored the wording used in deploying web apps.</li>
+        <li>Changed to list both Windows and Linux web apps in Azure Web App Explorer.</li>
+        <li>Changed to list all app service plans of the selected subscription for users to choose to create a new web app.</li>
+        <li>Changed to always uploads the web.config file together with the .jar artifact when deploying to Windows web apps.</li>
+        <li>Fixed some bugs.</li>
       </ul>
       <h3>[3.11.0]</h3>
       <ul>
