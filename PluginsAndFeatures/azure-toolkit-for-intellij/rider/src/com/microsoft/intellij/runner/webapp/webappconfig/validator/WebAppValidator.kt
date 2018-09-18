@@ -11,12 +11,6 @@ import java.io.File
 
 object WebAppValidator : ConfigurationValidator() {
 
-    private val resourceGroupRegex = "[^\\p{L}0-9-.()_]".toRegex()
-    private const val RESOURCE_GROUP_NAME_MIN_LENGTH = 1
-    private const val RESOURCE_GROUP_NAME_MAX_LENGTH = 90
-    private const val RESOURCE_GROUP_NAME_LENGTH_ERROR =
-            "Resource Group name should be from $RESOURCE_GROUP_NAME_MIN_LENGTH to $RESOURCE_GROUP_NAME_MAX_LENGTH characters"
-
     private val webAppNameRegex = "[^\\p{L}0-9-]".toRegex()
     private const val WEB_APP_NAME_MIN_LENGTH = 2
     private const val WEB_APP_NAME_MAX_LENGTH = 60
@@ -38,7 +32,7 @@ object WebAppValidator : ConfigurationValidator() {
             checkValueIsSet(model.subscriptionId, UiConstants.SUBSCRIPTION_NOT_DEFINED)
 
             if (model.isCreatingResourceGroup) {
-                validateResourceGroupName(model.subscriptionId, model.resourceGroupName)
+                ResourceGroupValidator.validateResourceGroupName(model.subscriptionId, model.resourceGroupName)
             } else {
                 checkValueIsSet(model.resourceGroupName, UiConstants.RESOURCE_GROUP_NAME_NOT_DEFINED)
             }
@@ -107,33 +101,6 @@ object WebAppValidator : ConfigurationValidator() {
             val webApps = resourceGroupToWebAppMap.flatMap { it.value }
             if (webApps.any { it.name().equals(webAppName, true) })
                 throw RuntimeConfigurationError(String.format(UiConstants.WEB_APP_ALREADY_EXISTS, webAppName))
-        }
-    }
-
-    @Throws(RuntimeConfigurationError::class)
-    private fun validateResourceGroupName(subscriptionId: String, name: String) {
-
-        checkValueIsSet(name, UiConstants.RESOURCE_GROUP_NAME_NOT_DEFINED)
-        checkResourceGroupExistence(subscriptionId, name)
-
-        if (name.endsWith('.')) throw RuntimeConfigurationError(UiConstants.RESOURCE_GROUP_NAME_CANNOT_ENDS_WITH_PERIOD)
-
-        validateResourceName(name,
-                RESOURCE_GROUP_NAME_MIN_LENGTH,
-                RESOURCE_GROUP_NAME_MAX_LENGTH,
-                RESOURCE_GROUP_NAME_LENGTH_ERROR,
-                resourceGroupRegex,
-                UiConstants.RESOURCE_GROUP_NAME_INVALID)
-    }
-
-    @Throws(RuntimeConfigurationError::class)
-    private fun checkResourceGroupExistence(subscriptionId: String, resourceGroupName: String) {
-        val subscriptionToResourceGroupMap = AzureModel.getInstance().subscriptionToResourceGroupMap
-
-        if (subscriptionToResourceGroupMap != null) {
-            val resourceGroups = subscriptionToResourceGroupMap.filter { it.key.subscriptionId == subscriptionId }.firstOrNull()?.value
-            if (resourceGroups != null && resourceGroups.any { it.name().equals(resourceGroupName, true) })
-                throw RuntimeConfigurationError(String.format(UiConstants.RESOURCE_GROUP_ALREADY_EXISTS, resourceGroupName))
         }
     }
 
