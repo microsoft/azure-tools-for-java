@@ -45,6 +45,11 @@ public class SignInOutAction extends NodeAction {
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
                 AzureSignInAction.onAzureSignIn((Project) azureModule.getProject());
             }
+
+            @Override
+            protected void afterActionPerformed(NodeActionEvent e) {
+                azureModule.load(false);
+            }
         });
     }
 
