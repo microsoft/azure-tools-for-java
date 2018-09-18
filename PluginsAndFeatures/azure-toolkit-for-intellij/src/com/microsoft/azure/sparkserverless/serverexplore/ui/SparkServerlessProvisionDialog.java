@@ -170,6 +170,13 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         });
     }
 
+    @Override
+    protected void dispose() {
+        super.dispose();
+
+        consoleViewPanel.dispose();
+    }
+
     protected void enableClusterNameUniquenessCheck() {
         try {
             clusterNameField.setNotAllowedValues(
