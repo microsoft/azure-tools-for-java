@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.util.Map;
 
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -204,6 +205,12 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         final FTPClient ftp = WebAppUtils.getFtpConnection(profile);
         int uploadCount;
 
+        // Workaround for Linux web apps, because unlike Windows ones, the webapps folder is not created in the
+        // beginning and thus cause ftp failure with reply code 550 when deploy directly.
+        // Issue https://github.com/Azure/azure-libraries-for-java/issues/584.
+        if (webApp.operatingSystem() == OperatingSystem.LINUX) {
+            ensureWebAppsFolderExist(ftp);
+        }
         if (webAppSettingModel.isDeployToRoot()) {
             WebAppUtils.removeFtpDirectory(ftp, CONTAINER_ROOT_PATH, processHandler);
             processHandler.setText(String.format(UPLOADING_ARTIFACT, CONTAINER_ROOT_PATH + ".war"));
@@ -224,9 +231,20 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         }
     }
 
+    private void ensureWebAppsFolderExist(@NotNull FTPClient ftp) {
+        try {
+            ftp.getStatus(WEB_APP_BASE_PATH);
+            if (!FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
+                ftp.makeDirectory(WEB_APP_BASE_PATH);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void uploadJarArtifact(@NotNull String fileName, @NotNull WebApp webApp,
-                                  @NotNull RunProcessHandler processHandler,
-                                  @NotNull Map<String, String> telemetryMap) throws Exception {
+                                   @NotNull RunProcessHandler processHandler,
+                                   @NotNull Map<String, String> telemetryMap) throws Exception {
         final File targetZipFile = File.createTempFile(TEMP_FILE_PREFIX, ".zip");
         // Java SE web app needs the artifact named app.jar
         final String artifactName = Constants.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(webApp.linuxFxVersion())

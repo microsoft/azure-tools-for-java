@@ -2,8 +2,11 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import java.io.IOException;
 
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
@@ -11,8 +14,11 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class WebAppModule extends AzureRefreshableNode {
+public class WebAppModule extends AzureRefreshableNode implements WebAppModuleView {
     private static final String REDIS_SERVICE_MODULE_ID = WebAppModule.class.getName();
     private static final String ICON_PATH = "WebApp_16.png";
     private static final String BASE_MODULE_NAME = "Web Apps";
@@ -33,7 +39,6 @@ public class WebAppModule extends AzureRefreshableNode {
     @Override
     protected void refreshItems() throws AzureCmdException {
         webAppModulePresenter.onModuleRefresh();
-
     }
 
     @Override
@@ -73,7 +78,7 @@ public class WebAppModule extends AzureRefreshableNode {
                                             ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId(),
                                             webAppDetails.webApp.id(),
                                             webAppDetails.webApp.name(),
-                                            WebAppState.fromString(webAppDetails.webApp.state()),
+                                            webAppDetails.webApp.state(),
                                             webAppDetails.webApp.defaultHostName(),
                                             null));
                                 } catch (Exception ex) {
@@ -93,5 +98,22 @@ public class WebAppModule extends AzureRefreshableNode {
             }
         };
         AzureUIRefreshCore.addListener(id, listener);
+    }
+
+    @Override
+    public void renderChildren(@NotNull final List<ResourceEx<WebApp>> resourceExes) {
+        for (final ResourceEx<WebApp> resourceEx : resourceExes) {
+            final WebApp app = resourceEx.getResource();
+            final WebAppNode node = new WebAppNode(this,
+                resourceEx.getSubscriptionId(), app.id(), app.name(), app.state(), app.defaultHostName(),
+                new HashMap<String, String>() {
+                    {
+                        put("regionName", app.regionName());
+                    }
+                });
+
+            addChildNode(node);
+            node.refreshItems();
+        }
     }
 }
