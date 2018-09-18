@@ -551,6 +551,9 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             return false;
         }
         if (rdoUseExist.isSelected()) {
+            if (selectedWebApp == null) {
+                return false;
+            }
             final WebApp app = selectedWebApp.getResource();
             return app.operatingSystem() == OperatingSystem.WINDOWS ||
                 !Constant.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(app.linuxFxVersion());
