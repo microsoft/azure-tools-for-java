@@ -51,13 +51,6 @@ object WebAppRunState {
         webApp.stop()
     }
 
-    /**
-     * Create a web app from a [AzureDotNetWebAppSettingModel] instance
-     *
-     * @param processHandler - a process handler to show a process message
-     *
-     * @return [WebApp] new or existing web app instance
-     */
     fun getOrCreateWebAppFromConfiguration(model: AzureDotNetWebAppSettingModel.WebAppModel,
                                            processHandler: RunProcessHandler): WebApp {
 
@@ -119,28 +112,15 @@ object WebAppRunState {
         return AzureWebAppMvpModel.getInstance().getWebAppById(model.subscriptionId, model.webAppId)
     }
 
-    /**
-     * Deploy an artifacts to a created web app
-     *
-     * @param webApp - Web App instance to use for deployment
-     * @param processHandler - a process handler to show a process message
-     */
     fun deployToAzureWebApp(project: Project,
                             publishableProject: PublishableProjectModel,
                             webApp: WebApp,
                             processHandler: RunProcessHandler) {
 
-        zipDeploy(project, publishableProject, webApp, processHandler)
+        packAndDeploy(project, publishableProject, webApp, processHandler)
         processHandler.setText(UiConstants.DEPLOY_SUCCESSFUL)
     }
 
-    /**
-     * Get an active URL for web app
-     *
-     * @param webApp - a web app instance to get URL for
-     *
-     * @return [String] URL string
-     */
     fun getWebAppUrl(webApp: WebApp): String {
         return "https://" + webApp.defaultHostName()
     }
@@ -200,17 +180,10 @@ object WebAppRunState {
         updateWithConnectionString(webApp, connectionStringName, connectionStringValue, processHandler)
     }
 
-    /**
-     * Deploy to Web App using KUDU Zip-Deploy
-     *
-     * @param publishableProject - a project to publish
-     * @param webApp - web app to deploy
-     * @param processHandler - a process handler to show a process message
-     */
-    private fun zipDeploy(project: Project,
-                          publishableProject: PublishableProjectModel,
-                          webApp: WebApp,
-                          processHandler: RunProcessHandler) {
+    private fun packAndDeploy(project: Project,
+                              publishableProject: PublishableProjectModel,
+                              webApp: WebApp,
+                              processHandler: RunProcessHandler) {
 
         try {
             processHandler.setText(String.format(UiConstants.PROJECT_ARTIFACTS_COLLECTING, publishableProject.projectName))
@@ -274,15 +247,6 @@ object WebAppRunState {
         return outPath.toFile().canonicalFile
     }
 
-    /**
-     * Archive a directory
-     *
-     * @param fromFile - file to be added to ZIP archive
-     * @param processHandler - a process handler to show a process message
-     * @param deleteOriginal - delete original file
-     *
-     * @return [File] Zip archive file
-     */
     @Throws(FileNotFoundException::class)
     private fun zipProjectArtifacts(fromFile: File,
                                     processHandler: RunProcessHandler,
@@ -306,13 +270,6 @@ object WebAppRunState {
     }
 
     /**
-     * Pack web app to ZIP file
-     *
-     * @param fileToZip - file that need to be zipped
-     * @param zipFileToCreate - zip file that will be created as a result
-     * @param filter - filter for zip package
-     *
-     * @return {File} ZIP file instance
      * @throws [FileNotFoundException] when ZIP file does not exists
      */
     @Throws(FileNotFoundException::class)
@@ -406,14 +363,6 @@ object WebAppRunState {
         }
     }
 
-    /**
-     * Update a created web app with a connection string
-     *
-     * @param webApp to set connection string for
-     * @param name connection string name
-     * @param value connection string value
-     * @param processHandler a process handler to show a process message
-     */
     private fun updateWithConnectionString(webApp: WebApp, name: String, value: String, processHandler: RunProcessHandler) {
         processHandler.setText(String.format(UiConstants.CONNECTION_STRING_CREATING, name))
         webApp.update().withConnectionString(name, value, ConnectionStringType.SQLAZURE).apply()

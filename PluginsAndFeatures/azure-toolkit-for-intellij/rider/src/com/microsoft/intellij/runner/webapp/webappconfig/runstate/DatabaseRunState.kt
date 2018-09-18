@@ -9,9 +9,7 @@ import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
 import java.net.URI
 
-object DatabaseState {
-
-    //region SQL Database
+object DatabaseRunState {
 
     fun getOrCreateSqlDatabaseFromConfig(model: AzureDotNetWebAppSettingModel.DatabaseModel,
                                                  processHandler: RunProcessHandler): SqlDatabase {
@@ -26,34 +24,6 @@ object DatabaseState {
         return database
     }
 
-    /**
-     * Create a SQL database from a [AzureDotNetWebAppSettingModel] instance
-     *
-     * @param sqlServer instance of Azure SQL Server that will host a database
-     * @param model database model
-     * @param processHandler a process handler to show a process message
-     *
-     * @return [SqlDatabase] instance of a new or existing Azure SQL Database
-     */
-    private fun createDatabase(sqlServer: SqlServer,
-                               model: AzureDotNetWebAppSettingModel.DatabaseModel,
-                               processHandler: RunProcessHandler): SqlDatabase {
-
-        processHandler.setText(String.format(UiConstants.SQL_DATABASE_CREATE, model.databaseName))
-
-        if (model.databaseName.isEmpty()) throw Exception(UiConstants.SQL_DATABASE_NAME_NOT_DEFINED)
-        val database = AzureDatabaseMvpModel.createSqlDatabase(sqlServer, model.databaseName, model.collation)
-
-        processHandler.setText(String.format(UiConstants.SQL_DATABASE_CREATE_SUCCESSFUL, database.id()))
-        return database
-    }
-
-    /**
-     * Get database URI from a published SQL Database
-     *
-     * @param database published database instance
-     * @return [java.net.URI] to a SQL Database on Azure portal
-     */
     fun getSqlDatabaseUri(subscriptionId: String, database: SqlDatabase): URI? {
         val azureManager = AuthMethodManager.getInstance().azureManager
         val portalUrl = azureManager.portalUrl
@@ -67,18 +37,19 @@ object DatabaseState {
         return URI.create("$portalUrl/$path").normalize()
     }
 
-    //endregion SQL Database
+    private fun createDatabase(sqlServer: SqlServer,
+                               model: AzureDotNetWebAppSettingModel.DatabaseModel,
+                               processHandler: RunProcessHandler): SqlDatabase {
 
-    //region SQL Server
+        processHandler.setText(String.format(UiConstants.SQL_DATABASE_CREATE, model.databaseName))
 
-    /**
-     * Get or create an Azure SQL server based on database model [AzureDotNetWebAppSettingModel] parameters
-     *
-     * @param model database model
-     * @param processHandler a process handler to show a process message
-     *
-     * @return [SqlServer] instance of existing or a new Azure SQL Server
-     */
+        if (model.databaseName.isEmpty()) throw Exception(UiConstants.SQL_DATABASE_NAME_NOT_DEFINED)
+        val database = AzureDatabaseMvpModel.createSqlDatabase(sqlServer, model.databaseName, model.collation)
+
+        processHandler.setText(String.format(UiConstants.SQL_DATABASE_CREATE_SUCCESSFUL, database.id()))
+        return database
+    }
+
     private fun getOrCreateSqlServerFromConfiguration(model: AzureDotNetWebAppSettingModel.DatabaseModel,
                                                       processHandler: RunProcessHandler): SqlServer {
 
@@ -112,6 +83,4 @@ object DatabaseState {
         if (model.sqlServerId.isEmpty()) throw Exception(UiConstants.SQL_SERVER_ID_NOT_DEFINED)
         return AzureDatabaseMvpModel.getSqlServerById(model.subscriptionId, model.sqlServerId)
     }
-
-    //endregion SQL Server
 }
