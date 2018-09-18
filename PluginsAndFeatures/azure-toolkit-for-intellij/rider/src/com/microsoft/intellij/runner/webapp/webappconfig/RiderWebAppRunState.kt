@@ -43,65 +43,6 @@ class RiderWebAppRunState(project: Project,
     companion object {
         private const val TARGET_NAME = "WebApp"
 
-        private const val PUBLISH_DONE = "Done."
-
-        // Subscription
-        private const val SUBSCRIPTION_ID_NOT_DEFINED = "Subscription ID is not defined"
-
-        private const val PROJECT_NOT_DEFINED = "Project is not defined"
-
-        private const val WEB_APP_START = "Start Web App '%s'..."
-        private const val WEB_APP_STOP = "Stop Web App '%s'..."
-        private const val WEB_APP_CREATE = "Creating Web App '%s'..."
-        private const val WEB_APP_CREATE_SUCCESSFUL = "Web App  is created, id: '%s'"
-        private const val WEB_APP_GET_EXISTING = "Got existing Web App with Id: '%s'"
-        private const val WEB_APP_ID_NOT_DEFINED = "Web App ID is not defined"
-        private const val WEB_APP_NAME_NOT_DEFINED = "Web App Name is not defined"
-        private const val WEB_APP_SET_STARTUP_FILE = "Set Startup File for a web app: '%s'"
-        private const val WEB_APP_STARTUP_COMMAND_TEMPLATE = "dotnet %s"
-        private const val WEB_APP_SETTING_DOCKER_CUSTOM_IMAGE_NAME = "DOCKER_CUSTOM_IMAGE_NAME"
-
-        private const val RESOURCE_GROUP_NAME_NOT_DEFINED = "Resource Group Name is not defined"
-
-        private const val APP_SERVICE_PLAN_ID_NOT_DEFINED = "App Service Plan ID is not defined"
-        private const val APP_SERVICE_PLAN_NAME_NOT_DEFINED = "App Service Plan Name is not defined"
-        private const val APP_SERVICE_PLAN_LOCATION_NOT_DEFINED = "App Service Plan Location is not defined"
-
-        private const val DEPLOY_SUCCESSFUL = "Deploy succeeded."
-
-        private const val SQL_DATABASE_NOT_DEFINED = "Database not set"
-        private const val SQL_DATABASE_GET_EXISTING = "Got existing SQL Database: %s"
-        private const val SQL_DATABASE_CREATE = "Creating SQL Database '%s'..."
-        private const val SQL_DATABASE_CREATE_SUCCESSFUL = "SQL Database is created successfully."
-        private const val SQL_DATABASE_NAME_NOT_DEFINED = "SQL Database Name is not defined"
-        private const val SQL_DATABASE_URL = "Please see SQL Database details by URL: %s"
-
-        private const val SQL_SERVER_CREATE = "Creating SQL Server '%s'..."
-        private const val SQL_SERVER_GET_EXISTING = "Get existing SQL Server with Id: '%s'"
-        private const val SQL_SERVER_CREATE_SUCCESSFUL = "SQL Server is created, id: '%s'"
-        private const val SQL_SERVER_NAME_NOT_DEFINED = "SQL Server Name is not defined"
-        private const val SQL_SERVER_REGION_NOT_DEFINED = "SQL Server Region is not defined"
-        private const val SQL_SERVER_RESOURCE_GROUP_NAME_NOT_DEFINED = "SQL Server Resource Group Name is not defined"
-        private const val SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED = "SQL Server Admin Login is not defined"
-        private const val SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED = "SQL Server Admin Password is not defined"
-        private const val SQL_SERVER_ID_NOT_DEFINED = "SQL Server ID is not defined"
-        private const val SQL_SERVER_CANNOT_GET = "Unable to find SQL Server with name '%s'"
-
-        private const val CONNECTION_STRING_NAME_NOT_DEFINED = "Connection string not set"
-        private const val CONNECTION_STRING_CREATING = "Creating connection string with name '%s'..."
-        private const val CONNECTION_STRING_CREATE_FAILED = "Failed to create Connection String to web app: %s"
-
-        private const val PROJECT_ARTIFACTS_COLLECTING = "Collecting '%s' project artifacts..."
-        private const val PROJECT_ARTIFACTS_COLLECTING_FAILED = "Failed collecting project artifacts. Please see Build output"
-
-        private const val ZIP_FILE_CREATE_FOR_PROJECT = "Creating '%s' project ZIP..."
-        private const val ZIP_FILE_CREATE_SUCCESSFUL = "Project ZIP is created: '%s'"
-        private const val ZIP_FILE_NOT_CREATED = "Unable to create a ZIP file"
-        private const val ZIP_FILE_DELETING = "Deleting ZIP file '%s'"
-        private const val ZIP_DEPLOY_START_PUBLISHING = "Publishing ZIP file. Attempt %s of %s..."
-        private const val ZIP_DEPLOY_PUBLISH_SUCCESS = "Published ZIP file successfully"
-        private const val ZIP_DEPLOY_PUBLISH_FAIL = "Fail publishing ZIP file: %s"
-
         private const val URL_AZURE_BASE = ".azurewebsites.net"
         private const val URL_KUDU_BASE = ".scm$URL_AZURE_BASE"
         private const val URL_KUDU_ZIP_DEPLOY = "$URL_KUDU_BASE/api/zipdeploy"
@@ -127,9 +68,9 @@ class RiderWebAppRunState(project: Project,
     public override fun executeSteps(processHandler: RunProcessHandler,
                                      telemetryMap: MutableMap<String, String>): Pair<WebApp, SqlDatabase?>? {
 
-        val publishableProject = myModel.webAppModel.publishableProject ?: throw Exception(PROJECT_NOT_DEFINED)
+        val publishableProject = myModel.webAppModel.publishableProject ?: throw Exception(UiConstants.PROJECT_NOT_DEFINED)
 
-        if (myModel.webAppModel.subscriptionId.isEmpty()) throw Exception(SUBSCRIPTION_ID_NOT_DEFINED)
+        if (myModel.webAppModel.subscriptionId.isEmpty()) throw Exception(UiConstants.SUBSCRIPTION_ID_NOT_DEFINED)
 
         val webApp = getOrCreateWebAppFromConfiguration(myModel.webAppModel, processHandler)
 
@@ -143,18 +84,18 @@ class RiderWebAppRunState(project: Project,
 
         if (myModel.databaseModel.isDatabaseConnectionEnabled) {
 
-            if (myModel.databaseModel.subscriptionId.isEmpty()) throw Exception(SUBSCRIPTION_ID_NOT_DEFINED)
+            if (myModel.databaseModel.subscriptionId.isEmpty()) throw Exception(UiConstants.SUBSCRIPTION_ID_NOT_DEFINED)
 
             database = getOrCreateSqlDatabaseFromConfig(myModel.databaseModel, processHandler)
 
             val subscriptionId = myModel.databaseModel.subscriptionId
             val databaseUri = getSqlDatabaseUri(subscriptionId, database)
             if (databaseUri != null)
-                processHandler.setText(String.format(SQL_DATABASE_URL, databaseUri))
+                processHandler.setText(String.format(UiConstants.SQL_DATABASE_URL, databaseUri))
 
-            if (myModel.databaseModel.connectionStringName.isEmpty()) throw Exception(CONNECTION_STRING_NAME_NOT_DEFINED)
-            if (myModel.databaseModel.sqlServerAdminLogin.isEmpty()) throw Exception(SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
-            if (myModel.databaseModel.sqlServerAdminPassword.isEmpty()) throw Exception(SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
+            if (myModel.databaseModel.connectionStringName.isEmpty()) throw Exception(UiConstants.CONNECTION_STRING_NAME_NOT_DEFINED)
+            if (myModel.databaseModel.sqlServerAdminLogin.isEmpty()) throw Exception(UiConstants.SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
+            if (myModel.databaseModel.sqlServerAdminPassword.isEmpty()) throw Exception(UiConstants.SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
 
             addConnectionString(
                     myModel.databaseModel.subscriptionId,
@@ -170,7 +111,7 @@ class RiderWebAppRunState(project: Project,
 
         val url = getWebAppUrl(webApp)
         processHandler.setText("URL: $url")
-        processHandler.setText(PUBLISH_DONE)
+        processHandler.setText(UiConstants.PUBLISH_DONE)
 
         return Pair(webApp, database)
     }
@@ -200,12 +141,12 @@ class RiderWebAppRunState(project: Project,
     //region Web App
 
     private fun webAppStart(webApp: WebApp, processHandler: RunProcessHandler) {
-        processHandler.setText(String.format(WEB_APP_START, webApp.name()))
+        processHandler.setText(String.format(UiConstants.WEB_APP_START, webApp.name()))
         webApp.start()
     }
 
     private fun webAppStop(webApp: WebApp, processHandler: RunProcessHandler) {
-        processHandler.setText(String.format(WEB_APP_STOP, webApp.name()))
+        processHandler.setText(String.format(UiConstants.WEB_APP_STOP, webApp.name()))
         webApp.stop()
     }
 
@@ -220,10 +161,10 @@ class RiderWebAppRunState(project: Project,
                                                    processHandler: RunProcessHandler): WebApp {
 
         if (model.isCreatingWebApp) {
-            processHandler.setText(String.format(WEB_APP_CREATE, model.webAppName))
+            processHandler.setText(String.format(UiConstants.WEB_APP_CREATE, model.webAppName))
 
-            if (model.webAppName.isEmpty()) throw Exception(WEB_APP_NAME_NOT_DEFINED)
-            if (model.resourceGroupName.isEmpty()) throw Exception(RESOURCE_GROUP_NAME_NOT_DEFINED)
+            if (model.webAppName.isEmpty()) throw Exception(UiConstants.WEB_APP_NAME_NOT_DEFINED)
+            if (model.resourceGroupName.isEmpty()) throw Exception(UiConstants.RESOURCE_GROUP_NAME_NOT_DEFINED)
             val operatingSystem = model.operatingSystem
 
             val webAppDefinition = AzureDotNetWebAppMvpModel.WebAppDefinition(
@@ -231,8 +172,8 @@ class RiderWebAppRunState(project: Project,
 
             val webApp =
                     if (model.isCreatingAppServicePlan) {
-                        if (model.appServicePlanName.isEmpty()) throw Exception(APP_SERVICE_PLAN_NAME_NOT_DEFINED)
-                        if (model.location.isEmpty()) throw Exception(APP_SERVICE_PLAN_LOCATION_NOT_DEFINED)
+                        if (model.appServicePlanName.isEmpty()) throw Exception(UiConstants.APP_SERVICE_PLAN_NAME_NOT_DEFINED)
+                        if (model.location.isEmpty()) throw Exception(UiConstants.APP_SERVICE_PLAN_LOCATION_NOT_DEFINED)
                         val pricingTier = model.pricingTier
                         val appServicePlanDefinition = AzureDotNetWebAppMvpModel.AppServicePlanDefinition(model.appServicePlanName, pricingTier, model.location)
 
@@ -250,7 +191,7 @@ class RiderWebAppRunState(project: Project,
                                     model.netCoreRuntime)
                         }
                     } else {
-                        if (model.appServicePlanId.isEmpty()) throw Exception(APP_SERVICE_PLAN_ID_NOT_DEFINED)
+                        if (model.appServicePlanId.isEmpty()) throw Exception(UiConstants.APP_SERVICE_PLAN_ID_NOT_DEFINED)
 
                         if (operatingSystem == OperatingSystem.WINDOWS) {
                             AzureDotNetWebAppMvpModel.createWebAppWithExistingWindowsAppServicePlan(
@@ -267,13 +208,13 @@ class RiderWebAppRunState(project: Project,
                         }
                     }
 
-            processHandler.setText(String.format(WEB_APP_CREATE_SUCCESSFUL, webApp.id()))
+            processHandler.setText(String.format(UiConstants.WEB_APP_CREATE_SUCCESSFUL, webApp.id()))
             return webApp
         }
 
-        processHandler.setText(String.format(WEB_APP_GET_EXISTING, model.webAppId))
+        processHandler.setText(String.format(UiConstants.WEB_APP_GET_EXISTING, model.webAppId))
 
-        if (model.webAppId.isEmpty()) throw Exception(WEB_APP_ID_NOT_DEFINED)
+        if (model.webAppId.isEmpty()) throw Exception(UiConstants.WEB_APP_ID_NOT_DEFINED)
         return AzureWebAppMvpModel.getInstance().getWebAppById(model.subscriptionId, model.webAppId)
     }
 
@@ -286,7 +227,7 @@ class RiderWebAppRunState(project: Project,
      * @param processHandler a process handler to show a process message
      */
     private fun updateWithConnectionString(webApp: WebApp, name: String, value: String, processHandler: RunProcessHandler) {
-        processHandler.setText(String.format(CONNECTION_STRING_CREATING, name))
+        processHandler.setText(String.format(UiConstants.CONNECTION_STRING_CREATING, name))
         webApp.update().withConnectionString(name, value, ConnectionStringType.SQLAZURE).apply()
     }
 
@@ -319,14 +260,14 @@ class RiderWebAppRunState(project: Project,
                                   projectName: String,
                                   runtime: RuntimeStack,
                                   processHandler: RunProcessHandler) {
-        processHandler.setText(String.format(WEB_APP_SET_STARTUP_FILE, webApp.name()))
+        processHandler.setText(String.format(UiConstants.WEB_APP_SET_STARTUP_FILE, webApp.name()))
         webApp.update()
                 .withPublicDockerHubImage("") // Hack to access .withStartUpCommand() API
-                .withStartUpCommand(String.format(WEB_APP_STARTUP_COMMAND_TEMPLATE, "$URL_WEB_APP_WWWROOT/$projectName.dll"))
+                .withStartUpCommand(String.format(UiConstants.WEB_APP_STARTUP_COMMAND_TEMPLATE, "$URL_WEB_APP_WWWROOT/$projectName.dll"))
                 .withBuiltInImage(runtime)
                 .apply()
 
-        webApp.update().withoutAppSetting(WEB_APP_SETTING_DOCKER_CUSTOM_IMAGE_NAME).apply()
+        webApp.update().withoutAppSetting(UiConstants.WEB_APP_SETTING_DOCKER_CUSTOM_IMAGE_NAME).apply()
     }
 
     //endregion Web App
@@ -340,9 +281,9 @@ class RiderWebAppRunState(project: Project,
             return createDatabase(sqlServer, model, processHandler)
         }
 
-        val database = model.database ?: throw Exception(SQL_DATABASE_NOT_DEFINED)
+        val database = model.database ?: throw Exception(UiConstants.SQL_DATABASE_NOT_DEFINED)
 
-        processHandler.setText(String.format(SQL_DATABASE_GET_EXISTING, database.name()))
+        processHandler.setText(String.format(UiConstants.SQL_DATABASE_GET_EXISTING, database.name()))
         return database
     }
 
@@ -359,12 +300,12 @@ class RiderWebAppRunState(project: Project,
                                model: AzureDotNetWebAppSettingModel.DatabaseModel,
                                processHandler: RunProcessHandler): SqlDatabase {
 
-        processHandler.setText(String.format(SQL_DATABASE_CREATE, model.databaseName))
+        processHandler.setText(String.format(UiConstants.SQL_DATABASE_CREATE, model.databaseName))
 
-        if (model.databaseName.isEmpty()) throw Exception(SQL_DATABASE_NAME_NOT_DEFINED)
+        if (model.databaseName.isEmpty()) throw Exception(UiConstants.SQL_DATABASE_NAME_NOT_DEFINED)
         val database = AzureDatabaseMvpModel.createSqlDatabase(sqlServer, model.databaseName, model.collation)
 
-        processHandler.setText(String.format(SQL_DATABASE_CREATE_SUCCESSFUL, database.id()))
+        processHandler.setText(String.format(UiConstants.SQL_DATABASE_CREATE_SUCCESSFUL, database.id()))
         return database
     }
 
@@ -402,16 +343,16 @@ class RiderWebAppRunState(project: Project,
     private fun getOrCreateSqlServerFromConfiguration(model: AzureDotNetWebAppSettingModel.DatabaseModel,
                                                       processHandler: RunProcessHandler): SqlServer {
 
-        if (model.subscriptionId.isEmpty()) throw Exception(SUBSCRIPTION_ID_NOT_DEFINED)
+        if (model.subscriptionId.isEmpty()) throw Exception(UiConstants.SUBSCRIPTION_ID_NOT_DEFINED)
 
         if (model.isCreatingSqlServer) {
-            processHandler.setText(String.format(SQL_SERVER_CREATE, model.sqlServerName))
+            processHandler.setText(String.format(UiConstants.SQL_SERVER_CREATE, model.sqlServerName))
 
-            if (model.sqlServerName.isEmpty()) throw Exception(SQL_SERVER_NAME_NOT_DEFINED)
-            if (model.sqlServerLocation.isEmpty()) throw Exception(SQL_SERVER_REGION_NOT_DEFINED)
-            if (model.dbResourceGroupName.isEmpty()) throw Exception(SQL_SERVER_RESOURCE_GROUP_NAME_NOT_DEFINED)
-            if (model.sqlServerAdminLogin.isEmpty()) throw Exception(SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
-            if (model.sqlServerAdminPassword.isEmpty()) throw Exception(SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
+            if (model.sqlServerName.isEmpty()) throw Exception(UiConstants.SQL_SERVER_NAME_NOT_DEFINED)
+            if (model.sqlServerLocation.isEmpty()) throw Exception(UiConstants.SQL_SERVER_REGION_NOT_DEFINED)
+            if (model.dbResourceGroupName.isEmpty()) throw Exception(UiConstants.SQL_SERVER_RESOURCE_GROUP_NAME_NOT_DEFINED)
+            if (model.sqlServerAdminLogin.isEmpty()) throw Exception(UiConstants.SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
+            if (model.sqlServerAdminPassword.isEmpty()) throw Exception(UiConstants.SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
 
             val sqlServer = AzureDatabaseMvpModel.createSqlServer(
                     model.subscriptionId,
@@ -422,14 +363,14 @@ class RiderWebAppRunState(project: Project,
                     model.sqlServerAdminLogin,
                     model.sqlServerAdminPassword)
 
-            processHandler.setText(String.format(SQL_SERVER_CREATE_SUCCESSFUL, sqlServer.id()))
+            processHandler.setText(String.format(UiConstants.SQL_SERVER_CREATE_SUCCESSFUL, sqlServer.id()))
 
             return sqlServer
         }
 
-        processHandler.setText(String.format(SQL_SERVER_GET_EXISTING, model.sqlServerId))
+        processHandler.setText(String.format(UiConstants.SQL_SERVER_GET_EXISTING, model.sqlServerId))
 
-        if (model.sqlServerId.isEmpty()) throw Exception(SQL_SERVER_ID_NOT_DEFINED)
+        if (model.sqlServerId.isEmpty()) throw Exception(UiConstants.SQL_SERVER_ID_NOT_DEFINED)
         return AzureDatabaseMvpModel.getSqlServerById(model.subscriptionId, model.sqlServerId)
     }
 
@@ -448,8 +389,8 @@ class RiderWebAppRunState(project: Project,
         val sqlServer = AzureDatabaseMvpModel.getSqlServerByName(subscriptionId, database.sqlServerName(), true)
 
         if (sqlServer == null) {
-            val message = String.format(SQL_SERVER_CANNOT_GET, database.sqlServerName())
-            processHandler.setText(String.format(CONNECTION_STRING_CREATE_FAILED, message))
+            val message = String.format(UiConstants.SQL_SERVER_CANNOT_GET, database.sqlServerName())
+            processHandler.setText(String.format(UiConstants.CONNECTION_STRING_CREATE_FAILED, message))
             return
         }
 
@@ -479,7 +420,7 @@ class RiderWebAppRunState(project: Project,
                                     processHandler: RunProcessHandler) {
 
         zipDeploy(publishableProject, webApp, processHandler)
-        processHandler.setText(DEPLOY_SUCCESSFUL)
+        processHandler.setText(UiConstants.DEPLOY_SUCCESSFUL)
     }
 
     /**
@@ -494,20 +435,20 @@ class RiderWebAppRunState(project: Project,
                           processHandler: RunProcessHandler) {
 
         try {
-            processHandler.setText(String.format(PROJECT_ARTIFACTS_COLLECTING, publishableProject.projectName))
+            processHandler.setText(String.format(UiConstants.PROJECT_ARTIFACTS_COLLECTING, publishableProject.projectName))
             val outDir = collectProjectArtifacts(project, publishableProject)
 
-            processHandler.setText(String.format(ZIP_FILE_CREATE_FOR_PROJECT, publishableProject.projectName))
+            processHandler.setText(String.format(UiConstants.ZIP_FILE_CREATE_FOR_PROJECT, publishableProject.projectName))
             val zipFile = zipProjectArtifacts(outDir, processHandler)
 
             webApp.kuduZipDeploy(zipFile, processHandler)
 
             if (zipFile.exists()) {
-                processHandler.setText(String.format(ZIP_FILE_DELETING, zipFile.path))
+                processHandler.setText(String.format(UiConstants.ZIP_FILE_DELETING, zipFile.path))
                 FileUtil.delete(zipFile)
             }
         } catch (e: Throwable) {
-            processHandler.setText(String.format(ZIP_DEPLOY_PUBLISH_FAIL, e))
+            processHandler.setText(String.format(UiConstants.ZIP_DEPLOY_PUBLISH_FAIL, e))
             throw e
         }
     }
@@ -549,7 +490,7 @@ class RiderWebAppRunState(project: Project,
 
         val buildResult = event.get(COLLECT_ARTIFACTS_TIMEOUT_MS, TimeUnit.MILLISECONDS)
         if (buildResult != BuildResultKind.Successful && buildResult != BuildResultKind.HasWarnings) {
-            throw Exception(PROJECT_ARTIFACTS_COLLECTING_FAILED)
+            throw Exception(UiConstants.PROJECT_ARTIFACTS_COLLECTING_FAILED)
         }
 
         return outPath.toFile().canonicalFile
@@ -574,14 +515,14 @@ class RiderWebAppRunState(project: Project,
         try {
             val toZip = FileUtil.createTempFile(fromFile.nameWithoutExtension, ".zip", true)
             packToZip(fromFile, toZip)
-            processHandler.setText(String.format(ZIP_FILE_CREATE_SUCCESSFUL, toZip.path))
+            processHandler.setText(String.format(UiConstants.ZIP_FILE_CREATE_SUCCESSFUL, toZip.path))
 
             if (deleteOriginal)
                 FileUtil.delete(fromFile)
 
             return toZip
         } catch (e: Throwable) {
-            processHandler.setText("$ZIP_FILE_NOT_CREATED: $e")
+            processHandler.setText("${UiConstants.ZIP_FILE_NOT_CREATED}: $e")
             throw e
         }
     }
@@ -631,7 +572,7 @@ class RiderWebAppRunState(project: Project,
 
         try {
             do {
-                processHandler.setText(String.format(ZIP_DEPLOY_START_PUBLISHING, uploadCount + 1, UPLOADING_MAX_TRY))
+                processHandler.setText(String.format(UiConstants.ZIP_DEPLOY_START_PUBLISHING, uploadCount + 1, UPLOADING_MAX_TRY))
 
                 try {
                     response = session.publishZip(
@@ -640,19 +581,19 @@ class RiderWebAppRunState(project: Project,
                             DEPLOY_TIMEOUT_MS)
                     success = response.isSuccessful
                 } catch (e: Throwable) {
-                    processHandler.setText(String.format(ZIP_DEPLOY_PUBLISH_FAIL, e))
+                    processHandler.setText(String.format(UiConstants.ZIP_DEPLOY_PUBLISH_FAIL, e))
                     e.printStackTrace()
                 }
 
             } while (!success && ++uploadCount < UPLOADING_MAX_TRY && isWaitFinished())
 
             if (response == null || !success) {
-                val message = "$ZIP_DEPLOY_PUBLISH_FAIL: Response code: ${response?.code()}. Response message: ${response?.message()}"
+                val message = "${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: Response code: ${response?.code()}. Response message: ${response?.message()}"
                 processHandler.setText(message)
                 throw Exception(message)
             }
 
-            processHandler.setText(ZIP_DEPLOY_PUBLISH_SUCCESS)
+            processHandler.setText(UiConstants.ZIP_DEPLOY_PUBLISH_SUCCESS)
 
         } finally {
             response?.body()?.close()
