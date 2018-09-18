@@ -22,6 +22,20 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.Map;
+
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.idea.maven.model.MavenConstants;
+
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
@@ -36,18 +50,8 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
+import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.util.Map;
-import org.apache.commons.net.ftp.FTPClient;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.maven.model.MavenConstants;
 
 public class WebAppRunState extends AzureRunProfileState<WebApp> {
 
@@ -58,8 +62,8 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
     private static final String UPLOADING_ARTIFACT = "Uploading artifact to: %s ...";
     private static final String UPLOADING_WEB_CONFIG = "Uploading web.config (check more details at: https://aka.ms/spring-boot)...";
     private static final String UPLOADING_SUCCESSFUL = "Uploading successfully...";
-    private static final String STOP_WEB_APP = "Stop Web App...";
-    private static final String START_WEB_APP = "Start Web App...";
+    private static final String STOP_WEB_APP = "Stopping Web App...";
+    private static final String START_WEB_APP = "Starting Web App...";
     private static final String LOGGING_OUT = "Logging out of FTP server...";
     private static final String DEPLOY_SUCCESSFUL = "Deploy successfully!";
     private static final String STOP_DEPLOY = "Deploy Failed!";
@@ -201,6 +205,12 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         final FTPClient ftp = WebAppUtils.getFtpConnection(profile);
         int uploadCount;
 
+        // Workaround for Linux web apps, because unlike Windows ones, the webapps folder is not created in the
+        // beginning and thus cause ftp failure with reply code 550 when deploy directly.
+        // Issue https://github.com/Azure/azure-libraries-for-java/issues/584.
+        if (webApp.operatingSystem() == OperatingSystem.LINUX) {
+            ensureWebAppsFolderExist(ftp);
+        }
         if (webAppSettingModel.isDeployToRoot()) {
             WebAppUtils.removeFtpDirectory(ftp, CONTAINER_ROOT_PATH, processHandler);
             processHandler.setText(String.format(UPLOADING_ARTIFACT, CONTAINER_ROOT_PATH + ".war"));
@@ -221,12 +231,24 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         }
     }
 
+    private void ensureWebAppsFolderExist(@NotNull FTPClient ftp) {
+        try {
+            ftp.getStatus(WEB_APP_BASE_PATH);
+            if (!FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
+                ftp.makeDirectory(WEB_APP_BASE_PATH);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void uploadJarArtifact(@NotNull String fileName, @NotNull WebApp webApp,
-                                  @NotNull RunProcessHandler processHandler,
-                                  @NotNull Map<String, String> telemetryMap) throws Exception {
+                                   @NotNull RunProcessHandler processHandler,
+                                   @NotNull Map<String, String> telemetryMap) throws Exception {
         final File targetZipFile = File.createTempFile(TEMP_FILE_PREFIX, ".zip");
-        // todo: Java SE web app needs the artifact named app.jar
-        final String artifactName = "ROOT.jar";
+        // Java SE web app needs the artifact named app.jar
+        final String artifactName = Constants.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(webApp.linuxFxVersion())
+            ? "app.jar" : "ROOT.jar";
         final File jarArtifact = prepareJarArtifact(fileName, artifactName);
 
         final File[] files;

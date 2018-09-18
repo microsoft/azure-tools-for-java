@@ -56,6 +56,7 @@ public class OAuthTokenHttpObservable extends HttpObservable {
                 .build());
 
         setHttpClient(HttpClients.custom()
+                .useSystemProperties()
                 .setDefaultCookieStore(getCookieStore())
                 .setDefaultRequestConfig(getDefaultRequestConfig())
                 .build());

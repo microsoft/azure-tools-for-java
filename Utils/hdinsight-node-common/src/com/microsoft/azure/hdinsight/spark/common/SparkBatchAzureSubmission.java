@@ -83,6 +83,7 @@ public class SparkBatchAzureSubmission extends SparkBatchSubmission {
     @Override
     protected CloseableHttpClient getHttpClient() throws IOException {
         return HttpClients.custom()
+                .useSystemProperties()
                 .setDefaultHeaders(Arrays.asList(
                         new BasicHeader("Authorization", "Bearer " + getAccessToken()),
                         new BasicHeader("x-ms-kobo-account-name", getAccountName())))

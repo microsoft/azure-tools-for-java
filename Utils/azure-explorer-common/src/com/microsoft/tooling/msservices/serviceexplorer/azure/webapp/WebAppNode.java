@@ -22,7 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.apache.commons.lang3.StringUtils;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -47,8 +47,8 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
     private static final String ACTION_RESTART = "Restart";
     private static final String ACTION_OPEN_IN_BROWSER = "Open In Browser";
     private static final String ACTION_SHOW_PROPERTY = "Show Properties";
-    private static final String ICON_RUNNING = "WebAppRunning_16.png";
-    private static final String ICON_STOPPED = "WebAppStopped_16.png";
+    private static final String ICON_RUNNING_POSTFIX = "WebAppRunning_16.png";
+    private static final String ICON_STOPPED_POSTFIX = "WebAppStopped_16.png";
     private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete Web App %s.\n"
         + "Are you sure you want to continue?";
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
@@ -62,24 +62,31 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
     protected WebAppState webAppState;
     protected String webAppId;
     protected String hostName;
+    protected String webAppOS;
     protected Map<String, String> propertyMap;
 
     /**
      * Constructor.
      */
     public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
-                      WebAppState state, String hostName, Map<String, String> propertyMap) {
-        super(webAppId, webAppName, parent, state == WebAppState.RUNNING ? ICON_RUNNING : ICON_STOPPED, true);
+                      String state, String hostName, String os, Map<String, String> propertyMap) {
+        super(webAppId, webAppName, parent, getIcon(WebAppState.fromString(state), os), true);
         this.subscriptionId = subscriptionId;
         this.webAppId = webAppId;
         this.webAppName = webAppName;
-        this.webAppState = state;
+        this.webAppState = WebAppState.fromString(state);
         this.hostName = hostName;
+        this.webAppOS = StringUtils.capitalize(os.toLowerCase());
         this.propertyMap = propertyMap;
         webAppNodePresenter = new WebAppNodePresenter<>();
         webAppNodePresenter.onAttachView(WebAppNode.this);
         this.deploymentSlotModule = new DeploymentSlotModule(this, subscriptionId, webAppId);
         loadActions();
+    }
+
+    protected static String getIcon(final WebAppState state, final String os) {
+        return StringUtils.capitalize(os.toLowerCase())
+            + (state == WebAppState.RUNNING ? ICON_RUNNING_POSTFIX : ICON_STOPPED_POSTFIX);
     }
 
     @Override
@@ -93,7 +100,7 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected void refreshItems() {
         webAppNodePresenter.onNodeRefresh();
     }
 
@@ -106,25 +113,25 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_STOP, ICON_STOPPED, new NodeActionListener() {
+        addAction(ACTION_STOP, getIcon(WebAppState.STOPPED, this.webAppOS), new NodeActionListener() {
             @Override
             public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, "Stopping Web App", false, true,
-                        "Stopping Web " + "App...", () -> stopWebApp());
+                DefaultLoader.getIdeHelper().runInBackground(null, "Stopping Web App", false,
+                    true, "Stopping Web App...", () -> stopWebApp());
             }
         });
         addAction(ACTION_START, new NodeActionListener() {
             @Override
             public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, "Starting Web App", false, true,
-                        "Starting Web " + "App...", () -> startWebApp());
+                DefaultLoader.getIdeHelper().runInBackground(null, "Starting Web App", false,
+                    true, "Starting Web App...", () -> startWebApp());
             }
         });
         addAction(ACTION_RESTART, new NodeActionListener() {
             @Override
             public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, "Restarting Web App", false, true,
-                        "Restarting Web" + " App...", () -> restartWebApp());
+                DefaultLoader.getIdeHelper().runInBackground(null, "Restarting Web App", false,
+                    true, "Restarting Web App...", () -> restartWebApp());
             }
         });
 
@@ -201,11 +208,11 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
         switch (state) {
             case RUNNING:
                 this.webAppState = state;
-                this.setIconPath(this.ICON_RUNNING);
+                this.setIconPath(getIcon(WebAppState.RUNNING, this.webAppOS));
                 break;
             case STOPPED:
                 this.webAppState = state;
-                this.setIconPath(this.ICON_STOPPED);
+                this.setIconPath(getIcon(WebAppState.STOPPED, this.webAppOS));
                 break;
             default:
                 break;

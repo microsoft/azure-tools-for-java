@@ -69,7 +69,7 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.AzureSettingPanel;
-import com.microsoft.intellij.runner.container.utils.Constant;
+import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
@@ -192,20 +192,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             }
         });
 
-        cbExistResGrp.addActionListener(e -> {
-            ResourceGroup resGrp = (ResourceGroup) cbExistResGrp.getSelectedItem();
-            if (resGrp == null) {
-                return;
-            }
-            String selectedGrp = resGrp.name();
-            if (!Comparing.equal(lastSelectedResGrp, selectedGrp)) {
-                cbExistAppServicePlan.removeAllItems();
-                lblLocation.setText(NOT_APPLICABLE);
-                lblPricing.setText(NOT_APPLICABLE);
-                webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, selectedGrp);
-                lastSelectedResGrp = selectedGrp;
-            }
-        });
+        cbExistResGrp.addActionListener(e -> reloadAppServicePlanDropdownList());
 
         cbSubscription.setRenderer(new ListCellRendererWrapper<Subscription>() {
             @Override
@@ -463,7 +450,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
                 webAppConfiguration.setOS(OperatingSystem.LINUX);
                 RuntimeStack linuxRuntime = (RuntimeStack)cbLinuxRuntime.getSelectedItem();
                 if (linuxRuntime != null) {
-                    webAppConfiguration.setLinuxRuntime(linuxRuntime);
+                    webAppConfiguration.setStack(linuxRuntime.stack());
+                    webAppConfiguration.setVersion(linuxRuntime.version());
                 }
             }
             if (rdoWindowsOS.isSelected()) {
@@ -564,13 +552,31 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             return false;
         }
         if (rdoUseExist.isSelected()) {
+            if (selectedWebApp == null) {
+                return false;
+            }
             final WebApp app = selectedWebApp.getResource();
             return app.operatingSystem() == OperatingSystem.WINDOWS ||
-                !Constant.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(app.linuxFxVersion());
+                !Constants.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(app.linuxFxVersion());
         }
 
         return rdoWindowsOS.isSelected() ||
             rdoLinuxOS.isSelected() && RuntimeStack.JAVA_8_JRE8 != cbLinuxRuntime.getSelectedItem();
+    }
+
+    private void reloadAppServicePlanDropdownList() {
+        final ResourceGroup resGrp = (ResourceGroup) cbExistResGrp.getSelectedItem();
+        if (resGrp == null) {
+            return;
+        }
+        final String selectedGrp = resGrp.name();
+        if (!Comparing.equal(lastSelectedResGrp, selectedGrp)) {
+            cbExistAppServicePlan.removeAllItems();
+            lblLocation.setText(NOT_APPLICABLE);
+            lblPricing.setText(NOT_APPLICABLE);
+            webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, selectedGrp);
+            lastSelectedResGrp = selectedGrp;
+        }
     }
 
     private void resetWidget() {
