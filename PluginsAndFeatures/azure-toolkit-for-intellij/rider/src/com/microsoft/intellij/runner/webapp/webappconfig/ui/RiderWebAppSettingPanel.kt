@@ -1,6 +1,7 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.ui
 
 import com.intellij.icons.AllIcons
+import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.actionSystem.ActionToolbarPosition
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.progress.ProgressIndicator
@@ -16,6 +17,7 @@ import com.intellij.ui.ListCellRendererWrapper
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.components.JBTabbedPane
+import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.ui.table.JBTable
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.model.projectModelTasks
@@ -96,6 +98,9 @@ class RiderWebAppSettingPanel(project: Project,
         private const val DEFAULT_SQL_DATABASE_NAME = "sql_%s_db"
         private const val DEFAULT_RESOURCE_GROUP_NAME = "rg-db-"
         private const val DEFAULT_SQL_SERVER_NAME = "sql-server-"
+
+        private const val WEB_APP_PRICING_URI = "https://azure.microsoft.com/en-us/pricing/details/app-service/"
+        private const val SQL_DATABASE_PRICING_URI = "https://azure.microsoft.com/en-us/pricing/details/sql-database/"
 
         private val netCoreAppVersionRegex = Regex("\\.NETCoreApp,Version=v([0-9](?:\\.[0-9])*)", RegexOption.IGNORE_CASE)
         private val netAppVersionRegex = Regex("\\.NETFramework,Version=v([0-9](?:\\.[0-9])*)", RegexOption.IGNORE_CASE)
@@ -186,6 +191,7 @@ class RiderWebAppSettingPanel(project: Project,
     private lateinit var txtAppServicePlanName: JTextField
     private lateinit var cbLocation: JComboBox<Location>
     private lateinit var cbPricingTier: JComboBox<PricingTier>
+    private lateinit var lblWebAppPricingLink: LinkLabel<String>
 
     private lateinit var rdoUseExistAppServicePlan: JRadioButton
     private lateinit var cbAppServicePlan: JComboBox<AppServicePlan>
@@ -250,6 +256,7 @@ class RiderWebAppSettingPanel(project: Project,
     @Suppress("unused")
     private lateinit var pnlDbEdition: JPanel
     private lateinit var cbDatabaseEdition: JComboBox<DatabaseEditions>
+    private lateinit var lblSqlDbPricingLink: LinkLabel<String>
 
     // Database Collation
     @Suppress("unused")
@@ -1081,6 +1088,7 @@ class RiderWebAppSettingPanel(project: Project,
         initAppServicePlanComboBox()
         initLocationComboBox()
         initPricingTierComboBox()
+        initWebAppPricingLink()
 
         initProjectsComboBox(project)
 
@@ -1088,6 +1096,7 @@ class RiderWebAppSettingPanel(project: Project,
         initSqlDatabaseComboBox()
         initSqlServerComboBox()
         initDatabaseEditionComboBox()
+        initSqlDatabasePricingLink()
 
         setHeaderDecorators()
     }
@@ -1193,6 +1202,8 @@ class RiderWebAppSettingPanel(project: Project,
         }
     }
 
+    private fun initWebAppPricingLink() = initLinkLabel(lblWebAppPricingLink, WEB_APP_PRICING_URI)
+
     private fun initProjectsComboBox(project: Project) {
 
         cbProject.renderer = object : ListCellRendererWrapper<PublishableProjectModel>() {
@@ -1290,6 +1301,8 @@ class RiderWebAppSettingPanel(project: Project,
             lastSelectedDatabaseEdition = cbDatabaseEdition.getItemAt(cbDatabaseEdition.selectedIndex) ?: return@addActionListener
         }
     }
+
+    private fun initSqlDatabasePricingLink() = initLinkLabel(lblSqlDbPricingLink, SQL_DATABASE_PRICING_URI)
 
     private fun initRuntimeMismatchWarningLabel() {
         lblRuntimeMismatchWarning.icon = warningIcon
@@ -1485,6 +1498,11 @@ class RiderWebAppSettingPanel(project: Project,
      */
     private fun setComponentsVisible(isVisible: Boolean, vararg components: JComponent) {
         components.forEach { it.isVisible = isVisible }
+    }
+
+    private fun initLinkLabel(linkComponent: LinkLabel<String>, linkUri: String) {
+        linkComponent.icon = null
+        linkComponent.setListener({ _, link -> BrowserUtil.browse(link) }, linkUri)
     }
 
     //endregion Private Methods and Operators
