@@ -22,9 +22,6 @@
 
 package com.microsoft.azuretools;
 
-/**
- * Created by vlashch on 8/18/16.
- */
 public class Constants {
     public static String resourceVault = "https://vault.azure.net";
 
