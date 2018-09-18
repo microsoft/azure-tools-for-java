@@ -50,6 +50,7 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
+import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
 public class WebAppRunState extends AzureRunProfileState<WebApp> {
@@ -245,8 +246,9 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
                                    @NotNull RunProcessHandler processHandler,
                                    @NotNull Map<String, String> telemetryMap) throws Exception {
         final File targetZipFile = File.createTempFile(TEMP_FILE_PREFIX, ".zip");
-        // todo: Java SE web app needs the artifact named app.jar
-        final String artifactName = "ROOT.jar";
+        // Java SE web app needs the artifact named app.jar
+        final String artifactName = Constants.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(webApp.linuxFxVersion())
+            ? "app.jar" : "ROOT.jar";
         final File jarArtifact = prepareJarArtifact(fileName, artifactName);
 
         final File[] files;

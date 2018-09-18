@@ -22,6 +22,11 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
+import java.io.IOException;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
@@ -38,11 +43,6 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.io.IOException;
 
 public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSettingModel> {
 
@@ -254,16 +254,20 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
         return webAppSettingModel.getOS();
     }
 
-    public RuntimeStack getLinuxRuntime() {
-        return webAppSettingModel.getLinuxRuntime();
-    }
-
     public void setOS(OperatingSystem value) {
         webAppSettingModel.setOS(value);
     }
 
-    public void setLinuxRuntime(RuntimeStack value) {
-        webAppSettingModel.setLinuxRuntime(value);
+    public void setStack(String value) {
+        webAppSettingModel.setStack(value);
+    }
+
+    public void setVersion(String value) {
+        webAppSettingModel.setVersion(value);
+    }
+
+    public RuntimeStack getLinuxRuntime() {
+        return webAppSettingModel.getLinuxRuntime();
     }
 
     @Override
