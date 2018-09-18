@@ -7,8 +7,11 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.util.io.ZipUtil
 import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.PublishableProjectModel
+import com.jetbrains.rider.model.runnableProjectsModel
+import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
 import com.jetbrains.rider.util.idea.application
+import com.jetbrains.rider.util.idea.toIOFile
 import com.microsoft.azure.management.appservice.ConnectionStringType
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.RuntimeStack
@@ -40,6 +43,8 @@ object WebAppRunState {
     private const val DEPLOY_TIMEOUT_MS = 180000L
     private const val SLEEP_TIME_MS = 5000L
     private const val UPLOADING_MAX_TRY = 3
+
+    var projectAssemblyRelativePath = ""
 
     fun webAppStart(webApp: WebApp, processHandler: RunProcessHandler) {
         processHandler.setText(String.format(UiConstants.WEB_APP_START, webApp.name()))
@@ -143,7 +148,7 @@ object WebAppRunState {
                           startupCommand: String,
                           runtime: RuntimeStack,
                           processHandler: RunProcessHandler) {
-        processHandler.setText(String.format(UiConstants.WEB_APP_SET_STARTUP_FILE, webApp.name()))
+        processHandler.setText(String.format(UiConstants.WEB_APP_SET_STARTUP_FILE, webApp.name(), startupCommand))
         webApp.update()
                 .withPublicDockerHubImage("") // Hack to access .withStartUpCommand() API
                 .withStartUpCommand(startupCommand)
@@ -184,10 +189,11 @@ object WebAppRunState {
                               publishableProject: PublishableProjectModel,
                               webApp: WebApp,
                               processHandler: RunProcessHandler) {
-
         try {
             processHandler.setText(String.format(UiConstants.PROJECT_ARTIFACTS_COLLECTING, publishableProject.projectName))
             val outDir = collectProjectArtifacts(project, publishableProject)
+            // Note: we need to do it only for Linux Azure instances (we might add this check to speed up)
+            projectAssemblyRelativePath = getAssemblyRelativePath(project, publishableProject, outDir)
 
             processHandler.setText(String.format(UiConstants.ZIP_FILE_CREATE_FOR_PROJECT, publishableProject.projectName))
             val zipFile = zipProjectArtifacts(outDir, processHandler)
@@ -202,6 +208,27 @@ object WebAppRunState {
             processHandler.setText(String.format(UiConstants.ZIP_DEPLOY_PUBLISH_FAIL, e))
             throw e
         }
+    }
+
+    /**
+     * Get a relative path for an assembly name based from a project output directory
+     *
+     * Note: There is no a property in [PublishableProjectModel] to get a project assembly name. Right now
+     *       we hack around with RunnableProject model to get this information
+     *       TODO: Rework this after we add a property to [PublishableProjectModel] and set exePath
+     */
+    private fun getAssemblyRelativePath(project: Project,
+                                        publishableProject: PublishableProjectModel,
+                                        outDir: File): String {
+
+        val defaultPath = "${publishableProject.projectName}.dll"
+
+        val publishableProjectPath = publishableProject.projectFilePath
+        val runnableProjects = project.solution.runnableProjectsModel.projects.valueOrNull ?: return defaultPath
+        val projectOutputs = runnableProjects.find { it.projectFilePath == publishableProjectPath }?.projectOutputs?.firstOrNull() ?: return defaultPath
+        val assemblyName = projectOutputs.exePath.toIOFile().name
+
+        return outDir.walk().find { it.name == assemblyName }?.relativeTo(outDir)?.path ?: defaultPath
     }
 
     /**

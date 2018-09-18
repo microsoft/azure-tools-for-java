@@ -14,6 +14,7 @@ import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.DatabaseRunState.getOrCreateSqlDatabaseFromConfig
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.DatabaseRunState.getSqlDatabaseUri
+import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.addConnectionString
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.deployToAzureWebApp
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.getOrCreateWebAppFromConfiguration
@@ -51,9 +52,9 @@ class RiderWebAppRunState(project: Project,
 
         webAppStop(webApp, processHandler)
         deployToAzureWebApp(project, publishableProject, webApp, processHandler)
+
         if (myModel.webAppModel.operatingSystem == OperatingSystem.LINUX && publishableProject.isDotNetCore) {
-            // TODO: this won't work if output assembly name differs from project name
-            val startupCommand = String.format(UiConstants.WEB_APP_STARTUP_COMMAND_TEMPLATE, "$URL_WEB_APP_WWWROOT/${publishableProject.projectName}.dll")
+            val startupCommand = String.format(UiConstants.WEB_APP_STARTUP_COMMAND_TEMPLATE, "$URL_WEB_APP_WWWROOT/${WebAppRunState.projectAssemblyRelativePath}")
             setStartupCommand(webApp, startupCommand, myModel.webAppModel.netCoreRuntime, processHandler)
         }
 

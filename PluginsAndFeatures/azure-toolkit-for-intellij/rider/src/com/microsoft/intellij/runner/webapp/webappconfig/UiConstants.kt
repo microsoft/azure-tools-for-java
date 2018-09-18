@@ -79,7 +79,7 @@ class UiConstants {
         const val WEB_APP_NAME_CANNOT_START_END_WITH_DASH = "Web App name cannot begin or end with '-' symbol"
         const val WEB_APP_NAME_INVALID = "Web App name cannot contain characters: %s"
         const val WEB_APP_NAME_NOT_DEFINED = "Web App name not provided"
-        const val WEB_APP_SET_STARTUP_FILE = "Set Startup File for a web app: '%s'"
+        const val WEB_APP_SET_STARTUP_FILE = "Set Startup File for a web app '%s' to: '%s'"
         const val WEB_APP_SETTING_DOCKER_CUSTOM_IMAGE_NAME = "DOCKER_CUSTOM_IMAGE_NAME"
         const val WEB_APP_START = "Start Web App '%s'..."
         const val WEB_APP_STARTUP_COMMAND_TEMPLATE = "dotnet %s"
