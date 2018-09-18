@@ -50,7 +50,9 @@ import javax.swing.table.TableRowSorter
 /**
  * The setting panel for web app deployment run configuration.
  *
- * TODO: refactor this, almost 1k lines as of 2018-09-06
+ * TODO: refactor this
+ * 1k lines as of 2018-09-06
+ * 1.5k as of 2018-09-18
  */
 class RiderWebAppSettingPanel(project: Project,
                               private val configuration: RiderWebAppConfiguration)
@@ -128,12 +130,17 @@ class RiderWebAppSettingPanel(project: Project,
 
     // Panels
     override var mainPanel: JPanel = pnlRoot
-    private lateinit var pnlRoot: JPanel
-    private lateinit var tpRoot: JBTabbedPane
-    private lateinit var pnlWebAppConfigTab: JPanel
-    private lateinit var pnlDbConnectionTab: JPanel
 
+    private lateinit var pnlRoot: JPanel
+    @Suppress("unused")
+    private lateinit var tpRoot: JBTabbedPane
+    @Suppress("unused")
+    private lateinit var pnlWebAppConfigTab: JPanel
+    @Suppress("unused")
+    private lateinit var pnlDbConnectionTab: JPanel
+    @Suppress("unused")
     private lateinit var pnlWebApp: JPanel
+    @Suppress("unused")
     private lateinit var pnlWebAppSelector: JPanel
 
     // Existing Web App
@@ -186,18 +193,22 @@ class RiderWebAppSettingPanel(project: Project,
     private lateinit var lblPricingTier: JLabel
 
     // Project
+    @Suppress("unused")
     private lateinit var pnlProject: JPanel
     private lateinit var cbProject: JComboBox<PublishableProjectModel>
 
     // SQL Database
+    @Suppress("unused")
     private lateinit var pnlDbConnection: JPanel
 
     private lateinit var checkBoxEnableDbConnection: JCheckBox
 
+    @Suppress("unused")
     private lateinit var pnlDbConnectionSelector: JPanel
     private lateinit var rdoExistingDb: JRadioButton
     private lateinit var rdoNewDb: JRadioButton
 
+    @Suppress("unused")
     private lateinit var pnlDbConnectionString: JPanel
     private lateinit var txtConnectionStringName: JTextField
 
@@ -236,10 +247,12 @@ class RiderWebAppSettingPanel(project: Project,
     private lateinit var passNewSqlServerAdminPassConfirm: JBPasswordField
 
     // Database Edition
+    @Suppress("unused")
     private lateinit var pnlDbEdition: JPanel
     private lateinit var cbDatabaseEdition: JComboBox<DatabaseEditions>
 
     // Database Collation
+    @Suppress("unused")
     private lateinit var pnlCollation: JPanel
     private lateinit var txtCollationValue: JTextField
 
@@ -1032,49 +1045,25 @@ class RiderWebAppSettingPanel(project: Project,
         }
     }
 
-    private fun checkCbSubscriptionRule(): Boolean {
-        if (cbSubscription.model.size == 0) return false
-        return true
-    }
+    private fun checkCbSubscriptionRule() = cbSubscription.model.size > 0
 
-    private fun checkCbResourceGroupRule(): Boolean {
-        if (rdoCreateResGrp.isSelected ||
-                cbResourceGroup.model.size == 0) return false
+    private fun checkCbResourceGroupRule() = cbResourceGroup.model.size > 0 && !rdoCreateResGrp.isSelected
 
-        return true
-    }
+    private fun checkCbAppServicePlanRule() = cbAppServicePlan.model.size > 0 && !rdoCreateAppServicePlan.isSelected
 
-    private fun checkCbAppServicePlanRule(): Boolean {
-        if (rdoCreateAppServicePlan.isSelected ||
-                cbAppServicePlan.model.size == 0) return false
+    private fun checkCbDatabaseRule() = cbDatabase.model.size > 0 && checkBoxEnableDbConnection.isSelected
 
-        return true
-    }
+    private fun checkCbDbResourceGroupRule() =
+                    cbDbResourceGroup.model.size > 0 &&
+                    checkBoxEnableDbConnection.isSelected &&
+                    !rdoDbCreateResourceGroup.isSelected &&
+                    !rdoUseExistSqlServer.isSelected
 
-    private fun checkCbDatabaseRule(): Boolean {
-        if (!checkBoxEnableDbConnection.isSelected ||
-                cbDatabase.model.size == 0) return false
-
-        return true
-    }
-
-    private fun checkCbDbResourceGroupRule(): Boolean {
-        if (!checkBoxEnableDbConnection.isSelected ||
-                rdoDbCreateResourceGroup.isSelected ||
-                rdoUseExistSqlServer.isSelected ||
-                cbDbResourceGroup.model.size == 0) return false
-
-        return true
-    }
-
-    private fun checkCbExistSqlServerRule(): Boolean {
-        if (!checkBoxEnableDbConnection.isSelected ||
-                rdoCreateSqlServer.isSelected ||
-                rdoDbCreateResourceGroup.isSelected ||
-                cbExistSqlServer.model.size == 0) return false
-
-        return true
-    }
+    private fun checkCbExistSqlServerRule() =
+                    cbExistSqlServer.model.size > 0 &&
+                    checkBoxEnableDbConnection.isSelected &&
+                    !rdoCreateSqlServer.isSelected &&
+                    !rdoDbCreateResourceGroup.isSelected
 
     //endregion Behavior
 

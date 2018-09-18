@@ -118,7 +118,7 @@ public class AzurePlugin extends AbstractProjectComponent {
                 NotificationType.INFORMATION);
 
         feedbackNotification.addAction(new NewGithubIssueAction(
-                        new GithubIssue<>(new ReportableSurvey("User feedback")).withLabel("Feedback"),
+                        new GithubIssue<>(new ReportableSurvey("User feedback")).withLabel("FeedbRack"),
                         "user satisfaction survey"));
 
         Observable.timer(30, TimeUnit.SECONDS)

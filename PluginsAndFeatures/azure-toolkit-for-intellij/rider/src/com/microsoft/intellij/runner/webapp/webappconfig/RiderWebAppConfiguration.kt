@@ -110,7 +110,6 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         private const val ADMIN_LOGIN_CANNOT_BEGIN_WITH_DIGIT_NONWORD = "SQL Server Admin login must not begin with numbers or symbols"
         private const val ADMIN_LOGIN_INVALID = "SQL Server Admin login should not unicode characters, or nonalphabetic characters."
 
-        private const val ADMIN_PASSWORD_MISSING = "Administrator password not provided"
         // Note: this is not an inverse regex like others and must be validated accordingly
         private val adminPasswordLowerCaseRegex = "[a-z]".toRegex()
         private val adminPasswordUpperCaseRegex = "[A-Z]".toRegex()
@@ -222,8 +221,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
                 validateAdminPassword(myModel.sqlServerAdminLogin, myModel.sqlServerAdminPassword)
                 checkPasswordsMatch(myModel.sqlServerAdminPassword, myModel.sqlServerAdminPasswordConfirm)
             } else {
-                validateAdminPassword(myModel.sqlServerAdminLogin, myModel.sqlServerAdminPassword)
-                // TODO: understand how to check that the password is valid
+                checkValueIsSet(model.sqlServerAdminPassword, SQL_SERVER_ADMIN_PASSWORD_MISSING)
                 checkValueIsSet(myModel.sqlServerId, SQL_SERVER_MISSING)
             }
 
@@ -233,7 +231,6 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
 
             checkValueIsSet(model.sqlServerAdminLogin, SQL_SERVER_ADMIN_LOGIN_MISSING)
             checkValueIsSet(model.sqlServerAdminPassword, SQL_SERVER_ADMIN_PASSWORD_MISSING)
-            // TODO: understand how to check that the password is valid
         }
     }
 
@@ -483,7 +480,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
      */
     @Throws(RuntimeConfigurationError::class)
     private fun validateAdminPassword(username: String, password: CharArray) {
-        if (password.isEmpty()) throw RuntimeConfigurationError(ADMIN_PASSWORD_MISSING)
+        checkValueIsSet(password, SQL_SERVER_ADMIN_PASSWORD_MISSING)
 
         val passwordString = password.joinToString("")
         if (passwordString.contains(username)) throw RuntimeConfigurationError(ADMIN_PASSWORD_CANNOT_CONTAIN_PART_OF_LOGIN)
