@@ -109,7 +109,7 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode implements 
         });
     }
 
-    private Boolean isClusterStable() {
+    private boolean isClusterStable() {
         return Optional.ofNullable(cluster.getMasterState()).orElse("")
                 .equalsIgnoreCase(SparkItemGroupState.STABLE.toString());
     }
