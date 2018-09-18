@@ -29,10 +29,7 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServe
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkItemGroupState;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 
 import java.awt.*;
 import java.io.IOException;
@@ -40,6 +37,7 @@ import java.net.URI;
 import java.util.Optional;
 
 public class SparkServerlessClusterNode extends AzureRefreshableNode implements ILogger {
+    private static final String UPDATE_ACTION_NAME = "Update";
     @NotNull
     private final String CLUSTER_MODULE_ID;
     // TODO: Update icon path
@@ -67,11 +65,7 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode implements 
     protected void refreshItems() throws AzureCmdException {
         try {
             cluster.get().toBlocking().singleOrDefault(cluster);
-            if (Optional.ofNullable(cluster.getMasterState()).orElse("")
-                    .equals(SparkItemGroupState.STABLE.toString())) {
-                addAction("Update", new SparkServerlessUpdateAction(
-                        this, cluster, SparkServerlessClusterOps.getInstance().getUpdateAction()));
-            }
+            getNodeActionByName(UPDATE_ACTION_NAME).setEnabled(isClusterStable());
         } catch (Exception ex) {
             log().warn(String.format("Can't get the cluster %s details: %s", cluster.getName(), ex));
         }
@@ -90,11 +84,11 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode implements 
                 this, cluster, adlAccount, SparkServerlessClusterOps.getInstance().getDestroyAction()));
         addAction("View Cluster Status", new SparkServerlessMonitorAction(
                 this, cluster, SparkServerlessClusterOps.getInstance().getMonitorAction()));
-        if (Optional.ofNullable(cluster.getMasterState()).orElse("")
-                .equals(SparkItemGroupState.STABLE.toString())) {
-            addAction("Update", new SparkServerlessUpdateAction(
-                    this, cluster, SparkServerlessClusterOps.getInstance().getUpdateAction()));
-        }
+
+        NodeAction updateAction = addAction(UPDATE_ACTION_NAME, new SparkServerlessUpdateAction(
+                this, cluster, SparkServerlessClusterOps.getInstance().getUpdateAction()));
+        updateAction.setEnabled(isClusterStable());
+        
         addAction("Open Spark Master UI", new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
@@ -113,6 +107,11 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode implements 
                 }
             }
         });
+    }
+
+    private boolean isClusterStable() {
+        return Optional.ofNullable(cluster.getMasterState()).orElse("")
+                .equalsIgnoreCase(SparkItemGroupState.STABLE.toString());
     }
 
     @NotNull
