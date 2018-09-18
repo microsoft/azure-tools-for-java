@@ -265,6 +265,7 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
     }
 
     // Add retry logic here to avoid Kudu's socket timeout issue.
+    // For each try, the method will wait 5 seconds.
     // More details: https://github.com/Microsoft/azure-maven-plugins/issues/339
     private int uploadFileViaZipDeploy(@NotNull WebApp webapp, @NotNull File zipFile,
                                        @NotNull RunProcessHandler processHandler) throws Exception {
@@ -272,6 +273,7 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         while (uploadCount < UPLOADING_MAX_TRY) {
             uploadCount += 1;
             try {
+                Thread.sleep(SLEEP_TIME);
                 webapp.zipDeploy(zipFile);
                 processHandler.setText(UPLOADING_SUCCESSFUL);
                 return uploadCount;
