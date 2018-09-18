@@ -1,6 +1,5 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -29,17 +28,16 @@ public class DeploymentSlotNode extends Node implements TelemetryProperties {
     }
 
     public DeploymentSlotNode(final DeploymentSlotModule parent, final String name, final String state,
-                              final OperatingSystem os, final String subscriptionId) {
-        super(SLOT_NODE_ID, name, parent, getIcon(state, os), true);
+                              final String os, final String subscriptionId) {
+        super(SLOT_NODE_ID, name, parent, getIcon(WebAppState.fromString(state), os), true);
         this.subscriptionId = subscriptionId;
-        this.os = StringUtils.capitalize(os.toString());
+        this.os = StringUtils.capitalize(os.toLowerCase());
         this.name = name;
         loadActions();
     }
 
-    protected static String getIcon(final String state, final OperatingSystem os) {
-        return WebAppState.fromString(state) == WebAppState.RUNNING
-            ? StringUtils.capitalize(os.toString()) + ICON_RUNNING_POSTFIX
-            : StringUtils.capitalize(os.toString()) + ICON_STOPPED_POSTFIX;
+    protected static String getIcon(final WebAppState state, final String os) {
+        return StringUtils.capitalize(os.toLowerCase())
+            + (state == WebAppState.RUNNING ? ICON_RUNNING_POSTFIX : ICON_STOPPED_POSTFIX);
     }
 }

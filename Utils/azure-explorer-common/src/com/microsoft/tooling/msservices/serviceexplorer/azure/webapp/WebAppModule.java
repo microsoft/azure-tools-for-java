@@ -80,7 +80,7 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
                                             webAppDetails.webApp.name(),
                                             webAppDetails.webApp.state(),
                                             webAppDetails.webApp.defaultHostName(),
-                                            webAppDetails.webApp.operatingSystem(),
+                                            webAppDetails.webApp.operatingSystem().toString(),
                                             null));
                                 } catch (Exception ex) {
                                     DefaultLoader.getUIHelper().logError("WebAppModule::createListener ADD", ex);
@@ -106,7 +106,7 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
         for (final ResourceEx<WebApp> resourceEx : resourceExes) {
             final WebApp app = resourceEx.getResource();
             final WebAppNode node = new WebAppNode(this, resourceEx.getSubscriptionId(), app.id(), app.name(),
-                app.state(), app.defaultHostName(), app.operatingSystem(),
+                app.state(), app.defaultHostName(), app.operatingSystem().toString(),
                 new HashMap<String, String>() {
                     {
                         put("regionName", app.regionName());

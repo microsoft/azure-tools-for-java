@@ -69,14 +69,14 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
      * Constructor.
      */
     public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
-                      String state, String hostName, OperatingSystem os, Map<String, String> propertyMap) {
-        super(webAppId, webAppName, parent, getIcon(state, os), true);
+                      String state, String hostName, String os, Map<String, String> propertyMap) {
+        super(webAppId, webAppName, parent, getIcon(WebAppState.fromString(state), os), true);
         this.subscriptionId = subscriptionId;
         this.webAppId = webAppId;
         this.webAppName = webAppName;
         this.webAppState = WebAppState.fromString(state);
         this.hostName = hostName;
-        this.webAppOS = StringUtils.capitalize(os.toString());
+        this.webAppOS = StringUtils.capitalize(os.toLowerCase());
         this.propertyMap = propertyMap;
         webAppNodePresenter = new WebAppNodePresenter<>();
         webAppNodePresenter.onAttachView(WebAppNode.this);
@@ -84,10 +84,9 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
         loadActions();
     }
 
-    protected static String getIcon(final String state, final OperatingSystem os) {
-        return WebAppState.fromString(state) == WebAppState.RUNNING
-            ? StringUtils.capitalize(os.toString()) + ICON_RUNNING_POSTFIX
-            : StringUtils.capitalize(os.toString()) + ICON_STOPPED_POSTFIX;
+    protected static String getIcon(final WebAppState state, final String os) {
+        return StringUtils.capitalize(os.toLowerCase())
+            + (state == WebAppState.RUNNING ? ICON_RUNNING_POSTFIX : ICON_STOPPED_POSTFIX);
     }
 
     @Override
@@ -114,25 +113,25 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_STOP, this.webAppOS + ICON_STOPPED_POSTFIX, new NodeActionListener() {
+        addAction(ACTION_STOP, getIcon(WebAppState.STOPPED, this.webAppOS), new NodeActionListener() {
             @Override
             public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, "Stopping Web App", false, true,
-                    "Stopping Web " + "App...", () -> stopWebApp());
+                DefaultLoader.getIdeHelper().runInBackground(null, "Stopping Web App", false,
+                    true, "Stopping Web App...", () -> stopWebApp());
             }
         });
         addAction(ACTION_START, new NodeActionListener() {
             @Override
             public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, "Starting Web App", false, true,
-                        "Starting Web " + "App...", () -> startWebApp());
+                DefaultLoader.getIdeHelper().runInBackground(null, "Starting Web App", false,
+                    true, "Starting Web App...", () -> startWebApp());
             }
         });
         addAction(ACTION_RESTART, new NodeActionListener() {
             @Override
             public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, "Restarting Web App", false, true,
-                        "Restarting Web" + " App...", () -> restartWebApp());
+                DefaultLoader.getIdeHelper().runInBackground(null, "Restarting Web App", false,
+                    true, "Restarting Web App...", () -> restartWebApp());
             }
         });
 
@@ -209,11 +208,11 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
         switch (state) {
             case RUNNING:
                 this.webAppState = state;
-                this.setIconPath(this.webAppOS + ICON_RUNNING_POSTFIX);
+                this.setIconPath(getIcon(WebAppState.RUNNING, this.webAppOS));
                 break;
             case STOPPED:
                 this.webAppState = state;
-                this.setIconPath(this.webAppOS + ICON_STOPPED_POSTFIX);
+                this.setIconPath(getIcon(WebAppState.STOPPED, this.webAppOS));
                 break;
             default:
                 break;
