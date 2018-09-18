@@ -74,6 +74,7 @@ class UiConstants {
         const val WEB_APP_CREATE = "Creating Web App '%s'..."
         const val WEB_APP_CREATE_SUCCESSFUL = "Web App  is created, id: '%s'"
         const val WEB_APP_GET_EXISTING = "Got existing Web App with Id: '%s'"
+        const val WEB_APP_NOT_DEFINED = "Please select an Azure Web App"
         const val WEB_APP_ID_NOT_DEFINED = "Web App ID is not defined"
         const val WEB_APP_NAME_CANNOT_START_END_WITH_DASH = "Web App name cannot begin or end with '-' symbol"
         const val WEB_APP_NAME_INVALID = "Web App name cannot contain characters: %s"
