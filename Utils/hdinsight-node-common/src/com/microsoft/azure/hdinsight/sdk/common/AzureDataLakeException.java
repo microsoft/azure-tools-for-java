@@ -20,8 +20,19 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.sdk.common
+package com.microsoft.azure.hdinsight.sdk.common;
 
-import org.apache.http.client.HttpResponseException
+import java.io.IOException;
 
-class HttpResponseWithRequestIdException(statusCode: Int, s: String, val requestId: String) : HttpResponseException(statusCode, s)
+public class AzureDataLakeException extends IOException {
+    private final int statusCode;
+
+    public AzureDataLakeException(final int statusCode, final String s) {
+        super(s);
+        this.statusCode = statusCode;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+}
