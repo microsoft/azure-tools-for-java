@@ -162,8 +162,17 @@
                 <executions>
                     <!-- Replacing default-testCompile as it is treated specially by maven -->
                     <execution>
+                        <id>default-compile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
                         <id>default-testCompile</id>
                         <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>java-compile</id>
+                        <phase>compile</phase>
+                        <goals> <goal>compile</goal> </goals>
                     </execution>
                     <execution>
                         <id>java-test-compile</id>

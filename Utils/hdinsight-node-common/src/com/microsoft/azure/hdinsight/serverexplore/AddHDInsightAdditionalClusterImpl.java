@@ -97,7 +97,9 @@ public class AddHDInsightAdditionalClusterImpl {
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 
         credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(userName.trim(), passwd));
-        CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .useSystemProperties()
+                .setDefaultCredentialsProvider(credentialsProvider).build();
 
         CloseableHttpResponse response = null;
         int responseCode = -1;
