@@ -33,6 +33,7 @@ import com.intellij.execution.configurations.ConfigurationUtil;
 import com.intellij.execution.junit.JavaRunConfigurationProducerBase;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.TestSourcesFilter;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -48,15 +49,14 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.plugins.scala.lang.psi.api.statements.ScFunctionDefinition;
+import org.jetbrains.plugins.scala.runner.ScalaMainMethodUtil;
 import scala.Option;
 import scala.Tuple2;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigurationProducerBase<RemoteDebugRunConfiguration> {
     public SparkBatchJobLocalRunConfigurationProducer() {
@@ -68,7 +68,9 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
         return Optional.ofNullable(context.getModule())
                 .map(Module::getProject)
                 .flatMap(project -> getMainClassFromContext(context)
-                                        .filter(mcPair -> isSparkContext(project, mcPair.getKey().getContainingFile())))
+                                        .filter(mcPair -> isSparkContext(project, mcPair.getKey().getContainingFile()))
+                                        .filter(mcPair -> !TestSourcesFilter.isTestSources(
+                                                mcPair.getKey().getContainingFile().getVirtualFile(), project)))
                 .map(mcPair -> {
                     setupConfiguration(configuration, mcPair.getValue(), context);
 
@@ -136,45 +138,15 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
 
     private static Optional<SimpleImmutableEntry<PsiElement, PsiClass>> findJavaMainClass(PsiElement element) {
         return Optional.ofNullable(ApplicationConfigurationType.getMainClass(element))
-                .map(clazz -> new SimpleImmutableEntry<PsiElement, PsiClass>(clazz, clazz));
+                .map(clazz -> new SimpleImmutableEntry<>(clazz, clazz));
     }
 
     private static Optional<SimpleImmutableEntry<PsiElement, PsiClass>> findScalaMainClass(PsiElement element) {
-        // TODO: Replace with the following code after IDEA 2018.1
-        // Option<Tuple2<PsiClass, PsiElement>> ceOption = ScalaMainMethodUtil.findMainClassAndSourceElem(element);
-        try {
-            // Added from IDEA 2017.2
-            Method findMainClassAndSourceElemMethod = Class
-                    .forName("org.jetbrains.plugins.scala.runner.ScalaMainMethodUtil")
-                    .getDeclaredMethod("findMainClassAndSourceElem", PsiElement.class);
+        Option<Tuple2<PsiClass, PsiElement>> ceOption = ScalaMainMethodUtil.findMainClassAndSourceElem(element);
 
-            Option<Tuple2<PsiClass, PsiElement>> ceOption =
-                    (Option<Tuple2<PsiClass, PsiElement>>) findMainClassAndSourceElemMethod.invoke(null, element);
-
-            return ceOption.isDefined() ?
-                    Optional.of(new SimpleImmutableEntry<>(ceOption.get()._1(), ceOption.get()._1())) :
-                    Optional.empty();
-        } catch (NoSuchMethodException ignored) {
-            // Use old one for IDEA 2017.1
-            try {
-                Method findContainingMainMethod = Class
-                        .forName("org.jetbrains.plugins.scala.runner.ScalaMainMethodUtil")
-                        .getDeclaredMethod("findContainingMainMethod", PsiElement.class);
-
-                Option<ScFunctionDefinition> funDefOption =
-                        (Option<ScFunctionDefinition>) findContainingMainMethod.invoke(null, element);
-
-                return funDefOption.isDefined() ?
-                        Optional.of(new SimpleImmutableEntry<PsiElement, PsiClass>(
-                                funDefOption.get().containingClass(),
-                                funDefOption.get().containingClass())) :
-                        Optional.empty();
-            } catch (Exception ignore) {
-                return Optional.empty();
-            }
-        } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException ignored) {
-            return Optional.empty();
-        }
+        return ceOption.isDefined() ?
+                Optional.of(new SimpleImmutableEntry<>(ceOption.get()._1(), ceOption.get()._1())) :
+                Optional.empty();
     }
 
     private static Optional<SimpleImmutableEntry<PsiElement, PsiClass>> getMainClassFromContext(ConfigurationContext context) {
@@ -182,7 +154,7 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
 
         return location
                 .map(JavaExecutionUtil::stepIntoSingleClass)
-                .map(Location::getPsiElement)
+                .map((Function<Location, PsiElement>) Location::getPsiElement)
                 .filter(PsiElement::isPhysical)
                 .flatMap(element -> {
                     Optional<SimpleImmutableEntry<PsiElement, PsiClass>> mcPair = findMainMethod(element);
