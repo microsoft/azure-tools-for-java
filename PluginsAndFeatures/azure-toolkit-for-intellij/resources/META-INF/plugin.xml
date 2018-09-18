@@ -20,13 +20,22 @@
     <![CDATA[
     <html>
       <h3>[3.12.0]</h3>
+      <h4>Added</h4>
       <ul>
-        <li>Added support to deploy applications to Linux web apps.</li>
-        <li>Added support to show all the deployment slots for a web app.</li>
-        <li>Changed to list both Windows and Linux web apps in Azure Web App Explorer.</li>
-        <li>Changed to list all app service plans of the selected subscription for users to choose to create a new web app.</li>
-        <li>Changed to always uploads the web.config file together with the .jar artifact when deploying to Windows web apps.</li>
-        <li>Fixed some bugs.</li>
+        <li>Support to deploy applications to Web App (Linux).</li>
+        <li>Support to show all the deployment slots for a Web App.</li>
+      </ul>
+      <h4>Changed</h4>
+      <ul>
+        <li>List Web Apps on both Windows and Linux in Azure Explorer.</li>
+        <li>List all app service plans of the selected subscription when creating a new Web App.</li>
+        <li>Always upload the web.config file together with the .jar artifact when deploying to Web App (Windows).</li>
+      </ul>
+      <h4>Fixed</h4>
+      <ul>
+        <li>Fixed some bugs:
+          <a href="https://github.com/Microsoft/azure-tools-for-java/issues/1968" rel="nofollow">#1968</a>
+        </li>
       </ul>
       <h3>[3.11.0]</h3>
       <ul>
