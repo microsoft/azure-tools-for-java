@@ -73,6 +73,8 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
 
     private static final String WEB_CONFIG_PACKAGE_PATH = "/webapp/web.config";
     private static final String BASE_PATH = "/site/wwwroot/";
+    private static final String ROOT_PATH = BASE_PATH + "app.jar";
+    private static final String WEB_CONFIG_FTP_PATH = "/site/wwwroot/web.config";
     private static final String WEB_APP_BASE_PATH = BASE_PATH + "webapps/";
     private static final String CONTAINER_ROOT_PATH = WEB_APP_BASE_PATH + "ROOT";
     private static final String TEMP_FILE_PREFIX = "azuretoolkit";
@@ -113,7 +115,9 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
                 }
                 break;
             case MavenConstants.TYPE_JAR:
-                uploadJarArtifact(webAppSettingModel.getTargetPath(), webApp, processHandler, telemetryMap);
+                try (FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath())) {
+                    uploadJarArtifactViaFTP(input, webApp, processHandler, telemetryMap);
+                }
                 break;
             default:
                 break;
@@ -261,6 +265,28 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         FileUtil.zipFiles(files, targetZipFile);
         processHandler.setText(String.format(UPLOADING_ARTIFACT, BASE_PATH + artifactName));
         final int uploadCount = uploadFileViaZipDeploy(webApp, targetZipFile, processHandler);
+        telemetryMap.put("artifactUploadCount", String.valueOf(uploadCount));
+    }
+
+    private void uploadJarArtifactViaFTP(@NotNull final FileInputStream input, @NotNull WebApp webApp,
+                                         @NotNull RunProcessHandler processHandler,
+                                         @NotNull Map<String, String> telemetryMap) throws Exception {
+        processHandler.setText(GETTING_DEPLOYMENT_CREDENTIAL);
+        PublishingProfile profile = webApp.getPublishingProfile();
+
+        processHandler.setText(CONNECTING_FTP);
+        FTPClient ftp = WebAppUtils.getFtpConnection(profile);
+
+        if (webApp.operatingSystem() == OperatingSystem.WINDOWS) {
+            processHandler.setText(UPLOADING_WEB_CONFIG);
+            try (InputStream webConfigInput = getClass().getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
+                int webConfigUploadCount = uploadFileToFtp(ftp, WEB_CONFIG_FTP_PATH, webConfigInput, processHandler);
+                telemetryMap.put("webConfigCount", String.valueOf(webConfigUploadCount));
+            }
+        }
+
+        processHandler.setText(String.format(UPLOADING_ARTIFACT, ROOT_PATH));
+        final int uploadCount = uploadFileToFtp(ftp, ROOT_PATH, input, processHandler);
         telemetryMap.put("artifactUploadCount", String.valueOf(uploadCount));
     }
 
