@@ -26,6 +26,8 @@ import com.intellij.ide.plugins.cl.PluginClassLoader;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -85,6 +87,7 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
     public static boolean IS_ANDROID_STUDIO = "AndroidStudio".equals(PlatformUtils.getPlatformPrefix());
+    public static boolean IS_RIDER = PlatformUtils.isRider();
 
     public static String pluginFolder = PluginUtil.getPluginRootDirectory();
 
@@ -106,8 +109,9 @@ public class AzurePlugin extends AbstractProjectComponent {
 
 
     public void projectOpened() {
+        if (IS_RIDER) return;
         initializeAIRegistry();
-        // initializeFeedbackNotification();
+        initializeFeedbackNotification();
     }
 
     private void initializeFeedbackNotification() {
@@ -134,19 +138,19 @@ public class AzurePlugin extends AbstractProjectComponent {
      * other plugins only in this method.
      */
     public void initComponent() {
-        if (!IS_ANDROID_STUDIO) {
-            LOG.info("Starting Azure Plugin");
-            try {
-                //this code is for copying componentset.xml in plugins folder
-                copyPluginComponents();
-                initializeTelemetry();
-                clearTempDirectory();
-                loadWebappsSettings();
-            } catch (Exception e) {
-            /* This is not a user initiated task
-               So user should not get any exception prompt.*/
-                LOG.error(AzureBundle.message("expErlStrtUp"), e);
-            }
+        if (IS_ANDROID_STUDIO || IS_RIDER) return;
+
+        LOG.info("Starting Azure Plugin");
+        try {
+            //this code is for copying componentset.xml in plugins folder
+            copyPluginComponents();
+            initializeTelemetry();
+            clearTempDirectory();
+            loadWebappsSettings();
+        } catch (Exception e) {
+        /* This is not a user initiated task
+           So user should not get any exception prompt.*/
+            LOG.error(AzureBundle.message("expErlStrtUp"), e);
         }
     }
 
@@ -306,21 +310,23 @@ public class AzurePlugin extends AbstractProjectComponent {
      * related files in azure-toolkit-for-intellij plugin folder at startup.
      */
     protected void copyPluginComponents() {
-        try {
-            for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
-                if (azureLibrary.getLocation() != null) {
-                    if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
-                        for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator + CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
-                            new File(pluginFolder + File.separator + entryName).getParentFile().mkdirs();
-                            copyResourceFile(entryName, pluginFolder + File.separator + entryName);
+        Runnable runnable = () -> {
+            try {
+                for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
+                    if (azureLibrary.getLocation() != null) {
+                        if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
+                            for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator + CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
+                                new File(pluginFolder + File.separator + entryName).getParentFile().mkdirs();
+                                copyResourceFile(entryName, pluginFolder + File.separator + entryName);
+                            }
                         }
                     }
                 }
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
             }
-
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
-        }
+        };
+        ApplicationManager.getApplication().invokeLater(runnable);
     }
 
     /**
