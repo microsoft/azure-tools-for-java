@@ -31,12 +31,13 @@ import java.nio.charset.StandardCharsets
 
 class GithubIssue<T : Reportable>(private val reportable: T) {
     private val plugin = reportable.plugin
-    private val labels = mutableSetOf("IntelliJ")
+    private val labels = mutableSetOf("Rider")
 
     private val pluginRepo: URI
         get() {
+            plugin ?: throw Exception("plugin is NULL")
+            plugin.url ?: throw Exception("plugin.url is NULL")
             val url = if (plugin.url.endsWith("/")) plugin.url else plugin.url + "/"
-
             return URI.create(url)
         }
 
@@ -48,16 +49,24 @@ class GithubIssue<T : Reportable>(private val reportable: T) {
         // To support a bigger issue body, please implement a RESTful API
         // version request.
 
-        return StringUtils.left(pluginRepo.resolve("issues/new?" + URLEncodedUtils.format(listOf(
+        val properties = mutableListOf(
                 BasicNameValuePair("title", reportable.getTitle()),
-                BasicNameValuePair("labels", labels.joinToString(",")),
-                BasicNameValuePair("body", reportable.getBody())
-        ), StandardCharsets.UTF_8)).toString(), 2083)  // 2083 URL max length
-        .replace("""%[\d\w]?$""", "")                  // remove ending uncompleted escaped chars
+                BasicNameValuePair("labels", labels.joinToString(",")))
+
+        if (reportable.getProject().isNotEmpty())
+            properties.add(BasicNameValuePair("projects", reportable.getProject()))
+
+        properties.add(BasicNameValuePair("body", reportable.getBody()))
+
+        // 2083 URL max length
+        return StringUtils.left(
+                pluginRepo.resolve("issues/new?${URLEncodedUtils.format(properties, StandardCharsets.UTF_8)}").toString(), 2083)
+                .replace("""%[\d\w]?$""", "") // remove ending uncompleted escaped chars
     }
 
     fun report() {
-        BrowserUtil.browse(getRequestUrl())
+        val url = getRequestUrl()
+        BrowserUtil.browse(url)
     }
 
     fun withLabel(label: String): GithubIssue<T> {

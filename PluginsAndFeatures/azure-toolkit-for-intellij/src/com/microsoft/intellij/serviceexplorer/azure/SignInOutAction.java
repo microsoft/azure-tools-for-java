@@ -33,8 +33,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 
 public class SignInOutAction extends NodeAction {
-    private static final String ICON_SIGNIN_DARK = "Azure.svg";
-    private static final String ICON_SIGNIN_LIGHT = "Azure.svg";
+    private static final String ICON_SIGNIN_DARK = "SignInDark.svg";
+    private static final String ICON_SIGNIN_LIGHT = "SignInLight.svg";
     private static final String ICON_SIGNOUT_DARK = "SignOutDark.svg";
     private static final String ICON_SIGNOUT_LIGHT = "SignOutLight.svg";
 

@@ -2,6 +2,6 @@
   <title>Signout_dark</title>
   <g>
     <rect width="16" height="16" fill="#ffdbff" opacity="0"/>
-    <path d="M13,3V13H10V12h2V4H10V3ZM9,1V15L3,12.5v-9ZM8,7H7V8H8Z" fill="#afb1b3"/>
+    <path d="M13,9.761,15.2,8,13,6.239V2H3V14H13ZM9,12V9H4V7H9V4l5,4Z" fill="#afb1b3"/>
   </g>
 </svg>

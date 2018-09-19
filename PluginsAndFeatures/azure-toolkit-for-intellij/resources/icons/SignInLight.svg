@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-  <title>Azure</title>
+  <title>Signin</title>
   <g>
     <rect width="16" height="16" fill="#ffdbff" opacity="0"/>
-    <path d="M7.628,7.894l3.415,3.44L5,13H15L9.333,3ZM8.715,2,4.2,12H1L4.545,5.624Z" fill="#40b6e0"/>
+    <path d="M13,2V14H3V10H4v3h8V3H4V6H3V2ZM6,7H1V9H6v3l5-4L6,4Z" fill="#6e6e6e"/>
   </g>
 </svg>

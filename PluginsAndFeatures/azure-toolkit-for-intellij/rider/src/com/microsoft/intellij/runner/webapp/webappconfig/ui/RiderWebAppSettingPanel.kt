@@ -759,7 +759,7 @@ class RiderWebAppSettingPanel(project: Project,
         initRefreshButton()
 
         val tableToolbarDecorator = ToolbarDecorator.createDecorator(table)
-                .addExtraActions(btnRefresh).setToolbarPosition(ActionToolbarPosition.TOP)
+                .addExtraActions(btnRefresh).setToolbarPosition(ActionToolbarPosition.BOTTOM)
 
         pnlWebAppTable = tableToolbarDecorator.createPanel()
     }

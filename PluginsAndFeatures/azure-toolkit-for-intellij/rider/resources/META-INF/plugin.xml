@@ -1,4 +1,5 @@
-<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude"
+             url="https://github.com/JetBrains/azure-tools-for-intellij">
   <id>com.intellij.resharper.azure</id>
   <name>Azure Toolkit for Rider</name>
   <vendor url="https://www.jetbrains.com">JetBrains</vendor>

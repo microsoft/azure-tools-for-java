@@ -28,4 +28,6 @@ class ReportableError(shortMessage: String, private val detailMessage: String)
         get() = mapOf(
                 "Error message" to GithubMarkdownFormat.toCode(detailMessage)
         )
+
+    override fun getProject() = "JetBrains/azure-tools-for-intellij/2"
 }
