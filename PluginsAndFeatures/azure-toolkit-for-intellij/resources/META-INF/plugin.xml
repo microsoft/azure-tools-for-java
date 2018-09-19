@@ -24,6 +24,7 @@
       <ul>
         <li>Support to deploy applications to Web App (Linux).</li>
         <li>Support to show all the deployment slots for a Web App.</li>
+        <li>Support to show the Azure Data Lake Spark resource pool provision log outputs.</li>
       </ul>
       <h4>Changed</h4>
       <ul>
@@ -33,8 +34,14 @@
       </ul>
       <h4>Fixed</h4>
       <ul>
-        <li>Fixed some bugs:
+        <li>
           <a href="https://github.com/Microsoft/azure-tools-for-java/issues/1968" rel="nofollow">#1968</a>
+          Runtime information is not clear enough for Azure Web Apps
+        </li>
+        <li>
+          <a href="https://github.com/Microsoft/azure-tools-for-java/issues/1779" rel="nofollow">#1779</a>
+          <a href="https://github.com/Microsoft/azure-tools-for-java/issues/1920" rel="nofollow">#1920</a>
+         The issue of Azure Data Lake Spark resource pool `Update` dialog pop up multi times.
         </li>
       </ul>
       <h3>[3.11.0]</h3>
