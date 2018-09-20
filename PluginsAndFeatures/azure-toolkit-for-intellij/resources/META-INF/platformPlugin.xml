@@ -147,14 +147,6 @@
           canCloseContents="true"
           icon="/icons/RoleFolder.svg"
           conditionClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactoryCondition"/>
-    <projectConfigurable groupId="root"
-                       id="com.microsoft.intellij.AzureConfigurable"
-                       provider="com.microsoft.intellij.AzureConfigurableProvider"
-                       dynamic="true"/>
-    <projectService serviceInterface="com.microsoft.intellij.AzureSettings"
-                  serviceImplementation="com.microsoft.intellij.AzureSettings"/>
-    <applicationService serviceInterface="com.microsoft.intellij.ApplicationSettings"
-                      serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
 
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider"/>

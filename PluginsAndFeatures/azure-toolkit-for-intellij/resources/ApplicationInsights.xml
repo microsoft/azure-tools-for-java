@@ -19,6 +19,6 @@
   <Channel>
     <DeveloperMode>false</DeveloperMode>
   </Channel>
-  <DisableTelemetry>false</DisableTelemetry>
+  <DisableTelemetry>true</DisableTelemetry>
 </ApplicationInsights>
 

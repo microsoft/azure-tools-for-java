@@ -103,8 +103,8 @@ public class AzurePlugin extends AbstractProjectComponent {
     public AzurePlugin(Project project) {
         super(project);
         this.azureSettings = AzureSettings.getSafeInstance(project);
-        CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
-                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
+//        CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
+//                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
     }
 
 

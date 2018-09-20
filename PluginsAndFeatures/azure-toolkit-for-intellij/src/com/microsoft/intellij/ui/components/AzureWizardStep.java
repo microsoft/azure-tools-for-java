@@ -26,6 +26,7 @@ import com.intellij.ui.wizard.WizardModel;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.intellij.AzurePlugin;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -57,6 +58,7 @@ public abstract class AzureWizardStep<T extends WizardModel> extends WizardStep<
     }
 
     protected void sendTelemetryOnAction(final String action) {
+        if (AzurePlugin.IS_RIDER) return;
         final Map<String, String> properties = new HashMap<>();
         properties.put("WizardStep", this.getClass().getSimpleName());
         properties.put("Action", action);
