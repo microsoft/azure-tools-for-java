@@ -1,11 +1,11 @@
 <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
-  <id>com.microsoft.tooling.msservices.intellij.azure</id>
+  <id>com.intellij.resharper.azure</id>
   <name>Azure Toolkit for Rider</name>
-  <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
+  <vendor url="https://www.jetbrains.com">JetBrains</vendor>
 
   <description><![CDATA[
       <html>
-        <p>TODO</p>
+        <p>TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO</p>
       </html>
     ]]></description>
 
