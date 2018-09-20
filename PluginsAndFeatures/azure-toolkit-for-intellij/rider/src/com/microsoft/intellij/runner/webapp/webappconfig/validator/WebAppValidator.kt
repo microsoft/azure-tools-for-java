@@ -1,12 +1,10 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.validator
 
 import com.intellij.execution.configurations.RuntimeConfigurationError
-import com.intellij.openapi.options.ConfigurationException
-import com.jetbrains.rider.model.PublishableProjectModel
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
-import java.io.File
+import com.microsoft.intellij.runner.webapp.webappconfig.validator.ProjectValidator.validateProject
 
 object WebAppValidator : ConfigurationValidator() {
 
@@ -47,33 +45,6 @@ object WebAppValidator : ConfigurationValidator() {
             checkValueIsSet(model.webAppId, UiConstants.WEB_APP_NOT_DEFINED)
         }
     }
-
-    /**
-     * Validate publishable project in the config
-     *
-     * Note: for .NET web apps we ned to check for the "WebApplication" targets
-     *       that contains tasks for generating publishable package
-     *
-     * @throws [ConfigurationException] in case validation is failed
-     */
-    @Throws(RuntimeConfigurationError::class)
-    private fun validateProject(publishableProject: PublishableProjectModel?) {
-
-        val project = publishableProject ?: throw RuntimeConfigurationError(UiConstants.PROJECT_NOT_DEFINED)
-
-        if (!project.isDotNetCore && !isWebTargetsPresent(File(project.projectFilePath)))
-            throw RuntimeConfigurationError(String.format(UiConstants.PROJECT_TARGETS_NOT_DEFINED, UiConstants.WEB_APP_TARGET_NAME))
-    }
-
-    /**
-     * Check whether necessary targets exists in a project that are necessary for web app deployment
-     * Note: On Windows only
-     *
-     * TODO: We should replace this method with a target validation on a backend (RIDER-18500)
-     *
-     * @return [Boolean] whether WebApplication targets are present in publishable project
-     */
-    private fun isWebTargetsPresent(csprojFile: File): Boolean = csprojFile.readText().contains(UiConstants.WEB_APP_TARGET_NAME, true)
 
     // Please see for details -
     // https://docs.microsoft.com/en-us/azure/app-service/app-service-web-get-started-dotnet?toc=%2Fen-us%2Fdotnet%2Fapi%2Fazure_ref_toc%2Ftoc.json&bc=%2Fen-us%2Fdotnet%2Fazure_breadcrumb%2Ftoc.json&view=azure-dotnet#create-an-app-service-plan

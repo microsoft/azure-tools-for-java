@@ -24,6 +24,7 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
         private const val CANNOT_LIST_SQL_DATABASE = "Failed to list SQL Database."
         private const val CANNOT_LIST_SQL_SERVER = "Failed to list SQL Server."
         private const val CANNOT_LIST_DATABASE_EDITION = "Failed to list SQL Database edition."
+        private const val CANNOT_LIST_PUBLISHABLE_PROJECTS = "Failed to list publishable projects."
     }
 
     fun onRefresh() {
@@ -95,9 +96,13 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
     }
 
     fun onLoadPublishableProjects(project: Project) {
-        project.solution.publishableProjectsModel.publishableProjects.advise(project.lifetime) {
+        project.solution.publishableProjectsModel.publishableProjects.advise(project.lifetime.createNested()) {
             if (it.newValueOpt != null) {
-                mvpView.fillPublishableProject(project.solution.publishableProjectsModel.publishableProjects.values.toList())
+                try {
+                    mvpView.fillPublishableProject(project.solution.publishableProjectsModel.publishableProjects.values.toList())
+                } catch (e: Exception) {
+                    errorHandler(CANNOT_LIST_PUBLISHABLE_PROJECTS, e)
+                }
             }
         }
     }

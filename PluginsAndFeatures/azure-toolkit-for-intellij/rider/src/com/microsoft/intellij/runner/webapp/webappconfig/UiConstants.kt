@@ -22,8 +22,6 @@ class UiConstants {
 
         const val PROJECT_NOT_DEFINED = "Project is not defined"
 
-        const val PROJECT_TARGETS_NOT_DEFINED = "Selected project '%s' cannot be published. Please choose a Web App"
-
         const val PUBLISH_DONE = "Done."
 
         const val RESOURCE_GROUP_ALREADY_EXISTS = "Resource Group with name '%s' already exists"

@@ -17,6 +17,7 @@ import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.AzureRunConfigurationBase
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
+import com.microsoft.intellij.runner.webapp.webappconfig.validator.ProjectValidator.validateProject
 import com.microsoft.intellij.runner.webapp.webappconfig.validator.SqlDatabaseValidator
 import com.microsoft.intellij.runner.webapp.webappconfig.validator.SqlDatabaseValidator.validateDatabaseConnection
 import com.microsoft.intellij.runner.webapp.webappconfig.validator.WebAppValidator.validateWebApp
@@ -67,6 +68,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     override fun checkConfiguration() {
         validateAzureAccountIsSignedIn()
 
+        validateProject(myModel.webAppModel.publishableProject)
         validateWebApp(myModel.webAppModel)
         validateDatabaseConnection(myModel.databaseModel)
 

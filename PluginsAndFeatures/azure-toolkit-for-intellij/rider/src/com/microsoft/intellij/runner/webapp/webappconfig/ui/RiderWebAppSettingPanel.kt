@@ -12,10 +12,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.ui.AnActionButton
-import com.intellij.ui.HideableDecorator
-import com.intellij.ui.ListCellRendererWrapper
-import com.intellij.ui.ToolbarDecorator
+import com.intellij.ui.*
 import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.labels.LinkLabel
@@ -279,7 +276,7 @@ class RiderWebAppSettingPanel(project: Project,
         updateAzureModelInBackground()
 
         initButtonGroupsState()
-        initUIComponents(project)
+        initUIComponents()
     }
 
     //region Read From Config
@@ -305,7 +302,7 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     private fun resetWebAppFromConfig(model: AzureDotNetWebAppSettingModel.WebAppModel, dateString: String) {
-        cbProject.model.selectedItem = model.publishableProject
+        if (model.publishableProject != null) cbProject.model.selectedItem = model.publishableProject
 
         txtWebAppName.text = if (model.webAppName.isEmpty()) "$DEFAULT_APP_NAME$dateString" else model.webAppName
         txtAppServicePlanName.text = if (model.appServicePlanName.isEmpty()) "$DEFAULT_PLAN_NAME$dateString" else model.appServicePlanName
@@ -654,8 +651,7 @@ class RiderWebAppSettingPanel(project: Project,
     override fun fillPublishableProject(publishableProjects: List<PublishableProjectModel>) {
         cbProject.removeAllItems()
 
-        val filteredProjects = filterProjects(publishableProjects)
-        filteredProjects.sortedBy { it.projectName }
+        publishableProjects.sortedBy { it.projectName }
                 .forEach {
                     cbProject.addItem(it)
                     if (it == configuration.model.webAppModel.publishableProject) {
@@ -712,13 +708,15 @@ class RiderWebAppSettingPanel(project: Project,
     //region Filters
 
     /**
-     * Filter all non-core apps or non-web apps on full .Net framework
+     * Check whether we can publish a web app to an Azure.
      *
-     * @param publishableProjects list of all available publishable projects
+     * Note: Currently we are technically limited to publish any core web app
+     *       and a full .Net framework web apps on Windows only
+     *
+     * @param publishableProject a project to verify
      */
-    private fun filterProjects(publishableProjects: Collection<PublishableProjectModel>): List<PublishableProjectModel> {
-        return publishableProjects.filter { it.isWeb && (it.isDotNetCore || SystemInfo.isWindows) }
-    }
+    private fun canBePublishedToAzure(publishableProject: PublishableProjectModel) =
+            publishableProject.isWeb && (publishableProject.isDotNetCore || SystemInfo.isWindows)
 
     /**
      * Filter App Service Plans to Operating System related values
@@ -1091,7 +1089,7 @@ class RiderWebAppSettingPanel(project: Project,
     /**
      * Configure renderer and listeners for all UI Components
      */
-    private fun initUIComponents(project: Project) {
+    private fun initUIComponents() {
         initRuntimeMismatchWarningLabel()
 
         initSubscriptionComboBox()
@@ -1103,7 +1101,7 @@ class RiderWebAppSettingPanel(project: Project,
         initWebAppPricingLink()
         initWebAppPublishSettings()
 
-        initProjectsComboBox(project)
+        initProjectsComboBox()
 
         initDbConnectionEnableCheckbox()
         initSqlDatabaseComboBox()
@@ -1235,7 +1233,7 @@ class RiderWebAppSettingPanel(project: Project,
                         AzureRiderSettings.openInBrowserDefaultValue)
     }
 
-    private fun initProjectsComboBox(project: Project) {
+    private fun initProjectsComboBox() {
 
         cbProject.renderer = object : ListCellRendererWrapper<PublishableProjectModel>() {
             override fun customize(list: JList<*>,
@@ -1245,7 +1243,6 @@ class RiderWebAppSettingPanel(project: Project,
                                    cellHasFocus: Boolean) {
                 if (project.isDisposed) return
 
-                // Text
                 if (publishableProject == null) {
                     setText(PROJECTS_EMPTY_MESSAGE)
                     return
@@ -1253,15 +1250,14 @@ class RiderWebAppSettingPanel(project: Project,
 
                 setText(publishableProject.projectName)
 
-                // Icon
                 val projectVf = VfsUtil.findFileByIoFile(File(publishableProject.projectFilePath), false) ?: return
-
                 val projectArray = ProjectModelViewHost.getInstance(project).getItemsByVirtualFile(projectVf)
                 val projectNodes = projectArray.filter { it.isProject() || it.isUnloadedProject() }
 
-                if (!projectNodes.isEmpty()) {
-                    setIcon(projectNodes[0].getIcon())
-                }
+                if (projectNodes.isEmpty()) return
+                val itemIcon = projectNodes[0].getIcon()
+                setIcon(if (canBePublishedToAzure(publishableProject)) itemIcon
+                        else LayeredIcon.create(IconLoader.getDisabledIcon(itemIcon), AllIcons.RunConfigurations.InvalidConfigurationLayer))
             }
         }
 
@@ -1270,7 +1266,6 @@ class RiderWebAppSettingPanel(project: Project,
             if (publishableProject == lastSelectedProject) return@addActionListener
 
             setOperatingSystemRadioButtons(publishableProject)
-
             filterWebAppTableContent(publishableProject)
 
             val webApp = lastSelectedWebApp?.resource
@@ -1515,7 +1510,11 @@ class RiderWebAppSettingPanel(project: Project,
     /**
      * Wrapper to get a typed Combo Box object
      */
-    private fun <T>getSelectedItem(comboBox: JComboBox<T>): T? = comboBox.getItemAt(comboBox.selectedIndex)
+    private fun <T>getSelectedItem(comboBox: JComboBox<T>): T? {
+        val index = comboBox.selectedIndex
+        if (index == -1) return null
+        return comboBox.getItemAt(index)
+    }
 
     /**
      * Set all provided components to a specified enabled state
