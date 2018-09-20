@@ -11,7 +11,7 @@ public class WebAppNodePresenter<V extends WebAppNodeView> extends MvpPresenter<
         if (view == null) {
             return;
         }
-        view.renderWebAppNode(WebAppState.RUNNING);
+        view.renderWebAppNode(WebAppBaseState.RUNNING);
     }
 
     public void onRestartWebApp(String subscriptionId, String webAppId) throws IOException {
@@ -20,7 +20,7 @@ public class WebAppNodePresenter<V extends WebAppNodeView> extends MvpPresenter<
         if (view == null) {
             return;
         }
-        view.renderWebAppNode(WebAppState.RUNNING);
+        view.renderWebAppNode(WebAppBaseState.RUNNING);
     }
 
     public void onStopWebApp(String subscriptionId, String webAppId) throws IOException {
@@ -29,7 +29,7 @@ public class WebAppNodePresenter<V extends WebAppNodeView> extends MvpPresenter<
         if (view == null) {
             return;
         }
-        view.renderWebAppNode(WebAppState.STOPPED);
+        view.renderWebAppNode(WebAppBaseState.STOPPED);
     }
 
     public void onNodeRefresh() {

@@ -59,7 +59,7 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
 
     protected String subscriptionId;
     protected String webAppName;
-    protected WebAppState webAppState;
+    protected WebAppBaseState webAppState;
     protected String webAppId;
     protected String hostName;
     protected String webAppOS;
@@ -70,11 +70,11 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
      */
     public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
                       String state, String hostName, String os, Map<String, String> propertyMap) {
-        super(webAppId, webAppName, parent, getIcon(WebAppState.fromString(state), os), true);
+        super(webAppId, webAppName, parent, getIcon(WebAppBaseState.fromString(state), os), true);
         this.subscriptionId = subscriptionId;
         this.webAppId = webAppId;
         this.webAppName = webAppName;
-        this.webAppState = WebAppState.fromString(state);
+        this.webAppState = WebAppBaseState.fromString(state);
         this.hostName = hostName;
         this.webAppOS = StringUtils.capitalize(os.toLowerCase());
         this.propertyMap = propertyMap;
@@ -84,14 +84,14 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
         loadActions();
     }
 
-    protected static String getIcon(final WebAppState state, final String os) {
+    protected static String getIcon(final WebAppBaseState state, final String os) {
         return StringUtils.capitalize(os.toLowerCase())
-            + (state == WebAppState.RUNNING ? ICON_RUNNING_POSTFIX : ICON_STOPPED_POSTFIX);
+            + (state == WebAppBaseState.RUNNING ? ICON_RUNNING_POSTFIX : ICON_STOPPED_POSTFIX);
     }
 
     @Override
     public List<NodeAction> getNodeActions() {
-        boolean running = this.webAppState == WebAppState.RUNNING;
+        boolean running = this.webAppState == WebAppBaseState.RUNNING;
         getNodeActionByName(ACTION_START).setEnabled(!running);
         getNodeActionByName(ACTION_STOP).setEnabled(running);
         getNodeActionByName(ACTION_RESTART).setEnabled(running);
@@ -113,7 +113,7 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_STOP, getIcon(WebAppState.STOPPED, this.webAppOS), new NodeActionListener() {
+        addAction(ACTION_STOP, getIcon(WebAppBaseState.STOPPED, this.webAppOS), new NodeActionListener() {
             @Override
             public void actionPerformed(NodeActionEvent e) {
                 DefaultLoader.getIdeHelper().runInBackground(null, "Stopping Web App", false,
@@ -204,15 +204,15 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
     }
 
     @Override
-    public void renderWebAppNode(@NotNull WebAppState state) {
+    public void renderWebAppNode(@NotNull WebAppBaseState state) {
         switch (state) {
             case RUNNING:
                 this.webAppState = state;
-                this.setIconPath(getIcon(WebAppState.RUNNING, this.webAppOS));
+                this.setIconPath(getIcon(WebAppBaseState.RUNNING, this.webAppOS));
                 break;
             case STOPPED:
                 this.webAppState = state;
-                this.setIconPath(getIcon(WebAppState.STOPPED, this.webAppOS));
+                this.setIconPath(getIcon(WebAppBaseState.STOPPED, this.webAppOS));
                 break;
             default:
                 break;
