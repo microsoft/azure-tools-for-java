@@ -113,47 +113,35 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_STOP, getIcon(WebAppState.STOPPED, this.webAppOS), new NodeActionListener() {
-            @Override
-            public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, "Stopping Web App", false,
-                    true, "Stopping Web App...", () -> stopWebApp());
-            }
-        });
-        addAction(ACTION_START, new NodeActionListener() {
-            @Override
-            public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, "Starting Web App", false,
-                    true, "Starting Web App...", () -> startWebApp());
-            }
-        });
-        addAction(ACTION_RESTART, new NodeActionListener() {
-            @Override
-            public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, "Restarting Web App", false,
-                    true, "Restarting Web App...", () -> restartWebApp());
-            }
-        });
-
+        addAction(ACTION_STOP, getIcon(WebAppState.STOPPED, this.webAppOS),
+            getNodeActionListener("Stopping Web App", () -> stopWebApp()));
+        addAction(ACTION_START, getNodeActionListener("Starting Web App", () -> startWebApp()));
+        addAction(ACTION_RESTART, getNodeActionListener("Restarting Web App", () -> restartWebApp()));
         addAction(ACTION_DELETE, new DeleteWebAppAction());
-
-        // Open in browser action
         addAction(ACTION_OPEN_IN_BROWSER, new NodeActionListener() {
             @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                String appServiceLink = "http://" + hostName;
-                DefaultLoader.getUIHelper().openInBrowser(appServiceLink);
+            protected void actionPerformed(NodeActionEvent e) {
+                DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
             }
         });
-
         addAction(ACTION_SHOW_PROPERTY, null, new NodeActionListener() {
             @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+            protected void actionPerformed(NodeActionEvent e) {
                 DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
             }
         });
 
         super.loadActions();
+    }
+
+    private NodeActionListener getNodeActionListener(final String message, final Runnable runnable) {
+        return new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                DefaultLoader.getIdeHelper().runInBackground(null, message, false,
+                    true, message + "...", runnable);
+            }
+        };
     }
 
     @Override
