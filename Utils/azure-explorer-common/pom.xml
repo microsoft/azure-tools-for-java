@@ -10,6 +10,7 @@
     <artifactId>azure-explorer-common</artifactId>
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
+        <kotlin.version>1.2.71</kotlin.version>
     </properties>
     <profiles>
         <profile>
@@ -39,6 +40,23 @@
         </testResources>
         <plugins>
             <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jvmTarget>1.8</jvmTarget>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
@@ -46,6 +64,7 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -62,6 +81,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
         </plugins>
     </build>
     <dependencies>
@@ -132,7 +152,7 @@
             <artifactId>wiremock</artifactId>
             <scope>test</scope>
         </dependency>
-                <dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -147,12 +167,23 @@
             <artifactId>powermock-module-junit4</artifactId>
             <version>1.7.0RC4</version>
             <scope>test</scope>
-         </dependency>
-         <dependency>
-             <groupId>org.powermock</groupId>
-             <artifactId>powermock-api-mockito2</artifactId>
-             <version>1.7.0RC4</version>
-             <scope>test</scope>
-         </dependency>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito2</artifactId>
+            <version>1.7.0RC4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test-junit</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
