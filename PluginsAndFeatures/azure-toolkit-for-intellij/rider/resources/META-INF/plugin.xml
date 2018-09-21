@@ -6,7 +6,12 @@
 
   <description><![CDATA[
       <html>
-        <p>TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO</p>
+        <p>Rider plugin for integration with Azure cloud services. Allow to create, configure, and deploy .Net Core and .Net Web Apps to Azure from Rider on all supported platforms.</p>
+        <ul>
+          <li>Azure App Services: Create and deploy your .Net Core Web applications on Azure Web App on any platform, and .Net Web application on Windows</li>
+          <li>SQL Database: Create and deploy SQL Database and SQL Servers while publishing a web app. The web app will be linked with created database
+          <li>Azure Explorer: View and manage your Azure resources (web apps, virtual machines, storage accounts, redis caches, docker hosts, container registries)</li>
+        </ul>
       </html>
     ]]></description>
 
