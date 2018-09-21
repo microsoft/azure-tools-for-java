@@ -156,12 +156,7 @@ public abstract class RefreshableNode extends Node {
                                 node.setName(name);
 
                                 if (throwable != null) {
-                                    DefaultLoader.getUIHelper().showException("An error occurred while attempting " +
-                                                    "to load " + node.getName() + ".",
-                                            throwable,
-                                            "MS Azure Explorer - Error Loading " + node.getName(),
-                                            false,
-                                            true);
+                                    throw new RuntimeException("MS Azure Explorer - Error Loading", throwable);
                                 }
                             }
                         });

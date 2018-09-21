@@ -366,7 +366,7 @@ public class ClusterManagerEx {
                 isLIstAdditionalClusterSuccess = false;
                 // clear local cache if we cannot get information from local json
                 DefaultLoader.getIdeHelper().unsetApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS);
-                DefaultLoader.getUIHelper().showException("Failed to list additional HDInsight cluster", e, "List Additional HDInsight Cluster", false, true);
+                DefaultLoader.getUIHelper().logError("Failed to list additional HDInsight cluster", e);
                 return new ArrayList<>();
             }
         }
@@ -386,10 +386,9 @@ public class ClusterManagerEx {
                 emulatorClusters = gson.fromJson(json, new TypeToken<ArrayList<EmulatorClusterDetail>>(){
                 }.getType());
             } catch (JsonSyntaxException e){
-
                 isListEmulatorClusterSuccess = false;
                 DefaultLoader.getIdeHelper().unsetApplicationProperty(CommonConst.EMULATOR_CLUSTERS);
-                DefaultLoader.getUIHelper().showException("Failed to list emulator cluster", e, "List Emulator Cluster", false, true);
+                DefaultLoader.getUIHelper().logError("Failed to list emulator cluster", e);
                 return new ArrayList<>();
             }
         }

@@ -348,9 +348,9 @@ public class IDEHelperImpl implements IDEHelper {
     public void openLinkInBrowser(@NotNull String url) {
         try {
             Desktop.getDesktop().browse(URI.create(url));
-        } catch (Exception e) {
-            DefaultLoader.getUIHelper().showException("Unexpected exception: " + e.getMessage(), e, "Browse Web App", true, false);
+        } catch (Throwable e) {
             DefaultLoader.getUIHelper().logError("Unexpected exception: " + e.getMessage(), e);
+            throw new RuntimeException("Browse web app exception", e);
         }
     }
 }

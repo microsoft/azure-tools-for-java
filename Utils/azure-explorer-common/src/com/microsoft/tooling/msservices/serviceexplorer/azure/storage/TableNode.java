@@ -82,8 +82,7 @@ public class TableNode extends Node implements TelemetryProperties {
                 parent.removeAllChildNodes();
                 ((TableModule) parent).load(false);
             } catch (AzureCmdException ex) {
-                DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete table.", ex,
-                        "MS Services - Error Deleting Table", false, true);
+                throw new RuntimeException("An error occurred while attempting to delete table.", ex);
             }
         }
 

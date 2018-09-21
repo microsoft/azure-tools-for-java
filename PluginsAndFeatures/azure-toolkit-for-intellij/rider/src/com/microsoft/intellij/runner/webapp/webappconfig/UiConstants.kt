@@ -87,7 +87,7 @@ class UiConstants {
         const val WEB_APP_STOP = "Stop Web App '%s'..."
         const val WEB_APP_TARGET_NAME = "Microsoft.WebApplication.targets"
 
-        const val ZIP_DEPLOY_PUBLISH_FAIL = "Fail publishing ZIP file: %s"
+        const val ZIP_DEPLOY_PUBLISH_FAIL = "Fail publishing ZIP file"
         const val ZIP_DEPLOY_PUBLISH_SUCCESS = "Published ZIP file successfully"
         const val ZIP_DEPLOY_START_PUBLISHING = "Publishing ZIP file. Attempt %s of %s..."
 

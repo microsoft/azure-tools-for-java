@@ -181,9 +181,8 @@ public class SparkSubmissionExDialog extends JDialog {
         try {
             AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionHelpClickEvent"), null);
             Desktop.getDesktop().browse(new URI(SparkSubmitHelper.HELP_LINK));
-        } catch (Exception e) {
-            DefaultLoader.getUIHelper().showException("An error occurred while attempting to browse link.", e,
-                    "HDInsight Spark Submit - Error Browsing Link", false, true);
+        } catch (Throwable e) {
+            throw new RuntimeException("HDInsight Spark Submit - Error Browsing Link", e);
         }
     }
 

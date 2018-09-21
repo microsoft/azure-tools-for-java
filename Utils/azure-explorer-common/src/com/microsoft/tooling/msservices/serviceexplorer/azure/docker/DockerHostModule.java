@@ -108,9 +108,8 @@ public class DockerHostModule extends AzureRefreshableNode {
       dockerManager.forceRefreshSubscriptions();
       dockerManager = AzureDockerHostsManager.getAzureDockerHostsManagerEmpty(null);
 
-    } catch (Exception ex) {
-      DefaultLoader.getUIHelper().showException("An error occurred while attempting to load the Docker virtual machines from Azure", ex,
-          "Azure Services Explorer - Error Refreshing Docker Hosts", false, true);
+    } catch (Throwable ex) {
+      throw new RuntimeException("An error occurred while attempting to load the Docker virtual machines from Azure", ex);
     }
   }
 
@@ -133,9 +132,8 @@ public class DockerHostModule extends AzureRefreshableNode {
       for (DockerHost host : dockerManager.getDockerHostsList()) {
         addChildNode(new DockerHostNode(this, dockerManager, host));
       }
-    } catch (Exception ex) {
-      DefaultLoader.getUIHelper().showException("An error occurred while attempting to load the Docker virtual machines from Azure", ex,
-          "Azure Services Explorer - Error Refreshing Docker Hosts", false, true);
+    } catch (Throwable ex) {
+      throw new RuntimeException("An error occurred while attempting to load the Docker virtual machines from Azure", ex);
     }
   }
 }

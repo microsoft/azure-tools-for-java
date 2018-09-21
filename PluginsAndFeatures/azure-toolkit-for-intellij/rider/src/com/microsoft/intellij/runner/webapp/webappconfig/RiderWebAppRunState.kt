@@ -46,8 +46,8 @@ class RiderWebAppRunState(project: Project,
     public override fun executeSteps(processHandler: RunProcessHandler,
                                      telemetryMap: MutableMap<String, String>): Pair<WebApp, SqlDatabase?>? {
 
-        val publishableProject = myModel.webAppModel.publishableProject ?: throw Exception(UiConstants.PROJECT_NOT_DEFINED)
-        val subscriptionId = myModel.webAppModel.subscription?.subscriptionId() ?: throw Exception(UiConstants.SUBSCRIPTION_NOT_DEFINED)
+        val publishableProject = myModel.webAppModel.publishableProject ?: throw RuntimeException(UiConstants.PROJECT_NOT_DEFINED)
+        val subscriptionId = myModel.webAppModel.subscription?.subscriptionId() ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)
 
         val webApp = getOrCreateWebAppFromConfiguration(myModel.webAppModel, processHandler)
 
@@ -68,9 +68,9 @@ class RiderWebAppRunState(project: Project,
             if (databaseUri != null)
                 processHandler.setText(String.format(UiConstants.SQL_DATABASE_URL, databaseUri))
 
-            if (myModel.databaseModel.connectionStringName.isEmpty()) throw Exception(UiConstants.CONNECTION_STRING_NAME_NOT_DEFINED)
-            if (myModel.databaseModel.sqlServerAdminLogin.isEmpty()) throw Exception(UiConstants.SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
-            if (myModel.databaseModel.sqlServerAdminPassword.isEmpty()) throw Exception(UiConstants.SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
+            if (myModel.databaseModel.connectionStringName.isEmpty()) throw RuntimeException(UiConstants.CONNECTION_STRING_NAME_NOT_DEFINED)
+            if (myModel.databaseModel.sqlServerAdminLogin.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
+            if (myModel.databaseModel.sqlServerAdminPassword.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
 
             addConnectionString(
                     subscriptionId,

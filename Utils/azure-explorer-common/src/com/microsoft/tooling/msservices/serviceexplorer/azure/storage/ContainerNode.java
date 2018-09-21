@@ -85,8 +85,7 @@ public class ContainerNode extends Node implements TelemetryProperties{
                 parent.removeAllChildNodes();
                 ((RefreshableNode) parent).load(false);
             } catch (AzureCmdException ex) {
-                DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete blob storage", ex,
-                        "MS Services - Error Deleting Blob Storage", false, true);
+                throw new RuntimeException("An error occurred while attempting to delete blob storage", ex);
             }
         }
 

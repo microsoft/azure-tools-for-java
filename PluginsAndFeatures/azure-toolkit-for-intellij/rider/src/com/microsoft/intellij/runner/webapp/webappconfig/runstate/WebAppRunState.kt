@@ -207,8 +207,8 @@ object WebAppRunState {
                 FileUtil.delete(zipFile)
             }
         } catch (e: Throwable) {
-            processHandler.setText(String.format(UiConstants.ZIP_DEPLOY_PUBLISH_FAIL, e))
-            throw e
+            processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: $e")
+            throw RuntimeException(UiConstants.ZIP_DEPLOY_PUBLISH_FAIL, e)
         }
     }
 
@@ -345,7 +345,7 @@ object WebAppRunState {
                             DEPLOY_TIMEOUT_MS)
                     success = response.isSuccessful
                 } catch (e: Throwable) {
-                    processHandler.setText(String.format(UiConstants.ZIP_DEPLOY_PUBLISH_FAIL, e))
+                    processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: $e")
                     e.printStackTrace()
                 }
 
@@ -354,7 +354,7 @@ object WebAppRunState {
             if (response == null || !success) {
                 val message = "${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: Response code: ${response?.code()}. Response message: ${response?.message()}"
                 processHandler.setText(message)
-                throw Exception(message)
+                throw RuntimeException(message)
             }
 
             processHandler.setText(UiConstants.ZIP_DEPLOY_PUBLISH_SUCCESS)

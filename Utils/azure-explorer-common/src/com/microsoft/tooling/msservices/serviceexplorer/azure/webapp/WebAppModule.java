@@ -41,9 +41,8 @@ public class WebAppModule extends AzureRefreshableNode {
         try {
             webAppModulePresenter.onDeleteWebApp(sid, id);
             removeDirectChildNode(node);
-        } catch (IOException e) {
-            DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Web App ",
-                    e, "Azure Services Explorer - Error Deleting Web App for Containers", false, true);
+        } catch (Throwable e) {
+            throw new RuntimeException("An error occurred while attempting to delete the Web App ", e);
         }
     }
 

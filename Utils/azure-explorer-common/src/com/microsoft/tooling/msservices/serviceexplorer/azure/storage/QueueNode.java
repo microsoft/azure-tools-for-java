@@ -83,8 +83,7 @@ public class QueueNode extends Node implements TelemetryProperties{
                 parent.removeAllChildNodes();
                 ((QueueModule) parent).load(false);
             } catch (AzureCmdException ex) {
-                DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete queue", ex,
-                        "MS Services - Error Deleting Queue", false, true);
+                throw new RuntimeException("An error occurred while attempting to delete queue", ex);
             }
         }
 
@@ -109,8 +108,7 @@ public class QueueNode extends Node implements TelemetryProperties{
 
                 DefaultLoader.getUIHelper().refreshQueue(getProject(), storageAccount, queue);
             } catch (AzureCmdException ex) {
-                DefaultLoader.getUIHelper().showException("An error occurred while attempting to clear queue.", ex,
-                        "MS Services - Error Clearing Queue", false, true);
+                throw new RuntimeException("An error occurred while attempting to clear queue.", ex);
             }
         }
 

@@ -349,8 +349,8 @@ public class UIHelperImpl implements UIHelper {
     public void openInBrowser(String link) {
         try {
             Desktop.getDesktop().browse(URI.create(link));
-        } catch (Exception e) {
-            showException(UNABLE_TO_OPEN_BROWSER, e, UNABLE_TO_OPEN_BROWSER, false, false);
+        } catch (Throwable e) {
+            throw new RuntimeException(UNABLE_TO_OPEN_BROWSER, e);
         }
     }
 
