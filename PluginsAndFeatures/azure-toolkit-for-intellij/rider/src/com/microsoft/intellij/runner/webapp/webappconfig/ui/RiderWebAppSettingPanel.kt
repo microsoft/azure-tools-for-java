@@ -117,7 +117,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
 
         private const val EMPTY_SUBSCRIPTION_MESSAGE = "No existing Azure Subscriptions"
         private const val EMPTY_RESOURCE_GROUP_MESSAGE = "No existing Azure Resource Groups"
-        private const val EMPTY_APP_SERVICE_PLAN_MESSAGE = "No existing Azure Resource Groups"
+        private const val EMPTY_APP_SERVICE_PLAN_MESSAGE = "No existing Azure App Service Plans"
         private const val EMPTY_LOCATION_MESSAGE = "No existing Azure Locations"
         private const val EMPTY_PRICING_TIER_MESSAGE = "No existing Azure Pricing Tiers"
         private const val EMPTY_SQL_DATABASES_MESSAGE = "No existing Azure SQL Databases"
