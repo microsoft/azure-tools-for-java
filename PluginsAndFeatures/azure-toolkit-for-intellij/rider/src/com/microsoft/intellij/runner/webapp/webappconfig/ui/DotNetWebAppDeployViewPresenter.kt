@@ -22,9 +22,6 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig.ui
 
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
@@ -33,7 +30,6 @@ import com.jetbrains.rider.util.idea.getLogger
 import com.jetbrains.rider.util.lifetime.Lifetime
 import com.jetbrains.rider.util.lifetime.isAlive
 import com.jetbrains.rider.util.reactive.Signal
-import com.jetbrains.rider.util.reactive.adviseOnce
 import com.microsoft.azure.management.appservice.AppServicePlan
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.appservice.WebApp
@@ -46,12 +42,12 @@ import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
-import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
+import com.microsoft.intellij.helpers.base.AzureMvpPresenter
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
 
-class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView>() : MvpPresenter<V>() {
+class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : AzureMvpPresenter<V>() {
 
     companion object {
 
@@ -166,37 +162,11 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView>() : MvpPres
                 { mvpView.renderWebAppsTable(it) })
     }
 
-    private fun <T>subscribe(lifetime: Lifetime,
-                             signal: Signal<T>,
-                             taskName: String,
-                             errorMessage: String,
-                             callableFunc: () -> T,
-                             invokeLaterCallback: (T) -> Unit) {
-
-        signal.adviseOnce(lifetime) {
-            application.invokeLater {
-                if (!lifetime.isAlive) return@invokeLater
-                invokeLaterCallback(it)
-            }
-        }
-
-        ProgressManager.getInstance().run(object : Task.Backgroundable(null, taskName, false) {
-            override fun run(indicator: ProgressIndicator) {
-                signal.fire(callableFunc())
-            }
-
-            override fun onThrowable(e: Throwable) {
-                LOG.error(e)
-                errorHandler(errorMessage, e as Exception)
-                super.onThrowable(e)
-            }
-        })
-    }
-
-    private fun errorHandler(msg: String, e: Exception) {
+    private fun errorHandler(message: String, e: Exception) {
         DefaultLoader.getIdeHelper().invokeLater {
             if (isViewDetached) return@invokeLater
-            mvpView.onErrorWithException(msg, e)
+            LOG.error(message)
+            mvpView.onErrorWithException(message, e)
         }
     }
 }
