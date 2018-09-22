@@ -54,7 +54,6 @@ public abstract class AzureRunProfileState <T> implements RunProfileState {
         final RunProcessHandler processHandler = new RunProcessHandler();
         processHandler.addDefaultListener();
         ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
-        processHandler.startNotify();
         consoleView.attachToProcess(processHandler);
         Map<String, String> telemetryMap = new HashMap<>();
         Observable.fromCallable(

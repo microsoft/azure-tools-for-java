@@ -110,6 +110,7 @@ class RiderWebAppRunState(project: Project,
     }
 
     override fun onFail(errMsg: String, processHandler: RunProcessHandler) {
+        if (processHandler.isProcessTerminated || processHandler.isProcessTerminating) return
         processHandler.println(errMsg, ProcessOutputTypes.STDERR)
         processHandler.notifyComplete()
     }
