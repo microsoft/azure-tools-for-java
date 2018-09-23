@@ -18,7 +18,7 @@ object AzureDatabaseMvpModel {
     private val sqlServerToSqlDatabasesMap = concurrentMapOf<SqlServer, List<SqlDatabase>>()
 
     fun refreshSubscriptionToSqlServerMap() {
-        val azureManager = AuthMethodManager.getInstance().azureManager
+        val azureManager = AuthMethodManager.getInstance().azureManager ?: return
         val subscriptions = azureManager.subscriptions
 
         subscriptions.forEach {

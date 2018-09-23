@@ -1,10 +1,8 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.validator
 
 import com.intellij.execution.configurations.RuntimeConfigurationError
-import com.jetbrains.rider.util.firstOrNull
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
-import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
@@ -40,16 +38,17 @@ object SqlDatabaseValidator : ConfigurationValidator() {
         if (!model.isDatabaseConnectionEnabled) return
 
         if (model.isCreatingSqlDatabase) {
-            validateDatabaseName(model.subscriptionId, model.databaseName, model.sqlServerName)
+            val subscriptionId = SubscriptionValidator.validateSubscription(model.subscription).subscriptionId()
+            validateDatabaseName(subscriptionId, model.databaseName, model.sqlServerName)
 
             if (model.isCreatingDbResourceGroup) {
-                ResourceGroupValidator.validateResourceGroupName(model.subscriptionId, model.dbResourceGroupName)
+                ResourceGroupValidator.validateResourceGroupName(subscriptionId, model.dbResourceGroupName)
             } else {
                 checkValueIsSet(model.dbResourceGroupName, UiConstants.RESOURCE_GROUP_NAME_NOT_DEFINED)
             }
 
             if (model.isCreatingSqlServer) {
-                validateSqlServerName(model.subscriptionId, model.sqlServerName)
+                validateSqlServerName(subscriptionId, model.sqlServerName)
                 validateAdminLogin(model.sqlServerAdminLogin)
                 validateAdminPassword(model.sqlServerAdminLogin, model.sqlServerAdminPassword)
                 checkPasswordsMatch(model.sqlServerAdminPassword, model.sqlServerAdminPasswordConfirm)

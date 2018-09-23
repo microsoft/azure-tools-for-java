@@ -1,6 +1,7 @@
 package com.microsoft.intellij.runner.webapp.webappconfig
 
 import com.intellij.execution.process.ProcessOutputTypes
+import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.WebApp
@@ -46,7 +47,7 @@ class RiderWebAppRunState(project: Project,
                                      telemetryMap: MutableMap<String, String>): Pair<WebApp, SqlDatabase?>? {
 
         val publishableProject = myModel.webAppModel.publishableProject ?: throw Exception(UiConstants.PROJECT_NOT_DEFINED)
-        if (myModel.webAppModel.subscriptionId.isEmpty()) throw Exception(UiConstants.SUBSCRIPTION_ID_NOT_DEFINED)
+        val subscriptionId = myModel.webAppModel.subscription?.subscriptionId() ?: throw Exception(UiConstants.SUBSCRIPTION_NOT_DEFINED)
 
         val webApp = getOrCreateWebAppFromConfiguration(myModel.webAppModel, processHandler)
 
@@ -61,11 +62,8 @@ class RiderWebAppRunState(project: Project,
         var database: SqlDatabase? = null
 
         if (myModel.databaseModel.isDatabaseConnectionEnabled) {
-            if (myModel.databaseModel.subscriptionId.isEmpty()) throw Exception(UiConstants.SUBSCRIPTION_ID_NOT_DEFINED)
-
             database = getOrCreateSqlDatabaseFromConfig(myModel.databaseModel, processHandler)
 
-            val subscriptionId = myModel.databaseModel.subscriptionId
             val databaseUri = getSqlDatabaseUri(subscriptionId, database)
             if (databaseUri != null)
                 processHandler.setText(String.format(UiConstants.SQL_DATABASE_URL, databaseUri))
@@ -75,7 +73,7 @@ class RiderWebAppRunState(project: Project,
             if (myModel.databaseModel.sqlServerAdminPassword.isEmpty()) throw Exception(UiConstants.SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
 
             addConnectionString(
-                    myModel.databaseModel.subscriptionId,
+                    subscriptionId,
                     webApp,
                     database,
                     myModel.databaseModel.connectionStringName,
@@ -95,11 +93,16 @@ class RiderWebAppRunState(project: Project,
 
     override fun onSuccess(result: Pair<WebApp, SqlDatabase?>, processHandler: RunProcessHandler) {
         processHandler.notifyComplete()
+
         if (myModel.webAppModel.isCreatingWebApp && AzureUIRefreshCore.listeners != null) {
             AzureUIRefreshCore.execute(AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null))
         }
 
-        refreshWebAppAfterPublish(result.first, myModel.webAppModel)
+        val webApp = result.first
+        if (myModel.webAppModel.isOpenBrowser)
+            BrowserUtil.browse(getWebAppUrl(webApp))
+
+        refreshWebAppAfterPublish(webApp, myModel.webAppModel)
         val sqlDatabase = result.second
         if (sqlDatabase != null) {
             refreshDatabaseAfterPublish(sqlDatabase, myModel.databaseModel)

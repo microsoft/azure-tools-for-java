@@ -20,7 +20,6 @@ import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.validator.SqlDatabaseValidator
 import com.microsoft.intellij.runner.webapp.webappconfig.validator.SqlDatabaseValidator.validateDatabaseConnection
 import com.microsoft.intellij.runner.webapp.webappconfig.validator.WebAppValidator.validateWebApp
-import java.io.IOException
 
 class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
         AzureRunConfigurationBase<AzureDotNetWebAppSettingModel>(project, factory, name) {
@@ -33,7 +32,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     }
 
     override fun getSubscriptionId(): String {
-        return myModel.webAppModel.subscriptionId
+        return myModel.webAppModel.subscription?.subscriptionId() ?: ""
     }
 
     override fun getTargetPath(): String {
@@ -87,7 +86,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
             if (!AuthMethodManager.getInstance().isSignedIn) {
                 throw RuntimeConfigurationError(UiConstants.SIGN_IN_REQUIRED)
             }
-        } catch (e: IOException) {
+        } catch (e: Throwable) {
             throw RuntimeConfigurationError(UiConstants.SIGN_IN_REQUIRED)
         }
     }

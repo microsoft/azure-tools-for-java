@@ -53,7 +53,7 @@ object DatabaseRunState {
     private fun getOrCreateSqlServerFromConfiguration(model: AzureDotNetWebAppSettingModel.DatabaseModel,
                                                       processHandler: RunProcessHandler): SqlServer {
 
-        if (model.subscriptionId.isEmpty()) throw Exception(UiConstants.SUBSCRIPTION_ID_NOT_DEFINED)
+        val subscriptionId = model.subscription?.subscriptionId() ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)
 
         if (model.isCreatingSqlServer) {
             processHandler.setText(String.format(UiConstants.SQL_SERVER_CREATE, model.sqlServerName))
@@ -65,7 +65,7 @@ object DatabaseRunState {
             if (model.sqlServerAdminPassword.isEmpty()) throw Exception(UiConstants.SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
 
             val sqlServer = AzureDatabaseMvpModel.createSqlServer(
-                    model.subscriptionId,
+                    subscriptionId,
                     model.sqlServerName,
                     model.sqlServerLocation,
                     model.isCreatingDbResourceGroup,
@@ -81,6 +81,6 @@ object DatabaseRunState {
         processHandler.setText(String.format(UiConstants.SQL_SERVER_GET_EXISTING, model.sqlServerId))
 
         if (model.sqlServerId.isEmpty()) throw Exception(UiConstants.SQL_SERVER_ID_NOT_DEFINED)
-        return AzureDatabaseMvpModel.getSqlServerById(model.subscriptionId, model.sqlServerId)
+        return AzureDatabaseMvpModel.getSqlServerById(subscriptionId, model.sqlServerId)
     }
 }

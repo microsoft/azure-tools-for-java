@@ -3,6 +3,7 @@ package com.microsoft.intellij.runner.webapp
 import com.intellij.util.xmlb.annotations.Transient
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.microsoft.azure.management.appservice.*
+import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.sql.DatabaseEditions
 import com.microsoft.azure.management.sql.SqlDatabase
@@ -27,7 +28,7 @@ class AzureDotNetWebAppSettingModel {
 
         var publishableProject: PublishableProjectModel? = null
 
-        var subscriptionId = ""
+        var subscription: Subscription? = null
 
         var isCreatingWebApp = false
         var webAppId = ""
@@ -45,6 +46,8 @@ class AzureDotNetWebAppSettingModel {
 
         var netFrameworkVersion = defaultNetFrameworkVersion
         var netCoreRuntime = defaultRuntime
+
+        var isOpenBrowser = false
 
         /**
          * Reset the model with values after creating a new instance
@@ -64,7 +67,7 @@ class AzureDotNetWebAppSettingModel {
 
     class DatabaseModel {
 
-        var subscriptionId = ""
+        var subscription: Subscription? = null
 
         var isDatabaseConnectionEnabled = false
 

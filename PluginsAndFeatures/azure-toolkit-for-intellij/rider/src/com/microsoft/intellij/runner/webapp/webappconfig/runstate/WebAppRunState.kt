@@ -59,6 +59,8 @@ object WebAppRunState {
     fun getOrCreateWebAppFromConfiguration(model: AzureDotNetWebAppSettingModel.WebAppModel,
                                            processHandler: RunProcessHandler): WebApp {
 
+        val subscriptionId = model.subscription?.subscriptionId() ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)
+
         if (model.isCreatingWebApp) {
             processHandler.setText(String.format(UiConstants.WEB_APP_CREATE, model.webAppName))
 
@@ -78,13 +80,13 @@ object WebAppRunState {
 
                         if (operatingSystem == OperatingSystem.WINDOWS) {
                             AzureDotNetWebAppMvpModel.createWebAppWithNewWindowsAppServicePlan(
-                                    model.subscriptionId,
+                                    subscriptionId,
                                     webAppDefinition,
                                     appServicePlanDefinition,
                                     model.netFrameworkVersion)
                         } else {
                             AzureDotNetWebAppMvpModel.createWebAppWithNewLinuxAppServicePlan(
-                                    model.subscriptionId,
+                                    subscriptionId,
                                     webAppDefinition,
                                     appServicePlanDefinition,
                                     model.netCoreRuntime)
@@ -94,13 +96,13 @@ object WebAppRunState {
 
                         if (operatingSystem == OperatingSystem.WINDOWS) {
                             AzureDotNetWebAppMvpModel.createWebAppWithExistingWindowsAppServicePlan(
-                                    model.subscriptionId,
+                                    subscriptionId,
                                     webAppDefinition,
                                     model.appServicePlanId,
                                     model.netFrameworkVersion)
                         } else {
                             AzureDotNetWebAppMvpModel.createWebAppWithExistingLinuxAppServicePlan(
-                                    model.subscriptionId,
+                                    subscriptionId,
                                     webAppDefinition,
                                     model.appServicePlanId,
                                     model.netCoreRuntime)
@@ -114,7 +116,7 @@ object WebAppRunState {
         processHandler.setText(String.format(UiConstants.WEB_APP_GET_EXISTING, model.webAppId))
 
         if (model.webAppId.isEmpty()) throw Exception(UiConstants.WEB_APP_ID_NOT_DEFINED)
-        return AzureWebAppMvpModel.getInstance().getWebAppById(model.subscriptionId, model.webAppId)
+        return AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, model.webAppId)
     }
 
     fun deployToAzureWebApp(project: Project,

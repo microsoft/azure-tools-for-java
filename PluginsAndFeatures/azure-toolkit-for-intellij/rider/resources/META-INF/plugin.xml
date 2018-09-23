@@ -18,6 +18,11 @@
   <depends>com.intellij.modules.rider</depends>
 
   <extensions defaultExtensionNs="com.intellij">
+    <projectConfigurable groupId="tools"
+                         id="com.microsoft.intellij.configuration.AzureRiderConfigurable"
+                         provider="com.microsoft.intellij.configuration.AzureRiderConfigurableProvider"
+                         dynamic="true"/>
+
     <configurationType implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfigurationType"/>
     <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppRunner"/>
     <rider.publishConfigurationProvider implementation="com.microsoft.intellij.runner.webapp.AzureDotNetWebAppContextPublishProvider" />

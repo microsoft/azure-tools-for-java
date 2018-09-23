@@ -3,7 +3,6 @@ package com.microsoft.intellij.runner.webapp.webappconfig.validator
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.openapi.options.ConfigurationException
 import com.jetbrains.rider.model.PublishableProjectModel
-import com.jetbrains.rider.util.firstOrNull
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
@@ -25,14 +24,15 @@ object WebAppValidator : ConfigurationValidator() {
 
     @Throws(RuntimeConfigurationError::class)
     fun validateWebApp(model: AzureDotNetWebAppSettingModel.WebAppModel) {
+        val subscriptionId = SubscriptionValidator.validateSubscription(model.subscription).subscriptionId()
         validateProject(model.publishableProject)
 
         if (model.isCreatingWebApp) {
             validateWebAppName(model.webAppName)
-            checkValueIsSet(model.subscriptionId, UiConstants.SUBSCRIPTION_NOT_DEFINED)
+            checkValueIsSet(subscriptionId, UiConstants.SUBSCRIPTION_NOT_DEFINED)
 
             if (model.isCreatingResourceGroup) {
-                ResourceGroupValidator.validateResourceGroupName(model.subscriptionId, model.resourceGroupName)
+                ResourceGroupValidator.validateResourceGroupName(subscriptionId, model.resourceGroupName)
             } else {
                 checkValueIsSet(model.resourceGroupName, UiConstants.RESOURCE_GROUP_NAME_NOT_DEFINED)
             }

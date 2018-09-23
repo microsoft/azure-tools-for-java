@@ -2,6 +2,7 @@ package com.microsoft.intellij.runner.webapp.webappconfig.ui
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.actionSystem.ActionToolbarPosition
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.progress.ProgressIndicator
@@ -36,6 +37,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
+import com.microsoft.intellij.configuration.AzureRiderSettings
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
@@ -203,6 +205,11 @@ class RiderWebAppSettingPanel(project: Project,
     private lateinit var pnlProject: JPanel
     private lateinit var cbProject: JComboBox<PublishableProjectModel>
 
+    // Web App Settings
+    @Suppress("unused")
+    private lateinit var pnlWebAppPublishSettings: JPanel
+    private lateinit var checkBoxOpenInBrowserAfterPublish: JCheckBox
+
     // SQL Database
     @Suppress("unused")
     private lateinit var pnlDbConnection: JPanel
@@ -329,6 +336,11 @@ class RiderWebAppSettingPanel(project: Project,
         }
 
         btnRefresh.isEnabled = false
+
+        checkBoxOpenInBrowserAfterPublish.isEnabled =
+                PropertiesComponent.getInstance().getBoolean(
+                        AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
+                        AzureRiderSettings.openInBrowserDefaultValue)
     }
 
     private fun resetDatabaseFromConfig(model: AzureDotNetWebAppSettingModel.DatabaseModel, dateString: String) {
@@ -366,7 +378,7 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     private fun applyWebAppConfig(model: AzureDotNetWebAppSettingModel.WebAppModel) {
-        model.subscriptionId = getSelectedItem(cbSubscription)?.subscriptionId() ?: ""
+        model.subscription = getSelectedItem(cbSubscription)
         model.publishableProject = getSelectedItem(cbProject) ?: model.publishableProject
 
         model.isCreatingWebApp = rdoCreateNewWebApp.isSelected
@@ -422,7 +434,7 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     private fun applyDatabaseConfig(model: AzureDotNetWebAppSettingModel.DatabaseModel) {
-        model.subscriptionId = getSelectedItem(cbSubscription)?.subscriptionId() ?: ""
+        model.subscription = getSelectedItem(cbSubscription)
         model.isDatabaseConnectionEnabled = checkBoxEnableDbConnection.isSelected
 
         if (checkBoxEnableDbConnection.isSelected) {
@@ -1089,6 +1101,7 @@ class RiderWebAppSettingPanel(project: Project,
         initLocationComboBox()
         initPricingTierComboBox()
         initWebAppPricingLink()
+        initWebAppPublishSettings()
 
         initProjectsComboBox(project)
 
@@ -1203,6 +1216,24 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     private fun initWebAppPricingLink() = initLinkLabel(lblWebAppPricingLink, WEB_APP_PRICING_URI)
+
+    private fun initWebAppPublishSettings() {
+        val properties = PropertiesComponent.getInstance()
+
+        checkBoxOpenInBrowserAfterPublish.addActionListener {
+            val isOpenBrowser = checkBoxOpenInBrowserAfterPublish.isSelected
+            properties.setValue(
+                    AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
+                    isOpenBrowser,
+                    AzureRiderSettings.openInBrowserDefaultValue)
+            configuration.model.webAppModel.isOpenBrowser = isOpenBrowser
+        }
+
+        checkBoxOpenInBrowserAfterPublish.isSelected =
+                properties.getBoolean(
+                        AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
+                        AzureRiderSettings.openInBrowserDefaultValue)
+    }
 
     private fun initProjectsComboBox(project: Project) {
 

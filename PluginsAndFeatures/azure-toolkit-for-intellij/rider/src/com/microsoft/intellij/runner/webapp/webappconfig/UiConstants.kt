@@ -67,8 +67,9 @@ class UiConstants {
         const val SQL_SERVER_REGION_NOT_DEFINED = "SQL Server Region is not defined"
         const val SQL_SERVER_RESOURCE_GROUP_NAME_NOT_DEFINED = "SQL Server Resource Group Name is not defined"
 
-        const val SUBSCRIPTION_ID_NOT_DEFINED = "Subscription ID is not defined"
         const val SUBSCRIPTION_NOT_DEFINED = "Subscription not provided"
+        const val SUBSCRIPTION_DISABLED = "Subscription '%s' is disabled"
+        const val SUBSCRIPTION_DELETED = "Subscription '%s' is deleted"
 
         const val WEB_APP_ALREADY_EXISTS = "Web App with name '%s' already exists"
         const val WEB_APP_CREATE = "Creating Web App '%s'..."
