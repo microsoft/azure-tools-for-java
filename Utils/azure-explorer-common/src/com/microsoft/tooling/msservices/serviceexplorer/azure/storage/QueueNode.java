@@ -119,7 +119,7 @@ public class QueueNode extends Node implements TelemetryProperties{
     }
 
     private static final String QUEUE_MODULE_ID = QueueNode.class.getName();
-    private static final String ICON_PATH = "container.png";
+    private static final String ICON_PATH = "container.svg";
     private final Queue queue;
     private final StorageAccount storageAccount;
 
@@ -137,7 +137,7 @@ public class QueueNode extends Node implements TelemetryProperties{
         final Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(), storageAccount.name(), queue);
 
         if (openedFile == null) {
-            DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, queue, " [Queue]", "Queue", "container.png");
+            DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, queue, " [Queue]", "Queue", "container.svg");
         } else {
             DefaultLoader.getUIHelper().openItem(getProject(), openedFile);
         }

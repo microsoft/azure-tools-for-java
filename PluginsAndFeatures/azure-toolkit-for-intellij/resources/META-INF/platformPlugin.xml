@@ -170,7 +170,7 @@
   <actions>
     <action id="Actions.AzureDockerHostDeploy" class="com.microsoft.intellij.actions.AzureDockerHostDeployAction"
             text="Publish as Docker Container..." description="Azure website deployment for Java on Docker"
-            icon="/icons/PublishDockerContainer_16.png">
+            icon="/icons/DockerContainer.svg">
     </action>
     <action class="com.microsoft.intellij.actions.AzureExplorerOpenAction" id="Actions.AzureExplorerOpenAction"
             text="Show Azure Explorer" description="Show Azure Explorer" icon="/icons/AzureExplorer.svg"/>

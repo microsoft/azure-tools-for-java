@@ -24,6 +24,7 @@ package com.microsoft.intellij.helpers.rediscache;
 
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
+import com.intellij.openapi.util.IconLoader;
 import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
@@ -142,6 +143,8 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
                 redisExplorerPresenter.onkeySelect(cbDatabase.getSelectedIndex(), selectedKey);
             }
         });
+
+        btnSearch.setIcon(IconLoader.getIcon("icons/search.svg"));
 
         btnSearch.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "btnSearch", null) {
             @Override

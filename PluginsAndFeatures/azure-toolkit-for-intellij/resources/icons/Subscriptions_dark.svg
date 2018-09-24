@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <title>Subscriptions_dark</title>
+  <g>
+    <rect width="16" height="16" fill="#ffdbff" opacity="0"/>
+    <circle cx="8" cy="4" r="1.5" fill="none"/>
+    <path d="M13,4.75C13,2.679,10.761,1,8,1S3,2.679,3,4.75A3.89,3.89,0,0,0,6,8.183V14l2,1,2-1V8.183A3.89,3.89,0,0,0,13,4.75ZM8,2.5A1.5,1.5,0,1,1,6.5,4,1.5,1.5,0,0,1,8,2.5ZM8,14l-1-.5V13l.75-.75L7,11.5V11l.75-.75L7,9.5v-1H8Z" fill="#afb1b3"/>
+  </g>
+</svg>

@@ -89,7 +89,6 @@
                         <properties>
                           <enabled value="false"/>
                           <font size="18"/>
-                          <icon value="icons/search.png"/>
                           <text value=""/>
                         </properties>
                       </component>
