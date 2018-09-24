@@ -47,8 +47,6 @@ class AzureDotNetWebAppSettingModel {
         var netFrameworkVersion = defaultNetFrameworkVersion
         var netCoreRuntime = defaultRuntime
 
-        var isOpenBrowser = false
-
         /**
          * Reset the model with values after creating a new instance
          */

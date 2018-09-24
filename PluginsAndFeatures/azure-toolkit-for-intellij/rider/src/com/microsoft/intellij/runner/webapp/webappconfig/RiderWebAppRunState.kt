@@ -1,13 +1,14 @@
 package com.microsoft.intellij.runner.webapp.webappconfig
 
 import com.intellij.execution.process.ProcessOutputTypes
-import com.intellij.ide.BrowserUtil
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.utils.AzureUIRefreshCore
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent
+import com.microsoft.intellij.configuration.AzureRiderSettings
 import com.microsoft.intellij.runner.AzureRunProfileState
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
@@ -20,12 +21,16 @@ import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.deployToAzureWebApp
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.getOrCreateWebAppFromConfiguration
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.getWebAppUrl
+import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.openWebAppInBrowser
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.setStartupCommand
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.webAppStart
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.webAppStop
 
 class RiderWebAppRunState(project: Project,
                           private val myModel: AzureDotNetWebAppSettingModel) : AzureRunProfileState<Pair<WebApp, SqlDatabase?>>(project) {
+
+    private var isWebAppCreated = false
+    private var isDatabaseCreated = false
 
     companion object {
         private const val TARGET_NAME = "WebApp"
@@ -59,6 +64,8 @@ class RiderWebAppRunState(project: Project,
             setStartupCommand(webApp, startupCommand, myModel.webAppModel.netCoreRuntime, processHandler)
         }
 
+        isWebAppCreated = true
+
         var database: SqlDatabase? = null
 
         if (myModel.databaseModel.isDatabaseConnectionEnabled) {
@@ -82,6 +89,8 @@ class RiderWebAppRunState(project: Project,
                     processHandler)
         }
 
+        isDatabaseCreated = true
+
         webAppStart(webApp, processHandler)
 
         val url = getWebAppUrl(webApp)
@@ -99,18 +108,30 @@ class RiderWebAppRunState(project: Project,
         }
 
         val webApp = result.first
-        if (myModel.webAppModel.isOpenBrowser)
-            BrowserUtil.browse(getWebAppUrl(webApp))
-
         refreshWebAppAfterPublish(webApp, myModel.webAppModel)
+
         val sqlDatabase = result.second
         if (sqlDatabase != null) {
             refreshDatabaseAfterPublish(sqlDatabase, myModel.databaseModel)
         }
+
+        val isOpenBrowser = PropertiesComponent.getInstance().getBoolean(
+                AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
+                AzureRiderSettings.openInBrowserDefaultValue)
+
+        if (isOpenBrowser)
+            openWebAppInBrowser(webApp, processHandler)
     }
 
     override fun onFail(errMsg: String, processHandler: RunProcessHandler) {
         if (processHandler.isProcessTerminated || processHandler.isProcessTerminating) return
+
+        if (isWebAppCreated)
+            AzureDotNetWebAppMvpModel.refreshSubscriptionToWebAppMap()
+
+        if (isDatabaseCreated)
+            AzureDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
+
         processHandler.println(errMsg, ProcessOutputTypes.STDERR)
         processHandler.notifyComplete()
     }

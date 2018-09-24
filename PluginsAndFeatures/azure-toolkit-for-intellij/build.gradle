@@ -70,6 +70,12 @@ allprojects {
         targetCompatibility = javaVersion
     }
 
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = javaVersion
+        }
+    }
+
     tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 
     checkstyle {

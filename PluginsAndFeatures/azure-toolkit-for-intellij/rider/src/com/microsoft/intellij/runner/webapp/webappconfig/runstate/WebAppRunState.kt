@@ -1,5 +1,6 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.runstate
 
+import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.wm.ToolWindowId
@@ -12,6 +13,7 @@ import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
 import com.jetbrains.rider.util.idea.application
 import com.jetbrains.rider.util.idea.toIOFile
+import com.jetbrains.rider.util.threading.SpinWait
 import com.microsoft.azure.management.appservice.ConnectionStringType
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.RuntimeStack
@@ -43,6 +45,10 @@ object WebAppRunState {
     private const val DEPLOY_TIMEOUT_MS = 180000L
     private const val SLEEP_TIME_MS = 5000L
     private const val UPLOADING_MAX_TRY = 3
+
+    private const val WEB_APP_LAUNCH_TIMEOUT_MS = 10000L
+    private const val WEB_APP_IS_NOT_STARTED = "Web app is not started. State: '%s'"
+    private const val WEB_APP_STATE_RUNNING = "Running"
 
     var projectAssemblyRelativePath = ""
 
@@ -185,6 +191,15 @@ object WebAppRunState {
                         "Password=${adminPassword.joinToString("")}"
 
         updateWithConnectionString(webApp, connectionStringName, connectionStringValue, processHandler)
+    }
+
+    fun openWebAppInBrowser(webApp: WebApp, processHandler: RunProcessHandler) {
+        val isStarted = SpinWait.spinUntil(WEB_APP_LAUNCH_TIMEOUT_MS) { webApp.state() == WEB_APP_STATE_RUNNING }
+
+        if (!isStarted && !processHandler.isProcessTerminated && !processHandler.isProcessTerminating)
+            processHandler.setText(String.format(WEB_APP_IS_NOT_STARTED, webApp.state()))
+
+        BrowserUtil.browse(getWebAppUrl(webApp))
     }
 
     private fun packAndDeploy(project: Project,
@@ -345,8 +360,7 @@ object WebAppRunState {
                             DEPLOY_TIMEOUT_MS)
                     success = response.isSuccessful
                 } catch (e: Throwable) {
-                    processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: $e")
-                    e.printStackTrace()
+                    processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: ${e.printStackTrace()}")
                 }
 
             } while (!success && ++uploadCount < UPLOADING_MAX_TRY && isWaitFinished())

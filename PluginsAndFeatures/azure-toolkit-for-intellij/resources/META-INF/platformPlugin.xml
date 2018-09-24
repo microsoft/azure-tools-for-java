@@ -160,7 +160,8 @@
           factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"
           id="Azure Explorer"
           canCloseContents="false"
-          icon="/icons/AzureExplorer.svg"/>
+          icon="/icons/AzureExplorer.svg"
+          order="after Project" />
   </extensions>
 
   <extensions defaultExtensionNs="com.microsoft.intellij">
