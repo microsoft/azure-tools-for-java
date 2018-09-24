@@ -28,6 +28,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -54,6 +56,7 @@ import com.microsoft.intellij.docker.wizards.createhost.AzureNewDockerWizardMode
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardModel;
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardStep;
 import com.microsoft.intellij.util.PluginUtil;
+import org.jetbrains.concurrency.AsyncPromise;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -498,38 +501,45 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
   private void onRemoveDockerHostAction() {
     DefaultTableModel tableModel = (DefaultTableModel) dockerHostsTable.getModel();
     String apiURL = (String) tableModel.getValueAt(dockerHostsTable.getSelectedRow(), 4);
-    DockerHost deleteHost = dockerManager.getDockerHostForURL(apiURL);
-    Azure azureClient = dockerManager.getSubscriptionsMap().get(deleteHost.sid).azureClient;
+    DockerHost dockerHost = dockerManager.getDockerHostForURL(apiURL);
 
-    int option = AzureDockerUIResources.deleteAzureDockerHostConfirmationDialog(azureClient, deleteHost);
+    Azure azureClient = dockerManager.getSubscriptionsMap().get(dockerHost.sid).azureClient;
+    AsyncPromise<Boolean> promise = new AsyncPromise<>();
 
-    if (option !=1 && option != 2) {
-      if (AzureDockerUtils.DEBUG) System.out.format("User canceled delete Docker host op: %d\n", option);
-      return;
-    }
-    AppInsightsClient.createByType(AppInsightsClient.EventType.DockerHost, "", "Remove");
-    int currentRow = dockerHostsTable.getSelectedRow();
-    tableModel.removeRow(currentRow);
-    tableModel.fireTableDataChanged();
-    if (dockerHostsTableSelection.row == currentRow) {
-      dockerHostsTableSelection = null;
-    }
+    Task task = new CalculateDockerDeletionSafenessBackgroundTask(promise, azureClient, dockerHost);
+    promise.onSuccess(isDeletingSafe -> {
+      int option = AzureDockerUIResources.deleteAzureDockerHostConfirmationDialog(dockerHost, isDeletingSafe);
 
-    AzureDockerUIResources.deleteDockerHost(model.getProject(), azureClient, deleteHost, option, new Runnable() {
-      @Override
-      public void run() {
-        dockerManager.refreshDockerHostDetails();
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-          @Override
-          public void run() {
-            refreshDockerHostsTable();
-          }
-        });
+      if (option != 1 && option != 2) {
+        if (AzureDockerUtils.DEBUG) System.out.format("User canceled delete Docker host op: %d\n", option);
+        return;
       }
+      AppInsightsClient.createByType(AppInsightsClient.EventType.DockerHost, "", "Remove");
+      int currentRow = dockerHostsTable.getSelectedRow();
+      tableModel.removeRow(currentRow);
+      tableModel.fireTableDataChanged();
+      if (dockerHostsTableSelection.row == currentRow) {
+        dockerHostsTableSelection = null;
+      }
+
+      AzureDockerUIResources.deleteDockerHost(model.getProject(), azureClient, dockerHost, option, new Runnable() {
+        @Override
+        public void run() {
+          dockerManager.refreshDockerHostDetails();
+          ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+              refreshDockerHostsTable();
+            }
+          });
+        }
+      });
+
+      setFinishButtonState(doValidate(false) == null);
+      setNextButtonState(doValidate(false) == null);
     });
 
-    setFinishButtonState(doValidate(false) == null);
-    setNextButtonState(doValidate(false) == null);
+    ProgressManager.getInstance().run(task);
   }
 
   /* Force a refresh of the docker hosts entries in the select host table
