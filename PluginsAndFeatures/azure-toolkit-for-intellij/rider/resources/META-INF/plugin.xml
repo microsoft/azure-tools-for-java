@@ -30,7 +30,7 @@
 
     <configurationType implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfigurationType"/>
     <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppRunner"/>
-    <rider.publishConfigurationProvider implementation="com.microsoft.intellij.runner.webapp.AzureDotNetWebAppContextPublishProvider" />
+    <rider.publishConfigurationProvider implementation="com.microsoft.intellij.runner.webapp.AzureDotNetWebAppContextPublishProvider" order="last" />
   </extensions>
 
   <application-components>

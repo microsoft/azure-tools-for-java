@@ -87,8 +87,9 @@ class RiderWebAppSettingPanel(project: Project,
         private const val TABLE_EMPTY_MESSAGE = "No available Web Apps."
         private const val PROJECTS_EMPTY_MESSAGE = "No projects to publish"
 
-        private const val DATABASES_EMPTY_MESSAGE = "No existing Azure SQL database"
-        private const val SQL_SERVER_EMPTY_MESSAGE = "No existing Azure SQL server"
+        private const val RESOURCE_GROUP_EMPTY_MESSAGE = "No existing Azure Resource Groups"
+        private const val DATABASES_EMPTY_MESSAGE = "No existing Azure SQL Databases"
+        private const val SQL_SERVER_EMPTY_MESSAGE = "No existing Azure SQL Servers"
 
         private const val DEFAULT_APP_NAME = "webapp-"
         private const val DEFAULT_PLAN_NAME = "appsp-"
@@ -118,7 +119,6 @@ class RiderWebAppSettingPanel(project: Project,
 
     private var lastSelectedSubscriptionId = ""
     private var lastSelectedResourceGroupName = ""
-    private var lastSelectedOperatingSystem = AzureDotNetWebAppSettingModel.defaultOperatingSystem
 
     private var cachedAppServicePlan = listOf<AppServicePlan>()
     private var lastSelectedLocation = ""
@@ -302,7 +302,7 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     private fun resetWebAppFromConfig(model: AzureDotNetWebAppSettingModel.WebAppModel, dateString: String) {
-        if (model.publishableProject != null) cbProject.model.selectedItem = model.publishableProject
+        if (model.publishableProject != null) cbProject.selectedItem = model.publishableProject
 
         txtWebAppName.text = if (model.webAppName.isEmpty()) "$DEFAULT_APP_NAME$dateString" else model.webAppName
         txtAppServicePlanName.text = if (model.appServicePlanName.isEmpty()) "$DEFAULT_PLAN_NAME$dateString" else model.appServicePlanName
@@ -334,7 +334,7 @@ class RiderWebAppSettingPanel(project: Project,
 
         btnRefresh.isEnabled = false
 
-        checkBoxOpenInBrowserAfterPublish.isEnabled =
+        checkBoxOpenInBrowserAfterPublish.isSelected =
                 PropertiesComponent.getInstance().getBoolean(
                         AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
                         AzureRiderSettings.openInBrowserDefaultValue)
@@ -342,26 +342,31 @@ class RiderWebAppSettingPanel(project: Project,
 
     private fun resetDatabaseFromConfig(model: AzureDotNetWebAppSettingModel.DatabaseModel, dateString: String) {
         checkBoxEnableDbConnection.isSelected = model.isDatabaseConnectionEnabled
-        cbDatabase.model.selectedItem = model.database
+        cbDatabase.selectedItem = model.database
 
         txtDbName.text = if (model.databaseName.isEmpty()) String.format(DEFAULT_SQL_DATABASE_NAME, dateString) else model.databaseName
         txtDbNewResourceGroup.text = if (model.dbResourceGroupName.isEmpty()) "$DEFAULT_RESOURCE_GROUP_NAME$dateString" else model.dbResourceGroupName
         txtNewSqlServerName.text = if (model.sqlServerName.isEmpty()) "$DEFAULT_SQL_SERVER_NAME$dateString" else model.sqlServerName
-
-        if (model.isCreatingDbResourceGroup) {
-            rdoDbCreateResourceGroup.doClick()
-        } else {
-            rdoDbExistingResourceGroup.doClick()
-        }
-
-        if (model.isCreatingSqlServer) {
-            rdoCreateSqlServer.doClick()
-        } else {
-            rdoUseExistSqlServer.doClick()
-        }
-
         txtCollationValue.text = model.collation
         txtConnectionStringName.text = model.connectionStringName
+
+        if (model.isCreatingSqlDatabase) {
+            rdoNewDb.doClick()
+
+            if (model.isCreatingDbResourceGroup) {
+                rdoDbCreateResourceGroup.doClick()
+            } else {
+                rdoDbExistingResourceGroup.doClick()
+            }
+
+            if (model.isCreatingSqlServer) {
+                rdoCreateSqlServer.doClick()
+            } else {
+                rdoUseExistSqlServer.doClick()
+            }
+        } else {
+            rdoExistingDb.doClick()
+        }
     }
 
     /**
@@ -487,7 +492,8 @@ class RiderWebAppSettingPanel(project: Project,
         val sortedWebApps = webAppLists.sortedWith(compareBy (
                 { it.resource.operatingSystem() },
                 { it.subscriptionId },
-                { it.resource.resourceGroupName() }))
+                { it.resource.resourceGroupName() },
+                { it.resource.name() }))
 
         cachedWebAppList = sortedWebApps
 
@@ -551,8 +557,8 @@ class RiderWebAppSettingPanel(project: Project,
                 }
 
         if (resourceGroups.isEmpty()) {
-            toggleResourceGroupPanel(true)
-            toggleDbResourceGroupPanel(true)
+            rdoCreateResGrp.doClick()
+            rdoDbCreateResourceGroup.doClick()
             lastSelectedResourceGroupName = ""
         }
 
@@ -563,7 +569,7 @@ class RiderWebAppSettingPanel(project: Project,
     override fun fillAppServicePlan(appServicePlans: List<AppServicePlan>) {
         cachedAppServicePlan = appServicePlans
 
-        val filteredPlans = filterAppServicePlans(lastSelectedOperatingSystem, appServicePlans)
+        val filteredPlans = filterAppServicePlans(getSelectedOperatingSystem(), appServicePlans)
         setAppServicePlanContent(filteredPlans)
 
         if (appServicePlans.isEmpty()) {
@@ -573,6 +579,7 @@ class RiderWebAppSettingPanel(project: Project,
         }
 
         setComponentsEnabled(checkCbAppServicePlanRule(), cbAppServicePlan)
+        setComponentsEnabled(checkRdoUseExistingAppServicePlanRule(), rdoUseExistAppServicePlan)
     }
 
     override fun fillLocation(locations: List<Location>) {
@@ -598,7 +605,7 @@ class RiderWebAppSettingPanel(project: Project,
 
     override fun fillPricingTier(prices: List<PricingTier>) {
         cachedPricingTier = prices
-        val filteredPrices = filterPricingTiers(lastSelectedOperatingSystem, prices)
+        val filteredPrices = filterPricingTiers(getSelectedOperatingSystem(), prices)
         setPricingTierContent(filteredPrices)
     }
 
@@ -607,7 +614,7 @@ class RiderWebAppSettingPanel(project: Project,
         databases.sortedBy { it.name() }
                 .forEach {
                     cbDatabase.addItem(it)
-                    if (it == configuration.model.databaseModel.database) {
+                    if (it.databaseId() == configuration.model.databaseModel.database?.databaseId()) {
                         cbDatabase.selectedItem = it
                     }
                 }
@@ -641,16 +648,16 @@ class RiderWebAppSettingPanel(project: Project,
                 }
 
         if (sqlServers.isEmpty()) {
-            toggleSqlServerPanel(true)
+            rdoCreateSqlServer.doClick()
             lastSelectedSqlServer = null
         }
 
         setComponentsEnabled(checkCbExistSqlServerRule(), cbExistSqlServer)
+        setComponentsEnabled(checkRdoUseExistSqlServerRule(), rdoUseExistSqlServer)
     }
 
     override fun fillPublishableProject(publishableProjects: List<PublishableProjectModel>) {
         cbProject.removeAllItems()
-
         publishableProjects.sortedBy { it.projectName }
                 .forEach {
                     cbProject.addItem(it)
@@ -1016,6 +1023,11 @@ class RiderWebAppSettingPanel(project: Project,
 
     private fun toggleOperatingSystem(operatingSystem: OperatingSystem) {
         setAppServicePlanContent(filterAppServicePlans(operatingSystem, cachedAppServicePlan))
+        setComponentsEnabled(checkCbAppServicePlanRule(), cbAppServicePlan)
+        setComponentsEnabled(checkRdoUseExistingAppServicePlanRule(), rdoUseExistAppServicePlan)
+        if (cbAppServicePlan.model.size == 0)
+            rdoCreateAppServicePlan.doClick()
+
         setPricingTierContent(filterPricingTiers(operatingSystem, cachedPricingTier))
     }
 
@@ -1065,8 +1077,10 @@ class RiderWebAppSettingPanel(project: Project,
     private fun checkCbSubscriptionRule() = cbSubscription.model.size > 0
 
     private fun checkCbResourceGroupRule() = cbResourceGroup.model.size > 0 && !rdoCreateResGrp.isSelected
+    private fun checkRdoUseExistingResourceGroupRule() = cbResourceGroup.model.size > 0
 
     private fun checkCbAppServicePlanRule() = cbAppServicePlan.model.size > 0 && !rdoCreateAppServicePlan.isSelected
+    private fun checkRdoUseExistingAppServicePlanRule() = cbAppServicePlan.model.size > 0
 
     private fun checkCbDatabaseRule() = cbDatabase.model.size > 0 && checkBoxEnableDbConnection.isSelected
 
@@ -1081,6 +1095,8 @@ class RiderWebAppSettingPanel(project: Project,
                     checkBoxEnableDbConnection.isSelected &&
                     !rdoCreateSqlServer.isSelected &&
                     !rdoDbCreateResourceGroup.isSelected
+
+    private fun checkRdoUseExistSqlServerRule() = cbExistSqlServer.model.size > 0
 
     //endregion Behavior
 
@@ -1141,7 +1157,10 @@ class RiderWebAppSettingPanel(project: Project,
 
         val renderer = object : ListCellRendererWrapper<ResourceGroup>() {
             override fun customize(list: JList<*>, resourceGroup: ResourceGroup?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
-                resourceGroup ?: return
+                if (resourceGroup == null) {
+                    setText(RESOURCE_GROUP_EMPTY_MESSAGE)
+                    return
+                }
                 setText(resourceGroup.name())
             }
         }
@@ -1224,7 +1243,6 @@ class RiderWebAppSettingPanel(project: Project,
                     AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
                     isOpenBrowser,
                     AzureRiderSettings.openInBrowserDefaultValue)
-            configuration.model.webAppModel.isOpenBrowser = isOpenBrowser
         }
 
         checkBoxOpenInBrowserAfterPublish.isSelected =
@@ -1506,6 +1524,9 @@ class RiderWebAppSettingPanel(project: Project,
         val targetFramework = project.solution.projectModelTasks.targetFrameworks[publishableProject.projectModelId]
         return targetFramework?.currentTargetFrameworkId?.valueOrNull
     }
+
+    private fun getSelectedOperatingSystem() =
+            if (rdoOperatingSystemWindows.isSelected) OperatingSystem.WINDOWS else OperatingSystem.LINUX
 
     /**
      * Wrapper to get a typed Combo Box object
