@@ -98,7 +98,7 @@ public class TableNode extends Node implements TelemetryProperties {
     }
 
     private static final String TABLE_MODULE_ID = TableNode.class.getName();
-    private static final String ICON_PATH = "container.png";
+    private static final String ICON_PATH = "container.svg";
     private final Table table;
     private final StorageAccount storageAccount;
 
@@ -116,7 +116,7 @@ public class TableNode extends Node implements TelemetryProperties {
         final Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(), storageAccount.name(), table);
 
         if (openedFile == null) {
-            DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, table, " [Table]", "Table", "container.png");
+            DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, table, " [Table]", "Table", "container.svg");
         } else {
             DefaultLoader.getUIHelper().openItem(getProject(), openedFile);
         }
