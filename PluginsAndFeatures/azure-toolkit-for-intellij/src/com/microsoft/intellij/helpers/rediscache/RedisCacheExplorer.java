@@ -144,7 +144,7 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
             }
         });
 
-        btnSearch.setIcon(IconLoader.getIcon("icons/search.svg"));
+        btnSearch.setIcon(IconLoader.getIcon("icons/Search.svg"));
 
         btnSearch.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "btnSearch", null) {
             @Override

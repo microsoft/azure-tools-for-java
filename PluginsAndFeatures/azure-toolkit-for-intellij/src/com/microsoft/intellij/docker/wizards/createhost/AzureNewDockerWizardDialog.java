@@ -26,6 +26,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.wizard.WizardDialog;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerPreferredSettings;
@@ -231,7 +232,7 @@ public class AzureNewDockerWizardDialog extends WizardDialog<AzureNewDockerWizar
         "Stop Create Docker Host",
         JOptionPane.YES_NO_OPTION,
         JOptionPane.QUESTION_MESSAGE,
-        PluginUtil.getIcon("/icons/logwarn.png"),
+        IconLoader.getIcon("icons/AzureWarning.svg"),
         new String[]{"Cancel", "OK"},
         null);
   }
