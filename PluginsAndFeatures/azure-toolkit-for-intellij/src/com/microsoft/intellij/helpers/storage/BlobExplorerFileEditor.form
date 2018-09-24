@@ -40,7 +40,6 @@
                   <defaultCapable value="true"/>
                   <focusPainted value="true"/>
                   <hideActionText value="false"/>
-                  <icon value="icons/Start.png"/>
                   <iconTextGap value="0"/>
                   <inheritsPopupMenu value="true"/>
                   <margin top="2" left="2" bottom="2" right="2"/>
@@ -51,7 +50,7 @@
                   <selected value="false"/>
                   <text value=""/>
                   <toolTipText value="Search"/>
-                  <verticalAlignment value="1"/>
+                  <verticalAlignment value="0"/>
                   <verticalTextPosition value="1"/>
                   <visible value="true"/>
                 </properties>
@@ -80,7 +79,6 @@
                   <contentAreaFilled value="false"/>
                   <defaultCapable value="true"/>
                   <hideActionText value="false"/>
-                  <icon value="icons/storagerefresh.svg"/>
                   <iconTextGap value="0"/>
                   <inheritsPopupMenu value="true"/>
                   <margin top="2" left="2" bottom="2" right="2"/>
@@ -90,7 +88,7 @@
                   <preferredSize width="32" height="32"/>
                   <text value=""/>
                   <toolTipText value="Refresh"/>
-                  <verticalAlignment value="1"/>
+                  <verticalAlignment value="0"/>
                   <verticalTextPosition value="1"/>
                 </properties>
                 <clientProperties>
@@ -105,7 +103,6 @@
                   <contentAreaFilled value="false"/>
                   <defaultCapable value="true"/>
                   <hideActionText value="false"/>
-                  <icon value="icons/storageupload.svg"/>
                   <iconTextGap value="0"/>
                   <inheritsPopupMenu value="true"/>
                   <margin top="2" left="2" bottom="2" right="2"/>
@@ -115,7 +112,7 @@
                   <preferredSize width="32" height="32"/>
                   <text value=""/>
                   <toolTipText value="Upload Blob"/>
-                  <verticalAlignment value="1"/>
+                  <verticalAlignment value="0"/>
                   <verticalTextPosition value="1"/>
                 </properties>
                 <clientProperties>
@@ -131,7 +128,6 @@
                   <defaultCapable value="true"/>
                   <enabled value="false"/>
                   <hideActionText value="false"/>
-                  <icon value="icons/storagedelete.svg"/>
                   <iconTextGap value="0"/>
                   <inheritsPopupMenu value="true"/>
                   <margin top="2" left="2" bottom="2" right="2"/>
@@ -141,7 +137,7 @@
                   <preferredSize width="32" height="32"/>
                   <text value=""/>
                   <toolTipText value="Delete Selected Blob"/>
-                  <verticalAlignment value="1"/>
+                  <verticalAlignment value="0"/>
                   <verticalTextPosition value="1"/>
                 </properties>
                 <clientProperties>
@@ -157,7 +153,6 @@
                   <defaultCapable value="true"/>
                   <enabled value="false"/>
                   <hideActionText value="false"/>
-                  <icon value="icons/storageopen.svg"/>
                   <iconTextGap value="0"/>
                   <inheritsPopupMenu value="true"/>
                   <margin top="2" left="2" bottom="2" right="2"/>
@@ -167,7 +162,7 @@
                   <preferredSize width="32" height="32"/>
                   <text value=""/>
                   <toolTipText value="Open Blob"/>
-                  <verticalAlignment value="1"/>
+                  <verticalAlignment value="0"/>
                   <verticalTextPosition value="1"/>
                 </properties>
                 <clientProperties>
@@ -183,7 +178,6 @@
                   <defaultCapable value="true"/>
                   <enabled value="false"/>
                   <hideActionText value="false"/>
-                  <icon value="icons/storagesaveas.svg"/>
                   <iconTextGap value="0"/>
                   <inheritsPopupMenu value="true"/>
                   <margin top="2" left="2" bottom="2" right="2"/>
@@ -193,7 +187,7 @@
                   <preferredSize width="32" height="32"/>
                   <text value=""/>
                   <toolTipText value="Save As"/>
-                  <verticalAlignment value="1"/>
+                  <verticalAlignment value="0"/>
                   <verticalTextPosition value="1"/>
                 </properties>
                 <clientProperties>
@@ -227,7 +221,6 @@
                   <enabled value="false"/>
                   <focusPainted value="true"/>
                   <hideActionText value="false"/>
-                  <icon value="icons/storageback.svg"/>
                   <iconTextGap value="0"/>
                   <inheritsPopupMenu value="true"/>
                   <margin top="0" left="0" bottom="0" right="0"/>
@@ -238,7 +231,7 @@
                   <selected value="false"/>
                   <text value=""/>
                   <toolTipText value="Open Parent Directory"/>
-                  <verticalAlignment value="1"/>
+                  <verticalAlignment value="0"/>
                   <verticalTextPosition value="1"/>
                   <visible value="true"/>
                 </properties>

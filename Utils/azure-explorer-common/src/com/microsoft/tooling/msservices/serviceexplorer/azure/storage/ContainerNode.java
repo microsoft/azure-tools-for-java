@@ -96,7 +96,7 @@ public class ContainerNode extends Node implements TelemetryProperties{
     }
 
     private static final String CONTAINER_MODULE_ID = ContainerNode.class.getName();
-    private static final String ICON_PATH = "BlobFile_16.png";
+    private static final String ICON_PATH = "BlobFile.svg";
     private final BlobContainer blobContainer;
     private StorageAccount storageAccount;
     private ClientStorageAccount clientStorageAccount;
@@ -124,7 +124,7 @@ public class ContainerNode extends Node implements TelemetryProperties{
         final Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(), storageAccount.name(), blobContainer);
 
         if (openedFile == null) {
-            DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, blobContainer, " [Container]", "BlobContainer", "BlobFile_16.png");
+            DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, blobContainer, " [Container]", "BlobContainer", "BlobFile.svg");
         } else {
             DefaultLoader.getUIHelper().openItem(getProject(), openedFile);
         }

@@ -35,6 +35,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
+import com.intellij.openapi.util.IconLoader;
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.icons.AllIcons;
@@ -164,6 +165,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
             }
         });
 
+        btnDiscard.setIcon(IconLoader.getIcon("icons/Discard.svg"));
         btnDiscard.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "btnDiscard", null) {
             @Override
             public void actionPerformedFunc(ActionEvent event) {
@@ -175,6 +177,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
             }
         });
 
+        btnSave.setIcon(IconLoader.getIcon("icons/SaveChanges.svg"));
         btnSave.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "btnSave", null) {
             @Override
             public void actionPerformedFunc(ActionEvent event) {

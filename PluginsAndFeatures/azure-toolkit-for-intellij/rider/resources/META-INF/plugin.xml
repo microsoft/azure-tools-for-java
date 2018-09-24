@@ -51,7 +51,7 @@
            text="Publish Group"
            description="Publish Group"
            popup="true"
-           icon="/icons/PublishAzure.svg">
+           icon="/icons/publishAzure.svg">
       <add-to-group group-id="AzureToolbarGroup" anchor="first" />
     </group>
   </actions>

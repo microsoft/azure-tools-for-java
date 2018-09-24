@@ -265,7 +265,7 @@ public class TablesQueryDesigner extends AzureDialogWrapper {
 
         public DeleteButtonRenderer() {
             deleteButton = new JButton();
-            deleteButton.setIcon(UIHelperImpl.loadIcon("storagedelete.png"));
+            deleteButton.setIcon(UIHelperImpl.loadIcon("Discard.svg"));
             deleteButton.setBorderPainted(false);
         }
 

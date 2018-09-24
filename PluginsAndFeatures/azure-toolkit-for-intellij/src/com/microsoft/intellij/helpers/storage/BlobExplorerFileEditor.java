@@ -33,6 +33,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
@@ -210,6 +211,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         sorter.setSortKeys(sortKeys);
         sorter.sort();
 
+        backButton.setIcon(IconLoader.getIcon("icons/AzureOpenParent.svg"));
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -276,9 +278,13 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         };
 
+        refreshButton.setIcon(IconLoader.getIcon("icons/refresh.svg"));
         refreshButton.addActionListener(queryAction);
+
+        queryButton.setIcon(IconLoader.getIcon("icons/Search.svg"));
         queryButton.addActionListener(queryAction);
 
+        deleteButton.setIcon(IconLoader.getIcon("icons/Discard.svg"));
         deleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -286,6 +292,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
+        saveAsButton.setIcon(IconLoader.getIcon("icons/SaveChanges.svg"));
         saveAsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -293,6 +300,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
+        openButton.setIcon(IconLoader.getIcon("icons/AzureOpen.svg"));
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -300,6 +308,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
+        uploadButton.setIcon(IconLoader.getIcon("icons/AzureUpload.svg"));
         uploadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {

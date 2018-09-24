@@ -44,7 +44,6 @@
                     </constraints>
                     <properties>
                       <enabled value="false"/>
-                      <icon value="actions/cancel.png"/>
                       <text value="Discard"/>
                     </properties>
                   </component>
@@ -54,7 +53,6 @@
                     </constraints>
                     <properties>
                       <enabled value="false"/>
-                      <icon value="runConfigurations/saveTempConfig.png"/>
                       <text value="Save"/>
                     </properties>
                   </component>
