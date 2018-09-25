@@ -20,6 +20,7 @@ import com.microsoft.azure.management.appservice.RuntimeStack
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
+import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.utils.WebAppDeploySession
@@ -32,6 +33,7 @@ import java.io.File
 import java.io.FileFilter
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
+import java.util.Date
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipOutputStream
 
@@ -50,16 +52,28 @@ object WebAppRunState {
     private const val WEB_APP_IS_NOT_STARTED = "Web app is not started. State: '%s'"
     private const val WEB_APP_STATE_RUNNING = "Running"
 
+    private const val NOTIFICATION_WEB_APP_STOP = "Stop Web App"
+    private const val NOTIFICATION_WEB_APP_START = "Start Web App"
+    private const val NOTIFICATION_WEB_APP_CREATE = "Create Web App"
+    private const val NOTIFICATION_WEB_APP_DEPLOY = "Deploy to Web App"
+    private const val NOTIFICATION_WEB_APP_UPDATE = "Update Web App"
+
+    private val activityNotifier = AzureDeploymentProgressNotification(null)
+
     var projectAssemblyRelativePath = ""
 
     fun webAppStart(webApp: WebApp, processHandler: RunProcessHandler) {
-        processHandler.setText(String.format(UiConstants.WEB_APP_START, webApp.name()))
+        val message = String.format(UiConstants.WEB_APP_START, webApp.name())
+        processHandler.setText(message)
         webApp.start()
+        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_STOP, Date(), webApp.defaultHostName(), 100, message)
     }
 
     fun webAppStop(webApp: WebApp, processHandler: RunProcessHandler) {
-        processHandler.setText(String.format(UiConstants.WEB_APP_STOP, webApp.name()))
+        val message = String.format(UiConstants.WEB_APP_STOP, webApp.name())
+        processHandler.setText(message)
         webApp.stop()
+        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_START, Date(), webApp.defaultHostName(), 100, message)
     }
 
     fun getOrCreateWebAppFromConfiguration(model: AzureDotNetWebAppSettingModel.WebAppModel,
@@ -115,13 +129,15 @@ object WebAppRunState {
                         }
                     }
 
-            processHandler.setText(String.format(UiConstants.WEB_APP_CREATE_SUCCESSFUL, webApp.id()))
+            val message = String.format(UiConstants.WEB_APP_CREATE_SUCCESSFUL, webApp.name())
+            processHandler.setText(message)
+            activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_CREATE, Date(), webApp.defaultHostName(), 100, message)
             return webApp
         }
 
         processHandler.setText(String.format(UiConstants.WEB_APP_GET_EXISTING, model.webAppId))
+        if (model.webAppId.isEmpty()) throw RuntimeException(UiConstants.WEB_APP_ID_NOT_DEFINED)
 
-        if (model.webAppId.isEmpty()) throw Exception(UiConstants.WEB_APP_ID_NOT_DEFINED)
         return AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, model.webAppId)
     }
 
@@ -156,7 +172,8 @@ object WebAppRunState {
                           startupCommand: String,
                           runtime: RuntimeStack,
                           processHandler: RunProcessHandler) {
-        processHandler.setText(String.format(UiConstants.WEB_APP_SET_STARTUP_FILE, webApp.name(), startupCommand))
+        val message = String.format(UiConstants.WEB_APP_SET_STARTUP_FILE, webApp.name(), startupCommand)
+        processHandler.setText(message)
         webApp.update()
                 .withPublicDockerHubImage("") // Hack to access .withStartUpCommand() API
                 .withStartUpCommand(startupCommand)
@@ -164,6 +181,7 @@ object WebAppRunState {
                 .apply()
 
         webApp.update().withoutAppSetting(UiConstants.WEB_APP_SETTING_DOCKER_CUSTOM_IMAGE_NAME).apply()
+        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_UPDATE, Date(), webApp.defaultHostName(), 100, message)
     }
 
     fun addConnectionString(subscriptionId: String,
@@ -232,7 +250,7 @@ object WebAppRunState {
      *
      * Note: There is no a property in [PublishableProjectModel] to get a project assembly name. Right now
      *       we hack around with RunnableProject model to get this information
-     *       TODO: Rework this after we add a property to [PublishableProjectModel] and set exePath
+     *       TODO: RIDER-110015 Rework this after we add a property to [PublishableProjectModel] and set exePath
      */
     private fun getAssemblyRelativePath(project: Project,
                                         publishableProject: PublishableProjectModel,
@@ -371,7 +389,9 @@ object WebAppRunState {
                 throw RuntimeException(message)
             }
 
-            processHandler.setText(UiConstants.ZIP_DEPLOY_PUBLISH_SUCCESS)
+            val message = UiConstants.ZIP_DEPLOY_PUBLISH_SUCCESS
+            activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_DEPLOY, Date(), defaultHostName(), 100, message)
+            processHandler.setText(message)
 
         } finally {
             response?.body()?.close()
@@ -407,7 +427,11 @@ object WebAppRunState {
     }
 
     private fun updateWithConnectionString(webApp: WebApp, name: String, value: String, processHandler: RunProcessHandler) {
-        processHandler.setText(String.format(UiConstants.CONNECTION_STRING_CREATING, name))
+        val message = String.format(UiConstants.CONNECTION_STRING_CREATING, name)
+
+        processHandler.setText(message)
         webApp.update().withConnectionString(name, value, ConnectionStringType.SQLAZURE).apply()
+
+        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_UPDATE, Date(), webApp.defaultHostName(), 100, message)
     }
 }

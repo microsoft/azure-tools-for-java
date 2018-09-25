@@ -71,7 +71,7 @@ class UiConstants {
 
         const val WEB_APP_ALREADY_EXISTS = "Web App with name '%s' already exists"
         const val WEB_APP_CREATE = "Creating Web App '%s'..."
-        const val WEB_APP_CREATE_SUCCESSFUL = "Web App  is created, id: '%s'"
+        const val WEB_APP_CREATE_SUCCESSFUL = "Web App  is created '%s'"
         const val WEB_APP_GET_EXISTING = "Got existing Web App with Id: '%s'"
         const val WEB_APP_NOT_DEFINED = "Please select an Azure Web App"
         const val WEB_APP_ID_NOT_DEFINED = "Web App ID is not defined"

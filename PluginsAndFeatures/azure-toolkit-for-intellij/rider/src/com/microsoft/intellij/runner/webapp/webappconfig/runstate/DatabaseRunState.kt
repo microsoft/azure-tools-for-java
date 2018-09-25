@@ -3,13 +3,20 @@ package com.microsoft.intellij.runner.webapp.webappconfig.runstate
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.authmanage.AuthMethodManager
+import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
 import java.net.URI
+import java.util.Date
 
 object DatabaseRunState {
+
+    private const val NOTIFICATION_SQL_DB_CREATE = "Create SQL Database"
+    private const val NOTIFICATION_SQL_SERVER_CREATE = "Create SQL Server"
+
+    private val activityNotifier = AzureDeploymentProgressNotification(null)
 
     fun getOrCreateSqlDatabaseFromConfig(model: AzureDotNetWebAppSettingModel.DatabaseModel,
                                                  processHandler: RunProcessHandler): SqlDatabase {
@@ -46,7 +53,10 @@ object DatabaseRunState {
         if (model.databaseName.isEmpty()) throw RuntimeException(UiConstants.SQL_DATABASE_NAME_NOT_DEFINED)
         val database = AzureDatabaseMvpModel.createSqlDatabase(sqlServer, model.databaseName, model.collation)
 
-        processHandler.setText(String.format(UiConstants.SQL_DATABASE_CREATE_SUCCESSFUL, database.id()))
+        val message = String.format(UiConstants.SQL_DATABASE_CREATE_SUCCESSFUL, database.id())
+        processHandler.setText(message)
+        activityNotifier.notifyProgress(NOTIFICATION_SQL_DB_CREATE, Date(), null, 100, message)
+
         return database
     }
 
@@ -73,7 +83,9 @@ object DatabaseRunState {
                     model.sqlServerAdminLogin,
                     model.sqlServerAdminPassword)
 
-            processHandler.setText(String.format(UiConstants.SQL_SERVER_CREATE_SUCCESSFUL, sqlServer.id()))
+            val message = String.format(UiConstants.SQL_SERVER_CREATE_SUCCESSFUL, sqlServer.id())
+            processHandler.setText(message)
+            activityNotifier.notifyProgress(NOTIFICATION_SQL_SERVER_CREATE, Date(), null, 100, message)
 
             return sqlServer
         }

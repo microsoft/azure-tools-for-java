@@ -83,7 +83,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
 
     // User-agent header for Azure SDK calls
-    public static final String USER_AGENT = "Azure Toolkit for IntelliJ, v%s, machineid:%s";
+    public static final String USER_AGENT = "Azure Toolkit for Rider, v%s, machineid:%s";
 
     public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
     public static boolean IS_ANDROID_STUDIO = "AndroidStudio".equals(PlatformUtils.getPlatformPrefix());

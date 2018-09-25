@@ -127,7 +127,7 @@ public abstract class AzureActionsComponent implements ApplicationComponent, Plu
             DefaultLoader.getUIHelper().showError("A problem with your Android Support plugin setup is preventing the"
                     + " Azure Toolkit from functioning correctly (Retrofit2 and RxJava failed to initialize)"
                     + ".\nTo fix this issue, try disabling the Android Support plugin or installing the "
-                    + "Android SDK", "Azure Toolkit for IntelliJ");
+                    + "Android SDK", "Azure Toolkit for Rider");
             // DefaultLoader.getUIHelper().showException("Android Support Error: isAndroid() throws " + ignored
             //         .getMessage(), ignored, "Error Android", true, false);
         }
