@@ -19,9 +19,9 @@ set -x
 
 tc_open "Initializing build script"
 {
-    BUILD_COUNTER = "$1"
+    BUILD_COUNTER="$1"
     if [[ "$1" -eq 0 ]] ; then
-        BUILD_COUNTER = "9999"
+        BUILD_COUNTER="9999"
     fi
 
     SCRIPTPATH=$(pwd -P)
