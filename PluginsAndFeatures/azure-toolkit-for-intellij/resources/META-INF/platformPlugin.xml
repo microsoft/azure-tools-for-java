@@ -68,7 +68,6 @@
       <ul>
         <li>Fixed Spark job submission issue when user right click Spark project and submit Spark job in project explorer.</li>
         <li>Fixed HDInsight wasbs access bug when SSL encrypted access is used.</li>
-        <li>Added JxBrowser support for new Spark job UI.</li>
         <li>Fixed winutils.exe not setup issue and updated error message.</li>
       </ul>
       <h3>[3.1.0]</h3>
