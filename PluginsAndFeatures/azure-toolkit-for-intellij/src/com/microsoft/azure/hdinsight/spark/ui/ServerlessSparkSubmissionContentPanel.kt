@@ -22,7 +22,4 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
-import com.microsoft.azure.hdinsight.common.CallBack
-
-class ServerlessSparkSubmissionContentPanel(updateCallBack: CallBack?) : SparkSubmissionContentPanel(updateCallBack) {
-}
+class ServerlessSparkSubmissionContentPanel : SparkSubmissionContentPanel()

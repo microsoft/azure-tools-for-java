@@ -51,6 +51,7 @@ sourceSets {
         java {
             srcDir 'Test/java'
         }
+        kotlin.srcDirs 'Test/java'
         resources {
             srcDir 'Test/resources'
         }
@@ -65,7 +66,6 @@ repositories {
 
 configurations {
     compile.exclude module:'slf4j-api'
-    testCompile.exclude module:'htmlunit'
     cucumberRuntime {
         extendsFrom testRuntime
     }
@@ -104,6 +104,10 @@ dependencies {
     testCompile 'org.powermock:powermock-module-junit4:1.7.0RC4'
     testCompile 'org.powermock:powermock-api-mockito2:1.7.0RC4'
     testCompile 'javax.servlet:javax.servlet-api:3.1.0'
+
+    testCompile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    testCompile "org.jetbrains.kotlin:kotlin-test"
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit"
 }
 
 test {
@@ -119,7 +123,7 @@ task cucumberPackJar(type: Jar) {
     doFirst {
         manifest {
             attributes "Class-Path": configurations.cucumberRuntime.files.collect {
-                it.toURL().toString().replaceFirst(/file:\/+/, '/')
+                it.toURI().toString().replaceFirst(/file:\/+/, '/')
             }.join(' ')
         }
     }
@@ -132,8 +136,9 @@ task cucumber() {
             main = "cucumber.api.cli.Main"
             classpath = files(sourceSets.main.output, sourceSets.test.output, cucumberPackJar.archivePath)
             args = [
-                '--plugin', 'pretty',
+                '--plugin', 'progress',
                 '--glue', 'com.microsoft.azure.hdinsight.spark.common',
+                '-m',
                 'Test/resources']
         }
     }

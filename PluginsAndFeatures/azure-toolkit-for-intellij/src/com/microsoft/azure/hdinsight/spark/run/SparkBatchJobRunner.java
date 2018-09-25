@@ -46,7 +46,7 @@ import rx.subjects.PublishSubject;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
 
-public class SparkBatchJobRunner extends DefaultProgramRunner {
+public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSubmissionRunner {
     @NotNull
     @Override
     public String getRunnerId() {

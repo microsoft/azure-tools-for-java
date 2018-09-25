@@ -21,13 +21,14 @@
 
 package com.microsoft.azure.hdinsight.spark.ui;
 
+import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.util.Optional;
 
 public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobConfigurableModel> {
     private JTabbedPane executionTypeTabPane;
@@ -50,7 +51,7 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
     protected void createUIComponents() {
         myLocalRunConfigurable = new SparkLocalRunConfigurable(myProject);
         myClusterSubmissionConfigurable = new SparkSubmissionDebuggablePanelConfigurable(
-                myProject, () -> {}, new SparkSubmissionDebuggableContentPanel(null));
+                myProject, new SparkSubmissionDebuggableContentPanel());
     }
 
     @Override
@@ -58,6 +59,11 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
         // Data -> Component
         myLocalRunConfigurable.setData(data.getLocalRunConfigurableModel());
         myClusterSubmissionConfigurable.setData(data.getSubmitModel());
+        executionTypeTabPane.setSelectedIndex(data.getFocusedTabIndex());
+
+        // Presentation only
+        setLocalRunConfigEnabled(data.isLocalRunConfigEnabled());
+        myClusterSubmissionConfigurable.setClusterSelectionEnabled(data.isClusterSelectionEnabled());
     }
 
     @Override
@@ -65,13 +71,14 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
         // Component -> Data
         myLocalRunConfigurable.getData(data.getLocalRunConfigurableModel());
         myClusterSubmissionConfigurable.getData(data.getSubmitModel());
+        data.setFocusedTabIndex(executionTypeTabPane.getSelectedIndex());
     }
 
-    public SparkLocalRunConfigurable getMyLocalRunConfigurable() {
+    public SparkLocalRunConfigurable getLocalRunConfigurable() {
         return myLocalRunConfigurable;
     }
 
-    public SparkSubmissionContentPanelConfigurable getMyClusterSubmissionConfigurable() {
+    public SparkSubmissionContentPanelConfigurable getClusterSubmissionConfigurable() {
         return myClusterSubmissionConfigurable;
     }
 
@@ -80,11 +87,19 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
         return myProject;
     }
 
-    protected void setMyLocalRunConfigurable(SparkLocalRunConfigurable myLocalRunConfigurable) {
+    protected void setLocalRunConfigurable(SparkLocalRunConfigurable myLocalRunConfigurable) {
         this.myLocalRunConfigurable = myLocalRunConfigurable;
     }
 
-    protected void setMyClusterSubmissionConfigurable(SparkSubmissionContentPanelConfigurable myClusterSubmissionConfigurable) {
+    protected void setClusterSubmissionConfigurable(SparkSubmissionContentPanelConfigurable myClusterSubmissionConfigurable) {
         this.myClusterSubmissionConfigurable = myClusterSubmissionConfigurable;
+    }
+
+    private void setLocalRunConfigEnabled(boolean enabled) {
+        executionTypeTabPane.setEnabledAt(0, enabled);
+    }
+
+    public void validate() throws ConfigurationException{
+        myClusterSubmissionConfigurable.validate();
     }
 }

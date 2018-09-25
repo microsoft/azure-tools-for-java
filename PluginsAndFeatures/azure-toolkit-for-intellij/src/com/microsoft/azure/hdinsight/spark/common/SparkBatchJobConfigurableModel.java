@@ -21,28 +21,42 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.intellij.openapi.command.impl.DummyProject;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.intellij.util.xmlb.annotations.Tag;
 import com.intellij.util.xmlb.annotations.Transient;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.jdom.Element;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
 
 @Tag("spark-job-configuration")
 public class SparkBatchJobConfigurableModel {
+    @Transient
+    private Project project;
+
     @Tag("local-run")
     @NotNull
     private SparkLocalRunConfigurableModel localRunConfigurableModel;
     @Transient
     @NotNull
     private SparkSubmitModel submitModel;
+    @Tag("focused-tab-index")
+    private int focusedTabIndex = 0;
+    @Transient
+    private boolean isLocalRunConfigEnabled = true;
+    @Transient
+    private boolean isClusterSelectionEnabled = true;
 
-    public SparkBatchJobConfigurableModel() { }
+    public SparkBatchJobConfigurableModel() {
+        this(DummyProject.getInstance());
+    }
 
     public SparkBatchJobConfigurableModel(@NotNull Project project) {
+        this.project = project;
         localRunConfigurableModel = new SparkLocalRunConfigurableModel(project);
         submitModel = new SparkSubmitModel(project);
     }
@@ -53,7 +67,7 @@ public class SparkBatchJobConfigurableModel {
         return localRunConfigurableModel;
     }
 
-    public void setLocalRunConfigurableModel(final SparkLocalRunConfigurableModel localRunConfigurableModel) {
+    public void setLocalRunConfigurableModel(@NotNull final SparkLocalRunConfigurableModel localRunConfigurableModel) {
         this.localRunConfigurableModel = localRunConfigurableModel;
     }
 
@@ -63,11 +77,11 @@ public class SparkBatchJobConfigurableModel {
         return submitModel;
     }
 
-    public void setSubmitModel(SparkSubmitModel submitModel) {
+    public void setSubmitModel(@NotNull SparkSubmitModel submitModel) {
         this.submitModel = submitModel;
     }
 
-    public Element exportToElement() {
+    public Element exportToElement() throws WriteExternalException {
         Element jobConfElement = XmlSerializer.serialize(this);
 
         jobConfElement.addContent(getSubmitModel().exportToElement());
@@ -79,13 +93,39 @@ public class SparkBatchJobConfigurableModel {
         Element root = element.getChild("spark-job-configuration");
 
         if (root != null) {
-            Optional.ofNullable(root.getChild("local-run"))
-                    .map(elem -> (Element) elem.getContent(0))
-                    .ifPresent(elem -> getLocalRunConfigurableModel().applyFromElement(elem));
+            XmlSerializer.deserializeInto(this, root);
+
+            // Transient fields
+            this.localRunConfigurableModel.setProject(project);
 
             Optional.ofNullable(root.getChild("spark_submission"))
-                    .map(elem -> getSubmitModel().applyFromElement(elem))
-                    .ifPresent(this::setSubmitModel);
+                    .ifPresent(elem -> getSubmitModel().applyFromElement(elem));
         }
+    }
+
+    public int getFocusedTabIndex() {
+        return focusedTabIndex;
+    }
+
+    public void setFocusedTabIndex(int focusedTabIndex) {
+        this.focusedTabIndex = focusedTabIndex;
+    }
+
+    @Transient
+    public boolean isLocalRunConfigEnabled() {
+        return isLocalRunConfigEnabled;
+    }
+
+    public void setLocalRunConfigEnabled(boolean localRunConfigEnabled) {
+        isLocalRunConfigEnabled = localRunConfigEnabled;
+    }
+
+    @Transient
+    public boolean isClusterSelectionEnabled() {
+        return isClusterSelectionEnabled;
+    }
+
+    public void setClusterSelectionEnabled(boolean clusterSelectionEnabled) {
+        this.isClusterSelectionEnabled = clusterSelectionEnabled;
     }
 }
