@@ -22,12 +22,15 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
+import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.JavaCommandLineState
 import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
+import com.intellij.psi.JavaPsiFacade
+import com.intellij.psi.search.ProjectScope
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchLocalRunState
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfiguration
@@ -47,6 +50,16 @@ class SparkScalaLocalConsoleRunConfiguration(
         val params = super.createParams()
         params.classPath.clear()
         params.classPath.addAll(localRunParams.classPath.pathList)
+
+        val replMain = "org.apache.spark.repl.Main"
+        if (JavaPsiFacade.getInstance(project).findClass(replMain, ProjectScope.getLibrariesScope(project)) == null) {
+            throw ExecutionException("""
+                The library org.apache.spark:spark-repl_2.11 (or spark-repl_2.10, depends on project Spark Scala version)
+                is not in project dependencies, please add it as the top one of list.
+                ( Refer to https://www.jetbrains.com/help/idea/library.html#add-library-to-module-dependencies )
+                """.trimIndent())
+        }
+
         params.mainClass = mainClass()
 
         params.vmParametersList.addAll(localRunParams.vmParametersList.parameters)
