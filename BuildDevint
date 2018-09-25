@@ -1,11 +1,15 @@
 #!/bin/bash
 
 tc_open() {
+    set +x
     echo "##teamcity[blockOpened name='$1' description='$1']"
+    set -x
 }
 
 tc_close() {
+    set +x
     echo "##teamcity[blockClosed name='$1']"
+    set -x
 }
 
 set -e
@@ -15,18 +19,21 @@ set -x
 
 tc_open "Initializing build script"
 {
+    BUILD_COUNTER="9999"
+
     SCRIPTPATH=$(pwd -P)
     cd "$SCRIPTPATH"
 
     MAVEN_QUIET=""
     INTELLIJ_VERSION=false
 
-    while getopts ":hqvB" option; do
+    while getopts ":hqvBC:" option; do
         case $option in
-            h) echo "usage: $0 [-h] [-q] [-v] [-B]"; exit ;;
+            h) echo "usage: $0 [-h] [-q] [-v] [-B] [-C BuildCounter]"; exit ;;
             q) MAVEN_QUIET="-q" ;;
             v) INTELLIJ_VERSION=true ;;
             B) MAVEN_QUIET="--batch-mode" ;;
+            C) BUILD_COUNTER="$OPTARG" ;;
             ?) echo "error: option -$OPTARG is not implemented"; exit ;;
         esac
     done
@@ -72,8 +79,8 @@ tc_close "Building IDEA plugin"
 # Build JetBrains Rider 2018.2 plugin
 tc_open "Building Rider plugin"
 {
-    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider)
-    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-2018.2.zip
+    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildCounter=$BUILD_COUNTER)
+    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider-3.11.0.$BUILD_COUNTER.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-2018.2.zip
 }
 tc_close "Building Rider plugin"
 
