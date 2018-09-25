@@ -41,7 +41,3 @@ While waiting for this PR to be accepted, we are releasing the forked Azure Tool
 ## Contributing
 
 Please see the [contribution instructions](CONTRIBUTING.md) if you wish to build the plugin from source.
-
-## Disclaimer
-
-*azure-tools-for-java uses JxBrowser http://www.teamdev.com/jxbrowser, which is proprietary software. The use of JxBrowser is governed by JxBrowser Product Licence Agreement http://www.teamdev.com/jxbrowser-licence-agreement. If you would like to use JxBrowser in your development, please contact TeamDev.*
