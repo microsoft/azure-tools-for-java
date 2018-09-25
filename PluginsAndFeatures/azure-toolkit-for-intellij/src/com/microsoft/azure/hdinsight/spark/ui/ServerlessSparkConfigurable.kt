@@ -23,11 +23,12 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.openapi.project.Project
+import com.microsoft.azure.hdinsight.spark.common.ServerlessSparkSubmitModel
 
 class ServerlessSparkConfigurable(project: Project) : SparkBatchJobConfigurable(project) {
     override fun createUIComponents() {
-        myLocalRunConfigurable = SparkLocalRunConfigurable(project)
-        myClusterSubmissionConfigurable = ServerlessSparkSubmissionPanelConfigurable(
-                project, null, ServerlessSparkSubmissionContentPanel(null))
+        localRunConfigurable = SparkLocalRunConfigurable(project)
+        clusterSubmissionConfigurable = ServerlessSparkSubmissionPanelConfigurable(
+                project, ServerlessSparkSubmissionContentPanel())
     }
 }

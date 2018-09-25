@@ -36,19 +36,15 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.jcraft.jsch.JSchException;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.spark.common.*;
-import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.concurrency.AsyncPromise;
 import org.jetbrains.concurrency.Promise;
@@ -61,7 +57,7 @@ import java.net.URI;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Optional;
 
-public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
+public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implements SparkSubmissionRunner {
     public static final Key<String> DebugTargetKey = new Key<>("debug-target");
     private static final Key<String> ProfileNameKey = new Key<>("profile-name");
     public static final String DebugDriver = "driver";
@@ -110,7 +106,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
     @Override
     protected void execute(ExecutionEnvironment environment, Callback callback, RunProfileState state) throws ExecutionException {
         final AsyncPromise<ExecutionEnvironment> jobDriverEnvReady = new AsyncPromise<> ();
-        final SparkBatchJobSubmissionState submissionState = (SparkBatchJobSubmissionState) state;
+        final SparkBatchRemoteDebugState submissionState = (SparkBatchRemoteDebugState) state;
 
         // Check parameters before starting
         submissionState.checkSubmissionParameter();
@@ -218,9 +214,9 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner {
                                     jdbReadyEvent.getRemoteHost().orElse("unknown"),
                                     jdbReadyEvent.isDriver());
 
-                            SparkBatchJobSubmissionState forkState = jdbReadyEvent.isDriver() ?
+                            SparkBatchRemoteDebugState forkState = jdbReadyEvent.isDriver() ?
                                     submissionState :
-                                    (SparkBatchJobSubmissionState) forkEnv.getState();
+                                    (SparkBatchRemoteDebugState) forkEnv.getState();
 
                             if (forkState == null) {
                                 return;

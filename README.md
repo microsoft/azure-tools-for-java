@@ -31,6 +31,9 @@ Azure Toolkits for Java is an open-source project that helps Java developers eas
 * [Java Developer Center on Azure](https://docs.microsoft.com/en-us/java/azure/)
 * [Get Started for HDInsight](https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-apache-spark-eclipse-tool-plugin)
 
+## Known issues
+Follow this [link](https://github.com/Microsoft/azure-tools-for-java/issues?q=is%3Aissue+label%3Aknown-issue) to track the known issues.
+
 ## Data/Telemetry
 Azure Toolkits for Java collects usage data and sends it to Microsoft to help improve our products and services. Read our [privacy statement](https://go.microsoft.com/fwlink/?LinkID=620956) to learn more. If you don't wish to send usage data to Microsoft, you can turn off it in following places:
 * For **Eclipse**: Open `Window > Preferences > Azure`, and uncheck the checkbox.

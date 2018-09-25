@@ -22,40 +22,28 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
-import com.microsoft.azure.hdinsight.common.CallBack
+import com.intellij.ui.HideableTitledPanel
 import java.awt.GridBagConstraints
 import java.awt.Insets
-import java.awt.event.ActionListener
-import java.util.concurrent.TimeUnit
-import javax.swing.JButton
 
-class SparkSubmissionDebuggableContentPanel(updateCallBack: CallBack?) : SparkSubmissionContentPanel(updateCallBack) {
+class SparkSubmissionDebuggableContentPanel : SparkSubmissionContentPanel() {
 
-    private val advancedConfigButton = JButton("Advanced configuration")
-    val advancedConfigDialog = SparkSubmissionAdvancedConfigDialog()
+    val advancedConfigPanel = SparkSubmissionAdvancedConfigPanel()
+    private val hidableAdvancedConfigPanel = HideableTitledPanel(
+            "Advanced Configuration (Remote Debugging)", true, this.advancedConfigPanel, false)
+
 
     init {
         addAdvancedConfigLineItem()
     }
 
     private fun addAdvancedConfigLineItem() {
-        advancedConfigButton.isEnabled = false
-        advancedConfigButton.toolTipText = "Specify advanced configuration, for example, enabling Spark remote debug"
-
-        clusterSelectedSubject
-                .throttleWithTimeout(200, TimeUnit.MILLISECONDS)
-                .subscribe { cluster -> advancedConfigButton.isEnabled = cluster != null }
-
-        add(advancedConfigButton,
+        add(hidableAdvancedConfigPanel,
                 GridBagConstraints(0, ++displayLayoutCurrentRow,
                         0, 1,
-                        1.0, 0.0,
-                        GridBagConstraints.SOUTHEAST, GridBagConstraints.NONE,
+                        0.0, 0.0,
+                        GridBagConstraints.SOUTHWEST, GridBagConstraints.HORIZONTAL,
                         Insets(margin, margin, 0, 0), 0, 0))
 
-    }
-
-    fun addAdvancedConfigurationButtonActionListener(actionListener: ActionListener) {
-        advancedConfigButton.addActionListener(actionListener)
     }
 }
