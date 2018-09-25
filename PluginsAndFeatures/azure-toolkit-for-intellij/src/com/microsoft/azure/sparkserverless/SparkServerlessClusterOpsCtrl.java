@@ -22,10 +22,18 @@
 
 package com.microsoft.azure.sparkserverless;
 
-import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.execution.RunManager;
+import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
+import com.microsoft.azure.hdinsight.spark.actions.SparkAppSubmitContext;
+import com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction;
+import com.microsoft.azure.hdinsight.spark.run.configuration.ServerlessSparkConfigurationFactory;
+import com.microsoft.azure.hdinsight.spark.run.configuration.ServerlessSparkConfigurationType;
 import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterOps;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterDestoryDialog;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterMonitorDialog;
@@ -33,6 +41,12 @@ import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClust
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessProvisionDialog;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+
+import java.util.List;
+
+import static com.intellij.execution.configurations.ConfigurationTypeUtil.findConfigurationType;
+import static com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys.CLUSTER;
+import static com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys.RUN_CONFIGURATION_SETTING;
 
 public class SparkServerlessClusterOpsCtrl implements ILogger {
     @NotNull
@@ -84,6 +98,47 @@ public class SparkServerlessClusterOpsCtrl implements ILogger {
                             pair.getRight(), pair.getLeft());
                     updateDialog.show();
                 }, ex -> log().warn(ex.getMessage(), ex));
+
+        this.sparkServerlessClusterOps.getSubmitAction()
+                .observeOn(ideSchedulers.dispatchUIThread())
+                .subscribe(clusterNodePair -> {
+                    log().info(String.format("Submit message received. cluster: %s, node: %s",
+                            clusterNodePair.getLeft(), clusterNodePair.getRight()));
+
+                    try {
+                        AzureSparkServerlessCluster cluster = clusterNodePair.getLeft();
+                        SparkAppSubmitContext context = new SparkAppSubmitContext();
+                        Project project = (Project) clusterNodePair.getRight().getProject();
+
+                        final RunManager runManager = RunManager.getInstance(project);
+                        final List<RunnerAndConfigurationSettings> batchConfigSettings = runManager
+                                .getConfigurationSettingsList(findConfigurationType(ServerlessSparkConfigurationType.class));
+
+                        final String runConfigName = "[Azure Data Lake Spark] " + cluster.getName();
+                        final RunnerAndConfigurationSettings runConfigurationSetting = batchConfigSettings.stream()
+                                .filter(settings -> settings.getConfiguration().getName().startsWith(runConfigName))
+                                .findFirst()
+                                .orElseGet(() -> runManager.createRunConfiguration(
+                                        runConfigName,
+                                        new ServerlessSparkConfigurationFactory(new ServerlessSparkConfigurationType())));
+
+                        context.putData(RUN_CONFIGURATION_SETTING, runConfigurationSetting)
+                                .putData(CLUSTER, cluster);
+
+                        Presentation actionPresentation = new Presentation("Submit Job");
+                        actionPresentation.setDescription("Submit specified Spark application into the remote cluster");
+
+                        AnActionEvent event = AnActionEvent.createFromDataContext(
+                                String.format("Azure Data Lake Spark pool %s:%s context menu",
+                                        cluster.getAccount().getName(), cluster.getName()),
+                                actionPresentation,
+                                context);
+
+                        new SparkSubmitJobAction().actionPerformed(event);
+                    } catch (Exception ex) {
+                        log().error(ex.getMessage());
+                    }
+                }, ex -> log().error(ex.getMessage(), ex));
     }
 
 }

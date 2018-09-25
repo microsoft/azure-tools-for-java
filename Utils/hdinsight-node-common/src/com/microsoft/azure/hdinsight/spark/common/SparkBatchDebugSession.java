@@ -322,18 +322,18 @@ public class SparkBatchDebugSession implements ILogger{
             throws SparkJobException, JSchException {
         String sshServer = getSshHost(connectionUrl);
 
-        SparkBatchDebugSession session = SparkBatchDebugSession.factory(sshServer, auth.sshUserName);
+        SparkBatchDebugSession session = SparkBatchDebugSession.factory(sshServer, auth.getSshUserName());
 
-        switch (auth.sshAuthType) {
+        switch (auth.getSshAuthType()) {
             case UseKeyFile:
-                session.setPrivateKeyFile(auth.sshKeyFile);
+                session.setPrivateKeyFile(auth.getSshKeyFile());
                 break;
             case UsePassword:
-                session.setPassword(auth.sshPassword);
+                session.setPassword(auth.getSshPassword());
                 break;
             default:
                 throw new SparkBatchRemoteDebugJobSshAuth.UnknownSSHAuthTypeException(
-                        "Unknown SSH authentication type: " + auth.sshAuthType.name());
+                        "Unknown SSH authentication type: " + auth.getSshAuthType().name());
         }
 
         session.auth = auth;

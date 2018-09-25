@@ -1,18 +1,19 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.microsoft.azuretools.utils.Pair;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
 
 public class SubmissionTableModelTest extends TestCase{
     private SubmissionTableModel tableModel;
-    private String[] columns = new String[]{"col1", "col2", "col3"};
 
     @Before
     public void setUp() throws Exception {
-        tableModel = new SubmissionTableModel(columns);
+        tableModel = new SubmissionTableModel();
 
         //add three empty row for test
         tableModel.addEmptyRow();
@@ -42,7 +43,7 @@ public class SubmissionTableModelTest extends TestCase{
 
     @Test
     public void testGetJobConfigMap() throws Exception {
-        Map<String,Object> maps = tableModel.getJobConfigMap();
+        List<Pair<String, String>> maps = tableModel.getJobConfigMap();
         assertEquals(maps.size(), 0);
 
         tableModel.setValueAt("test", 0, 0);

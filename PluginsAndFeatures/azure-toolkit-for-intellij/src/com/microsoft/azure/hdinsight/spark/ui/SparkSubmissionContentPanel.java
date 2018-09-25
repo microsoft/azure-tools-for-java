@@ -21,16 +21,18 @@
  */
 package com.microsoft.azure.hdinsight.spark.ui;
 
+import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.ComboBox;
-import com.intellij.openapi.ui.FixedSizeButton;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
-import com.microsoft.azure.hdinsight.common.CallBack;
+import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.hdinsight.common.DarkThemeManager;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckResult;
@@ -43,6 +45,8 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.azuretools.utils.Pair;
+import org.apache.commons.lang3.StringUtils;
 import rx.subjects.BehaviorSubject;
 
 import javax.swing.*;
@@ -50,15 +54,16 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.ActionListener;
+import java.awt.event.ContainerAdapter;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ItemEvent;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class SparkSubmissionContentPanel extends JPanel{
-    public SparkSubmissionContentPanel(@Nullable CallBack updateCallBack){
-        this.updateCallBack = updateCallBack;
-
+    public SparkSubmissionContentPanel(){
         initializeComponents();
 
         addContainerListener(new ContainerAdapter() {
@@ -71,19 +76,17 @@ public class SparkSubmissionContentPanel extends JPanel{
         });
     }
 
-    public boolean haveErrorMessage() {
-        for (int i = 0; i < errorMessageLabels.length; ++i) {
-            if (errorMessageLabels[i].isVisible() && errorMessageLabels[i].getForeground().equals(DarkThemeManager.getInstance().getErrorMessageColor())) {
-                return true;
-            }
-        }
+    @NotNull
+    private java.util.List<String> getErrorMessages() {
+        final Color currentErrorColor = DarkThemeManager.getInstance().getErrorMessageColor();
 
-        return false;
+        return Arrays.stream(errorMessageLabels)
+                .filter(errorLabel -> errorLabel.isVisible() && errorLabel.getForeground().equals(currentErrorColor))
+                .map(JLabel::getText)
+                .collect(Collectors.toList());
     }
 
     public int displayLayoutCurrentRow = 0;
-
-    private CallBack updateCallBack;
 
     protected final int margin = 10;
     private static final String REFRESH_BUTTON_PATH = "/icons/refresh.png";
@@ -91,9 +94,9 @@ public class SparkSubmissionContentPanel extends JPanel{
     @NotNull
     private ComboboxWithBrowseButton clustersListComboBox;
     @NotNull
-    private ComboBox<String> selectedArtifactComboBox;
+    private ComboBox<Artifact> selectedArtifactComboBox;
     @NotNull
-    private TextFieldWithBrowseButton selectedArtifactTextField;
+    private TextFieldWithBrowseButton localArtifactTextField;
     @NotNull
     private TextFieldWithBrowseButton mainClassTextField;
     @NotNull
@@ -108,20 +111,21 @@ public class SparkSubmissionContentPanel extends JPanel{
     private JRadioButton intelliJArtifactRadioButton;
     @NotNull
     private JRadioButton localArtifactRadioButton;
-    @NotNull
-    private final JLabel[] errorMessageLabels = new JLabel[5];
-    @NotNull
-    FixedSizeButton loadJobConfigurationFixedSizeButton;
 
     private BehaviorSubject<String> clusterSelectedSubject = BehaviorSubject.create();
 
-    private enum ErrorMessageLabelTag {
+    private enum ErrorMessage {
         ClusterName,
         SystemArtifact,
         LocalArtifact,
         MainClass,
-        JobConfiguration;
+        JobConfiguration
+        // Don't add more Error Message please, throw Configuration Exception in checkInputs()
     }
+
+    @NotNull
+    private final JLabel[] errorMessageLabels = new JLabel[5]; // Fix the size rather than ErrorMessage.values().length
+                                                               // since we won't like to add more message labels
 
     private void initializeComponents(){
         setLayout(new GridBagLayout());
@@ -141,22 +145,12 @@ public class SparkSubmissionContentPanel extends JPanel{
     }
 
     void updateTableColumn() {
-        TableColumn hidden = jobConfigurationTable.getColumnModel().getColumn(InteractiveTableModel.HIDDEN_INDEX);
-        hidden.setMinWidth(2);
-        hidden.setPreferredWidth(2);
-        hidden.setMaxWidth(2);
-        hidden.setCellRenderer(new InteractiveRenderer(InteractiveTableModel.HIDDEN_INDEX));
-
         TableColumn keyColumn = jobConfigurationTable.getColumnModel().getColumn(InteractiveTableModel.KEY_INDEX);
         keyColumn.setCellRenderer(new InteractiveRenderer(InteractiveTableModel.KEY_INDEX));
-        
-        if (updateCallBack != null) {
-            updateCallBack.run();
-        }
     }
 
     @NotNull
-    ComboBox<String> getSelectedArtifactComboBox() {
+    ComboBox<Artifact> getSelectedArtifactComboBox() {
         return selectedArtifactComboBox;
     }
 
@@ -176,8 +170,13 @@ public class SparkSubmissionContentPanel extends JPanel{
     }
 
     @NotNull
-    TextFieldWithBrowseButton getSelectedArtifactTextField() {
-        return selectedArtifactTextField;
+    JRadioButton getIntelliJArtifactRadioButton() {
+        return intelliJArtifactRadioButton;
+    }
+
+    @NotNull
+    TextFieldWithBrowseButton getLocalArtifactTextField() {
+        return localArtifactTextField;
     }
 
     @NotNull
@@ -206,7 +205,7 @@ public class SparkSubmissionContentPanel extends JPanel{
     }
 
     void setClustersListRefreshEnabled(boolean enabled) {
-        clustersListComboBox.getButton().setEnabled(enabled);
+        clustersListComboBox.setButtonEnabled(enabled);
     }
 
     void addClusterListRefreshActionListener(ActionListener actionListener) {
@@ -216,31 +215,19 @@ public class SparkSubmissionContentPanel extends JPanel{
     private void addSparkClustersLineItem() {
         JLabel sparkClusterLabel = new JLabel("Spark clusters(Linux only)");
         sparkClusterLabel.setToolTipText("The HDInsight Spark cluster you want to submit your application to. Only Linux cluster is supported.");
-        GridBagConstraints c11 = new GridBagConstraints();
-        c11.gridx = 0;
-        c11.gridy = 0;
-        c11.insets = new Insets(margin, margin, 0, margin);
         add(sparkClusterLabel,
                 new GridBagConstraints(0, displayLayoutCurrentRow,
                         1, 1,
                         0, 0,
                         GridBagConstraints.WEST, GridBagConstraints.NONE,
-                        new Insets(margin, margin, 0, margin), 0, 0));
+                        JBUI.insets(margin, margin, 0, margin), 0, 0));
 
 
         clustersListComboBox = new ComboboxWithBrowseButton();
         clustersListComboBox.setButtonIcon(StreamUtil.getImageResourceFile(REFRESH_BUTTON_PATH));
         clustersListComboBox.getButton().setToolTipText("Refresh");
         clustersListComboBox.getComboBox().setToolTipText("The HDInsight Spark cluster you want to submit your application to. Only Linux cluster is supported.");
-        clustersListComboBox.getComboBox().addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals("model") && evt.getNewValue() instanceof DefaultComboBoxModel) {
-                    int size = ((DefaultComboBoxModel) evt.getNewValue()).getSize();
-                    setVisibleForFixedErrorMessageLabel(ErrorMessageLabelTag.ClusterName.ordinal(), size <= 0);
-                }
-            }
-        });
+        clustersListComboBox.getComboBox().addPropertyChangeListener(evt -> checkInputsWithErrorLabels());
         clustersListComboBox.getComboBox().addItemListener(ev ->
                 clusterSelectedSubject.onNext(ev.getStateChange() == ItemEvent.SELECTED ? ev.getItem().toString() : null));
 
@@ -249,7 +236,7 @@ public class SparkSubmissionContentPanel extends JPanel{
                         0, 1,
                         1, 0,
                         GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
-                        new Insets(margin, margin, 0, margin), 0, 0));
+                        JBUI.insets(margin, margin, 0, margin), 0, 0));
 
         boolean isSignedIn = false;
 
@@ -257,25 +244,37 @@ public class SparkSubmissionContentPanel extends JPanel{
             isSignedIn = AuthMethodManager.getInstance().isSignedIn();
         } catch (IOException ignored) { }
 
-        errorMessageLabels[ErrorMessageLabelTag.ClusterName.ordinal()] = new JLabel( isSignedIn ?
+        errorMessageLabels[ErrorMessage.ClusterName.ordinal()] = new JLabel( isSignedIn ?
                         "Cluster Name Should not be null, please choose one for submission" :
                         "Can't list cluster, please login within Azure Explorer (View -> Tool Windows -> Azure Explorer) and refresh");
-        errorMessageLabels[ErrorMessageLabelTag.ClusterName.ordinal()].setForeground(DarkThemeManager.getInstance().getErrorMessageColor());
+        errorMessageLabels[ErrorMessage.ClusterName.ordinal()].setForeground(DarkThemeManager.getInstance().getErrorMessageColor());
 
-        clustersListComboBox.getComboBox().addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                setVisibleForFixedErrorMessageLabel(0, clustersListComboBox.getComboBox().getItemCount() == 0);
-            }
-        });
+        clustersListComboBox.getComboBox().addItemListener(e -> setVisibleForFixedErrorMessageLabel(ErrorMessage.ClusterName, clustersListComboBox.getComboBox().getItemCount() == 0));
 
-        add(errorMessageLabels[ErrorMessageLabelTag.ClusterName.ordinal()],
+        add(errorMessageLabels[ErrorMessage.ClusterName.ordinal()],
                 new GridBagConstraints(1, ++displayLayoutCurrentRow,
                         0, 1,
                         1, 0,
                         GridBagConstraints.WEST, GridBagConstraints.NONE,
-                        new Insets(0, margin, 0, 0), 0, 0));
+                        JBUI.insetsLeft(margin), 0, 0));
     }
+
+    private DocumentListener documentValidationListener = new DocumentListener() {
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            checkInputsWithErrorLabels();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            checkInputsWithErrorLabels();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            checkInputsWithErrorLabels();
+        }
+    };
 
     private void addSelectedArtifactLineItem() {
         final String tipInfo = "The Artifact you want to use.";
@@ -285,87 +284,41 @@ public class SparkSubmissionContentPanel extends JPanel{
         selectedArtifactComboBox = new ComboBox<>();
         selectedArtifactComboBox.setToolTipText(tipInfo);
 
-        errorMessageLabels[ErrorMessageLabelTag.SystemArtifact.ordinal()] = new JLabel("Artifact should not be null!");
-        errorMessageLabels[ErrorMessageLabelTag.SystemArtifact.ordinal()].setForeground(DarkThemeManager.getInstance().getErrorMessageColor());
-        errorMessageLabels[ErrorMessageLabelTag.SystemArtifact.ordinal()].setVisible(false);
+        errorMessageLabels[ErrorMessage.SystemArtifact.ordinal()] = new JLabel("Artifact should not be null!");
+        errorMessageLabels[ErrorMessage.SystemArtifact.ordinal()].setForeground(DarkThemeManager.getInstance().getErrorMessageColor());
 
-        errorMessageLabels[ErrorMessageLabelTag.LocalArtifact.ordinal()] = new JLabel("Could not find the local jar package for Artifact");
-        errorMessageLabels[ErrorMessageLabelTag.LocalArtifact.ordinal()].setForeground(DarkThemeManager.getInstance().getErrorMessageColor());
-        errorMessageLabels[ErrorMessageLabelTag.LocalArtifact.ordinal()].setVisible(false);
+        errorMessageLabels[ErrorMessage.LocalArtifact.ordinal()] = new JLabel("Could not find the local jar package for Artifact");
+        errorMessageLabels[ErrorMessage.LocalArtifact.ordinal()].setForeground(DarkThemeManager.getInstance().getErrorMessageColor());
 
-        selectedArtifactTextField = new TextFieldWithBrowseButton();
-        selectedArtifactTextField.setToolTipText("Artifact from local jar package.");
-        selectedArtifactTextField.setEditable(true);
-        selectedArtifactTextField.setEnabled(false);
-        selectedArtifactTextField.getTextField().getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                setVisibleForFixedErrorMessageLabel(2, !SparkSubmitHelper.isLocalArtifactPath(selectedArtifactTextField.getText()));
-            }
+        localArtifactTextField = new TextFieldWithBrowseButton();
+        localArtifactTextField.setToolTipText("Artifact from local jar package.");
+        localArtifactTextField.setEnabled(false);
+        localArtifactTextField.getTextField().getDocument().addDocumentListener(documentValidationListener);
 
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                setVisibleForFixedErrorMessageLabel(2, !SparkSubmitHelper.isLocalArtifactPath(selectedArtifactTextField.getText()));
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                setVisibleForFixedErrorMessageLabel(2, !SparkSubmitHelper.isLocalArtifactPath(selectedArtifactTextField.getText()));
-            }
-        });
-
-        selectedArtifactTextField.getButton().addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                FileChooserDescriptor chooserDescriptor = new FileChooserDescriptor(false, false, true, false, true, false);
-                chooserDescriptor.setTitle("Select Local Artifact File");
-                VirtualFile chooseFile = FileChooser.chooseFile(chooserDescriptor, null, null);
-                if (chooseFile != null) {
-                    String path = chooseFile.getPath();
-                    if (path.endsWith("!/")) {
-                        path = path.substring(0, path.length() - 2);
-                    }
-                    selectedArtifactTextField.setText(path);
+        localArtifactTextField.getButton().addActionListener(e -> {
+            FileChooserDescriptor chooserDescriptor = new FileChooserDescriptor(false, false, true, false, true, false);
+            chooserDescriptor.setTitle("Select Local Artifact File");
+            VirtualFile chooseFile = FileChooser.chooseFile(chooserDescriptor, null, null);
+            if (chooseFile != null) {
+                String path = chooseFile.getPath();
+                if (path.endsWith("!/")) {
+                    path = path.substring(0, path.length() - 2);
                 }
+                localArtifactTextField.setText(path);
             }
         });
 
 
         intelliJArtifactRadioButton = new JRadioButton("Artifact from IntelliJ project:", true);
-        localArtifactRadioButton = new JRadioButton("Artifact from local disk:", false);
-
-        intelliJArtifactRadioButton.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    selectedArtifactComboBox.setEnabled(true);
-                    selectedArtifactTextField.setEnabled(false);
-                    mainClassTextField.setButtonEnabled(true);
-
-                    setVisibleForFixedErrorMessageLabel(2, false);
-
-                    if (selectedArtifactComboBox.getItemCount() == 0) {
-                        setVisibleForFixedErrorMessageLabel(2, true);
-                    }
-                }
-            }
+        intelliJArtifactRadioButton.addItemListener(e -> {
+            selectedArtifactComboBox.setEnabled(e.getStateChange() == ItemEvent.SELECTED);
+            checkInputsWithErrorLabels();
         });
 
-        localArtifactRadioButton.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    selectedArtifactComboBox.setEnabled(false);
-                    selectedArtifactTextField.setEnabled(true);
-                    mainClassTextField.setButtonEnabled(true);
-
-                    setVisibleForFixedErrorMessageLabel(1, false);
-
-                    if (StringHelper.isNullOrWhiteSpace(selectedArtifactTextField.getText())) {
-                        setVisibleForFixedErrorMessageLabel(2, true);
-                    }
-                }
-            }
+        localArtifactRadioButton = new JRadioButton("Artifact from local disk:", false);
+        localArtifactRadioButton.addItemListener(e -> {
+            localArtifactTextField.setEnabled(e.getStateChange() == ItemEvent.SELECTED);
+            checkInputsWithErrorLabels();
         });
 
         ButtonGroup group = new ButtonGroup();
@@ -379,63 +332,59 @@ public class SparkSubmissionContentPanel extends JPanel{
                         0, 1,
                         0, 0,
                         GridBagConstraints.WEST, GridBagConstraints.NONE,
-                        new Insets(margin, margin, 0, margin), 0, 0));
+                        JBUI.insets(margin, margin, 0, margin), 0, 0));
 
         add(intelliJArtifactRadioButton,
                 new GridBagConstraints(0, ++displayLayoutCurrentRow,
                         1, 1,
                         0, 0,
                         GridBagConstraints.WEST, GridBagConstraints.NONE,
-                        new Insets(margin / 3, margin * 3, 0, margin), 0, 0));
+                        JBUI.insets(margin / 3, margin * 3, 0, margin), 0, 0));
 
         add(selectedArtifactComboBox,
                 new GridBagConstraints(1, displayLayoutCurrentRow,
                         0, 1,
                         1, 0,
                         GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
-                        new Insets(margin / 3, margin, 0, margin), 0, 0));
+                        JBUI.insets(margin / 3, margin, 0, margin), 0, 0));
 
-        add(errorMessageLabels[ErrorMessageLabelTag.SystemArtifact.ordinal()],
+        add(errorMessageLabels[ErrorMessage.SystemArtifact.ordinal()],
                 new GridBagConstraints(1, ++displayLayoutCurrentRow,
                         0, 1,
                         1, 0,
                         GridBagConstraints.WEST, GridBagConstraints.NONE,
-                        new Insets(0, margin, 0, 0), 0, 0));
+                        JBUI.insetsLeft(margin), 0, 0));
 
         add(localArtifactRadioButton,
                 new GridBagConstraints(0, ++displayLayoutCurrentRow,
                         1, 1,
                         0, 0,
                         GridBagConstraints.WEST, GridBagConstraints.NONE,
-                        new Insets(margin / 3, margin * 3, 0, margin), 0, 0));
+                        JBUI.insets(margin / 3, margin * 3, 0, margin), 0, 0));
 
-        add(selectedArtifactTextField,
+        add(localArtifactTextField,
                 new GridBagConstraints(1, displayLayoutCurrentRow,
                         0, 1,
                         0, 0,
                         GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
-                        new Insets(margin / 3, margin, 0, margin), 0, 0));
-        add(errorMessageLabels[ErrorMessageLabelTag.LocalArtifact.ordinal()],
+                        JBUI.insets(margin / 3, margin, 0, margin), 0, 0));
+        add(errorMessageLabels[ErrorMessage.LocalArtifact.ordinal()],
                 new GridBagConstraints(1, ++displayLayoutCurrentRow,
                         0, 1,
                         1, 0,
                         GridBagConstraints.WEST, GridBagConstraints.NONE,
-                        new Insets(0, margin, 0, 0), 0, 0));
+                        JBUI.insetsLeft(margin), 0, 0));
     }
 
     private void addMainClassNameLineItem() {
         JLabel sparkMainClassLabel = new JLabel("Main class name");
         sparkMainClassLabel.setToolTipText("Application's java/spark main class");
-        GridBagConstraints c31 = new GridBagConstraints();
-        c31.gridx = 0;
-        c31.gridy = 2;
-        c31.insets = new Insets(margin, margin, margin, margin);
         add(sparkMainClassLabel,
                 new GridBagConstraints(0, ++displayLayoutCurrentRow,
                         1, 1,
                         1, 0,
                         GridBagConstraints.WEST, GridBagConstraints.NONE,
-                        new Insets(margin, margin, 0, 0), 0, 0));
+                        JBUI.insets(margin, margin, 0, 0), 0, 0));
 
         mainClassTextField = new TextFieldWithBrowseButton();
         mainClassTextField.setToolTipText("Application's java/spark main class");
@@ -445,38 +394,20 @@ public class SparkSubmissionContentPanel extends JPanel{
                         0, 1,
                         1, 0,
                         GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
-                        new Insets(margin, margin, 0, margin), 0, 0));
+                        JBUI.insets(margin, margin, 0, margin), 0, 0));
 
-        errorMessageLabels[ErrorMessageLabelTag.MainClass.ordinal()] = new JLabel("Main Class Name should not be null");
-        errorMessageLabels[ErrorMessageLabelTag.MainClass.ordinal()].setForeground(DarkThemeManager.getInstance().getErrorMessageColor());
-        errorMessageLabels[ErrorMessageLabelTag.MainClass.ordinal()].setVisible(true);
+        errorMessageLabels[ErrorMessage.MainClass.ordinal()] = new JLabel("Main Class Name should not be null");
+        errorMessageLabels[ErrorMessage.MainClass.ordinal()].setForeground(DarkThemeManager.getInstance().getErrorMessageColor());
+        errorMessageLabels[ErrorMessage.MainClass.ordinal()].setVisible(true);
 
-        mainClassTextField.getTextField().getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                setVisibleForFixedErrorMessageLabel(3, e.getDocument().getLength() == 0);
-            }
+        mainClassTextField.getTextField().getDocument().addDocumentListener(documentValidationListener);
 
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                setVisibleForFixedErrorMessageLabel(3, e.getDocument().getLength() == 0);
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-            }
-        });
-
-        add(errorMessageLabels[ErrorMessageLabelTag.MainClass.ordinal()],
+        add(errorMessageLabels[ErrorMessage.MainClass.ordinal()],
                 new GridBagConstraints(1, ++displayLayoutCurrentRow,
                         0, 1,
                         1, 0,
                         GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, margin, 0, margin), 0, 0));
-    }
-
-    void addJobConfigurationLoadButtonActionListener(ActionListener actionListener) {
-        loadJobConfigurationFixedSizeButton.addActionListener(actionListener);
+                        JBUI.insets(0, margin), 0, 0));
     }
 
     private void addConfigurationLineItem() {
@@ -487,11 +418,9 @@ public class SparkSubmissionContentPanel extends JPanel{
                         1, 1,
                         1, 0,
                         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-                        new Insets(margin, margin, 0, 0), 0, 0));
+                        JBUI.insets(margin, margin, 0, 0), 0, 0));
 
-        String[] columns = {"Key", "Value", ""};
-
-        jobConfigurationTable = new JBTable();
+        jobConfigurationTable = new JBTable(new SubmissionTableModel());
         Dimension jobConfigurationTableSize = new Dimension(320, 100);
         jobConfigurationTable.setPreferredScrollableViewportSize(jobConfigurationTableSize);
 
@@ -502,47 +431,28 @@ public class SparkSubmissionContentPanel extends JPanel{
         jobConfigurationTable.setFillsViewportHeight(true);
         scrollPane.setMinimumSize(jobConfigurationTableSize);
 
-        jobConfigurationTable.addPropertyChangeListener((evt)-> {
-            if ((evt.getPropertyName().equals("tableCellEditor") || evt.getPropertyName().equals("model")) && jobConfigurationTable.getModel() instanceof SubmissionTableModel) {
-                SubmissionTableModel model = (SubmissionTableModel) jobConfigurationTable.getModel();
-                setVisibleForFixedErrorMessageLabel(ErrorMessageLabelTag.JobConfiguration.ordinal(), false);
-
-                SparkSubmissionJobConfigCheckResult result = model.getFirstCheckResults();
-                if (result != null) {
-                    setStatusForMessageLabel(ErrorMessageLabelTag.JobConfiguration.ordinal(), true, result.getMessaqge(), result.getStatus() == SparkSubmissionJobConfigCheckStatus.Warning);
-                }
-            }
-        });
+        jobConfigurationTable.addPropertyChangeListener((evt)-> checkInputsWithErrorLabels());
 
         add(scrollPane,
                 new GridBagConstraints(1, displayLayoutCurrentRow,
                         1, 1,
                         1, 0,
                         GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
-                        new Insets(margin, margin, 0, 0), 0, 0));
+                        JBUI.insets(margin, margin, 0, 0), 0, 0));
 
         JButton loadJobConfigurationButton = new JButton("...");
-        loadJobConfigurationButton.setPreferredSize(selectedArtifactTextField.getButton().getPreferredSize());
-        loadJobConfigurationFixedSizeButton = new FixedSizeButton(loadJobConfigurationButton);
+        loadJobConfigurationButton.setPreferredSize(localArtifactTextField.getButton().getPreferredSize());
 
-        add(loadJobConfigurationFixedSizeButton,
-                new GridBagConstraints(2, displayLayoutCurrentRow,
-                        0, 1,
-                        0, 0,
-                        GridBagConstraints.NORTHEAST, GridBagConstraints.NONE,
-                        new Insets(margin, margin / 2, 0, margin), 0, 0));
-        loadJobConfigurationFixedSizeButton.setToolTipText("Load Spark config from property file");
+        errorMessageLabels[ErrorMessage.JobConfiguration.ordinal()] = new JLabel();
+        errorMessageLabels[ErrorMessage.JobConfiguration.ordinal()].setForeground(DarkThemeManager.getInstance().getErrorMessageColor());
+        errorMessageLabels[ErrorMessage.JobConfiguration.ordinal()].setVisible(false);
 
-        errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()] = new JLabel();
-        errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()].setForeground(DarkThemeManager.getInstance().getErrorMessageColor());
-        errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()].setVisible(false);
-
-        add(errorMessageLabels[ErrorMessageLabelTag.JobConfiguration.ordinal()],
+        add(errorMessageLabels[ErrorMessage.JobConfiguration.ordinal()],
                 new GridBagConstraints(1, ++displayLayoutCurrentRow,
                         0, 1,
                         1, 0,
                         GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
-                        new Insets(0, margin, 0, margin), 0, 0));
+                        JBUI.insets(0, margin), 0, 0));
 
     }
 
@@ -555,7 +465,7 @@ public class SparkSubmissionContentPanel extends JPanel{
                         1, 1,
                         1, 0,
                         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-                        new Insets(margin, margin, 0, 0), 0, 0));
+                        JBUI.insets(margin, margin, 0, 0), 0, 0));
 
         commandLineTextField = new JTextField();
         commandLineTextField.setToolTipText("Command line arguments used in your main class; multiple arguments should be split by space.");
@@ -565,71 +475,138 @@ public class SparkSubmissionContentPanel extends JPanel{
                         0, 1,
                         1, 0,
                         GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
-                        new Insets(margin, margin, 0, margin), 0, 0));
+                        JBUI.insets(margin, margin, 0, margin), 0, 0));
     }
 
     private void addReferencedJarsLineItem() {
         JLabel commandLineArgs = new JLabel("Referenced Jars(spark.jars)");
-        commandLineArgs.setToolTipText("Files to be placed on the java classpath; The path needs to be a Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;)");
+        commandLineArgs.setToolTipText("Files to be placed on the java classpath; The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;)");
 
         add(commandLineArgs,
                 new GridBagConstraints(0, ++displayLayoutCurrentRow,
                         1, 1,
                         1, 0,
                         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-                        new Insets(margin, margin, 0, 0), 0, 0));
+                        JBUI.insets(margin, margin, 0, 0), 0, 0));
 
         referencedJarsTextField = new JTextField();
-        referencedJarsTextField.setToolTipText("Files to be placed on the java classpath; The path needs to be a Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;)");
+        referencedJarsTextField.setToolTipText("Files to be placed on the java classpath; The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;)");
         add(referencedJarsTextField,
                 new GridBagConstraints(1, displayLayoutCurrentRow,
                         0, 1,
                         1, 0,
                         GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
-                        new Insets(margin, margin, 0, margin), 0, 0));
+                        JBUI.insets(margin, margin, 0, margin), 0, 0));
     }
 
     private void addReferencedFilesLineItem() {
         JLabel commandLineArgs = new JLabel("Referenced Files(spark.files)");
-        commandLineArgs.setToolTipText("Files to be placed in executor working directory. The path needs to be a Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;) ");
+        commandLineArgs.setToolTipText("Files to be placed in executor working directory. The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;) ");
         add(commandLineArgs,
                 new GridBagConstraints(0, ++displayLayoutCurrentRow,
                         1, 1,
                         1, 0,
                         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-                        new Insets(margin, margin, 0, 0), 0, 0));
+                        JBUI.insets(margin, margin, 0, 0), 0, 0));
 
         referencedFilesTextField = new JTextField();
-        referencedFilesTextField.setToolTipText("Files to be placed in executor working directory. The path needs to be a Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;) ");
+        referencedFilesTextField.setToolTipText("Files to be placed in executor working directory. The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;) ");
         add(referencedFilesTextField, new GridBagConstraints(1, displayLayoutCurrentRow,
                 0, 1,
                 1, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
-                new Insets(margin, margin, 0, margin), 0, 0));
+                JBUI.insets(margin, margin, 0, margin), 0, 0));
     }
 
-    private void setVisibleForFixedErrorMessageLabel(@NotNull int label, @NotNull boolean isVisible) {
+    private void setVisibleForFixedErrorMessageLabel(@NotNull ErrorMessage label, boolean isVisible) {
         setStatusForMessageLabel(label, isVisible, null);
     }
 
-    private void setStatusForMessageLabel(@NotNull int label, @NotNull boolean isVisible, @Nullable String message, boolean isWarning) {
+    private void setStatusForMessageLabel(@NotNull ErrorMessage label, boolean isVisible, @Nullable String message, boolean isWarning) {
         if (!StringHelper.isNullOrWhiteSpace(message)) {
-            errorMessageLabels[label].setText(message);
+            errorMessageLabels[label.ordinal()].setText(message);
         }
 
-        errorMessageLabels[label].setForeground(isWarning ? DarkThemeManager.getInstance().getWarningMessageColor() : DarkThemeManager.getInstance().getErrorMessageColor());
-        this.errorMessageLabels[label].setVisible(isVisible);
-
-        if (updateCallBack != null) {
-            updateCallBack.run();
-        }
+        errorMessageLabels[label.ordinal()].setForeground(isWarning ? DarkThemeManager.getInstance().getWarningMessageColor() : DarkThemeManager.getInstance().getErrorMessageColor());
+        this.errorMessageLabels[label.ordinal()].setVisible(isVisible);
     }
 
-    private void setStatusForMessageLabel(@NotNull int label, @NotNull boolean isVisible, @Nullable String message) {
+    private void setStatusForMessageLabel(@NotNull ErrorMessage label, boolean isVisible, @Nullable String message) {
         setStatusForMessageLabel(label, isVisible, message, false);
     }
 
-    public void cleanUp() {
+    private void hideAllErrors() {
+        for (ErrorMessage errorMessageLabel : ErrorMessage.values()) {
+            setVisibleForFixedErrorMessageLabel(errorMessageLabel, false);
+        }
+    }
+
+    private void cleanUp() {
         clusterSelectedSubject.onCompleted();
+    }
+
+    private synchronized void checkInputsWithErrorLabels() {
+        // Clean all error messages firstly
+        hideAllErrors();
+
+        // Check Cluster selection
+        if (clustersListComboBox.getComboBox().getSelectedItem() == null) {
+            setVisibleForFixedErrorMessageLabel(ErrorMessage.ClusterName, true);
+        }
+
+        if (intelliJArtifactRadioButton.isSelected()) {
+            // Check Intellij artifact
+            if (selectedArtifactComboBox.getSelectedItem() == null) {
+                setVisibleForFixedErrorMessageLabel(ErrorMessage.SystemArtifact, true);
+            }
+        }
+
+        if (localArtifactRadioButton.isSelected()) {
+            // Check local jar artifact
+            if (StringHelper.isNullOrWhiteSpace(localArtifactTextField.getText())) {
+                setVisibleForFixedErrorMessageLabel(ErrorMessage.LocalArtifact, true);
+            }
+
+            if (!SparkSubmitHelper.isLocalArtifactPath(localArtifactTextField.getText())) {
+                setVisibleForFixedErrorMessageLabel(ErrorMessage.LocalArtifact, true);
+            }
+        }
+
+        // Check main class input
+        if (StringUtils.isBlank(mainClassTextField.getText())) {
+            setVisibleForFixedErrorMessageLabel(ErrorMessage.MainClass, true);
+        }
+
+        // Check job config table
+        SubmissionTableModel confTableModel = ((SubmissionTableModel) getJobConfigurationTable().getModel());
+        SparkSubmissionJobConfigCheckResult result = confTableModel.getFirstCheckResults();
+        if (result != null) {
+            setStatusForMessageLabel(ErrorMessage.JobConfiguration, true, result.getMessaqge(), result.getStatus() == SparkSubmissionJobConfigCheckStatus.Warning);
+        }
+    }
+
+    public void checkInputs() throws ConfigurationException {
+        checkInputsWithErrorLabels();
+
+        // Convert Error Labels into Configuration Exception
+        java.util.List<String> errors = getErrorMessages();
+        if (!errors.isEmpty()) {
+            throw new ConfigurationException(String.join("; \n", errors));
+        }
+
+        SubmissionTableModel confTableModel = ((SubmissionTableModel) getJobConfigurationTable().getModel());
+        for (Pair<String, String> confEntry : confTableModel.getJobConfigMap()) {
+            String entryKey = confEntry.first();
+
+            if (!StringUtils.isAlpha(entryKey.substring(0, 1)) && !StringUtils.startsWith(entryKey, "_")) {
+                throw new RuntimeConfigurationError("The Spark config key should start with a letter or underscore");
+            }
+
+            if (!StringUtils.containsOnly(entryKey.toLowerCase(), "abcdefghijklmnopqrstuvwxyz1234567890_-.")) {
+                throw new RuntimeConfigurationError("The Spark config key should only contains letters, digits, hyphens, underscores, and periods: (" + entryKey + ")");
+            }
+
+        }
+
     }
 }

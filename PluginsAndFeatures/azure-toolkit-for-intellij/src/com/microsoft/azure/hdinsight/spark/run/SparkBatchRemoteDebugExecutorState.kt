@@ -20,28 +20,14 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.run.configuration
+package com.microsoft.azure.hdinsight.spark.run
 
-import com.intellij.openapi.options.SettingsEditor
-import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.spark.ui.ServerlessSparkConfigurable
-import javax.swing.JComponent
+import com.intellij.execution.Executor
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 
-class ServerlessSparkSettingsEditor(project: Project) : SettingsEditor<ServerlessSparkConfiguration>() {
-    private val configurable = ServerlessSparkConfigurable(project)
+class SparkBatchRemoteDebugExecutorState(serverlessSparkSubmitModel: SparkSubmitModel)
+    : SparkBatchRemoteDebugState(serverlessSparkSubmitModel) {
 
-    override fun createEditor(): JComponent {
-        return configurable.component
+    override fun onSuccess(executor: Executor) {
     }
-
-    override fun resetEditorFrom(data: ServerlessSparkConfiguration) {
-        // Reset the panel from the RunConfiguration
-        configurable.setData(data.module.model)
-    }
-
-    override fun applyEditorTo(data: ServerlessSparkConfiguration) {
-        // Apply the panel's setting to RunConfiguration
-        configurable.getData(data.module.model)
-    }
-
 }

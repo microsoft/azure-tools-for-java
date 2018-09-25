@@ -23,7 +23,9 @@ package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.spark.uihelper.InteractiveTableModel;
 import com.microsoft.azuretools.adauth.StringUtils;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
+import com.microsoft.azuretools.utils.Pair;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,15 +33,24 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 public class SubmissionTableModel extends InteractiveTableModel{
+    private static final String[] columns = {"Key", "Value"};
+
     private List<SparkSubmissionJobConfigCheckResult> checkResults;
 
-    public SubmissionTableModel(String[] columnNames) {
-        super(columnNames);
+    public SubmissionTableModel() {
+        super(columns);
     }
 
+    public SubmissionTableModel(List<Pair<String, String>> flatJobConfig) {
+        this();
+
+        loadJobConfigMap(flatJobConfig);
+    }
+
+    @Nullable
     public SparkSubmissionJobConfigCheckResult getFirstCheckResults() {
         return checkResults == null || checkResults.size() == 0 ? null : checkResults.get(0);
     }
@@ -64,44 +75,30 @@ public class SubmissionTableModel extends InteractiveTableModel{
     }
 
     @NotNull
-    public Map<String, Object> getJobConfigMap() {
-        Map<String, Object> jobConfigMap = new HashMap<>();
-        Map<String, Object> sparkConfigMap = new HashMap<>();
+    public List<Pair<String, String>> getJobConfigMap() {
+        List<Pair<String, String>> jobConfigs = new ArrayList<>();
 
         for (int index = 0; index < this.getRowCount(); index++) {
             String key = (String) this.getValueAt(index, 0);
+            Object value = this.getValueAt(index, 1);
 
             if (!StringHelper.isNullOrWhiteSpace(key)) {
-                // Separate the submission and Spark conf parameters
-                if (SparkSubmissionParameter.isSubmissionParameter(key)) {
-                    jobConfigMap.put(key, this.getValueAt(index, 1));
-                } else {
-                    sparkConfigMap.put(key, this.getValueAt(index, 1));
-                }
+                jobConfigs.add(new Pair<>(key, value == null ? null : value.toString()));
             }
         }
 
-        if (!sparkConfigMap.isEmpty()) {
-            jobConfigMap.put(SparkSubmissionParameter.Conf, sparkConfigMap);
-        }
-
-        return jobConfigMap;
+        return jobConfigs;
     }
 
-    public void loadJobConfigMap(Map<String, Object> jobConf) {
+    public void loadJobConfigMap(List<Pair<String, String>> jobConf) {
+        // Not thread safe
         removeAllRows();
 
-        Stream.concat(
-                jobConf.entrySet().stream()
-                        .filter(entry -> SparkSubmissionParameter.isSubmissionParameter(entry.getKey())),
-                // The Spark Job Configuration needs to be separated
-                jobConf.entrySet().stream()
-                        .filter(entry -> !SparkSubmissionParameter.isSubmissionParameter(entry.getKey()))
-                        .filter(entry -> entry.getKey().equals(SparkSubmissionParameter.Conf))
-                        .flatMap(entry -> new SparkConfigures(entry.getValue()).entrySet().stream())
-        )
-        .filter(entry -> !entry.getKey().trim().isEmpty())
-        .forEach(entry -> super.addRow(entry.getKey(), entry.getValue()));
+        jobConf.forEach(kvPair -> {
+            if (kvPair.first() != null) {
+                super.addRow(kvPair.first(), kvPair.second());
+            }
+        });
 
         if (!hasEmptyRow()) {
             addEmptyRow();
@@ -150,22 +147,8 @@ public class SubmissionTableModel extends InteractiveTableModel{
     }
 
     private void checkParameter() {
-        final List<SparkSubmissionJobConfigCheckResult> resultList = SparkSubmissionParameter.checkJobConfigMap(getJobConfigMap());
-
-        Collections.sort(resultList, new Comparator<SparkSubmissionJobConfigCheckResult>() {
-            @Override
-            public int compare(SparkSubmissionJobConfigCheckResult o1, SparkSubmissionJobConfigCheckResult o2) {
-                if (o1.getStatus() == o2.getStatus()) {
-                    return 0;
-                } else if (o1.getStatus() == SparkSubmissionJobConfigCheckStatus.Warning && o2.getStatus() == SparkSubmissionJobConfigCheckStatus.Error) {
-                    return 1;
-                } else {
-                    return -1;
-                }
-            }
-        });
-
-        checkResults = resultList;
+        checkResults = SparkSubmissionParameter.checkJobConfigMap(
+                getJobConfigMap().stream().collect(Collectors.toMap(Pair::first, Pair::second)));
     }
 
 }
