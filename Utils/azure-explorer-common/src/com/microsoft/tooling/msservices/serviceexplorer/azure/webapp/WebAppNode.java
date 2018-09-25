@@ -22,7 +22,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
@@ -114,9 +113,9 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
     @Override
     protected void loadActions() {
         addAction(ACTION_STOP, getIcon(WebAppState.STOPPED, this.webAppOS),
-            getNodeActionListener("Stopping Web App", () -> stopWebApp()));
-        addAction(ACTION_START, getNodeActionListener("Starting Web App", () -> startWebApp()));
-        addAction(ACTION_RESTART, getNodeActionListener("Restarting Web App", () -> restartWebApp()));
+            createBackgroundActionListener("Stopping Web App", () -> stopWebApp()));
+        addAction(ACTION_START, createBackgroundActionListener("Starting Web App", () -> startWebApp()));
+        addAction(ACTION_RESTART, createBackgroundActionListener("Restarting Web App", () -> restartWebApp()));
         addAction(ACTION_DELETE, new DeleteWebAppAction());
         addAction(ACTION_OPEN_IN_BROWSER, new NodeActionListener() {
             @Override
@@ -134,12 +133,12 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
         super.loadActions();
     }
 
-    private NodeActionListener getNodeActionListener(final String message, final Runnable runnable) {
+    private NodeActionListener createBackgroundActionListener(final String message, final Runnable runnable) {
         return new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, message, false,
-                    true, message + "...", runnable);
+                DefaultLoader.getIdeHelper().runInBackground(null, message, false, true,
+                    String.format("%s...", message), runnable);
             }
         };
     }
