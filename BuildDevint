@@ -1,11 +1,15 @@
 #!/bin/bash
 
 tc_open() {
+    set +x
     echo "##teamcity[blockOpened name='$1' description='$1']"
+    set -x
 }
 
 tc_close() {
+    set +x
     echo "##teamcity[blockClosed name='$1']"
+    set -x
 }
 
 set -e
@@ -77,7 +81,7 @@ tc_close "Building IDEA plugin"
 # Build JetBrains Rider 2018.2 plugin
 tc_open "Building Rider plugin"
 {
-    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider)
+    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildCounter=$BUILD_COUNTER)
     cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-2018.2.zip
 }
 tc_close "Building Rider plugin"
