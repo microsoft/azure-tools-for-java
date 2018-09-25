@@ -22,52 +22,45 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.azuretools.utils.Pair;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+
 public class SparkSubmissionParameterScenario {
-
-    String mockSelectedClusterName = "mockCluster";
+    static ObjectMapper mapper = new ObjectMapper();
+    String mockSelectedClusterName = "";
     boolean mockIsLocalArtifactRadioButtionSelected = true;
-    String mockArtifactName = "mockArtifact";
-    String mockLocalArtifactPath = "mockLocalArtifactPath";
-    String mockFilePath = "mockFilePath";
-    String mockClassName = "mockClassName";
-    List<String> mockReferencedFiles = new ArrayList<String>(Arrays.asList(
-            "mock_reference_file1",
-            "mock_reference_file2"));
-    List<String> mockReferencedJars = new ArrayList<String>(Arrays.asList(
-            "mock_reference_jar1",
-            "mock_reference_jar2"));
-    List<String> mockArgs = new ArrayList<String>(Arrays.asList(
-            "mock_arg1",
-            "mock_arg2"));
+    String mockArtifactName = "";
+    String mockLocalArtifactPath = "";
+    String mockFilePath = "";
+    String mockClassName = "";
+    List<String> mockReferencedFiles = new ArrayList<>();
+    List<String> mockReferencedJars = new ArrayList<>();
+    List<String> mockArgs = new ArrayList<>();
 
-    SparkSubmissionParameter sparkSubmissionParameter;
-    Map<String, Object> sparkConfig;
+    SparkSubmissionParameter sparkSubmissionParameter = new SparkSubmissionParameter();
+    Map<String, String> sparkConfig;
 
-    private Map<String, Object>
-    __getSparkSubmissionParameterMap(SparkSubmissionParameter sparkSubmissionParameter) throws
-            Throwable {
-        Method method = SparkSubmissionParameter.class.getDeclaredMethod("getSparkSubmissionParameterMap");
-        method.setAccessible(true);
-        return (Map<String, Object>) method.invoke(sparkSubmissionParameter);
+    @Given("^apply spark configs$")
+    public void applySparkConfigures(Map<String, String> config) throws Throwable {
+        List<com.microsoft.azuretools.utils.Pair<String, String>> mergedJobConf = sparkSubmissionParameter.flatJobConfig();
+        config.forEach( (k, v) -> mergedJobConf.add(new Pair<>(k, v)));
+        sparkSubmissionParameter.applyFlattedJobConf(mergedJobConf);
     }
 
-    @Given("^create SparkSubmissionParameter spark config parameter$")
-    public void createSparkSubmissionParameterSparkConfigParameter(Map<String, Object> config) throws Throwable {
-        sparkConfig = config;
-    }
 
-    public SparkSubmissionParameter mockSparkSubmissionParameterWithJobConf(Map<String, Object> jobConfig) {
-        return new SparkSubmissionParameter(
+    @Given("^create SparkSubmissionParameter with the following job config$")
+    public void createSparkSubmissionParameterWithJobConfig(Map<String, String> jobConfig) throws Throwable {
+        sparkSubmissionParameter = new SparkSubmissionParameter(
                 mockSelectedClusterName,
                 mockIsLocalArtifactRadioButtionSelected,
                 mockArtifactName,
@@ -77,28 +70,23 @@ public class SparkSubmissionParameterScenario {
                 mockReferencedFiles,
                 mockReferencedJars,
                 mockArgs,
-                jobConfig);
-    }
+                new HashMap<>());
 
-    @Given("^create SparkSubmissionParameter with the following job config$")
-    public void createSparkSubmissionParameterWithJobConfig(Map<String, Object> jobConfig) throws Throwable {
-        Map<String, Object> mergedJobConf = new HashMap<>(jobConfig);
-
-        mergedJobConf.put("conf", sparkConfig);
-
-        sparkSubmissionParameter = mockSparkSubmissionParameterWithJobConf(mergedJobConf);
+        applySparkConfigures(jobConfig);
     }
 
     @Then("^the parameter map should include key '(.+)' with value '(.+)'$")
     public void verifyParameterKeyAndValueExist(String key, String value) throws Throwable{
-        Map<String, Object> param = __getSparkSubmissionParameterMap(sparkSubmissionParameter);
+        Map<String, Object> param = sparkSubmissionParameter.getJobConfig();
         assertTrue(param.containsKey(key));
         assertEquals(value, param.get(key).toString());
     }
 
     @Then("^the serialized JSON should be '(.+)'$")
     public void verifySerializedJSON(String json) throws Throwable {
-        assertEquals(sparkSubmissionParameter.serializeToJson(), json);
+        String actualJson = sparkSubmissionParameter.serializeToJson();
+
+        assertThat(mapper.readValue(actualJson, HashMap.class)).isEqualTo(mapper.readValue(json, HashMap.class));
     }
 
 

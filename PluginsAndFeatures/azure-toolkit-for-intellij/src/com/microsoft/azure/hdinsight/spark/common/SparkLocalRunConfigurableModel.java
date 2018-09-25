@@ -23,15 +23,14 @@ package com.microsoft.azure.hdinsight.spark.common;
 
 import com.intellij.execution.CommonJavaRunConfigurationParameters;
 import com.intellij.execution.ExternalizablePath;
+import com.intellij.openapi.command.impl.DummyProject;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.PathUtil;
-import com.intellij.util.xmlb.XmlSerializer;
 import com.intellij.util.xmlb.annotations.MapAnnotation;
 import com.intellij.util.xmlb.annotations.Tag;
 import com.intellij.util.xmlb.annotations.Transient;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import org.apache.commons.lang3.SystemUtils;
-import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,7 +51,7 @@ public class SparkLocalRunConfigurableModel implements CommonJavaRunConfiguratio
     private boolean isPassParentEnvs = true;
     @Transient
     @NotNull
-    private Project project;
+    private Project project = DummyProject.getInstance();
     @Tag("program-parameters")
     @Nullable
     private String programParameters;
@@ -70,8 +69,12 @@ public class SparkLocalRunConfigurableModel implements CommonJavaRunConfiguratio
     @Nullable
     private String mainClass;
     @Tag("data-root")
-    @NotNull
+    @Nullable
     private String dataRootDirectory;
+
+    // For XML deserialization
+    private SparkLocalRunConfigurableModel() {
+    }
 
     public SparkLocalRunConfigurableModel(@NotNull Project project) {
         this.project = project;
@@ -108,6 +111,10 @@ public class SparkLocalRunConfigurableModel implements CommonJavaRunConfiguratio
         return project;
     }
 
+    public void setProject(@NotNull Project project) {
+        this.project = project;
+    }
+
     @Override
     public void setProgramParameters(@Nullable String s) {
         programParameters = s;
@@ -134,6 +141,10 @@ public class SparkLocalRunConfigurableModel implements CommonJavaRunConfiguratio
 
     @Override
     public void setEnvs(@NotNull Map<String, String> map) {
+        if (map == envs) {
+            return;
+        }
+
         envs.clear();
         envs.putAll(map);
     }
@@ -215,13 +226,5 @@ public class SparkLocalRunConfigurableModel implements CommonJavaRunConfiguratio
     @Override
     public String getPackage() {
         return null;
-    }
-
-    public Element exportToElement() {
-        return XmlSerializer.serialize(this);
-    }
-
-    public void applyFromElement(Element element) {
-        XmlSerializer.deserializeInto(this, element);
     }
 }
