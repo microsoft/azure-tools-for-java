@@ -1,2 +1,6 @@
 echo "127.0.0.1 $(hostname)" > /etc/hosts # without this spark-tools tests will fail in docker
-./BuildDevint $1 -B
+if [[ "$1" -eq 0 ]] ; then
+    ./BuildDevint -B
+else
+    ./BuildDevint -B -C $1
+fi
