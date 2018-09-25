@@ -27,7 +27,7 @@ tc_open "Initializing build script"
     MAVEN_QUIET=""
     INTELLIJ_VERSION=false
 
-    while getopts ":hqvBC" option; do
+    while getopts ":hqvBC:" option; do
         case $option in
             h) echo "usage: $0 [-h] [-q] [-v] [-B] [-C BuildCounter]"; exit ;;
             q) MAVEN_QUIET="-q" ;;
