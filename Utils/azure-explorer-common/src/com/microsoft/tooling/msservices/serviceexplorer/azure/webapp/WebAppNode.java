@@ -22,9 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 import java.io.IOException;
@@ -41,7 +39,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
-public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeView {
+public class WebAppNode extends RefreshableNode implements TelemetryProperties, WebAppNodeView {
     private static final String ACTION_START = "Start";
     private static final String ACTION_STOP = "Stop";
     private static final String ACTION_DELETE = "Delete";
@@ -100,11 +98,10 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeV
         return super.getNodeActions();
     }
 
-//     disable deployment slots sub module
-//    @Override
-//    protected void refreshItems() {
-//        webAppNodePresenter.onNodeRefresh();
-//    }
+    @Override
+    protected void refreshItems() {
+        webAppNodePresenter.onNodeRefresh();
+    }
 
     @Override
     public void renderSubModules() {
