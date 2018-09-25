@@ -22,49 +22,70 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
+import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.common.CallBack
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UsePassword
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UseKeyFile
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
-import java.awt.event.ActionListener
+import org.apache.commons.lang3.StringUtils
 
 class SparkSubmissionDebuggablePanelConfigurable(project: Project,
-                                                 callBack: CallBack?,
                                                  submissionPanel: SparkSubmissionDebuggableContentPanel)
-    : SparkSubmissionContentPanelConfigurable(project, callBack, submissionPanel) {
+    : SparkSubmissionContentPanelConfigurable(project, submissionPanel) {
     private val submissionDebuggablePanel
         get() = submissionPanel as SparkSubmissionDebuggableContentPanel
 
-    override fun createUIComponents() {
-        super.createUIComponents()
+    private val advancedConfigPanel
+        get() = submissionDebuggablePanel.advancedConfigPanel
 
-        val advConfDialog = this.submissionDebuggablePanel.advancedConfigDialog
-        advConfDialog.addCallbackOnOk {
-            advConfDialog.getData(submitModel.advancedConfigModel)
-        }
+    private val advancedConfigCtrl = object : SparkSubmissionAdvancedConfigCtrl(advancedConfigPanel) {
+        override fun getClusterNameToCheck(): String? = selectedClusterDetail?.name
+    }
 
-        this.submissionDebuggablePanel.addAdvancedConfigurationButtonActionListener(ActionListener {
-            // Read the current panel setting into current model
 
-            advConfDialog.setAuthenticationAutoVerify(submitModel.selectedClusterDetail
-                    .map(IClusterDetail::getName)
-                    .orElse(null))
-            advConfDialog.isModal = true
-            advConfDialog.isVisible = true
-        })
+    override fun onClusterSelected(cluster: IClusterDetail) {
+        super.onClusterSelected(cluster)
+
+        advancedConfigCtrl.selectCluster(cluster.name)
     }
 
     override fun setData(data: SparkSubmitModel) {
+        // Data -> Components
         super.setData(data)
 
-        // Advanced Configuration Dialog
-        submissionDebuggablePanel.advancedConfigDialog.setData(data.advancedConfigModel)
+        // Advanced Configuration panel
+        advancedConfigPanel.setData(data.advancedConfigModel.apply { clusterName = data.clusterName })
     }
 
     override fun getData(data: SparkSubmitModel) {
+        // Components -> Data
         super.getData(data)
 
-        // Advanced Configuration Dialog
-        submissionDebuggablePanel.advancedConfigDialog.getData(data.advancedConfigModel)
+        // Advanced Configuration panel
+        advancedConfigPanel.getData(data.advancedConfigModel)
+        data.advancedConfigModel.clusterName = selectedClusterDetail?.name
+    }
+
+    override fun validate() {
+        super.validate()
+
+        if (advancedConfigPanel.isRemoteDebugEnabled) {
+            if (advancedConfigCtrl.resultMessage.isNotBlank() &&
+                !advancedConfigCtrl.isCheckPassed) {
+                throw RuntimeConfigurationError("Can't save the configuration since ${advancedConfigCtrl.resultMessage}")
+            }
+
+            val advModel = advancedConfigPanel.model
+            when (advModel.sshAuthType) {
+                UsePassword -> if (StringUtils.isBlank(advModel.sshPassword)) {
+                    throw RuntimeConfigurationError("Can't save the configuration since password is blank")
+                }
+                UseKeyFile -> if (advModel.sshKeyFile?.exists() != true) {
+                    throw RuntimeConfigurationError("Can't save the configuration since SSh key file isn't set or doesn't exist")
+                }
+                else -> {}
+            }
+        }
     }
 }

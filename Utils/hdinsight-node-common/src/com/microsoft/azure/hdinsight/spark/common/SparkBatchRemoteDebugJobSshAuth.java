@@ -27,11 +27,11 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 
 public class SparkBatchRemoteDebugJobSshAuth {
-    public String sshUserName = "sshuser";
+    private String sshUserName = "sshuser";
 
-    public SSHAuthType sshAuthType = SSHAuthType.UsePassword;
-    public File sshKeyFile;
-    public String sshPassword = "";
+    private SSHAuthType sshAuthType = SSHAuthType.UsePassword;
+    private File sshKeyFile;
+    private String sshPassword = "";
 
     public enum SSHAuthType {
         UsePassword,
@@ -42,6 +42,38 @@ public class SparkBatchRemoteDebugJobSshAuth {
         return StringUtils.isNotEmpty(sshUserName) &&
                 (sshAuthType == SSHAuthType.UsePassword ? StringUtils.isNotEmpty(sshPassword) :
                                                           (sshKeyFile != null && sshKeyFile.exists()));
+    }
+
+    public String getSshUserName() {
+        return sshUserName;
+    }
+
+    public void setSshUserName(String sshUserName) {
+        this.sshUserName = sshUserName;
+    }
+
+    public SSHAuthType getSshAuthType() {
+        return sshAuthType;
+    }
+
+    public void setSshAuthType(SSHAuthType sshAuthType) {
+        this.sshAuthType = sshAuthType;
+    }
+
+    public File getSshKeyFile() {
+        return sshKeyFile;
+    }
+
+    public void setSshKeyFile(File sshKeyFile) {
+        this.sshKeyFile = sshKeyFile;
+    }
+
+    public String getSshPassword() {
+        return sshPassword;
+    }
+
+    public void setSshPassword(String sshPassword) {
+        this.sshPassword = sshPassword;
     }
 
     public static class UnknownSSHAuthTypeException extends SparkJobException {
