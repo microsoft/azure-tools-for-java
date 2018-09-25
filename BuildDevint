@@ -80,7 +80,7 @@ tc_close "Building IDEA plugin"
 tc_open "Building Rider plugin"
 {
     (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildCounter=$BUILD_COUNTER)
-    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-2018.2.zip
+    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider-3.11.0.$BUILD_COUNTER.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-2018.2.zip
 }
 tc_close "Building Rider plugin"
 
