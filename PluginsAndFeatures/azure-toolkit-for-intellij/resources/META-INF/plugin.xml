@@ -23,7 +23,6 @@
       <h4>Added</h4>
       <ul>
         <li>Support to deploy applications to Web App (Linux).</li>
-        <li>Support to show all the deployment slots for a Web App.</li>
         <li>Support to show the Azure Data Lake Spark resource pool provision log outputs.</li>
       </ul>
       <h4>Changed</h4>
