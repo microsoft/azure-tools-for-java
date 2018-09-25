@@ -8,7 +8,7 @@
     <colspec value="left:5dlu:noGrow"/>
     <colspec value="fill:m:noGrow"/>
     <constraints>
-      <xy x="20" y="20" width="709" height="400"/>
+      <xy x="20" y="20" width="733" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -37,9 +37,8 @@
           <forms defaultalign-horz="false" defaultalign-vert="false"/>
         </constraints>
         <properties>
-          <icon value="icons/settings.png"/>
           <text value=""/>
-          <verticalAlignment value="1"/>
+          <verticalAlignment value="0"/>
         </properties>
       </component>
       <grid id="53e0c" layout-manager="FormLayout">

@@ -56,8 +56,8 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
   public static final String ACTION_SHUTDOWN = "Shutdown";
   public static final String ACTION_VIEW = "Details";
   public static final String ACTION_DEPLOY = "Publish";
-  private static final String ACTION_SHUTDOWN_ICON = "Stop.png";
-  private static final String ACTION_START_ICON = "Start.png";
+  private static final String ACTION_SHUTDOWN_ICON = "AzureStop.svg";
+  private static final String ACTION_START_ICON = "AzureStart.svg";
 
   DockerHost dockerHost;
   AzureDockerHostsManager dockerManager;

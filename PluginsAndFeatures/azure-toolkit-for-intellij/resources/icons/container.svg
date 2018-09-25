@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <title>AzureStorageContainer</title>
+  <g>
+    <rect width="16" height="16" fill="#ffdbff" opacity="0"/>
+    <path d="M1,2V15H15V2ZM14,14H2V5H14Z" fill="#9aa7b0"/>
+    <path d="M9,6,8,8H4v5h8V6Zm2,2H9.118l.5-1H11Zm0,4H5V9h6Z" fill="#f4af3d"/>
+  </g>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <title>AzureOpen_dark</title>
+  <g>
+    <rect width="16" height="16" fill="#ffdbff" opacity="0"/>
+    <path d="M8,2l4,4H9v4H7V6H4Zm6,9.44V10H12v1.44a.56.56,0,0,1-.56.56H4.56A.56.56,0,0,1,4,11.44V10H2v1.44A2.562,2.562,0,0,0,4.56,14h6.88A2.562,2.562,0,0,0,14,11.44Z" fill="#afb1b3"/>
+  </g>
+</svg>

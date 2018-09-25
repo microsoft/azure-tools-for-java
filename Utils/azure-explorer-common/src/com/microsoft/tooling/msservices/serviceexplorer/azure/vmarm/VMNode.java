@@ -154,9 +154,9 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
     private static final String ACTION_SHUTDOWN = "Shutdown";
     private static final String ACTION_START = "Start";
     private static final String ACTION_RESTART = "Restart";
-    private static final String ACTION_SHUTDOWN_ICON = "Stop.png";
-    private static final String ACTION_START_ICON = "Start.png";
-    private static final String ACTION_DELETE_ICON = "Delete.png";
+    private static final String ACTION_SHUTDOWN_ICON = "AzureStop.svg";
+    private static final String ACTION_START_ICON = "AzureStart.svg";
+    private static final String ACTION_DELETE_ICON = "Discard.svg";
     public static final int REMOTE_DESKTOP_PORT = 3389;
 
     private VirtualMachine virtualMachine;

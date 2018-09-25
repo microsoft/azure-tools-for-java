@@ -22,6 +22,7 @@
 package com.microsoft.intellij.wizards.createarmvm;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.intellij.ui.wizard.WizardStep;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -59,6 +60,8 @@ public class SubscriptionStep extends AzureWizardStep<VMWizardModel> implements 
         this.project = project;
 
         model.configStepList(createVmStepsList, 0);
+
+        buttonLogin.setIcon(IconLoader.getIcon("icons/Subscriptions.svg"));
 
         buttonLogin.addActionListener(new ActionListener() {
             @Override
