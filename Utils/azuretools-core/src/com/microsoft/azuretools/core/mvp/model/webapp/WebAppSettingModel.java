@@ -41,6 +41,7 @@ public class WebAppSettingModel {
     private String webAppName = "";
     private String webContainer = "";
 
+    private String slotName = "production";
     private boolean creatingResGrp = false;
     private String resourceGroup = "";
 
@@ -109,6 +110,14 @@ public class WebAppSettingModel {
 
     public void setWebAppName(String webAppName) {
         this.webAppName = webAppName;
+    }
+
+    public String getSlotName() {
+        return this.slotName;
+    }
+
+    public void setSlotName(final String slotName) {
+        this.slotName = slotName;
     }
 
     public String getWebContainer() {
