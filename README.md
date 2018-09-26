@@ -13,7 +13,7 @@ The Azure plugin for [JetBrains Rider](https://www.jetbrains.com/rider) is an op
 * Basic management of Redis caches (create/delete, start/stop, view details, list keys/values)
 * Basic management of storage accounts (create/delete, list/create/delete blob container, list/upload/download/delete blobs)
 * Basic management of virtual machines (create/delete, start/stop, view details)
-* Basic management of web apps (create/delete, start/stop, view details)
+* Basic management of web apps (create/delete, start/stop, view details, edit settings)
 * Run configuration to deploy ASP.NET web apps (can also provision SQL database)]
   * ASP.NET Core web apps on any platform
   * .NET framework web apps on Windows only
