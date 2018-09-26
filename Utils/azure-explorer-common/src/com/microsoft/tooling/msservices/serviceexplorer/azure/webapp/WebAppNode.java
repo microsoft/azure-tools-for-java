@@ -112,7 +112,7 @@ public class WebAppNode extends RefreshableNode implements TelemetryProperties, 
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_STOP, getIcon(WebAppState.STOPPED, this.webAppOS),
+        addAction(ACTION_STOP, getIcon(WebAppBaseState.STOPPED, this.webAppOS),
             createBackgroundActionListener("Stopping Web App", () -> stopWebApp()));
         addAction(ACTION_START, createBackgroundActionListener("Starting Web App", () -> startWebApp()));
         addAction(ACTION_RESTART, createBackgroundActionListener("Restarting Web App", () -> restartWebApp()));
