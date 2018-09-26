@@ -356,9 +356,9 @@ object WebAppRunState {
      * @param zipFile - zip file instance to be published
      * @param processHandler - a process handler to show a process message
      *
-     * @throws [Exception] in case REST request was not succeed or timed out after 3 attempts
+     * @throws [RuntimeException] in case REST request was not succeed or timed out after 3 attempts
      */
-    @Throws(Exception::class)
+    @Throws(RuntimeException::class)
     private fun WebApp.kuduZipDeploy(zipFile: File, processHandler: RunProcessHandler) {
 
         val session = WebAppDeploySession(publishingProfile.gitUsername(), publishingProfile.gitPassword())

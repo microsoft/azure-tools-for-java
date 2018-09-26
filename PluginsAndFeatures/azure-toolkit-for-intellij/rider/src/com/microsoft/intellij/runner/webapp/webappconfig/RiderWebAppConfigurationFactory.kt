@@ -11,9 +11,7 @@ class RiderWebAppConfigurationFactory(type: ConfigurationType) : ConfigurationFa
         private const val FACTORY_NAME = "Azure Web App"
     }
 
-    override fun getName(): String {
-        return FACTORY_NAME
-    }
+    override fun getName() = FACTORY_NAME
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
         return RiderWebAppConfiguration(project, this, project.name)
