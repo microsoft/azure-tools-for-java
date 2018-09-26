@@ -225,12 +225,15 @@
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.ServerlessSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.SparkFailureTaskDebugConfigurationType"/>
+    <configurationType implementation="com.microsoft.azure.hdinsight.spark.console.SparkScalaLocalConsoleConfigurationType"/>
+    <actionPromoter implementation="com.microsoft.azure.hdinsight.spark.console.SparkExecuteInConsoleActionPromoter"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobLocalRunConfigurationProducer"/>
     <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ServerlessSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
     <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
+    <projectTaskRunner implementation="com.microsoft.azure.hdinsight.spark.console.SparkScalaLocalConsoleProjectTaskRunner" />
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
   </extensions>
 
@@ -304,6 +307,25 @@
             text="Disconnect" description="Disconnect the log view from remote Spark Job"
             icon="/icons/SparkJobDisconnect.png">
     </action>
+    <action id="Spark.RunScalaLocalConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLocalConsoleAction"
+            text="Run Spark Local Console(Scala)" description="Run Spark Local Console (Scala language)">
+    </action>
+    <action id="Spark.RunScalaLivyConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLivyConsoleAction"
+            text="Run Spark Livy Interactive Session Console(Scala)" description="Run Spark Livy Interactive Session Console (Scala language)">
+    </action>
+    <action id="SparkConsole.Execute" class="com.microsoft.azure.hdinsight.spark.console.SparkConsoleExecuteAction" text="Execute Spark Console Statement">
+      <keyboard-shortcut first-keystroke="control ENTER" keymap="$default"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="meta shift ENTER"/>
+    </action>
+    <action id="Spark.SendSelectionToConsole" class="com.microsoft.azure.hdinsight.spark.console.SparkSendSelectionToConsoleAction"
+            text="Send Selection To Spark Console" description="Send selection to Spark console">
+      <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
+      <keyboard-shortcut first-keystroke="control shift S" keymap="$default"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="ctrl shift S"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="meta shift S" remove="true"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="ctrl shift S"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="meta shift S" remove="true"/>
+    </action>
 
     <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/azure.png" popup="true"
            class="com.microsoft.intellij.actions.AzurePopupGroup">
@@ -342,6 +364,12 @@
       <reference ref="AzureToolkit.AzureSignIn"/>
     </group>
 
+    <group id="SparkConsoleGroup" text="Spark Console" description="Spark Console" popup="true">
+      <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+      <reference ref="Spark.RunScalaLocalConsole"/>
+      <reference ref="Spark.RunScalaLivyConsole"/>
+    </group>
   </actions>
 
     <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>

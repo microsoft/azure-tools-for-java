@@ -22,9 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 import java.io.IOException;
@@ -41,7 +39,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
-public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeView {
+public class WebAppNode extends RefreshableNode implements TelemetryProperties, WebAppNodeView {
     private static final String ACTION_START = "Start";
     private static final String ACTION_STOP = "Stop";
     private static final String ACTION_DELETE = "Delete";
@@ -60,7 +58,7 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeV
 
     protected String subscriptionId;
     protected String webAppName;
-    protected WebAppState webAppState;
+    protected WebAppBaseState webAppState;
     protected String webAppId;
     protected String hostName;
     protected String webAppOS;
@@ -71,11 +69,11 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeV
      */
     public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
                       String state, String hostName, String os, Map<String, String> propertyMap) {
-        super(webAppId, webAppName, parent, getIcon(WebAppState.fromString(state), os), true);
+        super(webAppId, webAppName, parent, getIcon(WebAppBaseState.fromString(state), os), true);
         this.subscriptionId = subscriptionId;
         this.webAppId = webAppId;
         this.webAppName = webAppName;
-        this.webAppState = WebAppState.fromString(state);
+        this.webAppState = WebAppBaseState.fromString(state);
         this.hostName = hostName;
         this.webAppOS = StringUtils.capitalize(os.toLowerCase());
         this.propertyMap = propertyMap;
@@ -85,14 +83,14 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeV
         loadActions();
     }
 
-    protected static String getIcon(final WebAppState state, final String os) {
+    protected static String getIcon(final WebAppBaseState state, final String os) {
         return StringUtils.capitalize(os.toLowerCase())
-            + (state == WebAppState.RUNNING ? ICON_RUNNING_POSTFIX : ICON_STOPPED_POSTFIX);
+            + (state == WebAppBaseState.RUNNING ? ICON_RUNNING_POSTFIX : ICON_STOPPED_POSTFIX);
     }
 
     @Override
     public List<NodeAction> getNodeActions() {
-        boolean running = this.webAppState == WebAppState.RUNNING;
+        boolean running = this.webAppState == WebAppBaseState.RUNNING;
         getNodeActionByName(ACTION_START).setEnabled(!running);
         getNodeActionByName(ACTION_STOP).setEnabled(running);
         getNodeActionByName(ACTION_RESTART).setEnabled(running);
@@ -100,11 +98,10 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeV
         return super.getNodeActions();
     }
 
-//     disable deployment slots sub module
-//    @Override
-//    protected void refreshItems() {
-//        webAppNodePresenter.onNodeRefresh();
-//    }
+    @Override
+    protected void refreshItems() {
+        webAppNodePresenter.onNodeRefresh();
+    }
 
     @Override
     public void renderSubModules() {
@@ -115,47 +112,35 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeV
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_STOP, getIcon(WebAppState.STOPPED, this.webAppOS), new NodeActionListener() {
-            @Override
-            public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, "Stopping Web App", false,
-                    true, "Stopping Web App...", () -> stopWebApp());
-            }
-        });
-        addAction(ACTION_START, new NodeActionListener() {
-            @Override
-            public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, "Starting Web App", false,
-                    true, "Starting Web App...", () -> startWebApp());
-            }
-        });
-        addAction(ACTION_RESTART, new NodeActionListener() {
-            @Override
-            public void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, "Restarting Web App", false,
-                    true, "Restarting Web App...", () -> restartWebApp());
-            }
-        });
-
+        addAction(ACTION_STOP, getIcon(WebAppBaseState.STOPPED, this.webAppOS),
+            createBackgroundActionListener("Stopping Web App", () -> stopWebApp()));
+        addAction(ACTION_START, createBackgroundActionListener("Starting Web App", () -> startWebApp()));
+        addAction(ACTION_RESTART, createBackgroundActionListener("Restarting Web App", () -> restartWebApp()));
         addAction(ACTION_DELETE, new DeleteWebAppAction());
-
-        // Open in browser action
         addAction(ACTION_OPEN_IN_BROWSER, new NodeActionListener() {
             @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                String appServiceLink = "http://" + hostName;
-                DefaultLoader.getUIHelper().openInBrowser(appServiceLink);
+            protected void actionPerformed(NodeActionEvent e) {
+                DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
             }
         });
-
         addAction(ACTION_SHOW_PROPERTY, null, new NodeActionListener() {
             @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+            protected void actionPerformed(NodeActionEvent e) {
                 DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
             }
         });
 
         super.loadActions();
+    }
+
+    private NodeActionListener createBackgroundActionListener(final String message, final Runnable runnable) {
+        return new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                DefaultLoader.getIdeHelper().runInBackground(null, message, false, true,
+                    String.format("%s...", message), runnable);
+            }
+        };
     }
 
     @Override
@@ -206,15 +191,15 @@ public class WebAppNode extends Node implements TelemetryProperties, WebAppNodeV
     }
 
     @Override
-    public void renderWebAppNode(@NotNull WebAppState state) {
+    public void renderWebAppNode(@NotNull WebAppBaseState state) {
         switch (state) {
             case RUNNING:
                 this.webAppState = state;
-                this.setIconPath(getIcon(WebAppState.RUNNING, this.webAppOS));
+                this.setIconPath(getIcon(WebAppBaseState.RUNNING, this.webAppOS));
                 break;
             case STOPPED:
                 this.webAppState = state;
-                this.setIconPath(getIcon(WebAppState.STOPPED, this.webAppOS));
+                this.setIconPath(getIcon(WebAppBaseState.STOPPED, this.webAppOS));
                 break;
             default:
                 break;
