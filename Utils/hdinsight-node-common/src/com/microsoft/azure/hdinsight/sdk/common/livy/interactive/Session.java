@@ -302,7 +302,10 @@ public abstract class Session implements AutoCloseable, Closeable {
      */
     public Observable<Session> kill() {
         return deleteSessionRequest()
-                .map(resp -> this)
+                .map(resp -> {
+                    lastState = SessionState.SHUTTING_DOWN;
+                    return this;
+                })
                 .defaultIfEmpty(this);
     }
 
@@ -359,7 +362,7 @@ public abstract class Session implements AutoCloseable, Closeable {
                     }));
     }
 
-    private Observable<Session> awaitReady() {
+    public Observable<Session> awaitReady() {
         return get()
                 .repeatWhen(ob -> ob.delay(1, TimeUnit.SECONDS))
                 .takeUntil(Session::isStatementRunnable)
