@@ -3,10 +3,10 @@ dependencies {
     testCompile rootProject
 }
 
-if (!ext.has("BuildCounter"))
-    ext.BuildCounter = 9999
+if (!ext.has("BuildNumber"))
+    ext.BuildNumber = "3.11.0.9999"
 
-version "3.11.0.$BuildCounter"
+version "$BuildNumber"
 logger.lifecycle("version=$version")
 println "##teamcity[buildNumber '$version']"
 

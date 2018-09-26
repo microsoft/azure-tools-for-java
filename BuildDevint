@@ -76,11 +76,13 @@ tc_open "Building IDEA plugin"
 }
 tc_close "Building IDEA plugin"
 
+BUILD_NUMBER="3.11.0.$BUILD_COUNTER"
+
 # Build JetBrains Rider 2018.2 plugin
 tc_open "Building Rider plugin"
 {
-    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildCounter=$BUILD_COUNTER)
-    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider-3.11.0.$BUILD_COUNTER.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-2018.2.zip
+    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER)
+    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider-$BUILD_NUMBER.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-2018.2.zip
 }
 tc_close "Building Rider plugin"
 
