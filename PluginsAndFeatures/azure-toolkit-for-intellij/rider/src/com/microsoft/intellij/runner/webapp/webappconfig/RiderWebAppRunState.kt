@@ -2,7 +2,12 @@ package com.microsoft.intellij.runner.webapp.webappconfig
 
 import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationGroup
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.ToolWindowId
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.sql.SqlDatabase
@@ -35,6 +40,8 @@ class RiderWebAppRunState(project: Project,
     companion object {
         private const val TARGET_NAME = "WebApp"
         private const val URL_WEB_APP_WWWROOT = "/home/site/wwwroot"
+        private const val TOOL_NOTIFICATION_PUBLISH_SUCCEEDED = "Azure Publish completed"
+        private const val TOOL_NOTIFICATION_PUBLISH_FAILED = "Azure Publish failed"
     }
 
     /**
@@ -115,6 +122,8 @@ class RiderWebAppRunState(project: Project,
             refreshDatabaseAfterPublish(sqlDatabase, myModel.databaseModel)
         }
 
+        showPublishNotification(TOOL_NOTIFICATION_PUBLISH_SUCCEEDED, NotificationType.INFORMATION)
+
         val isOpenBrowser = PropertiesComponent.getInstance().getBoolean(
                 AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
                 AzureRiderSettings.openInBrowserDefaultValue)
@@ -132,6 +141,8 @@ class RiderWebAppRunState(project: Project,
         if (isDatabaseCreated)
             AzureDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
 
+        showPublishNotification(TOOL_NOTIFICATION_PUBLISH_FAILED, NotificationType.ERROR)
+
         processHandler.println(errMsg, ProcessOutputTypes.STDERR)
         processHandler.notifyComplete()
     }
@@ -148,5 +159,11 @@ class RiderWebAppRunState(project: Project,
     private fun refreshDatabaseAfterPublish(sqlDatabase: SqlDatabase, model: AzureDotNetWebAppSettingModel.DatabaseModel) {
         model.resetOnPublish(sqlDatabase)
         AzureDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
+    }
+
+    private fun showPublishNotification(text: String, type: NotificationType) {
+        val displayId = NotificationGroup.toolWindowGroup("Azure Web App Publish Message", ToolWindowId.RUN).displayId
+        val notification = Notification(displayId, "", text, type)
+        Notifications.Bus.notify(notification, project)
     }
 }
