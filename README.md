@@ -2,7 +2,7 @@
 
 # Azure Toolkit for Rider [![Teamcity](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:AzureToolsForIntellij_Build)/statusIcon)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=AzureToolsForIntellij_Build&guest=1)
 
-The Azure plugin for [JetBrains Rider](https://www.jetbrains.com/rider) is an open-source project that helps .NET developers easily create, develop, configure, test, manage and deploy highly available and scalable web apps to Azure.
+The Azure Toolkit for [JetBrains Rider](https://www.jetbrains.com/rider) is an open-source project that helps .NET developers easily create, develop, configure, test, manage and deploy highly available and scalable web apps to Azure.
 
 ## Functionality
 
