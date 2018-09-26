@@ -39,7 +39,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         super(slotId, name, LABEL, parent,subscriptionId, hostName, os, state);
         this.webAppId = webAppId;
         this.slotName = name;
-        this.presenter =  new DeploymentSlotNodePresenter();
+        this.presenter = new DeploymentSlotNodePresenter();
         this.presenter.onAttachView(this);
     }
 
