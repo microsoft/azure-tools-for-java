@@ -5,5 +5,5 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import java.util.List;
 
 public interface DeploymentSlotModuleView extends MvpView {
-    void renderDeploymentSlots(final List<DeploymentSlot>slots);
+    void renderDeploymentSlots(final String webAppId, final List<DeploymentSlot>slots);
 }

@@ -20,20 +20,10 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.webappbase;
 
-public enum WebAppBaseState {
-    RUNNING,
-    STOPPED;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 
-    private static WebAppBaseState[] copyOfValues = values();
-
-    public static WebAppBaseState fromString(final String name) {
-        for(final WebAppBaseState value: copyOfValues) {
-            if (value.name().equalsIgnoreCase(name)) {
-                return value;
-            }
-        }
-        return null;
-    }
+public interface WebAppBaseNodeView extends MvpView {
+    void renderNode(WebAppBaseState state);
 }
