@@ -15,8 +15,8 @@ The Azure Toolkit for [JetBrains Rider](https://www.jetbrains.com/rider) is an o
 * Basic management of virtual machines (create/delete, start/stop, view details)
 * Basic management of web apps (create/delete, start/stop, view details, edit settings)
 * Run configuration to deploy ASP.NET web apps (can also provision SQL database)
-  * ASP.NET Core web apps on any platform
-  * .NET framework web apps on Windows only
+  * ASP.NET Core web apps (any platform)
+  * .NET framework web apps (Windows)
 
 Feature requests can be logged in our [issue tracker](https://github.com/JetBrains/azure-tools-for-intellij/issues), we also welcome contributions.
 
@@ -29,14 +29,16 @@ Feature requests can be logged in our [issue tracker](https://github.com/JetBrai
 
 The Azure Toolkit for [JetBrains Rider](https://www.jetbrains.com/rider) is a fork of the [Azure Toolkit for IntelliJ](https://docs.microsoft.com/en-us/java/azure/intellij/azure-toolkit-for-intellij-installation), available [on GitHub](https://github.com/Microsoft/azure-tools-for-java).
 
-Microsoft's Azure Toolkit for IntelliJ provides similar functionality to the Azure plugin for [JetBrains Rider](https://www.jetbrains.com/rider), however focus on the Java/JVM ecosystem and development flows. JetBrains [opened a pull request](https://github.com/Microsoft/azure-tools-for-java/pull/1725) to split base functionality (such as browsing Azure resources) from Java/JVM-specific features (such as deploying a `.war` file to the HDInsight service), which would open up the original plugin for various other ecosystems.
+Microsoft's Azure Toolkit for IntelliJ provides similar functionality to the Azure plugin for [JetBrains Rider](https://www.jetbrains.com/rider), however focus on the Java/JVM ecosystem and development flows. JetBrains decided to fork the original plugin, and split base functionality (such as browsing Azure resources) from Java/JVM-specific features (such as deploying a `.war` file to the HDInsight service).
 
-While waiting for this PR to be accepted, we are releasing the forked Azure Toolkit for [JetBrains Rider](https://www.jetbrains.com/rider), with several notable differences:
+The Azure Toolkit for [JetBrains Rider](https://www.jetbrains.com/rider) is released with several notable differences:
 
 * No telemetry or usage data is collected and sent to Microsoft
 * Icons have been replaced by custom icons, as [the original icons are not open-source](https://github.com/Microsoft/azure-tools-for-java/issues/1626)
 * Java/JVM-specific functionality was removed
-* .NET-specific functionality, such as deploying an ASP.NET Core web application, has been added
+* .NET-specific functionality, such as deploying an ASP.NET web application, has been added
+
+JetBrains [opened a pull request](https://github.com/Microsoft/azure-tools-for-java/pull/1725) to Microsoft's Azure Toolkit for IntelliJ as well, which would contribute this effort back to the original plugin, and open up the original plugin to various other ecosystems.
 
 ## Contributing
 
