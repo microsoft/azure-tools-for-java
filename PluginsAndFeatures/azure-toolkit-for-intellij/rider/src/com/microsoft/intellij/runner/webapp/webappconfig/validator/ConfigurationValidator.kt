@@ -20,7 +20,7 @@ open class ConfigurationValidator {
 
         validateResourceNameRegex(name, nameRegex, nameInvalidCharsMessage)
 
-        if (name.length < nameLengthMin || name.length > nameLengthMax)
+        if (name.length !in nameLengthMin..nameLengthMax)
             throw RuntimeConfigurationError(nameLengthErrorMessage)
     }
 

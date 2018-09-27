@@ -23,6 +23,7 @@ import com.jetbrains.rider.projectView.ProjectModelViewHost
 import com.jetbrains.rider.projectView.nodes.isProject
 import com.jetbrains.rider.projectView.nodes.isUnloadedProject
 import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.util.idea.lifetime
 import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
@@ -93,10 +94,8 @@ class RiderWebAppSettingPanel(project: Project,
 
         private const val DEFAULT_APP_NAME = "webapp-"
         private const val DEFAULT_PLAN_NAME = "appsp-"
-        private const val DEFAULT_RGP_NAME = "rg-webapp-"
-
+        private const val DEFAULT_RESOURCE_GROUP_NAME = "rg-"
         private const val DEFAULT_SQL_DATABASE_NAME = "sql_%s_db"
-        private const val DEFAULT_RESOURCE_GROUP_NAME = "rg-db-"
         private const val DEFAULT_SQL_SERVER_NAME = "sql-server-"
 
         private const val WEB_APP_PRICING_URI = "https://azure.microsoft.com/en-us/pricing/details/app-service/"
@@ -267,6 +266,8 @@ class RiderWebAppSettingPanel(project: Project,
     private lateinit var pnlCollation: JPanel
     private lateinit var txtCollationValue: JTextField
 
+    val lifetimeDef = project.lifetime.createNestedDef()
+
     override val panelName: String
         get() = WEB_APP_SETTINGS_PANEL_NAME
 
@@ -295,8 +296,8 @@ class RiderWebAppSettingPanel(project: Project,
         resetDatabaseFromConfig(model.databaseModel, dateString)
 
         myView.onLoadPublishableProjects(project)
-        myView.onLoadSubscription()
-        myView.onLoadWebApps()
+        myView.onLoadSubscription(lifetimeDef.lifetime)
+        myView.onLoadWebApps(lifetimeDef.lifetime)
         myView.onLoadPricingTier()
         myView.onLoadDatabaseEdition()
     }
@@ -306,7 +307,7 @@ class RiderWebAppSettingPanel(project: Project,
 
         txtWebAppName.text = if (model.webAppName.isEmpty()) "$DEFAULT_APP_NAME$dateString" else model.webAppName
         txtAppServicePlanName.text = if (model.appServicePlanName.isEmpty()) "$DEFAULT_PLAN_NAME$dateString" else model.appServicePlanName
-        txtResourceGroupName.text = if (model.resourceGroupName.isEmpty()) "$DEFAULT_RGP_NAME$dateString" else model.resourceGroupName
+        txtResourceGroupName.text = if (model.resourceGroupName.isEmpty()) "$DEFAULT_RESOURCE_GROUP_NAME$dateString" else model.resourceGroupName
 
         if (model.isCreatingWebApp) {
             rdoCreateNewWebApp.doClick()
@@ -827,7 +828,7 @@ class RiderWebAppSettingPanel(project: Project,
         btnRefresh = object : AnActionButton(BUTTON_REFRESH_NAME, AllIcons.Actions.Refresh) {
             override fun actionPerformed(anActionEvent: AnActionEvent) {
                 resetWidget()
-                myView.onRefresh()
+                myView.onRefresh(lifetimeDef.lifetime)
             }
         }
     }
@@ -1142,11 +1143,13 @@ class RiderWebAppSettingPanel(project: Project,
             if (lastSelectedSubscriptionId != selectedSid) {
                 resetSubscriptionComboBoxValues()
 
-                myView.onLoadResourceGroups(selectedSid)
-                myView.onLoadLocation(selectedSid)
-                myView.onLoadAppServicePlan(selectedSid)
-                myView.onLoadSqlServers(selectedSid)
-                myView.onLoadSqlDatabase(selectedSid)
+                val lifetime = lifetimeDef.lifetime
+
+                myView.onLoadResourceGroups(lifetime, selectedSid)
+                myView.onLoadLocation(lifetime, selectedSid)
+                myView.onLoadAppServicePlan(lifetime, selectedSid)
+                myView.onLoadSqlServers(lifetime, selectedSid)
+                myView.onLoadSqlDatabase(lifetime, selectedSid)
 
                 lastSelectedSubscriptionId = selectedSid
             }

@@ -51,10 +51,10 @@ class RiderWebAppRunState(project: Project,
      * @param processHandler - a process handler to show a process message
      * @param telemetryMap - a key-value map for collecting telemetry
      *
-     * @throws [Exception] exception during step execution
+     * @throws [RuntimeException] exception during step execution
      * @return [WebApp] or null instance with a new azure web app that contains deployed application
      */
-    @Throws(Exception::class)
+    @Throws(RuntimeException::class)
     public override fun executeSteps(processHandler: RunProcessHandler,
                                      telemetryMap: MutableMap<String, String>): Pair<WebApp, SqlDatabase?>? {
 
@@ -114,10 +114,9 @@ class RiderWebAppRunState(project: Project,
             AzureUIRefreshCore.execute(AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null))
         }
 
-        val webApp = result.first
+        val (webApp, sqlDatabase) = result
         refreshWebAppAfterPublish(webApp, myModel.webAppModel)
 
-        val sqlDatabase = result.second
         if (sqlDatabase != null) {
             refreshDatabaseAfterPublish(sqlDatabase, myModel.databaseModel)
         }

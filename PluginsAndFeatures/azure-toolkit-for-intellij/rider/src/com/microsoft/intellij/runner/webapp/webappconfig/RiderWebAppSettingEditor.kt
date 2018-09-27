@@ -14,10 +14,15 @@ class RiderWebAppSettingEditor(project: Project,
     private val myPanel: RiderWebAppSettingPanel = RiderWebAppSettingPanel(project, webAppConfiguration)
 
     override val panel: AzureRiderSettingPanel<RiderWebAppConfiguration>
-        get() = this.myPanel
+        get() = myPanel
 
     override fun createEditor(): JComponent {
         IPermittedModalities.getInstance().allowPumpProtocolUnderCurrentModality()
         return super.createEditor()
+    }
+
+    override fun disposeEditor() {
+        super.disposeEditor()
+        myPanel.lifetimeDef.terminate()
     }
 }
