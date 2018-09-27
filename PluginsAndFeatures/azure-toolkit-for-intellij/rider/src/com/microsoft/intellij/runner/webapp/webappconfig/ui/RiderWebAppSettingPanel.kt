@@ -108,7 +108,7 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     // presenter
-    private val myView = DotNetWebAppDeployViewPresenter<RiderWebAppSettingPanel>()
+    private val myView = DotNetWebAppDeployViewPresenter<RiderWebAppSettingPanel>(this)
 
     // cache variable
     private var lastSelectedProject: PublishableProjectModel? = null
