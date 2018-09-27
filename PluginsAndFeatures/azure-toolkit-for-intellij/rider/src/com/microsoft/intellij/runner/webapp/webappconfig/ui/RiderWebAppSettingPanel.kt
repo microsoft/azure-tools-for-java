@@ -295,11 +295,12 @@ class RiderWebAppSettingPanel(project: Project,
         resetWebAppFromConfig(model.webAppModel, dateString)
         resetDatabaseFromConfig(model.databaseModel, dateString)
 
-        myView.onLoadPublishableProjects(project)
-        myView.onLoadSubscription(lifetimeDef.lifetime)
-        myView.onLoadWebApps(lifetimeDef.lifetime)
-        myView.onLoadPricingTier()
-        myView.onLoadDatabaseEdition()
+        val lifetime = lifetimeDef.lifetime
+        myView.onLoadPublishableProjects(lifetime, project)
+        myView.onLoadSubscription(lifetime)
+        myView.onLoadWebApps(lifetime)
+        myView.onLoadPricingTier(lifetime)
+        myView.onLoadDatabaseEdition(lifetime)
     }
 
     private fun resetWebAppFromConfig(model: AzureDotNetWebAppSettingModel.WebAppModel, dateString: String) {

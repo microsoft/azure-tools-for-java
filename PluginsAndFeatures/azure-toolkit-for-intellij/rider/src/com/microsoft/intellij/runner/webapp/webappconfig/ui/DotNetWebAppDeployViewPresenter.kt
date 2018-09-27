@@ -12,10 +12,12 @@ import com.jetbrains.rider.util.lifetime.Lifetime
 import com.jetbrains.rider.util.reactive.Signal
 import com.jetbrains.rider.util.reactive.adviseOnce
 import com.microsoft.azure.management.appservice.AppServicePlan
+import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
+import com.microsoft.azure.management.sql.DatabaseEditions
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
@@ -33,9 +35,11 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
         private const val TASK_WEB_APP = "Collect Azure web apps"
         private const val TASK_RESOURCE_GROUP = "Collect Azure resource groups"
         private const val TASK_APP_SERVICE_PLAN = "Collect Azure app service plans"
+        private const val TASK_PRICING_TIER = "Collect Azure pricing tiers"
         private const val TASK_LOCATION = "Collect Azure locations"
         private const val TASK_SQL_DATABASE = "Collect Azure SQL databases"
         private const val TASK_SQL_SERVER = "Collect Azure SQL servers"
+        private const val TASK_DATABASE_EDITION = "Collect Azure Database Edition"
 
         private const val CANNOT_LIST_SUBSCRIPTION = "Failed to list subscriptions."
         private const val CANNOT_LIST_WEB_APP = "Failed to list web apps."
@@ -53,9 +57,11 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
     private val webAppSignal = Signal<List<ResourceEx<WebApp>>>()
     private val resourceGroupSignal = Signal<List<ResourceGroup>>()
     private val appServicePlanSignal = Signal<List<AppServicePlan>>()
+    private val pricingTierSignal = Signal<List<PricingTier>>()
     private val locationSignal = Signal<List<Location>>()
     private val sqlDatabaseSignal = Signal<List<SqlDatabase>>()
     private val sqlServerSignal = Signal<List<SqlServer>>()
+    private val databaseEditionSignal = Signal<List<DatabaseEditions>>()
 
     fun onRefresh(lifetime: Lifetime) {
         loadWebApps(lifetime, true)
@@ -89,13 +95,10 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
                 { mvpView.fillLocation(it) })
     }
 
-    fun onLoadPricingTier() {
-        try {
-            val pricingTiers = AzureMvpModel.getInstance().listPricingTier()
-            mvpView.fillPricingTier(pricingTiers)
-        } catch (e: IllegalAccessException) {
-            errorHandler(CANNOT_LIST_PRICING_TIER, e)
-        }
+    fun onLoadPricingTier(lifetime: Lifetime) {
+        subscribe(lifetime, pricingTierSignal, TASK_PRICING_TIER, CANNOT_LIST_PRICING_TIER,
+                { AzureMvpModel.getInstance().listPricingTier() },
+                { mvpView.fillPricingTier(it) })
     }
 
     fun onLoadSqlDatabase(lifetime: Lifetime, subscriptionId: String) {
@@ -110,22 +113,22 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
                 { mvpView.fillSqlServer(it) })
     }
 
-    fun onLoadDatabaseEdition() {
-        try {
-            mvpView.fillDatabaseEdition(AzureDatabaseMvpModel.listDatabaseEditions())
-        } catch (e: IllegalAccessException) {
-            errorHandler(CANNOT_LIST_DATABASE_EDITION, e)
-        }
-
+    fun onLoadDatabaseEdition(lifetime: Lifetime) {
+        subscribe(lifetime, databaseEditionSignal, TASK_DATABASE_EDITION, CANNOT_LIST_DATABASE_EDITION,
+                { AzureDatabaseMvpModel.listDatabaseEditions() },
+                { mvpView.fillDatabaseEdition(it) })
     }
 
-    fun onLoadPublishableProjects(project: Project) {
+    fun onLoadPublishableProjects(lifetime: Lifetime, project: Project) {
         project.solution.publishableProjectsModel.publishableProjects.advise(project.lifetime.createNested()) {
             if (it.newValueOpt != null) {
-                try {
-                    mvpView.fillPublishableProject(project.solution.publishableProjectsModel.publishableProjects.values.toList())
-                } catch (e: Exception) {
-                    errorHandler(CANNOT_LIST_PUBLISHABLE_PROJECTS, e)
+                application.invokeLater {
+                    if (lifetime.isTerminated) return@invokeLater
+                    try {
+                        mvpView.fillPublishableProject(project.solution.publishableProjectsModel.publishableProjects.values.toList())
+                    } catch (e: Exception) {
+                        errorHandler(CANNOT_LIST_PUBLISHABLE_PROJECTS, e)
+                    }
                 }
             }
         }
