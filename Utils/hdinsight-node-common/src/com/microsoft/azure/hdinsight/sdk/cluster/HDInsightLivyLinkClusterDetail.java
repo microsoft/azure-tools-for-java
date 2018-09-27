@@ -53,13 +53,13 @@ public class HDInsightLivyLinkClusterDetail extends HDInsightAdditionalClusterDe
     @Override
     @NotNull
     public String getLivyConnectionUrl() {
-        return getConnectionUrl() + "batches";
+        return getConnectionUrl();
     }
 
     @Override
     @Nullable
     public String getYarnNMConnectionUrl() {
-        return Optional.of(yarnEndpoint)
+        return Optional.ofNullable(yarnEndpoint)
                 .filter(endpoint -> endpoint != null)
                 .map(endpoint -> endpoint.toString().endsWith("/") ? endpoint.toString() : endpoint.toString() + "/")
                 .map(url -> url + "ws/v1/cluster/apps/")

@@ -88,7 +88,7 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
     }
 
     public String getLivyConnectionUrl() {
-        return URI.create(getConnectionUrl()).resolve("livy/batches").toString();
+        return URI.create(getConnectionUrl()).resolve("livy/").toString();
     }
 
     public String getYarnNMConnectionUrl() {

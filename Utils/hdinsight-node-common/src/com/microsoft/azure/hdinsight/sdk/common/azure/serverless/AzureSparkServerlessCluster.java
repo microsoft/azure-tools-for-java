@@ -802,11 +802,11 @@ public class AzureSparkServerlessCluster extends SparkCluster
     }
 
     public String getLivyConnectionUrl() {
-        return URI.create(getConnectionUrl()).resolve("/livy/batches").toString();
+        return URI.create(getConnectionUrl()).resolve("livy/").toString();
     }
 
     public String getYarnNMConnectionUrl() {
-        return URI.create(getConnectionUrl()).resolve("/yarnui/ws/v1/cluster/apps/").toString();
+        return URI.create(getConnectionUrl()).resolve("yarnui/ws/v1/cluster/apps/").toString();
     }
 
 }

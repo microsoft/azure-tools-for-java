@@ -199,7 +199,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                 }
 
                 this.connectUri = cluster.filter(c -> c instanceof LivyCluster)
-                        .map(c -> ((LivyCluster) c).getLivyConnectionUrl())
+                        .map(c -> ((LivyCluster) c).getLivyBatchUrl())
                         .map(URI::create)
                         .orElse(null);
             } else {
@@ -952,7 +952,8 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                         Observable.fromCallable(() ->
                                 getSparkJobYarnApplication(this.getYarnNMConnectUri(), applicationId))
                                 .repeatWhen(ob -> ob.delay(getDelaySeconds(), TimeUnit.SECONDS))
-                                .takeWhile(app -> app != null && !isYarnAppLogAggregationDone(app))
+                                .filter(app -> app != null)
+                                .takeUntil(this::isYarnAppLogAggregationDone)
                                 .filter(this::isYarnAppLogAggregationDone))
                 .map(yarnApp -> yarnApp.getLogAggregationStatus().toUpperCase());
     }

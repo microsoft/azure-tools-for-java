@@ -99,7 +99,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                 .getClusterDetailByName(clusterName)
                 .orElseThrow(() -> new ExecutionException("No cluster name matched selection: " + clusterName));
 
-        String sparkJobUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyConnectionUrl() : null;
+        String sparkJobUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyBatchUrl() : null;
         if (sparkJobUrl == null) {
             throw new IOException("Can't get livy connection URL. Cluster: " + clusterName);
         }

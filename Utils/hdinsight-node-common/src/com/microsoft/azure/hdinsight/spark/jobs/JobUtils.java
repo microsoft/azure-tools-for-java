@@ -554,9 +554,9 @@ public class JobUtils {
         String password = selectedClusterDetail.getHttpPassword();
         String sessionName = "Helper session to upload " + destUri.toString();
 
-        URI livyUri = selectedClusterDetail.isEmulator() || selectedClusterDetail instanceof HDInsightLivyLinkClusterDetail ?
-                URI.create(selectedClusterDetail.getConnectionUrl()).resolve("/") :
-                URI.create(selectedClusterDetail.getConnectionUrl()).resolve("/livy/");
+        URI livyUri = selectedClusterDetail instanceof LivyCluster ?
+                URI.create(((LivyCluster) selectedClusterDetail).getLivyConnectionUrl()) :
+                URI.create(selectedClusterDetail.getConnectionUrl());
 
         logSubject.onNext(new SimpleImmutableEntry<>(Info, "Create Spark helper interactive session..."));
 
@@ -646,7 +646,7 @@ public class JobUtils {
             submission.setUsernamePasswordCredential(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
         }
 
-        String livyUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyConnectionUrl() : null;
+        String livyUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyBatchUrl() : null;
         if (livyUrl == null) {
             throw new IOException("Can't get livy connection Url");
         }

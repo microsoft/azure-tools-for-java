@@ -116,7 +116,7 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
                         if (clusterDetail != null) {
                             AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionStopButtionClickEvent"), null);
                             try {
-                                String livyUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyConnectionUrl() : null;
+                                String livyUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyBatchUrl() : null;
                                 HttpResponse deleteResponse = SparkBatchSubmission.getInstance().killBatchJob(livyUrl, batchId);
                                 if (deleteResponse.getCode() == 201 || deleteResponse.getCode() == 200) {
                                     jobStatusManager.setJobKilled();
