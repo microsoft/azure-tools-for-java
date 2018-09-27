@@ -202,7 +202,6 @@
       <separator/>
       <reference ref="AzureToolkit.AzureSignIn"/>
     </group>
-
   </actions>
 
   <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
