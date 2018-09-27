@@ -42,6 +42,7 @@ import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfiguration
 import java.io.File
+import java.lang.NullPointerException
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.*
@@ -629,7 +630,13 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     override fun fillDatabaseEdition(prices: List<DatabaseEditions>) {
-        cbDatabaseEdition.removeAllItems()
+        try {
+            cbDatabaseEdition.removeAllItems()
+        }
+        catch(e: NullPointerException){
+            // ExpandableStringEnum<T> equals throw NPE when comparing with null
+            // TODO: make a PR https://github.com/Azure/azure-sdk-for-java/
+        }
         prices.forEach {
             cbDatabaseEdition.addItem(it)
             if (it == configuration.model.databaseModel.databaseEdition) {
