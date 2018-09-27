@@ -27,6 +27,7 @@ import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.ConfigurationTypeUtil.findConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunConfigurationBase
+import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -41,11 +42,15 @@ import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
 import com.microsoft.intellij.util.runInReadAction
+import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 import scala.Function1
 import scala.runtime.BoxedUnit
 
-class RunSparkLivyConsoleAction
+open class RunSparkLivyConsoleAction
     : AzureAnAction(), RunConsoleAction.RunActionBase<RemoteDebugRunConfigurationType>, ILogger {
+    open val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
+        get() = SparkScalaLivyConsoleConfigurationType().confFactory()
+
     override fun onActionPerformed(event: AnActionEvent) {
         val dataContext = event.dataContext
         val file = CommonDataKeys.PSI_FILE.getData(dataContext)
@@ -114,16 +119,20 @@ class RunSparkLivyConsoleAction
 
                 val environment = ExecutionEnvironmentBuilder.create(
                         runExecutor,
-                        SparkScalaLivyConsoleConfigurationType().confFactory().createConfiguration(
+                        consoleRunConfigurationFactory.createConfiguration(
                                 batchRunConfiguration.name, batchRunConfiguration)).build()
 
-                (environment.runProfile as? RunConfigurationBase)?.checkSettingsBeforeRun()
+                checkSettingsBeforeRun(environment.runProfile)
 
                 runner.execute(environment)
             } catch (e: ExecutionException) {
                 Messages.showErrorDialog(project, e.message, ExecutionBundle.message("error.common.title"))
             }
         }
+    }
+
+    open fun checkSettingsBeforeRun(runProfile: RunProfile?) {
+        (runProfile as? RunConfigurationBase)?.checkSettingsBeforeRun()
     }
 
     override fun getMyConfigurationType(): RemoteDebugRunConfigurationType? =
