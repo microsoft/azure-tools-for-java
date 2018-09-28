@@ -102,9 +102,9 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         if (!file.exists()) {
             throw new FileNotFoundException(String.format(NO_TARGET_FILE, webAppSettingModel.getTargetPath()));
         }
-        WebAppBase webApp = getDeployTargetByConfiguration(processHandler);
-        processHandler.setText(isDeployingToSlot() ? STOP_DEPLOYMENT_SLOT : STOP_WEB_APP);
-        webApp.stop();
+        WebAppBase deployTarget = getDeployTargetByConfiguration(processHandler);
+        processHandler.setText(webAppSettingModel.isDeployToSlot() ? STOP_DEPLOYMENT_SLOT : STOP_WEB_APP);
+        deployTarget.stop();
 
         int indexOfDot = webAppSettingModel.getTargetName().lastIndexOf(".");
         String fileName = webAppSettingModel.getTargetName().substring(0, indexOfDot);
@@ -113,25 +113,25 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         switch (fileType) {
             case MavenConstants.TYPE_WAR:
                 try (FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath())) {
-                    uploadWarArtifact(input, webApp, fileName, processHandler, telemetryMap);
+                    uploadWarArtifact(input, deployTarget, fileName, processHandler, telemetryMap);
                 }
                 break;
             case MavenConstants.TYPE_JAR:
                 try (FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath())) {
-                    uploadJarArtifactViaFTP(input, webApp, processHandler, telemetryMap);
+                    uploadJarArtifactViaFTP(input, deployTarget, processHandler, telemetryMap);
                 }
                 break;
             default:
                 break;
         }
 
-        processHandler.setText(isDeployingToSlot() ? START_DEPLOYMENT_SLOT : START_WEB_APP);
-        webApp.start();
+        processHandler.setText(webAppSettingModel.isDeployToSlot() ? START_DEPLOYMENT_SLOT : START_WEB_APP);
+        deployTarget.start();
 
-        String url = getUrl(webApp, fileName, fileType);
+        String url = getUrl(deployTarget, fileName, fileType);
         processHandler.setText(DEPLOY_SUCCESSFUL);
         processHandler.setText("URL: " + url);
-        return webApp;
+        return deployTarget;
     }
 
     @Override

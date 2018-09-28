@@ -37,6 +37,7 @@ public class WebAppSettingModel {
     private String targetPath = "";
     private String targetName = "";
     private boolean deployToRoot = true;
+    private boolean deployToSlot = false;
     // create related
     private String webAppName = "";
     private String webContainer = "";
@@ -78,6 +79,14 @@ public class WebAppSettingModel {
 
     public void setDeployToRoot(boolean deployToRoot) {
         this.deployToRoot = deployToRoot;
+    }
+
+    public boolean isDeployToSlot() {
+        return deployToSlot;
+    }
+
+    public void setDeployToSlot(boolean deployToSlot) {
+        this.deployToSlot = deployToSlot;
     }
 
     public String getTargetPath() {
