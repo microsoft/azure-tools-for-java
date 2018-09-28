@@ -26,6 +26,8 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
@@ -37,6 +39,7 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 
+import java.net.URI;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -56,12 +59,40 @@ public class AddNewClusterCtrlProvider {
     }
 
     //format input string
-    private static String getClusterName(String userNameOrUrl) {
+    public static String getClusterName(String userNameOrUrl) {
         if (userNameOrUrl.startsWith(URL_PREFIX)) {
             return StringHelper.getClusterNameFromEndPoint(userNameOrUrl);
         } else {
             return userNameOrUrl;
         }
+    }
+
+    public boolean isURLValid(@NotNull String url) {
+        try {
+            URI.create(url);
+            return true;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    public boolean doesClusterNameExist(@NotNull String clusterName) {
+        if (ClusterManagerEx.getInstance().getHdinsightAdditionalClusterDetails().stream().anyMatch(clusterDetail ->
+                clusterDetail.getName().equals(clusterName))) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean doesClusterLivyEndpointExist(@NotNull String livyEndpoint) {
+        if (ClusterManagerEx.getInstance().getHdinsightAdditionalClusterDetails().stream()
+                .filter(cluster -> cluster instanceof LivyCluster)
+                .anyMatch(clusterDetail ->
+                        URI.create(((LivyCluster) clusterDetail).getLivyConnectionUrl()).resolve("/").toString()
+                                .equals(URI.create(livyEndpoint).resolve("/").toString()))) {
+            return true;
+        }
+        return false;
     }
 
     public Observable<AddNewClusterModel> refreshContainers() {
@@ -94,6 +125,7 @@ public class AddNewClusterCtrlProvider {
                 .doOnNext(controllableView::setData);
     }
 
+
     public Observable<AddNewClusterModel> validateAndAdd() {
         return Observable.just(new AddNewClusterModel())
                 .doOnNext(controllableView::getData)
@@ -104,27 +136,36 @@ public class AddNewClusterCtrlProvider {
                     String storageName = toUpdate.getStorageName();
                     String storageKey = toUpdate.getStorageKey();
                     String password = toUpdate.getPassword();
+                    URI livyEndpoint = toUpdate.getLivyEndpoint();
+                    URI yarnEndpoint = toUpdate.getYarnEndpoint();
+                    Boolean isHDInsightClusterSelected = toUpdate.getHDInsightClusterSelected();
                     int selectedContainerIndex = toUpdate.getSelectedContainerIndex();
 
+                    // These validation check are redundant for intelliJ sicne intellij does full check at view level
+                    // but necessary for Eclipse
+
                     // Incomplete data check
-                    if (StringHelper.isNullOrWhiteSpace(clusterNameOrUrl) ||
-                            StringHelper.isNullOrWhiteSpace(userName) ||
-                            StringHelper.isNullOrWhiteSpace(password)) {
-                        String highlightPrefix = "* ";
+                    // link through livy don't need to verify empty username and password
+                    if (livyEndpoint == null) {
+                        if (StringUtils.containsWhitespace(clusterNameOrUrl) ||
+                                StringUtils.containsWhitespace(userName) ||
+                                StringUtils.containsWhitespace(password)) {
+                            String highlightPrefix = "* ";
 
-                        if (!toUpdate.getClusterNameLabelTitle().startsWith(highlightPrefix)) {
-                            toUpdate.setClusterNameLabelTitle(highlightPrefix + toUpdate.getClusterNameLabelTitle());
+                            if (!toUpdate.getClusterNameLabelTitle().startsWith(highlightPrefix)) {
+                                toUpdate.setClusterNameLabelTitle(highlightPrefix + toUpdate.getClusterNameLabelTitle());
+                            }
+
+                            if (!toUpdate.getUserNameLabelTitle().startsWith(highlightPrefix)) {
+                                toUpdate.setUserNameLabelTitle(highlightPrefix + toUpdate.getUserNameLabelTitle());
+                            }
+
+                            if (!toUpdate.getPasswordLabelTitle().startsWith(highlightPrefix)) {
+                                toUpdate.setPasswordLabelTitle(highlightPrefix + toUpdate.getPasswordLabelTitle());
+                            }
+
+                            return toUpdate.setErrorMessage("All (*) fields are required.");
                         }
-
-                        if (!toUpdate.getUserNameLabelTitle().startsWith(highlightPrefix)) {
-                            toUpdate.setUserNameLabelTitle(highlightPrefix + toUpdate.getUserNameLabelTitle());
-                        }
-
-                        if (!toUpdate.getPasswordLabelTitle().startsWith(highlightPrefix)) {
-                            toUpdate.setPasswordLabelTitle(highlightPrefix + toUpdate.getPasswordLabelTitle());
-                        }
-
-                        return toUpdate.setErrorMessage("All (*) fields are required.");
                     }
 
                     String clusterName = getClusterName(clusterNameOrUrl);
@@ -167,8 +208,10 @@ public class AddNewClusterCtrlProvider {
                                 toUpdate.getContainers().get(selectedContainerIndex));
                     }
 
-                    HDInsightAdditionalClusterDetail hdInsightAdditionalClusterDetail =
-                            new HDInsightAdditionalClusterDetail(clusterName, userName, password, storageAccount);
+
+                    HDInsightAdditionalClusterDetail hdInsightAdditionalClusterDetail = isHDInsightClusterSelected ?
+                            new HDInsightAdditionalClusterDetail(clusterName, userName, password, storageAccount) :
+                            new HDInsightLivyLinkClusterDetail(livyEndpoint, yarnEndpoint, clusterName, userName, password);
 
                     // Account certificate check
                     try {

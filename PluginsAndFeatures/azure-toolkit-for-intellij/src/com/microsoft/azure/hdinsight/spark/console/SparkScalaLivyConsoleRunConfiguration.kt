@@ -30,7 +30,9 @@ import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
@@ -60,7 +62,7 @@ class SparkScalaLivyConsoleRunConfiguration(project: Project,
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
         val session = SparkSession(
                 name,
-                URI.create(JobUtils.getLivyBaseUri(cluster).toString()),
+                URI.create((cluster as? LivyCluster)?.livyConnectionUrl ?: return null),
                 cluster.httpUserName,
                 cluster.httpPassword)
 

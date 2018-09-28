@@ -26,7 +26,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class StringHelper {
-    private static final Pattern PATTERN = Pattern.compile("https://([^/.]\\.)+[^/.]+/?$");
+    // pattern for cluster URL. e.g. https://sparkcluster.azurehdinsight.net
+    private static final Pattern CLUSTER_URL_PATTERN = Pattern.compile("https://([^/.]+\\.)+[^/.]+/?$");
 
     public static boolean isNullOrWhiteSpace(String str) {
         if (str == null) {
@@ -66,7 +67,7 @@ public class StringHelper {
     }
 
     public static String getClusterNameFromEndPoint(@NotNull String endpoint) {
-        if (PATTERN.matcher(endpoint).find()) {
+        if (CLUSTER_URL_PATTERN.matcher(endpoint).find()) {
             return endpoint.split("\\.")[0].substring(8);
         }
 

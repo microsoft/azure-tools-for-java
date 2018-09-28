@@ -28,6 +28,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBScrollPane;
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitHelper;
@@ -115,7 +116,8 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
                         if (clusterDetail != null) {
                             AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionStopButtionClickEvent"), null);
                             try {
-                                HttpResponse deleteResponse = SparkBatchSubmission.getInstance().killBatchJob(JobUtils.getLivyConnectionURL(clusterDetail), batchId);
+                                String livyUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyBatchUrl() : null;
+                                HttpResponse deleteResponse = SparkBatchSubmission.getInstance().killBatchJob(livyUrl, batchId);
                                 if (deleteResponse.getCode() == 201 || deleteResponse.getCode() == 200) {
                                     jobStatusManager.setJobKilled();
                                     setInfo("========================Stop application successfully=======================");
