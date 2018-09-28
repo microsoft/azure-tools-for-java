@@ -7,18 +7,31 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.ide.CopyPasteManager
+import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.ui.popup.PopupStep
+import com.intellij.openapi.ui.popup.util.BaseListPopupStep
+import com.microsoft.aad.adal4j.AuthenticationException
 import com.microsoft.azure.AzureEnvironment
 import com.microsoft.azuretools.authmanage.AdAuthManager
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
+import com.microsoft.azuretools.sdkmanage.AzureManager
+import com.microsoft.rest.credentials.ServiceClientCredentials
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellDeviceAuthenticationContext
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
 import org.jetbrains.plugins.azure.cloudshell.rest.*
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalProcess
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalRunner
+import java.awt.datatransfer.StringSelection
 import java.net.URI
 import javax.swing.event.HyperlinkEvent
 
@@ -34,155 +47,150 @@ class StartAzureCloudShellAction : AnAction() {
         val project = CommonDataKeys.PROJECT.getData(e.dataContext) ?: return
         val azureManager = AuthMethodManager.getInstance().azureManager ?: return
 
-//        ProgressManager.getInstance().run(object : Task.Backgroundable(project, this.templatePresentation.text) {
-//            override fun run(indicator: ProgressIndicator) {
-//                indicator.fraction = 0.05
-//                indicator.text = "Retrieving Azure subscription details..."
-//
-//                val selectedSubscriptions = azureManager.subscriptionManager.subscriptionDetails
-//                        .asSequence()
-//                        .filter { it.isSelected }
-//                        .toList()
-//
-//                indicator.fraction = 1.0
-//
-//                val step = object : BaseListPopupStep<SubscriptionDetail>("Select subscription to run Azure Cloud Shell", selectedSubscriptions) {
-//                    override fun getTextFor(value: SubscriptionDetail?): String {
-//                        if (value != null) {
-//                            return "${value.subscriptionName} (${value.subscriptionId})"
-//                        }
-//
-//                        return super.getTextFor(value)
-//                    }
-//
-//                    override fun onChosen(selectedValue: SubscriptionDetail, finalChoice: Boolean): PopupStep<*>? {
-//                        // TODO
-//                        return PopupStep.FINAL_CHOICE
-//                    }
-//                }
-//
-//                val popup = JBPopupFactory.getInstance().createListPopup(step)
-//                val event = e.inputEvent
-//                val c = event?.component
-//                if (c != null) {
-//                    popup.showUnderneathOf(c)
-//                } else {
-//                    popup.showInBestPositionFor(e.dataContext)
-//                }
-//            }
-//        })
-//return
-
-        ProgressManager.getInstance().run(object : Task.Backgroundable(project, this.templatePresentation.text) {
-            override fun run(indicator: ProgressIndicator) {
-                indicator.fraction = 0.05
-                indicator.text = "Retrieving Azure subscription details..."
-
+        object : Task.Backgroundable(project, "Retrieving Azure subscription details...", true, PerformInBackgroundOption.DEAF)
+        {
+            override fun run(indicator: ProgressIndicator)
+            {
                 val selectedSubscriptions = azureManager.subscriptionManager.subscriptionDetails
                         .asSequence()
                         .filter { it.isSelected }
                         .toList()
 
-                indicator.fraction = 0.25
-                indicator.text = "Retrieving cloud shell preferences..."
-                selectedSubscriptions.forEach {
+                // One option? No popup needed
+                if (selectedSubscriptions.count() == 1) {
+                    ApplicationManager.getApplication().invokeLater {
+                        if (project.isDisposed) return@invokeLater
 
-                    val authenticationContext = AzureCloudShellDeviceAuthenticationContext.create(azureManager, it.tenantId)
-                    val deviceCode = authenticationContext.acquireDeviceCode()
+                        startAzureCloudShell(project, azureManager, selectedSubscriptions.first())
+                    }
+                    return
+                }
 
-                    // TODO: prompt
+                // Multiple options? Popup.
+                ApplicationManager.getApplication().invokeLater{
+                    if (project.isDisposed) return@invokeLater
 
-                    val authenticationToken = authenticationContext.acquireTokenByDeviceCode(deviceCode)
-
-                    val tokenCredentials = authenticationContext.tokenCredentialsFor(authenticationToken)
-
-                    // Use custom API's
-                    val retrofitClient = azureManager.getRetrofitClient(
-                            azureManager.environment.azureEnvironment,
-                            AzureEnvironment.Endpoint.RESOURCE_MANAGER,
-                            CloudConsoleService::class.java,
-                            tokenCredentials)
-
-                    val consoleUserSettingsResponse = retrofitClient.userSettings().execute()
-                    if (consoleUserSettingsResponse.isSuccessful) {
-                        indicator.fraction = 0.45
-                        indicator.text = "Provisioning cloud shell..."
-
-                        // We can provision a shell!
-                        val provisionParameters = CloudConsoleProvisionParameters(
-                                CloudConsoleProvisionParameters.Properties(consoleUserSettingsResponse.body()!!.properties!!.preferredOsType!!))
-
-                        val provisionResult = retrofitClient.provision(provisionParameters).execute()
-                        if (provisionResult.isSuccessful && provisionResult.body()!!.properties!!.provisioningState.equals("Succeeded", true)) {
-                            indicator.fraction = 0.65
-                            indicator.text = "Requesting cloud shell..."
-
-                            // Cloud Shell URL
-                            val shellUrl = provisionResult.body()!!.properties!!.uri!! + "/terminals"
-
-                            // Fetch graph and key vault tokens
-                            val credentials = RefreshableTokenCredentials(AdAuthManager.getInstance(), it.tenantId)
-                            val graphToken = credentials.getToken(azureManager.environment.azureEnvironment.graphEndpoint())
-                            val vaultToken = credentials.getToken("https://" + azureManager.environment.azureEnvironment.keyVaultDnsSuffix().trimStart('.') + "/")
-
-                            // Provision terminal
-                            indicator.fraction = 0.75
-                            indicator.text = "Requesting cloud shell terminal..."
-
-                            val provisionTerminalParameters = CloudConsoleProvisionTerminalParameters()
-                            provisionTerminalParameters.tokens.add(graphToken)
-                            provisionTerminalParameters.tokens.add(vaultToken)
-
-                            val provisionTerminalResult = retrofitClient.provisionTerminal(shellUrl, 120, 30, provisionTerminalParameters).execute()
-                            if (provisionTerminalResult.isSuccessful && provisionTerminalResult.body()!!.socketUri!!.isNotEmpty()) {
-                                // Let's connect!
-                                indicator.fraction = 0.85
-                                indicator.text = "Connecting to cloud shell terminal..."
-
-                                val socketUri = provisionTerminalResult.body()!!.socketUri!!
-
-                                // Setup connection
-
-                                val socketClient = CloudConsoleTerminalWebSocket(URI(socketUri))
-                                socketClient.connectBlocking()
-
-                                val runner = CloudTerminalRunner(project, "Azure Cloud Shell",
-                                        CloudTerminalProcess( socketClient.outputStream, socketClient.inputStream))
-
-                                runner.run()
-
-//                                ws.connect()
-//
-//                                val runner = CloudTerminalRunner(project, "Azure Cloud Shell",
-//                                        CloudTerminalProcess( ws.socket!!.outputStream, ws.socket!!.inputStream))
-//
-//                                runner.run()
-//
-//                                val terminal = CloudTerminalProvider.getInstance().createTerminal(
-//                                        "Azure Cloud Shell",
-//                                        project,
-//                                        ws.socket!!.inputStream,
-//                                        ws.socket!!.outputStream)
-//
-//                                terminal.attachChild(ws)
-//
-//                                terminal.
-//                                //CloudTerminalRunner
-//                                val window = ToolWindowManager.getInstance(project).getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID)
-//                                if (window != null && window.isAvailable) {
-//                                    TerminalView.getInstance(project).initTerminal()
-//                                    window.activate(null)
-//                                }
-//                                CloudTerminalRunner()
-//
-//                                val window = ToolWindowManager.getInstance(project).getToolWindow("Terminal")
-//                                if (window != null && window.isAvailable) {
-//                                    TerminalView.getInstance(project).setFileToOpen(selectedFile)
-//                                    window.activate(null)
-//                                }
-
-                                return
+                    val step = object : BaseListPopupStep<SubscriptionDetail>("Select subscription to run Azure Cloud Shell", selectedSubscriptions) {
+                        override fun getTextFor(value: SubscriptionDetail?): String {
+                            if (value != null) {
+                                return "${value.subscriptionName} (${value.subscriptionId})"
                             }
+
+                            return super.getTextFor(value)
+                        }
+
+                        override fun onChosen(selectedValue: SubscriptionDetail, finalChoice: Boolean): PopupStep<*>? {
+                            doFinalStep {
+                                startAzureCloudShell(project, azureManager, selectedValue)
+                            }
+                            return PopupStep.FINAL_CHOICE
+                        }
+                    }
+
+                    val popup = JBPopupFactory.getInstance().createListPopup(step)
+                    popup.showCenteredInCurrentWindow(project)
+                }
+            }
+        }.queue()
+    }
+
+    private fun startAzureCloudShell(project: Project, azureManager: AzureManager, subscriptionDetail: SubscriptionDetail) {
+        val authenticationContext = AzureCloudShellDeviceAuthenticationContext.create(azureManager, subscriptionDetail.tenantId)
+        val deviceCode = authenticationContext.acquireDeviceCode()
+
+        CopyPasteManager.getInstance().setContents(StringSelection(deviceCode.userCode))
+        BrowserUtil.browse(deviceCode.verificationUrl)
+
+        // Authenticate
+        val didAuthenticate = Messages.showDialog(
+                project,
+                deviceCode.message + "\r\nThe code has been copied to your clipboard.\r\n\r\nPress \"Yes\" after authenticating in the browser.",
+                this.templatePresentation.text,
+                arrayOf(Messages.YES_BUTTON, Messages.CANCEL_BUTTON),
+                0,
+                this.templatePresentation.icon)
+
+        if (didAuthenticate == 0) {
+            // Verify authentication
+            try {
+                val authenticationToken = authenticationContext.acquireTokenByDeviceCode(deviceCode)
+                val tokenCredentials = authenticationContext.tokenCredentialsFor(authenticationToken)
+
+                provisionAzureCloudShell(project, azureManager, tokenCredentials, subscriptionDetail)
+            } catch (e: AuthenticationException) {
+                // Failed to authenticate....
+                AzureCloudShellNotifications.notify(project,
+                        "Azure",
+                        "Failed to authenticate Azure Cloud Shell",
+                        "Authentication was unsuccessful.",
+                        NotificationType.WARNING,
+                        null)
+            }
+        }
+    }
+
+    private fun provisionAzureCloudShell(project: Project, azureManager: AzureManager, tokenCredentials: ServiceClientCredentials, subscriptionDetail: SubscriptionDetail) {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, this.templatePresentation.text) {
+            override fun run(indicator: ProgressIndicator) {
+                indicator.fraction = 0.05
+                indicator.text = "Retrieving cloud shell preferences..."
+
+                // Use custom API's
+                val retrofitClient = azureManager.getRetrofitClient(
+                        azureManager.environment.azureEnvironment,
+                        AzureEnvironment.Endpoint.RESOURCE_MANAGER,
+                        CloudConsoleService::class.java,
+                        tokenCredentials)
+
+                val consoleUserSettingsResponse = retrofitClient.userSettings().execute()
+                if (consoleUserSettingsResponse.isSuccessful) {
+                    indicator.fraction = 0.35
+                    indicator.text = "Provisioning cloud shell..."
+
+                    // We can provision a shell!
+                    val provisionParameters = CloudConsoleProvisionParameters(
+                            CloudConsoleProvisionParameters.Properties(consoleUserSettingsResponse.body()!!.properties!!.preferredOsType!!))
+
+                    val provisionResult = retrofitClient.provision(provisionParameters).execute()
+                    if (provisionResult.isSuccessful && provisionResult.body()!!.properties!!.provisioningState.equals("Succeeded", true)) {
+                        indicator.fraction = 0.65
+                        indicator.text = "Requesting cloud shell..."
+
+                        // Cloud Shell URL
+                        val shellUrl = provisionResult.body()!!.properties!!.uri!! + "/terminals"
+
+                        // Fetch graph and key vault tokens
+                        val credentials = RefreshableTokenCredentials(AdAuthManager.getInstance(), subscriptionDetail.tenantId)
+                        val graphToken = credentials.getToken(azureManager.environment.azureEnvironment.graphEndpoint())
+                        val vaultToken = credentials.getToken("https://" + azureManager.environment.azureEnvironment.keyVaultDnsSuffix().trimStart('.') + "/")
+
+                        // Provision terminal
+                        indicator.fraction = 0.75
+                        indicator.text = "Requesting cloud shell terminal..."
+
+                        val provisionTerminalParameters = CloudConsoleProvisionTerminalParameters()
+                        provisionTerminalParameters.tokens.add(graphToken)
+                        provisionTerminalParameters.tokens.add(vaultToken)
+
+                        val provisionTerminalResult = retrofitClient.provisionTerminal(shellUrl, 120, 30, provisionTerminalParameters).execute()
+                        if (provisionTerminalResult.isSuccessful && provisionTerminalResult.body()!!.socketUri!!.isNotEmpty()) {
+                            // Let's connect!
+                            indicator.fraction = 0.85
+                            indicator.text = "Connecting to cloud shell terminal..."
+
+                            val socketUri = provisionTerminalResult.body()!!.socketUri!!
+
+                            // Setup connection
+
+                            val socketClient = CloudConsoleTerminalWebSocket(URI(socketUri))
+                            socketClient.connectBlocking()
+
+                            val runner = CloudTerminalRunner(project, "Azure Cloud Shell",
+                                    CloudTerminalProcess( socketClient.outputStream, socketClient.inputStream))
+
+                            runner.run()
+
+                            return
                         }
                     }
                 }
