@@ -152,7 +152,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @Override
     protected String getDeployTarget() {
-        return isDeployingToSlot() ? "DeploymentSlot" : "WebApp";
+        return webAppSettingModel.isDeployToSlot() ? "DeploymentSlot" : "WebApp";
     }
 
     @Override
@@ -177,7 +177,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
             throw new Exception(NO_WEB_APP);
         }
 
-        if (isDeployingToSlot()) {
+        if (webAppSettingModel.isDeployToSlot()) {
             return webApp.deploymentSlots().getByName(webAppSettingModel.getSlotName());
         } else {
             return webApp;
@@ -192,10 +192,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
             processHandler.setText(STOP_DEPLOY);
             throw new Exception(String.format(CREATE_FAILED, e.getMessage()));
         }
-    }
-
-    private boolean isDeployingToSlot() {
-        return webAppSettingModel.getSlotName() != "production";
     }
 
     private File prepareWebConfig() throws Exception {
