@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.serverexplore;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +38,11 @@ public class AddNewClusterModel implements Cloneable {
     private String clusterName;
     private String userName;
     private String password;
+    @Nullable
+    private URI livyEndpoint;
+    @Nullable
+    private URI yarnEndpoint;
+    private boolean isHDInsightClusterSelected = true;
 
     private String storageName;
     private String storageKey;
@@ -125,6 +131,35 @@ public class AddNewClusterModel implements Cloneable {
     public AddNewClusterModel setStorageKey(String storageKey) {
         this.storageKey = storageKey;
 
+        return this;
+    }
+
+    @Nullable
+    public URI getLivyEndpoint() {
+        return livyEndpoint;
+    }
+
+    public AddNewClusterModel setLivyEndpoint(@Nullable URI livyEndpoint) {
+        this.livyEndpoint = livyEndpoint;
+        return this;
+    }
+
+    @Nullable
+    public URI getYarnEndpoint() {
+        return yarnEndpoint;
+    }
+
+    public AddNewClusterModel setYarnEndpoint(@Nullable URI yarnEndpoint) {
+        this.yarnEndpoint = yarnEndpoint;
+        return this;
+    }
+
+    public boolean getHDInsightClusterSelected() {
+        return isHDInsightClusterSelected;
+    }
+
+    public AddNewClusterModel setHDInsightClusterSelected(boolean HDInsightClusterSelected) {
+        isHDInsightClusterSelected = HDInsightClusterSelected;
         return this;
     }
 

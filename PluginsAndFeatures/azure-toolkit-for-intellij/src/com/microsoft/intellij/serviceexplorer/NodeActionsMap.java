@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewEmulatorAction;
+import com.microsoft.azure.hdinsight.serverexplore.action.AddNewLivyClusterAction;
 import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.CreateNewDockerHostAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.DeleteDockerHostAction;
@@ -84,9 +85,14 @@ public class NodeActionsMap {
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(ConfirmDialogAction.class, ModifyExternalStorageAccountAction.class).build());
         //noinspection unchecked
-        node2Actions.put(HDInsightRootModuleImpl.class,
+        ImmutableList.Builder hdinsightRootModuleImplActionBuilder =
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(AddNewClusterAction.class, AddNewEmulatorAction.class).build());
+                        .add(AddNewClusterAction.class, AddNewEmulatorAction.class);
+        String islinkLivyClusterEnabled = System.getenv("livyCluster");
+        if (islinkLivyClusterEnabled != null && islinkLivyClusterEnabled.equalsIgnoreCase("true")) {
+            hdinsightRootModuleImplActionBuilder.add(AddNewLivyClusterAction.class);
+        }
+        node2Actions.put(HDInsightRootModuleImpl.class, hdinsightRootModuleImplActionBuilder.build());
         //noinspection unchecked
         node2Actions.put(DockerHostNode.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()

@@ -39,8 +39,8 @@ import com.intellij.openapi.util.Key;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.spark.common.*;
-import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -53,6 +53,7 @@ import rx.Subscription;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Optional;
@@ -91,14 +92,18 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         return null;
     }
 
-    private String getSparkJobUrl(@NotNull SparkSubmitModel submitModel) throws ExecutionException {
+    private String getSparkJobUrl(@NotNull SparkSubmitModel submitModel) throws ExecutionException, IOException {
         String clusterName = submitModel.getSubmissionParameter().getClusterName();
 
         IClusterDetail clusterDetail = ClusterManagerEx.getInstance()
                 .getClusterDetailByName(clusterName)
                 .orElseThrow(() -> new ExecutionException("No cluster name matched selection: " + clusterName));
 
-        return JobUtils.getLivyConnectionURL(clusterDetail);
+        String sparkJobUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyBatchUrl() : null;
+        if (sparkJobUrl == null) {
+            throw new IOException("Can't get livy connection URL. Cluster: " + clusterName);
+        }
+        return sparkJobUrl;
     }
     /**
      * Running in Event dispatch thread
