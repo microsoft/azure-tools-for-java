@@ -63,22 +63,22 @@ tc_open "Building Eclipse plugin"
 }
 tc_close "Building Eclipse plugin"
 
-# Build intellij 2018.2 compatible plugin
+# Build intellij plugin
 tc_open "Building IDEA plugin"
 {    
     if [ $INTELLIJ_VERSION == "true" ] ; then
-        ./tools/IntellijVersionHelper 2018.2
+        ./tools/IntellijVersionHelper 2018.3
     fi
 
     (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info clean)
     (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :idea:buildPlugin -s -Pbuild_common_code_with=idea)
-    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/idea/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.2.zip
+    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/idea/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.3.zip
 }
 tc_close "Building IDEA plugin"
 
 BUILD_NUMBER="3.11.0.$BUILD_COUNTER"
 
-# Build JetBrains Rider 2018.2 plugin
+# Build JetBrains Rider 2018.3 plugin
 tc_open "Building Rider plugin"
 {
     (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER)
