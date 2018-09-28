@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
 public enum WebAppBaseState {
     RUNNING,
