@@ -233,7 +233,6 @@
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ServerlessSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
     <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
-    <projectTaskRunner implementation="com.microsoft.azure.hdinsight.spark.console.SparkScalaLocalConsoleProjectTaskRunner" />
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
   </extensions>
 
