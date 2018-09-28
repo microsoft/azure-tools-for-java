@@ -1,6 +1,5 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.ui
 
-import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -11,6 +10,7 @@ import com.jetbrains.rider.util.idea.application
 import com.jetbrains.rider.util.idea.lifetime
 import com.jetbrains.rider.util.lifetime.Lifetime
 import com.jetbrains.rider.util.reactive.Signal
+import com.jetbrains.rider.util.reactive.adviseOnce
 import com.microsoft.azure.management.appservice.AppServicePlan
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.appservice.WebApp
@@ -28,7 +28,7 @@ import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
 
-class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView>(private val myPanel: RiderWebAppSettingPanel) : MvpPresenter<V>() {
+class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView>() : MvpPresenter<V>() {
 
     companion object {
         private const val TASK_SUBSCRIPTION = "Collect Azure subscriptions"
@@ -122,14 +122,14 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView>(private val
     fun onLoadPublishableProjects(lifetime: Lifetime, project: Project) {
         project.solution.publishableProjectsModel.publishableProjects.advise(project.lifetime.createNested()) {
             if (it.newValueOpt != null) {
-                application.invokeLater( {
+                application.invokeLater {
                     if (lifetime.isTerminated) return@invokeLater
                     try {
                         mvpView.fillPublishableProject(project.solution.publishableProjectsModel.publishableProjects.values.toList())
                     } catch (e: Exception) {
                         errorHandler(CANNOT_LIST_PUBLISHABLE_PROJECTS, e)
                     }
-                }, ModalityState.stateForComponent(myPanel.mainPanel))
+                }
             }
         }
     }
@@ -147,13 +147,16 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView>(private val
                              callableFunc: () -> T,
                              invokeLaterCallback: (T) -> Unit) {
 
+        signal.adviseOnce(lifetime) {
+            application.invokeLater {
+                if (lifetime.isTerminated) return@invokeLater
+                invokeLaterCallback(it)
+            }
+        }
+
         ProgressManager.getInstance().run(object : Task.Backgroundable(null, taskName, false) {
             override fun run(indicator: ProgressIndicator) {
-                val value = callableFunc()
-                application.invokeLater({
-                    if (lifetime.isTerminated) return@invokeLater
-                    invokeLaterCallback(value)
-                }, ModalityState.stateForComponent(myPanel.mainPanel))
+                signal.fire(callableFunc())
             }
 
             override fun onThrowable(error: Throwable) {
@@ -165,9 +168,7 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView>(private val
 
     private fun errorHandler(msg: String, e: Exception) {
         DefaultLoader.getIdeHelper().invokeLater {
-            if (isViewDetached) {
-                return@invokeLater
-            }
+            if (isViewDetached) return@invokeLater
             mvpView.onErrorWithException(msg, e)
         }
     }
