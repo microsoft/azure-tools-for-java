@@ -33,8 +33,8 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.webappbase.WebAppBaseNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.webappbase.WebAppBaseState;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 
 public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete Web App %s.\n"

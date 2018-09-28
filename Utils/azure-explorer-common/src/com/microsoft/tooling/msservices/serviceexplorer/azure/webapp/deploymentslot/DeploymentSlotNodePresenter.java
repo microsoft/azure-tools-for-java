@@ -39,7 +39,7 @@ public class DeploymentSlotNodePresenter<V extends DeploymentSlotNodeView> exten
         //todo
     }
 
-    public void onNodeRefresh() {
+    public void onRefreshNode() {
         //todo
     }
 

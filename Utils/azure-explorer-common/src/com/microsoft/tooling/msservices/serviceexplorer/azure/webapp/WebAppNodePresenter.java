@@ -2,7 +2,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.webappbase.WebAppBaseState;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import java.io.IOException;
 
 public class WebAppNodePresenter<V extends WebAppNodeView> extends MvpPresenter<V> {

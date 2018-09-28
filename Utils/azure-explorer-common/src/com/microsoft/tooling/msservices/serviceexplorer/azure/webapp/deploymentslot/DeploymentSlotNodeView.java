@@ -22,7 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.webappbase.WebAppBaseNodeView;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNodeView;
 
 public interface DeploymentSlotNodeView extends WebAppBaseNodeView {
     // todo

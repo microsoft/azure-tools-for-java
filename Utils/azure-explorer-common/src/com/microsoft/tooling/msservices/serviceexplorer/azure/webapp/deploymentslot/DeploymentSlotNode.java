@@ -23,7 +23,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.webappbase.WebAppBaseNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 
 public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlotNodeView {
     private static final String ACTION_SWAP_WITH_PRODUCTION = "Swap with production";

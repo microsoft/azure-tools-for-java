@@ -22,7 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.webappbase.WebAppBaseNodeView;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNodeView;
 
 public interface WebAppNodeView extends WebAppBaseNodeView {
     void renderSubModules();

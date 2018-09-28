@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.webappbase;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
 import java.util.HashMap;
 import java.util.List;
