@@ -31,8 +31,11 @@ import org.apache.commons.lang3.StringUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
 public abstract class WebAppBaseNode extends RefreshableNode implements TelemetryProperties, WebAppBaseNodeView {
@@ -75,6 +78,16 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         getNodeActionByName(ACTION_RESTART).setEnabled(running);
 
         return super.getNodeActions();
+    }
+
+    protected NodeActionListener createBackgroundActionListener(final String actionName, final Runnable runnable) {
+        return new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                DefaultLoader.getIdeHelper().runInBackground(null, actionName, false,
+                    true, String.format("%s...", actionName), runnable);
+            }
+        };
     }
 
     @Override
