@@ -40,7 +40,7 @@ import java.util.List;
 
 public interface WebAppDeployMvpView extends MvpView {
 
-    void renderWebAppsTable(@NotNull List<ResourceEx<WebApp>> webAppLists);
+    void renderWebAppsAndSlots(@NotNull List<ResourceEx<WebApp>> webAppLists);
 
     void fillSubscription(@NotNull List<Subscription> subscriptions);
 
