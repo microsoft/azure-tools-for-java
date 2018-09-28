@@ -366,6 +366,31 @@ public class AzureWebAppMvpModel {
         AuthMethodManager.getInstance().getAzureClient(sid).webApps().getById(appid).stop();
     }
 
+    public void startDeploymentSlot(final String subscriptionId, final String appId,
+                                    final String slotName) throws IOException {
+        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        app.deploymentSlots().getByName(slotName).start();
+    }
+
+    public void stopDeploymentSlot(final String subscriptionId, final String appId,
+                                   final String slotName) throws IOException {
+        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        app.deploymentSlots().getByName(slotName).stop();
+    }
+
+    public void restartDeploymentSlot(final String subscriptionId, final String appId,
+                                      final String slotName) throws IOException {
+        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        app.deploymentSlots().getByName(slotName).restart();
+    }
+
+    public void swapSlotWithProduction(final String subscriptionId, final String appId,
+                                       final String slotName) throws IOException {
+        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        final DeploymentSlot slot = app.deploymentSlots().getByName(slotName);
+        slot.swap("production");
+    }
+
     /**
      * Get all the deployment slots of a web app by the subscription id and web app id.
      */
