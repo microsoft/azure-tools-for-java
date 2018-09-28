@@ -58,33 +58,35 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
     protected void loadActions() {
         super.loadActions();
 
-        addAction("Open Spark History UI", new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                String sparkHistoryUrl = clusterDetail.isEmulator() ?
-                        ((EmulatorClusterDetail)clusterDetail).getSparkHistoryEndpoint() :
-                        ClusterManagerEx.getInstance().getClusterConnectionString(clusterDetail.getName()) + "/sparkhistory";
-                openUrlLink(sparkHistoryUrl);
-            }
-        });
+        if (!(clusterDetail instanceof HDInsightLivyLinkClusterDetail)) {
+            addAction("Open Spark History UI", new NodeActionListener() {
+                @Override
+                protected void actionPerformed(NodeActionEvent e) {
+                    String sparkHistoryUrl = clusterDetail.isEmulator() ?
+                            ((EmulatorClusterDetail)clusterDetail).getSparkHistoryEndpoint() :
+                            ClusterManagerEx.getInstance().getClusterConnectionString(clusterDetail.getName()) + "/sparkhistory";
+                    openUrlLink(sparkHistoryUrl);
+                }
+            });
 
-        addAction("Open Azure Storage Explorer for storage", new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                String aseDeepLink = "storageexplorer:///";
-                openUrlLink(aseDeepLink);
-            }
-        });
+            addAction("Open Azure Storage Explorer for storage", new NodeActionListener() {
+                @Override
+                protected void actionPerformed(NodeActionEvent e) {
+                    String aseDeepLink = "storageexplorer:///";
+                    openUrlLink(aseDeepLink);
+                }
+            });
 
-        addAction("Open Cluster Management Portal(Ambari)", new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                String ambariUrl = clusterDetail.isEmulator() ?
-                        ((EmulatorClusterDetail)clusterDetail).getAmbariEndpoint() :
-                        ClusterManagerEx.getInstance().getClusterConnectionString(clusterDetail.getName());
-                openUrlLink(ambariUrl);
-            }
-        });
+            addAction("Open Cluster Management Portal(Ambari)", new NodeActionListener() {
+                @Override
+                protected void actionPerformed(NodeActionEvent e) {
+                    String ambariUrl = clusterDetail.isEmulator() ?
+                            ((EmulatorClusterDetail)clusterDetail).getAmbariEndpoint() :
+                            ClusterManagerEx.getInstance().getClusterConnectionString(clusterDetail.getName());
+                    openUrlLink(ambariUrl);
+                }
+            });
+        }
 
         if (clusterDetail instanceof ClusterDetail) {
             addAction("Open Jupyter Notebook", new NodeActionListener() {

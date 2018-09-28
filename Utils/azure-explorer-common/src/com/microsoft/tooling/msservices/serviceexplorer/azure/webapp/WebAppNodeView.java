@@ -22,10 +22,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNodeView;
 
-public interface WebAppNodeView extends MvpView {
-    void renderWebAppNode(WebAppBaseState state);
-
+public interface WebAppNodeView extends WebAppBaseNodeView {
     void renderSubModules();
 }

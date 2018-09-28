@@ -37,10 +37,12 @@ public class WebAppSettingModel {
     private String targetPath = "";
     private String targetName = "";
     private boolean deployToRoot = true;
+    private boolean deployToSlot = false;
     // create related
     private String webAppName = "";
     private String webContainer = "";
 
+    private String slotName = "production";
     private boolean creatingResGrp = false;
     private String resourceGroup = "";
 
@@ -79,6 +81,14 @@ public class WebAppSettingModel {
         this.deployToRoot = deployToRoot;
     }
 
+    public boolean isDeployToSlot() {
+        return deployToSlot;
+    }
+
+    public void setDeployToSlot(boolean deployToSlot) {
+        this.deployToSlot = deployToSlot;
+    }
+
     public String getTargetPath() {
         return targetPath;
     }
@@ -109,6 +119,14 @@ public class WebAppSettingModel {
 
     public void setWebAppName(String webAppName) {
         this.webAppName = webAppName;
+    }
+
+    public String getSlotName() {
+        return this.slotName;
+    }
+
+    public void setSlotName(final String slotName) {
+        this.slotName = slotName;
     }
 
     public String getWebContainer() {

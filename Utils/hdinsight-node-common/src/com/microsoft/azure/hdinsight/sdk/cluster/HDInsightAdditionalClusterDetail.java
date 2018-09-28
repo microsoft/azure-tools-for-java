@@ -22,22 +22,19 @@
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.google.gson.annotations.Expose;
-import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
-public class HDInsightAdditionalClusterDetail implements IClusterDetail {
+public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
 
     private String clusterName;
     private String userName;
@@ -88,6 +85,14 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail {
     @Override
     public String getConnectionUrl() {
         return ClusterManagerEx.getInstance().getClusterConnectionString(this.clusterName);
+    }
+
+    public String getLivyConnectionUrl() {
+        return URI.create(getConnectionUrl()).resolve("livy/").toString();
+    }
+
+    public String getYarnNMConnectionUrl() {
+        return URI.create(getConnectionUrl()).resolve("yarnui/ws/v1/cluster/apps/").toString();
     }
 
     @Override

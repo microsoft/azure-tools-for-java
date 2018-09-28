@@ -31,6 +31,8 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
+import com.microsoft.azure.hdinsight.sdk.cluster.YarnCluster;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
@@ -77,6 +79,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     }
 
     public enum DriverLogConversionMode {
+        ORIGINAL,
         WITHOUT_PORT,
         WITH_PORT;
 
@@ -103,6 +106,12 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      */
     @Nullable
     private URI connectUri;
+
+    /**
+     * The base connection URI for HDInsight Yarn application service, such as: http://hn0-spark2:8088/cluster/app
+     */
+    @Nullable
+    private URI yarnConnectUri;
 
     /**
      * The LIVY Spark batch job ID got from job submission
@@ -189,7 +198,10 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                     log().warn("No credential provided for Spark batch job.");
                 }
 
-                this.connectUri = URI.create(JobUtils.getLivyConnectionURL(cluster.get()));
+                this.connectUri = cluster.filter(c -> c instanceof LivyCluster)
+                        .map(c -> ((LivyCluster) c).getLivyBatchUrl())
+                        .map(URI::create)
+                        .orElse(null);
             } else {
                 log().warn("No cluster found for " + getSubmissionParameter().getClusterName());
             }
@@ -197,6 +209,34 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
         return connectUri;
     }
+
+    @Nullable
+    public URI getYarnNMConnectUri() {
+        if (yarnConnectUri == null) {
+            Optional<IClusterDetail> cluster = ClusterManagerEx.getInstance()
+                    .getClusterDetailByName(getSubmissionParameter().getClusterName());
+
+            if (cluster.isPresent()) {
+                try {
+                    SparkBatchSubmission.getInstance()
+                            .setUsernamePasswordCredential(cluster.get().getHttpUserName(), cluster.get().getHttpPassword());
+                } catch (HDIException e) {
+                    log().warn("No credential provided for Spark batch job.");
+                }
+
+                this.yarnConnectUri = cluster.filter(c -> c instanceof YarnCluster)
+                        .map(c -> ((YarnCluster) c).getYarnNMConnectionUrl())
+                        .map(URI::create)
+                        .orElse(null);
+            } else {
+                log().warn("No cluster found for " + getSubmissionParameter().getClusterName());
+            }
+        }
+
+        return yarnConnectUri;
+    }
+
+
 
     /**
      * Getter of the LIVY Spark batch job ID got from job submission
@@ -448,12 +488,16 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      * @return the Yarn application got
      * @throws IOException exceptions in transaction
      */
-    private App getSparkJobYarnApplication(URI batchBaseUri, String applicationID) throws IOException {
+    private App getSparkJobYarnApplication(URI yarnConnectUri, String applicationID) throws Exception {
+        if (yarnConnectUri == null) {
+            return null;
+        }
+
         int retries = 0;
 
         do {
             // TODO: An issue here when the yarnui not sharing root with Livy batch job URI
-            URI getYarnClusterAppURI = batchBaseUri.resolve("/yarnui/ws/v1/cluster/apps/" + applicationID);
+            URI getYarnClusterAppURI = URI.create(yarnConnectUri.toString() + applicationID);
 
             try {
                 HttpResponse httpResponse = this.getSubmission()
@@ -531,8 +575,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
         return getSparkJobApplicationIdObservable()
                 .flatMap(appId -> {
-                    URI getYarnAppAttemptsURI = getConnectUri().resolve("/yarnui/ws/v1/cluster/apps/" + appId +
-                                                                        "/appattempts");
+                    URI getYarnAppAttemptsURI = URI.create(getYarnNMConnectUri() + appId + "/appattempts");
 
                     try {
                         HttpResponse httpResponse = this.getSubmission()
@@ -735,7 +778,11 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
             String applicationId = this.getSparkJobApplicationId(this.getConnectUri(), this.getBatchId());
 
-            App yarnApp = this.getSparkJobYarnApplication(this.getConnectUri(), applicationId);
+            App yarnApp = this.getSparkJobYarnApplication(this.getYarnNMConnectUri(), applicationId);
+
+            if (yarnApp == null) {
+                throw new Exception("Can not access yarn applicaition since yarnConnectUri is null");
+            }
 
             if (yarnApp.isFinished()) {
                 throw new UnknownServiceException("The Livy job " + this.getBatchId() + " on yarn is not running.");
@@ -902,11 +949,10 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     private Observable<String> getJobLogAggregationDoneObservable() {
         return getSparkJobApplicationIdObservable()
                 .flatMap(applicationId ->
-                        Observable.fromCallable(() -> getSparkJobYarnApplication(
-                                        // if getConnectUri() is null, the getSparkJobApplicationIdObservable() would
-                                        // return Observable.error()
-                                        Objects.requireNonNull(this.getConnectUri()), applicationId))
+                        Observable.fromCallable(() ->
+                                getSparkJobYarnApplication(this.getYarnNMConnectUri(), applicationId))
                                 .repeatWhen(ob -> ob.delay(getDelaySeconds(), TimeUnit.SECONDS))
+                                .filter(app -> app != null)
                                 .takeUntil(this::isYarnAppLogAggregationDone)
                                 .filter(this::isYarnAppLogAggregationDone))
                 .map(yarnApp -> yarnApp.getLogAggregationStatus().toUpperCase());
@@ -963,6 +1009,8 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                                     internalLogUrl.getHost(),
                                     internalLogUrl.getPort(),
                                     normalizedPath)));
+                case ORIGINAL:
+                    return Optional.of(internalLogUrl);
             }
         }
 

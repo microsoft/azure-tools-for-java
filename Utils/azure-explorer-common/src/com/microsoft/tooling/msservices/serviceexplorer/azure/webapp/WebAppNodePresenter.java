@@ -2,6 +2,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import java.io.IOException;
 
 public class WebAppNodePresenter<V extends WebAppNodeView> extends MvpPresenter<V> {
@@ -11,7 +12,7 @@ public class WebAppNodePresenter<V extends WebAppNodeView> extends MvpPresenter<
         if (view == null) {
             return;
         }
-        view.renderWebAppNode(WebAppBaseState.RUNNING);
+        view.renderNode(WebAppBaseState.RUNNING);
     }
 
     public void onRestartWebApp(String subscriptionId, String webAppId) throws IOException {
@@ -20,7 +21,7 @@ public class WebAppNodePresenter<V extends WebAppNodeView> extends MvpPresenter<
         if (view == null) {
             return;
         }
-        view.renderWebAppNode(WebAppBaseState.RUNNING);
+        view.renderNode(WebAppBaseState.RUNNING);
     }
 
     public void onStopWebApp(String subscriptionId, String webAppId) throws IOException {
@@ -29,7 +30,7 @@ public class WebAppNodePresenter<V extends WebAppNodeView> extends MvpPresenter<
         if (view == null) {
             return;
         }
-        view.renderWebAppNode(WebAppBaseState.STOPPED);
+        view.renderNode(WebAppBaseState.STOPPED);
     }
 
     public void onNodeRefresh() {

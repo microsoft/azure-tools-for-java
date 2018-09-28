@@ -36,7 +36,8 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
 
     @Override
     public void renderDeploymentSlots(@NotNull final List<DeploymentSlot> slots) {
-        slots.forEach(slot -> addChildNode(new DeploymentSlotNode(
-            this, slot.name(), slot.state(), slot.operatingSystem().toString(), this.subscriptionId)));
+        slots.forEach(slot -> addChildNode(
+            new DeploymentSlotNode(slot.id(), slot.parent().id(), this, slot.name(), slot.state(),
+                slot.operatingSystem().toString(), this.subscriptionId, slot.defaultHostName())));
     }
 }
