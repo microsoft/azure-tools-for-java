@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.util.idea.application
+import com.jetbrains.rider.util.idea.getLogger
 import com.jetbrains.rider.util.idea.lifetime
 import com.jetbrains.rider.util.lifetime.Lifetime
 import com.jetbrains.rider.util.reactive.Signal
@@ -29,6 +30,9 @@ import com.microsoft.tooling.msservices.components.DefaultLoader
 class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresenter<V>() {
 
     companion object {
+
+        private val LOG = getLogger(this)
+
         private const val TASK_SUBSCRIPTION = "Collect Azure subscriptions"
         private const val TASK_WEB_APP = "Collect Azure web apps"
         private const val TASK_RESOURCE_GROUP = "Collect Azure resource groups"
@@ -156,9 +160,10 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : MvpPresen
                 signal.fire(callableFunc())
             }
 
-            override fun onThrowable(error: Throwable) {
-                errorHandler(errorMessage, error as Exception)
-                super.onThrowable(error)
+            override fun onThrowable(e: Throwable) {
+                LOG.error(e)
+                errorHandler(errorMessage, e as Exception)
+                super.onThrowable(e)
             }
         })
     }

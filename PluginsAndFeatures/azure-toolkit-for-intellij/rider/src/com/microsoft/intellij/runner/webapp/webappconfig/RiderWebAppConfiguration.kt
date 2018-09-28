@@ -12,6 +12,7 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.util.idea.getLogger
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.AzureRunConfigurationBase
@@ -24,6 +25,10 @@ import com.microsoft.intellij.runner.webapp.webappconfig.validator.WebAppValidat
 
 class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
         AzureRunConfigurationBase<AzureDotNetWebAppSettingModel>(project, factory, name) {
+
+    companion object {
+        private val LOG = getLogger<RiderWebAppConfiguration>()
+    }
 
     private val myModel = AzureDotNetWebAppSettingModel()
 
@@ -86,9 +91,12 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     private fun validateAzureAccountIsSignedIn() {
         try {
             if (!AuthMethodManager.getInstance().isSignedIn) {
-                throw RuntimeConfigurationError(UiConstants.SIGN_IN_REQUIRED)
+                val message = UiConstants.SIGN_IN_REQUIRED
+                LOG.error(message)
+                throw RuntimeConfigurationError(message)
             }
         } catch (e: Throwable) {
+            LOG.error(e)
             throw RuntimeConfigurationError(UiConstants.SIGN_IN_REQUIRED)
         }
     }

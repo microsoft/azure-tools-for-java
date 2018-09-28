@@ -1,14 +1,17 @@
 package com.microsoft.intellij.runner.webapp
 
 import com.jetbrains.rider.util.concurrentMapOf
+import com.jetbrains.rider.util.error
+import com.jetbrains.rider.util.getLogger
 import com.microsoft.azure.management.Azure
 import com.microsoft.azure.management.appservice.*
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
-import java.io.IOException
 
 object AzureDotNetWebAppMvpModel {
+
+    private val LOG = getLogger<AzureDotNetWebAppMvpModel>()
 
     class WebAppDefinition(val name: String,
                            val isCreatingResourceGroup: Boolean,
@@ -54,8 +57,8 @@ object AzureDotNetWebAppMvpModel {
             val webAppList = azure.webApps().list().map { ResourceEx(it, subscriptionId) }
             subscriptionIdToWebAppsMap[subscriptionId] = webAppList
             return webAppList
-        } catch (e: IOException) {
-            e.printStackTrace()
+        } catch (e: Throwable) {
+            LOG.error(e)
         }
 
         return listOf()
