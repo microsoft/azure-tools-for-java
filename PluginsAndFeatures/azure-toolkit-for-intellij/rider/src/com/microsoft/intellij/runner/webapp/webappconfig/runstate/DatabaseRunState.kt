@@ -6,7 +6,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
-import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
+import com.microsoft.intellij.runner.webapp.model.DatabasePublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
 import java.net.URI
 import java.util.Date
@@ -18,8 +18,7 @@ object DatabaseRunState {
 
     private val activityNotifier = AzureDeploymentProgressNotification(null)
 
-    fun getOrCreateSqlDatabaseFromConfig(model: AzureDotNetWebAppSettingModel.DatabaseModel,
-                                                 processHandler: RunProcessHandler): SqlDatabase {
+    fun getOrCreateSqlDatabaseFromConfig(model: DatabasePublishModel, processHandler: RunProcessHandler): SqlDatabase {
         if (model.isCreatingSqlDatabase) {
             val sqlServer = getOrCreateSqlServerFromConfiguration(model, processHandler)
             return createDatabase(sqlServer, model, processHandler)
@@ -45,7 +44,7 @@ object DatabaseRunState {
     }
 
     private fun createDatabase(sqlServer: SqlServer,
-                               model: AzureDotNetWebAppSettingModel.DatabaseModel,
+                               model: DatabasePublishModel,
                                processHandler: RunProcessHandler): SqlDatabase {
 
         processHandler.setText(String.format(UiConstants.SQL_DATABASE_CREATE, model.databaseName))
@@ -60,7 +59,7 @@ object DatabaseRunState {
         return database
     }
 
-    private fun getOrCreateSqlServerFromConfiguration(model: AzureDotNetWebAppSettingModel.DatabaseModel,
+    private fun getOrCreateSqlServerFromConfiguration(model: DatabasePublishModel,
                                                       processHandler: RunProcessHandler): SqlServer {
 
         val subscriptionId = model.subscription?.subscriptionId() ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)

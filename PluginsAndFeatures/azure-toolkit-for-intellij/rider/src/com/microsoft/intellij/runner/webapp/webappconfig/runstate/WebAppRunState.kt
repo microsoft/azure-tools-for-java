@@ -26,7 +26,7 @@ import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.utils.WebAppDeploySession
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
-import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
+import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
 import okhttp3.Response
 import org.jetbrains.concurrency.AsyncPromise
@@ -79,7 +79,7 @@ object WebAppRunState {
         activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_START, Date(), webApp.defaultHostName(), 100, message)
     }
 
-    fun getOrCreateWebAppFromConfiguration(model: AzureDotNetWebAppSettingModel.WebAppModel,
+    fun getOrCreateWebAppFromConfiguration(model: WebAppPublishModel,
                                            processHandler: RunProcessHandler): WebApp {
 
         val subscriptionId = model.subscription?.subscriptionId() ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)

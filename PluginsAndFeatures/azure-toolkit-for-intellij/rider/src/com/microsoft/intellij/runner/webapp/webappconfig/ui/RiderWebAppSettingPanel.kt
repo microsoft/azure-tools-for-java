@@ -41,7 +41,8 @@ import com.microsoft.intellij.configuration.AzureRiderSettings
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
-import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
+import com.microsoft.intellij.runner.webapp.model.DatabasePublishModel
+import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfiguration
 import java.io.File
 import java.lang.NullPointerException
@@ -92,9 +93,13 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         private const val TABLE_EMPTY_MESSAGE = "No available Web Apps."
         private const val PROJECTS_EMPTY_MESSAGE = "No projects to publish"
 
-        private const val RESOURCE_GROUP_EMPTY_MESSAGE = "No existing Azure Resource Groups"
-        private const val DATABASES_EMPTY_MESSAGE = "No existing Azure SQL Databases"
-        private const val SQL_SERVER_EMPTY_MESSAGE = "No existing Azure SQL Servers"
+        private const val EMPTY_SUBSCRIPTION_MESSAGE = "No existing Azure Subscriptions"
+        private const val EMPTY_RESOURCE_GROUP_MESSAGE = "No existing Azure Resource Groups"
+        private const val EMPTY_APP_SERVICE_PLAN_MESSAGE = "No existing Azure Resource Groups"
+        private const val EMPTY_LOCATION_MESSAGE = "No existing Azure Locations"
+        private const val EMPTY_PRICING_TIER_MESSAGE = "No existing Azure Pricing Tiers"
+        private const val EMPTY_SQL_DATABASES_MESSAGE = "No existing Azure SQL Databases"
+        private const val EMPTY_SQL_SERVER_MESSAGE = "No existing Azure SQL Servers"
 
         private const val DEFAULT_APP_NAME = "webapp-"
         private const val DEFAULT_PLAN_NAME = "appsp-"
@@ -126,14 +131,14 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     private var cachedAppServicePlan = listOf<AppServicePlan>()
     private var lastSelectedLocation = ""
     private var cachedPricingTier = listOf<PricingTier>()
-    private var lastSelectedPriceTier = AzureDotNetWebAppSettingModel.defaultPricingTier
+    private var lastSelectedPriceTier = WebAppPublishModel.defaultPricingTier
 
     private var lastSelectedDatabase: SqlDatabase? = null
     private var cachedResourceGroups = listOf<ResourceGroup>()
     private var lastSelectedDbResourceGroupName = ""
     private var lastSelectedSqlServer: SqlServer? = null
     private var lastSelectedDbLocation = ""
-    private var lastSelectedDatabaseEdition = AzureDotNetWebAppSettingModel.defaultDatabaseEditions
+    private var lastSelectedDatabaseEdition = DatabasePublishModel.defaultDatabaseEditions
 
     // Panels
     override var mainPanel: JPanel = pnlRoot
@@ -270,6 +275,25 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     private lateinit var pnlCollation: JPanel
     private lateinit var txtCollationValue: JTextField
 
+    // Set of rules to control components enable state
+    // Note: there is more complicated behavior when selecting one set of controls affect another set,
+    //       e.g. when we select existing Sql Server, we cannot create a new Resource Group because they are linked
+    private val controlBehaviorMap: Map<JComponent, () -> Boolean> = hashMapOf(
+            cbSubscription to { checkCbSubscriptionRule() },
+            cbResourceGroup to { checkCbResourceGroupRule() },
+            cbAppServicePlan to { checkCbAppServicePlanRule() },
+
+            cbDatabase to { checkCbDatabaseRule() },
+            cbDbResourceGroup to { checkCbDbResourceGroupRule() },
+            cbExistSqlServer to { checkCbExistSqlServerRule() },
+
+            rdoUseExistResGrp to { checkRdoUseExistingResourceGroupRule() },
+            rdoUseExistAppServicePlan to { checkRdoUseExistingAppServicePlanRule() },
+
+            rdoDbExistingResourceGroup to { checkRdoDbUseExistingResourceGroupRule() },
+            rdoUseExistSqlServer to { checkRdoUseExistSqlServerRule() }
+    )
+
     override val panelName: String
         get() = WEB_APP_SETTINGS_PANEL_NAME
 
@@ -317,12 +341,18 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         resetDatabaseFromConfig(model.databaseModel, dateString)
     }
 
-    private fun resetWebAppFromConfig(model: AzureDotNetWebAppSettingModel.WebAppModel, dateString: String) {
+    private fun resetWebAppFromConfig(model: WebAppPublishModel, dateString: String) {
         if (model.publishableProject != null) cbProject.selectedItem = model.publishableProject
 
-        txtWebAppName.text = if (model.webAppName.isEmpty()) "$DEFAULT_APP_NAME$dateString" else model.webAppName
-        txtAppServicePlanName.text = if (model.appServicePlanName.isEmpty()) "$DEFAULT_PLAN_NAME$dateString" else model.appServicePlanName
-        txtResourceGroupName.text = if (model.resourceGroupName.isEmpty()) "$DEFAULT_RESOURCE_GROUP_NAME$dateString" else model.resourceGroupName
+        txtWebAppName.text =
+                if (model.webAppName.isEmpty()) "$DEFAULT_APP_NAME$dateString"
+                else model.webAppName
+
+        txtAppServicePlanName.text =
+                if (model.appServicePlanName.isEmpty()) "$DEFAULT_PLAN_NAME$dateString"
+                else model.appServicePlanName
+
+        txtResourceGroupName.text = "$DEFAULT_RESOURCE_GROUP_NAME$dateString"
 
         if (model.isCreatingWebApp) {
             rdoCreateNewWebApp.doClick()
@@ -356,32 +386,37 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
                         AzureRiderSettings.openInBrowserDefaultValue)
     }
 
-    private fun resetDatabaseFromConfig(model: AzureDotNetWebAppSettingModel.DatabaseModel, dateString: String) {
-        checkBoxEnableDbConnection.isSelected = model.isDatabaseConnectionEnabled
+    private fun resetDatabaseFromConfig(model: DatabasePublishModel, dateString: String) {
+        if (model.isDatabaseConnectionEnabled) checkBoxEnableDbConnection.doClick()
         cbDatabase.selectedItem = model.database
 
-        txtDbName.text = if (model.databaseName.isEmpty()) String.format(DEFAULT_SQL_DATABASE_NAME, dateString) else model.databaseName
-        txtDbNewResourceGroup.text = if (model.dbResourceGroupName.isEmpty()) "$DEFAULT_RESOURCE_GROUP_NAME$dateString" else model.dbResourceGroupName
-        txtNewSqlServerName.text = if (model.sqlServerName.isEmpty()) "$DEFAULT_SQL_SERVER_NAME$dateString" else model.sqlServerName
+        txtDbName.text =
+                if (model.databaseName.isEmpty()) String.format(DEFAULT_SQL_DATABASE_NAME, dateString)
+                else model.databaseName
+
+        txtDbNewResourceGroup.text = "$DEFAULT_RESOURCE_GROUP_NAME$dateString"
+
+        txtNewSqlServerName.text = "$DEFAULT_SQL_SERVER_NAME$dateString"
+
         txtCollationValue.text = model.collation
         txtConnectionStringName.text = model.connectionStringName
 
         if (model.isCreatingSqlDatabase) {
             rdoNewDb.doClick()
-
-            if (model.isCreatingDbResourceGroup) {
-                rdoDbCreateResourceGroup.doClick()
-            } else {
-                rdoDbExistingResourceGroup.doClick()
-            }
-
-            if (model.isCreatingSqlServer) {
-                rdoCreateSqlServer.doClick()
-            } else {
-                rdoUseExistSqlServer.doClick()
-            }
         } else {
             rdoExistingDb.doClick()
+        }
+
+        if (model.isCreatingDbResourceGroup) {
+            rdoDbCreateResourceGroup.doClick()
+        } else {
+            rdoDbExistingResourceGroup.doClick()
+        }
+
+        if (model.isCreatingSqlServer) {
+            rdoCreateSqlServer.doClick()
+        } else {
+            rdoUseExistSqlServer.doClick()
         }
     }
 
@@ -395,7 +430,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         applyDatabaseConfig(configuration.model.databaseModel)
     }
 
-    private fun applyWebAppConfig(model: AzureDotNetWebAppSettingModel.WebAppModel) {
+    private fun applyWebAppConfig(model: WebAppPublishModel) {
         model.subscription = getSelectedItem(cbSubscription)
         model.publishableProject = getSelectedItem(cbProject) ?: model.publishableProject
 
@@ -445,13 +480,13 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
                 val dotNetCoreVersionArray = selectedWebApp?.linuxFxVersion()?.split('|')
                 val netCoreRuntime =
                         if (dotNetCoreVersionArray != null && dotNetCoreVersionArray.size == 2) RuntimeStack(dotNetCoreVersionArray[0], dotNetCoreVersionArray[1])
-                        else AzureDotNetWebAppSettingModel.defaultRuntime
+                        else WebAppPublishModel.defaultRuntime
                 model.netCoreRuntime = netCoreRuntime
             }
         }
     }
 
-    private fun applyDatabaseConfig(model: AzureDotNetWebAppSettingModel.DatabaseModel) {
+    private fun applyDatabaseConfig(model: DatabasePublishModel) {
         model.subscription = getSelectedItem(cbSubscription)
         model.isDatabaseConnectionEnabled = checkBoxEnableDbConnection.isSelected
 
@@ -552,7 +587,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         }
 
         if (subscriptions.isEmpty()) { lastSelectedSubscriptionId = "" }
-        setComponentsEnabled(checkCbSubscriptionRule(), cbSubscription)
+        setComponentsEnabled(true, cbSubscription)
     }
 
     override fun fillResourceGroup(resourceGroups: List<ResourceGroup>) {
@@ -574,12 +609,12 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
 
         if (resourceGroups.isEmpty()) {
             rdoCreateResGrp.doClick()
-            rdoDbCreateResourceGroup.doClick()
             lastSelectedResourceGroupName = ""
         }
 
-        setComponentsEnabled(checkCbResourceGroupRule(), cbResourceGroup)
-        setComponentsEnabled(checkCbDbResourceGroupRule(), cbDbResourceGroup)
+        setComponentsEnabled(true,
+                cbResourceGroup, rdoUseExistResGrp,
+                cbDbResourceGroup, rdoDbExistingResourceGroup)
     }
 
     override fun fillAppServicePlan(appServicePlans: List<AppServicePlan>) {
@@ -589,13 +624,13 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         setAppServicePlanContent(filteredPlans)
 
         if (appServicePlans.isEmpty()) {
-            toggleAppServicePlanPanel(true)
+            rdoCreateAppServicePlan.doClick()
+
             lblLocation.text = NOT_APPLICABLE
             lblPricingTier.text = NOT_APPLICABLE
         }
 
-        setComponentsEnabled(checkCbAppServicePlanRule(), cbAppServicePlan)
-        setComponentsEnabled(checkRdoUseExistingAppServicePlanRule(), rdoUseExistAppServicePlan)
+        setComponentsEnabled(true, cbAppServicePlan, rdoUseExistAppServicePlan)
     }
 
     override fun fillLocation(locations: List<Location>) {
@@ -639,7 +674,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
             lastSelectedDatabase = null
         }
 
-        setComponentsEnabled(checkCbDatabaseRule(), cbDatabase, passExistingDbAdminPassword)
+        setComponentsEnabled(true, cbDatabase, passExistingDbAdminPassword)
     }
 
     override fun fillDatabaseEdition(prices: List<DatabaseEditions>) {
@@ -669,13 +704,8 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
                     }
                 }
 
-        if (sqlServers.isEmpty()) {
-            rdoCreateSqlServer.doClick()
-            lastSelectedSqlServer = null
-        }
-
-        setComponentsEnabled(checkCbExistSqlServerRule(), cbExistSqlServer)
-        setComponentsEnabled(checkRdoUseExistSqlServerRule(), rdoUseExistSqlServer)
+        if (sqlServers.isEmpty()) { lastSelectedSqlServer = null }
+        setComponentsEnabled(true, cbExistSqlServer, rdoUseExistSqlServer)
     }
 
     override fun fillPublishableProject(publishableProjects: List<PublishableProjectModel>) {
@@ -986,7 +1016,6 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
             if (sqlServer != null) toggleSqlServerComboBox(sqlServer)
 
             rdoDbExistingResourceGroup.doClick()
-            toggleDbResourceGroupPanel(false)
             cbDbResourceGroup.isEnabled = false // Disable ability to select resource group - show related to SQL Server instead
         }
 
@@ -1045,12 +1074,11 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
 
     private fun toggleOperatingSystem(operatingSystem: OperatingSystem) {
         setAppServicePlanContent(filterAppServicePlans(operatingSystem, cachedAppServicePlan))
-        setComponentsEnabled(checkCbAppServicePlanRule(), cbAppServicePlan)
-        setComponentsEnabled(checkRdoUseExistingAppServicePlanRule(), rdoUseExistAppServicePlan)
+        setPricingTierContent(filterPricingTiers(operatingSystem, cachedPricingTier))
+
+        setComponentsEnabled(true, cbAppServicePlan, rdoUseExistAppServicePlan)
         if (cbAppServicePlan.model.size == 0)
             rdoCreateAppServicePlan.doClick()
-
-        setPricingTierContent(filterPricingTiers(operatingSystem, cachedPricingTier))
     }
 
     private fun setDbConnectionPanel(isEnabled: Boolean) {
@@ -1082,7 +1110,18 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         if (isEnabled) {
             toggleDbResourceGroupPanel(rdoDbCreateResourceGroup.isSelected)
             toggleSqlServerPanel(rdoCreateSqlServer.isSelected)
-            if (rdoUseExistSqlServer.isSelected) rdoUseExistSqlServer.doClick() // Perform a click to force resource group setup logic
+            if (cbDbResourceGroup.model.size == 0) {
+                rdoDbCreateResourceGroup.doClick()
+            }
+
+            if (cbExistSqlServer.model.size == 0) {
+                rdoCreateSqlServer.doClick()
+            }
+
+            if (rdoUseExistSqlServer.isSelected) {
+                // Perform a click to force resource group setup logic
+                rdoDbExistingResourceGroup.doClick()
+            }
         }
     }
 
@@ -1097,27 +1136,25 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun checkCbSubscriptionRule() = cbSubscription.model.size > 0
-
     private fun checkCbResourceGroupRule() = cbResourceGroup.model.size > 0 && !rdoCreateResGrp.isSelected
-    private fun checkRdoUseExistingResourceGroupRule() = cbResourceGroup.model.size > 0
-
     private fun checkCbAppServicePlanRule() = cbAppServicePlan.model.size > 0 && !rdoCreateAppServicePlan.isSelected
+
+    private fun checkRdoUseExistingResourceGroupRule() = cbResourceGroup.model.size > 0
     private fun checkRdoUseExistingAppServicePlanRule() = cbAppServicePlan.model.size > 0
 
     private fun checkCbDatabaseRule() = cbDatabase.model.size > 0 && checkBoxEnableDbConnection.isSelected
-
     private fun checkCbDbResourceGroupRule() =
                     cbDbResourceGroup.model.size > 0 &&
                     checkBoxEnableDbConnection.isSelected &&
                     !rdoDbCreateResourceGroup.isSelected &&
                     !rdoUseExistSqlServer.isSelected
-
     private fun checkCbExistSqlServerRule() =
                     cbExistSqlServer.model.size > 0 &&
                     checkBoxEnableDbConnection.isSelected &&
                     !rdoCreateSqlServer.isSelected &&
                     !rdoDbCreateResourceGroup.isSelected
 
+    private fun checkRdoDbUseExistingResourceGroupRule() = cbDbResourceGroup.model.size > 0
     private fun checkRdoUseExistSqlServerRule() = cbExistSqlServer.model.size > 0
 
     //endregion Behavior
@@ -1151,12 +1188,8 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initSubscriptionComboBox() {
-        cbSubscription.renderer = object : ListCellRendererWrapper<Subscription>() {
-            override fun customize(list: JList<*>, subscription: Subscription?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
-                subscription ?: return
-                setText(subscription.displayName())
-            }
-        }
+
+        cbSubscription.renderer = createDefaultComboBoxRenderer(EMPTY_SUBSCRIPTION_MESSAGE) { it.displayName() }
 
         cbSubscription.addActionListener {
             val subscription = getSelectedItem(cbSubscription) ?: return@addActionListener
@@ -1176,24 +1209,13 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initResourceGroupComboBox() {
-
-        val renderer = object : ListCellRendererWrapper<ResourceGroup>() {
-            override fun customize(list: JList<*>, resourceGroup: ResourceGroup?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
-                if (resourceGroup == null) {
-                    setText(RESOURCE_GROUP_EMPTY_MESSAGE)
-                    return
-                }
-                setText(resourceGroup.name())
-            }
-        }
-
+        val renderer = createDefaultComboBoxRenderer<ResourceGroup>(EMPTY_RESOURCE_GROUP_MESSAGE) { it.name() }
         cbResourceGroup.renderer = renderer
+        cbDbResourceGroup.renderer = renderer
 
         cbResourceGroup.addActionListener {
             lastSelectedResourceGroupName = getSelectedItem(cbResourceGroup)?.name() ?: return@addActionListener
         }
-
-        cbDbResourceGroup.renderer = renderer
 
         cbDbResourceGroup.addActionListener {
             lastSelectedDbResourceGroupName = getSelectedItem(cbDbResourceGroup)?.name() ?: return@addActionListener
@@ -1201,12 +1223,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initAppServicePlanComboBox() {
-        cbAppServicePlan.renderer = object : ListCellRendererWrapper<AppServicePlan>() {
-            override fun customize(list: JList<*>, appServicePlan: AppServicePlan?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
-                appServicePlan ?: return
-                setText(appServicePlan.name())
-            }
-        }
+        cbAppServicePlan.renderer = createDefaultComboBoxRenderer(EMPTY_APP_SERVICE_PLAN_MESSAGE) { it.name() }
 
         cbAppServicePlan.addActionListener {
             val plan = getSelectedItem(cbAppServicePlan) ?: return@addActionListener
@@ -1218,21 +1235,13 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initLocationComboBox() {
-        val renderer = object : ListCellRendererWrapper<Location>() {
-            override fun customize(list: JList<*>, location: Location?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
-                if (location != null) {
-                    setText(location.displayName())
-                }
-            }
-        }
-
+        val renderer = createDefaultComboBoxRenderer<Location>(EMPTY_LOCATION_MESSAGE) { it.displayName() }
         cbLocation.renderer = renderer
+        cbSqlServerLocation.renderer = renderer
 
         cbLocation.addActionListener {
             lastSelectedLocation = getSelectedItem(cbLocation)?.name() ?: return@addActionListener
         }
-
-        cbSqlServerLocation.renderer = renderer
 
         cbSqlServerLocation.addActionListener {
             lastSelectedDbLocation = getSelectedItem(cbSqlServerLocation)?.name() ?: return@addActionListener
@@ -1240,12 +1249,9 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initPricingTierComboBox() {
-        cbPricingTier.renderer = object : ListCellRendererWrapper<PricingTier>() {
-            override fun customize(list: JList<*>?, pricingTier: PricingTier?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
-                pricingTier ?: return
-                val skuDescription = pricingTier.toSkuDescription()
-                setText("${skuDescription.name()} (${skuDescription.tier()})")
-            }
+        cbPricingTier.renderer = createDefaultComboBoxRenderer(EMPTY_PRICING_TIER_MESSAGE) {
+            val skuDescription = it.toSkuDescription()
+            "${skuDescription.name()} (${skuDescription.tier()})"
         }
 
         cbPricingTier.addActionListener {
@@ -1317,17 +1323,9 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initSqlDatabaseComboBox() {
-        cbDatabase.renderer = object : ListCellRendererWrapper<SqlDatabase>() {
-            override fun customize(list: JList<*>?, sqlDatabase: SqlDatabase?, index: Int, selected: Boolean, hasFocus: Boolean) {
-                if (sqlDatabase == null) {
-                    setText(DATABASES_EMPTY_MESSAGE)
-                    return
-                }
-
-                setText("${sqlDatabase.name()} (${sqlDatabase.resourceGroupName()})")
-                setIcon(IconLoader.getIcon("icons/Database.svg"))
-            }
-        }
+        cbDatabase.renderer = createDefaultComboBoxRenderer(
+                EMPTY_SQL_DATABASES_MESSAGE,
+                IconLoader.getIcon("icons/Database.svg")) { "${it.name()} (${it.resourceGroupName()})" }
 
         cbDatabase.addActionListener {
             val database = getSelectedItem(cbDatabase) ?: return@addActionListener
@@ -1339,15 +1337,8 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initSqlServerComboBox() {
-        cbExistSqlServer.renderer = object : ListCellRendererWrapper<SqlServer>() {
-            override fun customize(list: JList<*>, sqlServer: SqlServer?, index: Int, selected: Boolean, hasFocus: Boolean) {
-                if (sqlServer == null) {
-                    setText(SQL_SERVER_EMPTY_MESSAGE)
-                    return
-                }
-                setText("${sqlServer.name()} (${sqlServer.resourceGroupName()})")
-            }
-        }
+        cbExistSqlServer.renderer =
+                createDefaultComboBoxRenderer(EMPTY_SQL_SERVER_MESSAGE) { "${it.name()} (${it.resourceGroupName()})" }
 
         cbExistSqlServer.addActionListener {
             val sqlServer = cbExistSqlServer.getItemAt(cbExistSqlServer.selectedIndex) ?: return@addActionListener
@@ -1563,7 +1554,10 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
      * Set all provided components to a specified enabled state
      */
     private fun setComponentsEnabled(isEnabled: Boolean, vararg components: JComponent) {
-        components.forEach { it.isEnabled = isEnabled }
+        components.forEach {
+            it.isEnabled = isEnabled &&
+                    controlBehaviorMap.getOrDefault(it) { true }.invoke()
+        }
     }
 
     /**
@@ -1576,6 +1570,22 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     private fun initLinkLabel(linkComponent: LinkLabel<String>, linkUri: String) {
         linkComponent.icon = null
         linkComponent.setListener({ _, link -> BrowserUtil.browse(link) }, linkUri)
+    }
+
+    private fun <T>createDefaultComboBoxRenderer(errorMessage: String,
+                                                 icon: Icon? = null,
+                                                 getValueString: (T) -> String): ListCellRenderer<T> {
+        return object : ListCellRendererWrapper<T>() {
+            override fun customize(list: JList<*>, value: T?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
+                if (value == null) {
+                    setText(errorMessage)
+                    return
+                }
+                setText(getValueString(value))
+
+                if (icon != null) setIcon(icon)
+            }
+        }
     }
 
     //endregion Private Methods and Operators
