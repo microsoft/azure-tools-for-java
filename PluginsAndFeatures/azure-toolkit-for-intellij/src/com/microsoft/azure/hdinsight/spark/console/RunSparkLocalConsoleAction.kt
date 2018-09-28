@@ -22,20 +22,18 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
-import com.intellij.execution.configurations.ConfigurationTypeUtil
-import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.execution.configurations.RunProfile
 import com.intellij.psi.PsiFile
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction
-import org.jetbrains.plugins.scala.console.RunConsoleAction
+import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 
-class RunSparkLocalConsoleAction
-    : AzureAnAction(), RunConsoleAction.RunActionBase<RemoteDebugRunConfigurationType> {
-    override fun onActionPerformed(event: AnActionEvent) = doRunAction(event)
+class RunSparkLocalConsoleAction : RunSparkLivyConsoleAction() {
+    override val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
+        get() = SparkScalaLocalConsoleConfigurationType().confFactory()
 
-    override fun getMyConfigurationType(): RemoteDebugRunConfigurationType? =
-        ConfigurationTypeUtil.findConfigurationType(RemoteDebugRunConfigurationType::class.java)
+    override fun checkSettingsBeforeRun(runProfile: RunProfile?) {
+        // TODO: Add local run check
+    }
 
     override fun getNewSettingName(): String = "Spark Local Console(Scala)"
 
