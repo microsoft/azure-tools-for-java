@@ -62,7 +62,7 @@ class SparkScalaLivyConsoleRunConfiguration(project: Project,
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
         val session = SparkSession(
                 name,
-                URI.create(if (cluster is LivyCluster) (cluster as LivyCluster).livyConnectionUrl else cluster.connectionUrl),
+                URI.create((cluster as? LivyCluster)?.livyConnectionUrl ?: return null),
                 cluster.httpUserName,
                 cluster.httpPassword)
 
