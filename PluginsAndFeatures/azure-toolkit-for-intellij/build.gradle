@@ -131,7 +131,7 @@ task cucumberPackJar(type: Jar) {
 }
 
 task cucumber() {
-    dependsOn assemble, compileTestJava, cucumberPackJar
+    dependsOn compileTestJava, cucumberPackJar
     doLast {
         javaexec {
             main = "cucumber.api.cli.Main"
@@ -146,8 +146,9 @@ task cucumber() {
 }
 
 test.dependsOn cucumber
+buildPlugin.dependsOn test
 
-defaultTasks 'buildPlugin', 'test'
+defaultTasks 'buildPlugin'
 
 task wrapper(type: Wrapper) {
     gradleVersion = '4.8'
