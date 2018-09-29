@@ -141,7 +141,8 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
                     if (isViewDetached()) {
                         return;
                     }
-                    getMvpView().renderWebAppsAndSlots(webAppList);
+                    getMvpView().renderWebAppsTable(webAppList);
+                    getMvpView().enableDeploymentSlotPanel();
                 }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
     }
 

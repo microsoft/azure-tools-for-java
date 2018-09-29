@@ -485,7 +485,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     }
 
     @Override
-    public void renderWebAppsAndSlots(@NotNull List<ResourceEx<WebApp>> webAppLists) {
+    public void renderWebAppsTable(@NotNull List<ResourceEx<WebApp>> webAppLists) {
         btnRefresh.setEnabled(true);
         table.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
         List<ResourceEx<WebApp>> sortedList = webAppLists.stream()
@@ -508,12 +508,15 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
                     table.setRowSelectionInterval(i, i);
                 }
             }
-            // render the deployment slot panel
-            deployToSlotCheckBox.setEnabled(true);
-            cbDeploymentSlots.setEnabled(true);
-            if (webAppConfiguration.isDeployToSlot() && StringUtils.isNotEmpty(webAppConfiguration.getSlotName())) {
-                cbDeploymentSlots.setSelectedItem(webAppConfiguration.getSlotName());
-            }
+        }
+    }
+
+    @Override
+    public void enableDeploymentSlotPanel() {
+        deployToSlotCheckBox.setEnabled(true);
+        cbDeploymentSlots.setEnabled(true);
+        if (webAppConfiguration.isDeployToSlot() && StringUtils.isNotEmpty(webAppConfiguration.getSlotName())) {
+            cbDeploymentSlots.setSelectedItem(webAppConfiguration.getSlotName());
         }
     }
 
