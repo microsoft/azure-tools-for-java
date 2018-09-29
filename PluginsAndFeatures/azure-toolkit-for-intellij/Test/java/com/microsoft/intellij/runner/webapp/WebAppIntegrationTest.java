@@ -50,6 +50,7 @@ import com.microsoft.tooling.msservices.helpers.UIHelper;
 import org.apache.commons.net.ftp.FTPClient;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -75,6 +76,7 @@ import static org.powermock.api.mockito.PowerMockito.whenNew;
 @PrepareForTest({ AuthMethodManager.class, AzureManager.class, SubscriptionManager.class, DefaultLoader.class,
         TextConsoleBuilderFactory.class, WebAppUtils.class, FTPClient.class })
 
+@Ignore
 public class WebAppIntegrationTest extends IntegrationTestBase {
 
     @Mock
