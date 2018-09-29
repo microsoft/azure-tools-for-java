@@ -77,7 +77,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
 
     @Override
     protected void onNodeClick(NodeActionEvent e) {
-        // RefreshableNode refresh itself whenever the node is clicked.
+        // RefreshableNode refresh itself when the first time being clicked.
         // The deployment slot node is just a single node for the time being.
         // Override the function to do noting to disable the auto refresh functionality.
     }
@@ -87,6 +87,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
             presenter.onStartDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
         } catch (IOException e) {
             e.printStackTrace();
+            // TODO: Error handling
         }
     }
 
@@ -95,6 +96,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
             presenter.onStopDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
         } catch (IOException e) {
             e.printStackTrace();
+            // TODO: Error handling
         }
     }
 
@@ -103,6 +105,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
             presenter.onRestartDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
         } catch (IOException e) {
             e.printStackTrace();
+            // TODO: Error handling
         }
     }
 
@@ -111,6 +114,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
             presenter.onSwapWithProduction(this.subscriptionId, this.webAppId, this.slotName);
         } catch (IOException e) {
             e.printStackTrace();
+            // TODO: Error handling
         }
     }
 
@@ -120,6 +124,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
             presenter.onRefreshNode(this.subscriptionId, this.webAppId, this.slotName);
         } catch (Exception e) {
             e.printStackTrace();
+            // TODO: Error handling
         }
     }
 }
