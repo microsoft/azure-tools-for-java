@@ -99,16 +99,6 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         super.loadActions();
     }
 
-    private NodeActionListener createBackgroundActionListener(final String message, final Runnable runnable) {
-        return new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, message, false, true,
-                    String.format("%s...", message), runnable);
-            }
-        };
-    }
-
     @Override
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
