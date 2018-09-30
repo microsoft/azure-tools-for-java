@@ -162,6 +162,7 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>applicationinsights-web</artifactId>
+            <version>2.1.2</version>
         </dependency>
         <dependency>
             <groupId>eu.infomas</groupId>
