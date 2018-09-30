@@ -1,8 +1,8 @@
 package com.microsoft.intellij.runner.db
 
-import com.intellij.openapi.diagnostic.logger
 import com.jetbrains.rider.util.concurrentMapOf
-import com.jetbrains.rider.util.getOrCreate
+import com.jetbrains.rider.util.error
+import com.jetbrains.rider.util.getLogger
 import com.microsoft.azure.management.sql.DatabaseEditions
 import com.microsoft.azure.management.sql.ServiceObjectiveName
 import com.microsoft.azure.management.sql.SqlDatabase
@@ -15,6 +15,8 @@ import java.io.IOException
 import java.lang.reflect.Modifier
 
 object AzureDatabaseMvpModel {
+
+    private val LOG = getLogger<AzureDatabaseMvpModel>()
 
     private val subscriptionIdToSqlServersMap = concurrentMapOf<String, List<ResourceEx<SqlServer>>>()
     private val sqlServerToSqlDatabasesMap = concurrentMapOf<SqlServer, List<SqlDatabase>>()
@@ -48,7 +50,7 @@ object AzureDatabaseMvpModel {
             subscriptionIdToSqlServersMap[subscriptionId] = sqlServerList
             return sqlServerList
         } catch (e: IOException) {
-            e.printStackTrace()
+            LOG.error(e)
         }
 
         return listOf()

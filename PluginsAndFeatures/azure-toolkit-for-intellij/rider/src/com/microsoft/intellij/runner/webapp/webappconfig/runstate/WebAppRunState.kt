@@ -12,6 +12,7 @@ import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
 import com.jetbrains.rider.util.idea.application
+import com.jetbrains.rider.util.idea.getLogger
 import com.jetbrains.rider.util.idea.toIOFile
 import com.jetbrains.rider.util.threading.SpinWait
 import com.microsoft.azure.management.appservice.ConnectionStringType
@@ -38,6 +39,8 @@ import java.util.concurrent.TimeUnit
 import java.util.zip.ZipOutputStream
 
 object WebAppRunState {
+
+    private val LOG = getLogger<WebAppRunState>()
 
     private const val URL_AZURE_BASE = ".azurewebsites.net"
     private const val URL_KUDU_BASE = ".scm$URL_AZURE_BASE"
@@ -84,8 +87,8 @@ object WebAppRunState {
         if (model.isCreatingWebApp) {
             processHandler.setText(String.format(UiConstants.WEB_APP_CREATE, model.webAppName))
 
-            if (model.webAppName.isEmpty()) throw Exception(UiConstants.WEB_APP_NAME_NOT_DEFINED)
-            if (model.resourceGroupName.isEmpty()) throw Exception(UiConstants.RESOURCE_GROUP_NAME_NOT_DEFINED)
+            if (model.webAppName.isEmpty()) throw RuntimeException(UiConstants.WEB_APP_NAME_NOT_DEFINED)
+            if (model.resourceGroupName.isEmpty()) throw RuntimeException(UiConstants.RESOURCE_GROUP_NAME_NOT_DEFINED)
             val operatingSystem = model.operatingSystem
 
             val webAppDefinition = AzureDotNetWebAppMvpModel.WebAppDefinition(
@@ -93,8 +96,8 @@ object WebAppRunState {
 
             val webApp =
                     if (model.isCreatingAppServicePlan) {
-                        if (model.appServicePlanName.isEmpty()) throw Exception(UiConstants.APP_SERVICE_PLAN_NAME_NOT_DEFINED)
-                        if (model.location.isEmpty()) throw Exception(UiConstants.APP_SERVICE_PLAN_LOCATION_NOT_DEFINED)
+                        if (model.appServicePlanName.isEmpty()) throw RuntimeException(UiConstants.APP_SERVICE_PLAN_NAME_NOT_DEFINED)
+                        if (model.location.isEmpty()) throw RuntimeException(UiConstants.APP_SERVICE_PLAN_LOCATION_NOT_DEFINED)
                         val pricingTier = model.pricingTier
                         val appServicePlanDefinition = AzureDotNetWebAppMvpModel.AppServicePlanDefinition(model.appServicePlanName, pricingTier, model.location)
 
@@ -112,7 +115,7 @@ object WebAppRunState {
                                     model.netCoreRuntime)
                         }
                     } else {
-                        if (model.appServicePlanId.isEmpty()) throw Exception(UiConstants.APP_SERVICE_PLAN_ID_NOT_DEFINED)
+                        if (model.appServicePlanId.isEmpty()) throw RuntimeException(UiConstants.APP_SERVICE_PLAN_ID_NOT_DEFINED)
 
                         if (operatingSystem == OperatingSystem.WINDOWS) {
                             AzureDotNetWebAppMvpModel.createWebAppWithExistingWindowsAppServicePlan(
@@ -240,6 +243,7 @@ object WebAppRunState {
                 FileUtil.delete(zipFile)
             }
         } catch (e: Throwable) {
+            LOG.error(e)
             processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: $e")
             throw RuntimeException(UiConstants.ZIP_DEPLOY_PUBLISH_FAIL, e)
         }
@@ -303,7 +307,9 @@ object WebAppRunState {
 
         val buildResult = event.get(COLLECT_ARTIFACTS_TIMEOUT_MS, TimeUnit.MILLISECONDS)
         if (buildResult != BuildResultKind.Successful && buildResult != BuildResultKind.HasWarnings) {
-            throw Exception(UiConstants.PROJECT_ARTIFACTS_COLLECTING_FAILED)
+            val message = UiConstants.PROJECT_ARTIFACTS_COLLECTING_FAILED
+            LOG.error(message)
+            throw RuntimeException(message)
         }
 
         return outPath.toFile().canonicalFile
@@ -326,8 +332,9 @@ object WebAppRunState {
 
             return toZip
         } catch (e: Throwable) {
+            LOG.error(e)
             processHandler.setText("${UiConstants.ZIP_FILE_NOT_CREATED}: $e")
-            throw e
+            throw RuntimeException(e)
         }
     }
 
@@ -339,7 +346,9 @@ object WebAppRunState {
                           zipFileToCreate: File,
                           filter: FileFilter? = null) {
         if (!fileToZip.exists()) {
-            throw FileNotFoundException("Source file or directory '${fileToZip.path}' does not exist")
+            val message = "Source file or directory '${fileToZip.path}' does not exist"
+            LOG.error(message)
+            throw FileNotFoundException(message)
         }
 
         ZipOutputStream(FileOutputStream(zipFileToCreate)).use { zipOutput ->
@@ -378,7 +387,8 @@ object WebAppRunState {
                             DEPLOY_TIMEOUT_MS)
                     success = response.isSuccessful
                 } catch (e: Throwable) {
-                    processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: ${e.printStackTrace()}")
+                    LOG.error(e)
+                    processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: $e")
                 }
 
             } while (!success && ++uploadCount < UPLOADING_MAX_TRY && isWaitFinished())
@@ -405,7 +415,7 @@ object WebAppRunState {
         try {
             Thread.sleep(timeout)
         } catch (e: InterruptedException) {
-            e.printStackTrace()
+            LOG.error(e)
         }
 
         return true
@@ -422,7 +432,7 @@ object WebAppRunState {
                     window.show(null)
             }
         } catch (e: Throwable) {
-            // Ignore if we unable to switch back to Run tool window (it is not alive and we cannot log the error)
+            LOG.error(e)
         }
     }
 
