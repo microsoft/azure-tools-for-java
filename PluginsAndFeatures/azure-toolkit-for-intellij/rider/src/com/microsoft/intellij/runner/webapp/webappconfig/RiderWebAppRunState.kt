@@ -18,7 +18,9 @@ import com.microsoft.intellij.runner.AzureRunProfileState
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
-import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
+import com.microsoft.intellij.runner.webapp.model.DatabasePublishModel
+import com.microsoft.intellij.runner.webapp.model.DotNetWebAppSettingModel
+import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.DatabaseRunState.getOrCreateSqlDatabaseFromConfig
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.DatabaseRunState.getSqlDatabaseUri
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState
@@ -32,7 +34,7 @@ import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.webAppStop
 
 class RiderWebAppRunState(project: Project,
-                          private val myModel: AzureDotNetWebAppSettingModel) : AzureRunProfileState<Pair<WebApp, SqlDatabase?>>(project) {
+                          private val myModel: DotNetWebAppSettingModel) : AzureRunProfileState<Pair<WebApp, SqlDatabase?>>(project) {
 
     private var isWebAppCreated = false
     private var isDatabaseCreated = false
@@ -150,12 +152,12 @@ class RiderWebAppRunState(project: Project,
         return TARGET_NAME
     }
 
-    private fun refreshWebAppAfterPublish(webApp: WebApp, model: AzureDotNetWebAppSettingModel.WebAppModel) {
+    private fun refreshWebAppAfterPublish(webApp: WebApp, model: WebAppPublishModel) {
         model.resetOnPublish(webApp)
         AzureDotNetWebAppMvpModel.refreshSubscriptionToWebAppMap()
     }
 
-    private fun refreshDatabaseAfterPublish(sqlDatabase: SqlDatabase, model: AzureDotNetWebAppSettingModel.DatabaseModel) {
+    private fun refreshDatabaseAfterPublish(sqlDatabase: SqlDatabase, model: DatabasePublishModel) {
         model.resetOnPublish(sqlDatabase)
         AzureDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
     }

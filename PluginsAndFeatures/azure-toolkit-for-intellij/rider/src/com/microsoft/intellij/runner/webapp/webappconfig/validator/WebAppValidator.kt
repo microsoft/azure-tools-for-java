@@ -2,7 +2,7 @@ package com.microsoft.intellij.runner.webapp.webappconfig.validator
 
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.microsoft.azuretools.utils.AzureModel
-import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
+import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
 import com.microsoft.intellij.runner.webapp.webappconfig.validator.ProjectValidator.validateProject
 
@@ -21,7 +21,7 @@ object WebAppValidator : ConfigurationValidator() {
             "Web App name should be from $WEB_APP_NAME_MIN_LENGTH to $WEB_APP_NAME_MAX_LENGTH characters"
 
     @Throws(RuntimeConfigurationError::class)
-    fun validateWebApp(model: AzureDotNetWebAppSettingModel.WebAppModel) {
+    fun validateWebApp(model: WebAppPublishModel) {
         val subscriptionId = SubscriptionValidator.validateSubscription(model.subscription).subscriptionId()
         validateProject(model.publishableProject)
 

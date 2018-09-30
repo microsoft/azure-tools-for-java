@@ -4,7 +4,7 @@ import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
-import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
+import com.microsoft.intellij.runner.webapp.model.DatabasePublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
 
 object SqlDatabaseValidator : ConfigurationValidator() {
@@ -34,7 +34,7 @@ object SqlDatabaseValidator : ConfigurationValidator() {
             "Your password must be from $ADMIN_PASSWORD_MIN_LENGTH to $ADMIN_PASSWORD_MAX_LENGTH characters"
 
     @Throws(RuntimeConfigurationError::class)
-    fun validateDatabaseConnection(model: AzureDotNetWebAppSettingModel.DatabaseModel) {
+    fun validateDatabaseConnection(model: DatabasePublishModel) {
         if (!model.isDatabaseConnectionEnabled) return
 
         if (model.isCreatingSqlDatabase) {
