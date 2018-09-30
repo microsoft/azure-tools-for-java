@@ -33,12 +33,18 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction;
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Observer;
@@ -46,7 +52,7 @@ import rx.subjects.PublishSubject;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
 
-public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSubmissionRunner {
+public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSubmissionRunner, ILogger {
     @NotNull
     @Override
     public String getRunnerId() {
@@ -60,8 +66,28 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
     @NotNull
     public ISparkBatchJob buildSparkBatchJob(@NotNull SparkSubmitModel submitModel,
-                                             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) throws ExecutionException {
-        return new SparkBatchJob(submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject);
+                                             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+        // get storage account from submitModel
+        IHDIStorageAccount storageAccount = null;
+        String storageAcccountType = submitModel.getJobUploadStorageModel().getStorageAccountType();
+        IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(
+                submitModel.getSubmissionParameter().getClusterName()).orElse(null);
+        if (storageAcccountType.equals(SparkSubmitStorageType.Blob.toString())) {
+            String storageAccountName = submitModel.getJobUploadStorageModel().getStorageAccount();
+            String fullStorageBlobName = ClusterManagerEx.getInstance().getBlobFullName(storageAccountName);
+            String key = submitModel.getJobUploadStorageModel().getStorageKey();
+            String container = submitModel.getJobUploadStorageModel().getSelectedContainer();
+            storageAccount = new HDStorageAccount(clusterDetail, fullStorageBlobName, key, false, container);
+        } else if (storageAcccountType.equals(SparkSubmitStorageType.DefaultStorageAccount.toString())) {
+            try {
+                clusterDetail.getConfigurationInfo();
+                storageAccount = clusterDetail.getStorageAccount();
+            } catch (Exception ex) {
+                log().warn("Error getting cluster storage configuration. " + ExceptionUtils.getStackTrace(ex));
+                storageAccount = null;
+            }
+        }
+        return new SparkBatchJob(submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount);
     }
 
     @Nullable

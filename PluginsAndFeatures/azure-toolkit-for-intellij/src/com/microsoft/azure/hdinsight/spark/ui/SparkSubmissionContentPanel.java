@@ -113,6 +113,8 @@ public class SparkSubmissionContentPanel extends JPanel{
     private JRadioButton intelliJArtifactRadioButton;
     @NotNull
     private JRadioButton localArtifactRadioButton;
+    @NotNull
+    public SparkSubmissionJobUploadStorageWithUploadPathPanel storageWithUploadPathPanel;
 
     private BehaviorSubject<String> clusterSelectedSubject = BehaviorSubject.create();
 
@@ -144,6 +146,8 @@ public class SparkSubmissionContentPanel extends JPanel{
         addReferencedJarsLineItem();
         //TODO: ReferencedFiles Parameter Valid Check
         addReferencedFilesLineItem();
+
+        addJobUploadStorageItem();
     }
 
     void updateTableColumn() {
@@ -518,6 +522,15 @@ public class SparkSubmissionContentPanel extends JPanel{
                 1, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
                 JBUI.insets(margin, margin, 0, margin), 0, 0));
+    }
+
+    private void addJobUploadStorageItem() {
+        storageWithUploadPathPanel = new SparkSubmissionJobUploadStorageWithUploadPathPanel();
+        add(storageWithUploadPathPanel, new GridBagConstraints(0, ++displayLayoutCurrentRow,
+                0, 1,
+                0, 0,
+                GridBagConstraints.SOUTHWEST, GridBagConstraints.HORIZONTAL,
+                new Insets(margin, margin, 0, margin), 0, 0));
     }
 
     private void setVisibleForFixedErrorMessageLabel(@NotNull ErrorMessage label, boolean isVisible) {

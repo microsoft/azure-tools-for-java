@@ -613,6 +613,18 @@ public class JobUtils {
                                 null));
     }
 
+    public static Observable<String> deployArtifact(@NotNull String artifactLocalPath,
+                                                    @NotNull final IHDIStorageAccount storageAccount,
+                                                    @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) {
+        return Observable.fromCallable(() -> JobUtils.uploadFileToAzure(
+                new File(artifactLocalPath),
+                storageAccount,
+                storageAccount.getDefaultContainerOrRootPath(),
+                getFormatPathByDate(),
+                logSubject,
+                null));
+    }
+
     public static Single<SimpleImmutableEntry<IClusterDetail, String>> deployArtifact(@NotNull String artifactLocalPath,
                                                         @NotNull String clusterName,
                                                         @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) {
