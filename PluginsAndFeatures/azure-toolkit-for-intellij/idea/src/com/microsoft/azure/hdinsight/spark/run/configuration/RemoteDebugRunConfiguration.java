@@ -50,7 +50,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunConfigurationModule>
+public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunConfigurationModule, Element>
 {
     enum RunMode {
         LOCAL,
@@ -127,12 +127,11 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
         this.mode = mode;
     }
 
-    @NotNull
     @Override
-    public List<BeforeRunTask> getBeforeRunTasks() {
-        Stream<BeforeRunTask> compileTask = super.getBeforeRunTasks().stream()
+    public @NotNull List<BeforeRunTask<?>> getBeforeRunTasks() {
+        Stream<BeforeRunTask<?>> compileTask = super.getBeforeRunTasks().stream()
                 .filter(task -> task instanceof CompileStepBeforeRun.MakeBeforeRunTask);
-        Stream<BeforeRunTask> buildArtifactTask = super.getBeforeRunTasks().stream()
+        Stream<BeforeRunTask<?>> buildArtifactTask = super.getBeforeRunTasks().stream()
                 .filter(task -> task instanceof BuildArtifactsBeforeRunTask);
 
         switch (mode) {

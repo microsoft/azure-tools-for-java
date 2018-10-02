@@ -35,7 +35,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.sbt.project.SbtProjectSystem;
 import org.jetbrains.sbt.project.settings.SbtProjectSettings;
-import org.jetbrains.sbt.settings.SbtSystemSettings;
+import org.jetbrains.sbt.settings.SbtSettings;
 
 import java.io.File;
 import java.io.IOException;
@@ -181,7 +181,7 @@ public class SbtProjectGenerator {
         SbtProjectSettings sbtProjectSettings = new SbtProjectSettings();
         sbtProjectSettings.setExternalProjectPath(root);
 
-        SbtSystemSettings sbtSystemSettings = SbtSystemSettings.getInstance(project);
+        SbtSettings sbtSystemSettings = SbtSettings.getInstance(project);
         HashSet<SbtProjectSettings> projects = ContainerUtilRt.newHashSet(sbtSystemSettings.getLinkedProjectsSettings());
         projects.add(sbtProjectSettings);
         sbtSystemSettings.setLinkedProjectsSettings(projects);
