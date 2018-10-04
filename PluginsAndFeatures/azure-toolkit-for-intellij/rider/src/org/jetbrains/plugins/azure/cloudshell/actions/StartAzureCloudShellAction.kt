@@ -8,13 +8,11 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.PopupStep
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep
@@ -26,12 +24,10 @@ import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.sdkmanage.AzureManager
 import com.microsoft.rest.credentials.ServiceClientCredentials
-import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellDeviceAuthenticationContext
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
 import org.jetbrains.plugins.azure.cloudshell.rest.*
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalProcess
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalRunner
-import java.awt.datatransfer.StringSelection
 import java.net.URI
 import javax.swing.event.HyperlinkEvent
 
@@ -95,37 +91,19 @@ class StartAzureCloudShellAction : AnAction() {
     }
 
     private fun startAzureCloudShell(project: Project, azureManager: AzureManager, subscriptionDetail: SubscriptionDetail) {
-        val authenticationContext = AzureCloudShellDeviceAuthenticationContext.create(azureManager, subscriptionDetail.tenantId)
-        val deviceCode = authenticationContext.acquireDeviceCode()
+        try {
+            val authManager = AdAuthManager.getInstance()
+            val tokenCredentials = RefreshableTokenCredentials(authManager, subscriptionDetail.tenantId)
 
-        CopyPasteManager.getInstance().setContents(StringSelection(deviceCode.userCode))
-        BrowserUtil.browse(deviceCode.verificationUrl)
-
-        // Authenticate
-        val didAuthenticate = Messages.showDialog(
-                project,
-                deviceCode.message + "\r\nThe code has been copied to your clipboard.\r\n\r\nPress \"Yes\" after authenticating in the browser.",
-                this.templatePresentation.text,
-                arrayOf(Messages.YES_BUTTON, Messages.CANCEL_BUTTON),
-                0,
-                this.templatePresentation.icon)
-
-        if (didAuthenticate == 0) {
-            // Verify authentication
-            try {
-                val authenticationToken = authenticationContext.acquireTokenByDeviceCode(deviceCode)
-                val tokenCredentials = authenticationContext.tokenCredentialsFor(authenticationToken)
-
-                provisionAzureCloudShell(project, azureManager, tokenCredentials, subscriptionDetail)
-            } catch (e: AuthenticationException) {
-                // Failed to authenticate....
-                AzureCloudShellNotifications.notify(project,
-                        "Azure",
-                        "Failed to authenticate Azure Cloud Shell",
-                        "Authentication was unsuccessful.",
-                        NotificationType.WARNING,
-                        null)
-            }
+            provisionAzureCloudShell(project, azureManager, tokenCredentials, subscriptionDetail)
+        } catch (e: AuthenticationException) {
+            // Failed to authenticate....
+            AzureCloudShellNotifications.notify(project,
+                    "Azure",
+                    "Failed to authenticate Azure Cloud Shell",
+                    "Authentication was unsuccessful.",
+                    NotificationType.WARNING,
+                    null)
         }
     }
 
