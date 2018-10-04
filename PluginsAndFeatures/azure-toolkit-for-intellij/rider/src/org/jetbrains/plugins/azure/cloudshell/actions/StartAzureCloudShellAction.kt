@@ -25,8 +25,8 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.sdkmanage.AzureManager
 import com.microsoft.rest.credentials.ServiceClientCredentials
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
+import org.jetbrains.plugins.azure.cloudshell.AzureCloudTerminalProcess
 import org.jetbrains.plugins.azure.cloudshell.rest.*
-import org.jetbrains.plugins.terminal.cloud.CloudTerminalProcess
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalRunner
 import java.net.URI
 import javax.swing.event.HyperlinkEvent
@@ -164,7 +164,7 @@ class StartAzureCloudShellAction : AnAction() {
                             socketClient.connectBlocking()
 
                             val runner = CloudTerminalRunner(project, "Azure Cloud Shell",
-                                    CloudTerminalProcess( socketClient.outputStream, socketClient.inputStream))
+                                    AzureCloudTerminalProcess(socketClient))
 
                             runner.run()
 
