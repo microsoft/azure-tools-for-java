@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.azure.cloudshell.rest
 
+import com.intellij.openapi.application.ApplicationManager
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import java.io.PipedInputStream
@@ -28,14 +29,25 @@ class CloudConsoleTerminalWebSocket(serverURI: URI)
     }
 
     override fun onError(ex: Exception?) {
+        // TODO
     }
 
     override fun onClose(code: Int, reason: String?, remote: Boolean) {
-        inputStream.close()
-        socketReceiver.close()
+        if (remote) {
+            socketReceiver.write("\r\nConnection terminated by remote host. ($code)\r\n".toByteArray())
+            if (!reason.isNullOrBlank()) {
+                socketReceiver.write("Reason: $reason".toByteArray())
+            }
+            socketReceiver.flush()
+        }
 
-        outputStream.close()
-        socketSender.close()
+        ApplicationManager.getApplication().invokeLater {
+            inputStream.close()
+            socketReceiver.close()
+
+            outputStream.close()
+            socketSender.close()
+        }
     }
 
     class MyPipedOutputStream(private val socket: CloudConsoleTerminalWebSocket) : PipedOutputStream() {
