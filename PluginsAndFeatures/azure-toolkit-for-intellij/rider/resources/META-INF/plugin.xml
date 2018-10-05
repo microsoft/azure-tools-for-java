@@ -58,7 +58,7 @@
 
     <action class="org.jetbrains.plugins.azure.cloudshell.actions.StartAzureCloudShellAction"
             id="StartAzureCloudShellAction"
-            text="Azure Cloud Shell"
+            text="Start Azure Cloud Shell..."
             description="Start Azure Cloud Shell"
             icon="/icons/AzureOpenCloudShell.svg">
       <add-to-group group-id="AzureToolkit.AzureActionGroup"
