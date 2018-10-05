@@ -38,7 +38,6 @@
             <properties>
               <alignmentY value="0.0"/>
               <borderPainted value="false"/>
-              <icon value="icons/Start.png"/>
               <text value=""/>
             </properties>
           </component>
@@ -59,7 +58,6 @@
             </constraints>
             <properties>
               <borderPainted value="false"/>
-              <icon value="icons/storagerefresh.png"/>
               <text value=""/>
             </properties>
           </component>

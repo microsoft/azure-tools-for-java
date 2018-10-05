@@ -146,17 +146,17 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         }
     }
 
-    private static final String WAIT_ICON_PATH = "VirtualMachineUpdating_16.png";
-    private static final String STOP_ICON_PATH = "VirtualMachineStopped_16.png";
-    private static final String RUN_ICON_PATH = "VirtualMachineRunning_16.png";
+    private static final String WAIT_ICON_PATH = "VirtualMachineUpdating.svg";
+    private static final String STOP_ICON_PATH = "VirtualMachineStopped.svg";
+    private static final String RUN_ICON_PATH = "VirtualMachineRunning.svg";
     private static final String ACTION_DELETE = "Delete";
     public static final String ACTION_DOWNLOAD_RDP_FILE = "Connect Remote Desktop";
     private static final String ACTION_SHUTDOWN = "Shutdown";
     private static final String ACTION_START = "Start";
     private static final String ACTION_RESTART = "Restart";
-    private static final String ACTION_SHUTDOWN_ICON = "Stop.png";
-    private static final String ACTION_START_ICON = "Start.png";
-    private static final String ACTION_DELETE_ICON = "Delete.png";
+    private static final String ACTION_SHUTDOWN_ICON = "AzureStop.svg";
+    private static final String ACTION_START_ICON = "AzureStart.svg";
+    private static final String ACTION_DELETE_ICON = "Discard.svg";
     public static final int REMOTE_DESKTOP_PORT = 3389;
 
     private VirtualMachine virtualMachine;

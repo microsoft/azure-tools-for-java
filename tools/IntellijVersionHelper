@@ -6,7 +6,7 @@ SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 cd $SCRIPTPATH
 
-XMLFile="../PluginsAndFeatures/azure-toolkit-for-intellij/resources/META-INF/plugin.xml"
+XMLFile="../PluginsAndFeatures/azure-toolkit-for-intellij/idea/resources/META-INF/plugin.xml"
 
 git checkout -- $XMLFile
 javac XMLHelper.java

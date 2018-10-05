@@ -26,6 +26,8 @@ import com.intellij.ide.plugins.cl.PluginClassLoader;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -73,24 +75,26 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
 public class AzurePlugin extends AbstractProjectComponent {
-    private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.AzurePlugin");
+    protected static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.AzurePlugin");
+
     public static final String PLUGIN_VERSION = CommonConst.PLUGIN_VERISON;
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
     public static final String JDBC_LIBRARIES_VERSION = "6.1.0.jre8";
     public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
 
     // User-agent header for Azure SDK calls
-    public static final String USER_AGENT = "Azure Toolkit for IntelliJ, v%s, machineid:%s";
+    public static final String USER_AGENT = "Azure Toolkit for Rider, v%s, machineid:%s";
 
     public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
     public static boolean IS_ANDROID_STUDIO = "AndroidStudio".equals(PlatformUtils.getPlatformPrefix());
+    public static boolean IS_RIDER = PlatformUtils.isRider();
 
     public static String pluginFolder = PluginUtil.getPluginRootDirectory();
 
     private static final EventListenerList DEPLOYMENT_EVENT_LISTENERS = new EventListenerList();
     public static List<DeploymentEventListener> depEveList = new ArrayList<DeploymentEventListener>();
 
-    private String dataFile = PluginHelper.getTemplateFile(message("dataFileName"));
+    protected final String dataFile = PluginHelper.getTemplateFile(message("dataFileName"));
 
     private final AzureSettings azureSettings;
 
@@ -99,12 +103,13 @@ public class AzurePlugin extends AbstractProjectComponent {
     public AzurePlugin(Project project) {
         super(project);
         this.azureSettings = AzureSettings.getSafeInstance(project);
-        CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
-                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
+//        CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
+//                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
     }
 
 
     public void projectOpened() {
+        if (IS_RIDER) return;
         initializeAIRegistry();
         initializeFeedbackNotification();
     }
@@ -117,7 +122,7 @@ public class AzurePlugin extends AbstractProjectComponent {
                 NotificationType.INFORMATION);
 
         feedbackNotification.addAction(new NewGithubIssueAction(
-                        new GithubIssue<>(new ReportableSurvey("User feedback")).withLabel("Feedback"),
+                        new GithubIssue<>(new ReportableSurvey("User feedback")).withLabel("FeedbRack"),
                         "user satisfaction survey"));
 
         Observable.timer(30, TimeUnit.SECONDS)
@@ -133,19 +138,19 @@ public class AzurePlugin extends AbstractProjectComponent {
      * other plugins only in this method.
      */
     public void initComponent() {
-        if (!IS_ANDROID_STUDIO) {
-            LOG.info("Starting Azure Plugin");
-            try {
-                //this code is for copying componentset.xml in plugins folder
-                copyPluginComponents();
-                initializeTelemetry();
-                clearTempDirectory();
-                loadWebappsSettings();
-            } catch (Exception e) {
-            /* This is not a user initiated task
-               So user should not get any exception prompt.*/
-                LOG.error(AzureBundle.message("expErlStrtUp"), e);
-            }
+        if (IS_ANDROID_STUDIO || IS_RIDER) return;
+
+        LOG.info("Starting Azure Plugin");
+        try {
+            //this code is for copying componentset.xml in plugins folder
+            copyPluginComponents();
+            initializeTelemetry();
+            clearTempDirectory();
+            loadWebappsSettings();
+        } catch (Exception e) {
+        /* This is not a user initiated task
+           So user should not get any exception prompt.*/
+            LOG.error(AzureBundle.message("expErlStrtUp"), e);
         }
     }
 
@@ -296,7 +301,7 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     // currently we didn't have a better way to know if it is in debug model.
     // the code suppose we are under debug model if the plugin root path contains 'sandbox' for Gradle default debug path
-    private boolean isDebugModel() {
+    protected boolean isDebugModel() {
         return PluginUtil.getPluginRootDirectory().contains("sandbox");
     }
 
@@ -304,23 +309,24 @@ public class AzurePlugin extends AbstractProjectComponent {
      * Copies Azure Toolkit for IntelliJ
      * related files in azure-toolkit-for-intellij plugin folder at startup.
      */
-    private void copyPluginComponents() {
-        try {
-            extractJobViewResource();
-            for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
-                if (azureLibrary.getLocation() != null) {
-                    if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
-                        for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator + CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
-                            new File(pluginFolder + File.separator + entryName).getParentFile().mkdirs();
-                            copyResourceFile(entryName, pluginFolder + File.separator + entryName);
+    protected void copyPluginComponents() {
+        Runnable runnable = () -> {
+            try {
+                for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
+                    if (azureLibrary.getLocation() != null) {
+                        if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
+                            for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator + CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
+                                new File(pluginFolder + File.separator + entryName).getParentFile().mkdirs();
+                                copyResourceFile(entryName, pluginFolder + File.separator + entryName);
+                            }
                         }
                     }
                 }
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
             }
-
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
-        }
+        };
+        ApplicationManager.getApplication().invokeLater(runnable);
     }
 
     /**
@@ -372,75 +378,5 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     public static void log(String message) {
         LOG.info(message);
-    }
-
-    private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";
-
-    private boolean isFirstInstallationByVersion() {
-        if (new File(dataFile).exists()) {
-            String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
-            if (!StringHelper.isNullOrWhiteSpace(version) && version.equals(PLUGIN_VERSION)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private void extractJobViewResource() {
-        File indexRootFile = new File(PluginUtil.getPluginRootDirectory() + File.separator + "com.microsoft.hdinsight");
-
-        if (isFirstInstallationByVersion() || isDebugModel()) {
-            if (indexRootFile.exists()) {
-                try {
-                    FileUtils.deleteDirectory(indexRootFile);
-                } catch (IOException e) {
-                    LOG.error("delete HDInsight job view folder error", e);
-                }
-            }
-        }
-
-        URL url = AzurePlugin.class.getResource(HTML_ZIP_FILE_NAME);
-        if (url != null) {
-            File toFile = new File(indexRootFile.getAbsolutePath(), HTML_ZIP_FILE_NAME);
-            try {
-                FileUtils.copyURLToFile(url, toFile);
-                unzip(toFile.getAbsolutePath(), toFile.getParent());
-            } catch (IOException e) {
-                LOG.error("Extract Job View Folder", e);
-            }
-        } else {
-            LOG.error("Can't find HDInsight job view zip package");
-        }
-    }
-
-    private static void unzip(String zipFilePath, String destDirectory) throws IOException {
-        File destDir = new File(destDirectory);
-        if (!destDir.exists()) {
-            destDir.mkdir();
-        }
-        ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath));
-        ZipEntry entry = zipIn.getNextEntry();
-        while (entry != null) {
-            String filePath = destDirectory + File.separator + entry.getName();
-            if (!entry.isDirectory()) {
-                extractFile(zipIn, filePath);
-            } else {
-                File dir = new File(filePath);
-                dir.mkdir();
-            }
-            zipIn.closeEntry();
-            entry = zipIn.getNextEntry();
-        }
-        zipIn.close();
-    }
-
-    private static void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
-        BufferedOutputStream bos = new BufferedOutputStream(new java.io.FileOutputStream(filePath));
-        byte[] bytesIn = new byte[1024 * 10];
-        int read = 0;
-        while ((read = zipIn.read(bytesIn)) != -1) {
-            bos.write(bytesIn, 0, read);
-        }
-        bos.close();
     }
 }

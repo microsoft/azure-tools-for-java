@@ -37,6 +37,6 @@ public interface MvpView {
         if (uiHelper == null) {
             return;
         }
-        uiHelper.showException(message, ex);
+        throw new RuntimeException(message, ex);
     }
 }

@@ -39,7 +39,7 @@ import java.util.Set;
 
 public class VMArmModule extends AzureRefreshableNode {
     private static final String VM_SERVICE_MODULE_ID = com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule.class.getName();
-    private static final String ICON_PATH = "VirtualMachine_16.png";
+    private static final String ICON_PATH = "VirtualMachine.svg";
     private static final String BASE_MODULE_NAME = "Virtual Machines";
 
     public VMArmModule(Node parent) {

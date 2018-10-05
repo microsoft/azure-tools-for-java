@@ -1,57 +1,89 @@
 #!/bin/bash
 
+tc_open() {
+    set +x
+    echo "##teamcity[blockOpened name='$1' description='$1']"
+    set -x
+}
+
+tc_close() {
+    set +x
+    echo "##teamcity[blockClosed name='$1']"
+    set -x
+}
+
 set -e
-
-SCRIPTPATH=$(pwd -P)
-cd "$SCRIPTPATH"
-
-MAVEN_QUIET=""
-INTELLIJ_VERSION=false
-
-while getopts ":hqv" option; do
-    case $option in
-        h) echo "usage: $0 [-h] [-q] [-v]"; exit ;;
-        q) MAVEN_QUIET="-q" ;;
-        v) INTELLIJ_VERSION=true ;;
-        ?) echo "error: option -$OPTARG is not implemented"; exit ;;
-    esac
-done
-
-ARTIFACTS_DIR="artifacts"
-# check dir exists
-if [ ! -d  "$ARTIFACTS_DIR" ]; then
-    echo "Creating artifacts directory $ARTIFACTS_DIR"
-    mkdir -p $ARTIFACTS_DIR
-fi
 
 # echo shell commands when they are executed.
 set -x
 
+tc_open "Initializing build script"
+{
+    BUILD_COUNTER="9999"
+
+    SCRIPTPATH=$(pwd -P)
+    cd "$SCRIPTPATH"
+
+    MAVEN_QUIET=""
+    INTELLIJ_VERSION=false
+
+    while getopts ":hqvBC:" option; do
+        case $option in
+            h) echo "usage: $0 [-h] [-q] [-v] [-B] [-C BuildCounter]"; exit ;;
+            q) MAVEN_QUIET="-q" ;;
+            v) INTELLIJ_VERSION=true ;;
+            B) MAVEN_QUIET="--batch-mode" ;;
+            C) BUILD_COUNTER="$OPTARG" ;;
+            ?) echo "error: option -$OPTARG is not implemented"; exit ;;
+        esac
+    done
+
+    ARTIFACTS_DIR="artifacts"
+    # check dir exists
+    if [ ! -d  "$ARTIFACTS_DIR" ]; then
+        echo "Creating artifacts directory $ARTIFACTS_DIR"
+        mkdir -p $ARTIFACTS_DIR
+    fi
+}
+tc_close "Initializing build script"
+
 # Build Utils
-mvn install -f $SCRIPTPATH/Utils/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
-mvn install -f $SCRIPTPATH/PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
+tc_open "Building Utils"
+{    
+    mvn install -f $SCRIPTPATH/Utils/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
+    mvn install -f $SCRIPTPATH/PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
+}
+tc_close "Building Utils"
 
-# # Build eclipse plugin
-mvn clean install -f $SCRIPTPATH/PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml $MAVEN_QUIET
-cp ./PluginsAndFeatures/azure-toolkit-for-eclipse/WindowsAzurePlugin4EJ/target/WindowsAzurePlugin4EJ*.zip ./$ARTIFACTS_DIR/WindowsAzurePlugin4EJ.zip
+# Build eclipse plugin
+tc_open "Building Eclipse plugin"
+{    
+    mvn clean install -f $SCRIPTPATH/PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml $MAVEN_QUIET
+    cp ./PluginsAndFeatures/azure-toolkit-for-eclipse/WindowsAzurePlugin4EJ/target/WindowsAzurePlugin4EJ*.zip ./$ARTIFACTS_DIR/WindowsAzurePlugin4EJ.zip
+}
+tc_close "Building Eclipse plugin"
 
-chmod +x ./tools/IntellijVersionHelper
+# Build intellij plugin
+tc_open "Building IDEA plugin"
+{    
+    if [ $INTELLIJ_VERSION == "true" ] ; then
+        ./tools/IntellijVersionHelper 2018.3
+    fi
 
-# Build intellij 2018.1 plugin
-if [ $INTELLIJ_VERSION == "true" ] ; then
-    ./tools/IntellijVersionHelper 2018.1
-fi
+    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info clean)
+    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :idea:buildPlugin -s -Pbuild_common_code_with=idea)
+    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/idea/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.3.zip
+}
+tc_close "Building IDEA plugin"
 
-(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Pintellij_version=IC-2018.1 -Pdep_plugins=org.intellij.scala:2018.1.8)
+BUILD_NUMBER="3.11.0.$BUILD_COUNTER"
 
-cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.1.zip
+# Build JetBrains Rider 2018.3 plugin
+tc_open "Building Rider plugin"
+{
+    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER)
+    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider-$BUILD_NUMBER.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-$BUILD_NUMBER.zip
+}
+tc_close "Building Rider plugin"
 
-# Build intellij 2018.2 compatible plugin
-if [ $INTELLIJ_VERSION == "true" ] ; then
-    ./tools/IntellijVersionHelper 2018.2
-fi
-
-(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s)
-
-cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.2.zip
 echo "ALL BUILD SUCCESSFUL"

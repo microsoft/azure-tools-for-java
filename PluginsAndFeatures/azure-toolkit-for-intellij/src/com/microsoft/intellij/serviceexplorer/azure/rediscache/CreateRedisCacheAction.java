@@ -55,9 +55,9 @@ public class CreateRedisCacheAction extends NodeActionListener {
                 }
             });
             createRedisCacheForm.show();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             AzurePlugin.log("Error creating Redis cache", ex);
-            DefaultLoader.getUIHelper().showException("Error creating Redis Cache", ex, "Error creating Redis Cache", false, true);
+            throw new RuntimeException("Error creating Redis Cache", ex);
         }
     }
 }

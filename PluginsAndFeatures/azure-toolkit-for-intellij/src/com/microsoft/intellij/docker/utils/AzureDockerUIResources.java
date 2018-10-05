@@ -29,6 +29,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.openapi.util.IconLoader;
 import com.jcraft.jsch.Session;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerCertVault;
@@ -49,6 +50,7 @@ import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardDial
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardModel;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.jetbrains.concurrency.AsyncPromise;
 
 import javax.swing.*;
 import java.util.Date;
@@ -152,7 +154,7 @@ public class AzureDockerUIResources {
    *   2 - delete VM and associated resources (vnet, publicIp, nic, nsg)
    */
 
-  public static int deleteAzureDockerHostConfirmationDialog(Azure azureClient, DockerHost dockerHost) {
+  public static int deleteAzureDockerHostConfirmationDialog(DockerHost dockerHost, Boolean isDeletingDockerHostSafe) {
     String promptMessageDeleteAll = String.format("This operation will delete virtual machine %s and its resources:\n" +
             "\t - network interface: %s\n" +
             "\t - public IP: %s\n" +
@@ -171,10 +173,7 @@ public class AzureDockerUIResources {
     String[] options;
     String promptMessage;
 
-    if (AzureDockerVMOps.isDeletingDockerHostAllSafe(
-        azureClient,
-        dockerHost.hostVM.resourceGroupName,
-        dockerHost.hostVM.name)) {
+    if (isDeletingDockerHostSafe) {
       promptMessage = promptMessageDeleteAll;
       options = new String[]{"Cancel", "Delete VM Only", "Delete All"};
     } else {
@@ -187,7 +186,7 @@ public class AzureDockerUIResources {
         "Delete Docker Host",
         JOptionPane.YES_NO_OPTION,
         JOptionPane.QUESTION_MESSAGE,
-        PluginUtil.getIcon("/icons/logwarn.png"),
+        IconLoader.getIcon("icons/AzureWarning.svg"),
         options,
         null);
 
@@ -375,7 +374,7 @@ public class AzureDockerUIResources {
         "Stop Create Azure Key Vault",
         JOptionPane.YES_NO_OPTION,
         JOptionPane.QUESTION_MESSAGE,
-        PluginUtil.getIcon("/icons/logwarn.png"),
+        IconLoader.getIcon("icons/AzureWarning.svg"),
         new String[]{"Cancel", "OK"},
         null);
   }

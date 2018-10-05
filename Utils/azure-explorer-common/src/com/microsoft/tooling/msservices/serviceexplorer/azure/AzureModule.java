@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 
 public class AzureModule extends AzureRefreshableNode {
     private static final String AZURE_SERVICE_MODULE_ID = AzureModule.class.getName();
-    private static final String ICON_PATH = "AzureExplorer_16.png";
+    private static final String ICON_PATH = "AzureExplorer.svg";
     private static final String BASE_MODULE_NAME = "Azure";
 
     @Nullable
@@ -110,11 +110,10 @@ public class AzureModule extends AzureRefreshableNode {
                         ? String.format("%s subscriptions", selectedSubscriptions.size())
                         : selectedSubscriptions.get(0).getSubscriptionName());
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             String msg = "An error occurred while getting the subscription list." + "\n" + "(Message from Azure:" + e
                     .getMessage() + ")";
-            DefaultLoader.getUIHelper().showException(msg, e,
-                    "MS Services - Error Getting Subscriptions", false, true);
+            DefaultLoader.getUIHelper().logError(msg, e);
         }
         return BASE_MODULE_NAME;
     }

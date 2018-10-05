@@ -830,19 +830,15 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                                 parent.addChildNode(new com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMNode(parent, model.getSubscription().getSubscriptionId(), vm));
                             } catch (AzureCmdException e) {
                                 String msg = "An error occurred while attempting to refresh the list of virtual machines.";
-                                DefaultLoader.getUIHelper().showException(msg,
-                                        e,
-                                        "Azure Services Explorer - Error Refreshing VM List",
-                                        false,
-                                        true);
                                 AzurePlugin.log(msg, e);
+                                throw new RuntimeException(msg, e);
                             }
                         }
                     });
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     String msg = "An error occurred while attempting to create the specified virtual machine." + "<br>" + String.format(message("webappExpMsg"), e.getMessage());
-                    DefaultLoader.getUIHelper().showException(msg, e, message("errTtl"), false, true);
                     AzurePlugin.log(msg, e);
+                    throw new RuntimeException(msg, e);
                 }
             }
         });

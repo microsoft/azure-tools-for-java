@@ -28,6 +28,7 @@ import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.intellij.AzurePlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -127,6 +128,7 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
     }
 
     protected void sendTelemetry(int code) {
+        if (AzurePlugin.IS_RIDER) return;
         final Map<String, String> properties = new HashMap<>();
         String action = "OK";
         properties.put("Window", this.getClass().getSimpleName());

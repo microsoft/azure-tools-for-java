@@ -56,14 +56,14 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     }
 
     public void init() {
-        if (!AzurePlugin.IS_ANDROID_STUDIO) {
-            Messages.configureMessagePaneUi(textPane1, message("preferenceLinkMsg"));
-            if (new File(dataFile).exists()) {
-                String prefValue = DataOperations.getProperty(dataFile, message("prefVal"));
-                if (prefValue != null && !prefValue.isEmpty()) {
-                    if (prefValue.equals("true")) {
-                        checkBox1.setSelected(true);
-                    }
+        if (AzurePlugin.IS_ANDROID_STUDIO || AzurePlugin.IS_RIDER)  return;
+
+        Messages.configureMessagePaneUi(textPane1, message("preferenceLinkMsg"));
+        if (new File(dataFile).exists()) {
+            String prefValue = DataOperations.getProperty(dataFile, message("prefVal"));
+            if (prefValue != null && !prefValue.isEmpty()) {
+                if (prefValue.equals("true")) {
+                    checkBox1.setSelected(true);
                 }
             }
         }

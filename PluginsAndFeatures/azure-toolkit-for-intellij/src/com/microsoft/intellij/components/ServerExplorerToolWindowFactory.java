@@ -27,14 +27,13 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
-import com.microsoft.azure.hdinsight.common.HDInsightUtil;
-import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterRootModuleImpl;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
@@ -83,9 +82,9 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         // initialize azure service module
         AzureModule azureModule = new AzureModuleImpl(project);
-
-        HDInsightUtil.setHDInsightRootModule(azureModule);
-        azureModule.setSparkServerlessModule(new SparkServerlessClusterRootModuleImpl(azureModule));
+        for (ServerExplorerToolWindowListener listener : Extensions.getExtensions(ServerExplorerToolWindowListener.EXTENSION_POINT_NAME)) {
+            listener.onAzureModuleCreated(azureModule);
+        }
 
         // initialize with all the service modules
         DefaultTreeModel treeModel = new DefaultTreeModel(initRoot(project, azureModule));

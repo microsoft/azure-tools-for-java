@@ -29,6 +29,7 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -71,7 +72,8 @@ public class UIHelperImpl implements UIHelper {
     public static Key<ClientStorageAccount> CLIENT_STORAGE_KEY = new Key<ClientStorageAccount>("clientStorageAccount");
     public static final Key<String> SUBSCRIPTION_ID = new Key<>("subscriptionId");
     public static final Key<String> RESOURCE_ID = new Key<>("resourceId");
-    private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key = ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
+    private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key = ImmutableMap.of(
+            BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
             Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
             Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
 
@@ -348,8 +350,8 @@ public class UIHelperImpl implements UIHelper {
     public void openInBrowser(String link) {
         try {
             Desktop.getDesktop().browse(URI.create(link));
-        } catch (Exception e) {
-            showException(UNABLE_TO_OPEN_BROWSER, e, UNABLE_TO_OPEN_BROWSER, false, false);
+        } catch (Throwable e) {
+            throw new RuntimeException(UNABLE_TO_OPEN_BROWSER, e);
         }
     }
 
@@ -473,9 +475,8 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @NotNull
-    public static ImageIcon loadIcon(@Nullable String name) {
-        java.net.URL url = UIHelperImpl.class.getResource("/icons/" + name);
-        return new ImageIcon(url);
+    public static Icon loadIcon(@Nullable String name) {
+        return IconLoader.getIcon("icons/" + name);
     }
 
     private LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String fileType, String resourceId) {

@@ -27,14 +27,14 @@ import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.extensions.PluginId
 
 open class Reportable(private val shortMessage: String) {
-    val plugin = PluginManager.getPlugin(PluginId.getId("com.microsoft.tooling.msservices.intellij.azure"))!!
+    val plugin = PluginManager.getPlugin(PluginId.getId("com.intellij.resharper.azure"))
     private val appInfo = ApplicationInfo.getInstance()
 
     private val platformInfo = mutableMapOf<String, String>(
             "IntelliJ build version" to "${appInfo.fullVersion} ${appInfo.build}",
             "OS" to System.getProperty("os.name"),
             "JDK" to "${System.getProperty("java.vendor")} ${System.getProperty("java.version")}",
-            "Plugin version" to plugin.version
+            "Plugin version" to "${plugin?.version}"
     )
 
     protected open val detailInfo get() = mapOf<String, String>()
@@ -42,7 +42,7 @@ open class Reportable(private val shortMessage: String) {
     private val additionalInfo = mutableMapOf<String, String>()
 
     open fun getTitleTags(): Set<String> {
-        return setOf("IntelliJ", "ReportedByUser")
+        return setOf("Rider", "ReportedByUser")
     }
 
     open fun getTitle(): String {
@@ -63,5 +63,9 @@ open class Reportable(private val shortMessage: String) {
         additionalInfo[key] = value
 
         return this
+    }
+
+    open fun getProject(): String {
+        return ""
     }
 }

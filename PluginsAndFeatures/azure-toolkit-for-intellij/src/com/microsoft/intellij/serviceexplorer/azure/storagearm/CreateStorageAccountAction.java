@@ -56,9 +56,9 @@ public class CreateStorageAccountAction extends NodeActionListener {
                 }
             });
             createStorageAccountForm.show();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             AzurePlugin.log("Error creating storage account", ex);
-            DefaultLoader.getUIHelper().showException("Error creating storage account", ex, "Error Creating Storage Account", false, true);
+            throw new RuntimeException("Error creating storage account", ex);
         }
     }
 }

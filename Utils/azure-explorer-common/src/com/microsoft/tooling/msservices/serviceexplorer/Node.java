@@ -234,18 +234,8 @@ public class Node implements MvpView {
                     Class<? extends NodeActionListener> listenerClass = entry.getValue();
                     NodeActionListener actionListener = createNodeActionListener(listenerClass);
                     addAction(entry.getKey(), actionListener);
-                } catch (InstantiationException e) {
-                    DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                            "MS Services - Error", true, false);
-                } catch (IllegalAccessException e) {
-                    DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                            "MS Services - Error", true, false);
-                } catch (NoSuchMethodException e) {
-                    DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                            "MS Services - Error", true, false);
-                } catch (InvocationTargetException e) {
-                    DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                            "MS Services - Error", true, false);
+                } catch (Throwable e) {
+                    throw new RuntimeException("MS Services - Error", e);
                 }
             }
         }
@@ -275,18 +265,8 @@ public class Node implements MvpView {
                         addAction(name.value(), createNodeActionListener(actionListener));
                     }
                 }
-            } catch (InstantiationException e) {
-                DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                        "MS Services - Error", true, false);
-            } catch (IllegalAccessException e) {
-                DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                        "MS Services - Error", true, false);
-            } catch (NoSuchMethodException e) {
-                DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                        "MS Services - Error", true, false);
-            } catch (InvocationTargetException e) {
-                DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                        "MS Services - Error", true, false);
+            } catch (Throwable e) {
+                throw new RuntimeException("MS Services - Error", e);
             }
         }
         return null;

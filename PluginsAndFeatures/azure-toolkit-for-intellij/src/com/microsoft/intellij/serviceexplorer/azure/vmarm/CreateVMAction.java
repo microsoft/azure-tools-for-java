@@ -47,9 +47,9 @@ public class CreateVMAction extends NodeActionListener {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return;
             CreateVMWizard createVMWizard = new CreateVMWizard((VMArmModule) e.getAction().getNode());
             createVMWizard.show();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             AzurePlugin.log("Error creating virtual machine", ex);
-            DefaultLoader.getUIHelper().showException("Error creating virtual machine", ex, "Error Creating Virtual Machine", false, true);
+            throw new RuntimeException("Error creating virtual machine", ex);
         }
     }
 }

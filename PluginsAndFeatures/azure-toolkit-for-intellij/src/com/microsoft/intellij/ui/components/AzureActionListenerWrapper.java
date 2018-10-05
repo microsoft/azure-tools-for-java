@@ -25,6 +25,7 @@ package com.microsoft.intellij.ui.components;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.AzurePlugin;
 
 import javax.swing.JComboBox;
 import java.awt.event.ActionEvent;
@@ -65,6 +66,7 @@ public abstract class AzureActionListenerWrapper implements ActionListener {
     protected abstract void actionPerformedFunc(ActionEvent e);
 
     private void sendTelemetry(ActionEvent event) {
+        if (AzurePlugin.IS_RIDER) return;
         Map<String, String> telemetryProperties = new HashMap<String, String>();
         String cmd = event.getActionCommand();
         telemetryProperties.put(CMD, (cmd != null ? cmd : ""));

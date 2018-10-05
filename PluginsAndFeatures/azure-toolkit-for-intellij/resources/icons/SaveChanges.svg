@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <title>SaveChanges</title>
+  <g>
+    <rect width="16" height="16" fill="#ffdbff" opacity="0"/>
+    <path d="M10,11v3H7V11ZM2,2V14H5V10h6v4h3V2ZM12,8H4V3h8Z" fill="#6e6e6e"/>
+  </g>
+</svg>

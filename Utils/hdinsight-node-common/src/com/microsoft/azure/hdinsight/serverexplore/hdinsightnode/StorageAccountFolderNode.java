@@ -64,10 +64,8 @@ public class StorageAccountFolderNode extends RefreshableNode {
                         addChildNode(new StorageAccountNode(this, account, false));
                     }
                 }
-            } catch (Exception exception) {
-                DefaultLoader.getUIHelper().showException(
-                        "Failed to get HDInsight cluster configuration.", exception,
-                        "HDInsight Explorer", false, true);
+            } catch (Throwable exception) {
+                throw new RuntimeException("Failed to get HDInsight cluster configuration.", exception);
             }
         }
     }

@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 
 public class StorageNode extends RefreshableNode implements TelemetryProperties {
-    private static final String STORAGE_ACCOUNT_ICON_PATH = "StorageAccount_16.png";
+    private static final String STORAGE_ACCOUNT_ICON_PATH = "StorageAccount.svg";
 
     private final StorageAccount storageAccount;
     private String subscriptionId;
@@ -89,9 +89,8 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
                         getParent().removeDirectChildNode(StorageNode.this);
                     }
                 });
-            } catch (Exception ex) {
-                DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete storage account.", ex,
-                        "MS Services - Error Deleting Storage Account", false, true);
+            } catch (Throwable ex) {
+                throw new RuntimeException("An error occurred while attempting to delete storage account.", ex);
             }
         }
 

@@ -22,14 +22,15 @@
 
 package com.microsoft.intellij;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
-import com.microsoft.azure.hdinsight.common.HDInsightLoader;
+import com.intellij.openapi.extensions.Extensions;
+import com.intellij.util.containers.hash.HashMap;
 import com.microsoft.azure.sparkserverless.SparkServerlessClusterOpsCtrl;
 import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterOps;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -52,8 +53,10 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
+import com.microsoft.tooling.msservices.helpers.IDEHelper;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -62,13 +65,14 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
 
 import rx.internal.util.PlatformDependent;
 
-public class AzureActionsComponent implements ApplicationComponent, PluginComponent {
+public abstract class AzureActionsComponent implements ApplicationComponent, PluginComponent {
     public static final String PLUGIN_ID = CommonConst.PLUGIN_ID;
     private static final Logger LOG = Logger.getInstance(AzureActionsComponent.class);
     private static FileHandler logFileHandler = null;
@@ -78,18 +82,26 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
     public AzureActionsComponent() {
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setUiHelper(new UIHelperImpl());
-        DefaultLoader.setIdeHelper(new IDEHelperImpl());
-        Node.setNode2Actions(NodeActionsMap.node2Actions);
+        DefaultLoader.setIdeHelper(createIDEHelper());
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
 
-        HDInsightLoader.setHHDInsightHelper(new HDInsightHelperImpl());
+        Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions = new HashMap<>();
+        for (NodeActionsMap nodeActionsMap : Extensions.getExtensions(NodeActionsMap.EXTENSION_POINT_NAME)) {
+            node2Actions.putAll(nodeActionsMap.getMap());
+        }
+        Node.setNode2Actions(node2Actions);
+
         try {
             loadPluginSettings();
         } catch (IOException e) {
             PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"),
                     "An error occurred while attempting to load settings", e);
         }
+    }
+
+    protected IDEHelper createIDEHelper() {
+        return new IDEHelperImpl();
     }
 
     @NotNull
@@ -107,8 +119,6 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
             ActionManager am = ActionManager.getInstance();
             DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
             toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
-            DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
-            popupGroup.add(am.getAction("AzurePopupGroup"));
             loadWebApps();
         }
         try {
@@ -117,7 +127,7 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
             DefaultLoader.getUIHelper().showError("A problem with your Android Support plugin setup is preventing the"
                     + " Azure Toolkit from functioning correctly (Retrofit2 and RxJava failed to initialize)"
                     + ".\nTo fix this issue, try disabling the Android Support plugin or installing the "
-                    + "Android SDK", "Azure Toolkit for IntelliJ");
+                    + "Android SDK", "Azure Toolkit for Rider");
             // DefaultLoader.getUIHelper().showException("Android Support Error: isAndroid() throws " + ignored
             //         .getMessage(), ignored, "Error Android", true, false);
         }

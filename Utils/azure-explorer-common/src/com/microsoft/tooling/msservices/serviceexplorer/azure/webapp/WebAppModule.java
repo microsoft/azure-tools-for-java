@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class WebAppModule extends AzureRefreshableNode implements WebAppModuleView {
     private static final String REDIS_SERVICE_MODULE_ID = WebAppModule.class.getName();
-    private static final String ICON_PATH = "WebApp_16.png";
+    private static final String ICON_PATH = "WebApp.svg";
     private static final String BASE_MODULE_NAME = "Web Apps";
     private final WebAppModulePresenter<WebAppModule> webAppModulePresenter;
 
@@ -46,9 +46,8 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
         try {
             webAppModulePresenter.onDeleteWebApp(sid, id);
             removeDirectChildNode(node);
-        } catch (IOException e) {
-            DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Web App ",
-                    e, "Azure Services Explorer - Error Deleting Web App for Containers", false, true);
+        } catch (Throwable e) {
+            throw new RuntimeException("An error occurred while attempting to delete the Web App ", e);
         }
     }
 

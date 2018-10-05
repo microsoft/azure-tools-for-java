@@ -52,8 +52,15 @@ class SparkLocalRunnerITScenario {
 
         val process = job.start()
 
-        assertThat(process.waitFor())
-                .describedAs("Spark job exist with error.")
+        val exitCode = process.waitFor()
+
+        if (exitCode != 0) {
+            System.out.println("stderr:")
+            System.out.print(process.errorStream.reader().readText())
+        }
+
+        assertThat(exitCode)
+                .describedAs("Spark job exits with error.")
                 .isEqualTo(0)
 
         val outputLines = process.inputStream.reader().readLines()
