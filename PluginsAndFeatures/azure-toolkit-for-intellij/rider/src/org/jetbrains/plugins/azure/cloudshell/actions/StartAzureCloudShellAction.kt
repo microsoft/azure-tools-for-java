@@ -17,6 +17,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.PopupStep
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep
+import com.intellij.openapi.wm.ToolWindowManager
 import com.microsoft.aad.adal4j.AuthenticationException
 import com.microsoft.azure.AzureEnvironment
 import com.microsoft.azuretools.authmanage.AdAuthManager
@@ -28,12 +29,15 @@ import com.microsoft.rest.credentials.ServiceClientCredentials
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudTerminalProcess
 import org.jetbrains.plugins.azure.cloudshell.rest.*
+import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
+import org.jetbrains.plugins.terminal.TerminalView
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalRunner
 import java.net.URI
 import javax.swing.event.HyperlinkEvent
 
 class StartAzureCloudShellAction : AnAction() {
     private val logger = Logger.getInstance(StartAzureCloudShellAction::class.java)
+    private val runInTerminalToolWindow = true // pending PR review
 
     override fun update(e: AnActionEvent?) {
         if (e == null) return
@@ -70,7 +74,7 @@ class StartAzureCloudShellAction : AnAction() {
                 }
 
                 // Multiple options? Popup.
-                ApplicationManager.getApplication().invokeLater{
+                ApplicationManager.getApplication().invokeLater {
                     if (project.isDisposed) return@invokeLater
 
                     val step = object : BaseListPopupStep<SubscriptionDetail>("Select subscription to run Azure Cloud Shell", selectedSubscriptions) {
@@ -206,10 +210,25 @@ class StartAzureCloudShellAction : AnAction() {
                 val socketClient = CloudConsoleTerminalWebSocket(URI(socketUri))
                 socketClient.connectBlocking()
 
-                val runner = CloudTerminalRunner(project, "Azure Cloud Shell",
-                        AzureCloudTerminalProcess(socketClient))
+                if (runInTerminalToolWindow) {
+                    // Run in terminal window
+                    ApplicationManager.getApplication().invokeLater {
+                        val terminalWindow = ToolWindowManager.getInstance(project).getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID)
+                        if (terminalWindow != null && terminalWindow.isAvailable) {
+                            terminalWindow.activate {
+                                TerminalView.getInstance(project).createNewSession(project,
+                                        CloudTerminalRunner(project, "Azure Cloud Shell",
+                                                AzureCloudTerminalProcess(socketClient)))
+                            }
+                        }
+                    }
+                } else {
+                    // Run as run configuration
+                    val runner = CloudTerminalRunner(project, "Azure Cloud Shell",
+                            AzureCloudTerminalProcess(socketClient))
 
-                runner.run()
+                    runner.run()
+                }
             }
         })
     }
