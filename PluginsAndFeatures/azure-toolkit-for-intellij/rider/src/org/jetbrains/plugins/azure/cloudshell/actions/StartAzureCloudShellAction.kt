@@ -38,7 +38,7 @@ import javax.swing.event.HyperlinkEvent
 class StartAzureCloudShellAction : AnAction() {
     private val logger = Logger.getInstance(StartAzureCloudShellAction::class.java)
 
-    override fun update(e: AnActionEvent?) {
+    override fun update(e: AnActionEvent) {
         if (e == null) return
 
         e.presentation.isEnabled = CommonDataKeys.PROJECT.getData(e.dataContext) != null
