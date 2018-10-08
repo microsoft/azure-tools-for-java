@@ -281,6 +281,7 @@
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
             description="ShowSubscriptionsAction" />
+    <action class="com.microsoft.azuretools.ijidea.actions.GithubSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback..." />
     <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
             text="Run on Web App" description="Run on Web App"
             icon="/icons/PublishWebApp_16.png">
@@ -360,6 +361,8 @@
       <reference ref="AzureToolkit.SelectSubscriptions"/>
       <separator/>
       <reference ref="AzureToolkit.AzureSignIn"/>
+      <separator/>
+      <reference ref="AzureToolkit.Survey"/>
     </group>
 
     <group id="SparkConsoleGroup" text="Spark Console" description="Spark Console" popup="true">
