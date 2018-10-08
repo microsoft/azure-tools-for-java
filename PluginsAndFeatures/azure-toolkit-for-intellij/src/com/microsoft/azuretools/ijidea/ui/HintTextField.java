@@ -32,16 +32,16 @@ public class HintTextField extends JTextField implements FocusListener {
             } else {
                 super.setForeground(Color.BLACK);
             }
-            super.setText("");
             showingHint = false;
+            super.setText("");
         }
     }
     @Override
     public void focusLost(FocusEvent e) {
         if(this.getText().isEmpty()) {
             super.setForeground(Color.GRAY);
-            super.setText(hint);
             showingHint = true;
+            super.setText(hint);
         }
     }
 
