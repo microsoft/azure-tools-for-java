@@ -37,7 +37,6 @@ import javax.swing.event.HyperlinkEvent
 
 class StartAzureCloudShellAction : AnAction() {
     private val logger = Logger.getInstance(StartAzureCloudShellAction::class.java)
-    private val runInTerminalToolWindow = true // pending PR review
 
     override fun update(e: AnActionEvent?) {
         if (e == null) return
@@ -210,24 +209,20 @@ class StartAzureCloudShellAction : AnAction() {
                 val socketClient = CloudConsoleTerminalWebSocket(URI(socketUri))
                 socketClient.connectBlocking()
 
-                if (runInTerminalToolWindow) {
-                    // Run in terminal window
-                    ApplicationManager.getApplication().invokeLater {
-                        val terminalWindow = ToolWindowManager.getInstance(project).getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID)
-                        if (terminalWindow != null && terminalWindow.isAvailable) {
-                            terminalWindow.activate {
-                                TerminalView.getInstance(project).createNewSession(project,
-                                        CloudTerminalRunner(project, "Azure Cloud Shell",
-                                                AzureCloudTerminalProcess(socketClient)))
-                            }
+                val runner = CloudTerminalRunner(project, "Azure Cloud Shell",
+                        AzureCloudTerminalProcess(socketClient))
+
+                ApplicationManager.getApplication().invokeLater {
+                    val terminalWindow = ToolWindowManager.getInstance(project)
+                            .getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID)
+
+                    terminalWindow.show {
+                        // HACK: Because local terminal always opens, we want to make sure it is available before opening cloud terminal
+                        ApplicationManager.getApplication().invokeLater {
+                            Thread.sleep(500)
+                            TerminalView.getInstance(project).createNewSession(project, runner)
                         }
                     }
-                } else {
-                    // Run as run configuration
-                    val runner = CloudTerminalRunner(project, "Azure Cloud Shell",
-                            AzureCloudTerminalProcess(socketClient))
-
-                    runner.run()
                 }
             }
         })
