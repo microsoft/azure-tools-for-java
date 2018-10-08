@@ -70,8 +70,8 @@ tc_open "Building IDEA plugin"
         ./tools/IntellijVersionHelper 2018.3
     fi
 
-    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info clean)
-    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :idea:buildPlugin -s -Pbuild_common_code_with=idea)
+    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info clean --console=plain)
+    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :idea:buildPlugin -s -Pbuild_common_code_with=idea --console=plain)
     cp ./PluginsAndFeatures/azure-toolkit-for-intellij/idea/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.3.zip
 }
 tc_close "Building IDEA plugin"
@@ -81,7 +81,7 @@ BUILD_NUMBER="3.11.0.$BUILD_COUNTER"
 # Build JetBrains Rider 2018.3 plugin
 tc_open "Building Rider plugin"
 {
-    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER)
+    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER --console=plain)
     cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider-$BUILD_NUMBER.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-$BUILD_NUMBER.zip
 }
 tc_close "Building Rider plugin"

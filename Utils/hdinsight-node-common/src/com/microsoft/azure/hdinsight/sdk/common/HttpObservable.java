@@ -34,7 +34,6 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -113,6 +112,7 @@ public class HttpObservable {
                 .build();
 
         this.httpClient = HttpClients.custom()
+                .useSystemProperties()
                 .setDefaultCookieStore(getCookieStore())
                 .setDefaultRequestConfig(getDefaultRequestConfig())
                 .build();
@@ -132,6 +132,7 @@ public class HttpObservable {
                 new AuthScope(AuthScope.ANY), new UsernamePasswordCredentials(username, password));
 
         this.httpClient = HttpClients.custom()
+                .useSystemProperties()
                 .setDefaultCookieStore(getCookieStore())
                 .setDefaultCredentialsProvider(credentialsProvider)
                 .setDefaultRequestConfig(getDefaultRequestConfig())
@@ -235,8 +236,10 @@ public class HttpObservable {
                         StatusLine status = streamResp.getStatusLine();
 
                         if (status.getStatusCode() >= 300) {
-                            return Observable.error(new HttpResponseException(status.getStatusCode(),
-                                                                              status.getReasonPhrase()));
+                            Header requestIdHeader = streamResp.getFirstHeader("x-ms-request-id");
+                            return Observable.error(new SparkAzureDataLakePoolServiceException(status.getStatusCode(),
+                                    status.getReasonPhrase(),
+                                    requestIdHeader != null ? requestIdHeader.getValue() : ""));
                         }
 
                         return Observable.just(StreamUtil.getResultFromHttpResponse(streamResp));

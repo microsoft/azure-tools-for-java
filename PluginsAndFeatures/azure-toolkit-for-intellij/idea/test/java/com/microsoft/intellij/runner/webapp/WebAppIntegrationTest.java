@@ -281,7 +281,7 @@ public class WebAppIntegrationTest extends IntegrationTestBase {
     }
 
     private WebApp getWebApp(String webappName) {
-        List<ResourceEx<WebApp>> webApps = AzureWebAppMvpModel.getInstance().listWebApps(true);
+        List<ResourceEx<WebApp>> webApps = AzureWebAppMvpModel.getInstance().listAllWebAppsOnWindows(true);
         WebApp selectedApp = null;
         for (ResourceEx<WebApp> webApp : webApps) {
             if (webApp.getResource().name().equalsIgnoreCase(webappName)) {

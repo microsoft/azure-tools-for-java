@@ -15,6 +15,7 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.rest.RestException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -88,7 +89,7 @@ public class AzureWebAppMvpModelTest {
 
     @After
     public void tearDown() {
-        azureWebAppMvpModel.cleanWebApps();
+        azureWebAppMvpModel.cleanWebAppsOnWindows();
         azureWebAppMvpModel.cleanWebAppsOnLinux();
         reset(webAppsMock);
         reset(azureMock);
@@ -110,6 +111,7 @@ public class AzureWebAppMvpModelTest {
     }
 
     @Test
+    @Ignore
     public void testCreateWebAppNewSrvPlan() {
         WebAppSettingModel settingModel = new WebAppSettingModel();
         settingModel.setCreatingAppServicePlan(true);
@@ -140,7 +142,7 @@ public class AzureWebAppMvpModelTest {
         when(withGrp.withNewResourceGroup(settingModel.getResourceGroup())).thenReturn(with);
 
         try {
-            azureWebAppMvpModel.createWebApp(settingModel);
+            azureWebAppMvpModel.createWebAppOnWindows(settingModel);
         }catch (Exception e) {
         }
 
@@ -166,7 +168,7 @@ public class AzureWebAppMvpModelTest {
         when(def.withExistingWindowsPlan(srvPlan)).thenReturn(withGrp);
 
         try{
-            azureWebAppMvpModel.createWebApp(settingModel);
+            azureWebAppMvpModel.createWebAppOnWindows(settingModel);
         } catch (Exception e) {
         }
 
@@ -199,7 +201,7 @@ public class AzureWebAppMvpModelTest {
         when(def.withExistingLinuxPlan(srvPlan)).thenReturn(withGrp);
 
         try{
-            azureWebAppMvpModel.createWebAppOnLinux(model);
+            azureWebAppMvpModel.createWebAppWithPrivateRegistryImage(model);
         } catch(Exception e) {
         }
 
@@ -278,142 +280,119 @@ public class AzureWebAppMvpModelTest {
     }
 
     @Test
-    public void testListWebAppsBySubscriptionId() {
-        List<WebApp> storedList = new PagedList<WebApp>() {
-            @Override
-            public Page<WebApp> nextPage(String nextPageLink) throws RestException, IOException {
-                return null;
-            }
-        };
+    public void testListAllWebApps() throws IOException {
+        List<WebApp> webAppList = prepareMockWebAppList();
+        when(webAppsMock.list()).thenReturn((PagedList<WebApp>) webAppList);
 
-        WebApp app1 = mock(WebApp.class); when(app1.operatingSystem()).thenReturn(OperatingSystem.LINUX);
-        WebApp app2 = mock(WebApp.class); when(app2.operatingSystem()).thenReturn(OperatingSystem.LINUX);
-        WebApp app3 = mock(WebApp.class); when(app3.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
-        storedList.add(app1);
-        storedList.add(app2);
-        when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
+        final List<Subscription> subscriptions = new ArrayList<Subscription>();
+        final Subscription sub = mock(Subscription.class);
+        when(sub.subscriptionId()).thenReturn("1");
+        subscriptions.add(sub);
+        when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);
 
-        List<ResourceEx<WebApp>> rstList = azureWebAppMvpModel.listWebAppsBySubscriptionId(MOCK_SUBSCRIPTION, false);
-        verify(webAppsMock, times(1)).list();
-        assertEquals(0, rstList.size());
-        reset(webAppsMock);
+        when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
+        final AzureWebAppMvpModel mockWebAppModel = spy(azureWebAppMvpModel);
 
-        storedList.add(app3);
-        rstList = azureWebAppMvpModel.listWebAppsBySubscriptionId(MOCK_SUBSCRIPTION, false);
-        verify(webAppsMock, times(0)).list();
-        assertEquals(0, rstList.size());
-        reset(webAppsMock);
+        mockWebAppModel.listAllWebApps(false);
+        List<ResourceEx<WebApp>> resultList = azureWebAppMvpModel.listAllWebApps(false);
 
-        when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
-        rstList = azureWebAppMvpModel.listWebAppsBySubscriptionId(MOCK_SUBSCRIPTION, true);
-        verify(webAppsMock, times(1)).list();
-        assertEquals(1, rstList.size());
+        verify(mockWebAppModel, times(1)).listWebApps("1", false);
+        assertEquals(2, resultList.size());
+
+        final WebApp app3 = mock(WebApp.class);
+        when(app3.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
+        webAppList.add(app3);
+        resultList = azureWebAppMvpModel.listAllWebApps(true);
+        assertEquals(3, resultList.size());
+
         reset(webAppsMock);
     }
 
     @Test
-    public void testListWebApps() {
+    public void testListWebAppsOnLinux() throws IOException {
+        final List<WebApp> storedList = prepareMockWebAppList();
+        when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
+
+        when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
+
+        final List<ResourceEx<WebApp>> webAppList = azureWebAppMvpModel.listWebAppsOnLinux(MOCK_SUBSCRIPTION, true);
+        final AzureWebAppMvpModel mockWebAppModel = spy(azureWebAppMvpModel);
+        mockWebAppModel.listWebAppsOnLinux(MOCK_SUBSCRIPTION, true);
+        verify(mockWebAppModel, times(1)).listWebAppsOnLinux(MOCK_SUBSCRIPTION, true);
+        assertEquals(1, webAppList.size());
+    }
+
+    @Test
+    public void testListAllWebAppsOnLinux() throws IOException {
         List<Subscription> subscriptions = new ArrayList<Subscription>();
-        Subscription sub1 = mock(Subscription.class); when(sub1.subscriptionId()).thenReturn("1");
-        Subscription sub2 = mock(Subscription.class); when(sub2.subscriptionId()).thenReturn("2");
-        Subscription sub3 = mock(Subscription.class); when(sub3.subscriptionId()).thenReturn("3");
         when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);
 
         AzureWebAppMvpModel mockWebAppModel = spy(azureWebAppMvpModel);
-        try {
-            when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
-            when(webAppsMock.list()).thenReturn(new PagedList<WebApp>() {
-                @Override
-                public Page<WebApp> nextPage(String nextPageLink) throws RestException, IOException {
-                    return null;
-                }
-            });
-        }catch (Exception e){
-            printException(e);
-        }
-
-        mockWebAppModel.listWebApps(false);
-        verify(mockWebAppModel, times(0)).listWebAppsBySubscriptionId(anyString(), eq(false));
-
-        subscriptions.add(sub1);
-        subscriptions.add(sub2);
-        subscriptions.add(sub3);
-        mockWebAppModel.listWebApps(false);
-        verify(mockWebAppModel, times(3)).listWebAppsBySubscriptionId(anyString(), eq(false));
-        reset(mockWebAppModel);
-
-        mockWebAppModel.listWebApps(true);
-        verify(mockWebAppModel, times(3)).listWebAppsBySubscriptionId(anyString(), eq(true));
-    }
-
-    @Test
-    public void testListWebAppsOnLinuxBySubscriptionId() {
-        List<WebApp> storedList = new PagedList<WebApp>() {
-            @Override
-            public Page<WebApp> nextPage(String nextPageLink) throws RestException, IOException {
-                return null;
-            }
-        };
-
-        WebApp app1 = mock(WebApp.class); when(app1.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
-        WebApp app2 = mock(WebApp.class); when(app2.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
-        WebApp app3 = mock(WebApp.class); when(app3.operatingSystem()).thenReturn(OperatingSystem.LINUX);
-        storedList.add(app1);
-        storedList.add(app2);
-        when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
-
-        List<ResourceEx<WebApp>> rstList = azureWebAppMvpModel.listWebAppsOnLinuxBySubscriptionId(MOCK_SUBSCRIPTION, false);
-        verify(webAppsMock, times(1)).list();
-        assertEquals(0, rstList.size());
-        reset(webAppsMock);
-
-        storedList.add(app3);
-        rstList = azureWebAppMvpModel.listWebAppsOnLinuxBySubscriptionId(MOCK_SUBSCRIPTION, false);
-        verify(webAppsMock, times(0)).list();
-        assertEquals(0, rstList.size());
-        reset(webAppsMock);
-
-        when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
-        rstList = azureWebAppMvpModel.listWebAppsOnLinuxBySubscriptionId(MOCK_SUBSCRIPTION, true);
-        verify(webAppsMock, times(1)).list();
-        assertEquals(1, rstList.size());
-        reset(webAppsMock);
-    }
-
-    @Test
-    public void testListAllWebAppsOnLinux() {
-
-        List<Subscription> subscriptions = new ArrayList<Subscription>();
-        Subscription sub1 = mock(Subscription.class); when(sub1.subscriptionId()).thenReturn("1");
-        Subscription sub2 = mock(Subscription.class); when(sub2.subscriptionId()).thenReturn("2");
-        Subscription sub3 = mock(Subscription.class); when(sub3.subscriptionId()).thenReturn("3");
-        when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);
-
-        AzureWebAppMvpModel mockWebAppModel = spy(azureWebAppMvpModel);
-        try {
-            when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
-            when(webAppsMock.list()).thenReturn(new PagedList<WebApp>() {
-                @Override
-                public Page<WebApp> nextPage(String nextPageLink) throws RestException, IOException {
-                    return null;
-                }
-            });
-        }catch (Exception e){
-            printException(e);
-        }
-
-        mockWebAppModel.listAllWebAppsOnLinux(false);
-        verify(mockWebAppModel, times(0)).listWebAppsOnLinuxBySubscriptionId(anyString(), eq(false));
-
-        subscriptions.add(sub1);
-        subscriptions.add(sub2);
-        subscriptions.add(sub3);
-        mockWebAppModel.listAllWebAppsOnLinux(false);
-        verify(mockWebAppModel, times(3)).listWebAppsOnLinuxBySubscriptionId(anyString(), eq(false));
-        reset(mockWebAppModel);
+        when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
 
         mockWebAppModel.listAllWebAppsOnLinux(true);
-        verify(mockWebAppModel, times(3)).listWebAppsOnLinuxBySubscriptionId(anyString(), eq(true));
+        verify(mockWebAppModel, times(1)).listAllWebAppsOnLinux(true);
+        List<ResourceEx<WebApp>> resultList = azureWebAppMvpModel.listAllWebAppsOnLinux(true);
+        assertEquals(resultList.size(), 0);
+
+        final Subscription sub = mock(Subscription.class);
+        when(sub.subscriptionId()).thenReturn("1");
+        subscriptions.add(sub);
+
+        final List<WebApp> webAppList = prepareMockWebAppList();
+        when(webAppsMock.list()).thenReturn((PagedList<WebApp>) webAppList);
+
+        resultList = azureWebAppMvpModel.listAllWebAppsOnLinux(true);
+        assertEquals(resultList.size(), 1);
+    }
+
+    @Test
+    public void testListWebAppsOnWindows() throws IOException {
+        List<WebApp> storedList = new PagedList<WebApp>() {
+            @Override
+            public Page<WebApp> nextPage(String nextPageLink) throws RestException {
+                return null;
+            }
+        };
+        WebApp app1 = mock(WebApp.class);
+        when(app1.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
+        WebApp app2 = mock(WebApp.class);
+        when(app2.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
+        storedList.add(app1);
+        storedList.add(app2);
+        when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
+
+        when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
+
+        final List<ResourceEx<WebApp>> rstList = azureWebAppMvpModel.listWebAppsOnWindows(MOCK_SUBSCRIPTION, true);
+        final AzureWebAppMvpModel mockWebAppModel = spy(azureWebAppMvpModel);
+        mockWebAppModel.listWebAppsOnWindows(MOCK_SUBSCRIPTION, true);
+        verify(mockWebAppModel, times(1)).listWebAppsOnWindows(MOCK_SUBSCRIPTION, true);
+        assertEquals(2, rstList.size());
+    }
+
+    @Test
+    public void testListAllWebAppsOnWindows() throws IOException {
+        List<Subscription> subscriptions = new ArrayList<Subscription>();
+        when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);
+
+        AzureWebAppMvpModel mockWebAppModel = spy(azureWebAppMvpModel);
+        when(authMethodManagerMock.getAzureClient(anyString())).thenReturn(azureMock);
+
+        mockWebAppModel.listAllWebAppsOnWindows(true);
+        verify(mockWebAppModel, times(1)).listAllWebAppsOnWindows(true);
+        List<ResourceEx<WebApp>> resultList = azureWebAppMvpModel.listAllWebAppsOnWindows(true);
+        assertEquals(resultList.size(), 0);
+
+        final Subscription sub = mock(Subscription.class);
+        when(sub.subscriptionId()).thenReturn("1");
+        subscriptions.add(sub);
+
+        final List<WebApp> webAppList = prepareMockWebAppList();
+        when(webAppsMock.list()).thenReturn((PagedList<WebApp>) webAppList);
+
+        resultList = azureWebAppMvpModel.listAllWebAppsOnWindows(true);
+        assertEquals(resultList.size(), 1);
     }
 
     @Test
@@ -426,6 +405,22 @@ public class AzureWebAppMvpModelTest {
     @Test
     public void testListJdks() {
         assertEquals(JdkModel.values().length, azureWebAppMvpModel.listJdks().size());
+    }
+
+    private List<WebApp> prepareMockWebAppList() {
+        final List<WebApp> webAppList = new PagedList<WebApp>() {
+            @Override
+            public Page<WebApp> nextPage(String nextPageLink) throws RestException {
+                return null;
+            }
+        };
+        final WebApp app1 = mock(WebApp.class);
+        final WebApp app2 = mock(WebApp.class);
+        when(app1.operatingSystem()).thenReturn(OperatingSystem.WINDOWS);
+        when(app2.operatingSystem()).thenReturn(OperatingSystem.LINUX);
+        webAppList.add(app1);
+        webAppList.add(app2);
+        return webAppList;
     }
 
     private void printException(Exception e) {

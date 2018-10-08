@@ -395,7 +395,9 @@ public class JobUtils {
 
     public static HttpEntity getEntity(@NotNull final IClusterDetail clusterDetail, @NotNull final String url) throws IOException, HDIException {
         provider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword()));
-        final HttpClient client = HttpClients.custom().setDefaultCredentialsProvider(provider).build();
+        final HttpClient client = HttpClients.custom()
+                .useSystemProperties()
+                .setDefaultCredentialsProvider(provider).build();
 
         final HttpGet get = new HttpGet(url);
         final HttpResponse response = client.execute(get);

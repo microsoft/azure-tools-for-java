@@ -20,8 +20,10 @@
 
 package com.microsoft.azuretools.azurecommons.util;
 
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +31,7 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 public class FileUtil {
 	
@@ -104,5 +107,70 @@ public class FileUtil {
 		}
 		return isValid;
 	}
+
+    public static void addToZipFile(@NotNull final File file, @NotNull final ZipOutputStream zos) throws IOException {
+        final FileInputStream fis = new FileInputStream(file);
+        try {
+            final ZipEntry zipEntry = new ZipEntry(file.getName());
+            zos.putNextEntry(zipEntry);
+
+            final byte[] bytes = new byte[BUFF_SIZE];
+            int length;
+            while ((length = fis.read(bytes)) >= 0) {
+                zos.write(bytes, 0, length);
+            }
+        } finally {
+            zos.closeEntry();
+            fis.close();
+        }
+    }
+
+    private static void ensureValidZipSourceAndTarget(@NotNull final File[] sourceFiles,
+                                                      @NotNull final File targetZipFile) throws Exception {
+        final String targetZipFileName = targetZipFile.getName();
+        final String targetZipFileExtension = targetZipFileName.substring(targetZipFileName.lastIndexOf(".") + 1);
+        if (!targetZipFileExtension.equalsIgnoreCase("zip")) {
+            throw new Exception("The target file should be a .zip file.");
+        }
+
+        for (final File file : sourceFiles) {
+            if (!file.exists()) {
+                throw new Exception(String.format("The source file: %s does not exist.", file.getName()));
+            }
+        }
+    }
+
+    /**
+     * Utility method to zip the given source file to the destination file.
+     * @param sourceFile source file
+     * @param targetZipFile ZIP file that will be created or overwritten
+     */
+    public static void zipFile(@NotNull final File sourceFile, @NotNull final File targetZipFile) throws Exception {
+        zipFiles(new File[] {sourceFile}, targetZipFile);
+    }
+
+    /**
+     * Utility method to zip the given collection source files to the destination file.
+     * @param sourceFiles source files array
+     * @param targetZipFile ZIP file that will be created or overwritten
+     */
+    public static void zipFiles(@NotNull final File[] sourceFiles,
+                                @NotNull final File targetZipFile) throws Exception {
+        ensureValidZipSourceAndTarget(sourceFiles, targetZipFile);
+        final FileOutputStream fos = new FileOutputStream(targetZipFile);
+        final ZipOutputStream zipOut = new ZipOutputStream(fos);
+        try {
+            for (final File file : sourceFiles) {
+                addToZipFile(file, zipOut);
+            }
+        } finally {
+            if (zipOut != null) {
+                zipOut.close();
+            }
+            if (fos != null) {
+                fos.close();
+            }
+        }
+    }
 
 }

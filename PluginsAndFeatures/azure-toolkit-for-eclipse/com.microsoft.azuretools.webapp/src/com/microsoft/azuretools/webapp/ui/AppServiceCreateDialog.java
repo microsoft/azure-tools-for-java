@@ -825,7 +825,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                                 });
                             }
                             try {
-                                webApp = AzureWebAppMvpModel.getInstance().createWebApp(model);
+                                webApp = AzureWebAppMvpModel.getInstance().createWebAppOnWindows(model);
                                 if (webApp != null && packaging.equals(WebAppUtils.TYPE_JAR)) {
                                     webApp.stop();
                                     try (InputStream webConfigInput = WebAppUtils.class

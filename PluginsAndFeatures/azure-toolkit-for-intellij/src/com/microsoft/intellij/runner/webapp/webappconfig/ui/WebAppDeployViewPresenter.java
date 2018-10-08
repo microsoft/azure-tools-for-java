@@ -78,8 +78,7 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
      * Load app service plan by resource group from model.
      */
     public void onLoadAppServicePlan(String sid, String group) {
-        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance()
-                .listAppServicePlanBySubscriptionIdAndResourceGroupName(sid, group))
+        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionId(sid))
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {
@@ -143,8 +142,15 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
         getMvpView().fillJdkVersion(AzureWebAppMvpModel.getInstance().listJdks());
     }
 
+    /**
+     * Load Java Linux runtimes from model.
+     */
+    public void onLoadLinuxRuntimes() {
+        getMvpView().fillLinuxRuntime(AzureWebAppMvpModel.getInstance().getLinuxRuntimes());
+    }
+
     private void loadWebApps(boolean forceRefresh) {
-        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listWebApps(forceRefresh))
+        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listAllWebApps(forceRefresh))
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(webAppList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {

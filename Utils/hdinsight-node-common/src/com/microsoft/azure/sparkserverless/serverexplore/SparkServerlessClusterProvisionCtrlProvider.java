@@ -24,10 +24,12 @@ package com.microsoft.azure.sparkserverless.serverexplore;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
+import com.microsoft.azure.hdinsight.sdk.common.SparkAzureDataLakePoolServiceException;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -109,28 +111,17 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
     }
 
     @NotNull
-    private SparkServerlessClusterProvisionSettingsModel provisionCluster(
-            @NotNull SparkServerlessClusterProvisionSettingsModel toUpdate) {
-        if (!StringUtils.isEmpty(toUpdate.getErrorMessage())) {
-            return toUpdate;
-        }
-
-        try {
-            AzureSparkServerlessCluster cluster =
-                    (AzureSparkServerlessCluster) new AzureSparkServerlessCluster.Builder(account)
-                            .name(toUpdate.getClusterName())
-                            .masterPerInstanceCores(toUpdate.getMasterCores())
-                            .masterPerInstanceMemory(toUpdate.getMasterMemory())
-                            .workerPerInstanceCores(toUpdate.getWorkerCores())
-                            .workerPerInstanceMemory(toUpdate.getWorkerMemory())
-                            .workerInstances(toUpdate.getWorkerNumberOfContainers())
-                            .sparkEventsPath(toUpdate.getSparkEvents())
-                            .userStorageAccount(account.getDetailResponse().defaultDataLakeStoreAccount())
-                            .build().provision().toBlocking().single();
-        } catch (Exception e) {
-            return toUpdate.setErrorMessage("Provision failed: " + e.getMessage());
-        }
-        return toUpdate;
+    private Observable<AzureSparkServerlessCluster> buildCluster(@NotNull SparkServerlessClusterProvisionSettingsModel toUpdate) {
+        return Observable.just(new AzureSparkServerlessCluster.Builder(account)
+                .name(toUpdate.getClusterName())
+                .masterPerInstanceCores(toUpdate.getMasterCores())
+                .masterPerInstanceMemory(toUpdate.getMasterMemory())
+                .workerPerInstanceCores(toUpdate.getWorkerCores())
+                .workerPerInstanceMemory(toUpdate.getWorkerMemory())
+                .workerInstances(toUpdate.getWorkerNumberOfContainers())
+                .sparkEventsPath(toUpdate.getSparkEvents())
+                .userStorageAccount(account.getDetailResponse().defaultDataLakeStoreAccount())
+                .build());
     }
 
         public Observable<SparkServerlessClusterProvisionSettingsModel> validateAndProvision() {
@@ -139,7 +130,22 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
                 .doOnNext(controllableView::getData)
                 .observeOn(ideSchedulers.processBarVisibleAsync("Provisioning cluster..."))
                 .map(toUpdate -> toUpdate.setErrorMessage(null))
-                .map(toUpdate -> provisionCluster(toUpdate))
+                .flatMap(toUpdate ->
+                        buildCluster(toUpdate)
+                                .doOnNext(cluster -> toUpdate.setClusterGuid(cluster.getGuid()))
+                                .flatMap(cluster -> cluster.provision())
+                                .map(cluster -> toUpdate)
+                                .onErrorReturn(err -> {
+                                    log().warn("Error provision a cluster. " + ExceptionUtils.getStackTrace(err));
+                                    if (err instanceof SparkAzureDataLakePoolServiceException) {
+                                        String requestId = ((SparkAzureDataLakePoolServiceException) err).getRequestId();
+                                        toUpdate.setRequestId(requestId);
+                                        log().info("x-ms-request-id: " + requestId);
+                                    }
+                                    log().info("Cluster guid: " + toUpdate.getClusterGuid());
+                                    return toUpdate.setErrorMessage(err.getMessage());
+                                })
+                )
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData)
                 .filter(data -> StringUtils.isEmpty(data.getErrorMessage()));

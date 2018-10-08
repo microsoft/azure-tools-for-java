@@ -24,6 +24,8 @@
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
 import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.RuntimeStack;
 
 public class WebAppSettingModel {
 
@@ -48,6 +50,10 @@ public class WebAppSettingModel {
     private String region = "";
     private String pricing = "";
     private JavaVersion jdkVersion = JavaVersion.JAVA_8_NEWEST;
+    private String stack = "TOMCAT";
+    private String version = "8.5-jre8";
+
+    private OperatingSystem os = OperatingSystem.LINUX;
 
     public String getWebAppId() {
         return webAppId;
@@ -175,6 +181,34 @@ public class WebAppSettingModel {
 
     public void setJdkVersion(JavaVersion jdkVersion) {
         this.jdkVersion = jdkVersion;
+    }
+
+    public String getStack() {
+        return this.stack;
+    }
+
+    public void setStack(final String value) {
+        this.stack = value;
+    }
+
+    public String getVersion() {
+        return this.version;
+    }
+
+    public void setVersion(final String value) {
+        this.version = value;
+    }
+
+    public RuntimeStack getLinuxRuntime() {
+        return new RuntimeStack(this.stack, this.version);
+    }
+
+    public OperatingSystem getOS() {
+        return this.os;
+    }
+
+    public void setOS(final OperatingSystem value) {
+        this.os = value;
     }
 
 }

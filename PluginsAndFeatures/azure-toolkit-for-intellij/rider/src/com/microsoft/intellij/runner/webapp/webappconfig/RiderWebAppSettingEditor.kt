@@ -1,7 +1,7 @@
 package com.microsoft.intellij.runner.webapp.webappconfig
 
 import com.intellij.openapi.project.Project
-import com.jetbrains.rider.protocol.IPermittedModalities
+import com.jetbrains.rdclient.protocol.IPermittedModalities
 import com.jetbrains.rider.util.idea.lifetime
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
 import com.microsoft.intellij.runner.AzureRiderSettingsEditor
