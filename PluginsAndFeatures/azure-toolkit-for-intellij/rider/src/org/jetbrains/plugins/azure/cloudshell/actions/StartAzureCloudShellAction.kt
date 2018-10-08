@@ -38,6 +38,9 @@ import javax.swing.event.HyperlinkEvent
 class StartAzureCloudShellAction : AnAction() {
     private val logger = Logger.getInstance(StartAzureCloudShellAction::class.java)
 
+    private val defaultTerminalColumns = 100
+    private val defaultTerminalRows = 30
+
     override fun update(e: AnActionEvent) {
         if (e == null) return
 
@@ -187,7 +190,7 @@ class StartAzureCloudShellAction : AnAction() {
                 provisionTerminalParameters.tokens.add(graphToken)
                 provisionTerminalParameters.tokens.add(vaultToken)
 
-                val provisionTerminalResult = retrofitClient.provisionTerminal(shellUrl, 120, 30, provisionTerminalParameters).execute()
+                val provisionTerminalResult = retrofitClient.provisionTerminal(shellUrl, defaultTerminalColumns, defaultTerminalRows, provisionTerminalParameters).execute()
                 if (!provisionTerminalResult.isSuccessful) {
                     reportNoCloudShellConfiguration(project)
                     return
