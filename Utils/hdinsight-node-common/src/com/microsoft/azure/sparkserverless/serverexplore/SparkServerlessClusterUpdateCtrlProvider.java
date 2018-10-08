@@ -3,9 +3,11 @@ package com.microsoft.azure.sparkserverless.serverexplore;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
+import com.microsoft.azure.hdinsight.sdk.common.SparkAzureDataLakePoolServiceException;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
 public class SparkServerlessClusterUpdateCtrlProvider implements ILogger {
@@ -63,7 +65,16 @@ public class SparkServerlessClusterUpdateCtrlProvider implements ILogger {
                 .flatMap(toUpdate ->
                         cluster.update(toUpdate.getWorkerNumberOfContainers())
                                 .map(cluster -> toUpdate)
-                                .onErrorReturn(err -> toUpdate.setErrorMessage(err.getMessage())))
+                                .onErrorReturn(err -> {
+                                    log().warn("Error update a cluster. " + ExceptionUtils.getStackTrace(err));
+                                    if (err instanceof SparkAzureDataLakePoolServiceException) {
+                                        String requestId = ((SparkAzureDataLakePoolServiceException) err).getRequestId();
+                                        toUpdate.setRequestId(requestId);
+                                        log().info("x-ms-request-id: " + requestId);
+                                    }
+                                    log().info("Cluster guid: " + cluster.getGuid());
+                                    return toUpdate.setErrorMessage(err.getMessage());
+                                }))
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData)
                 .filter(data -> StringUtils.isEmpty(data.getErrorMessage()));

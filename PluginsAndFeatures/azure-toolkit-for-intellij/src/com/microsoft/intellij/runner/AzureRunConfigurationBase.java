@@ -33,11 +33,12 @@ import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.XmlSerializer;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class AzureRunConfigurationBase<T> extends RunConfigurationBase {
     private boolean firstTimeCreated = true;
 
-    protected AzureRunConfigurationBase(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
+    protected AzureRunConfigurationBase(@NotNull Project project, @NotNull ConfigurationFactory factory, @Nullable String name) {
         super(project, factory, name);
     }
 

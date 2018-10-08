@@ -5,6 +5,13 @@ dependencies {
     testCompile rootProject
 }
 
+if (!ext.has("BuildNumber"))
+    ext.BuildNumber = "3.11.0.9999"
+
+version "$BuildNumber"
+logger.lifecycle("version=$version")
+println "##teamcity[buildNumber '$version']"
+
 intellij {
     pluginName = 'azure-toolkit-for-rider'
     version = rider_version

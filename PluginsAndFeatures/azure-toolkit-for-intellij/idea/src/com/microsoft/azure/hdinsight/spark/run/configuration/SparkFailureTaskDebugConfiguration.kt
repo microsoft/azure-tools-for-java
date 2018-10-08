@@ -37,7 +37,7 @@ import org.jdom.Element
 class SparkFailureTaskDebugConfiguration(name: String,
                                          val module: SparkFailureTaskDebugConfigurableModel,
                                          factory: ConfigurationFactory) :
-        ModuleBasedConfiguration<RunConfigurationModule>(name, module, factory) {
+        ModuleBasedConfiguration<RunConfigurationModule, Element>(name, module, factory) {
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
         return SparkFailureTaskDebugSettingsEditor(module.project)
     }

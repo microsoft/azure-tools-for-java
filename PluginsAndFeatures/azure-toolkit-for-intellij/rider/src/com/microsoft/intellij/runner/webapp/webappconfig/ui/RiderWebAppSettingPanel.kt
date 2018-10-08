@@ -17,12 +17,15 @@ import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.ui.table.JBTable
+import com.intellij.util.ui.update.Activatable
+import com.intellij.util.ui.update.UiNotifyConnector
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.model.projectModelTasks
 import com.jetbrains.rider.projectView.ProjectModelViewHost
 import com.jetbrains.rider.projectView.nodes.isProject
 import com.jetbrains.rider.projectView.nodes.isUnloadedProject
 import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.util.lifetime.Lifetime
 import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
@@ -41,6 +44,7 @@ import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfiguration
 import java.io.File
+import java.lang.NullPointerException
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.*
@@ -55,9 +59,10 @@ import javax.swing.table.TableRowSorter
  * 1k lines as of 2018-09-06
  * 1.5k as of 2018-09-18
  */
-class RiderWebAppSettingPanel(project: Project,
+class RiderWebAppSettingPanel(private val lifetime: Lifetime,
+                              project: Project,
                               private val configuration: RiderWebAppConfiguration)
-    : AzureRiderSettingPanel<RiderWebAppConfiguration>(project), DotNetWebAppDeployMvpView {
+    : AzureRiderSettingPanel<RiderWebAppConfiguration>(project), DotNetWebAppDeployMvpView, Activatable {
 
     companion object {
 
@@ -93,10 +98,8 @@ class RiderWebAppSettingPanel(project: Project,
 
         private const val DEFAULT_APP_NAME = "webapp-"
         private const val DEFAULT_PLAN_NAME = "appsp-"
-        private const val DEFAULT_RGP_NAME = "rg-webapp-"
-
+        private const val DEFAULT_RESOURCE_GROUP_NAME = "rg-"
         private const val DEFAULT_SQL_DATABASE_NAME = "sql_%s_db"
-        private const val DEFAULT_RESOURCE_GROUP_NAME = "rg-db-"
         private const val DEFAULT_SQL_SERVER_NAME = "sql-server-"
 
         private const val WEB_APP_PRICING_URI = "https://azure.microsoft.com/en-us/pricing/details/app-service/"
@@ -271,6 +274,8 @@ class RiderWebAppSettingPanel(project: Project,
         get() = WEB_APP_SETTINGS_PANEL_NAME
 
     init {
+        UiNotifyConnector.Once(mainPanel, this)
+
         myView.onAttachView(this)
 
         updateAzureModelInBackground()
@@ -278,6 +283,23 @@ class RiderWebAppSettingPanel(project: Project,
         initButtonGroupsState()
         initUIComponents()
     }
+
+    /**
+     * Execute on showing the form to make sure we run with a correct modality state to properly pull the UI thread
+     *
+     * Note: There are two different ways to launch the publish editor: from run config and from context menu.
+     *       In case we run from a run config, we have a run configuration modal window, while context menu set a correct modality only
+     *       when an editor is shown up. We need to wait for a window to show to get a correct modality state for a publish editor
+     */
+    override fun showNotify() {
+        myView.onLoadPublishableProjects(lifetime, project)
+        myView.onLoadSubscription(lifetime)
+        myView.onLoadWebApps(lifetime)
+        myView.onLoadPricingTier(lifetime)
+        myView.onLoadDatabaseEdition(lifetime)
+    }
+
+    override fun hideNotify() { }
 
     //region Read From Config
 
@@ -287,18 +309,12 @@ class RiderWebAppSettingPanel(project: Project,
      *
      * @param configuration - Web App Configuration instance
      */
-    public override fun resetFromConfig(configuration: RiderWebAppConfiguration) {
+    override fun resetFromConfig(configuration: RiderWebAppConfiguration) {
         val dateString = SimpleDateFormat("yyMMddHHmmss").format(Date())
         val model = configuration.model
 
         resetWebAppFromConfig(model.webAppModel, dateString)
         resetDatabaseFromConfig(model.databaseModel, dateString)
-
-        myView.onLoadPublishableProjects(project)
-        myView.onLoadSubscription()
-        myView.onLoadWebApps()
-        myView.onLoadPricingTier()
-        myView.onLoadDatabaseEdition()
     }
 
     private fun resetWebAppFromConfig(model: AzureDotNetWebAppSettingModel.WebAppModel, dateString: String) {
@@ -306,7 +322,7 @@ class RiderWebAppSettingPanel(project: Project,
 
         txtWebAppName.text = if (model.webAppName.isEmpty()) "$DEFAULT_APP_NAME$dateString" else model.webAppName
         txtAppServicePlanName.text = if (model.appServicePlanName.isEmpty()) "$DEFAULT_PLAN_NAME$dateString" else model.appServicePlanName
-        txtResourceGroupName.text = if (model.resourceGroupName.isEmpty()) "$DEFAULT_RGP_NAME$dateString" else model.resourceGroupName
+        txtResourceGroupName.text = if (model.resourceGroupName.isEmpty()) "$DEFAULT_RESOURCE_GROUP_NAME$dateString" else model.resourceGroupName
 
         if (model.isCreatingWebApp) {
             rdoCreateNewWebApp.doClick()
@@ -627,7 +643,13 @@ class RiderWebAppSettingPanel(project: Project,
     }
 
     override fun fillDatabaseEdition(prices: List<DatabaseEditions>) {
-        cbDatabaseEdition.removeAllItems()
+        try {
+            cbDatabaseEdition.removeAllItems()
+        }
+        catch(e: NullPointerException){
+            // ExpandableStringEnum<T> equals throw NPE when comparing with null
+            // TODO: make a PR https://github.com/Azure/azure-sdk-for-java/
+        }
         prices.forEach {
             cbDatabaseEdition.addItem(it)
             if (it == configuration.model.databaseModel.databaseEdition) {
@@ -827,7 +849,7 @@ class RiderWebAppSettingPanel(project: Project,
         btnRefresh = object : AnActionButton(BUTTON_REFRESH_NAME, AllIcons.Actions.Refresh) {
             override fun actionPerformed(anActionEvent: AnActionEvent) {
                 resetWidget()
-                myView.onRefresh()
+                myView.onRefresh(lifetime)
             }
         }
     }
@@ -1139,17 +1161,17 @@ class RiderWebAppSettingPanel(project: Project,
         cbSubscription.addActionListener {
             val subscription = getSelectedItem(cbSubscription) ?: return@addActionListener
             val selectedSid = subscription.subscriptionId()
-            if (lastSelectedSubscriptionId != selectedSid) {
-                resetSubscriptionComboBoxValues()
 
-                myView.onLoadResourceGroups(selectedSid)
-                myView.onLoadLocation(selectedSid)
-                myView.onLoadAppServicePlan(selectedSid)
-                myView.onLoadSqlServers(selectedSid)
-                myView.onLoadSqlDatabase(selectedSid)
+            if (lastSelectedSubscriptionId == selectedSid) return@addActionListener
 
-                lastSelectedSubscriptionId = selectedSid
-            }
+            resetSubscriptionComboBoxValues()
+            myView.onLoadResourceGroups(lifetime, selectedSid)
+            myView.onLoadLocation(lifetime, selectedSid)
+            myView.onLoadAppServicePlan(lifetime, selectedSid)
+            myView.onLoadSqlServers(lifetime, selectedSid)
+            myView.onLoadSqlDatabase(lifetime, selectedSid)
+
+            lastSelectedSubscriptionId = selectedSid
         }
     }
 

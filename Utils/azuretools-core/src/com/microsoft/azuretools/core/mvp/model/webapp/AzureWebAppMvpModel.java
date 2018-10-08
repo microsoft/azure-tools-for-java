@@ -41,9 +41,11 @@ import org.apache.commons.io.IOUtils;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.PublishingProfileFormat;
+import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.Subscription;
@@ -57,12 +59,10 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 public class AzureWebAppMvpModel {
 
     public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
-    private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsMap;
-    private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebAppsOnLinuxMap;
+    private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebApps;
 
     private AzureWebAppMvpModel() {
-        subscriptionIdToWebAppsOnLinuxMap = new ConcurrentHashMap<>();
-        subscriptionIdToWebAppsMap = new ConcurrentHashMap<>();
+        subscriptionIdToWebApps = new ConcurrentHashMap<>();
     }
 
     public static AzureWebAppMvpModel getInstance() {
@@ -82,16 +82,34 @@ public class AzureWebAppMvpModel {
     }
 
     /**
-     * Create an Azure web app service.
+     * API to create new Web App by setting model.
      */
     public WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
+        switch (model.getOS()) {
+            case WINDOWS:
+                return createWebAppOnWindows(model);
+            case LINUX:
+                return createWebAppOnLinux(model);
+            default:
+                throw new Exception("Invalid operating system setting: " + model.getOS());
+        }
+    }
+
+     /**
+     * API to create Web App on Windows .
+     *
+     * @param model parameters
+     * @return instance of created WebApp
+     * @throws Exception exception
+     */
+    public WebApp createWebAppOnWindows(@NotNull WebAppSettingModel model) throws Exception {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
 
         WebApp.DefinitionStages.WithCreate withCreate;
         if (model.isCreatingAppServicePlan()) {
-            withCreate = withCreateNewSPlan(azure, model);
+            withCreate = withCreateNewWindowsServicePlan(azure, model);
         } else {
-            withCreate = withCreateExistingSPlan(azure, model);
+            withCreate = withExistingWindowsServicePlan(azure, model);
         }
 
         return withCreate
@@ -100,59 +118,107 @@ public class AzureWebAppMvpModel {
                 .create();
     }
 
-    private WebApp.DefinitionStages.WithCreate withCreateNewSPlan(
-            @NotNull Azure azure,
-            @NotNull WebAppSettingModel model) throws Exception {
-        String[] tierSize = model.getPricing().split("_");
+    /**
+     * API to create Web App on Linux.
+     */
+    public WebApp createWebAppOnLinux(@NotNull WebAppSettingModel model) throws Exception {
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
+
+        WebApp.DefinitionStages.WithDockerContainerImage withCreate;
+        if (model.isCreatingAppServicePlan()) {
+            withCreate = withCreateNewLinuxServicePlan(azure, model);
+        } else {
+            withCreate = withExistingLinuxServicePlan(azure, model);
+        }
+
+        return withCreate.withBuiltInImage(model.getLinuxRuntime()).create();
+    }
+
+    private AppServicePlan.DefinitionStages.WithCreate prepareWithCreate(
+        @NotNull Azure azure, @NotNull WebAppSettingModel model) throws Exception {
+
+        final String[] tierSize = model.getPricing().split("_");
         if (tierSize.length != 2) {
             throw new Exception("Cannot get valid price tier");
         }
-        PricingTier pricing = new PricingTier(tierSize[0], tierSize[1]);
-        AppServicePlan.DefinitionStages.WithCreate withCreatePlan;
+        final PricingTier pricingTier = new PricingTier(tierSize[0], tierSize[1]);
 
-        WebApp.DefinitionStages.WithCreate withCreateWebApp;
+        final AppServicePlan.DefinitionStages.WithGroup withGroup = azure
+            .appServices()
+            .appServicePlans()
+            .define(model.getAppServicePlanName())
+            .withRegion(model.getRegion());
+
+        final AppServicePlan.DefinitionStages.WithPricingTier withPricingTier;
+        final String resourceGroup = model.getResourceGroup();
         if (model.isCreatingResGrp()) {
-            withCreatePlan = azure.appServices().appServicePlans()
-                    .define(model.getAppServicePlanName())
-                    .withRegion(model.getRegion())
-                    .withNewResourceGroup(model.getResourceGroup())
-                    .withPricingTier(pricing)
-                    .withOperatingSystem(OperatingSystem.WINDOWS);
-            withCreateWebApp = azure.webApps().define(model.getWebAppName())
-                    .withRegion(model.getRegion())
-                    .withNewResourceGroup(model.getResourceGroup())
-                    .withNewWindowsPlan(withCreatePlan);
+            withPricingTier = withGroup.withNewResourceGroup(resourceGroup);
         } else {
-            withCreatePlan = azure.appServices().appServicePlans()
-                    .define(model.getAppServicePlanName())
-                    .withRegion(model.getRegion())
-                    .withExistingResourceGroup(model.getResourceGroup())
-                    .withPricingTier(pricing)
-                    .withOperatingSystem(OperatingSystem.WINDOWS);
-            withCreateWebApp = azure.webApps().define(model.getWebAppName())
-                    .withRegion(model.getRegion())
-                    .withExistingResourceGroup(model.getResourceGroup())
-                    .withNewWindowsPlan(withCreatePlan);
+            withPricingTier = withGroup.withExistingResourceGroup(resourceGroup);
         }
-        return withCreateWebApp;
+
+        return withPricingTier.withPricingTier(pricingTier).withOperatingSystem(model.getOS());
     }
 
-    private WebApp.DefinitionStages.WithCreate withCreateExistingSPlan(
-            @NotNull Azure azure,
-            @NotNull WebAppSettingModel model) {
-        AppServicePlan servicePlan = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
-        WebApp.DefinitionStages.WithCreate withCreate;
-        if (model.isCreatingResGrp()) {
-            withCreate = azure.webApps().define(model.getWebAppName())
-                    .withExistingWindowsPlan(servicePlan)
-                    .withNewResourceGroup(model.getResourceGroup());
-        } else {
-            withCreate = azure.webApps().define(model.getWebAppName())
-                    .withExistingWindowsPlan(servicePlan)
-                    .withExistingResourceGroup(model.getResourceGroup());
-        }
+    private WebApp.DefinitionStages.WithNewAppServicePlan prepareServicePlan(
+        @NotNull Azure azure, @NotNull WebAppSettingModel model) {
 
-        return withCreate;
+        final WebApp.DefinitionStages.NewAppServicePlanWithGroup appWithGroup = azure
+            .webApps()
+            .define(model.getWebAppName())
+            .withRegion(model.getRegion());
+
+        final String resourceGroup = model.getResourceGroup();
+        if (model.isCreatingResGrp()) {
+            return appWithGroup.withNewResourceGroup(resourceGroup);
+        }
+        return appWithGroup.withExistingResourceGroup(resourceGroup);
+    }
+
+    private WebApp.DefinitionStages.WithCreate withCreateNewWindowsServicePlan(
+            @NotNull Azure azure, @NotNull WebAppSettingModel model) throws Exception {
+
+        final AppServicePlan.DefinitionStages.WithCreate withCreate = prepareWithCreate(azure, model);
+        final WebApp.DefinitionStages.WithNewAppServicePlan withNewAppServicePlan = prepareServicePlan(azure, model);
+        return withNewAppServicePlan.withNewWindowsPlan(withCreate);
+    }
+
+    private WebApp.DefinitionStages.WithDockerContainerImage withCreateNewLinuxServicePlan(
+        @NotNull Azure azure, @NotNull WebAppSettingModel model) throws Exception {
+
+        final AppServicePlan.DefinitionStages.WithCreate withCreate = prepareWithCreate(azure, model);
+        final WebApp.DefinitionStages.WithNewAppServicePlan withNewAppServicePlan = prepareServicePlan(azure, model);
+        return withNewAppServicePlan.withNewLinuxPlan(withCreate);
+    }
+
+    private WebApp.DefinitionStages.WithCreate withExistingWindowsServicePlan(
+            @NotNull Azure azure, @NotNull WebAppSettingModel model) {
+
+        AppServicePlan servicePlan = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
+        WebApp.DefinitionStages.ExistingWindowsPlanWithGroup withGroup = azure
+            .webApps()
+            .define(model.getWebAppName())
+            .withExistingWindowsPlan(servicePlan);
+
+        if (model.isCreatingResGrp()) {
+            return withGroup.withNewResourceGroup(model.getResourceGroup());
+        }
+        return withGroup.withExistingResourceGroup(model.getResourceGroup());
+    }
+
+    private WebApp.DefinitionStages.WithDockerContainerImage withExistingLinuxServicePlan(
+        @NotNull Azure azure, @NotNull WebAppSettingModel model) {
+
+        AppServicePlan servicePlan = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
+        WebApp.DefinitionStages.ExistingLinuxPlanWithGroup withGroup = azure
+            .webApps()
+            .define(model.getWebAppName())
+            .withExistingLinuxPlan(servicePlan);
+
+        if (model.isCreatingResGrp()) {
+            return withGroup.withNewResourceGroup(model.getResourceGroup());
+        }
+        return withGroup.withExistingResourceGroup(model.getResourceGroup());
     }
 
     public void deployWebApp() {
@@ -165,13 +231,13 @@ public class AzureWebAppMvpModel {
     }
 
     /**
-     * API to create Web App on Linux.
+     * API to create Web App on Docker.
      *
      * @param model parameters
      * @return instance of created WebApp
      * @throws IOException IOExceptions
      */
-    public WebApp createWebAppOnLinux(WebAppOnLinuxDeployModel model)
+    public WebApp createWebAppWithPrivateRegistryImage(@NotNull WebAppOnLinuxDeployModel model)
             throws IOException {
         PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
         WebApp app;
@@ -246,7 +312,7 @@ public class AzureWebAppMvpModel {
      * @param imageSetting new container settings
      * @return instance of the updated Web App on Linux
      */
-    public WebApp updateWebAppOnLinux(String sid, String webAppId, ImageSetting imageSetting) throws Exception {
+    public WebApp updateWebAppOnDocker(String sid, String webAppId, ImageSetting imageSetting) throws Exception {
         WebApp app = getWebAppById(sid, webAppId);
         clearTags(app);
         if (imageSetting instanceof PrivateRegistryImageSetting) {
@@ -301,6 +367,16 @@ public class AzureWebAppMvpModel {
     }
 
     /**
+     * Get all the deployment slots of a web app by the subscription id and web app id.
+     */
+    public List<DeploymentSlot> getDeploymentSlots(final String subscriptionId, final String appId) throws IOException {
+        final List<DeploymentSlot> deploymentSlots = new ArrayList<>();
+        final WebApp webApp = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        deploymentSlots.addAll(webApp.deploymentSlots().list());
+        return deploymentSlots;
+    }
+
+    /**
      * List app service plan by subscription id and resource group name.
      */
     public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group) {
@@ -325,35 +401,21 @@ public class AzureWebAppMvpModel {
     /**
      * List Web Apps by Subscription ID.
      */
-    public List<ResourceEx<WebApp>> listWebAppsBySubscriptionId(String sid, boolean force) {
-        if (!force && subscriptionIdToWebAppsMap.containsKey(sid)) {
-            return subscriptionIdToWebAppsMap.get(sid);
-        }
-        List<ResourceEx<WebApp>> webAppList = new ArrayList<>();
-        try {
-            Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-            for (WebApp webApp : azure.webApps().list()) {
-                if (webApp.operatingSystem().equals(OperatingSystem.WINDOWS)) {
-                    webAppList.add(new ResourceEx<>(webApp, sid));
-                }
-            }
-            subscriptionIdToWebAppsMap.put(sid, webAppList);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return webAppList;
+    @Deprecated
+    public List<ResourceEx<WebApp>> listWebAppsOnWindowsBySubscriptionId(final String sid, final boolean force) {
+        return this.listWebAppsOnWindows(sid, force);
     }
 
     /**
-     * List all the Web Apps in selected subscriptions.
+     * List all the Web Apps on Windows in selected subscriptions.
      */
-    public List<ResourceEx<WebApp>> listWebApps(boolean force) {
-        List<ResourceEx<WebApp>> webAppList = new ArrayList<>();
-        List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
-        for (Subscription sub : subscriptions) {
-            webAppList.addAll(this.listWebAppsBySubscriptionId(sub.subscriptionId(), force));
+    public List<ResourceEx<WebApp>> listAllWebAppsOnWindows(final boolean force) {
+        final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
+        for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
+            final String sid = sub.subscriptionId();
+            webApps.addAll(listWebAppsOnWindows(sid, force));
         }
-        return webAppList;
+        return webApps;
     }
 
     /**
@@ -363,24 +425,67 @@ public class AzureWebAppMvpModel {
      * @param force flag indicating whether force to fetch most updated data from server
      * @return list of Web App on Linux
      */
-    public List<ResourceEx<WebApp>> listWebAppsOnLinuxBySubscriptionId(String sid, boolean force) {
-        List<ResourceEx<WebApp>> wal = new ArrayList<>();
-        if (!force && subscriptionIdToWebAppsOnLinuxMap.containsKey(sid)) {
-            return subscriptionIdToWebAppsOnLinuxMap.get(sid);
+    @Deprecated
+    public List<ResourceEx<WebApp>> listWebAppsOnLinuxBySubscriptionId(final String sid, final boolean force) {
+        return this.listWebAppsOnLinux(sid, force);
+    }
+
+    /**
+     * List all the Web Apps in selected subscriptions.
+     *
+     * @param force flag indicating whether force to fetch most updated data from server
+     * @return list of Web App
+     */
+    public List<ResourceEx<WebApp>> listAllWebApps(final boolean force) {
+        final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
+        for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
+            final String sid = sub.subscriptionId();
+            webApps.addAll(listWebApps(sid, force));
         }
+        return webApps;
+    }
+
+    /**
+     * List web apps on linux by subscription id.
+     */
+    public List<ResourceEx<WebApp>> listWebAppsOnLinux(@NotNull final String subscriptionId, final boolean force) {
+        return listWebApps(subscriptionId, force)
+            .stream()
+            .filter(resourceEx -> OperatingSystem.LINUX.equals(resourceEx.getResource().operatingSystem()))
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * List web apps on windows by subscription id.
+     */
+    public List<ResourceEx<WebApp>> listWebAppsOnWindows(@NotNull final String subscriptionId, final boolean force) {
+        return listWebApps(subscriptionId, force)
+            .stream()
+            .filter(resourceEx -> OperatingSystem.WINDOWS.equals((resourceEx.getResource().operatingSystem())))
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * List all web apps by subscription id.
+     */
+    @NotNull
+    public List<ResourceEx<WebApp>> listWebApps(final String subscriptionId, final boolean force) {
+        if (!force && subscriptionIdToWebApps.get(subscriptionId) != null) {
+            return subscriptionIdToWebApps.get(subscriptionId);
+        }
+
+        List<ResourceEx<WebApp>> webApps = new ArrayList<>();
         try {
-            Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-            wal.addAll(azure.webApps().list()
-                    .stream()
-                    .filter(app -> OperatingSystem.LINUX.equals(app.operatingSystem()))
-                    .map(app -> new ResourceEx<>(app, sid))
-                    .collect(Collectors.toList())
-            );
-            subscriptionIdToWebAppsOnLinuxMap.put(sid, wal);
+            final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
+            webApps = azure.webApps().list()
+                .stream()
+                .map(app -> new ResourceEx<WebApp>(app, subscriptionId))
+                .collect(Collectors.toList());
+            subscriptionIdToWebApps.put(subscriptionId, webApps);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return wal;
+        return webApps;
     }
 
     /**
@@ -402,18 +507,30 @@ public class AzureWebAppMvpModel {
     }
 
     /**
-     * List Web App on Linux in all selected subscriptions.
-     *
+     * List all available Java linux RuntimeStacks.
+     * todo: For those unchanged list, like jdk versions, web containers,
+     * linux runtimes, do we really need to get the values from Mvp model every time?
+     */
+    public List<RuntimeStack> getLinuxRuntimes() {
+        final List<RuntimeStack> runtimes = new ArrayList<>();
+        runtimes.add(RuntimeStack.TOMCAT_8_5_JRE8);
+        runtimes.add(RuntimeStack.TOMCAT_9_0_JRE8);
+        runtimes.add(RuntimeStack.JAVA_8_JRE8);
+        return runtimes;
+    }
+
+    /**
+     * List all the Web Apps on Linux in selected subscriptions.
      * @param force flag indicating whether force to fetch most updated data from server
      * @return list of Web App on Linux
      */
-    public List<ResourceEx<WebApp>> listAllWebAppsOnLinux(boolean force) {
-        List<ResourceEx<WebApp>> ret = new ArrayList<>();
-        for (Subscription sb : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-            List<ResourceEx<WebApp>> wal = listWebAppsOnLinuxBySubscriptionId(sb.subscriptionId(), force);
-            ret.addAll(wal);
+    public List<ResourceEx<WebApp>> listAllWebAppsOnLinux(final boolean force) {
+        final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
+        for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
+            final String sid = sub.subscriptionId();
+            webApps.addAll(listWebAppsOnLinux(sid, force));
         }
-        return ret;
+        return webApps;
     }
 
     /**
@@ -443,12 +560,19 @@ public class AzureWebAppMvpModel {
         }
     }
 
-    public void cleanWebApps() {
-        subscriptionIdToWebAppsMap.clear();
+    @Deprecated
+    public void cleanWebAppsOnWindows() {
+        // todo: remove the function
+        // todo: create a new function clearWebAppsCache clear cache web apps
+        // subscriptionIdToWebAppsOnWindowsMap.clear();
+        subscriptionIdToWebApps.clear();
     }
 
+    @Deprecated
     public void cleanWebAppsOnLinux() {
-        subscriptionIdToWebAppsOnLinuxMap.clear();
+        // todo: remove the function
+        // subscriptionIdToWebAppsOnLinuxMap.clear();
+        subscriptionIdToWebApps.clear();
     }
 
     /**

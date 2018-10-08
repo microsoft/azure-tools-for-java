@@ -20,13 +20,12 @@
  *  SOFTWARE.
  */
 
-package com.microsoft.azuretools.ui.embeddedbrowser;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-/**
- * JxBrowser related functions caught exception and re-throw this one
- */
-public class JxBrowserException extends Exception {
-    public JxBrowserException(String message) {
-        super(message);
-    }
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+
+public interface WebAppNodeView extends MvpView {
+    void renderWebAppNode(WebAppState state);
+
+    void renderSubModules();
 }

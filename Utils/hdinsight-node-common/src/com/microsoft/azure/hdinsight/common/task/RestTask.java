@@ -61,7 +61,9 @@ public class RestTask extends Task<String> {
 
     @Override
     public String call() throws Exception {
-        CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
+        CloseableHttpClient httpclient = HttpClients.custom()
+                .useSystemProperties()
+                .setDefaultCredentialsProvider(credentialsProvider).build();
         HttpGet httpGet = new HttpGet(path);
         httpGet.addHeader("Content-Type", "application/json");
 

@@ -27,8 +27,8 @@ object AzureDotNetWebAppMvpModel {
         val webAppList = arrayListOf<ResourceEx<WebApp>>()
         val subscriptions = AzureMvpModel.getInstance().selectedSubscriptions
 
-        subscriptions.forEach {
-            webAppList.addAll(listWebAppsBySubscriptionId(it.subscriptionId(), force))
+        for (subscription in subscriptions) {
+            webAppList.addAll(listWebAppsBySubscriptionId(subscription.subscriptionId(), force))
         }
 
         return webAppList
@@ -38,10 +38,6 @@ object AzureDotNetWebAppMvpModel {
         listWebApps(true)
     }
 
-    fun listWebApps(operatingSystem: OperatingSystem, force: Boolean): List<ResourceEx<WebApp>> {
-        return listWebApps(force).filter { it.resource.operatingSystem() == operatingSystem }
-    }
-
     fun cleanWebApps() {
         subscriptionIdToWebAppsMap.clear()
     }
@@ -49,25 +45,20 @@ object AzureDotNetWebAppMvpModel {
     private fun listWebAppsBySubscriptionId(subscriptionId: String, force: Boolean): List<ResourceEx<WebApp>> {
 
         if (!force && subscriptionIdToWebAppsMap.containsKey(subscriptionId)) {
-            return subscriptionIdToWebAppsMap.getValue(subscriptionId)
-        } else {
-            val webAppList = arrayListOf<ResourceEx<WebApp>>()
-
-            try {
-                val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-                val webApps = azure.webApps().list()
-
-                webApps.forEach {
-                    webAppList.add(ResourceEx(it, subscriptionId))
-                }
-
-                subscriptionIdToWebAppsMap[subscriptionId] = webAppList
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-
-            return webAppList
+            val webApps = subscriptionIdToWebAppsMap[subscriptionId]
+            if (webApps != null) return webApps
         }
+
+        try {
+            val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
+            val webAppList = azure.webApps().list().map { ResourceEx(it, subscriptionId) }
+            subscriptionIdToWebAppsMap[subscriptionId] = webAppList
+            return webAppList
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return listOf()
     }
 
     fun createWebAppWithNewWindowsAppServicePlan(subscriptionId: String,
@@ -112,7 +103,8 @@ object AzureDotNetWebAppMvpModel {
 
     fun getConnectionStrings(webApp: WebApp, force: Boolean = false): List<ConnectionString> {
         if (!force && webAppToConnectionStringsMap.containsKey(webApp)) {
-            return webAppToConnectionStringsMap.getValue(webApp)
+            val connectionStrings = webAppToConnectionStringsMap[webApp]
+            if (connectionStrings != null) return connectionStrings
         }
 
         val connectionStrings = webApp.connectionStrings.values.toList()
@@ -124,7 +116,7 @@ object AzureDotNetWebAppMvpModel {
     fun checkConnectionStringNameExists(webApp: WebApp, connectionStringName: String, force: Boolean = false): Boolean {
         if (!force) {
             if (!webAppToConnectionStringsMap.containsKey(webApp)) return false
-            return webAppToConnectionStringsMap.getValue(webApp).any { it.name() == connectionStringName }
+            return webAppToConnectionStringsMap[webApp]?.any { it.name() == connectionStringName } ?: false
         }
 
         val connectionStrings = getConnectionStrings(webApp, true)

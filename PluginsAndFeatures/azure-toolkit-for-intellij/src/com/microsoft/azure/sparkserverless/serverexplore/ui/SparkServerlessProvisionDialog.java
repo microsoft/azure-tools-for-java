@@ -22,9 +22,15 @@
 
 package com.microsoft.azure.sparkserverless.serverexplore.ui;
 
+import com.intellij.execution.impl.ConsoleViewImpl;
+import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionToolbar;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.HideableDecorator;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
@@ -36,16 +42,20 @@ import com.microsoft.azure.sparkserverless.serverexplore.SparkServerlessClusterP
 import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessADLAccountNode;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
+import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class SparkServerlessProvisionDialog extends DialogWrapper
@@ -76,56 +86,56 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
     protected JLabel workerCoresLabel;
     protected JLabel workerMemoryLabel;
     protected JLabel workerNumberOfContainersLabel;
-    protected JTextField errorMessageField;
     protected JPanel provisionDialogPanel;
     protected JButton refreshButton;
     protected JLabel storageRootPathLabel;
     protected JComboBox sparkVersionComboBox;
     protected JLabel sparkVersionLabel;
     private JXHyperLinkWithUri jobQueueHyperLink;
-
+    protected JPanel errorMessagePanel;
+    protected JPanel errorMessagePanelHolder;
+    protected JPanel configPanel;
+    protected JPanel auPanel;
+    protected ConsoleViewImpl consoleViewPanel;
+    protected HideableDecorator errorMessageDecorator;
     @NotNull
     private final List<TextWithErrorHintedField> allTextFields = Arrays.asList(clusterNameField, sparkEventsField);
     @NotNull
     private final List<IntegerWithErrorHintedField> allAURelatedFields = Arrays.asList(masterCoresField, workerCoresField,
             masterMemoryField, workerMemoryField, workerNumberOfContainersField);
 
-    protected void setClusterNameSets() {
-        try {
-            clusterNameField.setNotAllowedValues(
-                    new HashSet<>(ctrlProvider.getClusterNames().toBlocking().singleOrDefault(new ArrayList<>())));
-
-            sparkEventsField.setPatternAndErrorMessage(null);
-            // The text setting is necessary. By default, '/' is not allowed for TextWithErrorHintedField, leading to
-            // error tooltip. We have to set the text to trigger the validator of the new pattern.
-            sparkEventsField.setText("spark-events/");
-        } catch (Exception ex) {
-            log().warn("Got exceptions when getting cluster names: " + ex);
-        }
-    }
-
     public SparkServerlessProvisionDialog(@NotNull SparkServerlessADLAccountNode adlAccountNode,
                                           @NotNull AzureSparkServerlessAccount account) {
         // TODO: refactor the design of getProject Method for Node Class
         // TODO: get project through ProjectUtils.theProject()
         super((Project) adlAccountNode.getProject(), true);
-
         this.ctrlProvider = new SparkServerlessClusterProvisionCtrlProvider(
                 this, new IdeaSchedulers((Project) adlAccountNode.getProject()), account);
         this.adlAccountNode = adlAccountNode;
 
         init();
         this.setTitle("Provision Spark Cluster");
-        errorMessageField.setBackground(this.provisionDialogPanel.getBackground());
-        errorMessageField.setBorder(BorderFactory.createEmptyBorder());
         availableAUField.setBorder(BorderFactory.createEmptyBorder());
         totalAUField.setBorder(BorderFactory.createEmptyBorder());
         calculatedAUField.setBorder(BorderFactory.createEmptyBorder());
         this.setModal(true);
 
+        // make error message widget hideable
+        errorMessagePanel.setBorder(BorderFactory.createEmptyBorder());
+        errorMessageDecorator = new HideableDecorator(errorMessagePanelHolder, "Log", true);
+        errorMessageDecorator.setContentComponent(errorMessagePanel);
+        errorMessageDecorator.setOn(false);
+
+        // add console view panel to error message panel
+        consoleViewPanel = new ConsoleViewImpl((Project) adlAccountNode.getProject(), false);
+        errorMessagePanel.add(consoleViewPanel.getComponent(), BorderLayout.CENTER);
+        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("provisionLog",
+                new DefaultActionGroup(consoleViewPanel.createConsoleActions()), false);
+        errorMessagePanel.add(toolbar.getComponent(), BorderLayout.WEST);
+
         this.jobQueueHyperLink.setURI(account.getJobManagementURI());
-        // setClusterNameSets to enable cluster name uniqueness check
-        this.setClusterNameSets();
+
+        this.enableClusterNameUniquenessCheck();
         // We can determine the ADL account since we provision on a specific ADL account Node
         this.adlAccountField.setText(adlAccountNode.getAdlAccount().getName());
         this.storageRootPathLabel.setText(Optional.ofNullable(account.getStorageRootPath()).orElse(""));
@@ -160,6 +170,27 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         });
     }
 
+    @Override
+    protected void dispose() {
+        super.dispose();
+
+        consoleViewPanel.dispose();
+    }
+
+    protected void enableClusterNameUniquenessCheck() {
+        try {
+            clusterNameField.setNotAllowedValues(
+                    new HashSet<>(ctrlProvider.getClusterNames().toBlocking().singleOrDefault(new ArrayList<>())));
+
+            sparkEventsField.setPatternAndErrorMessage(null);
+            // The text setting is necessary. By default, '/' is not allowed for TextWithErrorHintedField, leading to
+            // error tooltip. We have to set the text to trigger the validator of the new pattern.
+            sparkEventsField.setText("spark-events/");
+        } catch (Exception ex) {
+            log().warn("Got exceptions when getting cluster names: " + ex);
+        }
+    }
+
     private void updateAvailableAUAndTotalAU() {
         if (!refreshButton.isEnabled()) {
             return;
@@ -192,10 +223,21 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
                 Integer.valueOf(workerNumberOfContainersField.getText()))));
     }
 
+    protected void printLogLine(@NotNull ConsoleViewContentType logLevel, @NotNull String log) {
+        consoleViewPanel.print(LocalDateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n", logLevel);
+    }
+
     // Data -> Components
     @Override
     public void setData(@NotNull SparkServerlessClusterProvisionSettingsModel data) {
-        errorMessageField.setText(data.getErrorMessage());
+        if (!StringUtils.isEmpty(data.getErrorMessage())) {
+            if (!errorMessageDecorator.isExpanded()) {
+                errorMessageDecorator.setOn(true);
+            }
+            printLogLine(ConsoleViewContentType.ERROR_OUTPUT, data.getErrorMessage());
+        }
+        printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "x-ms-request-id: " + data.getRequestId());
+        printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "cluster guid: " + data.getClusterGuid());
     }
 
     // Components -> Data
@@ -212,8 +254,7 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
                 .setWorkerCores(workerCoresField.getValue())
                 .setWorkerMemory(workerMemoryField.getValue())
                 .setWorkerNumberOfContainers(workerNumberOfContainersField.getValue())
-                .setStorageRootPathLabelTitle(storageRootPathLabel.getText())
-                .setErrorMessage(errorMessageField.getText());
+                .setStorageRootPathLabelTitle(storageRootPathLabel.getText());
     }
 
     @Override
@@ -230,7 +271,7 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
                     // TODO: replace load with refreshWithoutAsync
                     adlAccountNode.load(false);
                     super.doOKAction();
-                }, err -> errorMessageField.setText(String.format("Provision failed. %s", err.getMessage())));
+                }, err -> log().warn("Error provision a cluster. " + err.toString()));
     }
 
     @NotNull

@@ -22,6 +22,11 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
+import java.io.IOException;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
@@ -32,15 +37,12 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.io.IOException;
 
 public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSettingModel> {
 
@@ -98,7 +100,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
             if (Utils.isEmptyString(webAppSettingModel.getWebAppName())) {
                 throw new ConfigurationException(MISSING_WEB_APP_NAME);
             }
-            if (Utils.isEmptyString(webAppSettingModel.getWebContainer())) {
+            if (webAppSettingModel.getOS() == OperatingSystem.WINDOWS && Utils.isEmptyString(webAppSettingModel.getWebContainer())) {
                 throw new ConfigurationException(MISSING_WEB_CONTAINER);
             }
             if (Utils.isEmptyString(webAppSettingModel.getSubscriptionId())) {
@@ -246,6 +248,26 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
 
     public void setJdkVersion(JavaVersion jdk) {
         webAppSettingModel.setJdkVersion(jdk);
+    }
+
+    public OperatingSystem getOS() {
+        return webAppSettingModel.getOS();
+    }
+
+    public void setOS(OperatingSystem value) {
+        webAppSettingModel.setOS(value);
+    }
+
+    public void setStack(String value) {
+        webAppSettingModel.setStack(value);
+    }
+
+    public void setVersion(String value) {
+        webAppSettingModel.setVersion(value);
+    }
+
+    public RuntimeStack getLinuxRuntime() {
+        return webAppSettingModel.getLinuxRuntime();
     }
 
     @Override

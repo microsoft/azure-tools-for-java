@@ -9,13 +9,11 @@ abstract class AzureRiderSettingPanel<T : AzureRunConfigurationBase<*>>(protecte
 
     abstract val mainPanel: JPanel
 
-    fun reset(configuration: T) {
-        resetFromConfig(configuration)
-    }
-
-    abstract fun disposeEditor()
+    fun reset(configuration: T) = resetFromConfig(configuration)
 
     protected abstract fun resetFromConfig(configuration: T)
 
     abstract fun apply(configuration: T)
+
+    abstract fun disposeEditor()
 }

@@ -47,12 +47,26 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
     private int totalAU;
     @NotNull
     private int calculatedAU;
+    @Nullable
+    private String clusterGuid;
 
     @NotNull
     private String storageRootPathLabelTitle;
 
     @Nullable
     private String errorMessage;
+    @Nullable
+    private String requestId;
+
+    @Nullable
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public SparkServerlessClusterProvisionSettingsModel setRequestId(@Nullable String requestId) {
+        this.requestId = requestId;
+        return this;
+    }
 
     @NotNull
     public String getClusterName() {
@@ -169,6 +183,11 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return workerNumberOfContainers;
     }
 
+    @Nullable
+    public String getClusterGuid() {
+        return clusterGuid;
+    }
+
     @NotNull
     public SparkServerlessClusterProvisionSettingsModel setWorkerNumberOfContainers(
             @NotNull int workerNumberOfContainers) {
@@ -196,6 +215,11 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
     @NotNull
     public SparkServerlessClusterProvisionSettingsModel setErrorMessage(@Nullable String errorMessage) {
         this.errorMessage = errorMessage;
+        return this;
+    }
+
+    public SparkServerlessClusterProvisionSettingsModel setClusterGuid(@NotNull String clusterGuid) {
+        this.clusterGuid = clusterGuid;
         return this;
     }
 

@@ -22,8 +22,27 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig.ui;
 
-import com.microsoft.intellij.runner.AzureSettingPanel;
-import icons.MavenIcons;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
+
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.idea.maven.model.MavenConstants;
+import org.jetbrains.idea.maven.project.MavenProject;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
@@ -38,9 +57,9 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -49,37 +68,19 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.model.MavenConstants;
-import org.jetbrains.idea.maven.project.MavenProject;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
+import icons.MavenIcons;
 
 public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> implements WebAppDeployMvpView {
 
     // const
     private static final String RESOURCE_GROUP = "Resource Group";
     private static final String APP_SERVICE_PLAN = "App Service Plan";
-    private static final String JAVA = "Java";
+    private static final String RUNTIME = "Runtime";
     private static final String NOT_APPLICABLE = "N/A";
     private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
     private static final String TABLE_EMPTY_MESSAGE = "No available Web App.";
@@ -139,6 +140,12 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     private JPanel pnlMavenProject;
     private JLabel lblMavenProject;
     private JComboBox<MavenProject> cbMavenProject;
+    private JLabel lblLinuxRuntime;
+    private JComboBox<RuntimeStack> cbLinuxRuntime;
+    private JLabel lblOS;
+    private JRadioButton rdoLinuxOS;
+    private JRadioButton rdoWindowsOS;
+    private JLabel lblJavaVersion;
     private JBTable table;
     private AnActionButton btnRefresh;
     /**
@@ -169,6 +176,12 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         rdoUseExistAppServicePlan.addActionListener(e -> toggleAppServicePlanPanel(false /*isCreatingNew*/));
         rdoCreateAppServicePlan.addActionListener(e -> toggleAppServicePlanPanel(true /*isCreatingNew*/));
 
+        final ButtonGroup btnGrpForOperatingSystem = new ButtonGroup();
+        btnGrpForOperatingSystem.add(rdoLinuxOS);
+        btnGrpForOperatingSystem.add(rdoWindowsOS);
+        rdoLinuxOS.addActionListener(e -> onOperatingSystemChange(OperatingSystem.LINUX));
+        rdoWindowsOS.addActionListener(e -> onOperatingSystemChange(OperatingSystem.WINDOWS));
+
         cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
             @Override
             public void customize(JList list, ResourceGroup resourceGroup, int
@@ -179,20 +192,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             }
         });
 
-        cbExistResGrp.addActionListener(e -> {
-            ResourceGroup resGrp = (ResourceGroup) cbExistResGrp.getSelectedItem();
-            if (resGrp == null) {
-                return;
-            }
-            String selectedGrp = resGrp.name();
-            if (!Comparing.equal(lastSelectedResGrp, selectedGrp)) {
-                cbExistAppServicePlan.removeAllItems();
-                lblLocation.setText(NOT_APPLICABLE);
-                lblPricing.setText(NOT_APPLICABLE);
-                webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, selectedGrp);
-                lastSelectedResGrp = selectedGrp;
-            }
-        });
+        cbExistResGrp.addActionListener(e -> reloadAppServicePlanDropdownList());
 
         cbSubscription.setRenderer(new ListCellRendererWrapper<Subscription>() {
             @Override
@@ -300,7 +300,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         appServicePlanDecorator.setOn(true);
 
         HideableDecorator javaDecorator = new HideableDecorator(pnlJavaHolder,
-                JAVA, true /*adjustWindow*/);
+            RUNTIME, true /*adjustWindow*/);
         javaDecorator.setContentComponent(pnlJava);
         javaDecorator.setOn(true);
 
@@ -386,12 +386,18 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             rdoUseExist.doClick();
             chkToRoot.setSelected(webAppConfiguration.isDeployToRoot());
         }
+        if (webAppConfiguration.getOS() == OperatingSystem.WINDOWS) {
+            rdoWindowsOS.doClick();
+        } else {
+            rdoLinuxOS.doClick();
+        }
         btnRefresh.setEnabled(false);
         this.webAppDeployViewPresenter.onLoadWebApps();
         this.webAppDeployViewPresenter.onLoadWebContainer();
         this.webAppDeployViewPresenter.onLoadSubscription();
         this.webAppDeployViewPresenter.onLoadPricingTier();
         this.webAppDeployViewPresenter.onLoadJavaVersions();
+        this.webAppDeployViewPresenter.onLoadLinuxRuntimes();
     }
 
     /**
@@ -401,15 +407,14 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
      */
     @Override
     public void apply(@NotNull WebAppConfiguration webAppConfiguration) {
+        final String targetName = getTargetName();
+        final boolean isDeployingWar = MavenRunTaskUtil.getFileType(targetName).equalsIgnoreCase(MavenConstants.TYPE_WAR);
         webAppConfiguration.setTargetPath(getTargetPath());
-        webAppConfiguration.setTargetName(getTargetName());
+        webAppConfiguration.setTargetName(targetName);
 
-        String fileType = MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName());
-        if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)) {
-            toggleWebContainerSetting(true /*isWar*/);
-        } else {
-            toggleWebContainerSetting(false /*isWar*/);
-        }
+        toggleWebContainerSetting(isDeployingWar);
+        toggleDeployToRoot(isDeployingWar);
+        toggleJarDeployHint(isDeployingWar);
 
         if (rdoUseExist.isSelected()) {
             webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
@@ -440,20 +445,31 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
                     webAppConfiguration.setAppServicePlanId(appServicePlan.id());
                 }
             }
-            // Java
-            JdkModel jdkModel = (JdkModel) cbJdkVersion.getSelectedItem();
-            if (jdkModel != null) {
-                webAppConfiguration.setJdkVersion(jdkModel.getJavaVersion());
+            // runtime
+            if (rdoLinuxOS.isSelected()) {
+                webAppConfiguration.setOS(OperatingSystem.LINUX);
+                RuntimeStack linuxRuntime = (RuntimeStack)cbLinuxRuntime.getSelectedItem();
+                if (linuxRuntime != null) {
+                    webAppConfiguration.setStack(linuxRuntime.stack());
+                    webAppConfiguration.setVersion(linuxRuntime.version());
+                }
             }
-            if (cbWebContainer.isVisible()) {
-                WebAppUtils.WebContainerMod container = (WebAppUtils.WebContainerMod) cbWebContainer.getSelectedItem();
-                webAppConfiguration.setWebContainer(container == null ? "" : container.getValue());
-            } else {
-                webAppConfiguration.setWebContainer(WebAppUtils.WebContainerMod.Newest_Tomcat_85.getValue());
+            if (rdoWindowsOS.isSelected()) {
+                webAppConfiguration.setOS(OperatingSystem.WINDOWS);
+                JdkModel jdkModel = (JdkModel) cbJdkVersion.getSelectedItem();
+                if (jdkModel != null) {
+                    webAppConfiguration.setJdkVersion(jdkModel.getJavaVersion());
+                }
+                if (cbWebContainer.isVisible()) {
+                    WebAppUtils.WebContainerMod container = (WebAppUtils.WebContainerMod) cbWebContainer.getSelectedItem();
+                    webAppConfiguration.setWebContainer(container == null ? "" : container.getValue());
+                } else {
+                    webAppConfiguration.setWebContainer(WebAppUtils.WebContainerMod.Newest_Tomcat_85.getValue());
+                }
             }
             webAppConfiguration.setCreatingNew(true);
         }
-        webAppConfiguration.setDeployToRoot(chkToRoot.isSelected());
+        webAppConfiguration.setDeployToRoot(chkToRoot.isVisible() && chkToRoot.isSelected());
     }
 
     @Override
@@ -461,7 +477,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         btnRefresh.setEnabled(true);
         table.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
         List<ResourceEx<WebApp>> sortedList = webAppLists.stream()
-                .filter(resource -> resource.getResource().javaVersion() != JavaVersion.OFF)
+                .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
                 .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
                 .collect(Collectors.toList());
         cachedWebAppList = sortedList;
@@ -471,10 +487,10 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             for (int i = 0; i < sortedList.size(); i++) {
                 WebApp app = sortedList.get(i).getResource();
                 model.addRow(new String[]{
-                        app.name(),
-                        app.javaVersion().toString(),
-                        app.javaContainer() + " " + app.javaContainerVersion(),
-                        app.resourceGroupName(),
+                    app.name(),
+                    StringUtils.capitalize(app.operatingSystem().toString()),
+                    WebAppUtils.getJavaRuntime(app),
+                    app.resourceGroupName(),
                 });
                 if (Comparing.equal(app.id(), webAppConfiguration.getWebAppId())) {
                     table.setRowSelectionInterval(i, i);
@@ -502,11 +518,65 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         lblPricing.setEnabled(!isCreatingNew);
     }
 
-    private void toggleWebContainerSetting(boolean isWar) {
-        lblWebContainer.setVisible(isWar);
-        cbWebContainer.setVisible(isWar);
-        chkToRoot.setVisible(isWar);
-        lblJarDeployHint.setVisible(!isWar && rdoUseExist.isSelected());
+    private void onOperatingSystemChange(final OperatingSystem os) {
+        toggleRuntimePanel(os == OperatingSystem.WINDOWS);
+        webAppConfiguration.setOS(os);
+        final ResourceGroup resGrp = (ResourceGroup) cbExistResGrp.getSelectedItem();
+        if (resGrp != null) {
+            webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, resGrp.name());
+        }
+    }
+
+    private void toggleRuntimePanel(final boolean isWindows) {
+        lblJavaVersion.setVisible(isWindows);
+        cbJdkVersion.setVisible(isWindows);
+        lblLinuxRuntime.setVisible(!isWindows);
+        cbLinuxRuntime.setVisible(!isWindows);
+    }
+
+    private void toggleWebContainerSetting(boolean isDeployingWar) {
+        lblWebContainer.setVisible(isDeployingWar && rdoWindowsOS.isSelected());
+        cbWebContainer.setVisible(isDeployingWar && rdoWindowsOS.isSelected());
+    }
+
+    private void toggleDeployToRoot(final boolean isDeployingWar) {
+        chkToRoot.setVisible(isAbleToDeployToRoot(isDeployingWar));
+    }
+
+    private void toggleJarDeployHint(final boolean isDeployingWar) {
+        lblJarDeployHint.setVisible(!isDeployingWar && rdoUseExist.isSelected());
+    }
+
+    private boolean isAbleToDeployToRoot(final boolean isDeployingWar) {
+        if (!isDeployingWar) {
+            return false;
+        }
+        if (rdoUseExist.isSelected()) {
+            if (selectedWebApp == null) {
+                return false;
+            }
+            final WebApp app = selectedWebApp.getResource();
+            return app.operatingSystem() == OperatingSystem.WINDOWS ||
+                !Constants.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(app.linuxFxVersion());
+        }
+
+        return rdoWindowsOS.isSelected() ||
+            rdoLinuxOS.isSelected() && RuntimeStack.JAVA_8_JRE8 != cbLinuxRuntime.getSelectedItem();
+    }
+
+    private void reloadAppServicePlanDropdownList() {
+        final ResourceGroup resGrp = (ResourceGroup) cbExistResGrp.getSelectedItem();
+        if (resGrp == null) {
+            return;
+        }
+        final String selectedGrp = resGrp.name();
+        if (!Comparing.equal(lastSelectedResGrp, selectedGrp)) {
+            cbExistAppServicePlan.removeAllItems();
+            lblLocation.setText(NOT_APPLICABLE);
+            lblPricing.setText(NOT_APPLICABLE);
+            webAppDeployViewPresenter.onLoadAppServicePlan(lastSelectedSid, selectedGrp);
+            lastSelectedResGrp = selectedGrp;
+        }
     }
 
     private void resetWidget() {
@@ -526,8 +596,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             }
         };
         tableModel.addColumn("Name");
-        tableModel.addColumn("JDK");
-        tableModel.addColumn("Web container");
+        tableModel.addColumn("OS");
+        tableModel.addColumn("Runtime");
         tableModel.addColumn("Resource group");
 
         table = new JBTable(tableModel);
@@ -610,7 +680,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             return;
         }
         appServicePlans.stream()
-                .filter(item -> Comparing.equal(item.operatingSystem(), OperatingSystem.WINDOWS))
+                .filter(item -> Comparing.equal(item.operatingSystem(), webAppConfiguration.getOS()))
                 .sorted(Comparator.comparing(AppServicePlan::name))
                 .forEach((plan) -> {
                     cbExistAppServicePlan.addItem(plan);
@@ -666,6 +736,17 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             cbJdkVersion.addItem(jdk);
             if (Comparing.equal(jdk.getJavaVersion(), webAppConfiguration.getJdkVersion())) {
                 cbJdkVersion.setSelectedItem(jdk);
+            }
+        }
+    }
+
+    @Override
+    public void fillLinuxRuntime(@NotNull List<RuntimeStack> linuxRuntimes) {
+        cbLinuxRuntime.removeAllItems();
+        for(final RuntimeStack runtime: linuxRuntimes) {
+            cbLinuxRuntime.addItem(runtime);
+            if(Comparing.equal(runtime, webAppConfiguration.getLinuxRuntime())) {
+                cbLinuxRuntime.setSelectedItem(runtime);
             }
         }
     }

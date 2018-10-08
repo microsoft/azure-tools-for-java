@@ -24,6 +24,7 @@ package com.microsoft.intellij.runner.webapp.webappconfig.ui;
 
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -54,4 +55,6 @@ public interface WebAppDeployMvpView extends MvpView {
     void fillWebContainer(@NotNull List<WebAppUtils.WebContainerMod> webContainers);
 
     void fillJdkVersion(@NotNull List<JdkModel> jdks);
+
+    void fillLinuxRuntime(@NotNull List<RuntimeStack> linuxRuntimes);
 }

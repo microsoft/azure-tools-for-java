@@ -140,6 +140,8 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         blobListTable.getColumnModel().getColumn(2).setPreferredWidth(10);
         blobListTable.getColumnModel().getColumn(3).setPreferredWidth(15);
         blobListTable.getColumnModel().getColumn(4).setPreferredWidth(40);
+        blobListTable.setRowMargin(3);
+        blobListTable.setRowHeight(blobListTable.getRowHeight() + blobListTable.getRowMargin());
 
         JTableHeader tableHeader = blobListTable.getTableHeader();
         Dimension headerSize = tableHeader.getPreferredSize();

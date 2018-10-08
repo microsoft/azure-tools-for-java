@@ -25,6 +25,8 @@ package com.microsoft.azuretools.utils;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebContainer;
@@ -35,6 +37,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -65,6 +68,7 @@ public class WebAppUtils {
     private static final String ROOT = "ROOT";
     private static final int FTP_MAX_TRY = 3;
     private static final int SLEEP_TIME = 5000; // milliseconds
+    private static final String DEFAULT_VALUE_WHEN_VERSION_INVALID = "";
 
     @NotNull
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
@@ -363,6 +367,54 @@ public class WebAppUtils {
         }
         public ResourceGroup getRg() {
             return rg;
+        }
+    }
+
+    /**
+     * Check if the web app is a Windows or Linux Java configured web app.
+     * Docker web apps are not included.
+     */
+    public static boolean isJavaWebApp(@NotNull WebApp webApp) {
+        return (webApp.operatingSystem() == OperatingSystem.WINDOWS && webApp.javaVersion() != JavaVersion.OFF)
+         || (webApp.operatingSystem() == OperatingSystem.LINUX && StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "jre8"));
+    }
+
+    /**
+     * For a Windows web app, APIs are separated to get jdk information and web container information.
+     * For a Linux web app, API app.linuxFxVersion() returns a combined information, like
+     * "Tomcat|8.5-jre8" if it is a Linux web app with the web container Tomcat.
+     * We return a combined and refactored information as Java Runtime.
+     */
+    public static String getJavaRuntime(@NotNull final WebApp webApp) {
+        String webContainer;
+        switch (webApp.operatingSystem()) {
+            case WINDOWS:
+                webContainer = webApp.javaContainer() == null ? null : webApp.javaContainer().toLowerCase();
+                return String.format("%s %s (Java%s)",
+                    StringUtils.capitalize(webContainer), webApp.javaContainerVersion(), webApp.javaVersion().toString());
+            case LINUX:
+                final String linuxVersion = webApp.linuxFxVersion();
+                if (linuxVersion == null) {
+                    return DEFAULT_VALUE_WHEN_VERSION_INVALID;
+                }
+
+                final String[] versions = linuxVersion.split("\\||-");
+                if (versions == null && versions.length != 3) {
+                    return linuxVersion;
+                }
+
+                webContainer = versions[0].toLowerCase();
+                final String webContainerVersion = versions[1];
+                final String jreVersion = versions[2];
+                if (webContainer.contains("tomcat")) {
+                    // TOMCAT|8.5-jre8 -> Tomcat 8.5 (JRE8)
+                    return String.format("%s %s (%s)", StringUtils.capitalize(webContainer), webContainerVersion, jreVersion.toUpperCase());
+                } else {
+                    // JAVA|8-jre8 -> JRE8
+                    return jreVersion.toUpperCase();
+                }
+            default:
+                return DEFAULT_VALUE_WHEN_VERSION_INVALID;
         }
     }
 }
