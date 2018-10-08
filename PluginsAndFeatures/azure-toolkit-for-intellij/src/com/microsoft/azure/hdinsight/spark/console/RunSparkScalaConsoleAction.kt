@@ -30,6 +30,7 @@ import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
@@ -38,20 +39,19 @@ import com.intellij.psi.PsiFile
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import org.jetbrains.plugins.scala.console.RunConsoleAction
+import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
 import com.microsoft.intellij.util.runInReadAction
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 import scala.Function1
 import scala.runtime.BoxedUnit
 
-open class RunSparkLivyConsoleAction
-    : AzureAnAction(), RunConsoleAction.RunActionBase<RemoteDebugRunConfigurationType>, ILogger {
-    open val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
-        get() = SparkScalaLivyConsoleConfigurationType().confFactory()
+abstract class RunSparkScalaConsoleAction
+    : AnAction(), RunConsoleAction.RunActionBase<RemoteDebugRunConfigurationType>, ILogger {
+    abstract val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
 
-    override fun onActionPerformed(event: AnActionEvent) {
+    override fun actionPerformed(event: AnActionEvent) {
         val dataContext = event.dataContext
         val file = CommonDataKeys.PSI_FILE.getData(dataContext)
         val project = CommonDataKeys.PROJECT.getData(dataContext)
@@ -137,8 +137,6 @@ open class RunSparkLivyConsoleAction
 
     override fun getMyConfigurationType(): RemoteDebugRunConfigurationType? =
         findConfigurationType(RemoteDebugRunConfigurationType::class.java)
-
-    override fun getNewSettingName(): String = "Spark Livy Interactive Session Console(Scala)"
 
     override fun checkFile(psiFile: PsiFile): Boolean = psiFile is ScalaFile
 }

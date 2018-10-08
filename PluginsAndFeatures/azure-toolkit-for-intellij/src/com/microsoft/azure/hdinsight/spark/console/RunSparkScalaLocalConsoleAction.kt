@@ -23,11 +23,9 @@
 package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.configurations.RunProfile
-import com.intellij.psi.PsiFile
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
-import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 
-class RunSparkLocalConsoleAction : RunSparkLivyConsoleAction() {
+class RunSparkScalaLocalConsoleAction : RunSparkScalaConsoleAction() {
     override val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
         get() = SparkScalaLocalConsoleConfigurationType().confFactory()
 
@@ -36,6 +34,4 @@ class RunSparkLocalConsoleAction : RunSparkLivyConsoleAction() {
     }
 
     override fun getNewSettingName(): String = "Spark Local Console(Scala)"
-
-    override fun checkFile(psiFile: PsiFile): Boolean = psiFile is ScalaFile
 }
