@@ -94,6 +94,8 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private String _hashmac = GetHashMac.GetHashMac();
 
+    private Boolean firstInstallationByVersion;
+
     public AzurePlugin(Project project) {
         super(project);
         this.azureSettings = AzureSettings.getSafeInstance(project);
@@ -108,6 +110,10 @@ public class AzurePlugin extends AbstractProjectComponent {
     }
 
     private void initializeFeedbackNotification() {
+        if (!isFirstInstallationByVersion()) {
+            return;
+        }
+
         Notification feedbackNotification = new Notification(
                 "Azure Toolkit plugin",
                 "We're listening",
@@ -131,6 +137,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     public void initComponent() {
         if (!IS_ANDROID_STUDIO) {
             LOG.info("Starting Azure Plugin");
+            firstInstallationByVersion = new Boolean(isFirstInstallationByVersion());
             try {
                 //this code is for copying componentset.xml in plugins folder
                 copyPluginComponents();
@@ -373,6 +380,10 @@ public class AzurePlugin extends AbstractProjectComponent {
     private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";
 
     private boolean isFirstInstallationByVersion() {
+        if (firstInstallationByVersion != null) {
+            return firstInstallationByVersion.booleanValue();
+        }
+
         if (new File(dataFile).exists()) {
             String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
             if (!StringHelper.isNullOrWhiteSpace(version) && version.equals(PLUGIN_VERSION)) {
