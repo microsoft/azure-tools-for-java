@@ -26,6 +26,7 @@ import com.intellij.CommonBundle;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.ui.DocumentAdapter;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterCtrlProvider;
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterModel;
@@ -39,10 +40,9 @@ import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.net.URI;
 import java.util.Arrays;
 
@@ -114,52 +114,13 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         });
 
         // field validation check
-        Arrays.asList(clusterComboBox, clusterNameOrUrlField, userNameField, passwordField, livyEndpointField,
-                livyClusterNameField, yarnEndpointField).forEach(comp -> comp.addFocusListener(new FocusAdapter() {
+        Arrays.asList(clusterComboBox, authComboBox).forEach(comp -> comp.addActionListener(event -> basicValidate()));
+
+        Arrays.asList(clusterNameOrUrlField, userNameField, passwordField, livyEndpointField, livyClusterNameField,
+                yarnEndpointField).forEach(comp -> comp.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
-            public void focusLost(FocusEvent e) {
-                if (isHDInsightClusterSelected()) {
-                    if (StringUtils.isEmpty(clusterNameOrUrlField.getText()) ||
-                            StringUtils.isEmpty(userNameField.getText()) ||
-                            StringUtils.isEmpty(passwordField.getText())) {
-                        getOKAction().setEnabled(false);
-                    } else {
-                        // cluster name or URL validation
-                        String clusterName = ctrlProvider.getClusterName(clusterNameOrUrlField.getText());
-                        if (clusterName == null) {
-                            errorMessageField.setText("cluster URL is invalid");
-                            getOKAction().setEnabled(false);
-                        } else if (ctrlProvider.doesClusterNameExist(clusterName)) {
-                            errorMessageField.setText("Cluster already exists in linked clusters");
-                            getOKAction().setEnabled(false);
-                        } else {
-                            errorMessageField.setText(null);
-                            getOKAction().setEnabled(true);
-                        }
-                    }
-                } else {
-                    if (StringUtils.isEmpty(livyEndpointField.getText()) ||
-                            StringUtils.isEmpty(livyClusterNameField.getText())) {
-                        getOKAction().setEnabled(false);
-                    } else if (!ctrlProvider.isURLValid(livyEndpointField.getText())) {
-                        errorMessageField.setText("Livy Endpoint is not a valid URL");
-                        getOKAction().setEnabled(false);
-                    } else if (ctrlProvider.doesClusterLivyEndpointExist(livyEndpointField.getText())) {
-                        errorMessageField.setText("Livy Endpoint already exists in linked clusters");
-                        getOKAction().setEnabled(false);
-                    } else if (ctrlProvider.doesClusterNameExist(livyClusterNameField.getText())) {
-                        errorMessageField.setText("Cluster Name already exists in linked clusters");
-                        getOKAction().setEnabled(false);
-                    } else if (!StringUtils.isEmpty(yarnEndpointField.getText()) &&
-                            !ctrlProvider.isURLValid(yarnEndpointField.getText())) {
-                        errorMessageField.setText("Yarn Endpoint is not a valid URL");
-                        getOKAction().setEnabled(false);
-                    } else {
-                        errorMessageField.setText(null);
-                        getOKAction().setEnabled(true);
-                    }
-                }
-                super.focusLost(e);
+            protected void textChanged(DocumentEvent e) {
+                basicValidate();
             }
         }));
         getOKAction().setEnabled(false);
@@ -176,24 +137,26 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     public void getData(@NotNull AddNewClusterModel data) {
         if (isHDInsightClusterSelected()) {
             data.setHDInsightClusterSelected(true)
-                    .setClusterName(clusterNameOrUrlField.getText())
-                    .setUserName(userNameField.getText())
-                    .setPassword(passwordField.getText())
+                    .setClusterName(clusterNameOrUrlField.getText().trim())
+                    .setUserName(userNameField.getText().trim())
+                    .setPassword(passwordField.getText().trim())
                     // TODO: these label title setting is no use other than to be compatible with legacy ctrlprovider code
                     .setClusterNameLabelTitle(clusterNameLabel.getText())
                     .setUserNameLabelTitle(userNameLabel.getText())
                     .setPasswordLabelTitle(passwordLabel.getText());
         } else {
             data.setHDInsightClusterSelected(false)
-                    .setLivyEndpoint(URI.create(livyEndpointField.getText()))
-                    .setYarnEndpoint(StringUtils.isEmpty(yarnEndpointField.getText()) ? null : URI.create(yarnEndpointField.getText()))
-                    .setClusterName(livyClusterNameField.getText())
-                    .setUserName(userNameField.getText())
-                    .setPassword(passwordField.getText())
+                    .setLivyEndpoint(URI.create(livyEndpointField.getText().trim()))
+                    .setYarnEndpoint(StringUtils.isBlank(yarnEndpointField.getText()) ? null : URI.create(yarnEndpointField.getText().trim()))
+                    .setClusterName(livyClusterNameField.getText().trim())
                     // TODO: these label title setting is no use other than to be compatible with legacy ctrlprovider code
                     .setClusterNameLabelTitle(livyClusterNameLabel.getText())
                     .setUserNameLabelTitle(userNameLabel.getText())
                     .setPasswordLabelTitle(passwordLabel.getText());
+            if (isBasicAuthSelected()) {
+                data.setUserName(userNameField.getText().trim())
+                        .setPassword(passwordField.getText().trim());
+            }
         }
     }
 
@@ -224,6 +187,49 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
 
     private boolean isHDInsightClusterSelected() {
         return ((String)clusterComboBox.getSelectedItem()).equalsIgnoreCase("HDInsight Cluster");
+    }
+
+    private boolean isBasicAuthSelected() {
+        return ((String) authComboBox.getSelectedItem()).equalsIgnoreCase("Basic Authentication");
+    }
+
+    private void basicValidate() {
+        String errorMessage = null;
+        if (isHDInsightClusterSelected()) {
+            if (StringUtils.isBlank(clusterNameOrUrlField.getText())) {
+                errorMessage = "Cluster name can't be empty";
+            } else {
+                String clusterName = ctrlProvider.getClusterName(clusterNameOrUrlField.getText());
+                if (clusterName == null) {
+                    errorMessage = "Cluster URL is not a valid URL";
+                } else if (ctrlProvider.doesClusterNameExist(clusterName)) {
+                    errorMessage = "Cluster already exists in linked clusters";
+                }
+            }
+        } else {
+            if (StringUtils.isBlank(livyEndpointField.getText()) ||
+                    StringUtils.isBlank(livyClusterNameField.getText())) {
+                errorMessage = "Livy Endpoint and cluster name can't be empty";
+            } else if (!ctrlProvider.isURLValid(livyEndpointField.getText())) {
+                errorMessage = "Livy Endpoint is not a valid URL";
+            } else if (ctrlProvider.doesClusterLivyEndpointExist(livyEndpointField.getText())) {
+                errorMessage = "Livy Endpoint already exists in linked clusters";
+            } else if (ctrlProvider.doesClusterNameExist(livyClusterNameField.getText())) {
+                errorMessage = "Cluster Name already exists in linked clusters";
+            } else if (!StringUtils.isEmpty(yarnEndpointField.getText()) &&
+                    !ctrlProvider.isURLValid(yarnEndpointField.getText())) {
+                errorMessage = "Yarn Endpoint is not a valid URL";
+            }
+        }
+
+        if (errorMessage == null && isBasicAuthSelected()) {
+            if (StringUtils.isBlank(userNameField.getText()) || StringUtils.isBlank(passwordField.getText())) {
+                errorMessage = "Username and password can't be empty in Basic Authentication";
+            }
+        }
+
+        errorMessageField.setText(errorMessage);
+        getOKAction().setEnabled(StringUtils.isEmpty(errorMessageField.getText()));
     }
 
     private class HelpAction extends AbstractAction {

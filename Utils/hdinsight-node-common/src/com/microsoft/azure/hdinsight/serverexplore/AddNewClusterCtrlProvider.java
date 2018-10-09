@@ -37,6 +37,7 @@ import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManage
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.utils.URIUtils;
 import rx.Observable;
 
 import java.net.URI;
@@ -69,8 +70,12 @@ public class AddNewClusterCtrlProvider {
 
     public boolean isURLValid(@NotNull String url) {
         try {
-            URI.create(url);
-            return true;
+            URI uri = URI.create(url);
+            if (URIUtils.extractHost(uri) == null) {
+                return false;
+            } else {
+                return true;
+            }
         } catch (Exception ignored) {
             return false;
         }
