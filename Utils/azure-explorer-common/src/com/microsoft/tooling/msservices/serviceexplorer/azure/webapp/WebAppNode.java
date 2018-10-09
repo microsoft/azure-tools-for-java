@@ -22,7 +22,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 import java.io.IOException;
 import java.util.HashMap;
@@ -41,11 +40,8 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         + "Are you sure you want to continue?";
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
     private static final String LABEL = "WebApp";
+
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
-
-    @NotNull
-    private DeploymentSlotModule deploymentSlotModule;
-
     protected String webAppName;
     protected String webAppId;
     protected Map<String, String> propertyMap;
@@ -61,7 +57,6 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         this.propertyMap = propertyMap;
         webAppNodePresenter = new WebAppNodePresenter<>();
         webAppNodePresenter.onAttachView(WebAppNode.this);
-        this.deploymentSlotModule = new DeploymentSlotModule(this, subscriptionId, webAppId);
     }
 
     @Override
@@ -71,9 +66,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     @Override
     public void renderSubModules() {
-        if (!isDirectChild(deploymentSlotModule)) {
-            addChildNode(deploymentSlotModule);
-        }
+        addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webAppId));
     }
 
     @Override

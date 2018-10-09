@@ -42,6 +42,8 @@ public interface WebAppDeployMvpView extends MvpView {
 
     void renderWebAppsTable(@NotNull List<ResourceEx<WebApp>> webAppLists);
 
+    void enableDeploymentSlotPanel();
+
     void fillSubscription(@NotNull List<Subscription> subscriptions);
 
     void fillResourceGroup(@NotNull List<ResourceGroup> resourceGroups);
