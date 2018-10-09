@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.azure.cloudshell.rest
 
 import okhttp3.MultipartBody
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -24,4 +25,7 @@ interface CloudConsoleService {
     @POST
     @Multipart
     fun uploadFileToTerminal(@Url shellUrl: String, @Part file: MultipartBody.Part, @Query("version") version: String = "2018-06-01"): Call<Void>
+
+    @GET
+    fun downloadFileFromTerminal(@Url fileUrl: String): Call<ResponseBody>
 }

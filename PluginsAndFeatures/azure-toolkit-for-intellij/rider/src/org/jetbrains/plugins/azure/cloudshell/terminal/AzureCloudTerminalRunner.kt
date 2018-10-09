@@ -10,7 +10,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import org.apache.http.client.utils.URIBuilder
 import org.jetbrains.plugins.azure.cloudshell.CloudShellComponent
-import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleControlWebSocket
+import org.jetbrains.plugins.azure.cloudshell.controlchannel.CloudConsoleControlChannelWebSocket
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalProcess
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalRunner
@@ -18,7 +18,7 @@ import java.net.URI
 
 class AzureCloudTerminalRunner(project: Project,
                                private val cloudConsoleService: CloudConsoleService,
-                               private val provisionUrl: String,
+                               private val cloudConsoleBaseUrl: String,
                                socketUri: URI,
                                process: AzureCloudTerminalProcess)
     : CloudTerminalRunner(project, pipeName, process) {
@@ -47,7 +47,8 @@ class AzureCloudTerminalRunner(project: Project,
 
         // Connect control socket
         // TODO: for now, this does not yet need any other wiring, it's just a convenience for e.g. downloading files
-        var controlSocketClient = CloudConsoleControlWebSocket(URI(controlChannelSocketUrl), provisionUrl)
+        var controlSocketClient = CloudConsoleControlChannelWebSocket(
+                project, URI(controlChannelSocketUrl), cloudConsoleService, cloudConsoleBaseUrl)
         controlSocketClient.connectBlocking()
 
         // Build TTY

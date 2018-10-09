@@ -9,7 +9,7 @@ class AzureCloudTerminalFactory {
     companion object {
         fun createTerminalRunner(project: Project,
                                  cloudConsoleService: CloudConsoleService,
-                                 provisionUrl: String,
+                                 cloudConsoleBaseUrl: String,
                                  socketUri: URI): AzureCloudTerminalRunner {
             // Connect terminal web socket
             val terminalSocketClient = CloudConsoleTerminalWebSocket(socketUri)
@@ -17,7 +17,7 @@ class AzureCloudTerminalFactory {
 
             // Create runner
             return AzureCloudTerminalRunner(
-                    project, cloudConsoleService, provisionUrl, socketUri, AzureCloudTerminalProcess(terminalSocketClient))
+                    project, cloudConsoleService, cloudConsoleBaseUrl, socketUri, AzureCloudTerminalProcess(terminalSocketClient))
         }
     }
 }

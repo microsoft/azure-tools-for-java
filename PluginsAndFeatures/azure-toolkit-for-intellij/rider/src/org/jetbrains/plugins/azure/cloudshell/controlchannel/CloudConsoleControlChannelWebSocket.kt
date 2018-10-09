@@ -1,19 +1,21 @@
-package org.jetbrains.plugins.azure.cloudshell.rest
+package org.jetbrains.plugins.azure.cloudshell.controlchannel
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.annotations.SerializedName
-import com.intellij.ide.BrowserUtil
+import com.intellij.openapi.project.Project
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
+import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
 import java.net.URI
 
-class CloudConsoleControlWebSocket(serverURI: URI, private val baseUrl: String)
+class CloudConsoleControlChannelWebSocket(private val project: Project,
+                                          serverURI: URI,
+                                          private val cloudConsoleService: CloudConsoleService,
+                                          private val cloudConsoleBaseUrl: String)
     : WebSocketClient(serverURI) {
 
-    companion object {
-        protected val gson = Gson()
-    }
+    private val gson = Gson()
 
     override fun onOpen(handshakedata: ServerHandshake?) { }
 
@@ -22,7 +24,8 @@ class CloudConsoleControlWebSocket(serverURI: URI, private val baseUrl: String)
             try {
                 val controlMessage = gson.fromJson(message, ControlMessage::class.java)
                 if (controlMessage.audience == "download") {
-                    handleDownload(gson.fromJson(message, DownloadControlMessage::class.java))
+                    DownloadControlMessageHandler(gson, project, cloudConsoleService, cloudConsoleBaseUrl)
+                            .handle(message)
                 }
             } catch (e: JsonSyntaxException) {
                 // TODO
@@ -30,26 +33,12 @@ class CloudConsoleControlWebSocket(serverURI: URI, private val baseUrl: String)
         }
     }
 
-    private fun handleDownload(message: DownloadControlMessage?) {
-        if (message == null) return
-
-        BrowserUtil.browse(baseUrl + message.fileUri)
-    }
-
     override fun onError(ex: Exception?) { }
 
     override fun onClose(code: Int, reason: String?, remote: Boolean) { }
 
-    data class ControlMessage(
+    private data class ControlMessage(
             @SerializedName("audience")
             val audience : String
-    )
-
-    data class DownloadControlMessage(
-            @SerializedName("audience")
-            val audience : String,
-
-            @SerializedName("fileUri")
-            val fileUri : String
     )
 }
