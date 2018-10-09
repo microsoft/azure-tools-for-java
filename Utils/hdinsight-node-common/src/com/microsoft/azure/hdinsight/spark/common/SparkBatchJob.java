@@ -157,9 +157,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        this.submissionParameter = submissionParameter;
-        this.submission = sparkBatchSubmission;
-        this.ctrlSubject = ctrlSubject;
+        this(submissionParameter, sparkBatchSubmission, ctrlSubject, null);
     }
 
     public SparkBatchJob(

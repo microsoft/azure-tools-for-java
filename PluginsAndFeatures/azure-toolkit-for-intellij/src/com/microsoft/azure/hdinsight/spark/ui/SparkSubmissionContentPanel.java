@@ -530,7 +530,7 @@ public class SparkSubmissionContentPanel extends JPanel{
                 0, 1,
                 0, 0,
                 GridBagConstraints.SOUTHWEST, GridBagConstraints.HORIZONTAL,
-                new Insets(margin, margin, 0, margin), 0, 0));
+                JBUI.insets(margin, margin, 0, margin), 0, 0));
     }
 
     private void setVisibleForFixedErrorMessageLabel(@NotNull ErrorMessage label, boolean isVisible) {

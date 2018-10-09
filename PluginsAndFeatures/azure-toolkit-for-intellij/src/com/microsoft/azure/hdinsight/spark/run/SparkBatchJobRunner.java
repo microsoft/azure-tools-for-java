@@ -66,27 +66,34 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
     @NotNull
     public ISparkBatchJob buildSparkBatchJob(@NotNull SparkSubmitModel submitModel,
-                                             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+                                             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) throws ExecutionException {
         // get storage account from submitModel
         IHDIStorageAccount storageAccount = null;
-        String storageAcccountType = submitModel.getJobUploadStorageModel().getStorageAccountType();
         IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(
                 submitModel.getSubmissionParameter().getClusterName()).orElse(null);
-        if (storageAcccountType.equals(SparkSubmitStorageType.Blob.toString())) {
-            String storageAccountName = submitModel.getJobUploadStorageModel().getStorageAccount();
-            String fullStorageBlobName = ClusterManagerEx.getInstance().getBlobFullName(storageAccountName);
-            String key = submitModel.getJobUploadStorageModel().getStorageKey();
-            String container = submitModel.getJobUploadStorageModel().getSelectedContainer();
-            storageAccount = new HDStorageAccount(clusterDetail, fullStorageBlobName, key, false, container);
-        } else if (storageAcccountType.equals(SparkSubmitStorageType.DefaultStorageAccount.toString())) {
-            try {
-                clusterDetail.getConfigurationInfo();
-                storageAccount = clusterDetail.getStorageAccount();
-            } catch (Exception ex) {
-                log().warn("Error getting cluster storage configuration. " + ExceptionUtils.getStackTrace(ex));
-                storageAccount = null;
-            }
+
+        SparkSubmitStorageType storageAcccountType = submitModel.getJobUploadStorageModel().getStorageAccountType();
+        switch (storageAcccountType) {
+            case BLOB:
+                String storageAccountName = submitModel.getJobUploadStorageModel().getStorageAccount();
+                String fullStorageBlobName = ClusterManagerEx.getInstance().getBlobFullName(storageAccountName);
+                String key = submitModel.getJobUploadStorageModel().getStorageKey();
+                String container = submitModel.getJobUploadStorageModel().getSelectedContainer();
+                storageAccount = new HDStorageAccount(clusterDetail, fullStorageBlobName, key, false, container);
+                break;
+            case DEFAULT_STORAGE_ACCOUNT:
+                try {
+                    clusterDetail.getConfigurationInfo();
+                    storageAccount = clusterDetail.getStorageAccount();
+                } catch (Exception ex) {
+                    log().warn("Error getting cluster storage configuration. Error: " + ExceptionUtils.getStackTrace(ex));
+                    storageAccount = null;
+                }
+                break;
+            case SPARK_INTERACTIVE_SESSION:
+                break;
         }
+
         return new SparkBatchJob(submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount);
     }
 

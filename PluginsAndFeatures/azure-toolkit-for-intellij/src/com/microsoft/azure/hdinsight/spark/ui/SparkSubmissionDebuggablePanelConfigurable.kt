@@ -63,7 +63,7 @@ class SparkSubmissionDebuggablePanelConfigurable(project: Project,
         // Advanced Configuration panel
         advancedConfigPanel.setData(data.advancedConfigModel.apply { clusterName = data.clusterName })
 
-//        // Job Upload Storage panel
+        // Job Upload Storage panel
         storageWithUploadPathPanel.setData(data.jobUploadStorageModel)
     }
 

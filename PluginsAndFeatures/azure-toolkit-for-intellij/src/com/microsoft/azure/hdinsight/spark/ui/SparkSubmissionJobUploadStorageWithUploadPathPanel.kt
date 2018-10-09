@@ -31,12 +31,9 @@ import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import org.apache.commons.lang3.StringUtils
-import java.awt.Component
 import javax.swing.*
 
 class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableControl<SparkSubmitJobUploadStorageModel> {
-    data class Place(val component: Component, val gridConstraints: GridConstraints)
-
     private fun baseConstraints() = GridConstraints().apply { anchor = GridConstraints.ANCHOR_WEST }
     private val colTemplate = listOf(
             // Column 0
@@ -70,7 +67,6 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
                 colSpan = 2
                 hSizePolicy = GridConstraints.SIZEPOLICY_WANT_GROW
                 fill = GridConstraints.FILL_HORIZONTAL
-
             })
     )
 
@@ -85,18 +81,18 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
         data.errorMsg = storagePanel.errorMessage
         data.uploadPath = uploadPathField.text
         when (storagePanel.storageTypeComboBox.selectedItem) {
-            StorageType.AzureBlob.title -> {
-                data.storageAccountType = SparkSubmitStorageType.Blob.toString()
+            StorageType.AZURE_BLOB.title -> {
+                data.storageAccountType = SparkSubmitStorageType.BLOB
                 data.storageAccount = storagePanel.azureBlobCard.storageAccountField.text.trim()
                 data.storageKey = storagePanel.azureBlobCard.storageKeyField.text.trim()
                 data.containersModel = storagePanel.azureBlobCard.storageContainerComboBox.model as DefaultComboBoxModel
                 data.selectedContainer = storagePanel.azureBlobCard.storageContainerComboBox.selectedItem as? String
             }
-            StorageType.ClusterDefaultStorage.title -> {
-                data.storageAccountType = SparkSubmitStorageType.DefaultStorageAccount.toString()
+            StorageType.CLUSTER_DEFAULT_STORAGE.title -> {
+                data.storageAccountType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
             }
-            StorageType.SparkInteractiveSession.title -> {
-                data.storageAccountType = SparkSubmitStorageType.SparkInteractiveSession.toString()
+            StorageType.SPARK_INTERACTIVE_SESSION.title -> {
+                data.storageAccountType = SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
             }
         }
     }
@@ -109,7 +105,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
             storagePanel.storageAccountType = data.storageAccountType
             uploadPathField.text = data.uploadPath
             if (data.selectedStorageTypeIndex != -1) {
-                if (storagePanel.storageTypeComboBox.getItemAt(data.selectedStorageTypeIndex) == StorageType.AzureBlob.title) {
+                if (storagePanel.storageTypeComboBox.getItemAt(data.selectedStorageTypeIndex) == StorageType.AZURE_BLOB.title) {
                         storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
                         storagePanel.azureBlobCard.storageKeyField.text = data.storageKey
                         if (data.containersModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedContainer)) {

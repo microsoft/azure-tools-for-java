@@ -53,7 +53,7 @@ class SparkSubmitJobUploadStorageModel {
     var selectedContainer: String? = null
 
     @Attribute("storage_account_type")
-    var storageAccountType: String? = SparkSubmitStorageType.DefaultStorageAccount.toString()
+    var storageAccountType: SparkSubmitStorageType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
 
     @Transient var errorMsg: String? = SparkSubmissionJobUploadStoragePanel().notFinishCheckMessage
 }

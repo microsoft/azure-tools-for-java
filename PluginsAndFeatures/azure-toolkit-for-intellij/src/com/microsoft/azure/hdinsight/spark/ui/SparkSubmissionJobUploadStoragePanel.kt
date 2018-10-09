@@ -26,14 +26,15 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridLayoutManager
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import java.awt.CardLayout
 import java.awt.Component
 import javax.swing.*
 
 enum class StorageType(val title: String) {
-    AzureBlob("Azure Blob"),
-    SparkInteractiveSession("Use Spark interactive session to upload artifacts"),
-    ClusterDefaultStorage("Use cluster default storage account)")
+    AZURE_BLOB("Azure Blob"),
+    SPARK_INTERACTIVE_SESSION("Use Spark interactive session to upload artifacts"),
+    CLUSTER_DEFAULT_STORAGE("Use cluster default storage account)")
 }
 
 class SparkSubmissionJobUploadStoragePanel: JPanel() {
@@ -61,8 +62,6 @@ class SparkSubmissionJobUploadStoragePanel: JPanel() {
         }
     }
 
-    data class Place(val component: Component, val gridConstraints: GridConstraints)
-
     private fun baseConstraints() = GridConstraints().apply { anchor = GridConstraints.ANCHOR_WEST }
     private val colTemplate= listOf(
             // Column 0
@@ -80,16 +79,16 @@ class SparkSubmissionJobUploadStoragePanel: JPanel() {
 
     val notFinishCheckMessage = "job upload storage validation check is not finished"
     private val storageTypeLabel = JLabel("Storage Type")
-    val storageTypeComboBox = ComboBox(arrayOf(StorageType.AzureBlob.title, StorageType.SparkInteractiveSession.title, StorageType.ClusterDefaultStorage.title))
+    val storageTypeComboBox = ComboBox(arrayOf(StorageType.AZURE_BLOB.title, StorageType.SPARK_INTERACTIVE_SESSION.title, StorageType.CLUSTER_DEFAULT_STORAGE.title))
     val azureBlobCard = AzureBlobCard()
     private val sparkInteractiveSessionCard = JPanel()
     private val clusterDefaultStorageCard = JPanel()
     val storageCardsPanel = JPanel(CardLayout()).apply {
-        add(azureBlobCard, StorageType.AzureBlob.title)
-        add(sparkInteractiveSessionCard, StorageType.SparkInteractiveSession.title)
-        add(clusterDefaultStorageCard, StorageType.ClusterDefaultStorage.title)
+        add(azureBlobCard, StorageType.AZURE_BLOB.title)
+        add(sparkInteractiveSessionCard, StorageType.SPARK_INTERACTIVE_SESSION.title)
+        add(clusterDefaultStorageCard, StorageType.CLUSTER_DEFAULT_STORAGE.title)
     }
-    var storageAccountType: String? = StorageAccountTypeEnum.UNKNOWN.toString()
+    var storageAccountType: SparkSubmitStorageType = SparkSubmitStorageType.BLOB
     var errorMessage: String? = notFinishCheckMessage
     private val layoutPlan = listOf(
             Place(storageTypeLabel, buildConstraints(0).apply { row = 0 }), Place(storageTypeComboBox, buildConstraints(1).apply { row = 0; indent = 3 }),
