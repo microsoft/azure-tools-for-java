@@ -22,6 +22,8 @@
 package com.microsoft.azure.hdinsight.spark.ui;
 
 import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.options.ConfigurationException;
@@ -586,7 +588,7 @@ public class SparkSubmissionContentPanel extends JPanel{
     }
 
     public void checkInputs() throws ConfigurationException {
-        checkInputsWithErrorLabels();
+        ApplicationManager.getApplication().invokeAndWait(this::checkInputsWithErrorLabels, ModalityState.any());
 
         // Convert Error Labels into Configuration Exception
         java.util.List<String> errors = getErrorMessages();

@@ -22,6 +22,8 @@
 package com.microsoft.azure.hdinsight.spark.ui;
 
 import com.google.common.collect.ImmutableSortedSet;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.impl.jar.JarFileSystemImpl;
@@ -41,9 +43,10 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.helpers.ManifestFileUtilsEx;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import rx.Observable;
-import rx.Subscription;
 import rx.schedulers.Schedulers;
+import rx.subjects.PublishSubject;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
@@ -63,8 +66,9 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
     private SparkSubmissionContentPanel submissionPanel;
     private JPanel myWholePanel;
 
+    // Cluster refresh publish subject with preselected cluster name as event
     @Nullable
-    private Subscription clustersRefreshSub;
+    private PublishSubject<String> clustersRefreshSub;
 
     public SparkSubmissionContentPanelConfigurable(@NotNull Project project, @NotNull SparkSubmissionContentPanel submissionPanel) {
         this.submissionPanel = submissionPanel;
@@ -135,6 +139,42 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
 
         this.submissionPanel.updateTableColumn();
         this.submissionPanel.getClustersListComboBox().getComboBox().setModel(new DefaultComboBoxModel<>(getClusterDetails().toArray()));
+
+        this.submissionPanel.addPropertyChangeListener("ancestor", event -> {
+            if (event.getNewValue() != null) {
+                // Being added
+                clustersRefreshSub = PublishSubject.create();
+
+                clustersRefreshSub
+                        .doOnNext(any -> setClusterRefreshEnabled(false))
+                        .flatMap(preSelectedClusterName -> getClusterDetailsWithRefresh()
+                                .subscribeOn(Schedulers.io())
+                                .map(clusters -> Pair.of(preSelectedClusterName, clusters))
+                                .onErrorReturn(err -> {
+                                    log().warn(String.format("Project %s failed to refresh %s: %s",
+                                            myProject.getName(), getType(), err));
+
+                                    return Pair.of(preSelectedClusterName, ImmutableSortedSet.of());
+                                }))
+                        .doOnEach(each -> setClusterRefreshEnabled(true))
+                        .subscribe(
+                                selectedClustersPair -> {
+                                    final DefaultComboBoxModel<IClusterDetail> clustersModel = getClusterComboBoxModel();
+
+                                    clustersModel.removeAllElements();
+                                    selectedClustersPair.getRight().forEach(clustersModel::addElement);
+
+                                    if (selectedClustersPair.getLeft() != null) {
+                                        selectCluster(selectedClustersPair.getLeft(), IClusterDetail::getName);
+                                    }
+                                },
+                                err -> log().error(String.format("Project %s failed to process subject %s: %s",
+                                        myProject.getName(), getType(), err)));
+            } else if (clustersRefreshSub != null) {
+                // Being removed
+                clustersRefreshSub.onCompleted();
+            }
+        });
     }
 
     protected String getType() {
@@ -157,28 +197,8 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
 
     private synchronized void refreshClusterListAsync(@Nullable String preSelectedClusterName) {
         if (clustersRefreshSub != null) {
-            // In progress
-            return;
+            clustersRefreshSub.onNext(preSelectedClusterName);
         }
-
-        submissionPanel.setClustersListRefreshEnabled(false);
-
-        clustersRefreshSub = getClusterDetailsWithRefresh()
-                .subscribeOn(Schedulers.io())
-                .doOnEach(each -> submissionPanel.setClustersListRefreshEnabled(true))
-                .subscribe(clusters -> {
-                    final DefaultComboBoxModel<IClusterDetail> clustersModel = getClusterComboBoxModel();
-
-                    clustersModel.removeAllElements();
-                    clusters.forEach(clustersModel::addElement);
-
-                    if (preSelectedClusterName != null) {
-                        selectCluster(preSelectedClusterName, IClusterDetail::getName);
-                    }
-                },
-                err -> log().warn(String.format("Project %s failed to refresh %s: %s",
-                        myProject.getName(), getType(), err)),
-                () -> clustersRefreshSub = null);
     }
 
     private synchronized void refreshAndSelectArtifact(final @Nullable String artifactName) {
@@ -217,8 +237,14 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
         return false;
     }
 
+    void setClusterRefreshEnabled(boolean enabled) {
+        ApplicationManager.getApplication().invokeAndWait(() ->
+                submissionPanel.setClustersListRefreshEnabled(enabled), ModalityState.any());
+    }
+
     void setClusterSelectionEnabled(boolean enabled) {
-        submissionPanel.getClustersListComboBox().setEnabled(enabled);
+        ApplicationManager.getApplication().invokeAndWait(() ->
+                submissionPanel.getClustersListComboBox().setEnabled(enabled), ModalityState.any());
     }
 
     @Override
@@ -232,27 +258,29 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
         // 1. Cluster refresh in progress, the list model have choice, select cluster by cluster name
         // 2. Cluster refresh in progress, the list model is empty, save cluster name in submit model
         // 3. Cluster list got, but no selection before, select cluster by cluster name
-        submissionPanel.getClustersListComboBox().getComboBox().setModel(data.getClusterComboBoxModel());
-        submissionPanel.getSelectedArtifactComboBox().setModel(data.getArtifactComboBoxModel());
+        ApplicationManager.getApplication().invokeAndWait(() -> {
+            submissionPanel.getClustersListComboBox().getComboBox().setModel(data.getClusterComboBoxModel());
+            submissionPanel.getSelectedArtifactComboBox().setModel(data.getArtifactComboBoxModel());
 
-        if (!selectCluster(data.getClusterName(), IClusterDetail::getName)) {
-            refreshClusterListAsync(data.getClusterName());
-        }
+            if (!selectCluster(data.getClusterName(), IClusterDetail::getName)) {
+                refreshClusterListAsync(data.getClusterName());
+            }
 
-        if (data.getIsLocalArtifact()) {
-            submissionPanel.getLocalArtifactRadioButton().setSelected(true);
-        }
+            if (data.getIsLocalArtifact()) {
+                submissionPanel.getLocalArtifactRadioButton().setSelected(true);
+            }
 
-        submissionPanel.getLocalArtifactTextField().setText(data.getLocalArtifactPath());
-        submissionPanel.getMainClassTextField().setText(data.getMainClassName());
-        submissionPanel.getCommandLineTextField().setText(String.join(" ", data.getCommandLineArgs()));
-        submissionPanel.getReferencedJarsTextField().setText(String.join(";", data.getReferenceJars()));
-        submissionPanel.getReferencedFilesTextField().setText(String.join(";", data.getReferenceFiles()));
+            submissionPanel.getLocalArtifactTextField().setText(data.getLocalArtifactPath());
+            submissionPanel.getMainClassTextField().setText(data.getMainClassName());
+            submissionPanel.getCommandLineTextField().setText(String.join(" ", data.getCommandLineArgs()));
+            submissionPanel.getReferencedJarsTextField().setText(String.join(";", data.getReferenceJars()));
+            submissionPanel.getReferencedFilesTextField().setText(String.join(";", data.getReferenceFiles()));
 
-        // update job configuration table
-        submissionPanel.getJobConfigurationTable().setModel(data.getTableModel());
+            // update job configuration table
+            submissionPanel.getJobConfigurationTable().setModel(data.getTableModel());
 
-        refreshAndSelectArtifact(data.getArtifactName());
+            refreshAndSelectArtifact(data.getArtifactName());
+        }, ModalityState.any());
     }
 
     @Override
