@@ -24,7 +24,7 @@ package com.microsoft.azure.hdinsight.serverexplore.action;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
-import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewClusterFrom;
+import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewClusterForm;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -40,7 +40,7 @@ public class AddNewClusterAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        AddNewClusterFrom form = new AddNewClusterFrom((Project) hdInsightRootModule.getProject(), hdInsightRootModule);
+        AddNewClusterForm form = new AddNewClusterForm((Project) hdInsightRootModule.getProject(), hdInsightRootModule);
         form.show();
     }
 }
