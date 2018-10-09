@@ -206,7 +206,8 @@ class StartAzureCloudShellAction : AnAction() {
                 // 5. Connect to terminal
                 updateIndicator(indicator, 0.85, "Connecting to cloud shell terminal...")
 
-                val runner = AzureCloudTerminalFactory.createTerminalRunner(project, retrofitClient, URI(socketUri))
+                val runner = AzureCloudTerminalFactory.createTerminalRunner(
+                        project, retrofitClient, provisionUrl!!, URI(socketUri))
 
                 ApplicationManager.getApplication().invokeLater {
                     val terminalWindow = ToolWindowManager.getInstance(project)

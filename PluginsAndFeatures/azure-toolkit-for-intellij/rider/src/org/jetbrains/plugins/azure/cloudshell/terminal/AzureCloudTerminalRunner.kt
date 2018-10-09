@@ -10,6 +10,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import org.apache.http.client.utils.URIBuilder
 import org.jetbrains.plugins.azure.cloudshell.CloudShellComponent
+import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleControlWebSocket
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalProcess
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalRunner
@@ -17,6 +18,7 @@ import java.net.URI
 
 class AzureCloudTerminalRunner(project: Project,
                                private val cloudConsoleService: CloudConsoleService,
+                               private val provisionUrl: String,
                                socketUri: URI,
                                process: AzureCloudTerminalProcess)
     : CloudTerminalRunner(project, pipeName, process) {
@@ -28,6 +30,7 @@ class AzureCloudTerminalRunner(project: Project,
     private val logger = Logger.getInstance(AzureCloudTerminalRunner::class.java)
     private val resizeTerminalUrl: String
     private val uploadFileToTerminalUrl: String
+    private val controlChannelSocketUrl: String
 
     init {
         val builder = URIBuilder(socketUri)
@@ -36,11 +39,18 @@ class AzureCloudTerminalRunner(project: Project,
 
         resizeTerminalUrl = builder.toString() + "/size"
         uploadFileToTerminalUrl = builder.toString() + "/upload"
+        controlChannelSocketUrl = socketUri.toString() + "/control"
     }
 
     override fun createTtyConnector(process: CloudTerminalProcess): TtyConnector {
-        val cloudShellComponent = project?.getComponent<CloudShellComponent>()
+        val cloudShellComponent = project.getComponent<CloudShellComponent>()
 
+        // Connect control socket
+        // TODO: for now, this does not yet need any other wiring, it's just a convenience for e.g. downloading files
+        var controlSocketClient = CloudConsoleControlWebSocket(URI(controlChannelSocketUrl), provisionUrl)
+        controlSocketClient.connectBlocking()
+
+        // Build TTY
         val connector = object : AzureCloudProcessTtyConnector(process) {
             override fun resizeImmediately() {
                 if (pendingTermSize != null) {
@@ -77,12 +87,12 @@ class AzureCloudTerminalRunner(project: Project,
             }
 
             override fun close() {
-                cloudShellComponent?.unregisterConnector(this)
+                cloudShellComponent.unregisterConnector(this)
                 super.close()
             }
         }
 
-        cloudShellComponent?.registerConnector(connector)
+        cloudShellComponent.registerConnector(connector)
         return connector
     }
 }
