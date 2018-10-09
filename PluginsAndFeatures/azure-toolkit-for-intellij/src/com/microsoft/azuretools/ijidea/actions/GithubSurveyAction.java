@@ -22,19 +22,13 @@
 
 package com.microsoft.azuretools.ijidea.actions;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.intellij.feedback.GithubIssue;
+import com.microsoft.intellij.feedback.NewGithubIssueAction;
 import com.microsoft.intellij.feedback.ReportableSurvey;
 
 
-public class GithubSurveyAction extends AzureAnAction {
+public class GithubSurveyAction extends NewGithubIssueAction {
     public GithubSurveyAction() {
-        super("user satisfaction survey");
-    }
-
-    @Override
-    public void onActionPerformed(AnActionEvent anActionEvent) {
-        new GithubIssue<>(new ReportableSurvey("User feedback")).withLabel("Feedback").report();
+        super(new GithubIssue<>(new ReportableSurvey("User feedback")), "user satisfaction survey");
     }
 }

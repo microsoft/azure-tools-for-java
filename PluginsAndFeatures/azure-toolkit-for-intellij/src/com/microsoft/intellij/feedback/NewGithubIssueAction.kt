@@ -25,7 +25,7 @@ package com.microsoft.intellij.feedback
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 
-class NewGithubIssueAction(private val issue: GithubIssue<out Reportable>, actionTitle: String)
+open class NewGithubIssueAction(private val issue: GithubIssue<out Reportable>, actionTitle: String)
         : AzureAnAction(actionTitle) {
     override fun onActionPerformed(anActionEvent: AnActionEvent?) {
         issue.report()
