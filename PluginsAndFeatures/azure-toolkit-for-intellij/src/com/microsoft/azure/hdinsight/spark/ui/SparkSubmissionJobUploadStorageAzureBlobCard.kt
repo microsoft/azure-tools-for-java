@@ -25,11 +25,11 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridLayoutManager
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
-import java.awt.CardLayout
-import javax.swing.*
+import javax.swing.JLabel
+import javax.swing.JTextArea
+import javax.swing.JTextField
 
-class SparkSubmissionJobUploadStoragePanel: JPanel() {
+class SparkSubmissionJobUploadStorageAzureBlobCard: SparkSubmissionJobUploadStorageBasicCard() {
     private fun baseConstraints() = GridConstraints().apply { anchor = GridConstraints.ANCHOR_WEST }
     private val colTemplate= listOf(
             // Column 0
@@ -45,26 +45,25 @@ class SparkSubmissionJobUploadStoragePanel: JPanel() {
                 fill = GridConstraints.FILL_HORIZONTAL })
     private fun buildConstraints(colTemplateOffset: Int): GridConstraints = colTemplate[colTemplateOffset].clone() as GridConstraints
 
-    val notFinishCheckMessage = "job upload storage validation check is not finished"
-    private val storageTypeLabel = JLabel("Storage Type")
-    val azureBlobCard = SparkSubmissionJobUploadStorageAzureBlobCard()
-    val sparkInteractiveSessionCard = SparkSubmissionJobUploadStorageSparkInteractiveSessionCard()
-    val clusterDefaultStorageCard = SparkSubmissionJobUploadStorageClusterDefaultStorageCard()
-    val storageTypeComboBox = ComboBox(arrayOf(azureBlobCard.title(), sparkInteractiveSessionCard.title(), clusterDefaultStorageCard.title()))
-    val storageCardsPanel = JPanel(CardLayout()).apply {
-        add(azureBlobCard, azureBlobCard.title())
-        add(sparkInteractiveSessionCard, sparkInteractiveSessionCard.title())
-        add(clusterDefaultStorageCard, clusterDefaultStorageCard.title())
-    }
-    var storageAccountType: SparkSubmitStorageType = SparkSubmitStorageType.BLOB
-    var errorMessage: String? = notFinishCheckMessage
-    private val layoutPlan = listOf(
-            Place(storageTypeLabel, buildConstraints(0).apply { row = 0 }), Place(storageTypeComboBox, buildConstraints(1).apply { row = 0; indent = 3 }),
-            Place(storageCardsPanel, baseConstraints().apply { row = 1; colSpan = 2; hSizePolicy = GridConstraints.SIZEPOLICY_WANT_GROW; fill = GridConstraints.FILL_HORIZONTAL })
+    private val storageAccountTip = "The default storage account of the HDInsight cluster, which can be found from HDInsight cluster properties of Azure portal."
+    private val storageKeyTip = "The storage key of the default storage account, which can be found from HDInsight cluster storage accounts of Azure portal."
+    private val storageAccountLabel = JLabel("Storage Account").apply { toolTipText = storageAccountTip }
+    val storageAccountField = JTextField().apply { toolTipText = storageAccountTip }
+    private val storageKeyLabel = JLabel("Storage Key").apply { toolTipText = storageKeyTip }
+    val storageKeyField = JTextArea().apply { toolTipText = storageKeyTip }
+    private val storageContainerLabel = JLabel("Storage Container")
+    val storageContainerComboBox = ComboBox<String>()
+
+    private val cardLayoutPlan = listOf(
+            Place(storageAccountLabel, buildConstraints(0).apply { row = 0 }), Place(storageAccountField, buildConstraints(1).apply { row = 0 }),
+            Place(storageKeyLabel, buildConstraints(0).apply { row = 1 }), Place(storageKeyField, buildConstraints(1).apply { row = 1 }),
+            Place(storageContainerLabel, buildConstraints(0).apply { row = 2 }), Place(storageContainerComboBox, buildConstraints(1).apply { row = 2 })
     )
 
     init {
-        layout = GridLayoutManager(layoutPlan.last().gridConstraints.row + 1, colTemplate.size)
-        layoutPlan.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
+        layout = GridLayoutManager(cardLayoutPlan.last().gridConstraints.row + 1, colTemplate.size)
+        cardLayoutPlan.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }
+
+    override fun title() = "Azure Blob"
 }

@@ -77,21 +77,20 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
 
     override fun getData(data: SparkSubmitJobUploadStorageModel) {
         // Component -> Data
-        data.selectedStorageTypeIndex = storagePanel.storageTypeComboBox.selectedIndex
         data.errorMsg = storagePanel.errorMessage
         data.uploadPath = uploadPathField.text
         when (storagePanel.storageTypeComboBox.selectedItem) {
-            StorageType.AZURE_BLOB.title -> {
+            storagePanel.azureBlobCard.title() -> {
                 data.storageAccountType = SparkSubmitStorageType.BLOB
                 data.storageAccount = storagePanel.azureBlobCard.storageAccountField.text.trim()
                 data.storageKey = storagePanel.azureBlobCard.storageKeyField.text.trim()
                 data.containersModel = storagePanel.azureBlobCard.storageContainerComboBox.model as DefaultComboBoxModel
                 data.selectedContainer = storagePanel.azureBlobCard.storageContainerComboBox.selectedItem as? String
             }
-            StorageType.CLUSTER_DEFAULT_STORAGE.title -> {
+            storagePanel.clusterDefaultStorageCard.title() -> {
                 data.storageAccountType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
             }
-            StorageType.SPARK_INTERACTIVE_SESSION.title -> {
+            storagePanel.sparkInteractiveSessionCard.title() -> {
                 data.storageAccountType = SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
             }
         }
@@ -100,24 +99,31 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
     override fun setData(data: SparkSubmitJobUploadStorageModel) {
         // data -> Component
         val applyData: () -> Unit = {
-            storagePanel.storageTypeComboBox.selectedIndex = data.selectedStorageTypeIndex
+            storagePanel.storageTypeComboBox.selectedIndex = findStorageTypeComboBoxSelectedIndex(data.storageAccountType)
             storagePanel.errorMessage = data.errorMsg
             storagePanel.storageAccountType = data.storageAccountType
             uploadPathField.text = data.uploadPath
-            if (data.selectedStorageTypeIndex != -1) {
-                if (storagePanel.storageTypeComboBox.getItemAt(data.selectedStorageTypeIndex) == StorageType.AZURE_BLOB.title) {
-                        storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
-                        storagePanel.azureBlobCard.storageKeyField.text = data.storageKey
-                        if (data.containersModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedContainer)) {
-                            storagePanel.azureBlobCard.storageContainerComboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
-                        } else {
-                            storagePanel.azureBlobCard.storageContainerComboBox.model = data.containersModel
-                        }
+            if (data.storageAccountType == SparkSubmitStorageType.BLOB) {
+                storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
+                storagePanel.azureBlobCard.storageKeyField.text = data.storageKey
+                if (data.containersModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedContainer)) {
+                    storagePanel.azureBlobCard.storageContainerComboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
+                } else {
+                    storagePanel.azureBlobCard.storageContainerComboBox.model = data.containersModel
                 }
             }
         }
         ApplicationManager.getApplication().invokeLater(applyData, ModalityState.any())
     }
 
-
+    fun findStorageTypeComboBoxSelectedIndex(storageAccountType: SparkSubmitStorageType):Int {
+        listOf(0 until storagePanel.storageTypeComboBox.model.size).flatten().forEach {
+            if ((storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.azureBlobCard.title() && storageAccountType == SparkSubmitStorageType.BLOB) ||
+                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.sparkInteractiveSessionCard.title() && storageAccountType == SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION) ||
+                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.clusterDefaultStorageCard.title() && storageAccountType == SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT)) {
+                return it
+            }
+        }
+        return -1
+    }
 }
