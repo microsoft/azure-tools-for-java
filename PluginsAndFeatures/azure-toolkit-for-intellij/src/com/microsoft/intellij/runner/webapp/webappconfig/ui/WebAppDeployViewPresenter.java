@@ -142,6 +142,7 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
                         return;
                     }
                     getMvpView().renderWebAppsTable(webAppList);
+                    getMvpView().enableDeploymentSlotPanel();
                 }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
     }
 

@@ -38,11 +38,11 @@ public class WebAppSettingModel {
     private String targetName = "";
     private boolean deployToRoot = true;
     private boolean deployToSlot = false;
+    private String slotName;
     // create related
     private String webAppName = "";
     private String webContainer = "";
 
-    private String slotName = "production";
     private boolean creatingResGrp = false;
     private String resourceGroup = "";
 

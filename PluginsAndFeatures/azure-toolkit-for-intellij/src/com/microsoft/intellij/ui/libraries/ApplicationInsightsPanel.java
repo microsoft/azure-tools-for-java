@@ -193,6 +193,7 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
             try {
                 handler.disableAIFilterConfiguration(true);
                 handler.removeAIFilterDef();
+                handler.removeAIServletContextListener();
                 handler.save();
             } catch (Exception e) {
                 PluginUtil.displayErrorDialog(message("aiErrTitle"), message("aiConfigRemoveError") + e.getLocalizedMessage());
@@ -253,6 +254,11 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
         if (new File(xmlPath).exists()) {
             handler.parseWebXmlPath(xmlPath);
             handler.setAIFilterConfig();
+
+            // workaround for application insights v2.2.0 regression:
+            // An exception occurred when stop the tomcat application with application insights configured.
+            // Issue was logged to track: https://github.com/Microsoft/ApplicationInsights-Java/issues/755
+            handler.setAIServletContextListener();
         } else { // create web.xml
             int choice = Messages.showYesNoDialog(message("depDescMsg"), message("depDescTtl"), Messages.getQuestionIcon());
             if (choice == Messages.YES) {

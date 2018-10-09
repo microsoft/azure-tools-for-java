@@ -162,6 +162,22 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
         webAppSettingModel.setDeployToRoot(toRoot);
     }
 
+    public boolean isDeployToSlot() {
+        return webAppSettingModel.isDeployToSlot();
+    }
+
+    public void setDeployToSlot(final boolean deployToSlot) {
+        webAppSettingModel.setDeployToSlot(deployToSlot);
+    }
+
+    public String getSlotName() {
+        return webAppSettingModel.getSlotName();
+    }
+
+    public void setSlotName(final String slotName) {
+        webAppSettingModel.setSlotName(slotName);
+    }
+
     public boolean isCreatingNew() {
         return webAppSettingModel.isCreatingNew();
     }

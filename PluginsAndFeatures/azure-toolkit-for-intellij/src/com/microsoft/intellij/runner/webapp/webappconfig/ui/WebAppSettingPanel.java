@@ -146,6 +146,9 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     private JRadioButton rdoLinuxOS;
     private JRadioButton rdoWindowsOS;
     private JLabel lblJavaVersion;
+    private JCheckBox deployToSlotCheckBox;
+    private JComboBox cbDeploymentSlots;
+    private JPanel pnlDeploySlot;
     private JBTable table;
     private AnActionButton btnRefresh;
     /**
@@ -181,6 +184,10 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         btnGrpForOperatingSystem.add(rdoWindowsOS);
         rdoLinuxOS.addActionListener(e -> onOperatingSystemChange(OperatingSystem.LINUX));
         rdoWindowsOS.addActionListener(e -> onOperatingSystemChange(OperatingSystem.WINDOWS));
+
+        deployToSlotCheckBox.addActionListener(e -> toggleSlotPanel());
+        deployToSlotCheckBox.setSelected(false);
+        cbDeploymentSlots.setVisible(false);
 
         cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
             @Override
@@ -385,6 +392,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         } else {
             rdoUseExist.doClick();
             chkToRoot.setSelected(webAppConfiguration.isDeployToRoot());
+            deployToSlotCheckBox.setSelected(webAppConfiguration.isDeployToSlot());
+            cbDeploymentSlots.setVisible(webAppConfiguration.isDeployToSlot());
         }
         if (webAppConfiguration.getOS() == OperatingSystem.WINDOWS) {
             rdoWindowsOS.doClick();
@@ -419,6 +428,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         if (rdoUseExist.isSelected()) {
             webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
             webAppConfiguration.setSubscriptionId(selectedWebApp == null ? "" : selectedWebApp.getSubscriptionId());
+            webAppConfiguration.setDeployToSlot(deployToSlotCheckBox.isSelected());
+            webAppConfiguration.setSlotName((String)cbDeploymentSlots.getSelectedItem());
             webAppConfiguration.setCreatingNew(false);
         } else if (rdoCreateNew.isSelected()) {
             webAppConfiguration.setWebAppName(txtWebAppName.getText());
@@ -470,6 +481,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             webAppConfiguration.setCreatingNew(true);
         }
         webAppConfiguration.setDeployToRoot(chkToRoot.isVisible() && chkToRoot.isSelected());
+        webAppConfiguration.setDeployToSlot(deployToSlotCheckBox.isSelected());
     }
 
     @Override
@@ -499,8 +511,18 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         }
     }
 
+    @Override
+    public void enableDeploymentSlotPanel() {
+        deployToSlotCheckBox.setEnabled(true);
+        cbDeploymentSlots.setEnabled(true);
+        if (webAppConfiguration.isDeployToSlot() && StringUtils.isNotEmpty(webAppConfiguration.getSlotName())) {
+            cbDeploymentSlots.setSelectedItem(webAppConfiguration.getSlotName());
+        }
+    }
+
     private void toggleDeployPanel(boolean isUsingExisting) {
         pnlExist.setVisible(isUsingExisting);
+        pnlDeploySlot.setVisible(isUsingExisting);
         pnlCreate.setVisible(!isUsingExisting);
     }
 
@@ -588,6 +610,16 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         txtSelectedWebApp.setText("");
     }
 
+    private void toggleSlotPanel() {
+        cbDeploymentSlots.setVisible(deployToSlotCheckBox.isSelected());
+        if (!deployToSlotCheckBox.isSelected() || selectedWebApp == null) {
+            return;
+        }
+        final WebApp app = selectedWebApp.getResource();
+        cbDeploymentSlots.removeAllItems();
+        app.deploymentSlots().list().stream().forEach(slot -> cbDeploymentSlots.addItem(slot.name()));
+    }
+
     private void createUIComponents() {
         DefaultTableModel tableModel = new DefaultTableModel() {
             @Override
@@ -616,6 +648,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             }
             selectedWebApp = cachedWebAppList.get(selectedRow);
             txtSelectedWebApp.setText(selectedWebApp.toString());
+            toggleSlotPanel();
             try {
                 String scmSuffix = AuthMethodManager.getInstance().getAzureManager().getScmSuffix();
                 lblJarDeployHint.setHyperlinkTarget(String.format(WEB_CONFIG_URL_FORMAT, selectedWebApp.getResource()
