@@ -2,15 +2,18 @@ package org.jetbrains.plugins.azure.cloudshell.terminal
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.jediterm.terminal.ProcessTtyConnector
+import com.intellij.openapi.vfs.VirtualFile
 import com.jediterm.terminal.TtyConnector
+import com.jetbrains.rider.util.idea.getComponent
+import okhttp3.MediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import org.apache.http.client.utils.URIBuilder
+import org.jetbrains.plugins.azure.cloudshell.CloudShellComponent
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalProcess
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalRunner
-import java.io.IOException
 import java.net.URI
-import java.nio.charset.Charset
 
 class AzureCloudTerminalRunner(project: Project,
                                private val cloudConsoleService: CloudConsoleService,
@@ -24,16 +27,21 @@ class AzureCloudTerminalRunner(project: Project,
 
     private val logger = Logger.getInstance(AzureCloudTerminalRunner::class.java)
     private val resizeTerminalUrl: String
+    private val uploadFileToTerminalUrl: String
 
     init {
         val builder = URIBuilder(socketUri)
         builder.scheme = "https"
-        builder.path = builder.path.trimEnd('/') + "/size"
-        resizeTerminalUrl = builder.toString()
+        builder.path = builder.path.trimEnd('/')
+
+        resizeTerminalUrl = builder.toString() + "/size"
+        uploadFileToTerminalUrl = builder.toString() + "/upload"
     }
 
     override fun createTtyConnector(process: CloudTerminalProcess): TtyConnector {
-        return object : ProcessTtyConnector(process, Charset.defaultCharset()) {
+        val cloudShellComponent = project?.getComponent<CloudShellComponent>()
+
+        val connector = object : AzureCloudProcessTtyConnector(process) {
             override fun resizeImmediately() {
                 if (pendingTermSize != null) {
                     val resizeResult = cloudConsoleService.resizeTerminal(
@@ -45,48 +53,36 @@ class AzureCloudTerminalRunner(project: Project,
                 }
             }
 
-            override fun read(buf: CharArray?, offset: Int, length: Int): Int {
-                try {
-                    return super.read(buf, offset, length)
-                } catch (e: IOException) {
-                    if (shouldRethrowIOException(e)) {
-                        throw e
-                    }
-                }
+            override fun uploadFile(fileName: String, file: VirtualFile) {
+                val part = MultipartBody.Part.createFormData(
+                        "uploading-file",
+                        fileName,
+                        RequestBody.create(
+                                MediaType.get("application/octet-stream"),
+                                file.contentsToByteArray()
+                        ))
 
-                return -1
-            }
+                val uploadResult = cloudConsoleService.uploadFileToTerminal(
+                        uploadFileToTerminalUrl,
+                        part).execute()
 
-            override fun write(bytes: ByteArray?) {
-                try {
-                    super.write(bytes)
-                } catch (e: IOException) {
-                    if (shouldRethrowIOException(e)) {
-                        throw e
-                    }
+                if (!uploadResult.isSuccessful) {
+                    logger.error("Error uploading file to cloud terminal. Response received from API: ${uploadResult.code()} ${uploadResult.message()} - ${uploadResult.errorBody()?.string()}")
                 }
             }
 
-            override fun write(string: String?) {
-                try {
-                    super.write(string)
-                } catch (e: IOException) {
-                    if (shouldRethrowIOException(e)) {
-                        throw e
-                    }
-                }
-            }
-
-            private fun shouldRethrowIOException(exception: IOException): Boolean =
-                    exception.message == null || !exception.message!!.contains("pipe closed", true)
 
             override fun getName(): String {
                 return "Connector: $pipeName"
             }
 
-            override fun isConnected(): Boolean {
-                return true
+            override fun close() {
+                cloudShellComponent?.unregisterConnector(this)
+                super.close()
             }
         }
+
+        cloudShellComponent?.registerConnector(connector)
+        return connector
     }
 }

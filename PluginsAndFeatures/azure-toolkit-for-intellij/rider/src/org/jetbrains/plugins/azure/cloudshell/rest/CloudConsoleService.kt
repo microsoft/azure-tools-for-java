@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.azure.cloudshell.rest
 
+import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -18,5 +19,9 @@ interface CloudConsoleService {
 
     @POST
     @Headers(*arrayOf("Accept: application/json", "Content-type: application/json"))
-    fun resizeTerminal(@Url terminalUrl: String, @Query("cols") columns: Int, @Query("rows") rows: Int, @Query("version") version: String = "2018-06-01"): Call<Void>
+    fun resizeTerminal(@Url shellUrl: String, @Query("cols") columns: Int, @Query("rows") rows: Int, @Query("version") version: String = "2018-06-01"): Call<Void>
+
+    @POST
+    @Multipart
+    fun uploadFileToTerminal(@Url shellUrl: String, @Part file: MultipartBody.Part, @Query("version") version: String = "2018-06-01"): Call<Void>
 }
