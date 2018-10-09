@@ -49,6 +49,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
     // const string
     private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
     private static final String NEED_CHOOSE_WEB_APP = "Choose a web app to deploy.";
+    private static final String NO_SLOT_TO_DEPLOY = "The selected web app has no deployment slot, will deploy to the web app instead.";
     private static final String MISSING_WEB_APP_NAME = "Web App name not provided.";
     private static final String MISSING_SUBSCRIPTION = "Subscription not provided.";
     private static final String MISSING_WEB_CONTAINER = "Web Container not provided.";
@@ -127,6 +128,8 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
         } else {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppId())) {
                 throw new ConfigurationException(NEED_CHOOSE_WEB_APP);
+            } else if (webAppSettingModel.isDeployToSlot() && Utils.isEmptyString(webAppSettingModel.getSlotName())){
+                throw new ConfigurationException(NO_SLOT_TO_DEPLOY);
             }
         }
         if (Utils.isEmptyString(webAppSettingModel.getTargetName())) {
