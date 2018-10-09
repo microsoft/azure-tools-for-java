@@ -122,7 +122,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                                     val defaultStorageContainer = defaultStorageAccount.defaultContainerOrRootPath
                                     if (defaultStorageAccount != null && defaultStorageContainer != null) {
                                         errorMsg = null
-                                        uploadPath = getAzureBlobStoragePath(defaultStorageContainer, defaultStorageAccount.name)
+                                        uploadPath = getAzureBlobStoragePath(defaultStorageAccount.name, defaultStorageContainer)
                                         storageAccountType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
                                     } else {
                                         errorMsg = "Cluster have no storage account or storage container"
