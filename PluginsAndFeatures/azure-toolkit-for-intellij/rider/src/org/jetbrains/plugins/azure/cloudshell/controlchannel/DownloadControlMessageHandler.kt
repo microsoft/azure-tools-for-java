@@ -8,14 +8,13 @@ import com.intellij.notification.NotificationListener
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.fileChooser.FileChooser
-import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.fileChooser.FileChooserFactory
+import com.intellij.openapi.fileChooser.FileSaverDescriptor
 import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.PathUtil
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
 import java.io.File
@@ -38,66 +37,59 @@ class DownloadControlMessageHandler(
     override fun handle(jsonControlMessage: String) {
         val message = gson.fromJson(jsonControlMessage, DownloadControlMessage::class.java)
 
-        ApplicationManager.getApplication().invokeLater {
-            val descriptor = FileChooserDescriptor(false, true, false, false, false, false)
-            descriptor.title = "Save file from Azure Cloud Shell to folder"
+        object : Task.Backgroundable(project, "Downloading file...", true, PerformInBackgroundOption.DEAF) {
+            override fun run(indicator: ProgressIndicator) {
+                val downloadResult = cloudConsoleService.downloadFileFromTerminal(cloudConsoleBaseUrl + message.fileUri).execute()
+                if (!downloadResult.isSuccessful) {
+                    logger.error("Error downloading file from cloud terminal. Response received from API: ${downloadResult.code()} ${downloadResult.message()} - ${downloadResult.errorBody()?.string()}")
+                }
 
-            FileChooserFactory.getInstance().createPathChooser(descriptor, project, null)
-                    .choose(null, object : FileChooser.FileChooserConsumer {
-                        override fun consume(files: List<VirtualFile>) {
-                            val targetPath = files[0]
+                val matchResult = contentDispositionHeaderRegex.find(downloadResult.raw().header("Content-Disposition")
+                        ?: "")
+                val fileName = if (matchResult != null) {
+                    matchResult.value
+                            .replace('/', '-')
+                            .replace('\\', '-')
+                } else {
+                    "cloudshell-" + UUID.randomUUID()
+                }
 
-                            object : Task.Backgroundable(project, "Downloading file...", true, PerformInBackgroundOption.DEAF) {
-                                override fun run(indicator: ProgressIndicator) {
-                                    val downloadResult = cloudConsoleService.downloadFileFromTerminal(cloudConsoleBaseUrl + message.fileUri).execute()
-                                    if (!downloadResult.isSuccessful) {
-                                        logger.error("Error downloading file from cloud terminal. Response received from API: ${downloadResult.code()} ${downloadResult.message()} - ${downloadResult.errorBody()?.string()}")
-                                    }
+                ApplicationManager.getApplication().invokeLater {
+                    val dialog = FileChooserFactory.getInstance().createSaveFileDialog(
+                            FileSaverDescriptor("Save file from Azure Cloud Shell",
+                                    "", PathUtil.getFileExtension(fileName) ?: ""), project)
 
-                                    val matchResult = contentDispositionHeaderRegex.find(downloadResult.raw().header("Content-Disposition")
-                                            ?: "")
-                                    val fileName = if (matchResult != null) {
-                                        matchResult.value
-                                                .replace('/', '-')
-                                                .replace('\\', '-')
-                                    } else {
-                                        "cloudshell-" + UUID.randomUUID()
-                                    }
+                    val targetFile = dialog.save(null, fileName)
+                    if (targetFile != null) {
+                        ApplicationManager.getApplication().runWriteAction {
+                            try {
+                                val virtualFile = targetFile.getVirtualFile(true)
+                                val outputStream = virtualFile!!.getOutputStream(this)
+                                downloadResult.body()!!.byteStream().copyTo(outputStream)
+                                outputStream.close()
 
-                                    ApplicationManager.getApplication().invokeLater {
-                                        ApplicationManager.getApplication().runWriteAction {
-                                            try {
-                                                val targetFile = targetPath.createChildData(this, fileName)
-                                                val outputStream = targetFile.getOutputStream(this)
-                                                downloadResult.body()!!.byteStream().copyTo(outputStream)
-                                                outputStream.close()
-
-                                                AzureCloudShellNotifications.notify(project,
-                                                        "Azure",
-                                                        "File downloaded - $fileName",
-                                                        "The file $fileName was downloaded from Azure Cloud Shell. <a href='show'>Show file</a>",
-                                                        NotificationType.INFORMATION,
-                                                        object : NotificationListener.Adapter() {
-                                                            override fun hyperlinkActivated(notification: Notification, e: HyperlinkEvent) {
-                                                                if (!project.isDisposed) {
-                                                                    when (e.description) {
-                                                                        "show" -> ShowFilePathAction.openFile(File(targetFile.presentableUrl))
-                                                                    }
-                                                                }
-                                                            }
-                                                        })
-                                            } catch (e: IOException) {
-                                                logger.error(e)
+                                AzureCloudShellNotifications.notify(project,
+                                        "Azure",
+                                        "File downloaded - $fileName",
+                                        "The file $fileName was downloaded from Azure Cloud Shell. <a href='show'>Show file</a>",
+                                        NotificationType.INFORMATION,
+                                        object : NotificationListener.Adapter() {
+                                            override fun hyperlinkActivated(notification: Notification, e: HyperlinkEvent) {
+                                                if (!project.isDisposed) {
+                                                    when (e.description) {
+                                                        "show" -> ShowFilePathAction.openFile(File(virtualFile!!.presentableUrl))
+                                                    }
+                                                }
                                             }
-                                        }
-                                    }
-                                }
-                            }.queue()
+                                        })
+                            } catch (e: IOException) {
+                                logger.error(e)
+                            }
                         }
-
-                        override fun cancelled() {}
-                    })
-        }
+                    }
+                }
+            }
+        }.queue()
     }
 
     private data class DownloadControlMessage(

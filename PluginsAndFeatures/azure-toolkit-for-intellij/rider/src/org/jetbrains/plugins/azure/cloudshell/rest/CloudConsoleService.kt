@@ -27,5 +27,6 @@ interface CloudConsoleService {
     fun uploadFileToTerminal(@Url shellUrl: String, @Part file: MultipartBody.Part, @Query("version") version: String = "2018-06-01"): Call<Void>
 
     @GET
+    @Streaming
     fun downloadFileFromTerminal(@Url fileUrl: String): Call<ResponseBody>
 }
