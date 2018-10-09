@@ -43,13 +43,11 @@ import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.azurecommons.util.*;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
+import com.microsoft.azuretools.ijidea.actions.GithubSurveyAction;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.common.CommonConst;
-import com.microsoft.intellij.feedback.GithubIssue;
-import com.microsoft.intellij.feedback.NewGithubIssueAction;
-import com.microsoft.intellij.feedback.ReportableSurvey;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
@@ -96,6 +94,8 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private String _hashmac = GetHashMac.GetHashMac();
 
+    private Boolean firstInstallationByVersion;
+
     public AzurePlugin(Project project) {
         super(project);
         this.azureSettings = AzureSettings.getSafeInstance(project);
@@ -110,15 +110,17 @@ public class AzurePlugin extends AbstractProjectComponent {
     }
 
     private void initializeFeedbackNotification() {
+        if (!isFirstInstallationByVersion()) {
+            return;
+        }
+
         Notification feedbackNotification = new Notification(
                 "Azure Toolkit plugin",
                 "We're listening",
                 "Thanks for helping Microsoft improve Azure Toolkit experience!\nYour feedback is important. Please take a minute to fill out our",
                 NotificationType.INFORMATION);
 
-        feedbackNotification.addAction(new NewGithubIssueAction(
-                        new GithubIssue<>(new ReportableSurvey("User feedback")).withLabel("Feedback"),
-                        "user satisfaction survey"));
+        feedbackNotification.addAction(new GithubSurveyAction());
 
         Observable.timer(30, TimeUnit.SECONDS)
                 .take(1)
@@ -135,6 +137,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     public void initComponent() {
         if (!IS_ANDROID_STUDIO) {
             LOG.info("Starting Azure Plugin");
+            firstInstallationByVersion = new Boolean(isFirstInstallationByVersion());
             try {
                 //this code is for copying componentset.xml in plugins folder
                 copyPluginComponents();
@@ -376,7 +379,11 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";
 
-    private boolean isFirstInstallationByVersion() {
+    synchronized private boolean isFirstInstallationByVersion() {
+        if (firstInstallationByVersion != null) {
+            return firstInstallationByVersion.booleanValue();
+        }
+
         if (new File(dataFile).exists()) {
             String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
             if (!StringHelper.isNullOrWhiteSpace(version) && version.equals(PLUGIN_VERSION)) {
