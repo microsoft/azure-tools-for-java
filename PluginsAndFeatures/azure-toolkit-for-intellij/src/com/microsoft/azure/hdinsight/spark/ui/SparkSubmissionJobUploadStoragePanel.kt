@@ -55,9 +55,7 @@ class SparkSubmissionJobUploadStoragePanel: JPanel() {
         )
 
         init {
-            // TODO: choose another proper way to define colSize
-            val colSize = 2
-            layout = GridLayoutManager(cardLayoutPlan.last().gridConstraints.row + 1, colSize)
+            layout = GridLayoutManager(cardLayoutPlan.last().gridConstraints.row + 1, colTemplate.size)
             cardLayoutPlan.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
         }
     }

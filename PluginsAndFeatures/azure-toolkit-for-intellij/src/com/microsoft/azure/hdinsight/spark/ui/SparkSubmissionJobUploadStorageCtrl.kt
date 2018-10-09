@@ -100,7 +100,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                 .observeOn(Schedulers.io())
                 .map { toUpdate ->
                     when (selectedItem) {
-                        StorageType.SPARK_INTERACTIVE_SESSION.title ->toUpdate.apply {
+                        StorageType.SPARK_INTERACTIVE_SESSION.title -> toUpdate.apply {
                             if (getClusterDetail() != null) {
                                 errorMsg = null
                                 storageAccountType = SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
@@ -110,7 +110,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                                 uploadPath = "-"
                             }
                         }
-                        StorageType.CLUSTER_DEFAULT_STORAGE.title ->toUpdate.apply {
+                        StorageType.CLUSTER_DEFAULT_STORAGE.title -> toUpdate.apply {
                             val clusterDetail = getClusterDetail()
                             if (clusterDetail == null) {
                                 errorMsg = "Cluster not exist"
@@ -135,7 +135,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                                 }
                             }
                         }
-                        StorageType.AZURE_BLOB.title ->toUpdate.apply {
+                        StorageType.AZURE_BLOB.title -> toUpdate.apply {
                             if (containersModel.size == 0 || containersModel.selectedItem == null) {
                                 uploadPath = "-"
                                 errorMsg = "Azure Blob storage form is not completed"
