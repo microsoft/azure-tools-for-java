@@ -379,7 +379,7 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";
 
-    private boolean isFirstInstallationByVersion() {
+    synchronized private boolean isFirstInstallationByVersion() {
         if (firstInstallationByVersion != null) {
             return firstInstallationByVersion.booleanValue();
         }
