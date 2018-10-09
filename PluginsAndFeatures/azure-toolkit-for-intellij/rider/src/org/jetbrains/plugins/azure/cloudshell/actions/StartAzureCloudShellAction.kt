@@ -27,11 +27,10 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.sdkmanage.AzureManager
 import com.microsoft.rest.credentials.ServiceClientCredentials
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
-import org.jetbrains.plugins.azure.cloudshell.AzureCloudTerminalProcess
+import org.jetbrains.plugins.azure.cloudshell.terminal.AzureCloudTerminalFactory
 import org.jetbrains.plugins.azure.cloudshell.rest.*
 import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
 import org.jetbrains.plugins.terminal.TerminalView
-import org.jetbrains.plugins.terminal.cloud.CloudTerminalRunner
 import java.net.URI
 import javax.swing.event.HyperlinkEvent
 
@@ -42,8 +41,6 @@ class StartAzureCloudShellAction : AnAction() {
     private val defaultTerminalRows = 30
 
     override fun update(e: AnActionEvent) {
-        if (e == null) return
-
         e.presentation.isEnabled = CommonDataKeys.PROJECT.getData(e.dataContext) != null
                 && AuthMethodManager.getInstance().azureManager != null
     }
@@ -209,11 +206,7 @@ class StartAzureCloudShellAction : AnAction() {
                 // 5. Connect to terminal
                 updateIndicator(indicator, 0.85, "Connecting to cloud shell terminal...")
 
-                val socketClient = CloudConsoleTerminalWebSocket(URI(socketUri))
-                socketClient.connectBlocking()
-
-                val runner = CloudTerminalRunner(project, "Azure Cloud Shell",
-                        AzureCloudTerminalProcess(socketClient))
+                val runner = AzureCloudTerminalFactory.createTerminalRunner(project, retrofitClient, URI(socketUri))
 
                 ApplicationManager.getApplication().invokeLater {
                     val terminalWindow = ToolWindowManager.getInstance(project)
