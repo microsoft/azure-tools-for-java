@@ -146,7 +146,7 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView>() : MvpPres
     }
 
     fun onLoadPublishableProjects(lifetime: Lifetime, project: Project) {
-        project.solution.publishableProjectsModel.publishableProjects.advise(project.lifetime.createNested()) {
+        project.solution.publishableProjectsModel.publishableProjects.advise(lifetime) {
             if (it.newValueOpt != null) {
                 application.invokeLater {
                     if (lifetime.isTerminated) return@invokeLater

@@ -45,7 +45,7 @@ import com.microsoft.intellij.runner.webapp.webappconfig.validator.SqlDatabaseVa
 import com.microsoft.intellij.runner.webapp.webappconfig.validator.SqlDatabaseValidator.validateDatabaseConnection
 import com.microsoft.intellij.runner.webapp.webappconfig.validator.WebAppValidator.validateWebApp
 
-class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
+class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, name: String?) :
         AzureRunConfigurationBase<DotNetWebAppSettingModel>(project, factory, name) {
 
     companion object {

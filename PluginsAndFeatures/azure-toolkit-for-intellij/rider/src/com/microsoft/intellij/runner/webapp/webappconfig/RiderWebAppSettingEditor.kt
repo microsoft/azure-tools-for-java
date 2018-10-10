@@ -34,7 +34,7 @@ class RiderWebAppSettingEditor(project: Project,
                                webAppConfiguration: RiderWebAppConfiguration)
     : AzureRiderSettingsEditor<RiderWebAppConfiguration>() {
 
-    private val lifetimeDef = project.lifetime.createNestedDef()
+    private val lifetimeDef = project.lifetime.createNested()
 
     private val myPanel: RiderWebAppSettingPanel = RiderWebAppSettingPanel(lifetimeDef.lifetime, project, webAppConfiguration)
 
