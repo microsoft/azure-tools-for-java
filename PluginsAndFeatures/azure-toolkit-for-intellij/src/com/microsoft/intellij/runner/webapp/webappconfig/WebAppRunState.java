@@ -39,6 +39,7 @@ import org.jetbrains.idea.maven.model.MavenConstants;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
@@ -57,7 +58,9 @@ import com.microsoft.intellij.util.MavenRunTaskUtil;
 public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     private static final String CREATE_WEBAPP = "Creating new Web App...";
+    private static final String CREATE_DEPLOYMENT_SLOT = "Creating new Deployment Slot...";
     private static final String CREATE_FAILED = "Failed to create Web App. Error: %s ...";
+    private static final String CREATE_SLOT_FAILED = "Failed to create Deployment Slot. Error: %s ...";
     private static final String GETTING_DEPLOYMENT_CREDENTIAL = "Getting Deployment Credential...";
     private static final String CONNECTING_FTP = "Connecting to FTP server...";
     private static final String UPLOADING_ARTIFACT = "Uploading artifact to: %s ...";
@@ -103,7 +106,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
             throw new FileNotFoundException(String.format(NO_TARGET_FILE, webAppSettingModel.getTargetPath()));
         }
         WebAppBase deployTarget = getDeployTargetByConfiguration(processHandler);
-        processHandler.setText(webAppSettingModel.isDeployToSlot() ? STOP_DEPLOYMENT_SLOT : STOP_WEB_APP);
+        processHandler.setText(isDeployToSlot() ? STOP_DEPLOYMENT_SLOT : STOP_WEB_APP);
         deployTarget.stop();
 
         int indexOfDot = webAppSettingModel.getTargetName().lastIndexOf(".");
@@ -125,13 +128,17 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
                 break;
         }
 
-        processHandler.setText(webAppSettingModel.isDeployToSlot() ? START_DEPLOYMENT_SLOT : START_WEB_APP);
+        processHandler.setText(isDeployToSlot() ? START_DEPLOYMENT_SLOT : START_WEB_APP);
         deployTarget.start();
 
         String url = getUrl(deployTarget, fileName, fileType);
         processHandler.setText(DEPLOY_SUCCESSFUL);
         processHandler.setText("URL: " + url);
         return deployTarget;
+    }
+
+    private boolean isDeployToSlot() {
+        return !webAppSettingModel.isCreatingNew() && webAppSettingModel.isDeployToSlot();
     }
 
     @Override
@@ -152,7 +159,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @Override
     protected String getDeployTarget() {
-        return webAppSettingModel.isDeployToSlot() ? "DeploymentSlot" : "WebApp";
+        return isDeployToSlot() ? "DeploymentSlot" : "WebApp";
     }
 
     @Override
@@ -177,8 +184,12 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
             throw new Exception(NO_WEB_APP);
         }
 
-        if (webAppSettingModel.isDeployToSlot()) {
-            return webApp.deploymentSlots().getByName(webAppSettingModel.getSlotName());
+        if (isDeployToSlot()) {
+            if (webAppSettingModel.getSlotName() == Constants.CREATE_NEW_SLOT) {
+                return createDeploymentSlot(processHandler);
+            } else {
+                return webApp.deploymentSlots().getByName(webAppSettingModel.getSlotName());
+            }
         } else {
             return webApp;
         }
@@ -191,6 +202,16 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         } catch (Exception e) {
             processHandler.setText(STOP_DEPLOY);
             throw new Exception(String.format(CREATE_FAILED, e.getMessage()));
+        }
+    }
+
+    private DeploymentSlot createDeploymentSlot(@NotNull RunProcessHandler processHandler) throws Exception {
+        processHandler.setText(CREATE_DEPLOYMENT_SLOT);
+        try {
+            return AzureWebAppMvpModel.getInstance().createDeploymentSlot(webAppSettingModel);
+        } catch (Exception e) {
+            processHandler.setText(STOP_DEPLOY);
+            throw new Exception(String.format(CREATE_SLOT_FAILED, e.getMessage()));
         }
     }
 
@@ -357,9 +378,16 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     private void updateConfigurationDataModel(@NotNull WebAppBase app) {
         webAppSettingModel.setCreatingNew(false);
-        webAppSettingModel.setWebAppId(app.id());
+        // todo: add flag to indicate create new slot or not
+        if (app instanceof DeploymentSlot) {
+            webAppSettingModel.setSlotName(app.name());
+            webAppSettingModel.setNewSlotConfigurationSource(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
+            webAppSettingModel.setNewSlotName("");
+            webAppSettingModel.setWebAppId(((DeploymentSlot)app).parent().id());
+        } else {
+            webAppSettingModel.setWebAppId(app.id());
+        }
         webAppSettingModel.setWebAppName("");
-        webAppSettingModel.setSlotName("production");
         webAppSettingModel.setResourceGroup("");
         webAppSettingModel.setAppServicePlanName("");
     }

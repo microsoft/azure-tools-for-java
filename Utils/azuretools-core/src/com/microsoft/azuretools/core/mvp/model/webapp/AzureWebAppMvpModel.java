@@ -95,6 +95,31 @@ public class AzureWebAppMvpModel {
         }
     }
 
+    /**
+     * API to create a new Deployment Slot by setting model.
+     */
+    public DeploymentSlot createDeploymentSlot(@NotNull WebAppSettingModel model) throws Exception {
+        final WebApp app = getWebAppById(model.getSubscriptionId(), model.getWebAppId());
+        final String name = model.getNewSlotName();
+        final String configurationSource = model.getNewSlotConfigurationSource();
+        final DeploymentSlot.DefinitionStages.Blank definedSlot = app.deploymentSlots().define(name);
+
+        final DeploymentSlot configurationSourceSlot = app.deploymentSlots()
+            .list()
+            .stream()
+            .filter(s -> configurationSource.equals(s.name()))
+            .findAny()
+            .orElse(null);
+
+        if (configurationSourceSlot != null) {
+            return definedSlot.withConfigurationFromDeploymentSlot(configurationSourceSlot).create();
+        } else if (configurationSource.equals(app.name())) {
+            return definedSlot.withConfigurationFromParent().create();
+        } else {
+            return definedSlot.withBrandNewConfiguration().create();
+        }
+    }
+
      /**
      * API to create Web App on Windows .
      *

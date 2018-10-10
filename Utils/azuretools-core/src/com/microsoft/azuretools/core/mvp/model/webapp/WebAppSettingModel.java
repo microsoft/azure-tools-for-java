@@ -39,6 +39,8 @@ public class WebAppSettingModel {
     private boolean deployToRoot = true;
     private boolean deployToSlot = false;
     private String slotName;
+    private String newSlotName;
+    private String newSlotConfigurationSource;
     // create related
     private String webAppName = "";
     private String webContainer = "";
@@ -127,6 +129,22 @@ public class WebAppSettingModel {
 
     public void setSlotName(final String slotName) {
         this.slotName = slotName;
+    }
+
+    public String getNewSlotName() {
+        return this.newSlotName;
+    }
+
+    public void setNewSlotName(final String newSlotName) {
+        this.newSlotName = newSlotName;
+    }
+
+    public String getNewSlotConfigurationSource() {
+        return this.newSlotConfigurationSource;
+    }
+
+    public void setNewSlotConfigurationSource(final String newSlotConfigurationSource) {
+        this.newSlotConfigurationSource = newSlotConfigurationSource;
     }
 
     public String getWebContainer() {
