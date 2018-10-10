@@ -640,8 +640,10 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
 
     @Override
     public void fillDeploymentSlots(@NotNull final List<DeploymentSlot> slots) {
-        final List<String> configurationSources = new ArrayList();
-        final List<String> deploymentSlots = new ArrayList<>();
+        cbDeploymentSlots.removeAllItems();
+        slotConfigurationSourceComboBox.removeAllItems();
+        final List<String> configurationSources = new ArrayList<String>();
+        final List<String> deploymentSlots = new ArrayList<String>();
         configurationSources.add(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
         configurationSources.add(selectedWebApp.getResource().name());
 
