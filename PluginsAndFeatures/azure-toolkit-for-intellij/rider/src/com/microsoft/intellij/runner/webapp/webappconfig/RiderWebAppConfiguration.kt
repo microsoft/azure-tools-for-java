@@ -1,3 +1,25 @@
+/**
+ * Copyright (c) 2018 JetBrains s.r.o.
+ * <p/>
+ * All rights reserved.
+ * <p/>
+ * MIT License
+ * <p/>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p/>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ * <p/>
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.intellij.runner.webapp.webappconfig
 
 import com.intellij.execution.ExecutionException
@@ -12,20 +34,25 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.util.idea.getLogger
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.AzureRunConfigurationBase
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
-import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
+import com.microsoft.intellij.runner.webapp.model.DotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.webappconfig.validator.ProjectValidator.validateProject
 import com.microsoft.intellij.runner.webapp.webappconfig.validator.SqlDatabaseValidator
 import com.microsoft.intellij.runner.webapp.webappconfig.validator.SqlDatabaseValidator.validateDatabaseConnection
 import com.microsoft.intellij.runner.webapp.webappconfig.validator.WebAppValidator.validateWebApp
 
-class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, name: String?) :
-        AzureRunConfigurationBase<AzureDotNetWebAppSettingModel>(project, factory, name) {
+class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
+        AzureRunConfigurationBase<DotNetWebAppSettingModel>(project, factory, name) {
 
-    private val myModel = AzureDotNetWebAppSettingModel()
+    companion object {
+        private val LOG = getLogger<RiderWebAppConfiguration>()
+    }
+
+    private val myModel = DotNetWebAppSettingModel()
 
     init {
         myModel.webAppModel.publishableProject = project.solution.publishableProjectsModel.publishableProjects.values
@@ -44,7 +71,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         return myModel.webAppModel.publishableProject?.projectName ?: ""
     }
 
-    override fun getModel(): AzureDotNetWebAppSettingModel {
+    override fun getModel(): DotNetWebAppSettingModel {
         return myModel
     }
 
@@ -86,9 +113,12 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     private fun validateAzureAccountIsSignedIn() {
         try {
             if (!AuthMethodManager.getInstance().isSignedIn) {
-                throw RuntimeConfigurationError(UiConstants.SIGN_IN_REQUIRED)
+                val message = UiConstants.SIGN_IN_REQUIRED
+                LOG.error(message)
+                throw RuntimeConfigurationError(message)
             }
         } catch (e: Throwable) {
+            LOG.error(e)
             throw RuntimeConfigurationError(UiConstants.SIGN_IN_REQUIRED)
         }
     }
@@ -103,7 +133,12 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     @Throws(RuntimeConfigurationError::class)
     private fun checkConnectionStringNameExistence(name: String, webAppId: String) {
         SqlDatabaseValidator.checkValueIsSet(name, UiConstants.CONNECTION_STRING_NAME_NOT_DEFINED)
-        val webApp = AzureModel.getInstance().resourceGroupToWebAppMap
+        val resourceGroupToWebAppMap = AzureModel.getInstance().resourceGroupToWebAppMap
+        if (resourceGroupToWebAppMap == null) {
+            LOG.error("AzureModel.resourceGroupToWebAppMap map is NULL")
+            return
+        }
+        val webApp = resourceGroupToWebAppMap
                 .flatMap { it.value }
                 .firstOrNull { it.id() == webAppId } ?: return
 
