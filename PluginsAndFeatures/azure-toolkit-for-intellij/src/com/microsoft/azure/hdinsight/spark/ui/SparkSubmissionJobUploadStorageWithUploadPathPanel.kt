@@ -31,6 +31,7 @@ import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import org.apache.commons.lang3.StringUtils
+import rx.subjects.PublishSubject
 import javax.swing.*
 
 class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableControl<SparkSubmitJobUploadStorageModel> {
@@ -70,9 +71,17 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
             })
     )
 
+    val storageCheckSubject: PublishSubject<String> = PublishSubject.create()
+
     init {
         layout = GridLayoutManager(layoutPlan.last().gridConstraints.row + 1, colTemplate.size)
         layoutPlan.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
+    }
+
+    override fun removeNotify() {
+        super.removeNotify()
+
+        storageCheckSubject.onCompleted()
     }
 
     override fun getData(data: SparkSubmitJobUploadStorageModel) {

@@ -54,6 +54,7 @@ class SparkSubmissionDebuggablePanelConfigurable(project: Project,
         super.onClusterSelected(cluster)
 
         advancedConfigCtrl.selectCluster(cluster.name)
+        jobUploadStorageCtrl.selectCluster(cluster.name)
     }
 
     override fun setData(data: SparkSubmitModel) {
