@@ -46,6 +46,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import rx.Observable;
 import rx.schedulers.Schedulers;
+import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 
 import javax.swing.*;
@@ -68,11 +69,13 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
 
     // Cluster refresh publish subject with preselected cluster name as event
     @Nullable
-    private PublishSubject<String> clustersRefreshSub;
+    private BehaviorSubject<String> clustersRefreshSub;
 
     public SparkSubmissionContentPanelConfigurable(@NotNull Project project, @NotNull SparkSubmissionContentPanel submissionPanel) {
         this.submissionPanel = submissionPanel;
         this.myProject = project;
+
+        this.clustersRefreshSub = BehaviorSubject.create();
     }
 
     @NotNull
@@ -143,7 +146,9 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
         this.submissionPanel.addPropertyChangeListener("ancestor", event -> {
             if (event.getNewValue() != null) {
                 // Being added
-                clustersRefreshSub = PublishSubject.create();
+                if (clustersRefreshSub == null) {
+                    clustersRefreshSub = BehaviorSubject.create();
+                }
 
                 clustersRefreshSub
                         .doOnNext(any -> setClusterRefreshEnabled(false))
@@ -173,6 +178,8 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
             } else if (clustersRefreshSub != null) {
                 // Being removed
                 clustersRefreshSub.onCompleted();
+
+                clustersRefreshSub = null;
             }
         });
     }

@@ -21,6 +21,9 @@
 
 package com.microsoft.azure.hdinsight.spark.ui;
 
+import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.execution.configurations.RuntimeConfigurationException;
+import com.intellij.execution.configurations.RuntimeConfigurationWarning;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
@@ -100,6 +103,19 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
     }
 
     public void validate() throws ConfigurationException{
-        myClusterSubmissionConfigurable.validate();
+        try {
+            myClusterSubmissionConfigurable.validate();
+        } catch (ConfigurationException e) {
+            String remoteRunPrefix = "[Remotely Run in Cluster] ";
+            if (e instanceof RuntimeConfigurationError) {
+                throw new RuntimeConfigurationError(remoteRunPrefix + e.getMessage(), e.getQuickFix());
+            } else if (e instanceof RuntimeConfigurationWarning) {
+                throw new RuntimeConfigurationWarning(remoteRunPrefix + e.getMessage(), e.getQuickFix());
+            } else if (e instanceof RuntimeConfigurationException) {
+                throw new RuntimeConfigurationException(remoteRunPrefix + e.getMessage(), remoteRunPrefix + e.getTitle());
+            } else {
+                throw new ConfigurationException(remoteRunPrefix + e.getMessage(), remoteRunPrefix + e.getTitle());
+            }
+        }
     }
 }

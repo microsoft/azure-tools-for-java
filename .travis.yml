@@ -5,4 +5,4 @@ jdk:
 before_install:
 - export MAVEN_OPTS="-Xmx768M"
 script:
-- travis_wait 40 ./BuildDevint -q -e eclipse
+- travis_wait 80 ./BuildDevint -q -e eclipse
