@@ -378,9 +378,16 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     private void updateConfigurationDataModel(@NotNull WebAppBase app) {
         webAppSettingModel.setCreatingNew(false);
-        webAppSettingModel.setWebAppId(app.id());
+        // todo: add flag to indicate create new slot or not
+        if (app instanceof DeploymentSlot) {
+            webAppSettingModel.setSlotName(app.name());
+            webAppSettingModel.setNewSlotConfigurationSource(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
+            webAppSettingModel.setNewSlotName("");
+            webAppSettingModel.setWebAppId(((DeploymentSlot)app).parent().id());
+        } else {
+            webAppSettingModel.setWebAppId(app.id());
+        }
         webAppSettingModel.setWebAppName("");
-        webAppSettingModel.setSlotName("production");
         webAppSettingModel.setResourceGroup("");
         webAppSettingModel.setAppServicePlanName("");
     }
