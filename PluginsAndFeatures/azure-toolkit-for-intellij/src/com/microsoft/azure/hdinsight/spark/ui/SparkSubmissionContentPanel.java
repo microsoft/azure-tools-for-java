@@ -22,6 +22,8 @@
 package com.microsoft.azure.hdinsight.spark.ui;
 
 import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.options.ConfigurationException;
@@ -111,6 +113,8 @@ public class SparkSubmissionContentPanel extends JPanel{
     private JRadioButton intelliJArtifactRadioButton;
     @NotNull
     private JRadioButton localArtifactRadioButton;
+    @NotNull
+    public SparkSubmissionJobUploadStorageWithUploadPathPanel storageWithUploadPathPanel;
 
     private BehaviorSubject<String> clusterSelectedSubject = BehaviorSubject.create();
 
@@ -142,6 +146,8 @@ public class SparkSubmissionContentPanel extends JPanel{
         addReferencedJarsLineItem();
         //TODO: ReferencedFiles Parameter Valid Check
         addReferencedFilesLineItem();
+
+        addJobUploadStorageItem();
     }
 
     void updateTableColumn() {
@@ -518,6 +524,15 @@ public class SparkSubmissionContentPanel extends JPanel{
                 JBUI.insets(margin, margin, 0, margin), 0, 0));
     }
 
+    private void addJobUploadStorageItem() {
+        storageWithUploadPathPanel = new SparkSubmissionJobUploadStorageWithUploadPathPanel();
+        add(storageWithUploadPathPanel, new GridBagConstraints(0, ++displayLayoutCurrentRow,
+                0, 1,
+                0, 0,
+                GridBagConstraints.SOUTHWEST, GridBagConstraints.HORIZONTAL,
+                JBUI.insets(margin, margin, 0, margin), 0, 0));
+    }
+
     private void setVisibleForFixedErrorMessageLabel(@NotNull ErrorMessage label, boolean isVisible) {
         setStatusForMessageLabel(label, isVisible, null);
     }
@@ -586,7 +601,7 @@ public class SparkSubmissionContentPanel extends JPanel{
     }
 
     public void checkInputs() throws ConfigurationException {
-        checkInputsWithErrorLabels();
+        ApplicationManager.getApplication().invokeAndWait(this::checkInputsWithErrorLabels, ModalityState.any());
 
         // Convert Error Labels into Configuration Exception
         java.util.List<String> errors = getErrorMessages();

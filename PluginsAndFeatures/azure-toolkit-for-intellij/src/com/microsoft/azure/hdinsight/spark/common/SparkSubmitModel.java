@@ -31,9 +31,7 @@ import com.intellij.util.xmlb.XmlSerializer;
 import com.intellij.util.xmlb.annotations.*;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.Pair;
-import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 
 import javax.swing.*;
@@ -59,6 +57,10 @@ public class SparkSubmitModel {
     @Property(surroundWithTag = false)
     final private SparkSubmitAdvancedConfigModel advancedConfigModel;
 
+    @NotNull
+    @Property(surroundWithTag = false)
+    final private SparkSubmitJobUploadStorageModel jobUploadStorageModel;
+
     @Transient
     private DefaultComboBoxModel<IClusterDetail> clusterComboBoxModel;
 
@@ -82,6 +84,7 @@ public class SparkSubmitModel {
         this.clusterComboBoxModel = new DefaultComboBoxModel<>();
         this.artifactComboBoxModel = new DefaultComboBoxModel<>();
         this.advancedConfigModel = new SparkSubmitAdvancedConfigModel();
+        this.jobUploadStorageModel = new SparkSubmitJobUploadStorageModel();
         this.submissionParameter = submissionParameter;
 
         setTableModel(new SubmissionTableModel(submissionParameter.flatJobConfig()));
@@ -95,6 +98,11 @@ public class SparkSubmitModel {
 
     @NotNull
     public SparkSubmitAdvancedConfigModel getAdvancedConfigModel() { return advancedConfigModel; }
+
+    @NotNull
+    public SparkSubmitJobUploadStorageModel getJobUploadStorageModel() {
+        return jobUploadStorageModel;
+    }
 
     @Transient
     @NotNull

@@ -20,14 +20,8 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.feedback
+package com.microsoft.azure.hdinsight.spark.ui
 
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction
-
-open class NewGithubIssueAction(private val issue: GithubIssue<out Reportable>, actionTitle: String)
-        : AzureAnAction(actionTitle) {
-    override fun onActionPerformed(anActionEvent: AnActionEvent?) {
-        issue.report()
-    }
+class SparkSubmissionJobUploadStorageSparkInteractiveSessionCard: SparkSubmissionJobUploadStorageBasicCard() {
+    override val title: String = "Use Spark interactive session to upload artifacts"
 }

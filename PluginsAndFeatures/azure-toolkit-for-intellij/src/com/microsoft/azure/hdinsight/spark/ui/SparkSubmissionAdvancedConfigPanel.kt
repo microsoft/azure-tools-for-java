@@ -57,6 +57,9 @@ import java.util.*
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 
+// No auto format for the following lines
+data class Place(val component: Component, val gridConstraints: GridConstraints)
+
 // View and Control combined class
 class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitAdvancedConfigModel> {
 
@@ -122,9 +125,6 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         set(isEnabled) {
             enableRemoteDebugCheckBox.isSelected = isEnabled
         }
-
-    // No auto format for the following lines
-    data class Place(val component: Component, val gridConstraints: GridConstraints)
 
     private fun baseConstraints() = GridConstraints().apply { anchor = ANCHOR_WEST }
 

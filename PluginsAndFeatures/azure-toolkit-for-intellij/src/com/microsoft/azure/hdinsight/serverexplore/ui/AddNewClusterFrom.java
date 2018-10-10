@@ -125,7 +125,7 @@ public class AddNewClusterFrom extends DialogWrapper implements SettableControl<
         data.getContainers().forEach(containersComboBox::addItem);
         containersComboBox.setSelectedIndex(
                 Optional.of(data.getSelectedContainerIndex())
-                        .filter(index -> index > 0 && index <= data.getContainers().size())
+                        .filter(index -> index >= 0 && index < data.getContainers().size())
                         .orElse(-1));
     }
 

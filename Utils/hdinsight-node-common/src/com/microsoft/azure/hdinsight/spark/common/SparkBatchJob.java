@@ -40,6 +40,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.App;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttempt;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttemptsResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppResponse;
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -149,11 +150,23 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Nullable
     private DriverLogConversionMode driverLogConversionMode = null;
 
+    @Nullable
+    private IHDIStorageAccount storageAccount;
+
     public SparkBatchJob(
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+        this(submissionParameter, sparkBatchSubmission, ctrlSubject, null);
+    }
+
+    public SparkBatchJob(
+            SparkSubmissionParameter submissionParameter,
+            SparkBatchSubmission sparkBatchSubmission,
+            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
+            @Nullable IHDIStorageAccount storageAccount) {
         this.submissionParameter = submissionParameter;
+        this.storageAccount = storageAccount;
         this.submission = sparkBatchSubmission;
         this.ctrlSubject = ctrlSubject;
     }
@@ -236,7 +249,10 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         return yarnConnectUri;
     }
 
-
+    @Nullable
+    public IHDIStorageAccount getStorageAccount() {
+        return storageAccount;
+    }
 
     /**
      * Getter of the LIVY Spark batch job ID got from job submission
@@ -1066,12 +1082,20 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        return JobUtils.deployArtifact(artifactPath, getSubmissionParameter().getClusterName(), getCtrlSubject())
-                .map(clusterArtifactUriPair -> {
-                    getSubmissionParameter().setFilePath(clusterArtifactUriPair.getValue());
-                    return this;
-                })
-                .toObservable();
+        if (storageAccount == null) {
+            return JobUtils.deployArtifact(artifactPath, getSubmissionParameter().getClusterName(), getCtrlSubject())
+                    .map(clusterArtifactUriPair -> {
+                        getSubmissionParameter().setFilePath(clusterArtifactUriPair.getValue());
+                        return this;
+                    })
+                    .toObservable();
+        } else {
+            return JobUtils.deployArtifact(artifactPath, storageAccount, getCtrlSubject())
+                    .map(path -> {
+                        getSubmissionParameter().setFilePath(path);
+                        return this;
+                    });
+        }
     }
 
     /**
