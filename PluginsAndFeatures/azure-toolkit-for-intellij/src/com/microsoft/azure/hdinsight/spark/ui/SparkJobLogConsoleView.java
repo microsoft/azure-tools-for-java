@@ -26,6 +26,7 @@ import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -79,8 +80,8 @@ public class SparkJobLogConsoleView extends ConsoleViewImpl {
 
     @Override
     public void dispose() {
-        super.dispose();
+        Disposer.dispose(this.secondaryConsoleView);
 
-        this.secondaryConsoleView.dispose();
+        super.dispose();
     }
 }
