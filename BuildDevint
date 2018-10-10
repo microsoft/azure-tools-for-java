@@ -76,7 +76,7 @@ tc_open "Building IDEA plugin"
 }
 tc_close "Building IDEA plugin"
 
-BUILD_NUMBER="3.11.0.$BUILD_COUNTER"
+BUILD_NUMBER="3.11.0.$BUILD_COUNTER-2018.2"
 
 # Build JetBrains Rider 2018.2 plugin
 tc_open "Building Rider plugin"
