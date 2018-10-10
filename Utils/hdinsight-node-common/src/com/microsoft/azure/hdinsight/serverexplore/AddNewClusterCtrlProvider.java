@@ -137,10 +137,10 @@ public class AddNewClusterCtrlProvider {
                 .observeOn(ideSchedulers.processBarVisibleAsync("Validating the cluster settings..."))
                 .map(toUpdate -> {
                     String clusterNameOrUrl = toUpdate.getClusterName();
-                    String userName = toUpdate.getUserName();
+                    String userName = Optional.ofNullable(toUpdate.getUserName()).orElse("");
                     String storageName = toUpdate.getStorageName();
                     String storageKey = toUpdate.getStorageKey();
-                    String password = toUpdate.getPassword();
+                    String password = Optional.ofNullable(toUpdate.getPassword()).orElse("");
                     URI livyEndpoint = toUpdate.getLivyEndpoint();
                     URI yarnEndpoint = toUpdate.getYarnEndpoint();
                     Boolean isHDInsightClusterSelected = toUpdate.getHDInsightClusterSelected();
