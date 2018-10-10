@@ -38,11 +38,13 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import rx.Observable
+import rx.Subscription
 import rx.schedulers.Schedulers
 import java.awt.CardLayout
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
+import java.util.concurrent.TimeUnit
 import javax.swing.DefaultComboBoxModel
 
 abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStorageWithUploadPathPanel) : ILogger {
@@ -54,6 +56,9 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
     abstract fun getClusterName(): String?
 
     init {
+        // check storage info when cluster selection changes
+        registerStorageInfoCheck()
+
         // refresh containers after account and key focus lost
         arrayOf(view.storagePanel.azureBlobCard.storageAccountField, view.storagePanel.azureBlobCard.storageKeyField).forEach {
             it.addFocusListener(object : FocusAdapter() {
@@ -80,12 +85,24 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
             // validate storage info
             if (itemEvent?.stateChange == ItemEvent.SELECTED) {
                 val selectedItem = itemEvent.item as String
-                validateStorageInfoWhenStorageTypeSelected(selectedItem).subscribe(
+                validateStorageInfo(selectedItem).subscribe(
                         { },
                         { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
             }
         }
     }
+
+    fun selectCluster(clusterName: String) {
+        view.storageCheckSubject.onNext("Selected cluster $clusterName")
+    }
+
+    private fun registerStorageInfoCheck(): Subscription = view.storageCheckSubject
+            .throttleWithTimeout(500, TimeUnit.MILLISECONDS)
+            .doOnNext { log().debug("Receive checking message $it") }
+            .flatMap { validateStorageInfo(view.storagePanel.storageTypeComboBox.selectedItem as String) }
+            .subscribe(
+                    { },
+                    { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
 
     private fun getClusterDetail(): IClusterDetail? {
         if (StringUtils.isEmpty(getClusterName())) {
@@ -94,7 +111,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
         return ClusterManagerEx.getInstance().getClusterDetailByName(getClusterName()).orElse(null)
     }
 
-    private fun validateStorageInfoWhenStorageTypeSelected(selectedItem: String): Observable<SparkSubmitJobUploadStorageModel> {
+    private fun validateStorageInfo(selectedItem: String): Observable<SparkSubmitJobUploadStorageModel> {
         return Observable.just(SparkSubmitJobUploadStorageModel())
                 .doOnNext(view::getData)
                 .observeOn(Schedulers.io())
