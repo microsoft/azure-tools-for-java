@@ -91,14 +91,14 @@ object WebAppRunState {
         val message = String.format(UiConstants.WEB_APP_START, webApp.name())
         processHandler.setText(message)
         webApp.start()
-        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_STOP, Date(), webApp.defaultHostName(), 100, message)
+        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_START, Date(), webApp.defaultHostName(), 100, message)
     }
 
     fun webAppStop(webApp: WebApp, processHandler: RunProcessHandler) {
         val message = String.format(UiConstants.WEB_APP_STOP, webApp.name())
         processHandler.setText(message)
         webApp.stop()
-        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_START, Date(), webApp.defaultHostName(), 100, message)
+        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_STOP, Date(), webApp.defaultHostName(), 100, message)
     }
 
     fun getOrCreateWebAppFromConfiguration(model: WebAppPublishModel,

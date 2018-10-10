@@ -30,8 +30,8 @@ import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.util.idea.application
 import com.jetbrains.rider.util.idea.getLogger
-import com.jetbrains.rider.util.idea.lifetime
 import com.jetbrains.rider.util.lifetime.Lifetime
+import com.jetbrains.rider.util.lifetime.isAlive
 import com.jetbrains.rider.util.reactive.Signal
 import com.jetbrains.rider.util.reactive.adviseOnce
 import com.microsoft.azure.management.appservice.AppServicePlan
@@ -149,7 +149,7 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView>() : MvpPres
         project.solution.publishableProjectsModel.publishableProjects.advise(lifetime) {
             if (it.newValueOpt != null) {
                 application.invokeLater {
-                    if (lifetime.isTerminated) return@invokeLater
+                    if (!lifetime.isAlive) return@invokeLater
                     try {
                         mvpView.fillPublishableProject(project.solution.publishableProjectsModel.publishableProjects.values.toList())
                     } catch (e: Exception) {
@@ -175,7 +175,7 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView>() : MvpPres
 
         signal.adviseOnce(lifetime) {
             application.invokeLater {
-                if (lifetime.isTerminated) return@invokeLater
+                if (!lifetime.isAlive) return@invokeLater
                 invokeLaterCallback(it)
             }
         }

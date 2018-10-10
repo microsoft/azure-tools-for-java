@@ -47,7 +47,7 @@ class RiderWebAppSettingEditor(project: Project,
     }
 
     override fun disposeEditor() {
-        super.disposeEditor()
         lifetimeDef.terminate()
+        super.disposeEditor()
     }
 }
