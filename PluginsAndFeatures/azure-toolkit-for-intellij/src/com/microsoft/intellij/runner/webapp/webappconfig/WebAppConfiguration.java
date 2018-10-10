@@ -43,6 +43,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
+import com.microsoft.intellij.runner.webapp.Constants;
 
 public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSettingModel> {
 
@@ -50,6 +51,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
     private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
     private static final String NEED_CHOOSE_WEB_APP = "Choose a web app to deploy.";
     private static final String MISSING_WEB_APP_NAME = "Web App name not provided.";
+    private static final String MISSING_SLOT_NAME = "The deployment slot name is not provided.";
     private static final String MISSING_SUBSCRIPTION = "Subscription not provided.";
     private static final String MISSING_WEB_CONTAINER = "Web Container not provided.";
     private static final String MISSING_RESOURCE_GROUP = "Resource Group not provided.";
@@ -62,6 +64,8 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
             + "the digits '0' through '9', '.', '-' and '_'.";
 
     private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
+    private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
+    private static final String INVALID_SLOT_NAME = "The slot name is invalid, it needs to match the pattern " + SLOT_NAME_REGEX;
     private final WebAppSettingModel webAppSettingModel;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
@@ -128,6 +132,14 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
             if (Utils.isEmptyString(webAppSettingModel.getWebAppId())) {
                 throw new ConfigurationException(NEED_CHOOSE_WEB_APP);
             }
+            if (webAppSettingModel.isDeployToSlot() && webAppSettingModel.getSlotName() == Constants.CREATE_NEW_SLOT) {
+                if (Utils.isEmptyString(webAppSettingModel.getNewSlotName())) {
+                    throw new ConfigurationException(MISSING_SLOT_NAME);
+                }
+                if (!webAppSettingModel.getNewSlotName().matches(SLOT_NAME_REGEX)) {
+                    throw new ConfigurationException(INVALID_SLOT_NAME);
+                }
+            }
         }
         if (Utils.isEmptyString(webAppSettingModel.getTargetName())) {
             throw new ConfigurationException(MISSING_ARTIFACT);
@@ -178,6 +190,21 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
         webAppSettingModel.setSlotName(slotName);
     }
 
+    public String getNewSlotName() {
+        return webAppSettingModel.getNewSlotName();
+    }
+
+    public void setNewSlotName(final String newSlotName) {
+        webAppSettingModel.setNewSlotName(newSlotName);
+    }
+
+    public String getNewSlotConfigurationSource() {
+        return webAppSettingModel.getNewSlotConfigurationSource();
+    }
+
+    public void setNewSlotConfigurationSource(final String newSlotConfigurationSource) {
+        webAppSettingModel.setNewSlotConfigurationSource(newSlotConfigurationSource);
+    }
     public boolean isCreatingNew() {
         return webAppSettingModel.isCreatingNew();
     }
