@@ -76,4 +76,11 @@ public class SparkJobLogConsoleView extends ConsoleViewImpl {
 
         return this;
     }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+
+        this.secondaryConsoleView.dispose();
+    }
 }

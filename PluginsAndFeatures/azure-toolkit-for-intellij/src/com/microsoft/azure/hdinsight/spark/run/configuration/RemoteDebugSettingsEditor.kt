@@ -29,6 +29,7 @@ package com.microsoft.azure.hdinsight.spark.run.configuration
 
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SettingsEditor
+import com.intellij.openapi.util.Disposer
 import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable
 import javax.swing.JComponent
 
@@ -48,5 +49,11 @@ class RemoteDebugSettingsEditor(val jobConfigurable: SparkBatchJobConfigurable) 
 
     override fun createEditor(): JComponent {
         return jobConfigurable.component
+    }
+
+    override fun disposeEditor() {
+        Disposer.dispose(this)
+
+        super.disposeEditor()
     }
 }
