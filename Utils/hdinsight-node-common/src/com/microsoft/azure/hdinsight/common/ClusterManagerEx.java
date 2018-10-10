@@ -346,33 +346,50 @@ public class ClusterManagerEx {
     }
 
     private void saveAdditionalClusters() {
+        List<IClusterDetail> additionalClusters = new ArrayList<>();
+        List<IClusterDetail> livyLinkClusters = new ArrayList<>();
+
+        hdinsightAdditionalClusterDetails.forEach(clusterDetail -> {
+            if (clusterDetail instanceof HDInsightLivyLinkClusterDetail) {
+                livyLinkClusters.add(clusterDetail);
+            } else {
+                additionalClusters.add(clusterDetail);
+            }
+        });
         Gson gson = new Gson();
-        String json = gson.toJson(hdinsightAdditionalClusterDetails);
-        DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS, json);
+        String additionalClustersJson = gson.toJson(additionalClusters);
+        DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS, additionalClustersJson);
+
+        String livyLinkClustersJson = gson.toJson(livyLinkClusters);
+        DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.HDINSIGHT_LIVY_LINK_CLUSTERS, livyLinkClustersJson);
     }
 
     List<IClusterDetail> getAdditionalClusters() {
-        Gson gson = new Gson();
-        String json = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS);
-        List<IClusterDetail> hdiLocalClusters = new ArrayList<>();
+        List<IClusterDetail> hdiAdditionalClusters = new ArrayList<>();
+        List<IClusterDetail> hdiLivyLinkClusters = new ArrayList<>();
 
         isLIstAdditionalClusterSuccess = false;
-        if (!StringHelper.isNullOrWhiteSpace(json)) {
+        Gson gson = new Gson();
+        String additionalClustersJson = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS);
+        String livyLinkClustersJson = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.HDINSIGHT_LIVY_LINK_CLUSTERS);
+        if (!StringHelper.isNullOrWhiteSpace(additionalClustersJson) && !StringHelper.isNullOrWhiteSpace(livyLinkClustersJson)) {
             try {
-                hdiLocalClusters = gson.fromJson(json, new TypeToken<ArrayList<HDInsightAdditionalClusterDetail>>() {
+                hdiAdditionalClusters = gson.fromJson(additionalClustersJson, new TypeToken<ArrayList<HDInsightAdditionalClusterDetail>>() {
+                }.getType());
+                hdiLivyLinkClusters = gson.fromJson(livyLinkClustersJson, new TypeToken<ArrayList<HDInsightLivyLinkClusterDetail>>() {
                 }.getType());
             } catch (JsonSyntaxException e) {
-
                 isLIstAdditionalClusterSuccess = false;
                 // clear local cache if we cannot get information from local json
                 DefaultLoader.getIdeHelper().unsetApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS);
+                DefaultLoader.getIdeHelper().unsetApplicationProperty(CommonConst.HDINSIGHT_LIVY_LINK_CLUSTERS);
                 DefaultLoader.getUIHelper().showException("Failed to list additional HDInsight cluster", e, "List Additional HDInsight Cluster", false, true);
                 return new ArrayList<>();
             }
         }
 
         isLIstAdditionalClusterSuccess = true;
-        return hdiLocalClusters;
+        return Stream.concat(hdiAdditionalClusters.stream(), hdiLivyLinkClusters.stream()).collect(Collectors.toList());
     }
 
     List<IClusterDetail> getEmulatorClusters() {
