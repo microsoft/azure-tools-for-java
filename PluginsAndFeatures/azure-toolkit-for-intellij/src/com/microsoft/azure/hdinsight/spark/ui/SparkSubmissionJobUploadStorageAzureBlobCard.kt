@@ -65,5 +65,5 @@ class SparkSubmissionJobUploadStorageAzureBlobCard: SparkSubmissionJobUploadStor
         cardLayoutPlan.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }
 
-    override fun title() = "Azure Blob"
+    override val title = "Azure Blob"
 }

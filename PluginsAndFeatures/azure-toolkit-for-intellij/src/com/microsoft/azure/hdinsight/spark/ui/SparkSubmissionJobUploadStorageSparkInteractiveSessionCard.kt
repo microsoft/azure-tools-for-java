@@ -23,5 +23,5 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 class SparkSubmissionJobUploadStorageSparkInteractiveSessionCard: SparkSubmissionJobUploadStorageBasicCard() {
-    override fun title(): String = "Use Spark interactive session to upload artifacts"
+    override val title: String = "Use Spark interactive session to upload artifacts"
 }

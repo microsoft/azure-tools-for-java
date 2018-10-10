@@ -23,5 +23,5 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 class SparkSubmissionJobUploadStorageClusterDefaultStorageCard: SparkSubmissionJobUploadStorageBasicCard() {
-    override fun title(): String = "Use cluster default storage account"
+    override val title: String = "Use cluster default storage account"
 }

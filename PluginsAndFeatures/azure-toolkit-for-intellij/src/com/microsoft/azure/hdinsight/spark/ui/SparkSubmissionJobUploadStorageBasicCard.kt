@@ -25,5 +25,5 @@ package com.microsoft.azure.hdinsight.spark.ui
 import javax.swing.JPanel
 
 abstract class SparkSubmissionJobUploadStorageBasicCard: JPanel() {
-    abstract fun title(): String
+    abstract val title: String
 }
