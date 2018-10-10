@@ -17,6 +17,13 @@ compileJava {
     targetCompatibility = javaVersion
 }
 
+compileKotlin {
+    kotlinOptions.jvmTarget = javaVersion
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = javaVersion
+}
+
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 
 apply plugin: 'checkstyle'
