@@ -29,6 +29,7 @@ import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HideableDecorator;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
@@ -172,9 +173,9 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
 
     @Override
     protected void dispose() {
-        super.dispose();
+        Disposer.dispose(consoleViewPanel);
 
-        consoleViewPanel.dispose();
+        super.dispose();
     }
 
     protected void enableClusterNameUniquenessCheck() {

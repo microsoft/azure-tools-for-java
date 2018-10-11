@@ -24,11 +24,14 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models;
 
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * The extended Data Lake Analytics job information properties returned when retrieving a specific job.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class JobInformation extends JobInformationBasic {
     /**
      * The error message details for the job, if the job failed.

@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.spark.ui;
 
 import com.google.common.collect.ImmutableSortedSet;
+import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.options.ConfigurationException;
@@ -65,6 +66,8 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
     private final Project myProject;
 
     private SparkSubmissionContentPanel submissionPanel;
+    private SparkSubmissionJobUploadStorageWithUploadPathPanel storageWithUploadPathPanel;
+    private SparkSubmissionJobUploadStorageCtrl jobUploadStorageCtrl;
     private JPanel myWholePanel;
 
     // Cluster refresh publish subject with preselected cluster name as event
@@ -73,8 +76,17 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
 
     public SparkSubmissionContentPanelConfigurable(@NotNull Project project, @NotNull SparkSubmissionContentPanel submissionPanel) {
         this.submissionPanel = submissionPanel;
+        this.storageWithUploadPathPanel = submissionPanel.storageWithUploadPathPanel;
         this.myProject = project;
 
+        this.jobUploadStorageCtrl = new SparkSubmissionJobUploadStorageCtrl(this.storageWithUploadPathPanel) {
+            @Nullable
+            @Override
+            public String getClusterName() {
+                IClusterDetail clusterDetail = getSelectedClusterDetail();
+                return clusterDetail == null ? null : clusterDetail.getName();
+            }
+        };
         this.clustersRefreshSub = BehaviorSubject.create();
     }
 
@@ -200,6 +212,7 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
 
     protected void onClusterSelected(@NotNull IClusterDetail cluster) {
         getSubmissionPanel().getClusterSelectedSubject().onNext(cluster.getName());
+        jobUploadStorageCtrl.selectCluster(cluster.getName());
     }
 
     private synchronized void refreshClusterListAsync(@Nullable String preSelectedClusterName) {
@@ -288,6 +301,9 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
 
             refreshAndSelectArtifact(data.getArtifactName());
         }, ModalityState.any());
+
+        // set Job Upload Storage panel data
+        storageWithUploadPathPanel.setData(data.getJobUploadStorageModel());
     }
 
     @Override
@@ -336,6 +352,9 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
         data.setCommandLineArgs(argsList);
 
         data.setTableModel(tableModel);
+
+        // get Job upload storage panel data
+        storageWithUploadPathPanel.getData(data.getJobUploadStorageModel());
     }
 
     @Nullable
@@ -345,6 +364,11 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
 
     public void validate() throws ConfigurationException {
         getSubmissionPanel().checkInputs();
+
+        if (!jobUploadStorageCtrl.isCheckPassed()) {
+            throw new RuntimeConfigurationError("Can't save the configuration since "
+                    + jobUploadStorageCtrl.getResultMessage().toLowerCase());
+        }
     }
 
     public SparkSubmissionContentPanel getSubmissionPanel() {

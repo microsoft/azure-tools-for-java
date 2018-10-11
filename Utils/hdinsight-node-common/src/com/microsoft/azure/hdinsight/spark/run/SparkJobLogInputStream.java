@@ -64,7 +64,7 @@ public class SparkJobLogInputStream extends InputStream {
     private synchronized Optional<SimpleImmutableEntry<String, Long>> fetchLog(long logOffset, int fetchSize) {
         return getAttachedJob()
                 .map(job -> job.getDriverLog(getLogType(), logOffset, fetchSize)
-                               .toBlocking().singleOrDefault(new SimpleImmutableEntry<>("", logOffset)));
+                               .toBlocking().singleOrDefault(null));
     }
 
     void setSparkBatchJob(@Nullable ISparkBatchJob sparkBatchJob) {
