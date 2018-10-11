@@ -39,22 +39,14 @@ class SparkSubmissionDebuggablePanelConfigurable(project: Project,
     private val advancedConfigPanel
         get() = submissionDebuggablePanel.advancedConfigPanel
 
-    private val storageWithUploadPathPanel
-        get() = submissionDebuggablePanel.storageWithUploadPathPanel
-
     private val advancedConfigCtrl = object : SparkSubmissionAdvancedConfigCtrl(advancedConfigPanel) {
         override fun getClusterNameToCheck(): String? = selectedClusterDetail?.name
-    }
-
-    private val jobUploadStorageCtrl = object: SparkSubmissionJobUploadStorageCtrl(storageWithUploadPathPanel) {
-        override fun getClusterName(): String? = selectedClusterDetail?.name
     }
 
     override fun onClusterSelected(cluster: IClusterDetail) {
         super.onClusterSelected(cluster)
 
         advancedConfigCtrl.selectCluster(cluster.name)
-        jobUploadStorageCtrl.selectCluster(cluster.name)
     }
 
     override fun setData(data: SparkSubmitModel) {
@@ -63,9 +55,6 @@ class SparkSubmissionDebuggablePanelConfigurable(project: Project,
 
         // Advanced Configuration panel
         advancedConfigPanel.setData(data.advancedConfigModel.apply { clusterName = data.clusterName })
-
-        // Job Upload Storage panel
-        storageWithUploadPathPanel.setData(data.jobUploadStorageModel)
     }
 
     override fun getData(data: SparkSubmitModel) {
@@ -75,17 +64,10 @@ class SparkSubmissionDebuggablePanelConfigurable(project: Project,
         // Advanced Configuration panel
         advancedConfigPanel.getData(data.advancedConfigModel)
         data.advancedConfigModel.clusterName = selectedClusterDetail?.name
-
-        // Job upload storage panel
-        storageWithUploadPathPanel.getData(data.jobUploadStorageModel)
     }
 
     override fun validate() {
         super.validate()
-
-        if (!jobUploadStorageCtrl.isCheckPassed) {
-            throw RuntimeConfigurationError("Can't save the configuration since ${jobUploadStorageCtrl.resultMessage}")
-        }
 
         if (advancedConfigPanel.isRemoteDebugEnabled) {
             if (advancedConfigCtrl.resultMessage.isNotBlank() &&
