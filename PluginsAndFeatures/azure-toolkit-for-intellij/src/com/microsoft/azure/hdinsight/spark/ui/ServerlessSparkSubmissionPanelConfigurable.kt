@@ -30,10 +30,30 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServe
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager
 import com.microsoft.azure.hdinsight.spark.common.ServerlessSparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
+import org.apache.commons.lang3.StringUtils
 import rx.Observable
+import java.util.stream.Collectors
 
 class ServerlessSparkSubmissionPanelConfigurable(project: Project, submissionPanel: SparkSubmissionContentPanel)
     : SparkSubmissionContentPanelConfigurable(project, submissionPanel), ILogger {
+
+    init {
+        jobUploadStorageCtrl = object : SparkSubmissionJobUploadStorageCtrl(storageWithUploadPathPanel) {
+            override fun getClusterName(): String? = selectedClusterDetail?.name
+
+            override fun getClusterDetail(): IClusterDetail? {
+                if (StringUtils.isEmpty(getClusterName())) {
+                    return null
+                }
+                return AzureSparkServerlessClusterManager.getInstance().clusters.stream()
+                        .filter { clusterDetail -> clusterDetail.name == getClusterName() }
+                        .collect(Collectors.toList())
+                        .getOrNull(0)
+            }
+        }
+
+    }
+
     override fun getType(): String = "Azure Data Lake Spark Pool"
 
     override fun getClusterDetails(): ImmutableSortedSet<out IClusterDetail> {
