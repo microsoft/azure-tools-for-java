@@ -104,6 +104,10 @@ public class AzureWebAppMvpModel {
         final String configurationSource = model.getNewSlotConfigurationSource();
         final DeploymentSlot.DefinitionStages.Blank definedSlot = app.deploymentSlots().define(name);
 
+        if (configurationSource.equals(app.name())) {
+            return definedSlot.withConfigurationFromParent().create();
+        }
+
         final DeploymentSlot configurationSourceSlot = app.deploymentSlots()
             .list()
             .stream()
@@ -113,8 +117,6 @@ public class AzureWebAppMvpModel {
 
         if (configurationSourceSlot != null) {
             return definedSlot.withConfigurationFromDeploymentSlot(configurationSourceSlot).create();
-        } else if (configurationSource.equals(app.name())) {
-            return definedSlot.withConfigurationFromParent().create();
         } else {
             return definedSlot.withBrandNewConfiguration().create();
         }
