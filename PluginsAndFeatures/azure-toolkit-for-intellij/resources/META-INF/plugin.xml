@@ -24,6 +24,14 @@
       <ul>
         <li>Support to deploy an application to Deployment Slot.</li>
         <li>Support to show and operate Deployment Slots of a Web App in Azure Explorer.</li>
+        <li>Link an independent Livy server for Spark cluster.</li>
+        <li>Spark Local interactive console.</li>
+        <li>Spark HDInsight cluster interactive console (Only for 2018.1, Scala plugin is needed).</li>
+      </ul>
+      <h4>Changed</h4>
+      <ul>
+        <li>The Spark Job context menu submission dialog, unified with IntelliJ Run Configuration Setting dialog.</li>
+        <li>The storage information of HDInsight/Livy cluster to linked is moved into Run Configuration settings.</li>
       </ul>
       <h4>Fixed</h4>
       <ul>
