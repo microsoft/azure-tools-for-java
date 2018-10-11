@@ -155,6 +155,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     private JTextField txtNewSlotName;
     private JComboBox slotConfigurationSourceComboBox;
     private JPanel newSlotPanel;
+    private JLabel loadingLabel;
+    private JPanel loadingPanel;
     private JBTable table;
     private AnActionButton btnRefresh;
     /**
@@ -630,18 +632,26 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         deployToSlotCheckBox.setSelected(isDeployToSlot);
         cbDeploymentSlots.setVisible(isDeployToSlot);
         newSlotPanel.setVisible(isDeployToSlot && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT);
+        cbDeploymentSlots.removeAllItems();
+        slotConfigurationSourceComboBox.removeAllItems();
         if (!isDeployToSlot || selectedWebApp == null) {
             return;
         }
-        cbDeploymentSlots.removeAllItems();
-        slotConfigurationSourceComboBox.removeAllItems();
-        webAppDeployViewPresenter.onLoadDeploymentSlots(webAppConfiguration.getSubscriptionId(), selectedWebApp.getResource().id());
+        toggleLoadingPanel(true);
+        webAppDeployViewPresenter.onLoadDeploymentSlots(selectedWebApp.getSubscriptionId(), selectedWebApp.getResource().id());
+    }
+
+    private void toggleLoadingPanel(final boolean isLoading) {
+        loadingPanel.setVisible(isLoading);
+        cbDeploymentSlots.setVisible(!isLoading);
+        newSlotPanel.setVisible(!isLoading && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT);
     }
 
     @Override
     public void fillDeploymentSlots(@NotNull final List<DeploymentSlot> slots) {
         cbDeploymentSlots.removeAllItems();
         slotConfigurationSourceComboBox.removeAllItems();
+        toggleLoadingPanel(false);
         final List<String> configurationSources = new ArrayList<String>();
         final List<String> deploymentSlots = new ArrayList<String>();
         configurationSources.add(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
@@ -652,17 +662,16 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             configurationSources.add(slot.name());
         });
         deploymentSlots.add(Constants.CREATE_NEW_SLOT);
-
-        configurationSources.forEach(c -> {
-            slotConfigurationSourceComboBox.addItem(c);
-            if (Comparing.equal(c, webAppConfiguration.getNewSlotConfigurationSource())) {
-                slotConfigurationSourceComboBox.setSelectedItem(c);
-            }
-        });
         deploymentSlots.forEach(s -> {
             cbDeploymentSlots.addItem(s);
             if (Comparing.equal(s, webAppConfiguration.getSlotName())) {
                 cbDeploymentSlots.setSelectedItem(s);
+            }
+        });
+        configurationSources.forEach(c -> {
+            slotConfigurationSourceComboBox.addItem(c);
+            if (Comparing.equal(c, webAppConfiguration.getNewSlotConfigurationSource())) {
+                slotConfigurationSourceComboBox.setSelectedItem(c);
             }
         });
     }
