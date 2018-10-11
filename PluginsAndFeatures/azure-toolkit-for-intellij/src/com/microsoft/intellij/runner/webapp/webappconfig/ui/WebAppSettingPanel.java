@@ -531,8 +531,10 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
 
     @Override
     public void enableDeploymentSlotPanel() {
+        if (selectedWebApp == null) {
+            return;
+        }
         deployToSlotCheckBox.setEnabled(true);
-        cbDeploymentSlots.setEnabled(true);
         if (webAppConfiguration.isDeployToSlot()) {
             toggleSlotPanel(true);
         }
@@ -707,6 +709,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
                 return;
             }
             selectedWebApp = cachedWebAppList.get(selectedRow);
+            deployToSlotCheckBox.setEnabled(true);
             txtSelectedWebApp.setText(selectedWebApp.toString());
             toggleSlotPanel(false);
             try {
