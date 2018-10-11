@@ -151,12 +151,9 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     private JLabel lblJavaVersion;
     private JCheckBox deployToSlotCheckBox;
     private JComboBox cbDeploymentSlots;
-    private JPanel pnlDeploySlot;
     private JTextField txtNewSlotName;
     private JComboBox slotConfigurationSourceComboBox;
-    private JPanel newSlotPanel;
-    private JLabel loadingLabel;
-    private JPanel loadingPanel;
+    private JPanel slotPanel;
     private JBTable table;
     private AnActionButton btnRefresh;
     /**
@@ -194,9 +191,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         rdoWindowsOS.addActionListener(e -> onOperatingSystemChange(OperatingSystem.WINDOWS));
 
         deployToSlotCheckBox.addActionListener(e -> toggleSlotPanel(deployToSlotCheckBox.isSelected()));
-
         cbDeploymentSlots.addActionListener(e -> toggleNewSlotPanel());
-        newSlotPanel.setVisible(false);
 
         cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
             @Override
@@ -542,7 +537,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
 
     private void toggleDeployPanel(boolean isUsingExisting) {
         pnlExist.setVisible(isUsingExisting);
-        pnlDeploySlot.setVisible(isUsingExisting);
+        deployToSlotCheckBox.setVisible(isUsingExisting);
+        slotPanel.setVisible(isUsingExisting);
         pnlCreate.setVisible(!isUsingExisting);
     }
 
@@ -632,28 +628,26 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
 
     private void toggleSlotPanel(final boolean isDeployToSlot) {
         deployToSlotCheckBox.setSelected(isDeployToSlot);
-        cbDeploymentSlots.setVisible(isDeployToSlot);
-        newSlotPanel.setVisible(isDeployToSlot && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT);
-        cbDeploymentSlots.removeAllItems();
-        slotConfigurationSourceComboBox.removeAllItems();
-        if (!isDeployToSlot || selectedWebApp == null) {
+        if (selectedWebApp == null) {
+            deployToSlotCheckBox.setEnabled(false);
             return;
         }
-        toggleLoadingPanel(true);
+        if (!isDeployToSlot) {
+            cbDeploymentSlots.setEnabled(false);
+            txtNewSlotName.setEnabled(false);
+            slotConfigurationSourceComboBox.setEnabled(false);
+            return;
+        }
+        cbDeploymentSlots.removeAllItems();
+        slotConfigurationSourceComboBox.removeAllItems();
+        cbDeploymentSlots.setEnabled(true);
         webAppDeployViewPresenter.onLoadDeploymentSlots(selectedWebApp.getSubscriptionId(), selectedWebApp.getResource().id());
-    }
-
-    private void toggleLoadingPanel(final boolean isLoading) {
-        loadingPanel.setVisible(isLoading);
-        cbDeploymentSlots.setVisible(!isLoading);
-        newSlotPanel.setVisible(!isLoading && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT);
     }
 
     @Override
     public void fillDeploymentSlots(@NotNull final List<DeploymentSlot> slots) {
         cbDeploymentSlots.removeAllItems();
         slotConfigurationSourceComboBox.removeAllItems();
-        toggleLoadingPanel(false);
         final List<String> configurationSources = new ArrayList<String>();
         final List<String> deploymentSlots = new ArrayList<String>();
         configurationSources.add(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
@@ -679,7 +673,11 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     }
 
     private void toggleNewSlotPanel() {
-        newSlotPanel.setVisible(deployToSlotCheckBox.isSelected() && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT);
+        final boolean isCreatingNewSlot = deployToSlotCheckBox.isSelected()
+            && cbDeploymentSlots.isEnabled()
+            && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT;
+        slotConfigurationSourceComboBox.setEnabled(isCreatingNewSlot);
+        txtNewSlotName.setEnabled(isCreatingNewSlot);
     }
 
     private void createUIComponents() {
