@@ -19,6 +19,19 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>[3.13.0]</h3>
+      <h4>Added</h4>
+      <ul>
+        <li>Support to deploy an application to Deployment Slot.</li>
+        <li>Support to show and operate Deployment Slots of a Web App in Azure Explorer.</li>
+      </ul>
+      <h4>Fixed</h4>
+      <ul>
+        <li>
+          <a href="https://github.com/Microsoft/azure-tools-for-java/issues/2143" rel="nofollow">#2143</a>
+          The element "filter-mapping" is not removed when disabling telemetry with Application Insights.
+        </li>
+      </ul>
       <h3>[3.12.0]</h3>
       <h4>Added</h4>
       <ul>
