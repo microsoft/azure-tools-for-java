@@ -149,14 +149,11 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     private JRadioButton rdoLinuxOS;
     private JRadioButton rdoWindowsOS;
     private JLabel lblJavaVersion;
-    private JCheckBox deployToSlotCheckBox;
+    private JCheckBox cbDeployToSlot;
     private JComboBox cbDeploymentSlots;
-    private JPanel pnlDeploySlot;
     private JTextField txtNewSlotName;
-    private JComboBox slotConfigurationSourceComboBox;
-    private JPanel newSlotPanel;
-    private JLabel loadingLabel;
-    private JPanel loadingPanel;
+    private JComboBox cbSlotConfigurationSource;
+    private JPanel pnlSlot;
     private JBTable table;
     private AnActionButton btnRefresh;
     /**
@@ -193,10 +190,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         rdoLinuxOS.addActionListener(e -> onOperatingSystemChange(OperatingSystem.LINUX));
         rdoWindowsOS.addActionListener(e -> onOperatingSystemChange(OperatingSystem.WINDOWS));
 
-        deployToSlotCheckBox.addActionListener(e -> toggleSlotPanel(deployToSlotCheckBox.isSelected()));
-
+        cbDeployToSlot.addActionListener(e -> toggleSlotPanel(cbDeployToSlot.isSelected()));
         cbDeploymentSlots.addActionListener(e -> toggleNewSlotPanel());
-        newSlotPanel.setVisible(false);
 
         cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
             @Override
@@ -442,12 +437,12 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         if (rdoUseExist.isSelected()) {
             webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
             webAppConfiguration.setSubscriptionId(selectedWebApp == null ? "" : selectedWebApp.getSubscriptionId());
-            webAppConfiguration.setDeployToSlot(deployToSlotCheckBox.isSelected());
+            webAppConfiguration.setDeployToSlot(cbDeployToSlot.isSelected());
             webAppConfiguration.setSlotName((String)cbDeploymentSlots.getSelectedItem());
             webAppConfiguration.setCreatingNew(false);
-            if (deployToSlotCheckBox.isSelected() && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT) {
+            if (cbDeployToSlot.isSelected() && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT) {
                 webAppConfiguration.setNewSlotName(txtNewSlotName.getText());
-                webAppConfiguration.setNewSlotConfigurationSource((String) slotConfigurationSourceComboBox.getSelectedItem());
+                webAppConfiguration.setNewSlotConfigurationSource((String) cbSlotConfigurationSource.getSelectedItem());
             }
         } else if (rdoCreateNew.isSelected()) {
             webAppConfiguration.setWebAppName(txtWebAppName.getText());
@@ -499,7 +494,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             webAppConfiguration.setCreatingNew(true);
         }
         webAppConfiguration.setDeployToRoot(chkToRoot.isVisible() && chkToRoot.isSelected());
-        webAppConfiguration.setDeployToSlot(deployToSlotCheckBox.isSelected());
+        webAppConfiguration.setDeployToSlot(cbDeployToSlot.isSelected());
     }
 
     @Override
@@ -534,7 +529,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         if (selectedWebApp == null) {
             return;
         }
-        deployToSlotCheckBox.setEnabled(true);
+        cbDeployToSlot.setEnabled(true);
         if (webAppConfiguration.isDeployToSlot()) {
             toggleSlotPanel(true);
         }
@@ -542,7 +537,6 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
 
     private void toggleDeployPanel(boolean isUsingExisting) {
         pnlExist.setVisible(isUsingExisting);
-        pnlDeploySlot.setVisible(isUsingExisting);
         pnlCreate.setVisible(!isUsingExisting);
     }
 
@@ -631,29 +625,27 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     }
 
     private void toggleSlotPanel(final boolean isDeployToSlot) {
-        deployToSlotCheckBox.setSelected(isDeployToSlot);
-        cbDeploymentSlots.setVisible(isDeployToSlot);
-        newSlotPanel.setVisible(isDeployToSlot && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT);
-        cbDeploymentSlots.removeAllItems();
-        slotConfigurationSourceComboBox.removeAllItems();
-        if (!isDeployToSlot || selectedWebApp == null) {
+        cbDeployToSlot.setSelected(isDeployToSlot);
+        if (selectedWebApp == null) {
+            cbDeployToSlot.setEnabled(false);
             return;
         }
-        toggleLoadingPanel(true);
+        if (!isDeployToSlot) {
+            cbDeploymentSlots.setEnabled(false);
+            txtNewSlotName.setEnabled(false);
+            cbSlotConfigurationSource.setEnabled(false);
+            return;
+        }
+        cbDeploymentSlots.removeAllItems();
+        cbSlotConfigurationSource.removeAllItems();
+        cbDeploymentSlots.setEnabled(true);
         webAppDeployViewPresenter.onLoadDeploymentSlots(selectedWebApp.getSubscriptionId(), selectedWebApp.getResource().id());
-    }
-
-    private void toggleLoadingPanel(final boolean isLoading) {
-        loadingPanel.setVisible(isLoading);
-        cbDeploymentSlots.setVisible(!isLoading);
-        newSlotPanel.setVisible(!isLoading && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT);
     }
 
     @Override
     public void fillDeploymentSlots(@NotNull final List<DeploymentSlot> slots) {
         cbDeploymentSlots.removeAllItems();
-        slotConfigurationSourceComboBox.removeAllItems();
-        toggleLoadingPanel(false);
+        cbSlotConfigurationSource.removeAllItems();
         final List<String> configurationSources = new ArrayList<String>();
         final List<String> deploymentSlots = new ArrayList<String>();
         configurationSources.add(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
@@ -671,15 +663,19 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             }
         });
         configurationSources.forEach(c -> {
-            slotConfigurationSourceComboBox.addItem(c);
+            cbSlotConfigurationSource.addItem(c);
             if (Comparing.equal(c, webAppConfiguration.getNewSlotConfigurationSource())) {
-                slotConfigurationSourceComboBox.setSelectedItem(c);
+                cbSlotConfigurationSource.setSelectedItem(c);
             }
         });
     }
 
     private void toggleNewSlotPanel() {
-        newSlotPanel.setVisible(deployToSlotCheckBox.isSelected() && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT);
+        final boolean isCreatingNewSlot = cbDeployToSlot.isSelected()
+            && cbDeploymentSlots.isEnabled()
+            && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT;
+        cbSlotConfigurationSource.setEnabled(isCreatingNewSlot);
+        txtNewSlotName.setEnabled(isCreatingNewSlot);
     }
 
     private void createUIComponents() {
@@ -709,7 +705,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
                 return;
             }
             selectedWebApp = cachedWebAppList.get(selectedRow);
-            deployToSlotCheckBox.setEnabled(true);
+            cbDeployToSlot.setEnabled(true);
             txtSelectedWebApp.setText(selectedWebApp.toString());
             toggleSlotPanel(false);
             try {
