@@ -387,12 +387,18 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                         return Observable.empty();
                     }
 
-                    return Observable.just(new SimpleImmutableEntry<>(JobUtils.getInformationFromYarnLogDom(
+                    String logGot = JobUtils.getInformationFromYarnLogDom(
                             getSubmission().getCredentialsProvider(),
                             getCurrentLogUrl(),
                             type,
                             offset,
-                            size), offset));
+                            size);
+
+                    if (StringUtils.isEmpty(logGot)) {
+                        return Observable.empty();
+                    }
+
+                    return Observable.just(new SimpleImmutableEntry<>(logGot, offset));
                 });
     }
 
