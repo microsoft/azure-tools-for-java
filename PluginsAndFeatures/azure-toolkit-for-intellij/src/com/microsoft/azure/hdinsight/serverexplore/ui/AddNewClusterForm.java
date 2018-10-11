@@ -203,7 +203,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 if (clusterName == null) {
                     errorMessage = "Cluster URL is not a valid URL";
                 } else if (ctrlProvider.doesClusterNameExist(clusterName)) {
-                    errorMessage = "Cluster already exists in linked clusters";
+                    errorMessage = "Cluster already exists in clusters";
                 }
             }
         } else {
@@ -215,7 +215,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
             } else if (ctrlProvider.doesClusterLivyEndpointExist(livyEndpointField.getText())) {
                 errorMessage = "Livy Endpoint already exists in linked clusters";
             } else if (ctrlProvider.doesClusterNameExist(livyClusterNameField.getText())) {
-                errorMessage = "Cluster Name already exists in linked clusters";
+                errorMessage = "Cluster Name already exists in clusters";
             } else if (!StringUtils.isEmpty(yarnEndpointField.getText()) &&
                     !ctrlProvider.isURLValid(yarnEndpointField.getText())) {
                 errorMessage = "Yarn Endpoint is not a valid URL";

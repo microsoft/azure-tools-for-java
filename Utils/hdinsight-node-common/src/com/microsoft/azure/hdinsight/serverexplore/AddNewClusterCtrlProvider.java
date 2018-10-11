@@ -82,7 +82,7 @@ public class AddNewClusterCtrlProvider {
     }
 
     public boolean doesClusterNameExist(@NotNull String clusterName) {
-        if (ClusterManagerEx.getInstance().getHdinsightAdditionalClusterDetails().stream().anyMatch(clusterDetail ->
+        if (ClusterManagerEx.getInstance().getCachedClusters().stream().anyMatch(clusterDetail ->
                 clusterDetail.getName().equals(clusterName))) {
             return true;
         }
@@ -90,7 +90,7 @@ public class AddNewClusterCtrlProvider {
     }
 
     public boolean doesClusterLivyEndpointExist(@NotNull String livyEndpoint) {
-        if (ClusterManagerEx.getInstance().getHdinsightAdditionalClusterDetails().stream()
+        if (ClusterManagerEx.getInstance().getCachedClusters().stream()
                 .filter(cluster -> cluster instanceof LivyCluster)
                 .anyMatch(clusterDetail ->
                         URI.create(((LivyCluster) clusterDetail).getLivyConnectionUrl()).resolve("/").toString()
