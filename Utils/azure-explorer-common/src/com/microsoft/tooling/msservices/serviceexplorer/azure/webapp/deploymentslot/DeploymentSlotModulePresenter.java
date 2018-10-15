@@ -11,4 +11,9 @@ public class DeploymentSlotModulePresenter<V extends DeploymentSlotModuleView> e
             view.renderDeploymentSlots(AzureWebAppMvpModel.getInstance().getDeploymentSlots(subscriptionId, webAppId));
         }
     }
+
+    public void onDeleteDeploymentSlot(final String subscriptionId, final String webAppId,
+                                       final String slotName) throws IOException {
+        AzureWebAppMvpModel.getInstance().deleteDeploymentSlotNode(subscriptionId, webAppId, slotName);
+    }
 }

@@ -418,6 +418,12 @@ public class AzureWebAppMvpModel {
         slot.swap("production");
     }
 
+    public void deleteDeploymentSlotNode(final String subscriptionId, final String appId,
+                                         final String slotName) throws IOException {
+        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        app.deploymentSlots().deleteByName(slotName);
+    }
+
     /**
      * Get all the deployment slots of a web app by the subscription id and web app id.
      */
