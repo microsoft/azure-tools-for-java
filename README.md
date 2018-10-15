@@ -1,21 +1,21 @@
-# Azure Toolkits for Java [![Travis CI](https://travis-ci.org/Microsoft/azure-tools-for-java.svg?branch=develop)](https://travis-ci.org/Microsoft/azure-tools-for-java)
-Azure Toolkits for Java is an open-source project that helps Java developers easily create, develop, configure, test, and deploy highly available and scalable Java web apps to Azure from [Eclipse](https://docs.microsoft.com/en-us/java/azure/eclipse/azure-toolkit-for-eclipse) and [IntelliJ IDEA](https://docs.microsoft.com/en-us/java/azure/intellij/azure-toolkit-for-intellij) on all supported platforms. 
-* [Azure Toolkit for IntelliJ IDEA](https://docs.microsoft.com/en-us/java/azure/intellij/azure-toolkit-for-intellij)
-* [Azure Toolkit for Eclipse](https://docs.microsoft.com/en-us/java/azure/eclipse/azure-toolkit-for-eclipse)
-* [Release Notes](https://github.com/Microsoft/azure-tools-for-java/releases)
-* [Issues](https://github.com/Microsoft/azure-tools-for-java/issues)
+# जावा के लिए एज़ूर टूलकिट [! [ट्रैविस सीआई] (https://travis-ci.org/Microsoft/azure-tools-for-java.svg?branch=develop)] (https://travis-ci.org/ माइक्रोसॉफ्ट / नीला-उपकरण के लिए जावा)
+जावा के लिए एज़ूर टूलकिट एक ओपन-सोर्स प्रोजेक्ट है जो जावा डेवलपर्स को आसानी से बनाने, विकसित करने, कॉन्फ़िगर करने, परीक्षण करने और अत्यधिक उपलब्ध और स्केलेबल जावा वेब ऐप्स को [ग्रहण] से Azure में डालने में सहायता करता है (https://docs.microsoft.com/en -स / जावा / एज़ूर / एक्लिप्स / एज़ूर-टूलकिट-फॉर-एक्लिप्स) और [इंटेलिजे आईडीईए] (https://docs.microsoft.com/en-us/java/azure/intellij/azure-toolkit-for-intellij ) सभी समर्थित प्लेटफार्मों पर।
+* [IntelliJ IDEA के लिए Azure Toolkit] (https://docs.microsoft.com/en-us/java/azure/intellij/azure-toolkit-for-intellij)
+* [ग्रहण के लिए एज़ूर टूलकिट] (https://docs.microsoft.com/en-us/java/azure/eclipse/azure-toolkit-for-eclipse)
+* [रिलीज नोट्स] (https://github.com/Microsoft/azure-tools-for-java/releases)
+* [मुद्दे] (https://github.com/Microsoft/azure-tools-for-java/issues)
 
-## Azure Toolkit for IntelliJ IDEA
+## IntelliJ IDEA के लिए Azure Toolkit
 
-### Installation
-* [Set up the toolkits for IntelliJ](https://docs.microsoft.com/en-us/java/azure/intellij/azure-toolkit-for-intellij-installation)
-* [IntelliJ IDEA Plugin Repository](https://plugins.jetbrains.com/plugin/8053?pr=idea)
+### स्थापना
+* [IntelliJ के लिए टूलकिट सेट करें] (https://docs.microsoft.com/en-us/java/azure/intellij/azure-toolkit-for-intellij-installation)
+* [इंटेलिजे आईडीईए प्लगइन रिपोजिटरी] (https://plugins.jetbrains.com/plugin/8053?pr=idea)
 
-### Documentation 
-* [Get Started Tutorial](https://docs.microsoft.com/en-us/azure/app-service-web/app-service-web-intellij-create-hello-world-web-app)
-* [Home Page of Azure Toolkit for IntelliJ](https://docs.microsoft.com/en-us/java/azure/intellij/azure-toolkit-for-intellij)
-* [Java Developer Center on Azure](https://docs.microsoft.com/en-us/java/azure/)
-* [Get Started for HDInsight](https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-apache-spark-intellij-tool-plugin)
+### दस्तावेज़ीकरण
+* [प्रारंभ ट्यूटोरियल प्राप्त करें] (https://docs.microsoft.com/en-us/azure/app-service-web/app-service-web-intellij-create-hello-world-web-app)
+* [IntelliJ के लिए Azure Toolkit का होम पेज] (https://docs.microsoft.com/en-us/java/azure/intellij/azure-toolkit-for-intellij)
+* [Azure पर जावा डेवलपर सेंटर] (https://docs.microsoft.com/en-us/java/azure/)
+* [एचडीआईन्सइट के लिए शुरू करें] (https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-apache-spark-intellij-tool-plugin)
 
 ## Azure Toolkit for Eclipse
 
