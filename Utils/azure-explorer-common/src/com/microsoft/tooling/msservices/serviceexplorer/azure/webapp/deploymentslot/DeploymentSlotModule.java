@@ -33,7 +33,7 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
         try {
             presenter.onDeleteDeploymentSlot(sid, this.webAppId, name);
             removeDirectChildNode(node);
-        } catch (IOException e) {
+        } catch (Exception e) {
             DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Deployment Slot",
                 e, "Azure Services Explorer - Error Deleting Deployment Slot", false, true);
         }
