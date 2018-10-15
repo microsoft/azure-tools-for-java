@@ -46,7 +46,7 @@ cp ./Utils/azuretools-core/target/azuretools-core-${VERSION}.jar ${TOSIGNPATH}/
 cp ./Utils/azure-explorer-common/target/azure-explorer-common-${VERSION}.jar ${TOSIGNPATH}/
 cp ./Utils/hdinsight-node-common/target/hdinsight-node-common-${VERSION}.jar ${TOSIGNPATH}/
 
-if ${CSU_PATH}/csu.exe -c1=170
+if node /c/Signing/ESRP/signScript/index.js
 then
 	echo jar signed successfully
 else
