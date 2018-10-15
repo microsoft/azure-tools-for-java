@@ -26,7 +26,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deployments
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -36,7 +35,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebApp
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 
 public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
-    private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete Web App %s.\n"
+    private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete the Web App: %s.\n"
         + "Are you sure you want to continue?";
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
     private static final String LABEL = "WebApp";
@@ -104,10 +103,6 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         return this.webAppId;
     }
 
-    public String getWebAppName() {
-        return this.webAppName;
-    }
-
     public void startWebApp() {
         try {
             webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webAppId);
@@ -137,17 +132,17 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     private class DeleteWebAppAction extends AzureNodeActionPromptListener {
         DeleteWebAppAction() {
-            super(WebAppNode.this, String.format(DELETE_WEBAPP_PROMPT_MESSAGE, getWebAppName()),
+            super(WebAppNode.this, String.format(DELETE_WEBAPP_PROMPT_MESSAGE, getName()),
                     DELETE_WEBAPP_PROGRESS_MESSAGE);
         }
 
         @Override
-        protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
+        protected void azureNodeAction(NodeActionEvent e) {
             getParent().removeNode(getSubscriptionId(), getWebAppId(), WebAppNode.this);
         }
 
         @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+        protected void onSubscriptionsChanged(NodeActionEvent e) {
         }
     }
 }
