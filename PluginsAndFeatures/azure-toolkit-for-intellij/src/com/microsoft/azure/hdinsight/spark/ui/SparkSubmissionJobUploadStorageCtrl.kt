@@ -30,6 +30,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
@@ -104,12 +105,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                     { },
                     { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
 
-    private fun getClusterDetail(): IClusterDetail? {
-        if (StringUtils.isEmpty(getClusterName())) {
-            return null
-        }
-        return ClusterManagerEx.getInstance().getClusterDetailByName(getClusterName()).orElse(null)
-    }
+    abstract fun getClusterDetail(): IClusterDetail?
 
     private fun validateStorageInfo(selectedItem: String): Observable<SparkSubmitJobUploadStorageModel> {
         return Observable.just(SparkSubmitJobUploadStorageModel())
@@ -136,10 +132,10 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                                 try {
                                     clusterDetail.getConfigurationInfo()
                                     val defaultStorageAccount = clusterDetail.storageAccount
-                                    val defaultStorageContainer = defaultStorageAccount.defaultContainerOrRootPath
-                                    if (defaultStorageAccount != null && defaultStorageContainer != null) {
+                                    val defaultContainerOrRootPath = defaultStorageAccount.defaultContainerOrRootPath
+                                    if (defaultStorageAccount != null && defaultContainerOrRootPath != null) {
                                         errorMsg = null
-                                        uploadPath = getAzureBlobStoragePath(defaultStorageAccount.name, defaultStorageContainer)
+                                        uploadPath = if (clusterDetail is AzureSparkServerlessCluster) getAzureDataLakeStoragePath(defaultContainerOrRootPath) else getAzureBlobStoragePath(defaultStorageAccount.name, defaultContainerOrRootPath)
                                         storageAccountType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
                                     } else {
                                         errorMsg = "Cluster have no storage account or storage container"
@@ -240,5 +236,14 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
     private fun getAzureBlobStoragePath(storageAccountName: String?, container: String?): String? {
         return if (StringUtils.isEmpty(storageAccountName) || StringUtils.isEmpty(container)) null else
             "wasbs://$container@${ClusterManagerEx.getInstance().getBlobFullName(storageAccountName)}/SparkSubmission/"
+    }
+
+    private fun getRootPathEndsWithSlash(rootPath: String): String {
+        return if (rootPath.endsWith("/")) rootPath else "$rootPath/"
+    }
+
+    private fun getAzureDataLakeStoragePath(rootPath: String?): String? {
+        return if (StringUtils.isEmpty(rootPath)) null else
+            "${getRootPathEndsWithSlash(rootPath.orEmpty())}SparkSubmission/"
     }
 }

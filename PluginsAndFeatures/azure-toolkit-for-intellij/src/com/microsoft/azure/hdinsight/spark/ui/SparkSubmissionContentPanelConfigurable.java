@@ -66,8 +66,8 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
     private final Project myProject;
 
     private SparkSubmissionContentPanel submissionPanel;
-    private SparkSubmissionJobUploadStorageWithUploadPathPanel storageWithUploadPathPanel;
-    private SparkSubmissionJobUploadStorageCtrl jobUploadStorageCtrl;
+    protected SparkSubmissionJobUploadStorageWithUploadPathPanel storageWithUploadPathPanel;
+    protected SparkSubmissionJobUploadStorageCtrl jobUploadStorageCtrl;
     private JPanel myWholePanel;
 
     // Cluster refresh publish subject with preselected cluster name as event
@@ -79,6 +79,7 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
         this.storageWithUploadPathPanel = submissionPanel.storageWithUploadPathPanel;
         this.myProject = project;
 
+/*
         this.jobUploadStorageCtrl = new SparkSubmissionJobUploadStorageCtrl(this.storageWithUploadPathPanel) {
             @Nullable
             @Override
@@ -87,6 +88,7 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
                 return clusterDetail == null ? null : clusterDetail.getName();
             }
         };
+*/
         this.clustersRefreshSub = BehaviorSubject.create();
     }
 
