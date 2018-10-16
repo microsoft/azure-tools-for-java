@@ -29,6 +29,8 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchDebugSession
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UseKeyFile
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UsePassword
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel
+import com.microsoft.azuretools.securestore.SecureStore
+import com.microsoft.azuretools.service.ServiceManager
 import org.apache.commons.lang3.StringUtils
 import rx.Subscription
 import java.util.concurrent.TimeUnit
@@ -90,6 +92,8 @@ abstract class SparkSubmissionAdvancedConfigCtrl(val view: SparkSubmissionAdvanc
 
                     debugSession.close()
 
+                    ServiceManager.getServiceProvider(SecureStore::class.java)?.savePassword(
+                            modelToProbe.credentialStoreAccount, modelToProbe.sshUserName, modelToProbe.sshPassword)
                     CheckResult(modelToProbe, passedText)
                 } catch (ex: SparkBatchDebugSession.SshPasswordExpiredException) {
                     CheckResult(modelToProbe, "failed (password expired)")
