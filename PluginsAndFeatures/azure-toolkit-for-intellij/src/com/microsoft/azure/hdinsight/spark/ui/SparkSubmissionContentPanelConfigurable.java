@@ -48,7 +48,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
-import rx.subjects.PublishSubject;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
@@ -66,8 +65,8 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
     private final Project myProject;
 
     private SparkSubmissionContentPanel submissionPanel;
-    protected SparkSubmissionJobUploadStorageWithUploadPathPanel storageWithUploadPathPanel;
-    protected SparkSubmissionJobUploadStorageCtrl jobUploadStorageCtrl;
+    private SparkSubmissionJobUploadStorageWithUploadPathPanel storageWithUploadPathPanel;
+    private SparkSubmissionJobUploadStorageCtrl jobUploadStorageCtrl;
     private JPanel myWholePanel;
 
     // Cluster refresh publish subject with preselected cluster name as event
@@ -79,7 +78,6 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
         this.storageWithUploadPathPanel = submissionPanel.storageWithUploadPathPanel;
         this.myProject = project;
 
-/*
         this.jobUploadStorageCtrl = new SparkSubmissionJobUploadStorageCtrl(this.storageWithUploadPathPanel) {
             @Nullable
             @Override
@@ -87,8 +85,16 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
                 IClusterDetail clusterDetail = getSelectedClusterDetail();
                 return clusterDetail == null ? null : clusterDetail.getName();
             }
+
+            @Nullable
+            @Override
+            public IClusterDetail getClusterDetail() {
+                return getClusterDetails().stream()
+                        .filter(clusterDetail -> clusterDetail.getName().equals(getClusterName()))
+                        .findFirst()
+                        .orElse(null);
+            }
         };
-*/
         this.clustersRefreshSub = BehaviorSubject.create();
     }
 
