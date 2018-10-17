@@ -14,6 +14,7 @@ import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.util.PathUtil
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
@@ -59,7 +60,10 @@ class DownloadControlMessageHandler(
                             FileSaverDescriptor("Save file from Azure Cloud Shell",
                                     "", PathUtil.getFileExtension(fileName) ?: ""), project)
 
-                    val targetFile = dialog.save(null, fileName)
+                    val targetFile = dialog.save(
+                            LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")),
+                            fileName)
+
                     if (targetFile != null) {
                         ApplicationManager.getApplication().runWriteAction {
                             try {
