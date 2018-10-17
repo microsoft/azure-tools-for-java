@@ -46,6 +46,7 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
 
     @NotNull
     private AzureSparkServerlessAccount account;
+
     public SparkServerlessClusterProvisionCtrlProvider(
             @NotNull SettableControl<SparkServerlessClusterProvisionSettingsModel> controllableView,
             @NotNull IdeSchedulers ideSchedulers,
@@ -67,23 +68,27 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
     }
 
     public static int getCalculatedAU(int masterCores,
-                               int workerCores,
-                               int masterMemory,
-                               int workerMemory,
-                               int workerContainer) {
+                                      int workerCores,
+                                      int masterMemory,
+                                      int workerMemory,
+                                      int workerContainer) {
         return (int) Math.max(
                 Math.ceil((masterCores + workerCores * workerContainer) / 2.0),
                 Math.ceil((masterMemory + workerMemory * workerContainer) / 6.0));
     }
 
-    private Observable<Integer> getTotalAU() {
+    private Observable<Integer> getTotalAUAsync() {
         return account.get()
                 .onErrorReturn(err -> {
-                    log().warn(String.format("Can't get the account %s details: %s", account.getName(), err));
+                    log().warn(String.format("Can't get the account %s details: %s", account.getName(), ExceptionUtils.getStackTrace(err)));
                     return account;
                 })
                 .subscribeOn(Schedulers.io())
                 .map(account -> account.getSystemMaxDegreeOfParallelism());
+    }
+
+    private int getTotalAUWithoutAsync() {
+        return account.getSystemMaxDegreeOfParallelism();
     }
 
     private Observable<Integer> getUsedAU() {
@@ -91,23 +96,42 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
                 .subscribeOn(Schedulers.io());
     }
 
-    private int getAvailableAU(int totalAU, int usedAU) {
-        return totalAU < usedAU ? 0 : totalAU - usedAU;
+    @NotNull
+    public SparkServerlessClusterProvisionSettingsModel getModel() {
+        SparkServerlessClusterProvisionSettingsModel model = new SparkServerlessClusterProvisionSettingsModel();
+        controllableView.getData(model);
+        return model;
     }
 
-    public Observable<Integer> getAvailableAU() {
-        return getUsedAU()
-                .map(usedAU -> getAvailableAU(account.getSystemMaxDegreeOfParallelism(), usedAU));
+    @NotNull
+    public Observable<SparkServerlessClusterProvisionSettingsModel> updateAvailableAUAndTotalAU() {
+        return Observable.just(getModel())
+                // disable refresh button when updating available AU and total AU
+                .map(toUpdate -> toUpdate.setRefreshEnabled(false))
+                .doOnNext(controllableView::setData)
+                .flatMap(toUpdate -> Observable.zip(getTotalAUAsync(), getUsedAU(),
+                        (totalAU, usedAU) -> Pair.of(Math.max(0, totalAU - usedAU), totalAU)))
+                .map(availableAUAndTotalAUPair -> getModel()
+                        .setAvailableAU(availableAUAndTotalAUPair.getLeft())
+                        .setTotalAU(availableAUAndTotalAUPair.getRight())
+                        // re-enable refresh button after updating complete
+                        .setRefreshEnabled(true))
+                .doOnNext(controllableView::setData);
     }
 
-    /**
-     * The result of availableAU replies on totalAU, here getAvailableAUAndTotalAU() is defined to make sure that
-     * availableAU is calculated after totalAU is ready. Notice that totalAU is calculated once for all,
-     * getAvailableAUAndTotalAU() should only be called once, next time getAvailableAU() is enough to calculate availableAU
-     */
-    public Observable<Pair<Integer, Integer>> getAvailableAUAndTotalAU() {
-        return Observable.zip(getTotalAU(), getUsedAU(),
-                (totalAU, usedAU) -> Pair.of(getAvailableAU(totalAU, usedAU), totalAU));
+    @NotNull
+    public Observable<SparkServerlessClusterProvisionSettingsModel> updateAvailableAU() {
+        return Observable.just(getModel())
+                // disable refresh button when updating available AU
+                .map(toUpdate -> toUpdate.setRefreshEnabled(false))
+                .doOnNext(controllableView::setData)
+                .flatMap(toUpdate -> getUsedAU())
+                .map(usedAU -> Math.max(0, getTotalAUWithoutAsync() - usedAU))
+                .map(availableAU -> getModel()
+                        .setAvailableAU(availableAU)
+                        // re-enable refresh button after updating complete
+                        .setRefreshEnabled(true))
+                .doOnNext(controllableView::setData);
     }
 
     @NotNull
@@ -124,10 +148,10 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
                 .build());
     }
 
-        public Observable<SparkServerlessClusterProvisionSettingsModel> validateAndProvision() {
+    @NotNull
+    public Observable<SparkServerlessClusterProvisionSettingsModel> validateAndProvision() {
         // TODO: AU adequation check
-        return Observable.just(new SparkServerlessClusterProvisionSettingsModel())
-                .doOnNext(controllableView::getData)
+        return Observable.just(getModel())
                 .observeOn(ideSchedulers.processBarVisibleAsync("Provisioning cluster..."))
                 .map(toUpdate -> toUpdate.setErrorMessage(null))
                 .flatMap(toUpdate ->
@@ -146,8 +170,8 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
                                     return toUpdate.setErrorMessage(err.getMessage());
                                 })
                 )
-                .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData)
+                .observeOn(ideSchedulers.dispatchUIThread())
                 .filter(data -> StringUtils.isEmpty(data.getErrorMessage()));
     }
 }
