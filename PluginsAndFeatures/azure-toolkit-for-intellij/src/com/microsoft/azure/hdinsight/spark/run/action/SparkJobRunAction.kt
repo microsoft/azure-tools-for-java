@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.spark.run.action
 import com.intellij.execution.Executor
 import com.intellij.execution.ExecutorRegistry
 import com.intellij.icons.AllIcons
+import com.microsoft.azure.hdinsight.common.CommonConst
 import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor.EXECUTOR_ID
 
@@ -32,7 +33,7 @@ class SparkJobRunAction
     : SparkRunConfigurationAction(
         "SparkJobRun",
         "Submit Spark Application to remote cluster",
-        StreamUtil.getImageResourceFile("/icons/ToolWindowSparkJobRun.png")?: AllIcons.Actions.Upload) {
+        StreamUtil.getImageResourceFile(CommonConst.ToolWindowSparkJobRunIcon_13x_Path)?: AllIcons.Actions.Upload) {
 
     override val runExecutor: Executor
         get() = ExecutorRegistry.getInstance().getExecutorById(EXECUTOR_ID)

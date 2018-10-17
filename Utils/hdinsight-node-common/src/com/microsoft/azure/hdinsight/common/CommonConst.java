@@ -25,7 +25,8 @@ public class CommonConst {
     public static final String ProductIConPath = "/icons/Product.png";
     public static final String RefreshIConPath = "/icons/Refresh.png";
     public static final String BlobFileIConPath = "/icons/BlobFile.png";
-    public static final String HDExplorerIconPath = "HdExplorer.png";
+    public static final String HDExplorerIcon_16x_Path = "HdExplorer_16x.png";
+    public static final String HDExplorerIcon_13x_Path = "HdExplorer.png";
     public static final String HDInsightIConPath = "HdInsight.png";
     public static final String HDInsightGrayIconPath = "HdInsight_gray.png";
     public static final String ClusterIConPath = "Cluster.png";
@@ -43,7 +44,12 @@ public class CommonConst {
     public static final String EmualtorPath = "/emulator/";
     public static final String EmulatorArchieveFileName = "service.zip";
     public static final String EmulatorSetupScriptFileName = "setup.sh";
-    public static final String SparkFailureTaskDebugIconPath = "/icons/ToolWindowSparkJobDebug.png";
+    public static final String SparkFailureTaskDebugIcon_13x_Path = "/icons/ToolWindowSparkJobDebug_13x.png";
+    public static final String SparkFailureTaskDebugIcon_16x_Path = "/icons/ToolWindowSparkJobDebug.png";
+    public static final String ToolWindowSparkJobRunIcon_13x_Path = "/icons/ToolWindowSparkJobRun_13x.png";
+    public static final String ToolWindowSparkJobRunIcon_16x_Path = "/icons/ToolWindowSparkJobRun.png";
+    public static final String ToolWindowSparkJobDebugIcon_13x_Path = "/icons/ToolWindowSparkJobDebug_13x.png";
+    public static final String ToolWindowSparkJobDebugIcon_16x_Path = "/icons/ToolWindowSparkJobDebug.png";
 
     public static final String HDINSIGHT_ADDITIONAL_CLUSTERS = "com.microsoft.azure.hdinsight.AdditionalClusters";
     public static final String HDINSIGHT_LIVY_LINK_CLUSTERS = "com.microsoft.azure.hdinsight.LivyLinkClusters";
