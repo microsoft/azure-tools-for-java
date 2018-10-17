@@ -24,7 +24,6 @@ package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UsePassword
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UseKeyFile
@@ -42,19 +41,6 @@ class SparkSubmissionDebuggablePanelConfigurable(project: Project,
 
     private val advancedConfigCtrl = object : SparkSubmissionAdvancedConfigCtrl(advancedConfigPanel) {
         override fun getClusterNameToCheck(): String? = selectedClusterDetail?.name
-    }
-
-    init {
-        jobUploadStorageCtrl = object : SparkSubmissionJobUploadStorageCtrl(storageWithUploadPathPanel) {
-            override fun getClusterName(): String? = selectedClusterDetail?.name
-
-            override fun getClusterDetail(): IClusterDetail? {
-                if (StringUtils.isEmpty(getClusterName())) {
-                    return null
-                }
-                return ClusterManagerEx.getInstance().getClusterDetailByName(getClusterName()).orElse(null)
-            }
-        }
     }
 
     override fun onClusterSelected(cluster: IClusterDetail) {
