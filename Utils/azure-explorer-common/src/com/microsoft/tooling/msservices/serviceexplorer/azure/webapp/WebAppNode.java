@@ -56,6 +56,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         this.propertyMap = propertyMap;
         webAppNodePresenter = new WebAppNodePresenter<>();
         webAppNodePresenter.onAttachView(WebAppNode.this);
+        loadActions();
     }
 
     @Override
@@ -103,6 +104,10 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         return this.webAppId;
     }
 
+    public String getWebAppName() {
+        return this.webAppName;
+    }
+
     public void startWebApp() {
         try {
             webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webAppId);
@@ -132,7 +137,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     private class DeleteWebAppAction extends AzureNodeActionPromptListener {
         DeleteWebAppAction() {
-            super(WebAppNode.this, String.format(DELETE_WEBAPP_PROMPT_MESSAGE, getName()),
+            super(WebAppNode.this, String.format(DELETE_WEBAPP_PROMPT_MESSAGE, getWebAppName()),
                     DELETE_WEBAPP_PROGRESS_MESSAGE);
         }
 

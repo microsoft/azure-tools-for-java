@@ -47,6 +47,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         this.slotName = name;
         this.presenter = new DeploymentSlotNodePresenter();
         this.presenter.onAttachView(this);
+        loadActions();
     }
 
     @Override
