@@ -31,8 +31,6 @@ import com.intellij.util.io.ZipUtil
 import com.jetbrains.rdclient.util.idea.toIOFile
 import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.PublishableProjectModel
-import com.jetbrains.rider.model.runnableProjectsModel
-import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
 import com.jetbrains.rider.util.idea.application
 import com.jetbrains.rider.util.idea.getLogger
@@ -56,7 +54,7 @@ import java.io.File
 import java.io.FileFilter
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
-import java.util.Date
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipOutputStream
 
@@ -253,7 +251,7 @@ object WebAppRunState {
             processHandler.setText(String.format(UiConstants.PROJECT_ARTIFACTS_COLLECTING, publishableProject.projectName))
             val outDir = collectProjectArtifacts(project, publishableProject)
             // Note: we need to do it only for Linux Azure instances (we might add this check to speed up)
-            projectAssemblyRelativePath = getAssemblyRelativePath(project, publishableProject, outDir)
+            projectAssemblyRelativePath = getAssemblyRelativePath(publishableProject, outDir)
 
             processHandler.setText(String.format(UiConstants.ZIP_FILE_CREATE_FOR_PROJECT, publishableProject.projectName))
             val zipFile = zipProjectArtifacts(outDir, processHandler)
@@ -273,23 +271,15 @@ object WebAppRunState {
 
     /**
      * Get a relative path for an assembly name based from a project output directory
-     *
-     * Note: There is no a property in [PublishableProjectModel] to get a project assembly name. Right now
-     *       we hack around with RunnableProject model to get this information
-     *       TODO: RIDER-110015 Rework this after we add a property to [PublishableProjectModel] and set exePath
      */
-    private fun getAssemblyRelativePath(project: Project,
-                                        publishableProject: PublishableProjectModel,
-                                        outDir: File): String {
-
+    private fun getAssemblyRelativePath(publishableProject: PublishableProjectModel, outDir: File): String {
         val defaultPath = "${publishableProject.projectName}.dll"
 
-        val publishableProjectPath = publishableProject.projectFilePath
-        val runnableProjects = project.solution.runnableProjectsModel.projects.valueOrNull ?: return defaultPath
-        val projectOutputs = runnableProjects.find { it.projectFilePath == publishableProjectPath }?.projectOutputs?.firstOrNull() ?: return defaultPath
-        val assemblyName = projectOutputs.exePath.toIOFile().name
+        val outputs = publishableProject.projectOutputs.firstOrNull() ?: return defaultPath
+        val assemblyFile = outputs.exePath.toIOFile()
+        if (!assemblyFile.exists()) return defaultPath
 
-        return outDir.walk().find { it.name == assemblyName }?.relativeTo(outDir)?.path ?: defaultPath
+        return outDir.walk().find { it.name == assemblyFile.name }?.relativeTo(outDir)?.path ?: defaultPath
     }
 
     /**

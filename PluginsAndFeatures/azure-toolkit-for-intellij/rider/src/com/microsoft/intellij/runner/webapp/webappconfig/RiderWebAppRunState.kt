@@ -91,7 +91,8 @@ class RiderWebAppRunState(project: Project,
         deployToAzureWebApp(project, publishableProject, webApp, processHandler)
 
         if (myModel.webAppModel.operatingSystem == OperatingSystem.LINUX && publishableProject.isDotNetCore) {
-            val startupCommand = String.format(UiConstants.WEB_APP_STARTUP_COMMAND_TEMPLATE, "$URL_WEB_APP_WWWROOT/${WebAppRunState.projectAssemblyRelativePath}")
+            val assemblyPath = "$URL_WEB_APP_WWWROOT/${WebAppRunState.projectAssemblyRelativePath}"
+            val startupCommand = String.format(UiConstants.WEB_APP_STARTUP_COMMAND_TEMPLATE, assemblyPath)
             setStartupCommand(webApp, startupCommand, myModel.webAppModel.netCoreRuntime, processHandler)
         }
 
