@@ -26,7 +26,6 @@ import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
-import com.microsoft.intellij.runner.webapp.webappconfig.validator.ProjectValidator.validateProject
 
 object WebAppValidator : ConfigurationValidator() {
 
@@ -45,7 +44,6 @@ object WebAppValidator : ConfigurationValidator() {
     @Throws(RuntimeConfigurationError::class)
     fun validateWebApp(model: WebAppPublishModel) {
         val subscriptionId = SubscriptionValidator.validateSubscription(model.subscription).subscriptionId()
-        validateProject(model.publishableProject)
 
         if (model.isCreatingWebApp) {
             validateWebAppName(model.webAppName)

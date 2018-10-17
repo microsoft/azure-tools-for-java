@@ -32,6 +32,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
+import com.jetbrains.rdclient.util.idea.defineNestedLifetime
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.util.idea.getLogger

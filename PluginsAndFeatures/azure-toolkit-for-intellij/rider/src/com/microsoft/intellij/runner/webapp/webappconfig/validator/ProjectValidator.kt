@@ -25,14 +25,16 @@ package com.microsoft.intellij.runner.webapp.webappconfig.validator
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.util.SystemInfo
+import com.jetbrains.rider.framework.impl.RpcTimeouts
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
-import java.io.File
 
 object ProjectValidator : ConfigurationValidator() {
 
     private const val PROJECT_TARGETS_NOT_DEFINED = "Selected project '%s' cannot be published. Please choose a Web App"
     private const val PROJECT_PUBLISHING_NOT_SUPPORTED = "Publishing .Net applications on %s is not yet supported"
+
+    private val timeouts = RpcTimeouts(500L, 2000L)
 
     /**
      * Validate publishable project in the config
@@ -47,26 +49,24 @@ object ProjectValidator : ConfigurationValidator() {
 
         publishableProject ?: throw RuntimeConfigurationError(UiConstants.PROJECT_NOT_DEFINED)
 
-        if (!isPublishingSupported(publishableProject))
+        if (!isPublishSupported(publishableProject))
             throw RuntimeConfigurationError(
                     String.format(PROJECT_PUBLISHING_NOT_SUPPORTED, SystemInfo.OS_NAME))
 
-        if (!publishableProject.isDotNetCore && !isWebTargetsPresent(File(publishableProject.projectFilePath)))
+        if (!publishableProject.isDotNetCore && !isWebTargetsPresent(publishableProject))
             throw RuntimeConfigurationError(
                     String.format(PROJECT_TARGETS_NOT_DEFINED, UiConstants.WEB_APP_TARGET_NAME))
     }
+
+    private fun isPublishSupported(publishableProject: PublishableProjectModel) =
+            publishableProject.isWeb && (publishableProject.isDotNetCore || SystemInfo.isWindows)
 
     /**
      * Check whether necessary targets exists in a project that are necessary for web app deployment
      * Note: On Windows only
      *
-     * TODO: We should replace this method with a target validation on a backend (RIDER-18500)
-     *
      * @return [Boolean] whether WebApplication targets are present in publishable project
      */
-    private fun isWebTargetsPresent(csprojFile: File): Boolean = csprojFile.readText().contains(UiConstants.WEB_APP_TARGET_NAME, true)
-
-    private fun isPublishingSupported(publishableProject: PublishableProjectModel): Boolean {
-        return publishableProject.isWeb && (publishableProject.isDotNetCore || SystemInfo.isWindows)
-    }
+    private fun isWebTargetsPresent(publishableProject: PublishableProjectModel) =
+            publishableProject.hasTarget.sync(UiConstants.WEB_APP_TARGET_NAME, timeouts)
 }
