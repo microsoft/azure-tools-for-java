@@ -117,10 +117,13 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
             uploadPathField.text = data.uploadPath
             if (data.storageAccountType == SparkSubmitStorageType.BLOB) {
                 storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
+                val credentialAccount = data.getCredentialAzureBlobAccount()
                 storagePanel.azureBlobCard.storageKeyField.text =
-                        if (StringUtils.isEmpty(data.errorMsg) && StringUtils.isEmpty(data.storageKey))
-                            secureStore?.loadPassword(data.getCredentialAzureBlobAccount(), data.storageAccount) ?: data.storageKey
-                        else data.storageKey
+                        if (StringUtils.isEmpty(data.errorMsg) && StringUtils.isEmpty(data.storageKey)) {
+                            credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.storageAccount) }
+                        } else {
+                            data.storageKey
+                        }
                 if (data.containersModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedContainer)) {
                     storagePanel.azureBlobCard.storageContainerComboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
                 } else {
