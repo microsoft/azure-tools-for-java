@@ -658,18 +658,7 @@ public class AzureWebAppMvpModel {
         }
     }
 
-    @Deprecated
-    public void cleanWebAppsOnWindows() {
-        // todo: remove the function
-        // todo: create a new function clearWebAppsCache clear cache web apps
-        // subscriptionIdToWebAppsOnWindowsMap.clear();
-        subscriptionIdToWebApps.clear();
-    }
-
-    @Deprecated
-    public void cleanWebAppsOnLinux() {
-        // todo: remove the function
-        // subscriptionIdToWebAppsOnLinuxMap.clear();
+    public void clearWebAppsCache() {
         subscriptionIdToWebApps.clear();
     }
 
