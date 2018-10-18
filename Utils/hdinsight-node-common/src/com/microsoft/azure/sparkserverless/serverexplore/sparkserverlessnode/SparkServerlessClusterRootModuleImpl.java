@@ -28,6 +28,13 @@ import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootMo
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Optional;
 
 public class SparkServerlessClusterRootModuleImpl extends HDInsightRootModule {
     private static final String SERVICE_MODULE_ID = SparkServerlessClusterRootModuleImpl.class.getName();
@@ -68,6 +75,20 @@ public class SparkServerlessClusterRootModuleImpl extends HDInsightRootModule {
 
     }
 
+    @Override
+    protected void loadActions() {
+        super.loadActions();
+
+        addAction("Open Notebook", new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                try {
+                    Desktop.getDesktop().browse(URI.create("https://adsnotebookpreview.southeastasia.cloudapp.azure.com/hub/login"));
+                } catch (IOException ignore) {
+                }
+            }
+        });
+    }
     // TODO: refreshWithoutAsync() is called when unlink an HDInsight cluster. Maybe we also need to implement this method here?
     // public void refreshWithoutAsync()
 }
