@@ -83,6 +83,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     private static final String RESOURCE_GROUP = "Resource Group";
     private static final String APP_SERVICE_PLAN = "App Service Plan";
     private static final String RUNTIME = "Runtime";
+    private static final String DEPLOYMENT_SLOT = "Deployment Slot";
     private static final String NOT_APPLICABLE = "N/A";
     private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
     private static final String TABLE_EMPTY_MESSAGE = "No available Web App.";
@@ -154,6 +155,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     private JTextField txtNewSlotName;
     private JComboBox cbSlotConfigurationSource;
     private JPanel pnlSlot;
+    private JPanel pnlSlotHolder;
     private JBTable table;
     private AnActionButton btnRefresh;
     /**
@@ -314,6 +316,10 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             RUNTIME, true /*adjustWindow*/);
         javaDecorator.setContentComponent(pnlJava);
         javaDecorator.setOn(true);
+
+        HideableDecorator slotDecorator = new HideableDecorator(pnlSlotHolder, DEPLOYMENT_SLOT, true);
+        slotDecorator.setContentComponent(pnlSlot);
+        slotDecorator.setOn(true);
 
         lblJarDeployHint.setHyperlinkText(NON_WAR_FILE_DEPLOY_HINT);
     }

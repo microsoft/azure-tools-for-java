@@ -2,7 +2,23 @@ language: java
 sudo: false
 jdk:
 - oraclejdk8
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+  - rm -fr $HOME/.gradle/caches/modules-2/files-*/com.jetbrains.intellij.idea/
+  - rm -fr $HOME/.gradle/caches/modules-2/metadata-*/descriptors/com.jetbrains.intellij.idea/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.m2
 before_install:
 - export MAVEN_OPTS="-Xmx768M"
+branches:
+  only:
+  - master
+  - release
+  - develop
 script:
-- travis_wait 80 ./BuildDevint -q -e eclipse
+- 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then travis_wait 40 ./BuildDevint -q -e eclipse; fi'
+- 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then travis_wait 40 ./BuildDevint -q; fi'

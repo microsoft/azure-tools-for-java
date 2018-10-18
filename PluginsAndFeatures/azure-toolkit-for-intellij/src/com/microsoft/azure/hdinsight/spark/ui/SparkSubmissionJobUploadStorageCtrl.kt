@@ -191,6 +191,9 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                                     containersModel.selectedItem = containersModel.getElementAt(0)
                                     selectedContainer = containersModel.getElementAt(0)
                                     uploadPath = getAzureBlobStoragePath(storageAccount, selectedContainer)
+                                    val credentialAccount = getCredentialAzureBlobAccount()
+                                    credentialAccount?.let {
+                                        view.secureStore?.savePassword(credentialAccount, storageAccount, storageKey) }
                                     errorMsg = null
                                 } else {
                                     errorMsg = "No container found in this storage account"

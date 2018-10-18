@@ -29,18 +29,19 @@ package com.microsoft.azure.hdinsight.spark.common
 
 import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Tag
-import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStoragePanel
+import com.intellij.util.xmlb.annotations.Transient
 import javax.swing.DefaultComboBoxModel
 
 @Tag("job_upload_storage")
 class SparkSubmitJobUploadStorageModel {
+    @get:Transient val SERVICE_NAME_PREFIX = "Azure IntelliJ Plugin Job Upload Storage Azure Blob - "
+
     @Attribute("storage_account")
     var storageAccount: String? = null
 
-    @Attribute("storage_key")
-    var storageKey: String? = null
+    @get:Transient @set:Transient var storageKey: String? = null
 
-    @Transient var containersModel: DefaultComboBoxModel<String> = DefaultComboBoxModel()
+    @get:Transient @set:Transient var containersModel: DefaultComboBoxModel<String> = DefaultComboBoxModel()
 
     @Attribute("upload_path")
     var uploadPath: String? = null
@@ -52,5 +53,7 @@ class SparkSubmitJobUploadStorageModel {
     @Attribute("storage_account_type")
     var storageAccountType: SparkSubmitStorageType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
 
-    @Transient var errorMsg: String? = SparkSubmissionJobUploadStoragePanel().notFinishCheckMessage
+    @get:Transient @set:Transient var errorMsg: String? = null
+
+    fun getCredentialAzureBlobAccount(): String? = storageAccount?.let{ SERVICE_NAME_PREFIX + storageAccount }
 }
