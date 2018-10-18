@@ -62,7 +62,6 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         this.subscriptionId = subscriptionId;
         this.os = StringUtils.capitalize(os.toLowerCase());
         this.hostName = hostName;
-        loadActions();
     }
 
     protected static String getIcon(final String os, final String label, final WebAppBaseState state) {
