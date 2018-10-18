@@ -39,7 +39,6 @@ import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.InplaceButton
 import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridConstraints.*
-import com.intellij.uiDesigner.core.GridLayoutManager
 import com.microsoft.azure.hdinsight.common.Docs
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UseKeyFile
@@ -47,6 +46,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAut
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel
 import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
+import com.microsoft.intellij.forms.dsl.panel
 import org.apache.commons.lang3.StringUtils
 import rx.subjects.PublishSubject
 import java.awt.Component
@@ -126,20 +126,35 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
             enableRemoteDebugCheckBox.isSelected = isEnabled
         }
 
-    private fun baseConstraints() = GridConstraints().apply { anchor = ANCHOR_WEST }
-
-    private val colTemplate= listOf(
-            // Column 0                           | Column 1                              | Column 2
-            baseConstraints().apply { column = 0 }, baseConstraints().apply { column = 1 }, baseConstraints().apply { column = 2; hSizePolicy = SIZEPOLICY_WANT_GROW; fill = FILL_HORIZONTAL })
-
-    private fun buildConstraints(colTemplateOffset: Int): GridConstraints = colTemplate[colTemplateOffset].clone() as GridConstraints
-
-    private val layoutPlan = listOf(
-            Place(enableRemoteDebugCheckBox, buildConstraints(0).apply { indent = 0;         row = 0 }), Place(helpButton, buildConstraints(1).apply { row = 0 }), Place(checkSshCertIndicator, buildConstraints(2).apply { row = 0 }),
-                Place(sshUserNameLabel,          buildConstraints(0).apply { indent = 1;     row = 1 }), /* Empty Column 1, */ Place(sshUserNameTextField,  buildConstraints(2).apply { row = 1 }),
-                Place(sshAuthTypeLabel,          buildConstraints(0).apply { indent = 1;     row = 2 }),
-                    Place(sshUsePasswordRadioButton, buildConstraints(0).apply { indent = 2; row = 3 }), /* Empty Column 1, */ Place(sshPasswordField,      buildConstraints(2).apply { row = 3 }),
-                    Place(sshUseKeyFileRadioButton,  buildConstraints(0).apply { indent = 2; row = 4 }), /* Empty Column 1, */ Place(sshKeyFileTextField,   buildConstraints(2).apply { row = 4 }))
+    private val formBuilder = panel {
+        columnTemplate {
+            col {   // Column 0
+                anchor = ANCHOR_WEST
+            }
+            col {   // Column 1
+                anchor = ANCHOR_WEST
+            }
+            col {   // Column 2
+                hSizePolicy = SIZEPOLICY_WANT_GROW
+                fill = FILL_HORIZONTAL
+            }
+        }
+        row {
+            c(enableRemoteDebugCheckBox) { indent = 0 };        c(helpButton) {};   c(checkSshCertIndicator) {}
+        }
+        row {
+              c(sshUserNameLabel) { indent = 1 };               c(null) {};         c(sshUserNameTextField) {}
+        }
+        row {
+              c(sshAuthTypeLabel) { indent = 1 }
+        }
+        row {
+                c(sshUsePasswordRadioButton) { indent = 2 };    c(null) {};         c(sshPasswordField) {}
+        }
+        row {
+                c(sshUseKeyFileRadioButton) { indent = 2 };     c(null) {};         c(sshKeyFileTextField) {}
+        }
+    }
 
     val sshCheckSubject: PublishSubject<String> = PublishSubject.create()
 
@@ -147,8 +162,8 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         setSshAuthenticationUIEnabled(false)
 
         // Add all components according to the layout plan
-        layout = GridLayoutManager(layoutPlan.last().gridConstraints.row + 1, colTemplate.size)
-        layoutPlan.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
+        layout = formBuilder.createGridLayoutManager()
+        formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
 
         // To enable/disable all options
         enableRemoteDebugCheckBox.addItemListener { setSshAuthenticationUIEnabled(it.stateChange == SELECTED) }
