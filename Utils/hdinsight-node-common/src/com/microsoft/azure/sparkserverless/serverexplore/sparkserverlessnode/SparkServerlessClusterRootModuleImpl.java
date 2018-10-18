@@ -43,7 +43,7 @@ public class SparkServerlessClusterRootModuleImpl extends HDInsightRootModule {
     // TODO: determine root node name
     private static final String BASE_MODULE_NAME = "Azure Data Lake Spark Pool";
 
-    private static final String SPARK_NOTEBOOK_LINK = "Azure Data Lake Spark Pool";
+    private static final String SPARK_NOTEBOOK_LINK = "https://adsnotebookpreview.southeastasia.cloudapp.azure.com/";
 
     public SparkServerlessClusterRootModuleImpl(@NotNull Node parent) {
         super(SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH, true);
