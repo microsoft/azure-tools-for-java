@@ -36,6 +36,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
@@ -60,14 +61,13 @@ import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
 public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpView {
 
     public static final String ID = "com.microsoft.intellij.helpers.webapp.WebAppPropertyView";
 
-    private final WebAppPropertyViewPresenter<WebAppPropertyView> presenter;
-    private final String sid;
-    private final String resId;
+    private final WebAppBasePropertyViewPresenter presenter;
     private final Map<String, String> cachedAppSettings;
     private final Map<String, String> editedAppSettings;
     private final StatusBar statusBar;
@@ -118,20 +118,22 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     /**
      * Initialize the Web App Property View and return it.
      */
-    public static WebAppPropertyView create(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
-        WebAppPropertyView view = new WebAppPropertyView(project, sid, resId);
-        view.onLoadWebAppProperty();
+    public static WebAppPropertyView create(@NotNull final Project project, @NotNull final String sid,
+                                            @NotNull final String webAppId, @Nullable final String name,
+                                            @NotNull final WebAppBasePropertyViewPresenter presenter) {
+        WebAppPropertyView view = new WebAppPropertyView(project, sid, webAppId, name, presenter);
+        view.onLoadWebAppProperty(sid, webAppId, name);
         return view;
     }
 
-    private WebAppPropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
-        this.sid = sid;
-        this.resId = resId;
+    private WebAppPropertyView(@NotNull final Project project, @NotNull final String sid,
+                               @NotNull final String webAppId, @Nullable final String name,
+                               @NotNull final WebAppBasePropertyViewPresenter presenter) {
         cachedAppSettings = new LinkedHashMap<>();
         editedAppSettings = new LinkedHashMap<>();
         statusBar = WindowManager.getInstance().getStatusBar(project);
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
-        this.presenter = new WebAppPropertyViewPresenter<>();
+        this.presenter = presenter;
         this.presenter.onAttachView(this);
 
         // initialize widgets...
@@ -159,7 +161,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
                 fileChooserDescriptor.setTitle(FILE_SELECTOR_TITLE);
                 final VirtualFile file = FileChooser.chooseFile(fileChooserDescriptor, null, null);
                 if (file != null) {
-                    presenter.onGetPublishingProfileXmlWithSecrets(sid, resId, file.getPath());
+                    presenter.onGetPublishingProfileXmlWithSecrets(sid, webAppId, name, file.getPath());
                 }
             }
         });
@@ -179,7 +181,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
             @Override
             public void actionPerformedFunc(ActionEvent event) {
                 setBtnEnableStatus(false);
-                presenter.onUpdateWebAppProperty(sid, resId, cachedAppSettings, editedAppSettings);
+                presenter.onUpdateWebAppProperty(sid, webAppId, name, cachedAppSettings, editedAppSettings);
             }
         });
 
@@ -287,8 +289,8 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     }
 
     @Override
-    public void onLoadWebAppProperty() {
-        presenter.onLoadWebAppProperty(this.sid, this.resId);
+    public void onLoadWebAppProperty(final String sid, final String webAppId, final String name) {
+        presenter.onLoadWebAppProperty(sid, webAppId, name);
     }
 
     @Override
