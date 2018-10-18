@@ -49,6 +49,10 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         this.presenter.onAttachView(this);
     }
 
+    public String getWebAppId() {
+        return this.webAppId;
+    }
+
     @Override
     public List<NodeAction> getNodeActions() {
         getNodeActionByName(ACTION_SWAP_WITH_PRODUCTION).setEnabled(this.state == WebAppBaseState.RUNNING);

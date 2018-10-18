@@ -34,6 +34,8 @@ import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
 public interface UIHelper {
     void showException(@NotNull String message,
@@ -73,6 +75,8 @@ public interface UIHelper {
     void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node);
 
     void openWebAppPropertyView(@NotNull WebAppNode node);
+
+    void openDeploymentSlotPropertyView(@NotNull DeploymentSlotNode node);
 
     @Nullable
     <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,
