@@ -61,11 +61,11 @@ import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
 
-public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpView {
+public class WebAppBasePropertyView extends BaseEditor implements WebAppPropertyMvpView {
 
-    public static final String ID = "com.microsoft.intellij.helpers.webapp.WebAppPropertyView";
+    public static final String ID = "com.microsoft.intellij.helpers.webapp.WebAppBasePropertyView";
 
-    private final WebAppPropertyViewPresenter<WebAppPropertyView> presenter;
+    private final WebAppPropertyViewPresenter<WebAppBasePropertyView> presenter;
     private final String sid;
     private final String resId;
     private final Map<String, String> cachedAppSettings;
@@ -86,7 +86,7 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     private static final String NOTIFY_PROPERTY_UPDATE_SUCCESS = "Properties updated.";
     private static final String NOTIFY_PROFILE_GET_SUCCESS = "Publish Profile saved.";
     private static final String NOTIFY_PROFILE_GET_FAIL = "Failed to get Publish Profile.";
-    private static final String INSIGHT_NAME = "AzurePlugin.IntelliJ.Editor.WebAppPropertyView";
+    private static final String INSIGHT_NAME = "AzurePlugin.IntelliJ.Editor.WebAppBasePropertyView";
 
     private JPanel pnlMain;
     private JButton btnGetPublishFile;
@@ -118,13 +118,13 @@ public class WebAppPropertyView extends BaseEditor implements WebAppPropertyMvpV
     /**
      * Initialize the Web App Property View and return it.
      */
-    public static WebAppPropertyView create(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
-        WebAppPropertyView view = new WebAppPropertyView(project, sid, resId);
+    public static WebAppBasePropertyView create(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
+        WebAppBasePropertyView view = new WebAppBasePropertyView(project, sid, resId);
         view.onLoadWebAppProperty();
         return view;
     }
 
-    private WebAppPropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
+    private WebAppBasePropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
         this.sid = sid;
         this.resId = resId;
         cachedAppSettings = new LinkedHashMap<>();
