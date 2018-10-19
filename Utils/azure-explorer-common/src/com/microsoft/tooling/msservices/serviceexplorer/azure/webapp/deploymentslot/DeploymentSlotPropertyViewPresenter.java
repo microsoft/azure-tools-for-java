@@ -20,27 +20,27 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
 import java.util.Map;
 import java.util.Set;
 
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
-public class WebAppPropertyViewPresenter extends WebAppBasePropertyViewPresenter {
+public class DeploymentSlotPropertyViewPresenter extends WebAppBasePropertyViewPresenter {
     @Override
     protected void performUpdateSettings(@NotNull final String sid, @NotNull final WebAppBase webAppBase,
                                          final Map toUpdate, final Set toRemove) throws Exception {
-        AzureWebAppMvpModel.getInstance().updateWebAppSettings(sid, webAppBase.id(), toUpdate, toRemove);
+        // todo
     }
 
     @Override
-    protected boolean performGetPublishingProfile(@NotNull final String sid, @NotNull final WebAppBase webAppBase,
+    protected boolean performGetPublishingProfile(@NotNull final String subscriptionId,
+                                                  @NotNull final WebAppBase webAppBase,
                                                   @NotNull final String filePath) throws Exception {
-        return AzureWebAppMvpModel.getInstance().getPublishingProfileXmlWithSecrets(
-            sid, webAppBase.id(), filePath);
+        // todo
+        return false;
     }
 }
