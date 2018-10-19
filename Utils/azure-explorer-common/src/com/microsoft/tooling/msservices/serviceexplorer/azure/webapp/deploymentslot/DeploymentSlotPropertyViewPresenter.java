@@ -38,15 +38,15 @@ public class DeploymentSlotPropertyViewPresenter extends WebAppBasePropertyViewP
     protected void updateAppSettings(@NotNull final String sid, @NotNull final String webAppId,
                                      @Nullable final String name, final Map toUpdate,
                                      final Set toRemove) throws Exception {
-        // todo
+        AzureWebAppMvpModel.getInstance().updateDeploymentSlotAppSettings(sid, webAppId, name, toUpdate, toRemove);
     }
 
     @Override
     protected boolean getPublishingProfile(@NotNull final String subscriptionId, @NotNull final String webAppId,
                                            @Nullable final String name,
                                            @NotNull final String filePath) throws Exception {
-        // todo
-        return false;
+        return AzureWebAppMvpModel.getInstance()
+            .getSlotPublishingProfileXmlWithSecrets(subscriptionId, webAppId, name, filePath);
     }
 
     @Override

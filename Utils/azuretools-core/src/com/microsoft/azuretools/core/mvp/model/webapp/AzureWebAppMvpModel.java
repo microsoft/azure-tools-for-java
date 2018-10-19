@@ -47,6 +47,7 @@ import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.PublishingProfileFormat;
 import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
@@ -377,6 +378,22 @@ public class AzureWebAppMvpModel {
         update.apply();
     }
 
+    /**
+     * Update app settings of deployment slot.
+     */
+    public void updateDeploymentSlotAppSettings(final String subsciptionId, final String webAppId,
+                                                final String slotName, final Map<String, String> toUpdate,
+                                                final Set<String> toRemove) throws Exception {
+        final DeploymentSlot slot = getWebAppById(subsciptionId, webAppId).deploymentSlots().getByName(slotName);
+        clearTags(slot);
+        com.microsoft.azure.management.appservice.WebAppBase.Update<DeploymentSlot> update = slot.update()
+            .withAppSettings(toUpdate);
+        for (String key : toRemove) {
+            update = update.withoutAppSetting(key);
+        }
+        update.apply();
+    }
+
     public void deleteWebAppOnLinux(String sid, String appid) throws IOException {
         deleteWebApp(sid, appid);
     }
@@ -586,7 +603,7 @@ public class AzureWebAppMvpModel {
     }
 
     /**
-     * Download publish profile.
+     * Download publish profile of web app.
      *
      * @param sid      subscription id
      * @param webAppId webapp id
@@ -602,6 +619,29 @@ public class AzureWebAppMvpModel {
         try (InputStream inputStream = app.manager().inner().webApps()
                 .listPublishingProfileXmlWithSecrets(app.resourceGroupName(), app.name(),
                         PublishingProfileFormat.FTP);
+             OutputStream outputStream = new FileOutputStream(file);
+        ) {
+            IOUtils.copy(inputStream, outputStream);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Download publish profile of deployment slot.
+     */
+    public boolean getSlotPublishingProfileXmlWithSecrets(final String sid, final String webAppId, final String slotName,
+                                                          final String filePath) throws Exception {
+        final WebApp app = getWebAppById(sid, webAppId);
+        final DeploymentSlot slot = app.deploymentSlots().getByName(slotName);
+        final File file = new File(Paths.get(filePath, slotName + "_" + System.currentTimeMillis() + ".PublishSettings")
+            .toString());
+        file.createNewFile();
+        try (final InputStream inputStream = slot.manager().inner().webApps()
+            .listPublishingProfileXmlWithSecretsSlot(slot.resourceGroupName(), app.name(), slotName,
+                PublishingProfileFormat.FTP);
              OutputStream outputStream = new FileOutputStream(file);
         ) {
             IOUtils.copy(inputStream, outputStream);
@@ -634,7 +674,7 @@ public class AzureWebAppMvpModel {
      * An issue is logged at https://github.com/Azure/azure-sdk-for-java/issues/1755 .
      * Remove all tags here to make it work.
      */
-    private void clearTags(@NotNull final WebApp app) {
+    private void clearTags(@NotNull final WebAppBase app) {
         app.inner().withTags(null);
     }
 
