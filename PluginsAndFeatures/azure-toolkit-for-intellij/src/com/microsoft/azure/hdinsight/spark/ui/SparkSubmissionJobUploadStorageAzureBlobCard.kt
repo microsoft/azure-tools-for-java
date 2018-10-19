@@ -23,28 +23,13 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.uiDesigner.core.GridConstraints
-import com.intellij.uiDesigner.core.GridLayoutManager
+import com.intellij.uiDesigner.core.GridConstraints.*
+import com.microsoft.intellij.forms.dsl.panel
 import javax.swing.JLabel
 import javax.swing.JTextArea
 import javax.swing.JTextField
 
 class SparkSubmissionJobUploadStorageAzureBlobCard: SparkSubmissionJobUploadStorageBasicCard() {
-    private fun baseConstraints() = GridConstraints().apply { anchor = GridConstraints.ANCHOR_WEST }
-    private val colTemplate= listOf(
-            // Column 0
-            baseConstraints().apply {
-                column = 0
-                indent = 1
-            },
-            //  Column 1
-            baseConstraints().apply {
-                column = 1
-                indent = 1
-                hSizePolicy = GridConstraints.SIZEPOLICY_WANT_GROW
-                fill = GridConstraints.FILL_HORIZONTAL })
-    private fun buildConstraints(colTemplateOffset: Int): GridConstraints = colTemplate[colTemplateOffset].clone() as GridConstraints
-
     private val storageAccountTip = "The default storage account of the HDInsight cluster, which can be found from HDInsight cluster properties of Azure portal."
     private val storageKeyTip = "The storage key of the default storage account, which can be found from HDInsight cluster storage accounts of Azure portal."
     private val storageAccountLabel = JLabel("Storage Account").apply { toolTipText = storageAccountTip }
@@ -54,15 +39,31 @@ class SparkSubmissionJobUploadStorageAzureBlobCard: SparkSubmissionJobUploadStor
     private val storageContainerLabel = JLabel("Storage Container")
     val storageContainerComboBox = ComboBox<String>()
 
-    private val cardLayoutPlan = listOf(
-            Place(storageAccountLabel, buildConstraints(0).apply { row = 0 }), Place(storageAccountField, buildConstraints(1).apply { row = 0 }),
-            Place(storageKeyLabel, buildConstraints(0).apply { row = 1 }), Place(storageKeyField, buildConstraints(1).apply { row = 1 }),
-            Place(storageContainerLabel, buildConstraints(0).apply { row = 2 }), Place(storageContainerComboBox, buildConstraints(1).apply { row = 2 })
-    )
-
     init {
-        layout = GridLayoutManager(cardLayoutPlan.last().gridConstraints.row + 1, colTemplate.size)
-        cardLayoutPlan.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
+        val formBuilder = panel {
+            columnTemplate {
+                col {
+                    anchor = ANCHOR_WEST
+                }
+                col {
+                    anchor = ANCHOR_WEST
+                    hSizePolicy = SIZEPOLICY_WANT_GROW
+                    fill = FILL_HORIZONTAL
+                }
+            }
+            row {
+                c(storageAccountLabel) {}; c(storageAccountField) {}
+            }
+            row {
+                c(storageKeyLabel) {}; c(storageKeyField) {}
+            }
+            row {
+                c(storageContainerLabel) {}; c(storageContainerComboBox) {}
+            }
+        }
+
+        layout = formBuilder.createGridLayoutManager()
+        formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }
 
     override val title = "Azure Blob"
