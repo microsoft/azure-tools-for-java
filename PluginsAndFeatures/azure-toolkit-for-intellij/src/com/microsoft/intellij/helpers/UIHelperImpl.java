@@ -49,6 +49,7 @@ import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
 import com.microsoft.intellij.helpers.storage.*;
+import com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider;
 import com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
@@ -56,6 +57,8 @@ import com.microsoft.tooling.msservices.model.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
 import javax.swing.*;
 import java.awt.Desktop;
@@ -382,26 +385,52 @@ public class UIHelperImpl implements UIHelper {
         }
     }
 
-    @Override
-    public void openWebAppPropertyView(@NotNull WebAppNode webAppNode) {
-        String webAppName = webAppNode.getName();
-        String sid = webAppNode.getSubscriptionId();
-        String resId = webAppNode.getWebAppId();
-        if (isSubscriptionIdAndResourceIdEmpty(sid, resId)) {
-            return;
+    protected FileEditorManager getFileEditorManager(@NotNull final String sid, @NotNull final String webAppId,
+                                                     @NotNull final Project project) {
+        if (isSubscriptionIdAndResourceIdEmpty(sid, webAppId)) {
+            return null;
         }
-        Project project = (Project) webAppNode.getProject();
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         if (fileEditorManager == null) {
             showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
+            return null;
+        }
+        return fileEditorManager;
+    }
+
+    @Override
+    public void openWebAppPropertyView(@NotNull final WebAppNode node) {
+        final String sid = node.getSubscriptionId();
+        final String webAppId = node.getWebAppId();
+        final FileEditorManager fileEditorManager = getFileEditorManager(sid, webAppId, (Project) node.getProject());
+        if (fileEditorManager == null) {
             return;
         }
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
-            WebAppPropertyViewProvider.TYPE, resId);
+        final String type = WebAppPropertyViewProvider.TYPE;
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, webAppId);
         if (itemVirtualFile == null) {
-            String iconPath = webAppNode.getParent() == null ? webAppNode.getIconPath()
-                    : webAppNode.getParent().getIconPath();
-            itemVirtualFile = createVirtualFile(webAppName, WebAppPropertyViewProvider.TYPE, iconPath, sid, resId);
+            final String iconPath = node.getParent() == null ? node.getIconPath()
+                : node.getParent().getIconPath();
+            itemVirtualFile = createVirtualFile(node.getWebAppName(), type, iconPath, sid, webAppId);
+        }
+        fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
+    }
+
+    @Override
+    public void openDeploymentSlotPropertyView(@NotNull DeploymentSlotNode node) {
+        final String sid = node.getSubscriptionId();
+        final String webAppId = node.getWebAppId();
+        final FileEditorManager fileEditorManager = getFileEditorManager(sid, webAppId, (Project)node.getProject());
+        if (fileEditorManager == null) {
+            return;
+        }
+        final String type =  DeploymentSlotPropertyViewProvider.TYPE;
+
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, webAppId);
+        if (itemVirtualFile == null) {
+            final String iconPath = node.getParent() == null ? node.getIconPath()
+                : node.getParent().getIconPath();
+            itemVirtualFile = createVirtualFile(node.getName(), type, iconPath, sid, webAppId);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
