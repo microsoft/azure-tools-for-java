@@ -62,13 +62,11 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPrope
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
-public class WebAppBasePropertyView extends BaseEditor implements WebAppPropertyMvpView {
+public abstract class WebAppBasePropertyView extends BaseEditor implements WebAppPropertyMvpView {
 
     public static final String ID = "com.microsoft.intellij.helpers.webapp.WebAppBasePropertyView";
 
-    private WebAppBasePropertyViewPresenter presenter;
-    private final String sid;
-    private final String resId;
+    protected WebAppBasePropertyViewPresenter presenter;
     private final Map<String, String> cachedAppSettings;
     private final Map<String, String> editedAppSettings;
     private final StatusBar statusBar;
@@ -116,18 +114,7 @@ public class WebAppBasePropertyView extends BaseEditor implements WebAppProperty
     private AnActionButton btnRemove;
     private AnActionButton btnEdit;
 
-    /**
-     * Initialize the Web App Property View and return it.
-     */
-    public static WebAppBasePropertyView create(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
-        WebAppBasePropertyView view = new WebAppBasePropertyView(project, sid, resId);
-        view.onLoadWebAppProperty();
-        return view;
-    }
-
-    private WebAppBasePropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
-        this.sid = sid;
-        this.resId = resId;
+    protected WebAppBasePropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
         cachedAppSettings = new LinkedHashMap<>();
         editedAppSettings = new LinkedHashMap<>();
         statusBar = WindowManager.getInstance().getStatusBar(project);
@@ -283,11 +270,6 @@ public class WebAppBasePropertyView extends BaseEditor implements WebAppProperty
         ToolbarDecorator tableToolbarDecorator = ToolbarDecorator.createDecorator(tblAppSetting)
                 .addExtraActions(btnAdd, btnRemove, btnEdit).setToolbarPosition(ActionToolbarPosition.RIGHT);
         pnlAppSettings = tableToolbarDecorator.createPanel();
-    }
-
-    @Override
-    public void onLoadWebAppProperty() {
-        presenter.onLoadWebAppProperty(this.sid, this.resId, null);
     }
 
     @Override

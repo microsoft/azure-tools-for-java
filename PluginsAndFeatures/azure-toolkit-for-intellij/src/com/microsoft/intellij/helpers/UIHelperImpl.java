@@ -397,11 +397,11 @@ public class UIHelperImpl implements UIHelper {
             return;
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
-                WebAppPropertyViewProvider.getType(), resId);
+            WebAppPropertyViewProvider.TYPE, resId);
         if (itemVirtualFile == null) {
             String iconPath = webAppNode.getParent() == null ? webAppNode.getIconPath()
                     : webAppNode.getParent().getIconPath();
-            itemVirtualFile = createVirtualFile(webAppName, WebAppPropertyViewProvider.getType(), iconPath, sid, resId);
+            itemVirtualFile = createVirtualFile(webAppName, WebAppPropertyViewProvider.TYPE, iconPath, sid, resId);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
