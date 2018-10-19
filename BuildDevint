@@ -6,17 +6,29 @@ SCRIPTPATH=$(pwd -P)
 cd "$SCRIPTPATH"
 
 MAVEN_QUIET=""
+
+# Utils
 SKIP_CHECKSTYLE=$TRAVIS
-INTELLIJ_VERSION=false
+
+# Eclipse
 BUILD_ECLIPSE=true
+
+#IntelliJ
 BUILD_INTELLIJ=true
+INJECT_INTELLIJ_VERSION=false
+
+IJ_VERSION_LATEST=183.3795.13
+IJ_SCALA_VERSION_LATEST=2018.3.2
+
+IJ_VERSION_FALLBACK=2018.2
+IJ_SCALA_VERSION_FALLBACK=2018.2.11
 
 while getopts "hqve:" option; do
   echo $option
     case $option in
         h) echo "usage: $0 [-h] [-q] [-v] [-e eclipse/intellij]"; exit ;;
         q) MAVEN_QUIET="-q" ;;
-        v) INTELLIJ_VERSION=true ;;
+        v) INJECT_INTELLIJ_VERSION=true ;;
         e)
           shopt -s nocasematch
           case $OPTARG in 
@@ -53,23 +65,23 @@ fi
 if $BUILD_INTELLIJ; then
   echo "Building IntelliJ plugin ..."
   chmod +x ./tools/IntellijVersionHelper
-  ## Build intellij 2018.1 plugin
-  if [ $INTELLIJ_VERSION == "true" ] ; then
-      ./tools/IntellijVersionHelper 2018.1
+  ## Build intellij plugin for latest version
+  if [ $INJECT_INTELLIJ_VERSION == "true" ] ; then
+      ./tools/IntellijVersionHelper $IJ_VERSION_LATEST
   fi
 
-  (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Pintellij_version=IC-2018.1 -Pdep_plugins=org.intellij.scala:2018.1.8)
+  (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Pintellij_version=IC-$IJ_VERSION_LATEST -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_LATEST)
 
-  cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.1.zip
+  cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-$IJ_VERSION_LATEST.zip
 
-  ## Build intellij 2018.2 compatible plugin
-  if [ $INTELLIJ_VERSION == "true" ] ; then
-      ./tools/IntellijVersionHelper 2018.2
+  ## Build intellij plugin for fallback version
+  if [ $INJECT_INTELLIJ_VERSION == "true" ] ; then
+      ./tools/IntellijVersionHelper $IJ_VERSION_FALLBACK
   fi
 
-  (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s)
+  (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Pintellij_version=IC-$IJ_VERSION_FALLBACK -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_FALLBACK)
 
-  cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-2018.2.zip
+  cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-$IJ_VERSION_FALLBACK.zip
 fi
 
 echo "ALL BUILD SUCCESSFUL"
