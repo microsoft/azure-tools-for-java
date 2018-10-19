@@ -22,25 +22,36 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
 public class DeploymentSlotPropertyViewPresenter extends WebAppBasePropertyViewPresenter {
     @Override
-    protected void performUpdateSettings(@NotNull final String sid, @NotNull final WebAppBase webAppBase,
-                                         final Map toUpdate, final Set toRemove) throws Exception {
+    protected void updateAppSettings(@NotNull final String sid, @NotNull final String webAppId,
+                                     @Nullable final String name, final Map toUpdate,
+                                     final Set toRemove) throws Exception {
         // todo
     }
 
     @Override
-    protected boolean performGetPublishingProfile(@NotNull final String subscriptionId,
-                                                  @NotNull final WebAppBase webAppBase,
-                                                  @NotNull final String filePath) throws Exception {
+    protected boolean getPublishingProfile(@NotNull final String subscriptionId, @NotNull final String webAppId,
+                                           @Nullable final String name,
+                                           @NotNull final String filePath) throws Exception {
         // todo
         return false;
+    }
+
+    @Override
+    protected WebAppBase getWebApp(@NotNull final String sid, @NotNull final String webAppId,
+                                   @Nullable final String name) throws Exception {
+        return AzureWebAppMvpModel.getInstance().getWebAppById(sid, webAppId).deploymentSlots().getByName(name);
     }
 }

@@ -24,12 +24,14 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.AppSetting;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -57,13 +59,15 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppPropertyMv
     public static final String KEY_JAVA_CONTAINER_VERSION = "javaContainerVersion";
     public static final String KEY_OPERATING_SYS = "operatingSystem";
     public static final String KEY_APP_SETTING = "appSetting";
+
     private static final String CANNOT_GET_WEB_APP_PROPERTY = "Cannot get Web App's property.";
 
-    public void onLoadWebAppProperty(final String sid, @NotNull final WebAppBase webAppBase) {
+    public void onLoadWebAppProperty(final String sid, @NotNull final String webAppId, @Nullable final String name) {
         Observable.fromCallable(() -> {
             final Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-            final AppServicePlan plan = azure.appServices().appServicePlans().getById(webAppBase.appServicePlanId());
-            return generateProperty(webAppBase, plan);
+            final WebAppBase appBase = getWebApp(sid, webAppId, name);
+            final AppServicePlan plan = azure.appServices().appServicePlans().getById(appBase.appServicePlanId());
+            return generateProperty(appBase, plan);
         }).subscribeOn(getSchedulerProvider().io())
             .subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                 if (isViewDetached()) {
@@ -104,13 +108,17 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppPropertyMv
         return new WebAppProperty(propertyMap);
     }
 
-    protected abstract void performUpdateSettings(@NotNull String sid, @NotNull WebAppBase webAppBase,
-                                                  @NotNull Map toUpdate, @NotNull Set toRemove) throws Exception;
+    protected abstract WebAppBase getWebApp(@NotNull String sid, @NotNull String webAppId,
+                                            @Nullable String name) throws Exception;
 
-    protected abstract boolean performGetPublishingProfile(@NotNull String sid, @NotNull WebAppBase webAppBase,
-                                                           @NotNull String filePath) throws Exception;
+    protected abstract void updateAppSettings(@NotNull String sid, @NotNull String webAppId, @Nullable String name,
+                                              @NotNull Map toUpdate, @NotNull Set toRemove) throws Exception;
 
-    public void onUpdateWebAppProperty(@NotNull final String sid, @NotNull final WebAppBase webAppBase,
+    protected abstract boolean getPublishingProfile(@NotNull String sid, @NotNull String webAppId, @Nullable String name,
+                                                    @NotNull String filePath) throws Exception;
+
+    public void onUpdateWebAppProperty(@NotNull final String sid, @NotNull final String webAppId,
+                                       @Nullable final String name,
                                        @NotNull final Map<String, String> cacheSettings,
                                        @NotNull final Map<String, String> editedSettings) {
         final Map<String, String> telemetryMap = new HashMap<>();
@@ -122,7 +130,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppPropertyMv
                     toRemove.add(key);
                 }
             }
-            performUpdateSettings(sid, webAppBase, editedSettings, toRemove);
+            updateAppSettings(sid, webAppId, name, editedSettings, toRemove);
             return true;
         }).subscribeOn(getSchedulerProvider().io())
             .subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
@@ -141,11 +149,11 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppPropertyMv
             });
     }
 
-    public void onGetPublishingProfileXmlWithSecrets(@NotNull String sid, @NotNull WebAppBase webAppBase,
-                                                     @NotNull String filePath) {
+    public void onGetPublishingProfileXmlWithSecrets(@NotNull final String sid, @NotNull final String webAppId,
+                                                     @Nullable final String name, @NotNull final String filePath) {
         final Map<String, String> telemetryMap = new HashMap<>();
         telemetryMap.put("SubscriptionId", sid);
-        Observable.fromCallable(() -> performGetPublishingProfile(sid, webAppBase, filePath))
+        Observable.fromCallable(() -> getPublishingProfile(sid, webAppId, name, filePath))
             .subscribeOn(getSchedulerProvider().io()).subscribe(res -> DefaultLoader.getIdeHelper().invokeLater(() -> {
             if (isViewDetached()) {
                 return;

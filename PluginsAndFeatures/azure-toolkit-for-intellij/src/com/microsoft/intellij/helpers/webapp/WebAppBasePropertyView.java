@@ -60,12 +60,13 @@ import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
 public class WebAppBasePropertyView extends BaseEditor implements WebAppPropertyMvpView {
 
     public static final String ID = "com.microsoft.intellij.helpers.webapp.WebAppBasePropertyView";
 
-    private final WebAppPropertyViewPresenter<WebAppBasePropertyView> presenter;
+    private WebAppBasePropertyViewPresenter presenter;
     private final String sid;
     private final String resId;
     private final Map<String, String> cachedAppSettings;
@@ -131,8 +132,6 @@ public class WebAppBasePropertyView extends BaseEditor implements WebAppProperty
         editedAppSettings = new LinkedHashMap<>();
         statusBar = WindowManager.getInstance().getStatusBar(project);
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
-        this.presenter = new WebAppPropertyViewPresenter<>();
-        this.presenter.onAttachView(this);
 
         // initialize widgets...
         HideableDecorator overviewDecorator = new HideableDecorator(pnlOverviewHolder, PNL_OVERVIEW,
@@ -159,7 +158,7 @@ public class WebAppBasePropertyView extends BaseEditor implements WebAppProperty
                 fileChooserDescriptor.setTitle(FILE_SELECTOR_TITLE);
                 final VirtualFile file = FileChooser.chooseFile(fileChooserDescriptor, null, null);
                 if (file != null) {
-                    presenter.onGetPublishingProfileXmlWithSecrets(sid, resId, file.getPath());
+                    presenter.onGetPublishingProfileXmlWithSecrets(sid, resId, null, file.getPath());
                 }
             }
         });
@@ -179,7 +178,7 @@ public class WebAppBasePropertyView extends BaseEditor implements WebAppProperty
             @Override
             public void actionPerformedFunc(ActionEvent event) {
                 setBtnEnableStatus(false);
-                presenter.onUpdateWebAppProperty(sid, resId, cachedAppSettings, editedAppSettings);
+                presenter.onUpdateWebAppProperty(sid, resId, null, cachedAppSettings, editedAppSettings);
             }
         });
 
@@ -288,7 +287,7 @@ public class WebAppBasePropertyView extends BaseEditor implements WebAppProperty
 
     @Override
     public void onLoadWebAppProperty() {
-        presenter.onLoadWebAppProperty(this.sid, this.resId);
+        presenter.onLoadWebAppProperty(this.sid, this.resId, null);
     }
 
     @Override
