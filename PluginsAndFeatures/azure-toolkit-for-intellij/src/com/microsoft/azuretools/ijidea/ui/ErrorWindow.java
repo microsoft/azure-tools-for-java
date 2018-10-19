@@ -38,7 +38,7 @@ public class ErrorWindow extends AzureDialogWrapper {
         w.show();
     }
 
-    private ErrorWindow(@Nullable Project project,String message, String title) {
+    protected ErrorWindow(@Nullable Project project, String message, String title) {
         super(project, true, IdeModalityType.PROJECT);
         setModal(true);
         if (title != null && !title.isEmpty()) {
