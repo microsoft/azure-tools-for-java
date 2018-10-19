@@ -24,7 +24,7 @@ package com.microsoft.azure.sparkserverless.serverexplore;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
-public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
+public class SparkServerlessClusterProvisionSettingsModel {
     @NotNull
     private String clusterName;
     @NotNull
