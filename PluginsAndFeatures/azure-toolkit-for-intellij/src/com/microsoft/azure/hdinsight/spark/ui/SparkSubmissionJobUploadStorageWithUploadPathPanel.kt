@@ -30,6 +30,8 @@ import com.intellij.uiDesigner.core.GridLayoutManager
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
+import com.microsoft.azuretools.securestore.SecureStore
+import com.microsoft.azuretools.service.ServiceManager
 import org.apache.commons.lang3.StringUtils
 import rx.subjects.PublishSubject
 import javax.swing.*
@@ -52,6 +54,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
 
     private fun buildConstraints(colTemplateOffset: Int): GridConstraints = colTemplate[colTemplateOffset].clone() as GridConstraints
 
+    val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
     private val jobUploadStorageTitle = "Job Upload Storage"
     private val uploadPathLabel = JLabel("Upload Path")
     private val uploadPathField = JTextField().apply {
@@ -114,7 +117,13 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
             uploadPathField.text = data.uploadPath
             if (data.storageAccountType == SparkSubmitStorageType.BLOB) {
                 storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
-                storagePanel.azureBlobCard.storageKeyField.text = data.storageKey
+                val credentialAccount = data.getCredentialAzureBlobAccount()
+                storagePanel.azureBlobCard.storageKeyField.text =
+                        if (StringUtils.isEmpty(data.errorMsg) && StringUtils.isEmpty(data.storageKey)) {
+                            credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.storageAccount) }
+                        } else {
+                            data.storageKey
+                        }
                 if (data.containersModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedContainer)) {
                     storagePanel.azureBlobCard.storageContainerComboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
                 } else {
