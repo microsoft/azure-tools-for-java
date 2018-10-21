@@ -81,7 +81,7 @@ class DownloadControlMessageHandler(
                                             override fun hyperlinkActivated(notification: Notification, e: HyperlinkEvent) {
                                                 if (!project.isDisposed) {
                                                     when (e.description) {
-                                                        "show" -> ShowFilePathAction.openFile(File(virtualFile!!.presentableUrl))
+                                                        "show" -> ShowFilePathAction.openFile(File(virtualFile.presentableUrl))
                                                     }
                                                 }
                                             }

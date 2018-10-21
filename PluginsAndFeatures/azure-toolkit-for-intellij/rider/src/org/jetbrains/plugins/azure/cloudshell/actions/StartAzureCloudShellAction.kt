@@ -27,8 +27,11 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.sdkmanage.AzureManager
 import com.microsoft.rest.credentials.ServiceClientCredentials
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
+import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleProvisionParameters
+import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleProvisionTerminalParameters
+import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
+import org.jetbrains.plugins.azure.cloudshell.rest.getRetrofitClient
 import org.jetbrains.plugins.azure.cloudshell.terminal.AzureCloudTerminalFactory
-import org.jetbrains.plugins.azure.cloudshell.rest.*
 import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
 import org.jetbrains.plugins.terminal.TerminalView
 import java.net.URI
@@ -210,8 +213,16 @@ class StartAzureCloudShellAction : AnAction() {
                         project, retrofitClient, provisionUrl!!, URI(socketUri))
 
                 ApplicationManager.getApplication().invokeLater {
-                    Thread.sleep(500)
-                    TerminalView.getInstance(project).createNewSession(project, runner)
+                    val terminalWindow = ToolWindowManager.getInstance(project)
+                            .getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID)
+
+                    terminalWindow.show {
+                        // HACK: Because local terminal always opens, we want to make sure it is available before opening cloud terminal
+                        ApplicationManager.getApplication().invokeLater {
+                            Thread.sleep(500)
+                            TerminalView.getInstance(project).createNewSession(runner)
+                        }
+                    }
                 }
             }
         })

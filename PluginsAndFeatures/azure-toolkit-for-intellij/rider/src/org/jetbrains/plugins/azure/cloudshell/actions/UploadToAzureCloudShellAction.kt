@@ -33,13 +33,14 @@ class UploadToAzureCloudShellAction : AnAction() {
         ApplicationManager.getApplication().invokeLater {
             val descriptor = FileChooserDescriptor(true, false, false, true, false, true)
             descriptor.title = "Select file(s) to upload to Azure Cloud Shell"
-            FileChooser.chooseFiles(descriptor, project, null, project.baseDir, object : FileChooser.FileChooserConsumer {
+            FileChooser.chooseFiles(descriptor, project, null, null, object : FileChooser.FileChooserConsumer {
                 override fun consume(files: List<VirtualFile>) {
                     files.forEach {
                         object : Task.Backgroundable(project, "Uploading file " + it.presentableName + " to Azure Cloud Shell...", true, PerformInBackgroundOption.DEAF)
                         {
                             override fun run(indicator: ProgressIndicator)
                             {
+                                logger.info("Uploading {it.name} to Azure Cloud Shell...")
                                 activeConnector.uploadFile(it.name, it)
                             }
                         }.queue()
