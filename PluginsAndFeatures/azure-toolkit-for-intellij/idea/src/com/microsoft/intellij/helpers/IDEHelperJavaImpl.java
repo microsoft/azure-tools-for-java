@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2018 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -19,6 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.intellij.helpers;
 
 import com.google.common.util.concurrent.FutureCallback;

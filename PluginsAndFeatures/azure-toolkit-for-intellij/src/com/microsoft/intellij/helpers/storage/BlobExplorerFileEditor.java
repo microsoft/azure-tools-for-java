@@ -1,5 +1,6 @@
 /**
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2018 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -578,7 +579,9 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
 
         FileSaverDescriptor fileDescriptor = new FileSaverDescriptor(SAVE_AS, "Select location to save blob file.");
         final FileSaverDialog dialog = FileChooserFactory.getInstance().createSaveFileDialog(fileDescriptor, this.project);
-        final VirtualFileWrapper save = dialog.save(LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")), "");
+        final VirtualFileWrapper save = dialog.save(
+                LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")),
+                fileSelection.getName());
 
         if (save != null) {
             downloadSelectedFile(save.getFile(), false);

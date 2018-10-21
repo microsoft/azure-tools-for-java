@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2018 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>

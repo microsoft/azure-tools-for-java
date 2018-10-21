@@ -80,11 +80,11 @@ allprojects {
 
     tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 
-    checkstyle {
-        toolVersion = '7.7'
-        configFile = new File(rootProject.projectDir, 'config/checkstyle/checkstyle.xml')
-        showViolations = false
-    }
+    // checkstyle {
+    //     toolVersion = '7.7'
+    //     configFile = new File(rootProject.projectDir, 'config/checkstyle/checkstyle.xml')
+    //     showViolations = false
+    // }
 
     findbugs {
         toolVersion = "3.0.1"

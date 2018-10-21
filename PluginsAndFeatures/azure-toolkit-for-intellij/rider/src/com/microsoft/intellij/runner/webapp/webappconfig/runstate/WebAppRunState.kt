@@ -1,3 +1,25 @@
+/**
+ * Copyright (c) 2018 JetBrains s.r.o.
+ * <p/>
+ * All rights reserved.
+ * <p/>
+ * MIT License
+ * <p/>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p/>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ * <p/>
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.intellij.runner.webapp.webappconfig.runstate
 
 import com.intellij.ide.BrowserUtil
@@ -9,10 +31,9 @@ import com.intellij.util.io.ZipUtil
 import com.jetbrains.rdclient.util.idea.toIOFile
 import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.PublishableProjectModel
-import com.jetbrains.rider.model.runnableProjectsModel
-import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
 import com.jetbrains.rider.util.idea.application
+import com.jetbrains.rider.util.idea.getLogger
 import com.jetbrains.rider.util.threading.SpinWait
 import com.microsoft.azure.management.appservice.ConnectionStringType
 import com.microsoft.azure.management.appservice.OperatingSystem
@@ -25,7 +46,7 @@ import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.utils.WebAppDeploySession
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
-import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
+import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
 import okhttp3.Response
 import org.jetbrains.concurrency.AsyncPromise
@@ -33,11 +54,13 @@ import java.io.File
 import java.io.FileFilter
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
-import java.util.Date
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipOutputStream
 
 object WebAppRunState {
+
+    private val LOG = getLogger<WebAppRunState>()
 
     private const val URL_AZURE_BASE = ".azurewebsites.net"
     private const val URL_KUDU_BASE = ".scm$URL_AZURE_BASE"
@@ -66,17 +89,17 @@ object WebAppRunState {
         val message = String.format(UiConstants.WEB_APP_START, webApp.name())
         processHandler.setText(message)
         webApp.start()
-        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_STOP, Date(), webApp.defaultHostName(), 100, message)
+        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_START, Date(), webApp.defaultHostName(), 100, message)
     }
 
     fun webAppStop(webApp: WebApp, processHandler: RunProcessHandler) {
         val message = String.format(UiConstants.WEB_APP_STOP, webApp.name())
         processHandler.setText(message)
         webApp.stop()
-        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_START, Date(), webApp.defaultHostName(), 100, message)
+        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_STOP, Date(), webApp.defaultHostName(), 100, message)
     }
 
-    fun getOrCreateWebAppFromConfiguration(model: AzureDotNetWebAppSettingModel.WebAppModel,
+    fun getOrCreateWebAppFromConfiguration(model: WebAppPublishModel,
                                            processHandler: RunProcessHandler): WebApp {
 
         val subscriptionId = model.subscription?.subscriptionId() ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)
@@ -84,8 +107,8 @@ object WebAppRunState {
         if (model.isCreatingWebApp) {
             processHandler.setText(String.format(UiConstants.WEB_APP_CREATE, model.webAppName))
 
-            if (model.webAppName.isEmpty()) throw Exception(UiConstants.WEB_APP_NAME_NOT_DEFINED)
-            if (model.resourceGroupName.isEmpty()) throw Exception(UiConstants.RESOURCE_GROUP_NAME_NOT_DEFINED)
+            if (model.webAppName.isEmpty()) throw RuntimeException(UiConstants.WEB_APP_NAME_NOT_DEFINED)
+            if (model.resourceGroupName.isEmpty()) throw RuntimeException(UiConstants.RESOURCE_GROUP_NAME_NOT_DEFINED)
             val operatingSystem = model.operatingSystem
 
             val webAppDefinition = AzureDotNetWebAppMvpModel.WebAppDefinition(
@@ -93,8 +116,8 @@ object WebAppRunState {
 
             val webApp =
                     if (model.isCreatingAppServicePlan) {
-                        if (model.appServicePlanName.isEmpty()) throw Exception(UiConstants.APP_SERVICE_PLAN_NAME_NOT_DEFINED)
-                        if (model.location.isEmpty()) throw Exception(UiConstants.APP_SERVICE_PLAN_LOCATION_NOT_DEFINED)
+                        if (model.appServicePlanName.isEmpty()) throw RuntimeException(UiConstants.APP_SERVICE_PLAN_NAME_NOT_DEFINED)
+                        if (model.location.isEmpty()) throw RuntimeException(UiConstants.APP_SERVICE_PLAN_LOCATION_NOT_DEFINED)
                         val pricingTier = model.pricingTier
                         val appServicePlanDefinition = AzureDotNetWebAppMvpModel.AppServicePlanDefinition(model.appServicePlanName, pricingTier, model.location)
 
@@ -112,7 +135,7 @@ object WebAppRunState {
                                     model.netCoreRuntime)
                         }
                     } else {
-                        if (model.appServicePlanId.isEmpty()) throw Exception(UiConstants.APP_SERVICE_PLAN_ID_NOT_DEFINED)
+                        if (model.appServicePlanId.isEmpty()) throw RuntimeException(UiConstants.APP_SERVICE_PLAN_ID_NOT_DEFINED)
 
                         if (operatingSystem == OperatingSystem.WINDOWS) {
                             AzureDotNetWebAppMvpModel.createWebAppWithExistingWindowsAppServicePlan(
@@ -228,7 +251,7 @@ object WebAppRunState {
             processHandler.setText(String.format(UiConstants.PROJECT_ARTIFACTS_COLLECTING, publishableProject.projectName))
             val outDir = collectProjectArtifacts(project, publishableProject)
             // Note: we need to do it only for Linux Azure instances (we might add this check to speed up)
-            projectAssemblyRelativePath = getAssemblyRelativePath(project, publishableProject, outDir)
+            projectAssemblyRelativePath = getAssemblyRelativePath(publishableProject, outDir)
 
             processHandler.setText(String.format(UiConstants.ZIP_FILE_CREATE_FOR_PROJECT, publishableProject.projectName))
             val zipFile = zipProjectArtifacts(outDir, processHandler)
@@ -240,6 +263,7 @@ object WebAppRunState {
                 FileUtil.delete(zipFile)
             }
         } catch (e: Throwable) {
+            LOG.error(e)
             processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: $e")
             throw RuntimeException(UiConstants.ZIP_DEPLOY_PUBLISH_FAIL, e)
         }
@@ -247,23 +271,15 @@ object WebAppRunState {
 
     /**
      * Get a relative path for an assembly name based from a project output directory
-     *
-     * Note: There is no a property in [PublishableProjectModel] to get a project assembly name. Right now
-     *       we hack around with RunnableProject model to get this information
-     *       TODO: RIDER-110015 Rework this after we add a property to [PublishableProjectModel] and set exePath
      */
-    private fun getAssemblyRelativePath(project: Project,
-                                        publishableProject: PublishableProjectModel,
-                                        outDir: File): String {
-
+    private fun getAssemblyRelativePath(publishableProject: PublishableProjectModel, outDir: File): String {
         val defaultPath = "${publishableProject.projectName}.dll"
 
-        val publishableProjectPath = publishableProject.projectFilePath
-        val runnableProjects = project.solution.runnableProjectsModel.projects.valueOrNull ?: return defaultPath
-        val projectOutputs = runnableProjects.find { it.projectFilePath == publishableProjectPath }?.projectOutputs?.firstOrNull() ?: return defaultPath
-        val assemblyName = projectOutputs.exePath.toIOFile().name
+        val outputs = publishableProject.projectOutputs.firstOrNull() ?: return defaultPath
+        val assemblyFile = outputs.exePath.toIOFile()
+        if (!assemblyFile.exists()) return defaultPath
 
-        return outDir.walk().find { it.name == assemblyName }?.relativeTo(outDir)?.path ?: defaultPath
+        return outDir.walk().find { it.name == assemblyFile.name }?.relativeTo(outDir)?.path ?: defaultPath
     }
 
     /**
@@ -295,15 +311,17 @@ object WebAppRunState {
             }
 
             if (publishableProject.isDotNetCore) {
-                publishService.invokeMsBuild(publishableProject.projectFilePath, listOf(targetProperties), false, false, onFinish)
+                publishService.invokeMsBuild(publishableProject.projectFilePath, listOf(targetProperties), false, true, onFinish)
             } else {
-                publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, false, onFinish)
+                publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, true, onFinish)
             }
         }
 
         val buildResult = event.get(COLLECT_ARTIFACTS_TIMEOUT_MS, TimeUnit.MILLISECONDS)
         if (buildResult != BuildResultKind.Successful && buildResult != BuildResultKind.HasWarnings) {
-            throw Exception(UiConstants.PROJECT_ARTIFACTS_COLLECTING_FAILED)
+            val message = UiConstants.PROJECT_ARTIFACTS_COLLECTING_FAILED
+            LOG.error(message)
+            throw RuntimeException(message)
         }
 
         return outPath.toFile().canonicalFile
@@ -326,8 +344,9 @@ object WebAppRunState {
 
             return toZip
         } catch (e: Throwable) {
+            LOG.error(e)
             processHandler.setText("${UiConstants.ZIP_FILE_NOT_CREATED}: $e")
-            throw e
+            throw RuntimeException(e)
         }
     }
 
@@ -339,7 +358,9 @@ object WebAppRunState {
                           zipFileToCreate: File,
                           filter: FileFilter? = null) {
         if (!fileToZip.exists()) {
-            throw FileNotFoundException("Source file or directory '${fileToZip.path}' does not exist")
+            val message = "Source file or directory '${fileToZip.path}' does not exist"
+            LOG.error(message)
+            throw FileNotFoundException(message)
         }
 
         ZipOutputStream(FileOutputStream(zipFileToCreate)).use { zipOutput ->
@@ -378,7 +399,8 @@ object WebAppRunState {
                             DEPLOY_TIMEOUT_MS)
                     success = response.isSuccessful
                 } catch (e: Throwable) {
-                    processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: ${e.printStackTrace()}")
+                    LOG.error(e)
+                    processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: $e")
                 }
 
             } while (!success && ++uploadCount < UPLOADING_MAX_TRY && isWaitFinished())
@@ -405,7 +427,7 @@ object WebAppRunState {
         try {
             Thread.sleep(timeout)
         } catch (e: InterruptedException) {
-            e.printStackTrace()
+            LOG.error(e)
         }
 
         return true
@@ -422,7 +444,7 @@ object WebAppRunState {
                     window.show(null)
             }
         } catch (e: Throwable) {
-            // Ignore if we unable to switch back to Run tool window (it is not alive and we cannot log the error)
+            LOG.error(e)
         }
     }
 

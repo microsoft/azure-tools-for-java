@@ -1,3 +1,25 @@
+/**
+ * Copyright (c) 2018 JetBrains s.r.o.
+ * <p/>
+ * All rights reserved.
+ * <p/>
+ * MIT License
+ * <p/>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p/>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ * <p/>
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.intellij.runner.webapp.webappconfig
 
 import com.intellij.execution.process.ProcessOutputTypes
@@ -18,7 +40,9 @@ import com.microsoft.intellij.runner.AzureRunProfileState
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
-import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
+import com.microsoft.intellij.runner.webapp.model.DatabasePublishModel
+import com.microsoft.intellij.runner.webapp.model.DotNetWebAppSettingModel
+import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.DatabaseRunState.getOrCreateSqlDatabaseFromConfig
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.DatabaseRunState.getSqlDatabaseUri
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState
@@ -32,7 +56,7 @@ import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.webAppStop
 
 class RiderWebAppRunState(project: Project,
-                          private val myModel: AzureDotNetWebAppSettingModel) : AzureRunProfileState<Pair<WebApp, SqlDatabase?>>(project) {
+                          private val myModel: DotNetWebAppSettingModel) : AzureRunProfileState<Pair<WebApp, SqlDatabase?>>(project) {
 
     private var isWebAppCreated = false
     private var isDatabaseCreated = false
@@ -67,7 +91,8 @@ class RiderWebAppRunState(project: Project,
         deployToAzureWebApp(project, publishableProject, webApp, processHandler)
 
         if (myModel.webAppModel.operatingSystem == OperatingSystem.LINUX && publishableProject.isDotNetCore) {
-            val startupCommand = String.format(UiConstants.WEB_APP_STARTUP_COMMAND_TEMPLATE, "$URL_WEB_APP_WWWROOT/${WebAppRunState.projectAssemblyRelativePath}")
+            val assemblyPath = "$URL_WEB_APP_WWWROOT/${WebAppRunState.projectAssemblyRelativePath}"
+            val startupCommand = String.format(UiConstants.WEB_APP_STARTUP_COMMAND_TEMPLATE, assemblyPath)
             setStartupCommand(webApp, startupCommand, myModel.webAppModel.netCoreRuntime, processHandler)
         }
 
@@ -150,12 +175,12 @@ class RiderWebAppRunState(project: Project,
         return TARGET_NAME
     }
 
-    private fun refreshWebAppAfterPublish(webApp: WebApp, model: AzureDotNetWebAppSettingModel.WebAppModel) {
+    private fun refreshWebAppAfterPublish(webApp: WebApp, model: WebAppPublishModel) {
         model.resetOnPublish(webApp)
         AzureDotNetWebAppMvpModel.refreshSubscriptionToWebAppMap()
     }
 
-    private fun refreshDatabaseAfterPublish(sqlDatabase: SqlDatabase, model: AzureDotNetWebAppSettingModel.DatabaseModel) {
+    private fun refreshDatabaseAfterPublish(sqlDatabase: SqlDatabase, model: DatabasePublishModel) {
         model.resetOnPublish(sqlDatabase)
         AzureDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
     }

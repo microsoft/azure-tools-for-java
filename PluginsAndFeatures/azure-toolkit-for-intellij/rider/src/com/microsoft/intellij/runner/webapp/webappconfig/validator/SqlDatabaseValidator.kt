@@ -1,10 +1,32 @@
+/**
+ * Copyright (c) 2018 JetBrains s.r.o.
+ * <p/>
+ * All rights reserved.
+ * <p/>
+ * MIT License
+ * <p/>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p/>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ * <p/>
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.intellij.runner.webapp.webappconfig.validator
 
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
-import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppSettingModel
+import com.microsoft.intellij.runner.webapp.model.DatabasePublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
 
 object SqlDatabaseValidator : ConfigurationValidator() {
@@ -34,7 +56,7 @@ object SqlDatabaseValidator : ConfigurationValidator() {
             "Your password must be from $ADMIN_PASSWORD_MIN_LENGTH to $ADMIN_PASSWORD_MAX_LENGTH characters"
 
     @Throws(RuntimeConfigurationError::class)
-    fun validateDatabaseConnection(model: AzureDotNetWebAppSettingModel.DatabaseModel) {
+    fun validateDatabaseConnection(model: DatabasePublishModel) {
         if (!model.isDatabaseConnectionEnabled) return
 
         if (model.isCreatingSqlDatabase) {
