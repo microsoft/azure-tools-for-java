@@ -321,9 +321,9 @@ object WebAppRunState {
             }
 
             if (publishableProject.isDotNetCore) {
-                publishService.invokeMsBuild(publishableProject.projectFilePath, listOf(targetProperties), false, false, onFinish)
+                publishService.invokeMsBuild(publishableProject.projectFilePath, listOf(targetProperties), false, true, onFinish)
             } else {
-                publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, false, onFinish)
+                publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, true, onFinish)
             }
         }
 
