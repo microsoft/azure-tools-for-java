@@ -29,6 +29,7 @@ dependencies {
     compile 'commons-io:commons-io:2.5'
     compile 'com.microsoft.azure:azure-client-runtime:1.6.0', { force = true }
     compile 'com.microsoft.azure:azure-client-authentication:1.6.0', { force = true }
+    compile 'com.microsoft.azure:adal4j:1.6.0', { force = true }
     compile 'com.microsoft.azuretools:azuretools-core:3.12.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
@@ -43,6 +44,7 @@ dependencies {
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
     }
     compile 'com.spotify:docker-client:8.11.7'
+    compile 'com.fasterxml.jackson.module:jackson-module-kotlin:2.9.4'
 }
 
 configurations {
@@ -102,7 +104,7 @@ allprojects {
             default:
                 throw new Exception("Unsupported value for build_common_code_with: " + build_common_code_with)
         }
-
+        
         updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
         downloadSources = Boolean.valueOf(sources)
     }

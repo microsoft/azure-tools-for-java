@@ -21,6 +21,7 @@
   <idea-version since-build="181.*" until-build="181.*"/>
 
   <depends>com.intellij.modules.rider</depends>
+  <depends>org.jetbrains.plugins.terminal</depends>
 
   <extensions defaultExtensionNs="com.intellij">
     <projectConfigurable groupId="tools"
@@ -44,6 +45,10 @@
       <implementation-class>com.microsoft.intellij.AzureRiderPlugin</implementation-class>
       <loadForDefaultProject/>
     </component>
+
+    <component>
+      <implementation-class>org.jetbrains.plugins.azure.cloudshell.CloudShellComponent</implementation-class>
+    </component>
   </project-components>
 
   <actions>
@@ -53,6 +58,33 @@
            popup="true"
            icon="/icons/publishAzure.svg">
       <add-to-group group-id="AzureToolbarGroup" anchor="first" />
+    </group>
+
+    <!-- Azure Cloud Shell -->
+    <group id="AzureToolkit.AzureCloudShellGroup"
+           class="com.intellij.openapi.actionSystem.DefaultActionGroup"
+           text="Azure Cloud Shell"
+           description="Contains Azure Cloud Shell actions"
+           icon="/icons/AzureOpenCloudShell.svg">
+      <add-to-group group-id="AzureToolkit.AzureActionGroup"
+                    anchor="before"
+                    relative-to-action="AzureToolkit.AzureSignIn" />
+
+      <action class="org.jetbrains.plugins.azure.cloudshell.actions.StartAzureCloudShellAction"
+              id="AzureToolkit.StartAzureCloudShellAction"
+              text="Start Azure Cloud Shell..."
+              description="Start Azure Cloud Shell"
+              icon="/icons/AzureOpenCloudShell.svg">
+      </action>
+
+      <action class="org.jetbrains.plugins.azure.cloudshell.actions.UploadToAzureCloudShellAction"
+              id="AzureToolkit.UploadToAzureCloudShellAction"
+              text="Upload file to Azure Cloud Shell..."
+              description="Upload file to Azure Cloud Shell"
+              icon="AllIcons.Actions.Upload">
+      </action>
+
+      <separator />
     </group>
   </actions>
 
