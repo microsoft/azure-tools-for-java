@@ -55,5 +55,7 @@ class SparkSubmitJobUploadStorageModel {
 
     @get:Transient @set:Transient var errorMsg: String? = null
 
+    @get:Transient @set:Transient var refreshContainersEnabled = true
+
     fun getCredentialAzureBlobAccount(): String? = storageAccount?.let{ SERVICE_NAME_PREFIX + storageAccount }
 }

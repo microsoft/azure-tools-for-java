@@ -60,18 +60,14 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
         // check storage info when cluster selection changes
         registerStorageInfoCheck()
 
-        // refresh containers after account and key focus lost
-        arrayOf(view.storagePanel.azureBlobCard.storageAccountField, view.storagePanel.azureBlobCard.storageKeyField).forEach {
-            it.addFocusListener(object : FocusAdapter() {
-                override fun focusLost(e: FocusEvent?) {
-                    refreshContainers().subscribe(
-                            { },
-                            { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
-                }
-            })
+        // refresh containers after refresh button is clicked
+        view.storagePanel.azureBlobCard.storageContainerComboBox.button.addActionListener { _ ->
+            refreshContainers().subscribe(
+                    { },
+                    { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
         }
         // after container is selected, update upload path
-        view.storagePanel.azureBlobCard.storageContainerComboBox.addItemListener { itemEvent ->
+        view.storagePanel.azureBlobCard.storageContainerComboBox.comboBox.addItemListener { itemEvent ->
             if (itemEvent?.stateChange == ItemEvent.SELECTED) {
                 updateStorageAfterContainerSelected().subscribe(
                         { },
@@ -172,6 +168,8 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
     fun refreshContainers(): Observable<SparkSubmitJobUploadStorageModel> {
         return Observable.just(SparkSubmitJobUploadStorageModel())
                 .doOnNext(view::getData)
+                .map { toUpdate -> toUpdate.apply { refreshContainersEnabled = false } }
+                .doOnNext(view::setData)
                 .observeOn(Schedulers.io())
                 .map { toUpdate ->
                     toUpdate.apply {
@@ -203,6 +201,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                                 errorMsg = "Can't get storage containers, check if the key matches"
                             }
                         }
+                        refreshContainersEnabled = true
                     }
                 }
                 .doOnNext { data ->
