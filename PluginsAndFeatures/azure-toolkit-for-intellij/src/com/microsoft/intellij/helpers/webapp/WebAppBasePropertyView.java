@@ -36,6 +36,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
@@ -62,10 +63,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPrope
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
-public abstract class WebAppBasePropertyView extends BaseEditor implements WebAppPropertyMvpView {
-
-    public static final String ID = "com.microsoft.intellij.helpers.webapp.WebAppBasePropertyView";
-
+public class WebAppBasePropertyView extends BaseEditor implements WebAppPropertyMvpView {
+    public String id;
     protected WebAppBasePropertyViewPresenter presenter;
     private final Map<String, String> cachedAppSettings;
     private final Map<String, String> editedAppSettings;
@@ -114,7 +113,8 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     private AnActionButton btnRemove;
     private AnActionButton btnEdit;
 
-    protected WebAppBasePropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
+    protected WebAppBasePropertyView(@NotNull Project project, @NotNull String sid,
+                                     @NotNull String resId, @Nullable String slotName) {
         cachedAppSettings = new LinkedHashMap<>();
         editedAppSettings = new LinkedHashMap<>();
         statusBar = WindowManager.getInstance().getStatusBar(project);
@@ -145,7 +145,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
                 fileChooserDescriptor.setTitle(FILE_SELECTOR_TITLE);
                 final VirtualFile file = FileChooser.chooseFile(fileChooserDescriptor, null, null);
                 if (file != null) {
-                    presenter.onGetPublishingProfileXmlWithSecrets(sid, resId, null, file.getPath());
+                    presenter.onGetPublishingProfileXmlWithSecrets(sid, resId, slotName, file.getPath());
                 }
             }
         });
@@ -165,12 +165,20 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
             @Override
             public void actionPerformedFunc(ActionEvent event) {
                 setBtnEnableStatus(false);
-                presenter.onUpdateWebAppProperty(sid, resId, null, cachedAppSettings, editedAppSettings);
+                presenter.onUpdateWebAppProperty(sid, resId, slotName, cachedAppSettings, editedAppSettings);
             }
         });
 
         lnkUrl.setHyperlinkText("<Loading...>");
         setTextFieldStyle();
+    }
+
+
+
+    @Override
+    public void onLoadWebAppProperty(@NotNull final String sid, @NotNull final String webAppId,
+                                     @Nullable final String slotName) {
+        this.presenter.onLoadWebAppProperty(sid, webAppId, slotName);
     }
 
     @NotNull
@@ -182,7 +190,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     @NotNull
     @Override
     public String getName() {
-        return ID;
+        return id;
     }
 
     @Override
