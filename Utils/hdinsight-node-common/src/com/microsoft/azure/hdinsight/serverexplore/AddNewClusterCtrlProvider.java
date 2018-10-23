@@ -81,7 +81,15 @@ public class AddNewClusterCtrlProvider {
         }
     }
 
-    public boolean doesClusterNameExist(@NotNull String clusterName) {
+    /**
+     * Check if cluster name exists in:
+     * 1. clusters under user's azure account subscription
+     * 2. linked HDI cluster by user
+     * 3. linked livy cluster by user
+     * @param clusterName
+     * @return whether livy endpoint exists or not
+     */
+    public boolean doesClusterNameExistInAllClusters(@NotNull String clusterName) {
         if (ClusterManagerEx.getInstance().getCachedClusters().stream().anyMatch(clusterDetail ->
                 clusterDetail.getName().equals(clusterName))) {
             return true;
@@ -89,7 +97,31 @@ public class AddNewClusterCtrlProvider {
         return false;
     }
 
-    public boolean doesClusterLivyEndpointExist(@NotNull String livyEndpoint) {
+    /**
+     * Check if cluster name exists in:
+     * 1. linked HDI cluster by user
+     * 2. linked livy cluster by user
+     * @param clusterName
+     * @return whether livy endpoint exists or not
+     */
+    public boolean doesClusterNameExistInLinkedClusters(@NotNull String clusterName) {
+        if (ClusterManagerEx.getInstance().getCachedClusters().stream()
+                .filter(clusterDetail -> clusterDetail instanceof HDInsightAdditionalClusterDetail)
+                .anyMatch(clusterDetail -> clusterDetail.getName().equals(clusterName))) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check if livy endpoint exists in:
+     * 1. clusters under user's azure account subscription
+     * 2. linked HDI cluster by user
+     * 3. linked livy cluster by user
+     * @param livyEndpoint
+     * @return whether livy endpoint exists or not
+     */
+    public boolean doesClusterLivyEndpointExistInAllClusters(@NotNull String livyEndpoint) {
         if (ClusterManagerEx.getInstance().getCachedClusters().stream()
                 .filter(cluster -> cluster instanceof LivyCluster)
                 .anyMatch(clusterDetail ->
