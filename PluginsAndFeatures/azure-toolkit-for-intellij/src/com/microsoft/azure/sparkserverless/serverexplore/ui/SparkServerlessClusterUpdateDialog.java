@@ -40,24 +40,11 @@ import java.time.LocalDateTime;
 
 public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvisionDialog implements ILogger {
     @NotNull
-    private final AzureSparkServerlessCluster cluster;
-
-    private void disableUneditableFields() {
-        clusterNameField.setEditable(false);
-        sparkEventsField.setEditable(false);
-        masterCoresField.setEditable(false);
-        masterMemoryField.setEditable(false);
-        workerCoresField.setEditable(false);
-        workerMemoryField.setEditable(false);
-        sparkVersionComboBox.setEditable(false);
-    }
-
-    @NotNull
     private SparkServerlessClusterUpdateCtrlProvider ctrlProvider;
+
     public SparkServerlessClusterUpdateDialog(@NotNull SparkServerlessClusterNode clusterNode,
                                               @NotNull AzureSparkServerlessCluster cluster) {
         super((SparkServerlessADLAccountNode) clusterNode.getParent(), cluster.getAccount());
-        this.cluster = cluster;
         this.setTitle("Update Cluster");
         disableUneditableFields();
         ctrlProvider = new SparkServerlessClusterUpdateCtrlProvider(
@@ -72,6 +59,15 @@ public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvision
         });
     }
 
+    private void disableUneditableFields() {
+        clusterNameField.setEditable(false);
+        sparkEventsField.setEditable(false);
+        masterCoresField.setEditable(false);
+        masterMemoryField.setEditable(false);
+        workerCoresField.setEditable(false);
+        workerMemoryField.setEditable(false);
+        sparkVersionComboBox.setEditable(false);
+    }
 
     @Override
     protected void enableClusterNameUniquenessCheck() {
@@ -95,31 +91,5 @@ public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvision
                 .validateAndUpdate()
                 .doOnEach(notification -> getOKAction().setEnabled(true))
                 .subscribe(toUpdate -> close(OK_EXIT_CODE));
-    }
-
-    // Data -> Components
-    @Override
-    public void setData(@NotNull SparkServerlessClusterProvisionSettingsModel data) {
-        clusterNameField.setText(data.getClusterName());
-        adlAccountField.setText(data.getAdlAccount());
-        // to avoid string expected tooltip
-        sparkEventsField.setText(StringUtils.isEmpty(data.getSparkEvents()) ? "-" : data.getSparkEvents());
-        availableAUField.setText(String.valueOf(data.getAvailableAU()));
-        totalAUField.setText(String.valueOf(data.getTotalAU()));
-        calculatedAUField.setText(String.valueOf(data.getCalculatedAU()));
-        masterCoresField.setText(String.valueOf(data.getMasterCores()));
-        masterMemoryField.setText(String.valueOf(data.getMasterMemory()));
-        workerCoresField.setText(String.valueOf(data.getWorkerCores()));
-        workerMemoryField.setText(String.valueOf(data.getWorkerMemory()));
-        workerNumberOfContainersField.setText(String.valueOf(data.getWorkerNumberOfContainers()));
-
-        if (!StringUtils.isEmpty(data.getErrorMessage())) {
-            if (!errorMessageDecorator.isExpanded()) {
-                errorMessageDecorator.setOn(true);
-            }
-            printLogLine(ConsoleViewContentType.ERROR_OUTPUT, data.getErrorMessage());
-        }
-        printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "x-ms-request-id: " + data.getRequestId());
-        printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "cluster guid: " + cluster.getGuid());
     }
 }
