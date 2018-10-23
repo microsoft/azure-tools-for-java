@@ -213,7 +213,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
             } else if (!ctrlProvider.isURLValid(livyEndpointField.getText())) {
                 errorMessage = "Livy Endpoint is not a valid URL";
             } else if (ctrlProvider.doesClusterLivyEndpointExistInAllClusters(livyEndpointField.getText())) {
-                errorMessage = "Livy Endpoint already exists in clusters";
+                errorMessage = "The same name Livy Endpoint already exists in clusters";
             } else if (ctrlProvider.doesClusterNameExistInAllClusters(livyClusterNameField.getText())) {
                 errorMessage = "Cluster Name already exists in clusters";
             } else if (!StringUtils.isEmpty(yarnEndpointField.getText()) &&

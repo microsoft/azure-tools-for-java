@@ -105,12 +105,9 @@ public class AddNewClusterCtrlProvider {
      * @return whether livy endpoint exists or not
      */
     public boolean doesClusterNameExistInLinkedClusters(@NotNull String clusterName) {
-        if (ClusterManagerEx.getInstance().getCachedClusters().stream()
+        return ClusterManagerEx.getInstance().getCachedClusters().stream()
                 .filter(clusterDetail -> clusterDetail instanceof HDInsightAdditionalClusterDetail)
-                .anyMatch(clusterDetail -> clusterDetail.getName().equals(clusterName))) {
-            return true;
-        }
-        return false;
+                .anyMatch(clusterDetail -> clusterDetail.getName().equals(clusterName));
     }
 
     /**
@@ -122,14 +119,11 @@ public class AddNewClusterCtrlProvider {
      * @return whether livy endpoint exists or not
      */
     public boolean doesClusterLivyEndpointExistInAllClusters(@NotNull String livyEndpoint) {
-        if (ClusterManagerEx.getInstance().getCachedClusters().stream()
+        return ClusterManagerEx.getInstance().getCachedClusters().stream()
                 .filter(cluster -> cluster instanceof LivyCluster)
                 .anyMatch(clusterDetail ->
                         URI.create(((LivyCluster) clusterDetail).getLivyConnectionUrl()).resolve("/").toString()
-                                .equals(URI.create(livyEndpoint).resolve("/").toString()))) {
-            return true;
-        }
-        return false;
+                                .equals(URI.create(livyEndpoint).resolve("/").toString()));
     }
 
     public Observable<AddNewClusterModel> refreshContainers() {
