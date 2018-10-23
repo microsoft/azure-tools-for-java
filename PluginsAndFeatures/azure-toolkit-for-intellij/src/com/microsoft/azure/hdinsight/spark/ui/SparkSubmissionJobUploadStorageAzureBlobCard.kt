@@ -39,7 +39,7 @@ class SparkSubmissionJobUploadStorageAzureBlobCard: SparkSubmissionJobUploadStor
     private val storageKeyLabel = JLabel("Storage Key").apply { toolTipText = storageKeyTip }
     val storageKeyField = JTextArea().apply { toolTipText = storageKeyTip }
     private val storageContainerLabel = JLabel("Storage Container")
-    val storageContainerComboBox = ComboboxWithBrowseButton().apply {
+    val storageContainerUI = ComboboxWithBrowseButton().apply {
         button.toolTipText = "Refresh"
         button.icon = StreamUtil.getImageResourceFile(refreshButtonIconPath)
     }
@@ -63,7 +63,7 @@ class SparkSubmissionJobUploadStorageAzureBlobCard: SparkSubmissionJobUploadStor
                 c(storageKeyLabel) {}; c(storageKeyField) {}
             }
             row {
-                c(storageContainerLabel) {}; c(storageContainerComboBox) {}
+                c(storageContainerLabel) {}; c(storageContainerUI) {}
             }
         }
 

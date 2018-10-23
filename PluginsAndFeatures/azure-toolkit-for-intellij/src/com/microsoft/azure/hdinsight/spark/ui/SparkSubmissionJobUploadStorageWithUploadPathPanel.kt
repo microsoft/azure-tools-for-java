@@ -88,9 +88,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
                 data.storageAccountType = SparkSubmitStorageType.BLOB
                 data.storageAccount = storagePanel.azureBlobCard.storageAccountField.text.trim()
                 data.storageKey = storagePanel.azureBlobCard.storageKeyField.text.trim()
-                data.containersModel = storagePanel.azureBlobCard.storageContainerComboBox.comboBox.model as DefaultComboBoxModel<String>
-                data.selectedContainer = storagePanel.azureBlobCard.storageContainerComboBox.comboBox.selectedItem as? String
-                data.refreshContainersEnabled = storagePanel.azureBlobCard.storageContainerComboBox.button.isEnabled
+                data.containersModel = storagePanel.azureBlobCard.storageContainerUI.comboBox.model as DefaultComboBoxModel<String>
+                data.selectedContainer = storagePanel.azureBlobCard.storageContainerUI.comboBox.selectedItem as? String
             }
             storagePanel.clusterDefaultStorageCard.title -> {
                 data.storageAccountType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
@@ -118,11 +117,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
                             data.storageKey
                         }
                 if (data.containersModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedContainer)) {
-                    storagePanel.azureBlobCard.storageContainerComboBox.comboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
+                    storagePanel.azureBlobCard.storageContainerUI.comboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
                 } else {
-                    storagePanel.azureBlobCard.storageContainerComboBox.comboBox.model = data.containersModel as DefaultComboBoxModel<Any>
+                    storagePanel.azureBlobCard.storageContainerUI.comboBox.model = data.containersModel as DefaultComboBoxModel<Any>
                 }
-                storagePanel.azureBlobCard.storageContainerComboBox.button.isEnabled = data.refreshContainersEnabled
             }
         }
         ApplicationManager.getApplication().invokeLater(applyData, ModalityState.any())
