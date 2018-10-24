@@ -42,8 +42,6 @@ import rx.Observable
 import rx.Subscription
 import rx.schedulers.Schedulers
 import java.awt.CardLayout
-import java.awt.event.FocusAdapter
-import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
 import java.util.concurrent.TimeUnit
 import javax.swing.DefaultComboBoxModel
@@ -60,18 +58,19 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
         // check storage info when cluster selection changes
         registerStorageInfoCheck()
 
-        // refresh containers after account and key focus lost
-        arrayOf(view.storagePanel.azureBlobCard.storageAccountField, view.storagePanel.azureBlobCard.storageKeyField).forEach {
-            it.addFocusListener(object : FocusAdapter() {
-                override fun focusLost(e: FocusEvent?) {
-                    refreshContainers().subscribe(
-                            { },
-                            { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
-                }
-            })
+        // refresh containers after refresh button is clicked
+        view.storagePanel.azureBlobCard.storageContainerUI.button.addActionListener {
+            if (view.storagePanel.azureBlobCard.storageContainerUI.button.isEnabled) {
+                view.storagePanel.azureBlobCard.storageContainerUI.button.isEnabled = false
+                refreshContainers()
+                    .doOnEach { view.storagePanel.azureBlobCard.storageContainerUI.button.isEnabled = true }
+                    .subscribe(
+                        { },
+                        { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
+            }
         }
         // after container is selected, update upload path
-        view.storagePanel.azureBlobCard.storageContainerComboBox.addItemListener { itemEvent ->
+        view.storagePanel.azureBlobCard.storageContainerUI.comboBox.addItemListener { itemEvent ->
             if (itemEvent?.stateChange == ItemEvent.SELECTED) {
                 updateStorageAfterContainerSelected().subscribe(
                         { },
@@ -169,7 +168,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                 }
     }
 
-    fun refreshContainers(): Observable<SparkSubmitJobUploadStorageModel> {
+    private fun refreshContainers(): Observable<SparkSubmitJobUploadStorageModel> {
         return Observable.just(SparkSubmitJobUploadStorageModel())
                 .doOnNext(view::getData)
                 .observeOn(Schedulers.io())

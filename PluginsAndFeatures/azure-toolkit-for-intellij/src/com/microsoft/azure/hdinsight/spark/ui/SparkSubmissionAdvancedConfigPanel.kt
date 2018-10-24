@@ -37,7 +37,6 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.popup.IconButton
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.InplaceButton
-import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.Docs
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
@@ -49,16 +48,12 @@ import com.microsoft.azuretools.service.ServiceManager
 import com.microsoft.intellij.forms.dsl.panel
 import org.apache.commons.lang3.StringUtils
 import rx.subjects.PublishSubject
-import java.awt.Component
 import java.awt.event.ItemEvent.DESELECTED
 import java.awt.event.ItemEvent.SELECTED
 import java.io.File
 import java.util.*
 import javax.swing.*
 import javax.swing.event.DocumentEvent
-
-// No auto format for the following lines
-data class Place(val component: Component, val gridConstraints: GridConstraints)
 
 // View and Control combined class
 class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitAdvancedConfigModel> {
@@ -140,19 +135,19 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
             }
         }
         row {
-            c(enableRemoteDebugCheckBox) { indent = 0 };        c(helpButton) {};   c(checkSshCertIndicator) {}
+            c(enableRemoteDebugCheckBox) { indent = 2 };        c(helpButton) {};   c(checkSshCertIndicator) {}
         }
         row {
-              c(sshUserNameLabel) { indent = 1 };               c(null) {};         c(sshUserNameTextField) {}
+              c(sshUserNameLabel) { indent = 3 };               c(null) {};         c(sshUserNameTextField) {}
         }
         row {
-              c(sshAuthTypeLabel) { indent = 1 }
+              c(sshAuthTypeLabel) { indent = 3 }
         }
         row {
-                c(sshUsePasswordRadioButton) { indent = 2 };    c(null) {};         c(sshPasswordField) {}
+                c(sshUsePasswordRadioButton) { indent = 4 };    c(null) {};         c(sshPasswordField) {}
         }
         row {
-                c(sshUseKeyFileRadioButton) { indent = 2 };     c(null) {};         c(sshKeyFileTextField) {}
+                c(sshUseKeyFileRadioButton) { indent = 4 };     c(null) {};         c(sshKeyFileTextField) {}
         }
     }
 
