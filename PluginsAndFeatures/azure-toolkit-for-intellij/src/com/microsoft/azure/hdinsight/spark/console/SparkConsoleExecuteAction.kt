@@ -35,8 +35,8 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets.UTF_8
 
 class SparkConsoleExecuteAction() : AzureAnAction(), DumbAware, ILogger {
-    override fun update(e: AnActionEvent?) {
-        val editor = e?.getData(EDITOR) ?: return
+    override fun update(e: AnActionEvent) {
+        val editor = e.getData(EDITOR) ?: return
 
         if (editor !is EditorEx) {
             e.presentation.isEnabled = false

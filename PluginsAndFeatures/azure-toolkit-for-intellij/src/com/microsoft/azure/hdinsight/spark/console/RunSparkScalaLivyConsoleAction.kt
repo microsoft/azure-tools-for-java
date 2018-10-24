@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
-import com.intellij.execution.configurations.RunConfigurationBase
+import com.intellij.execution.configuration.AbstractRunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
@@ -32,7 +32,7 @@ class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction(), ILogger {
         get() = SparkScalaLivyConsoleConfigurationType().confFactory()
 
     override fun checkSettingsBeforeRun(runProfile: RunProfile?) {
-        (runProfile as? RunConfigurationBase)?.checkSettingsBeforeRun()
+        (runProfile as? AbstractRunConfiguration)?.checkSettingsBeforeRun()
     }
 
     override fun getNewSettingName(): String = "Spark Livy Interactive Session Console(Scala)"

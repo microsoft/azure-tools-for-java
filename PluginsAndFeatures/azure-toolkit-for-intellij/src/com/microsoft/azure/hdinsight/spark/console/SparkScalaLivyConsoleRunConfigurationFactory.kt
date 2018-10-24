@@ -33,12 +33,12 @@ class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaL
         return SparkScalaLivyConsoleRunConfiguration(project, this, null, "")
     }
 
-    override fun createConfiguration(name: String, template: RunConfiguration): RunConfiguration {
+    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
         // Create a Spark Scala Livy run configuration based on Spark Batch run configuration
         return SparkScalaLivyConsoleRunConfiguration(
                 template.project,
                 this,
                 template as? RemoteDebugRunConfiguration,
-                "${template.name} >> Spark Livy Interactive Session Console(Scala)")
+                "${template.name ?: ""} >> Spark Livy Interactive Session Console(Scala)")
     }
 }
