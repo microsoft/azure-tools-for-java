@@ -65,7 +65,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebApp
 
 public abstract class WebAppBasePropertyView extends BaseEditor implements WebAppBasePropertyMvpView {
     public final String id;
-    protected final WebAppBasePropertyViewPresenter presenter;
+    protected final WebAppBasePropertyViewPresenter<WebAppBasePropertyMvpView> presenter;
     private final Map<String, String> cachedAppSettings;
     private final Map<String, String> editedAppSettings;
     private final StatusBar statusBar;
@@ -117,6 +117,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
                                      @NotNull String resId, @Nullable String slotName) {
         this.id = getId();
         this.presenter = createPresenter();
+        this.presenter.onAttachView(this);
         cachedAppSettings = new LinkedHashMap<>();
         editedAppSettings = new LinkedHashMap<>();
         statusBar = WindowManager.getInstance().getStatusBar(project);

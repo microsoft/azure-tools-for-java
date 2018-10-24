@@ -52,8 +52,6 @@ public class WebAppPropertyView extends WebAppBasePropertyView {
 
     @Override
     protected WebAppBasePropertyViewPresenter createPresenter() {
-        final WebAppPropertyViewPresenter presenter = new WebAppPropertyViewPresenter();
-        presenter.onAttachView(this);
-        return presenter;
+        return new WebAppPropertyViewPresenter();
     }
 }

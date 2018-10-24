@@ -53,8 +53,6 @@ public class DeploymentSlotPropertyView extends WebAppBasePropertyView {
 
     @Override
     protected WebAppBasePropertyViewPresenter createPresenter() {
-        final DeploymentSlotPropertyViewPresenter presenter = new DeploymentSlotPropertyViewPresenter();
-        presenter.onAttachView(this);
-        return presenter;
+        return new DeploymentSlotPropertyViewPresenter();
     }
 }

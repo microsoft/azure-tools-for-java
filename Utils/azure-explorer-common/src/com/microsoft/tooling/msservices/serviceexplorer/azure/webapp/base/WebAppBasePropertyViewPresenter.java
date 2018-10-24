@@ -42,7 +42,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBaseP
 
 import rx.Observable;
 
-public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBasePropertyMvpView, E extends String> extends MvpPresenter<V> {
+public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBasePropertyMvpView> extends MvpPresenter<V> {
     public static final String KEY_NAME = "name";
     public static final String KEY_TYPE = "type";
     public static final String KEY_RESOURCE_GRP = "resourceGroup";
@@ -58,7 +58,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
     public static final String KEY_OPERATING_SYS = "operatingSystem";
     public static final String KEY_APP_SETTING = "appSetting";
 
-    private static final String CANNOT_GET_WEB_APP_PROPERTY = "Exception occurred when getting the application settings.";
+    private static final String CANNOT_GET_WEB_APP_PROPERTY = "An exception occurred when getting the application settings.";
 
     public void onLoadWebAppProperty(final String sid, @NotNull final String webAppId, @Nullable final String name) {
         Observable.fromCallable(() -> {
