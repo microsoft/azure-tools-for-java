@@ -43,7 +43,7 @@ public class Constant {
     public static final String DOCKERFILE_CONTENT_TOMCAT = "FROM tomcat:8.5-jre8\r\n"
             + "RUN rm -fr /usr/local/tomcat/webapps/ROOT\r\n"
             + "COPY %s /usr/local/tomcat/webapps/ROOT.war\r\n";
-    public static final String DOCKERFILE_CONTENT_SPRING = "FROM openjdk:8-jdk-alpine\r\n"
+    public static final String DOCKERFILE_CONTENT_SPRING = "FROM azul/zulu-openjdk-alpine:8\r\n"
             + "VOLUME /tmp\r\n"
             + "EXPOSE 8080\r\n"
             + "COPY %s app.jar\r\n"
