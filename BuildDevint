@@ -6,6 +6,7 @@ SCRIPTPATH=$(pwd -P)
 cd "$SCRIPTPATH"
 
 MAVEN_QUIET=""
+SKIP_CHECKSTYLE=$TRAVIS
 INTELLIJ_VERSION=false
 BUILD_ECLIPSE=true
 BUILD_INTELLIJ=true
@@ -38,7 +39,7 @@ set -x
 
 # Build Utils
 echo "Building Utils ..."
-mvn install -f $SCRIPTPATH/Utils/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
+mvn install -f $SCRIPTPATH/Utils/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository -Dcheckstyle.skip=$SKIP_CHECKSTYLE $MAVEN_QUIET
 mvn install -f $SCRIPTPATH/PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
 
 # Build Eclipse plugin

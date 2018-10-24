@@ -28,6 +28,13 @@ import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootMo
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Optional;
 
 public class SparkServerlessClusterRootModuleImpl extends HDInsightRootModule {
     private static final String SERVICE_MODULE_ID = SparkServerlessClusterRootModuleImpl.class.getName();
@@ -35,6 +42,8 @@ public class SparkServerlessClusterRootModuleImpl extends HDInsightRootModule {
     private static final String ICON_PATH = CommonConst.AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH;
     // TODO: determine root node name
     private static final String BASE_MODULE_NAME = "Azure Data Lake Spark Pool";
+
+    private static final String SPARK_NOTEBOOK_LINK = "https://aka.ms/spkadlnb";
 
     public SparkServerlessClusterRootModuleImpl(@NotNull Node parent) {
         super(SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH, true);
@@ -68,6 +77,20 @@ public class SparkServerlessClusterRootModuleImpl extends HDInsightRootModule {
 
     }
 
+    @Override
+    protected void loadActions() {
+        super.loadActions();
+
+        addAction("Open Notebook", new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                try {
+                    Desktop.getDesktop().browse(URI.create(SPARK_NOTEBOOK_LINK));
+                } catch (IOException ignore) {
+                }
+            }
+        });
+    }
     // TODO: refreshWithoutAsync() is called when unlink an HDInsight cluster. Maybe we also need to implement this method here?
     // public void refreshWithoutAsync()
 }

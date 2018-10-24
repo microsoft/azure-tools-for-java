@@ -27,6 +27,8 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.util.Disposer;
@@ -44,6 +46,7 @@ import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.Spa
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -96,7 +99,9 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
     protected JPanel errorMessagePanel;
     protected JPanel errorMessagePanelHolder;
     protected JPanel configPanel;
-    protected JPanel auPanel;
+    protected JPanel availalableAUPanel;
+    private JPanel auRequiredPanel;
+    protected JLabel auWarningLabel;
     protected ConsoleViewImpl consoleViewPanel;
     protected HideableDecorator errorMessageDecorator;
     @NotNull
@@ -141,13 +146,22 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         this.adlAccountField.setText(adlAccountNode.getAdlAccount().getName());
         this.storageRootPathLabel.setText(Optional.ofNullable(account.getStorageRootPath()).orElse(""));
 
-        refreshButton.addActionListener(e -> updateAvailableAU());
+        refreshButton.addActionListener(event -> ctrlProvider.updateAvailableAU().subscribe(
+                data -> {},
+                err -> log().warn("Update available AU in provision cluster dialog get exceptions. Error: " + ExceptionUtils.getStackTrace(err))));
+
         allAURelatedFields.forEach(comp ->
                 comp.addFocusListener(new FocusAdapter() {
                     @Override
                     public void focusLost(FocusEvent e) {
                         if (isAllAURelatedFieldsLegal()) {
-                            updateCalculatedAU();
+                            // update calculated AU
+                            calculatedAUField.setText(String.valueOf(ctrlProvider.getCalculatedAU(
+                                    Integer.valueOf(masterCoresField.getText()),
+                                    Integer.valueOf(workerCoresField.getText()),
+                                    Integer.valueOf(masterMemoryField.getText()),
+                                    Integer.valueOf(workerMemoryField.getText()),
+                                    Integer.valueOf(workerNumberOfContainersField.getText()))));
                         }
                         super.focusLost(e);
                     }
@@ -164,8 +178,10 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         this.getWindow().addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
-                updateAvailableAUAndTotalAU();
-                updateCalculatedAU();
+                ctrlProvider.updateAvailableAUAndTotalAU()
+                        .subscribe(
+                                data -> {},
+                                err -> log().warn("Update available AU, total AU and calculated AU in provision cluster dialog get exceptions. Error: " + ExceptionUtils.getStackTrace(err)));
                 super.windowOpened(e);
             }
         });
@@ -192,38 +208,6 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
         }
     }
 
-    private void updateAvailableAUAndTotalAU() {
-        if (!refreshButton.isEnabled()) {
-            return;
-        }
-        refreshButton.setEnabled(false);
-        ctrlProvider.getAvailableAUAndTotalAU()
-                .doOnEach(pair -> refreshButton.setEnabled(true))
-                .subscribe(pair -> {
-                    availableAUField.setText(String.valueOf(pair.getLeft()));
-                    totalAUField.setText(String.valueOf(pair.getRight()));
-                });
-    }
-
-    private void updateAvailableAU() {
-        if (!refreshButton.isEnabled()) {
-            return;
-        }
-        refreshButton.setEnabled(false);
-        ctrlProvider.getAvailableAU()
-                .doOnEach(au -> refreshButton.setEnabled(true))
-                .subscribe(au -> availableAUField.setText(String.valueOf(au)));
-    }
-
-    private void updateCalculatedAU() {
-        calculatedAUField.setText(String.valueOf(ctrlProvider.getCalculatedAU(
-                Integer.valueOf(masterCoresField.getText()),
-                Integer.valueOf(workerCoresField.getText()),
-                Integer.valueOf(masterMemoryField.getText()),
-                Integer.valueOf(workerMemoryField.getText()),
-                Integer.valueOf(workerNumberOfContainersField.getText()))));
-    }
-
     protected void printLogLine(@NotNull ConsoleViewContentType logLevel, @NotNull String log) {
         consoleViewPanel.print(LocalDateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n", logLevel);
     }
@@ -231,14 +215,32 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
     // Data -> Components
     @Override
     public void setData(@NotNull SparkServerlessClusterProvisionSettingsModel data) {
-        if (!StringUtils.isEmpty(data.getErrorMessage())) {
-            if (!errorMessageDecorator.isExpanded()) {
-                errorMessageDecorator.setOn(true);
+        ApplicationManager.getApplication().invokeAndWait(() -> {
+            clusterNameField.setText(data.getClusterName());
+            adlAccountField.setText(data.getAdlAccount());
+            // set sparkEventsField to "-" rather than empty string to avoid "string expected" tooltip
+            sparkEventsField.setText(StringUtils.isEmpty(data.getSparkEvents()) ? "-" : data.getSparkEvents());
+            availableAUField.setText(String.valueOf(data.getAvailableAU()));
+            totalAUField.setText(String.valueOf(data.getTotalAU()));
+            calculatedAUField.setText(String.valueOf(data.getCalculatedAU()));
+            auWarningLabel.setVisible(data.getCalculatedAU() > data.getAvailableAU());
+            refreshButton.setEnabled(data.getRefreshEnabled());
+            masterCoresField.setText(String.valueOf(data.getMasterCores()));
+            masterMemoryField.setText(String.valueOf(data.getMasterMemory()));
+            workerCoresField.setText(String.valueOf(data.getWorkerCores()));
+            workerMemoryField.setText(String.valueOf(data.getWorkerMemory()));
+            workerNumberOfContainersField.setText(String.valueOf(data.getWorkerNumberOfContainers()));
+
+            if (!StringUtils.isEmpty(data.getErrorMessage())) {
+                if (!errorMessageDecorator.isExpanded()) {
+                    errorMessageDecorator.setOn(true);
+                }
+                printLogLine(ConsoleViewContentType.ERROR_OUTPUT, data.getErrorMessage());
+
+                printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "x-ms-request-id: " + data.getRequestId());
+                printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "cluster guid: " + data.getClusterGuid());
             }
-            printLogLine(ConsoleViewContentType.ERROR_OUTPUT, data.getErrorMessage());
-        }
-        printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "x-ms-request-id: " + data.getRequestId());
-        printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "cluster guid: " + data.getClusterGuid());
+        }, ModalityState.any());
     }
 
     // Components -> Data
@@ -250,6 +252,7 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
                 .setAvailableAU(NumberUtils.toInt(availableAUField.getText()))
                 .setTotalAU(NumberUtils.toInt(totalAUField.getText()))
                 .setCalculatedAU(NumberUtils.toInt(calculatedAUField.getText()))
+                .setRefreshEnabled(refreshButton.isEnabled())
                 .setMasterCores(masterCoresField.getValue())
                 .setMasterMemory(masterMemoryField.getValue())
                 .setWorkerCores(workerCoresField.getValue())
@@ -269,7 +272,6 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
                 .validateAndProvision()
                 .doOnEach(notification -> getOKAction().setEnabled(true))
                 .subscribe(toUpdate -> {
-                    // TODO: replace load with refreshWithoutAsync
                     adlAccountNode.load(false);
                     super.doOKAction();
                 }, err -> log().warn("Error provision a cluster. " + err.toString()));

@@ -23,29 +23,14 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.uiDesigner.core.GridConstraints
-import com.intellij.uiDesigner.core.GridLayoutManager
+import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
+import com.microsoft.intellij.forms.dsl.panel
 import java.awt.CardLayout
 import javax.swing.*
 
 class SparkSubmissionJobUploadStoragePanel: JPanel() {
-    private fun baseConstraints() = GridConstraints().apply { anchor = GridConstraints.ANCHOR_WEST }
-    private val colTemplate= listOf(
-            // Column 0
-            baseConstraints().apply {
-                column = 0
-                indent = 1
-            },
-            //  Column 1
-            baseConstraints().apply {
-                column = 1
-                indent = 1
-                hSizePolicy = GridConstraints.SIZEPOLICY_WANT_GROW
-                fill = GridConstraints.FILL_HORIZONTAL })
-    private fun buildConstraints(colTemplateOffset: Int): GridConstraints = colTemplate[colTemplateOffset].clone() as GridConstraints
-
-    val notFinishCheckMessage = "job upload storage validation check is not finished"
+    private val notFinishCheckMessage = "job upload storage validation check is not finished"
     private val storageTypeLabel = JLabel("Storage Type")
     val azureBlobCard = SparkSubmissionJobUploadStorageAzureBlobCard()
     val sparkInteractiveSessionCard = SparkSubmissionJobUploadStorageSparkInteractiveSessionCard()
@@ -58,13 +43,28 @@ class SparkSubmissionJobUploadStoragePanel: JPanel() {
     }
     var storageAccountType: SparkSubmitStorageType = SparkSubmitStorageType.BLOB
     var errorMessage: String? = notFinishCheckMessage
-    private val layoutPlan = listOf(
-            Place(storageTypeLabel, buildConstraints(0).apply { row = 0 }), Place(storageTypeComboBox, buildConstraints(1).apply { row = 0; indent = 3 }),
-            Place(storageCardsPanel, baseConstraints().apply { row = 1; colSpan = 2; hSizePolicy = GridConstraints.SIZEPOLICY_WANT_GROW; fill = GridConstraints.FILL_HORIZONTAL })
-    )
 
     init {
-        layout = GridLayoutManager(layoutPlan.last().gridConstraints.row + 1, colTemplate.size)
-        layoutPlan.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
+        val formBuilder = panel {
+            columnTemplate {
+                col {
+                    anchor = ANCHOR_WEST
+                }
+                col {
+                    anchor = ANCHOR_WEST
+                    hSizePolicy = SIZEPOLICY_WANT_GROW
+                    fill = FILL_HORIZONTAL
+                }
+            }
+            row {
+                c(storageTypeLabel) { indent = 2 }; c(storageTypeComboBox) { indent = 3 }
+            }
+            row {
+                c(storageCardsPanel) { indent = 2; colSpan = 2; hSizePolicy = SIZEPOLICY_WANT_GROW; fill = FILL_HORIZONTAL}
+            }
+        }
+
+        layout = formBuilder.createGridLayoutManager()
+        formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }
 }
