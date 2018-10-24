@@ -36,4 +36,7 @@ abstract class ClassifiedException(exp: Throwable?) : Throwable(exp), ILogger {
     fun logStackTrace() {
         log().warn("$title: $stackTrace")
     }
+
+    open fun handleByUser(){
+    }
 }

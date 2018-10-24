@@ -25,6 +25,9 @@ import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
 
 class SparkUserException(exp: Throwable?) : ClassifiedException(exp) {
     override val title: String = "Spark User Error"
+
+    override fun handleByUser() {
+    }
 }
 
 object SparkUserExceptionFactory : ClassifiedExceptionFactory() {
