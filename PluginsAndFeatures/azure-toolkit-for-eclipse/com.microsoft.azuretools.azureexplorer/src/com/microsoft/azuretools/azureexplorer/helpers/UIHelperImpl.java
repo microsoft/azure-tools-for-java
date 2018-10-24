@@ -373,4 +373,9 @@ public class UIHelperImpl implements UIHelper {
         IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(WebAppPropertyEditor.ID);
         openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
     }
+
+    @Override
+    public void openDeploymentSlotPropertyView(final DeploymentSlotNode node) {
+        // todo
+    }
 }

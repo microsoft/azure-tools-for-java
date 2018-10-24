@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
 import java.util.List;
 import java.util.Map;
@@ -33,24 +33,25 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
-public class WebAppPropertyViewPresenter extends WebAppBasePropertyViewPresenter {
+public class DeploymentSlotPropertyViewPresenter extends WebAppBasePropertyViewPresenter {
     @Override
     protected void updateAppSettings(@NotNull final String sid, @NotNull final String webAppId,
                                      @Nullable final String name, final Map toUpdate,
                                      final Set toRemove) throws Exception {
-        AzureWebAppMvpModel.getInstance().updateWebAppSettings(sid, webAppId, toUpdate, toRemove);
+        AzureWebAppMvpModel.getInstance().updateDeploymentSlotAppSettings(sid, webAppId, name, toUpdate, toRemove);
     }
 
     @Override
-    protected boolean getPublishingProfile(@NotNull final String sid, @NotNull final String webAppId,
+    protected boolean getPublishingProfile(@NotNull final String subscriptionId, @NotNull final String webAppId,
                                            @Nullable final String name,
                                            @NotNull final String filePath) throws Exception {
-        return AzureWebAppMvpModel.getInstance().getPublishingProfileXmlWithSecrets(sid, webAppId, filePath);
+        return AzureWebAppMvpModel.getInstance()
+            .getSlotPublishingProfileXmlWithSecrets(subscriptionId, webAppId, name, filePath);
     }
 
     @Override
     protected WebAppBase getWebAppBase(@NotNull final String sid, @NotNull final String webAppId,
                                        @Nullable final String name) throws Exception {
-        return AzureWebAppMvpModel.getInstance().getWebAppById(sid, webAppId);
+        return AzureWebAppMvpModel.getInstance().getWebAppById(sid, webAppId).deploymentSlots().getByName(name);
     }
 }

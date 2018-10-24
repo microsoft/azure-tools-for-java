@@ -25,6 +25,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deployment
 import java.io.IOException;
 import java.util.List;
 
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -54,6 +55,10 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         loadActions();
     }
 
+    public String getWebAppId() {
+        return this.webAppId;
+    }
+
     @Override
     public List<NodeAction> getNodeActions() {
         getNodeActionByName(ACTION_SWAP_WITH_PRODUCTION).setEnabled(this.state == WebAppBaseState.RUNNING);
@@ -77,6 +82,12 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
             }
         });
         addAction(ACTION_DELETE, new DeleteDeploymentSlotAction());
+        addAction(ACTION_SHOW_PROPERTY, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(DeploymentSlotNode.this);
+            }
+        });
 
         super.loadActions();
     }

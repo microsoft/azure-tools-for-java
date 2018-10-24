@@ -28,7 +28,7 @@ import com.intellij.openapi.actionSystem.DataKey
 class SparkAppSubmitContext : DataContext {
     private val dataStore = mutableMapOf<String, Any>()
 
-    override fun getData(key: String?): Any? {
+    override fun getData(key: String): Any? {
         return dataStore[key]
     }
 
