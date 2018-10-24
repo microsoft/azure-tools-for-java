@@ -49,8 +49,8 @@ public class WebAppPropertyViewPresenter extends WebAppBasePropertyViewPresenter
     }
 
     @Override
-    protected WebAppBase getWebApp(@NotNull final String sid, @NotNull final String webAppId,
-                                   @Nullable final String name) throws Exception {
+    protected WebAppBase getWebAppBase(@NotNull final String sid, @NotNull final String webAppId,
+                                       @Nullable final String name) throws Exception {
         return AzureWebAppMvpModel.getInstance().getWebAppById(sid, webAppId);
     }
 }

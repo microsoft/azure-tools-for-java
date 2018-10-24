@@ -59,13 +59,13 @@ import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
 import com.microsoft.intellij.ui.util.UIUtils;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyMvpView;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBasePropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
-public class WebAppBasePropertyView extends BaseEditor implements WebAppPropertyMvpView {
-    public String id;
-    protected WebAppBasePropertyViewPresenter presenter;
+public abstract class WebAppBasePropertyView extends BaseEditor implements WebAppBasePropertyMvpView {
+    public final String id;
+    protected final WebAppBasePropertyViewPresenter presenter;
     private final Map<String, String> cachedAppSettings;
     private final Map<String, String> editedAppSettings;
     private final StatusBar statusBar;
@@ -115,6 +115,8 @@ public class WebAppBasePropertyView extends BaseEditor implements WebAppProperty
 
     protected WebAppBasePropertyView(@NotNull Project project, @NotNull String sid,
                                      @NotNull String resId, @Nullable String slotName) {
+        this.id = getId();
+        this.presenter = createPresenter();
         cachedAppSettings = new LinkedHashMap<>();
         editedAppSettings = new LinkedHashMap<>();
         statusBar = WindowManager.getInstance().getStatusBar(project);
@@ -174,6 +176,11 @@ public class WebAppBasePropertyView extends BaseEditor implements WebAppProperty
     }
 
 
+
+
+    protected abstract String getId();
+
+    protected abstract WebAppBasePropertyViewPresenter createPresenter();
 
     @Override
     public void onLoadWebAppProperty(@NotNull final String sid, @NotNull final String webAppId,

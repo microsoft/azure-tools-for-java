@@ -25,9 +25,11 @@ package com.microsoft.intellij.helpers.webapp;
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotPropertyViewPresenter;
 
 public class DeploymentSlotPropertyView extends WebAppBasePropertyView {
+    private static final String ID = "com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyView";
 
     /**
      * Initialize the Web App Property View and return it.
@@ -42,8 +44,17 @@ public class DeploymentSlotPropertyView extends WebAppBasePropertyView {
     private DeploymentSlotPropertyView(@NotNull final Project project, @NotNull final String sid,
                                        @NotNull final String webAppId, @NotNull final String slotName) {
         super(project, sid, webAppId, slotName);
-        this.id = "com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyView";
-        presenter = new DeploymentSlotPropertyViewPresenter();
+    }
+
+    @Override
+    protected String getId() {
+        return this.ID;
+    }
+
+    @Override
+    protected WebAppBasePropertyViewPresenter createPresenter() {
+        final DeploymentSlotPropertyViewPresenter presenter = new DeploymentSlotPropertyViewPresenter();
         presenter.onAttachView(this);
+        return presenter;
     }
 }

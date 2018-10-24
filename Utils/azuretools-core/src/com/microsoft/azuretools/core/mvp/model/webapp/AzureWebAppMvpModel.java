@@ -671,7 +671,7 @@ public class AzureWebAppMvpModel {
      * Work Around:
      * When a web app is created from Azure Portal, there are hidden tags associated with the app.
      * It will be messed up when calling "update" API.
-     * An issue is logged at https://github.com/Azure/azure-sdk-for-java/issues/1755 .
+     * An issue is logged at https://github.com/Azure/azure-libraries-for-java/issues/508 .
      * Remove all tags here to make it work.
      */
     private void clearTags(@NotNull final WebAppBase app) {
