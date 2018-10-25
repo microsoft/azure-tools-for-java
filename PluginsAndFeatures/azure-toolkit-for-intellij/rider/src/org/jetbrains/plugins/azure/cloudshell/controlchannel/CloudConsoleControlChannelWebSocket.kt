@@ -23,8 +23,12 @@ class CloudConsoleControlChannelWebSocket(private val project: Project,
         if (message != null) {
             try {
                 val controlMessage = gson.fromJson(message, ControlMessage::class.java)
-                if (controlMessage.audience == "download") {
-                    DownloadControlMessageHandler(gson, project, cloudConsoleService, cloudConsoleBaseUrl)
+                when {
+                    controlMessage.audience == "download" ->
+                        DownloadControlMessageHandler(gson, project, cloudConsoleService, cloudConsoleBaseUrl)
+                            .handle(message)
+                    controlMessage.audience == "url" ->
+                        UrlControlMessageHandler(gson)
                             .handle(message)
                 }
             } catch (e: JsonSyntaxException) {
