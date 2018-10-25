@@ -22,10 +22,10 @@
 package com.microsoft.azure.hdinsight.spark.run.configuration;
 
 import com.intellij.compiler.options.CompileStepBeforeRun;
-import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.JavaExecutionUtil;
+import com.intellij.execution.configuration.AbstractRunConfiguration;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
@@ -55,7 +55,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunConfigurationModule>
+public class RemoteDebugRunConfiguration extends AbstractRunConfiguration
 {
     enum RunMode {
         LOCAL,
@@ -178,24 +178,24 @@ public class RemoteDebugRunConfiguration extends ModuleBasedConfiguration<RunCon
 
     @NotNull
     @Override
-    public List<BeforeRunTask> getBeforeRunTasks() {
-        Stream<BeforeRunTask> compileTask = super.getBeforeRunTasks().stream()
+    public List getBeforeRunTasks() {
+        Stream compileTask = super.getBeforeRunTasks().stream()
                 .filter(task -> task instanceof CompileStepBeforeRun.MakeBeforeRunTask);
-        Stream<BeforeRunTask> buildArtifactTask = super.getBeforeRunTasks().stream()
+        Stream buildArtifactTask = super.getBeforeRunTasks().stream()
                 .filter(task -> task instanceof BuildArtifactsBeforeRunTask);
 
         switch (mode) {
         case LOCAL:
-            compileTask.forEach(task -> task.setEnabled(true));
-            buildArtifactTask.forEach(task -> task.setEnabled(false));
+            compileTask.forEach(task -> ((CompileStepBeforeRun.MakeBeforeRunTask) task).setEnabled(true));
+            buildArtifactTask.forEach(task -> ((BuildArtifactsBeforeRunTask) task).setEnabled(false));
             break;
         case REMOTE:
-            compileTask.forEach(task -> task.setEnabled(false));
-            buildArtifactTask.forEach(task -> task.setEnabled(true));
+            compileTask.forEach(task -> ((CompileStepBeforeRun.MakeBeforeRunTask) task).setEnabled(false));
+            buildArtifactTask.forEach(task -> ((BuildArtifactsBeforeRunTask) task).setEnabled(true));
             break;
         case REMOTE_DEBUG_EXECUTOR:
-            compileTask.forEach(task -> task.setEnabled(false));
-            buildArtifactTask.forEach(task -> task.setEnabled(false));
+            compileTask.forEach(task -> ((CompileStepBeforeRun.MakeBeforeRunTask) task).setEnabled(false));
+            buildArtifactTask.forEach(task -> ((BuildArtifactsBeforeRunTask) task).setEnabled(false));
             break;
         }
 

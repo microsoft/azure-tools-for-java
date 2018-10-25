@@ -40,8 +40,8 @@ open class RunSparkConsoleActionDelegate(sparkScalaActionClassName: String) : Az
     private val actionPerformedMethod: Method?
         get() = delegate.getMethod("actionPerformed", AnActionEvent::class.java)
 
-    override fun update(actionEvent: AnActionEvent?) {
-        val presentation = actionEvent?.presentation ?: return
+    override fun update(actionEvent: AnActionEvent) {
+        val presentation = actionEvent.presentation
 
         // Hide for the Scala plugin not installed
         presentation.isVisible = isEnabled

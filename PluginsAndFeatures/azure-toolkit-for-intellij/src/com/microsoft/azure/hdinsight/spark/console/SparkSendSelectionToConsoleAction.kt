@@ -33,8 +33,8 @@ import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import java.nio.charset.StandardCharsets.UTF_8
 
 class SparkSendSelectionToConsoleAction : AzureAnAction(), ILogger {
-    override fun update(actionEvent: AnActionEvent?) {
-        val presentation = actionEvent?.presentation ?: return
+    override fun update(actionEvent: AnActionEvent) {
+        val presentation = actionEvent.presentation
 
         fun setEnabled(v: Boolean) {
             presentation.isEnabled = v

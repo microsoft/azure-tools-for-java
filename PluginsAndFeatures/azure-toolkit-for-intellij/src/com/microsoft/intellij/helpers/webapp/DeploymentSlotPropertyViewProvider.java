@@ -20,20 +20,29 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.console
+package com.microsoft.intellij.helpers.webapp;
 
-import com.intellij.execution.configuration.AbstractRunConfiguration
-import com.intellij.execution.configurations.RunProfile
-import com.microsoft.azure.hdinsight.common.logger.ILogger
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
+import org.jetbrains.annotations.NotNull;
 
-class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction(), ILogger {
-    override val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
-        get() = SparkScalaLivyConsoleConfigurationType().confFactory()
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.intellij.helpers.UIHelperImpl;
 
-    override fun checkSettingsBeforeRun(runProfile: RunProfile?) {
-        (runProfile as? AbstractRunConfiguration)?.checkSettingsBeforeRun()
+public class DeploymentSlotPropertyViewProvider extends WebAppBasePropertyViewProvider {
+    public static final String TYPE ="DEPLOYMENT_SLOT_PROPERTY";
+
+    @NotNull
+    @Override
+    public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
+        final String sid = virtualFile.getUserData(UIHelperImpl.SUBSCRIPTION_ID);
+        final String id = virtualFile.getUserData(UIHelperImpl.RESOURCE_ID);
+        final String name = virtualFile.getName();
+        return DeploymentSlotPropertyView.create(project, sid, id, name);
     }
 
-    override fun getNewSettingName(): String = "Spark Livy Interactive Session Console(Scala)"
+    @Override
+    protected String getType() {
+        return TYPE;
+    }
 }
