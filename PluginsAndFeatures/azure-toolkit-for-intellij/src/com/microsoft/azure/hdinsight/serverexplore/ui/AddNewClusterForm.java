@@ -88,7 +88,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         init();
         this.hdInsightModule = hdInsightModule;
 
-        this.setTitle("Link A New HDInsight Cluster");
+        this.setTitle("Link A Cluster");
 
         errorMessageField.setBackground(this.wholePanel.getBackground());
         errorMessageField.setBorder(BorderFactory.createEmptyBorder());
