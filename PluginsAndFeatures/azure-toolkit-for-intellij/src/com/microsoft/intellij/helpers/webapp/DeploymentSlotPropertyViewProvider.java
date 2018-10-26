@@ -36,9 +36,9 @@ public class DeploymentSlotPropertyViewProvider extends WebAppBasePropertyViewPr
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         final String sid = virtualFile.getUserData(UIHelperImpl.SUBSCRIPTION_ID);
-        final String id = virtualFile.getUserData(UIHelperImpl.RESOURCE_ID);
+        final String webAppId = virtualFile.getUserData(UIHelperImpl.WEBAPP_ID);
         final String name = virtualFile.getName();
-        return DeploymentSlotPropertyView.create(project, sid, id, name);
+        return DeploymentSlotPropertyView.create(project, sid, webAppId, name);
     }
 
     @Override
