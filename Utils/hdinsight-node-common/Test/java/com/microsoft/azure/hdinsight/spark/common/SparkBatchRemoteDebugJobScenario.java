@@ -192,8 +192,9 @@ public class SparkBatchRemoteDebugJobScenario {
             String connectUrl,
             int batchId,
             int expectedPort) throws Throwable {
-        when(debugJobMock.getConnectUri()).thenReturn(new URI(httpServerMock.completeUrl(connectUrl)));
-        doReturn(debugJobMock.getConnectUri().resolve("/yarnui/ws/v1/cluster/apps/")).when(debugJobMock).getYarnNMConnectUri();
+        URI mockConnUri = new URI(httpServerMock.completeUrl(connectUrl));
+        when(debugJobMock.getConnectUri()).thenReturn(mockConnUri);
+        doReturn(mockConnUri.resolve("/yarnui/ws/v1/cluster/apps/")).when(debugJobMock).getYarnNMConnectUri();
         when(debugJobMock.getBatchId()).thenReturn(batchId);
 
         try {
@@ -210,8 +211,9 @@ public class SparkBatchRemoteDebugJobScenario {
             String connectUrl,
             int batchId,
             String expectedHost) throws Throwable {
-        when(debugJobMock.getConnectUri()).thenReturn(new URI(httpServerMock.completeUrl(connectUrl)));
-        doReturn(debugJobMock.getConnectUri().resolve("/yarnui/ws/v1/cluster/apps/")).when(debugJobMock).getYarnNMConnectUri();
+        URI mockConnUri = new URI(httpServerMock.completeUrl(connectUrl));
+        when(debugJobMock.getConnectUri()).thenReturn(mockConnUri);
+        doReturn(mockConnUri.resolve("/yarnui/ws/v1/cluster/apps/")).when(debugJobMock).getYarnNMConnectUri();
         when(debugJobMock.getBatchId()).thenReturn(batchId);
 
         try {
@@ -229,8 +231,9 @@ public class SparkBatchRemoteDebugJobScenario {
 
     @Then("^getting current Yarn App attempt should be '(.+)'$")
     public void checkGetCurrentYarnAppAttemptResult(String appAttemptIdExpect) {
-        when(debugJobMock.getConnectUri()).thenReturn(URI.create(httpServerMock.completeUrl("/")));
-        doReturn(debugJobMock.getConnectUri().resolve("/yarnui/ws/v1/cluster/apps/")).when(debugJobMock).getYarnNMConnectUri();
+        URI mockConnUri = URI.create(httpServerMock.completeUrl("/"));
+        when(debugJobMock.getConnectUri()).thenReturn(mockConnUri);
+        doReturn(mockConnUri.resolve("/yarnui/ws/v1/cluster/apps/")).when(debugJobMock).getYarnNMConnectUri();
 
         AppAttempt appAttempt = debugJobMock
                 .getSparkJobYarnCurrentAppAttempt()
