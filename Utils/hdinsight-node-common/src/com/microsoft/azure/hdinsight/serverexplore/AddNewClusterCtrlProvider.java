@@ -90,11 +90,8 @@ public class AddNewClusterCtrlProvider {
      * @return whether livy endpoint exists or not
      */
     public boolean doesClusterNameExistInAllClusters(@NotNull String clusterName) {
-        if (ClusterManagerEx.getInstance().getCachedClusters().stream().anyMatch(clusterDetail ->
-                clusterDetail.getName().equals(clusterName))) {
-            return true;
-        }
-        return false;
+        return ClusterManagerEx.getInstance().getCachedClusters().stream().anyMatch(clusterDetail ->
+                clusterDetail.getName().equals(clusterName));
     }
 
     /**
