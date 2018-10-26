@@ -23,9 +23,10 @@
 package com.microsoft.azure.hdinsight.spark.run.action
 
 import com.intellij.execution.*
-import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.execution.configurations.RunnerSettings
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
+import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
@@ -47,10 +48,10 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
             setting.configuration is RemoteDebugRunConfiguration &&
                     RunnerRegistry.getInstance().getRunner(runExecutor.id, setting.configuration) != null
 
-    override fun update(actionEvent: AnActionEvent?) {
+    override fun update(actionEvent: AnActionEvent) {
         super.update(actionEvent)
 
-        val project = actionEvent?.project ?: return
+        val project = actionEvent.project ?: return
         val runManagerEx = RunManagerEx.getInstanceEx(project)
         val selectedConfigSettings = runManagerEx.selectedConfiguration ?: return
         val presentation = actionEvent.presentation
@@ -83,7 +84,7 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
 
         try {
             val environment = ExecutionEnvironmentBuilder.create(runExecutor, configuration).build()
-            checkSettingsBeforeRun(environment.runProfile)
+            checkRunnerSettings(environment.runProfile, runner)
 
             runner.execute(environment)
         } catch (e: ExecutionException) {
@@ -91,8 +92,8 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
         }
     }
 
-    open fun checkSettingsBeforeRun(runProfile: RunProfile?) {
-        (runProfile as? RunConfigurationBase)?.checkSettingsBeforeRun()
+    open fun checkRunnerSettings(runProfile: RunProfile?, runner: ProgramRunner<RunnerSettings>) {
+        (runProfile as? RemoteDebugRunConfiguration)?.checkRunnerSettings(runner, null, null)
     }
 
 }

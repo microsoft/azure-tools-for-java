@@ -23,6 +23,7 @@
 package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.Executor
+import com.intellij.execution.configuration.AbstractRunConfiguration
 import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.module.Module
@@ -30,11 +31,9 @@ import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
-import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession
-import com.microsoft.azure.hdinsight.spark.jobs.JobUtils
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
 import java.net.URI
 
@@ -42,7 +41,7 @@ class SparkScalaLivyConsoleRunConfiguration(project: Project,
                                             configurationFactory: SparkScalaLivyConsoleRunConfigurationFactory,
                                             batchRunConfiguration: RemoteDebugRunConfiguration?,
                                             name: String)
-    : ModuleBasedConfiguration<RunConfigurationModule>(
+    : AbstractRunConfiguration (
         name, batchRunConfiguration?.configurationModule ?: RunConfigurationModule(project), configurationFactory)
 {
 

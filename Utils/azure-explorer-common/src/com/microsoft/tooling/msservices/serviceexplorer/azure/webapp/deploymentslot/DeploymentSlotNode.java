@@ -25,16 +25,21 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deployment
 import java.io.IOException;
 import java.util.List;
 
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 
 public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlotNodeView {
     private static final String ACTION_SWAP_WITH_PRODUCTION = "Swap with production";
     private static final String LABEL = "Slot";
+    private static final String DELETE_SLOT_PROMPT_MESSAGE = "This operation will delete the Deployment Slot: %s.\n"
+        + "Are you sure you want to continue?";
+    private static final String DELETE_SLOT_PROGRESS_MESSAGE = "Deleting Deployment Slot";
     private final DeploymentSlotNodePresenter presenter;
     protected final String webAppId;
     protected final String slotName;
@@ -48,6 +53,10 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         this.presenter = new DeploymentSlotNodePresenter();
         this.presenter.onAttachView(this);
         loadActions();
+    }
+
+    public String getWebAppId() {
+        return this.webAppId;
     }
 
     @Override
@@ -70,6 +79,13 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
             @Override
             protected void actionPerformed(NodeActionEvent e) {
                 DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
+            }
+        });
+        addAction(ACTION_DELETE, new DeleteDeploymentSlotAction());
+        addAction(ACTION_SHOW_PROPERTY, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(DeploymentSlotNode.this);
             }
         });
 
@@ -126,6 +142,22 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         } catch (Exception e) {
             e.printStackTrace();
             // TODO: Error handling
+        }
+    }
+
+    private class DeleteDeploymentSlotAction extends AzureNodeActionPromptListener {
+        DeleteDeploymentSlotAction() {
+            super(DeploymentSlotNode.this, String.format(DELETE_SLOT_PROMPT_MESSAGE, getName()),
+                DELETE_SLOT_PROGRESS_MESSAGE);
+        }
+
+        @Override
+        protected void azureNodeAction(NodeActionEvent e) {
+            getParent().removeNode(getSubscriptionId(), getName(), DeploymentSlotNode.this);
+        }
+
+        @Override
+        protected void onSubscriptionsChanged(NodeActionEvent e) {
         }
     }
 }

@@ -20,20 +20,32 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.console
+package com.microsoft.intellij.helpers.webapp;
 
-import com.intellij.execution.configuration.AbstractRunConfiguration
-import com.intellij.execution.configurations.RunProfile
-import com.microsoft.azure.hdinsight.common.logger.ILogger
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
+import org.jetbrains.annotations.NotNull;
 
-class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction(), ILogger {
-    override val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
-        get() = SparkScalaLivyConsoleConfigurationType().confFactory()
+import com.intellij.openapi.fileEditor.FileEditorPolicy;
+import com.intellij.openapi.fileEditor.FileEditorProvider;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 
-    override fun checkSettingsBeforeRun(runProfile: RunProfile?) {
-        (runProfile as? AbstractRunConfiguration)?.checkSettingsBeforeRun()
+public abstract class WebAppBasePropertyViewProvider implements FileEditorProvider {
+    @Override
+    public boolean accept(@NotNull Project project, @NotNull VirtualFile virtualFile) {
+        return virtualFile.getFileType().getName().equals(getType());
     }
 
-    override fun getNewSettingName(): String = "Spark Livy Interactive Session Console(Scala)"
+    @NotNull
+    @Override
+    public String getEditorTypeId() {
+        return getType();
+    }
+
+    @NotNull
+    @Override
+    public FileEditorPolicy getPolicy() {
+        return FileEditorPolicy.HIDE_DEFAULT_EDITOR;
+    }
+
+    protected abstract String getType();
 }

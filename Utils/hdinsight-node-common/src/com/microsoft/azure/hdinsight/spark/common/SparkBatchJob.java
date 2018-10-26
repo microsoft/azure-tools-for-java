@@ -80,9 +80,9 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     }
 
     public enum DriverLogConversionMode {
-        ORIGINAL,
         WITHOUT_PORT,
-        WITH_PORT;
+        WITH_PORT,
+        ORIGINAL;
 
         @Nullable
         public static DriverLogConversionMode next(@Nullable DriverLogConversionMode current) {
