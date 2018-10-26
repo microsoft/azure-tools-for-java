@@ -253,9 +253,9 @@ public class AzureWebAppMvpModel {
         // TODO
     }
 
-    public void deleteWebApp(String sid, String appid) throws IOException {
-        AuthMethodManager.getInstance().getAzureClient(sid).webApps().deleteById(appid);
-        // TODO: update cache
+    public void deleteWebApp(String sid, String appId) throws IOException {
+        AuthMethodManager.getInstance().getAzureClient(sid).webApps().deleteById(appId);
+        subscriptionIdToWebApps.remove(sid);
     }
 
     /**
