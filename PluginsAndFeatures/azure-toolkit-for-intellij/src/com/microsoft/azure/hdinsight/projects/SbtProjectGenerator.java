@@ -22,25 +22,28 @@
 
 package com.microsoft.azure.hdinsight.projects;
 
-import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMode;
-import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
+import com.intellij.ide.actions.ImportModuleAction;
+import com.intellij.ide.util.newProjectWizard.AddModuleWizard;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.externalSystem.ExternalSystemManager;
+import com.intellij.openapi.externalSystem.model.ProjectSystemId;
+import com.intellij.openapi.externalSystem.service.project.wizard.AbstractExternalProjectImportProvider;
+import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.util.containers.ContainerUtilRt;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.projectImport.ProjectImportProvider;
 import com.microsoft.azure.hdinsight.projects.util.ProjectSampleUtil;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.sbt.project.SbtProjectSystem;
-import org.jetbrains.sbt.project.settings.SbtProjectSettings;
-import org.jetbrains.sbt.settings.SbtSystemSettings;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 public class SbtProjectGenerator {
@@ -173,17 +176,38 @@ public class SbtProjectGenerator {
 
     private void importSbtProject(String root) {
         Project project = this.module.getProject();
+        final ProjectSystemId externalSystemId = new ProjectSystemId("SBT");
+        final ExternalSystemManager<?,?,?,?,?> manager = ExternalSystemApiUtil.getManager(externalSystemId);
+        if (manager == null) {
+            return;
+        }
 
-        ExternalSystemUtil.refreshProject(project,
-                SbtProjectSystem.Id(), root,
-                false, ProgressExecutionMode.IN_BACKGROUND_ASYNC);
+        ProjectImportProvider[] projectImportProviders = new ProjectImportProvider[1];
+        for (ProjectImportProvider provider : ProjectImportProvider.PROJECT_IMPORT_PROVIDER.getExtensions()) {
+            if (provider instanceof AbstractExternalProjectImportProvider
+                    && externalSystemId.equals(((AbstractExternalProjectImportProvider)provider).getExternalSystemId()))
+            {
+                projectImportProviders[0] = provider;
+                break;
+            }
+        }
 
-        SbtProjectSettings sbtProjectSettings = new SbtProjectSettings();
-        sbtProjectSettings.setExternalProjectPath(root);
+        if (projectImportProviders[0] == null) {
+            return;
+        }
 
-        SbtSystemSettings sbtSystemSettings = SbtSystemSettings.getInstance(project);
-        HashSet<SbtProjectSettings> projects = ContainerUtilRt.newHashSet(sbtSystemSettings.getLinkedProjectsSettings());
-        projects.add(sbtProjectSettings);
-        sbtSystemSettings.setLinkedProjectsSettings(projects);
+        final VirtualFile projectFile = VfsUtil.findFile(Paths.get(root, "build.sbt"), true);
+        if (projectFile != null) {
+            ApplicationManager.getApplication().invokeLater(() -> {
+                AddModuleWizard wizard = ImportModuleAction.createImportWizard(project,
+                        null,
+                        projectFile,
+                        projectImportProviders);
+
+                if (wizard != null && (wizard.getStepCount() <= 0 || wizard.showAndGet())) {
+                    ImportModuleAction.createFromWizard(project, wizard);
+                }
+            });
+        }
     }
 }

@@ -25,35 +25,18 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.ui.HideableTitledPanel
-import com.intellij.uiDesigner.core.GridConstraints
-import com.intellij.uiDesigner.core.GridLayoutManager
+import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
+import com.microsoft.intellij.forms.dsl.panel
 import org.apache.commons.lang3.StringUtils
 import rx.subjects.PublishSubject
 import javax.swing.*
 
 class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableControl<SparkSubmitJobUploadStorageModel> {
-    private fun baseConstraints() = GridConstraints().apply { anchor = GridConstraints.ANCHOR_WEST }
-    private val colTemplate = listOf(
-            // Column 0
-            baseConstraints().apply {
-                column = 0
-                indent = 1
-            },
-            //  Column 1
-            baseConstraints().apply {
-                column = 1
-                indent = 1
-                hSizePolicy = GridConstraints.SIZEPOLICY_WANT_GROW
-                fill = GridConstraints.FILL_HORIZONTAL
-            })
-
-    private fun buildConstraints(colTemplateOffset: Int): GridConstraints = colTemplate[colTemplateOffset].clone() as GridConstraints
-
     val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
     private val jobUploadStorageTitle = "Job Upload Storage"
     private val uploadPathLabel = JLabel("Upload Path")
@@ -64,22 +47,31 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
     val storagePanel = SparkSubmissionJobUploadStoragePanel()
     private val hideableJobUploadStoragePanel = HideableTitledPanel(jobUploadStorageTitle, true, storagePanel, false)
 
-    private val layoutPlan = listOf(
-            Place(uploadPathLabel, buildConstraints(0).apply { row = 0 }), Place(uploadPathField, buildConstraints(1).apply { row = 0 }),
-            Place(hideableJobUploadStoragePanel, baseConstraints().apply {
-                row = 1
-                colSpan = 2
-                hSizePolicy = GridConstraints.SIZEPOLICY_WANT_GROW
-                fill = GridConstraints.FILL_HORIZONTAL
-            })
-    )
+    init {
+        val formBuilder = panel {
+            columnTemplate {
+                col {
+                    anchor = ANCHOR_WEST
+                }
+                col {
+                    anchor = ANCHOR_WEST
+                    hSizePolicy = SIZEPOLICY_WANT_GROW
+                    fill = FILL_HORIZONTAL
+                }
+                row {
+                    c(uploadPathLabel) { indent = 0 }; c(uploadPathField) {}
+                }
+                row {
+                    c(hideableJobUploadStoragePanel) { colSpan = 2; hSizePolicy = SIZEPOLICY_WANT_GROW; fill = FILL_HORIZONTAL }
+                }
+            }
+        }
+
+        layout = formBuilder.createGridLayoutManager()
+        formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
+    }
 
     val storageCheckSubject: PublishSubject<String> = PublishSubject.create()
-
-    init {
-        layout = GridLayoutManager(layoutPlan.last().gridConstraints.row + 1, colTemplate.size)
-        layoutPlan.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
-    }
 
     override fun removeNotify() {
         super.removeNotify()
@@ -96,8 +88,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
                 data.storageAccountType = SparkSubmitStorageType.BLOB
                 data.storageAccount = storagePanel.azureBlobCard.storageAccountField.text.trim()
                 data.storageKey = storagePanel.azureBlobCard.storageKeyField.text.trim()
-                data.containersModel = storagePanel.azureBlobCard.storageContainerComboBox.model as DefaultComboBoxModel
-                data.selectedContainer = storagePanel.azureBlobCard.storageContainerComboBox.selectedItem as? String
+                data.containersModel = storagePanel.azureBlobCard.storageContainerUI.comboBox.model as DefaultComboBoxModel<String>
+                data.selectedContainer = storagePanel.azureBlobCard.storageContainerUI.comboBox.selectedItem as? String
             }
             storagePanel.clusterDefaultStorageCard.title -> {
                 data.storageAccountType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
@@ -125,16 +117,16 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
                             data.storageKey
                         }
                 if (data.containersModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedContainer)) {
-                    storagePanel.azureBlobCard.storageContainerComboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
+                    storagePanel.azureBlobCard.storageContainerUI.comboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
                 } else {
-                    storagePanel.azureBlobCard.storageContainerComboBox.model = data.containersModel
+                    storagePanel.azureBlobCard.storageContainerUI.comboBox.model = data.containersModel as DefaultComboBoxModel<Any>
                 }
             }
         }
         ApplicationManager.getApplication().invokeLater(applyData, ModalityState.any())
     }
 
-    fun findStorageTypeComboBoxSelectedIndex(storageAccountType: SparkSubmitStorageType):Int {
+    private fun findStorageTypeComboBoxSelectedIndex(storageAccountType: SparkSubmitStorageType):Int {
         listOf(0 until storagePanel.storageTypeComboBox.model.size).flatten().forEach {
             if ((storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.azureBlobCard.title && storageAccountType == SparkSubmitStorageType.BLOB) ||
                     (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.sparkInteractiveSessionCard.title && storageAccountType == SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION) ||

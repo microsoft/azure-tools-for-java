@@ -51,9 +51,9 @@ public class SparkServerlessClusterUpdateCtrlProvider implements ILogger {
                                     clusterUpdated.getWorkerPerInstanceCoreCount(),
                                     clusterUpdated.getMasterPerInstanceMemoryInGB(),
                                     clusterUpdated.getWorkerPerInstanceMemoryInGB(),
-                                    clusterUpdated.getWorkerTargetInstanceCount()));
+                                    clusterUpdated.getWorkerTargetInstanceCount()))
+                            .setClusterGuid(clusterUpdated.getGuid());
                 })
-                .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData);
     }
 
@@ -73,9 +73,10 @@ public class SparkServerlessClusterUpdateCtrlProvider implements ILogger {
                                         log().info("x-ms-request-id: " + requestId);
                                     }
                                     log().info("Cluster guid: " + cluster.getGuid());
-                                    return toUpdate.setErrorMessage(err.getMessage());
+                                    return toUpdate
+                                            .setClusterGuid(cluster.getGuid())
+                                            .setErrorMessage(err.getMessage());
                                 }))
-                .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData)
                 .filter(data -> StringUtils.isEmpty(data.getErrorMessage()));
     }

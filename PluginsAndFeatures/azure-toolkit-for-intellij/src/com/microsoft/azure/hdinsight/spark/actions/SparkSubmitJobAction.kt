@@ -47,12 +47,8 @@ class SparkSubmitJobAction : AzureAnAction() {
         submit(runConfigurationSetting, clusterName, mainClassName)
     }
 
-    override fun update(event: AnActionEvent?) {
+    override fun update(event: AnActionEvent) {
         super.update(event)
-
-        if (event == null) {
-            return
-        }
 
         event.presentation.isEnabledAndVisible = getRunConfigurationFromDataContext(event.dataContext) != null
     }

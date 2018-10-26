@@ -31,6 +31,9 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
+import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
@@ -64,14 +67,29 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
         arrayOf(view.storagePanel.azureBlobCard.storageAccountField, view.storagePanel.azureBlobCard.storageKeyField).forEach {
             it.addFocusListener(object : FocusAdapter() {
                 override fun focusLost(e: FocusEvent?) {
-                    refreshContainers().subscribe(
-                            { },
-                            { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
-                }
-            })
+                    if (view.storagePanel.azureBlobCard.storageContainerUI.button.isEnabled) {
+                        view.storagePanel.azureBlobCard.storageContainerUI.button.isEnabled = false
+                        refreshContainers()
+                            .doOnEach { view.storagePanel.azureBlobCard.storageContainerUI.button.isEnabled = true }
+                            .subscribe(
+                                { },
+                                { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
+                    }
+                }})
+        }
+        // refresh containers after refresh button is clicked
+        view.storagePanel.azureBlobCard.storageContainerUI.button.addActionListener {
+            if (view.storagePanel.azureBlobCard.storageContainerUI.button.isEnabled) {
+                view.storagePanel.azureBlobCard.storageContainerUI.button.isEnabled = false
+                refreshContainers()
+                    .doOnEach { view.storagePanel.azureBlobCard.storageContainerUI.button.isEnabled = true }
+                    .subscribe(
+                        { },
+                        { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
+            }
         }
         // after container is selected, update upload path
-        view.storagePanel.azureBlobCard.storageContainerComboBox.addItemListener { itemEvent ->
+        view.storagePanel.azureBlobCard.storageContainerUI.comboBox.addItemListener { itemEvent ->
             if (itemEvent?.stateChange == ItemEvent.SELECTED) {
                 updateStorageAfterContainerSelected().subscribe(
                         { },
@@ -109,71 +127,82 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
 
     private fun validateStorageInfo(selectedItem: String): Observable<SparkSubmitJobUploadStorageModel> {
         return Observable.just(SparkSubmitJobUploadStorageModel())
-                .doOnNext(view::getData)
-                .observeOn(Schedulers.io())
-                .map { toUpdate ->
-                    when (selectedItem) {
-                        view.storagePanel.sparkInteractiveSessionCard.title -> toUpdate.apply {
-                            if (getClusterDetail() != null) {
-                                errorMsg = null
-                                storageAccountType = SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
-                                uploadPath = "/SparkSubmission/"
-                            } else {
-                                errorMsg = "Cluster not exist"
-                                uploadPath = "-"
-                            }
+            .doOnNext(view::getData)
+            // set error message to prevent user from applying the changes when validation is not completed
+            .map { it.apply { errorMsg = "validating storage info is not completed" } }
+            .doOnNext(view::setData)
+            .observeOn(Schedulers.io())
+            .map { toUpdate ->
+                when (selectedItem) {
+                    view.storagePanel.sparkInteractiveSessionCard.title -> toUpdate.apply {
+                        if (getClusterDetail() != null) {
+                            errorMsg = null
+                            storageAccountType = SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
+                            uploadPath = "/SparkSubmission/"
+                        } else {
+                            errorMsg = "Cluster not exist"
+                            uploadPath = "-"
                         }
-                        view.storagePanel.clusterDefaultStorageCard.title -> toUpdate.apply {
-                            val clusterDetail = getClusterDetail()
-                            if (clusterDetail == null) {
-                                errorMsg = "Cluster not exist"
-                                uploadPath = "-"
-                            } else {
-                                try {
-                                    clusterDetail.getConfigurationInfo()
-                                    val defaultStorageAccount = clusterDetail.storageAccount
-                                    val defaultContainerOrRootPath = defaultStorageAccount.defaultContainerOrRootPath
-                                    if (defaultStorageAccount != null && defaultContainerOrRootPath != null) {
-                                        errorMsg = null
-                                        uploadPath = if (clusterDetail is AzureSparkServerlessCluster) getAzureDataLakeStoragePath(defaultContainerOrRootPath) else getAzureBlobStoragePath(defaultStorageAccount.name, defaultContainerOrRootPath)
-                                        storageAccountType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
-                                    } else {
-                                        errorMsg = "Cluster have no storage account or storage container"
-                                        uploadPath = "-"
-                                    }
-                                } catch (ex: Exception) {
-                                    errorMsg = "Error getting cluster storage configuration"
+                    }
+                    view.storagePanel.clusterDefaultStorageCard.title -> toUpdate.apply {
+                        val clusterDetail = getClusterDetail()
+                        if (clusterDetail == null) {
+                            errorMsg = "Cluster not exist"
+                            uploadPath = "-"
+                        } else {
+                            try {
+                                clusterDetail.getConfigurationInfo()
+                                val defaultStorageAccount = clusterDetail.storageAccount
+                                if (defaultStorageAccount == null) {
+                                    errorMsg = "Cluster have no storage account"
                                     uploadPath = "-"
-                                    log().warn(errorMsg + ". " + ExceptionUtils.getStackTrace(ex))
+                                } else {
+                                    val path = getUploadPath(defaultStorageAccount)
+                                    if (path == null) {
+                                        errorMsg = "Error getting upload path from storage account"
+                                        uploadPath = "-"
+                                    } else {
+                                        errorMsg = null
+                                        uploadPath = path
+                                        storageAccountType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
+                                    }
                                 }
-                            }
-                        }
-                        view.storagePanel.azureBlobCard.title -> toUpdate.apply {
-                            if (containersModel.size == 0 || containersModel.selectedItem == null) {
+                            } catch (ex: Exception) {
+                                errorMsg = "Error getting cluster storage configuration"
                                 uploadPath = "-"
-                                errorMsg = "Azure Blob storage form is not completed"
-                            } else {
-                                uploadPath = getAzureBlobStoragePath(storageAccount, containersModel.selectedItem as String)
-                                errorMsg = null
+                                log().warn(errorMsg + ". " + ExceptionUtils.getStackTrace(ex))
                             }
-                            storageAccountType = SparkSubmitStorageType.BLOB
                         }
-                        else -> toUpdate
                     }
-                }
-                .doOnNext { data ->
-                    if (data.errorMsg != null) {
-                        log().info("After selecting storage type, the storage info validation error is got: " + data.errorMsg)
+                    view.storagePanel.azureBlobCard.title -> toUpdate.apply {
+                        if (containersModel.size == 0 || containersModel.selectedItem == null) {
+                            uploadPath = "-"
+                            errorMsg = "Azure Blob storage form is not completed"
+                        } else {
+                            uploadPath = getAzureBlobStoragePath(ClusterManagerEx.getInstance().getBlobFullName(storageAccount), containersModel.selectedItem as String)
+                            errorMsg = null
+                        }
+                        storageAccountType = SparkSubmitStorageType.BLOB
                     }
-                    view.setData(data)
+                    else -> toUpdate
                 }
+            }
+            .doOnNext { data ->
+                if (data.errorMsg != null) {
+                    log().info("After selecting storage type, the storage info validation error is got: " + data.errorMsg)
+                }
+                view.setData(data)
+            }
     }
 
-    fun refreshContainers(): Observable<SparkSubmitJobUploadStorageModel> {
+    private fun refreshContainers(): Observable<SparkSubmitJobUploadStorageModel> {
         return Observable.just(SparkSubmitJobUploadStorageModel())
-                .doOnNext(view::getData)
-                .observeOn(Schedulers.io())
-                .map { toUpdate ->
+            .doOnNext(view::getData)
+            // set error message to prevent user from applying the change when refreshing is not completed
+            .map { it.apply { errorMsg = "refreshing storage containers is not completed" } }
+            .doOnNext(view::setData)
+            .observeOn(Schedulers.io())
+            .map { toUpdate ->
                     toUpdate.apply {
                         if (StringUtils.isEmpty(toUpdate.storageAccount) || StringUtils.isEmpty(toUpdate.storageKey)) {
                             errorMsg = "Storage account and key can't be empty"
@@ -190,63 +219,67 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                                     containersModel = DefaultComboBoxModel(containers)
                                     containersModel.selectedItem = containersModel.getElementAt(0)
                                     selectedContainer = containersModel.getElementAt(0)
-                                    uploadPath = getAzureBlobStoragePath(storageAccount, selectedContainer)
+                                    uploadPath = getAzureBlobStoragePath(ClusterManagerEx.getInstance().getBlobFullName(storageAccount), selectedContainer)
                                     val credentialAccount = getCredentialAzureBlobAccount()
                                     credentialAccount?.let {
                                         view.secureStore?.savePassword(credentialAccount, storageAccount, storageKey) }
-                                    errorMsg = null
-                                } else {
-                                    errorMsg = "No container found in this storage account"
-                                }
-                            } catch (ex: Exception) {
-                                log().info("Refresh Azure Blob contains error. " + ExceptionUtils.getStackTrace(ex))
-                                errorMsg = "Can't get storage containers, check if the key matches"
+                                errorMsg = null
+                            } else {
+                                errorMsg = "No container found in this storage account"
                             }
+                        } catch (ex: Exception) {
+                            log().info("Refresh Azure Blob contains error. " + ExceptionUtils.getStackTrace(ex))
+                            errorMsg = "Can't get storage containers, check if the key matches"
                         }
                     }
                 }
-                .doOnNext { data ->
-                    if (data.errorMsg != null) {
-                        log().info("Refresh Azure Blob containers error: " + data.errorMsg)
-                    }
-                    view.setData(data)
+            }
+            .doOnNext { data ->
+                if (data.errorMsg != null) {
+                    log().info("Refresh Azure Blob containers error: " + data.errorMsg)
                 }
+                view.setData(data)
+            }
     }
 
     private fun updateStorageAfterContainerSelected(): Observable<SparkSubmitJobUploadStorageModel> {
         return Observable.just(SparkSubmitJobUploadStorageModel())
-                .doOnNext(view::getData)
-                .observeOn(Schedulers.io())
-                .map { toUpdate ->
-                    if (toUpdate.containersModel.size == 0) {
-                        toUpdate.apply { errorMsg = "Storage account has no containers" }
-                    } else {
-                        toUpdate.apply {
-                            val selectedContainer = toUpdate.containersModel.selectedItem as String
-                            uploadPath = getAzureBlobStoragePath(storageAccount, selectedContainer)
-                            errorMsg = null
-                        }
+            .doOnNext(view::getData)
+            // set error message to prevent user from applying the change when updating is not completed
+            .map { it.apply { "updating upload path is not completed" } }
+            .doOnNext(view::setData)
+            .observeOn(Schedulers.io())
+            .map { toUpdate ->
+                if (toUpdate.containersModel.size == 0) {
+                    toUpdate.apply { errorMsg = "Storage account has no containers" }
+                } else {
+                    toUpdate.apply {
+                        val selectedContainer = toUpdate.containersModel.selectedItem as String
+                        uploadPath = getAzureBlobStoragePath(ClusterManagerEx.getInstance().getBlobFullName(storageAccount), selectedContainer)
+                        errorMsg = null
                     }
                 }
-                .doOnNext { data ->
-                    if (data.errorMsg != null) {
-                        log().info("Update storage info after container selected error: " + data.errorMsg)
-                    }
-                    view.setData(data)
+            }
+            .doOnNext { data ->
+                if (data.errorMsg != null) {
+                    log().info("Update storage info after container selected error: " + data.errorMsg)
                 }
+                view.setData(data)
+            }
     }
 
-    private fun getAzureBlobStoragePath(storageAccountName: String?, container: String?): String? {
-        return if (StringUtils.isEmpty(storageAccountName) || StringUtils.isEmpty(container)) null else
-            "wasbs://$container@${ClusterManagerEx.getInstance().getBlobFullName(storageAccountName)}/SparkSubmission/"
+    private fun getAzureBlobStoragePath(fullStorageBlobName: String?, container: String?): String? {
+        return if (StringUtils.isBlank(fullStorageBlobName) || StringUtils.isBlank(container)) null else
+            "wasbs://$container@$fullStorageBlobName/SparkSubmission/"
     }
 
-    private fun getRootPathEndsWithSlash(rootPath: String): String {
-        return if (rootPath.endsWith("/")) rootPath else "$rootPath/"
-    }
-
-    private fun getAzureDataLakeStoragePath(rootPath: String?): String? {
-        return if (StringUtils.isEmpty(rootPath)) null else
-            "${getRootPathEndsWithSlash(rootPath.orEmpty())}SparkSubmission/"
-    }
+    private fun getUploadPath(account: IHDIStorageAccount): String? =
+            when (account) {
+                is HDStorageAccount -> getAzureBlobStoragePath(account.fullStorageBlobName, account.defaultContainer)
+                is ADLSStorageAccount ->
+                    if (StringUtils.isBlank(account.name) || StringUtils.isBlank(account.defaultContainerOrRootPath)) null
+                    else "adl://${account.name}.azuredatalakestore.net${account.defaultContainerOrRootPath}SparkSubmission/"
+                is AzureSparkServerlessCluster.StorageAccount -> account.defaultContainerOrRootPath?.let { "${it}SparkSubmission/" }
+                else -> null
+            }
 }
