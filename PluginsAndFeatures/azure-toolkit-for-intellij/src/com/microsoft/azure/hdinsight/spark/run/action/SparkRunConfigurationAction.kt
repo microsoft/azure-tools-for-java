@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.spark.run.action
 import com.intellij.execution.*
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunnerSettings
+import com.intellij.execution.configurations.RuntimeConfigurationException
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -84,10 +85,17 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
 
         try {
             val environment = ExecutionEnvironmentBuilder.create(runExecutor, configuration).build()
-            checkRunnerSettings(environment.runProfile, runner)
 
-            runner.execute(environment)
-        } catch (e: ExecutionException) {
+            try {
+                checkRunnerSettings(environment.runProfile, runner)
+                setting.isEditBeforeRun = false
+            } catch (configError: RuntimeConfigurationException) {
+                log().warn("Found configuration error $configError, pop up run configuration dialog")
+                setting.isEditBeforeRun = true
+            }
+
+            ProgramRunnerUtil.executeConfiguration(setting, runExecutor)
+        } catch (e: Exception) {
             Messages.showErrorDialog(project, e.message, ExecutionBundle.message("error.common.title"))
         }
     }
