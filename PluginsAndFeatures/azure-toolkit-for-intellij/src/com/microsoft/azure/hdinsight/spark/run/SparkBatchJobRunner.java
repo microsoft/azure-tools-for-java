@@ -37,12 +37,19 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction;
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
+import com.microsoft.azuretools.adauth.AuthException;
+import com.microsoft.azuretools.adauth.PromptBehavior;
+import com.microsoft.azuretools.authmanage.AdAuthManager;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
@@ -50,6 +57,7 @@ import org.jetbrains.annotations.Nullable;
 import rx.Observer;
 import rx.subjects.PublishSubject;
 
+import java.io.IOException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
 public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSubmissionRunner, ILogger {
@@ -67,8 +75,10 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
     @NotNull
     public ISparkBatchJob buildSparkBatchJob(@NotNull SparkSubmitModel submitModel,
                                              @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) throws ExecutionException {
-        // get storage account from submitModel
+        // get storage account and access token from submitModel
         IHDIStorageAccount storageAccount = null;
+        String accessToken = null;
+        String adlRootPath = null;
         IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(
                 submitModel.getSubmissionParameter().getClusterName()).orElse(null);
 
@@ -92,9 +102,24 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 break;
             case SPARK_INTERACTIVE_SESSION:
                 break;
+            case ADLS:
+                adlRootPath = submitModel.getJobUploadStorageModel().getAdlsRootPath();
+                adlRootPath = adlRootPath.endsWith("/") ? adlRootPath : adlRootPath + "/";
+                // e.g. for adl://john.azuredatalakestore.net/root/path, adlsAccountName is john
+                String adlsAccountName =  adlRootPath.split("\\.")[0].substring(6);
+                SubscriptionDetail subscriptionDetail =
+                        AzureSparkClusterManager.getInstance().getSubscriptionDetailByStoreAccountName(adlsAccountName)
+                                .toBlocking().singleOrDefault(null);
+                // get Access Token
+                try {
+                    accessToken = AzureSparkClusterManager.getInstance().getAccessToken(subscriptionDetail.getTenantId());
+                } catch (IOException ex) {
+                    log().warn("Error get access token. " + ExceptionUtils.getStackTrace(ex));
+                }
+                break;
         }
 
-        return new SparkBatchJob(submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount);
+        return new SparkBatchJob(submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount, accessToken, adlRootPath);
     }
 
     @Nullable

@@ -22,28 +22,21 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
-import com.intellij.openapi.ui.ComboBox
-import com.intellij.uiDesigner.core.GridConstraints.*
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
+import com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST
+import com.microsoft.azure.sparkserverless.common.JXHyperLinkWithUri
+import com.microsoft.azuretools.authmanage.AuthMethodManager
+import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.intellij.forms.dsl.panel
-import java.awt.CardLayout
-import javax.swing.*
+import javax.swing.JLabel
 
-class SparkSubmissionJobUploadStoragePanel: JPanel() {
-    private val notFinishCheckMessage = "job upload storage validation check is not finished"
-    private val storageTypeLabel = JLabel("Storage Type")
-    val azureBlobCard = SparkSubmissionJobUploadStorageAzureBlobCard()
-    val sparkInteractiveSessionCard = SparkSubmissionJobUploadStorageSparkInteractiveSessionCard()
-    val clusterDefaultStorageCard = SparkSubmissionJobUploadStorageClusterDefaultStorageCard()
-    val adlsCard = SparkSubmissionJobUploadStorageAdlsCard()
-    val storageTypeComboBox = ComboBox(arrayOf(azureBlobCard.title, sparkInteractiveSessionCard.title, clusterDefaultStorageCard.title, adlsCard.title))
-    val storageCardsPanel = JPanel(CardLayout()).apply {
-        add(azureBlobCard, azureBlobCard.title)
-        add(sparkInteractiveSessionCard, sparkInteractiveSessionCard.title)
-        add(clusterDefaultStorageCard, clusterDefaultStorageCard.title)
-        add(adlsCard, adlsCard.title)
+class SparkSubmissionJobUploadStorageAdlsSignOutCard: SparkSubmissionJobUploadStorageBasicCard() {
+    override val title: String = "Sign Out"
+    val azureAccountLabel = JLabel().apply {
+        text = AuthMethodManager.getInstance()?.authMethodDetails?.accountEmail ?: AuthMethodManager.getInstance()?.authMethodDetails?.credFilePath
     }
-    var errorMessage: String? = notFinishCheckMessage
+    val signOutLink = JXHyperLinkWithUri().apply {
+        text = "Sign Out"
+    }
 
     init {
         val formBuilder = panel {
@@ -53,18 +46,12 @@ class SparkSubmissionJobUploadStoragePanel: JPanel() {
                 }
                 col {
                     anchor = ANCHOR_WEST
-                    hSizePolicy = SIZEPOLICY_WANT_GROW
-                    fill = FILL_HORIZONTAL
+                }
+                row {
+                    c(azureAccountLabel) {}; c(signOutLink) {}
                 }
             }
-            row {
-                c(storageTypeLabel) { indent = 2 }; c(storageTypeComboBox) { indent = 3 }
-            }
-            row {
-                c(storageCardsPanel) { indent = 2; colSpan = 2; hSizePolicy = SIZEPOLICY_WANT_GROW; fill = FILL_HORIZONTAL}
-            }
         }
-
         layout = formBuilder.createGridLayoutManager()
         formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }

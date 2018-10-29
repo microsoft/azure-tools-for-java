@@ -43,6 +43,7 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.http.NameValuePair;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -99,6 +100,11 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
     //
     // Getters / setters
     //
+
+    @NotNull
+    public List<NameValuePair> getAccountFilter() {
+        return Collections.singletonList(ODataParam.filter(ACCOUNT_FILTER));
+    }
 
     @NotNull
     public HashMap<String, AzureHttpObservable> getHttpMap() {
@@ -207,7 +213,7 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
                         getHttp(subUriPair.getLeft())
                                 .withUuidUserAgent()
                                 .get(subUriPair.getRight().toString(),
-                                        Collections.singletonList(ODataParam.filter(ACCOUNT_FILTER)),
+                                        getAccountFilter(),
                                         null,
                                         // FIXME!!! Needs to support paging
                                         GetAccountsListResponse.class)))

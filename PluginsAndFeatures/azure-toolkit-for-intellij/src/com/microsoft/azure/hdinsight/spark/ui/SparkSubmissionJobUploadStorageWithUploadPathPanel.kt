@@ -34,6 +34,7 @@ import com.microsoft.azuretools.service.ServiceManager
 import com.microsoft.intellij.forms.dsl.panel
 import org.apache.commons.lang3.StringUtils
 import rx.subjects.PublishSubject
+import java.awt.CardLayout
 import javax.swing.*
 
 class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableControl<SparkSubmitJobUploadStorageModel> {
@@ -97,6 +98,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
             storagePanel.sparkInteractiveSessionCard.title -> {
                 data.storageAccountType = SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
             }
+            storagePanel.adlsCard.title -> {
+                data.storageAccountType = SparkSubmitStorageType.ADLS
+                data.adlsRootPath = storagePanel.adlsCard.adlsRootPathField.text
+            }
         }
     }
 
@@ -109,21 +114,37 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
             }
 
             storagePanel.errorMessage = data.errorMsg
-            storagePanel.storageAccountType = data.storageAccountType
             uploadPathField.text = data.uploadPath
-            if (data.storageAccountType == SparkSubmitStorageType.BLOB) {
-                storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
-                val credentialAccount = data.getCredentialAzureBlobAccount()
-                storagePanel.azureBlobCard.storageKeyField.text =
-                        if (StringUtils.isEmpty(data.errorMsg) && StringUtils.isEmpty(data.storageKey)) {
-                            credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.storageAccount) }
-                        } else {
-                            data.storageKey
-                        }
-                if (data.containersModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedContainer)) {
-                    storagePanel.azureBlobCard.storageContainerUI.comboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
-                } else {
-                    storagePanel.azureBlobCard.storageContainerUI.comboBox.model = data.containersModel as DefaultComboBoxModel<Any>
+            when (data.storageAccountType) {
+                SparkSubmitStorageType.BLOB -> {
+                    storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
+                    val credentialAccount = data.getCredentialAzureBlobAccount()
+                    storagePanel.azureBlobCard.storageKeyField.text =
+                            if (StringUtils.isEmpty(data.errorMsg) && StringUtils.isEmpty(data.storageKey)) {
+                                credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.storageAccount) }
+                            } else {
+                                data.storageKey
+                            }
+                    if (data.containersModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedContainer)) {
+                        storagePanel.azureBlobCard.storageContainerUI.comboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
+                    } else {
+                        storagePanel.azureBlobCard.storageContainerUI.comboBox.model = data.containersModel as DefaultComboBoxModel<Any>
+                    }
+                }
+                SparkSubmitStorageType.ADLS -> {
+                    // Only set for changed
+                    if (storagePanel.adlsCard.adlsRootPathField.text != data.adlsRootPath) {
+                        storagePanel.adlsCard.adlsRootPathField.text = data.adlsRootPath
+                    }
+
+                    // show sign in/out panel based on whether user has signed in or not
+                    val curLayout = storagePanel.adlsCard.azureAccountCards.layout as CardLayout
+                    if (data.isSignedIn) {
+                        curLayout.show(storagePanel.adlsCard.azureAccountCards, storagePanel.adlsCard.signOutCard.title)
+                        storagePanel.adlsCard.signOutCard.azureAccountLabel.text = data.azureAccountEmail ?: "signed in with credential file"
+                    } else {
+                        curLayout.show(storagePanel.adlsCard.azureAccountCards, storagePanel.adlsCard.signInCard.title)
+                    }
                 }
             }
         }
@@ -134,7 +155,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
         listOf(0 until storagePanel.storageTypeComboBox.model.size).flatten().forEach {
             if ((storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.azureBlobCard.title && storageAccountType == SparkSubmitStorageType.BLOB) ||
                     (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.sparkInteractiveSessionCard.title && storageAccountType == SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION) ||
-                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.clusterDefaultStorageCard.title && storageAccountType == SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT)) {
+                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.clusterDefaultStorageCard.title && storageAccountType == SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT) ||
+                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.adlsCard.title && storageAccountType == SparkSubmitStorageType.ADLS)) {
                 return it
             }
         }

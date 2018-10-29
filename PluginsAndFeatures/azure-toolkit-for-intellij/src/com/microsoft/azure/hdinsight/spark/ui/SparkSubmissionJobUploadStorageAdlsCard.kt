@@ -23,27 +23,30 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.uiDesigner.core.GridConstraints.*
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
+import com.intellij.uiDesigner.core.GridConstraints
+import com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
+import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
+import com.microsoft.azuretools.ijidea.ui.HintTextField
 import com.microsoft.intellij.forms.dsl.panel
 import java.awt.CardLayout
-import javax.swing.*
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JTextField
 
-class SparkSubmissionJobUploadStoragePanel: JPanel() {
-    private val notFinishCheckMessage = "job upload storage validation check is not finished"
-    private val storageTypeLabel = JLabel("Storage Type")
-    val azureBlobCard = SparkSubmissionJobUploadStorageAzureBlobCard()
-    val sparkInteractiveSessionCard = SparkSubmissionJobUploadStorageSparkInteractiveSessionCard()
-    val clusterDefaultStorageCard = SparkSubmissionJobUploadStorageClusterDefaultStorageCard()
-    val adlsCard = SparkSubmissionJobUploadStorageAdlsCard()
-    val storageTypeComboBox = ComboBox(arrayOf(azureBlobCard.title, sparkInteractiveSessionCard.title, clusterDefaultStorageCard.title, adlsCard.title))
-    val storageCardsPanel = JPanel(CardLayout()).apply {
-        add(azureBlobCard, azureBlobCard.title)
-        add(sparkInteractiveSessionCard, sparkInteractiveSessionCard.title)
-        add(clusterDefaultStorageCard, clusterDefaultStorageCard.title)
-        add(adlsCard, adlsCard.title)
+class SparkSubmissionJobUploadStorageAdlsCard: SparkSubmissionJobUploadStorageBasicCard() {
+    override val title: String = "ADLS Gen 1"
+    private val adlsRootPathTip = "e.g. adl://myaccount.azuredatalakestore.net/root/path"
+    private val adlsRootPathLabel = JLabel("ADLS Root Path").apply { toolTipText = adlsRootPathTip }
+    val adlsRootPathField = JTextField().apply { toolTipText = adlsRootPathTip }
+    private val authMethodLabel = JLabel("Authentication Method")
+    private val authMethodComboBox = ComboBox<String>(arrayOf("Azure Account"))
+    val signInCard = SparkSubmissionJobUploadStorageAdlsSignInCard()
+    val signOutCard = SparkSubmissionJobUploadStorageAdlsSignOutCard()
+    val azureAccountCards = JPanel(CardLayout()).apply {
+        add(signInCard, signInCard.title)
+        add(signOutCard, signOutCard.title)
     }
-    var errorMessage: String? = notFinishCheckMessage
 
     init {
         val formBuilder = panel {
@@ -53,18 +56,20 @@ class SparkSubmissionJobUploadStoragePanel: JPanel() {
                 }
                 col {
                     anchor = ANCHOR_WEST
-                    hSizePolicy = SIZEPOLICY_WANT_GROW
-                    fill = FILL_HORIZONTAL
+                    hSizePolicy = GridConstraints.SIZEPOLICY_WANT_GROW
+                    fill = GridConstraints.FILL_HORIZONTAL
                 }
             }
             row {
-                c(storageTypeLabel) { indent = 2 }; c(storageTypeComboBox) { indent = 3 }
+                c(adlsRootPathLabel) {}; c(adlsRootPathField) {}
             }
             row {
-                c(storageCardsPanel) { indent = 2; colSpan = 2; hSizePolicy = SIZEPOLICY_WANT_GROW; fill = FILL_HORIZONTAL}
+                c(authMethodLabel) {}; c(authMethodComboBox) {}
+            }
+            row {
+                c(null) {}; c(azureAccountCards) {}
             }
         }
-
         layout = formBuilder.createGridLayoutManager()
         formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }

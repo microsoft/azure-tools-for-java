@@ -30,10 +30,14 @@ package com.microsoft.azure.hdinsight.spark.common
 import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.Transient
+import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azuretools.authmanage.AuthMethodManager
+import org.apache.commons.lang3.exception.ExceptionUtils
+import java.util.regex.Pattern
 import javax.swing.DefaultComboBoxModel
 
 @Tag("job_upload_storage")
-class SparkSubmitJobUploadStorageModel {
+class SparkSubmitJobUploadStorageModel: ILogger {
     @get:Transient val SERVICE_NAME_PREFIX = "Azure IntelliJ Plugin Job Upload Storage Azure Blob - "
 
     @Attribute("storage_account")
@@ -54,6 +58,24 @@ class SparkSubmitJobUploadStorageModel {
     var storageAccountType: SparkSubmitStorageType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
 
     @get:Transient @set:Transient var errorMsg: String? = null
+
+    // model for ADLS Gen 1 storage type
+    // pattern for adl root path. e.g. adl://john.azuredatalakestore.net/root/path/
+    val ADLS_ROOT_PATH_PATTERN = Pattern.compile("adl://([^/.]+\\.)+[^/.]+(/[^/.]+)*/?$")
+
+    @get:Transient @set:Transient var isSignedIn: Boolean = false
+        get() = try {
+            AuthMethodManager.getInstance()?.isSignedIn ?: false
+        } catch (ex: Exception) {
+            log().warn("Exception happens when we try to know if user signed in. Error: ${ExceptionUtils.getStackTrace(ex)}")
+            false
+        }
+
+    @get:Transient @set:Transient var azureAccountEmail: String? = null
+        get() = AuthMethodManager.getInstance()?.authMethodDetails?.accountEmail ?: AuthMethodManager.getInstance()?.authMethodDetails?.credFilePath
+
+    @Attribute("adl_root_path")
+    var adlsRootPath: String? = null
 
     fun getCredentialAzureBlobAccount(): String? = storageAccount?.let{ SERVICE_NAME_PREFIX + storageAccount }
 }
