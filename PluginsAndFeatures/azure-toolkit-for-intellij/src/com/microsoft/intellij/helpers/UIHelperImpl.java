@@ -67,6 +67,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.Map;
 
 public class UIHelperImpl implements UIHelper {
@@ -74,6 +75,8 @@ public class UIHelperImpl implements UIHelper {
     public static Key<ClientStorageAccount> CLIENT_STORAGE_KEY = new Key<ClientStorageAccount>("clientStorageAccount");
     public static final Key<String> SUBSCRIPTION_ID = new Key<>("subscriptionId");
     public static final Key<String> RESOURCE_ID = new Key<>("resourceId");
+    public static final Key<String> WEBAPP_ID = new Key<>("webAppId");
+    public static final Key<String> SLOT_NAME = new Key<>("slotName");
     private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key = ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
             Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
             Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
@@ -419,18 +422,24 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void openDeploymentSlotPropertyView(@NotNull DeploymentSlotNode node) {
         final String sid = node.getSubscriptionId();
-        final String webAppId = node.getWebAppId();
-        final FileEditorManager fileEditorManager = getFileEditorManager(sid, webAppId, (Project)node.getProject());
+        final String resourceId = node.getId();
+        final FileEditorManager fileEditorManager = getFileEditorManager(sid, resourceId, (Project) node.getProject());
         if (fileEditorManager == null) {
             return;
         }
-        final String type =  DeploymentSlotPropertyViewProvider.TYPE;
+        final String type = DeploymentSlotPropertyViewProvider.TYPE;
 
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, webAppId);
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, resourceId);
         if (itemVirtualFile == null) {
             final String iconPath = node.getParent() == null ? node.getIconPath()
                 : node.getParent().getIconPath();
-            itemVirtualFile = createVirtualFile(node.getName(), type, iconPath, sid, webAppId);
+            final Map<Key, String> userData = new HashMap<>();
+            userData.put(SUBSCRIPTION_ID, sid);
+            userData.put(RESOURCE_ID, resourceId);
+            userData.put(WEBAPP_ID, node.getWebAppId());
+            userData.put(SLOT_NAME, node.getName());
+            itemVirtualFile = createVirtualFile(node.getWebAppName() + "-" + node.getName(),
+                type, iconPath, userData);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
@@ -518,6 +527,15 @@ public class UIHelperImpl implements UIHelper {
             }
         }
         return virtualFile;
+    }
+
+    private LightVirtualFile createVirtualFile(String name, String type, String icon, Map<Key, String> userData) {
+        LightVirtualFile itemVirtualFile = new LightVirtualFile(name);
+        itemVirtualFile.setFileType(getFileType(type, icon));
+        for(final Map.Entry<Key, String> data : userData.entrySet()) {
+            itemVirtualFile.putUserData(data.getKey(), data.getValue());
+        }
+        return itemVirtualFile;
     }
 
     private LightVirtualFile createVirtualFile(String name, String type, String icon, String sid, String resId) {
