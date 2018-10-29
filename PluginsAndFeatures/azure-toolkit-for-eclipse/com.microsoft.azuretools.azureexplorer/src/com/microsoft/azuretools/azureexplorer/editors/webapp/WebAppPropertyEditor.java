@@ -62,10 +62,10 @@ import org.eclipse.ui.part.EditorPart;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.core.components.AzureListenerWrapper;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyMvpView;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBasePropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
 
-public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMvpView {
+public class WebAppPropertyEditor extends EditorPart implements WebAppBasePropertyMvpView {
     public static final String ID = "com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor";
     private static final String INSIGHT_NAME = "AzurePlugin.Eclipse.Editor.WebAppPropertyEditor";
     private static final int PROGRESS_BAR_HEIGHT = 3;
@@ -78,7 +78,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
 
     private final Map<String, String> cachedAppSettings;
     private final Map<String, String> editedAppSettings;
-    private final WebAppPropertyViewPresenter<WebAppPropertyEditor> webAppPropertyViewPresenter;
+    private final WebAppPropertyViewPresenter webAppPropertyViewPresenter;
     private Text txtResourceGroup;
     private Text txtAppServicePlan;
     private Text txtStatus;
@@ -110,7 +110,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
      * Constructor.
      */
     public WebAppPropertyEditor() {
-        this.webAppPropertyViewPresenter = new WebAppPropertyViewPresenter<WebAppPropertyEditor>();
+        this.webAppPropertyViewPresenter = new WebAppPropertyViewPresenter();
         this.webAppPropertyViewPresenter.onAttachView(this);
 
         cachedAppSettings = new LinkedHashMap<>();
@@ -170,7 +170,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
             @Override
             protected void handleEventFunc(Event event) {
                 setBtnEnableStatus(false);
-                webAppPropertyViewPresenter.onUpdateWebAppProperty(subscriptionId, webAppId, cachedAppSettings,
+                webAppPropertyViewPresenter.onUpdateWebAppProperty(subscriptionId, webAppId, null, cachedAppSettings,
                         editedAppSettings);
             }
         });
@@ -453,7 +453,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
         String firstPath = dirDialog.open();
         if (firstPath != null) {
             setBtnEnableStatus(false);
-            webAppPropertyViewPresenter.onGetPublishingProfileXmlWithSecrets(subscriptionId, webAppId, firstPath);
+            webAppPropertyViewPresenter.onGetPublishingProfileXmlWithSecrets(subscriptionId, webAppId, null, firstPath);
         }
     }
 
@@ -477,7 +477,7 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
             this.setPartName(webappInput.getName());
             this.subscriptionId = webappInput.getSubscriptionId();
             this.webAppId = webappInput.getId();
-            this.webAppPropertyViewPresenter.onLoadWebAppProperty(subscriptionId, webAppId);
+            this.webAppPropertyViewPresenter.onLoadWebAppProperty(subscriptionId, webAppId, null);
         }
 
         IWorkbench workbench = PlatformUI.getWorkbench();
@@ -530,9 +530,9 @@ public class WebAppPropertyEditor extends EditorPart implements WebAppPropertyMv
     }
 
     @Override
-    public void onLoadWebAppProperty() {
+    public void onLoadWebAppProperty(String sid, String webAppId, String slotName) {
         progressBar.setVisible(true);
-        this.webAppPropertyViewPresenter.onLoadWebAppProperty(this.subscriptionId, this.webAppId);
+        this.webAppPropertyViewPresenter.onLoadWebAppProperty(sid, webAppId, slotName);
     }
 
     @Override
