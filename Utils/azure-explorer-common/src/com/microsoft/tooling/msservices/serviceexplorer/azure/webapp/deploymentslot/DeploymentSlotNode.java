@@ -42,13 +42,15 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     private static final String DELETE_SLOT_PROGRESS_MESSAGE = "Deleting Deployment Slot";
     private final DeploymentSlotNodePresenter presenter;
     protected final String webAppId;
+    protected final String webAppName;
     protected final String slotName;
 
-    public DeploymentSlotNode(final String slotId, final String webAppId, final DeploymentSlotModule parent,
-                              final String name, final String state, final String os, final String subscriptionId,
-                              final String hostName) {
+    public DeploymentSlotNode(final String slotId, final String webAppId, final String webAppName,
+                              final DeploymentSlotModule parent, final String name, final String state, final String os,
+                              final String subscriptionId, final String hostName) {
         super(slotId, name, LABEL, parent, subscriptionId, hostName, os, state);
         this.webAppId = webAppId;
+        this.webAppName = webAppName;
         this.slotName = name;
         this.presenter = new DeploymentSlotNodePresenter();
         this.presenter.onAttachView(this);
@@ -57,6 +59,10 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
 
     public String getWebAppId() {
         return this.webAppId;
+    }
+
+    public String getWebAppName() {
+        return this.webAppName;
     }
 
     @Override
