@@ -76,6 +76,7 @@ public class UIHelperImpl implements UIHelper {
     public static final Key<String> SUBSCRIPTION_ID = new Key<>("subscriptionId");
     public static final Key<String> RESOURCE_ID = new Key<>("resourceId");
     public static final Key<String> WEBAPP_ID = new Key<>("webAppId");
+    public static final Key<String> SLOT_NAME = new Key<>("slotName");
     private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key = ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
             Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
             Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
@@ -436,7 +437,9 @@ public class UIHelperImpl implements UIHelper {
             userData.put(SUBSCRIPTION_ID, sid);
             userData.put(RESOURCE_ID, resourceId);
             userData.put(WEBAPP_ID, node.getWebAppId());
-            itemVirtualFile = createVirtualFile(node.getName(), type, iconPath, userData);
+            userData.put(SLOT_NAME, node.getName());
+            itemVirtualFile = createVirtualFile(node.getWebAppName() + "-" + node.getName(),
+                type, iconPath, userData);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
