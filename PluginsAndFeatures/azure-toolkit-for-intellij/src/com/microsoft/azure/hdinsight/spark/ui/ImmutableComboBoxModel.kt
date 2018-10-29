@@ -22,4 +22,30 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
-class ServerlessSparkSubmissionContentPanel : SparkSubmissionContentPanel()
+import javax.swing.DefaultComboBoxModel
+
+class ImmutableComboBoxModel<T>(values: Array<T>) : DefaultComboBoxModel<T>(values) {
+    companion object {
+        inline fun <reified E> empty() = ImmutableComboBoxModel<E>(emptyArray())
+    }
+
+    override fun addElement(anObject: T) {
+        throw UnsupportedOperationException("Unsupported modification to an immutable ComboBox model")
+    }
+
+    override fun removeAllElements() {
+        throw UnsupportedOperationException("Unsupported modification to an immutable ComboBox model")
+    }
+
+    override fun removeElementAt(index: Int) {
+        throw UnsupportedOperationException("Unsupported modification to an immutable ComboBox model")
+    }
+
+    override fun insertElementAt(anObject: T, index: Int) {
+        throw UnsupportedOperationException("Unsupported modification to an immutable ComboBox model")
+    }
+
+    override fun removeElement(anObject: Any?) {
+        throw UnsupportedOperationException("Unsupported modification to an immutable ComboBox model")
+    }
+}

@@ -23,6 +23,7 @@
 package com.microsoft.intellij.forms.dsl
 
 import com.intellij.uiDesigner.core.GridConstraints
+import com.intellij.uiDesigner.core.GridConstraints.*
 import com.intellij.uiDesigner.core.GridLayoutManager
 import java.awt.Component
 import javax.swing.JPanel
@@ -55,14 +56,19 @@ class FormBuilder(var columnTemplate: ColumnTemplate? = null) {
                 .max() ?: -1 ) + 1
 
     inner class Row(val index: Int, val comps: MutableList<ColComponent> = mutableListOf()) {
-        fun c(component: Component?, block: GridConstraints.() -> Unit) {
+        fun c(component: Component? = null, block: GridConstraints.() -> Unit = {}) {
             synchronized(comps) {
                 val colComponent = ColComponent(
                         component,
                         (columnTemplate?.columnConstraints?.getOrNull(comps.size)?.clone() as? GridConstraints ?:
-                                GridConstraints().apply { column = comps.size })
-                                        .apply(block)
-                                        .apply { row = index })
+                                GridConstraints().apply {
+                                    column = comps.size
+                                    anchor = ANCHOR_WEST
+                                    hSizePolicy = SIZEPOLICY_WANT_GROW
+                                    fill = FILL_BOTH
+                                })
+                                .apply(block)
+                                .apply { row = index })
 
                 comps.add(colComponent)
             }
@@ -107,19 +113,19 @@ The Form DSL can be used as following codes:
             }
         }
         row {
-            c(enableRemoteDebugCheckBox) { indent = 0 };    c(helpButton) {};   c(checkSshCertIndicator) {}
+            c(enableRemoteDebugCheckBox) { indent = 0 };    c(helpButton);   c(checkSshCertIndicator)
         }
         row {
-            c(sshUserNameLabel) { indent = 1 };             c(null) {};         c(sshUserNameTextField) {}
+            c(sshUserNameLabel) { indent = 1 };             c();             c(sshUserNameTextField)
         }
         row {
             c(sshAuthTypeLabel) { indent = 1 }
         }
         row {
-            c(sshUsePasswordRadioButton) { indent = 2 };    c(null) {};         c(sshPasswordField) {}
+            c(sshUsePasswordRadioButton) { indent = 2 };    c();             c(sshPasswordField)
         }
         row {
-            c(sshUseKeyFileRadioButton) { indent = 2 };     c(null) {};         c(sshKeyFileTextField) {}
+            c(sshUseKeyFileRadioButton) { indent = 2 };     c();             c(sshKeyFileTextField)
         }
     }
 

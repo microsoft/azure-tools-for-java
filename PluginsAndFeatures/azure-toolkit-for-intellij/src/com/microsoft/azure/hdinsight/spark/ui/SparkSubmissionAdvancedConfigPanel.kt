@@ -109,7 +109,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         add(sshUseKeyFileRadioButton)
     }
 
-    internal val checkSshCertIndicator = BackgroundTaskIndicator("Verify SSH Authentication...")
+    val checkSshCertIndicator = BackgroundTaskIndicator("Verify SSH Authentication...")
 
     private val helpButton = InplaceButton(IconButton("Help about connection to HDInsight using SSH", Help)) {
         BrowserUtil.browse(helpUrl)

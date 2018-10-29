@@ -202,7 +202,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 String clusterName = ctrlProvider.getClusterName(clusterNameOrUrlField.getText());
                 if (clusterName == null) {
                     errorMessage = "Cluster URL is not a valid URL";
-                } else if (ctrlProvider.doesClusterNameExist(clusterName)) {
+                } else if (ctrlProvider.doesClusterNameExistInLinkedClusters(clusterName)) {
                     errorMessage = "Cluster already exists in linked clusters";
                 }
             }
@@ -212,10 +212,10 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 errorMessage = "Livy Endpoint and cluster name can't be empty";
             } else if (!ctrlProvider.isURLValid(livyEndpointField.getText())) {
                 errorMessage = "Livy Endpoint is not a valid URL";
-            } else if (ctrlProvider.doesClusterLivyEndpointExist(livyEndpointField.getText())) {
-                errorMessage = "Livy Endpoint already exists in linked clusters";
-            } else if (ctrlProvider.doesClusterNameExist(livyClusterNameField.getText())) {
-                errorMessage = "Cluster Name already exists in linked clusters";
+            } else if (ctrlProvider.doesClusterLivyEndpointExistInAllClusters(livyEndpointField.getText())) {
+                errorMessage = "The same name Livy Endpoint already exists in clusters";
+            } else if (ctrlProvider.doesClusterNameExistInAllClusters(livyClusterNameField.getText())) {
+                errorMessage = "Cluster Name already exists in clusters";
             } else if (!StringUtils.isEmpty(yarnEndpointField.getText()) &&
                     !ctrlProvider.isURLValid(yarnEndpointField.getText())) {
                 errorMessage = "Yarn Endpoint is not a valid URL";

@@ -32,8 +32,8 @@ import com.microsoft.azure.hdinsight.spark.common.ServerlessSparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import rx.Observable
 
-class ServerlessSparkSubmissionPanelConfigurable(project: Project, submissionPanel: SparkSubmissionContentPanel)
-    : SparkSubmissionContentPanelConfigurable(project, submissionPanel), ILogger {
+class ServerlessSparkSubmissionPanelConfigurable(project: Project)
+    : SparkSubmissionContentPanelConfigurable(project), ILogger {
     override fun getType(): String = "Azure Data Lake Spark Pool"
 
     override fun getClusterDetails(): ImmutableSortedSet<out IClusterDetail> {

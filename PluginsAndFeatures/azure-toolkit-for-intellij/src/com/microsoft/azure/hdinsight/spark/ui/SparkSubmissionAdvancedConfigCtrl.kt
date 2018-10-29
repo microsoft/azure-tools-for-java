@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.sdk.common.HDIException
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchDebugSession
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UseKeyFile
@@ -33,25 +34,27 @@ import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
 import org.apache.commons.lang3.StringUtils
 import rx.Subscription
+import rx.subjects.PublishSubject
 import java.util.concurrent.TimeUnit
 
-abstract class SparkSubmissionAdvancedConfigCtrl(val view: SparkSubmissionAdvancedConfigPanel) : ILogger {
+abstract class SparkSubmissionAdvancedConfigCtrl(
+        val view: SettableControl<SparkSubmitAdvancedConfigModel>,
+        private val sshCheckSubject: PublishSubject<String>) : ILogger {
+    companion object {
+        const val passedText = "passed"
+    }
+
     data class CheckResult(val model: SparkSubmitAdvancedConfigModel, val message: String)
 
-    private val passedText = "passed"
-
-    val isCheckPassed
-            get() = view.checkSshCertIndicator.text.endsWith(passedText, true)
-
-    val resultMessage
-            get() = view.checkSshCertIndicator.text ?: ""
+    private val model: SparkSubmitAdvancedConfigModel
+        get() = SparkSubmitAdvancedConfigModel().apply { view.getData(this@apply) }
 
     init {
         registerAsyncSshAuthCheck()
     }
 
     fun selectCluster(clusterName: String) {
-        view.sshCheckSubject.onNext("Selected cluster $clusterName")
+        sshCheckSubject.onNext("Selected cluster $clusterName")
     }
 
     abstract fun getClusterNameToCheck(): String?
@@ -63,18 +66,18 @@ abstract class SparkSubmissionAdvancedConfigCtrl(val view: SparkSubmissionAdvanc
                 else -> false
             }
 
-    private fun registerAsyncSshAuthCheck(): Subscription = view.sshCheckSubject
+    private fun registerAsyncSshAuthCheck(): Subscription = sshCheckSubject
             .throttleWithTimeout(500, TimeUnit.MILLISECONDS)
             .doOnNext { log().debug("Receive checking message $it") }
             .map { getClusterNameToCheck() }
             .filter { StringUtils.isNotBlank(it) }
-            .map { selectedClusterName -> view.model.apply {
+            .map { selectedClusterName -> model.apply {
                 clusterName = selectedClusterName
             }}
             .filter { isReadyToCheck(it) }
-            .doOnNext { model ->
-                log().info("Check SSH authentication for cluster ${model.clusterName} ...")
-                view.setData(view.model.apply {
+            .doOnNext { modelToProbe ->
+                log().info("Check SSH authentication for cluster ${modelToProbe.clusterName} ...")
+                view.setData(model.apply {
                     checkingMessage = "SSH Authentication is checking..."
                     isChecking = true
                 })
@@ -104,10 +107,10 @@ abstract class SparkSubmissionAdvancedConfigCtrl(val view: SparkSubmissionAdvanc
             .subscribe { (probedModel, message) ->
                 log().info("...Result: $message")
 
-                val current = view.model
+                val current = model
 
                 // Double check the the result is met the current user input
-                val checkingResultMessage = if (view.isRemoteDebugEnabled &&
+                val checkingResultMessage = if (current.enableRemoteDebug &&
                         probedModel.sshAuthType == current.sshAuthType &&
                         when (current.sshAuthType) {
                             UseKeyFile -> probedModel.sshKeyFile?.absolutePath == current.sshKeyFile?.absolutePath
