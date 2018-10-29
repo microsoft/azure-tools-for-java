@@ -20,30 +20,35 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.ui
+package com.microsoft.azure.hdinsight.spark.common
 
-import com.intellij.ui.HideableTitledPanel
-import java.awt.GridBagConstraints
-import java.awt.Insets
+import com.intellij.testFramework.IdeaTestCase
+import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable
+import org.junit.Before
+import org.junit.Ignore
+import org.junit.Test
+import javax.swing.JDialog
 
-class SparkSubmissionDebuggableContentPanel : SparkSubmissionContentPanel() {
+/*
+ * Ignore those UI tests, since they are helpers to do manually tests
+ */
+@Ignore
+class SparkUITest : IdeaTestCase() {
+    private var dialog: JDialog? = null
 
-    val advancedConfigPanel = SparkSubmissionAdvancedConfigPanel()
-    private val hidableAdvancedConfigPanel = HideableTitledPanel(
-            "Advanced Configuration (Remote Debugging)", true, this.advancedConfigPanel, false)
+    @Before
+    override fun setUp() {
+        super.setUp()
 
-
-    init {
-        addAdvancedConfigLineItem()
+        dialog = JDialog().apply { isModal = true }
     }
 
-    private fun addAdvancedConfigLineItem() {
-        add(hidableAdvancedConfigPanel,
-                GridBagConstraints(0, ++displayLayoutCurrentRow,
-                        0, 1,
-                        0.0, 0.0,
-                        GridBagConstraints.SOUTHWEST, GridBagConstraints.HORIZONTAL,
-                        Insets(margin, margin, 0, 0), 0, 0))
-
+    @Test
+    fun testSparkBatchJobConfigurable() {
+        dialog!!.apply {
+            contentPane.add(SparkBatchJobConfigurable(project).component)
+            pack()
+            isVisible = true
+        }
     }
 }

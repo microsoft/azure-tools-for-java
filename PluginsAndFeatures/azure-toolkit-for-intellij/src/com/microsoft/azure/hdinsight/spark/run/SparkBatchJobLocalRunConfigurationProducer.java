@@ -148,8 +148,12 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
                     .forName("org.jetbrains.plugins.scala.runner.ScalaMainMethodUtil")
                     .getDeclaredMethod("findMainClassAndSourceElem", PsiElement.class);
 
-            Option<Tuple2<PsiClass, PsiElement>> ceOption =
-                    (Option<Tuple2<PsiClass, PsiElement>>) findMainClassAndSourceElemMethod.invoke(null, element);
+            Object option = findMainClassAndSourceElemMethod.invoke(null, element);
+            if (option instanceof scala.None$ || !(option instanceof Option)) {
+                return Optional.empty();
+            }
+
+            Option<Tuple2<PsiClass, PsiElement>> ceOption = (Option<Tuple2<PsiClass, PsiElement>>) option;
 
             return ceOption.isDefined() ?
                     Optional.of(new SimpleImmutableEntry<>(ceOption.get()._1(), ceOption.get()._1())) :
@@ -161,8 +165,12 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
                         .forName("org.jetbrains.plugins.scala.runner.ScalaMainMethodUtil")
                         .getDeclaredMethod("findContainingMainMethod", PsiElement.class);
 
-                Option<ScFunctionDefinition> funDefOption =
-                        (Option<ScFunctionDefinition>) findContainingMainMethod.invoke(null, element);
+                Object option = findContainingMainMethod.invoke(null, element);
+                if (option instanceof scala.None$ || !(option instanceof Option)) {
+                    return Optional.empty();
+                }
+
+                Option<ScFunctionDefinition> funDefOption = (Option<ScFunctionDefinition>) option;
 
                 return funDefOption.isDefined() ?
                         Optional.of(new SimpleImmutableEntry<PsiElement, PsiClass>(

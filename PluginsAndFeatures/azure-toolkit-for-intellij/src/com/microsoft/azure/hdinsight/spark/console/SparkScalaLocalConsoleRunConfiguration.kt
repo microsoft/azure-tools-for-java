@@ -60,7 +60,8 @@ class SparkScalaLocalConsoleRunConfiguration(
     override fun mainClass(): String = "org.apache.spark.deploy.SparkSubmit"
 
     override fun createParams(): JavaParameters {
-        val localRunParams = SparkBatchLocalRunState(project, batchRunConfiguration.model.localRunConfigurableModel).createParams()
+        val localRunParams = SparkBatchLocalRunState(project, batchRunConfiguration.model.localRunConfigurableModel)
+                .createParams(hasJmockit = false, hasMainClass = false, hasClassPath = false)
         val params = super.createParams()
         params.classPath.clear()
         val replLibraryCoord = findReplCoord() ?: throw ExecutionException("""
