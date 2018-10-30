@@ -44,11 +44,11 @@ public class CommonConst {
     public static final String EmualtorPath = "/emulator/";
     public static final String EmulatorArchieveFileName = "service.zip";
     public static final String EmulatorSetupScriptFileName = "setup.sh";
-    public static final String SparkFailureTaskDebugIcon_13x_Path = "/icons/ToolWindowSparkJobDebug_13x.png";
+    public static final String SparkFailureTaskDebugIcon_13x_Path = "/icons/ToolWindowSparkJobDebugger_13x.png";
     public static final String SparkFailureTaskDebugIcon_16x_Path = "/icons/ToolWindowSparkJobDebug.png";
     public static final String ToolWindowSparkJobRunIcon_13x_Path = "/icons/ToolWindowSparkJobRun_13x.png";
     public static final String ToolWindowSparkJobRunIcon_16x_Path = "/icons/ToolWindowSparkJobRun.png";
-    public static final String ToolWindowSparkJobDebugIcon_13x_Path = "/icons/ToolWindowSparkJobDebug_13x.png";
+    public static final String ToolWindowSparkJobDebugIcon_13x_Path = "/icons/ToolWindowSparkJobDebugger_13x.png";
     public static final String ToolWindowSparkJobDebugIcon_16x_Path = "/icons/ToolWindowSparkJobDebug.png";
 
     public static final String HDINSIGHT_ADDITIONAL_CLUSTERS = "com.microsoft.azure.hdinsight.AdditionalClusters";
