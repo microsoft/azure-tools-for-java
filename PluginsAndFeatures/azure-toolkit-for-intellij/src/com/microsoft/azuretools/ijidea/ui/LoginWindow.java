@@ -45,9 +45,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by vlashch on 10/17/16.
- */
 class LoginWindow extends AzureDialogWrapper {
     public final String redirectUri;
     public final String requestUri;
