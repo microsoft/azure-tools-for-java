@@ -21,13 +21,23 @@
  */
 package com.microsoft.azure.hdinsight.common.classifiedexception
 
+import com.intellij.openapi.application.ApplicationManager
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
+import com.microsoft.intellij.forms.ErrorMessageForm
 import org.apache.commons.lang.exception.ExceptionUtils
 
 const val ToolPackageSuffix: String = "com.microsoft.azure"
 
 class SparkToolException(exp: Throwable?) : ClassifiedException(exp) {
     override val title: String = "Azure Plugin for IntelliJ Error"
+
+    override fun handleByUser(){
+        ApplicationManager.getApplication().invokeLater {
+            val toolErrorDialog = ErrorMessageForm(title)
+            toolErrorDialog.showErrorMessageForm(message, stackTrace)
+            toolErrorDialog.show()
+        }
+    }
 }
 
 object SparkToolExceptionFactory : ClassifiedExceptionFactory() {

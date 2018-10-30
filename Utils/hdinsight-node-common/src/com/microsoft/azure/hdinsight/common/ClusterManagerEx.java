@@ -147,7 +147,7 @@ public class ClusterManagerEx {
         ClusterMetaDataService.getInstance().addCachedClusters(clusterDetails);
     }
 
-    synchronized ImmutableList<IClusterDetail> getCachedClusters() {
+    public synchronized ImmutableList<IClusterDetail> getCachedClusters() {
         return ClusterMetaDataService.getInstance().getCachedClusterDetails();
     }
 
