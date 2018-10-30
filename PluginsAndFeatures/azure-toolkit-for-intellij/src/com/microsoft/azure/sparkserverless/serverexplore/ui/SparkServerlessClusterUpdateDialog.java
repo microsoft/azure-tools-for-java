@@ -90,6 +90,9 @@ public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvision
         ctrlProvider
                 .validateAndUpdate()
                 .doOnEach(notification -> getOKAction().setEnabled(true))
-                .subscribe(toUpdate -> close(OK_EXIT_CODE));
+                .subscribe(
+                        toUpdate -> close(OK_EXIT_CODE),
+                        err -> log().warn("Error update a cluster. " + err.toString())
+                );
     }
 }
