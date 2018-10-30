@@ -47,6 +47,8 @@ import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper
 import com.microsoft.intellij.forms.dsl.panel
+import com.microsoft.intellij.lang.containsInvisibleChars
+import com.microsoft.intellij.lang.tagInvisibleChars
 import org.apache.commons.lang3.StringUtils
 import rx.subjects.BehaviorSubject
 import java.awt.Dimension
@@ -380,6 +382,12 @@ open class SparkSubmissionContentPanel : JPanel() {
             if (!StringUtils.containsOnly(entryKey.toLowerCase(), "abcdefghijklmnopqrstuvwxyz1234567890_-.")) {
                 throw RuntimeConfigurationError("The Spark config key should only contains letters, digits, hyphens, underscores, and periods: ($entryKey)")
             }
+        }
+
+        // Check for command arguments invisible chars
+        if (commandLineTextField.text.containsInvisibleChars()) {
+            throw ConfigurationException("Found invisible chars (not space) in Command line arguments(tagged with []): " +
+                                         commandLineTextField.text.tagInvisibleChars("[]"))
         }
     }
 }
