@@ -30,6 +30,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.jcraft.jsch.*;
+import com.microsoft.azure.datalake.store.ADLStoreClient;
+import com.microsoft.azure.datalake.store.IfExists;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
@@ -611,6 +613,32 @@ public class JobUtils {
                                 getFormatPathByDate(),
                                 logSubject,
                                 null));
+    }
+
+    // Have to catch IOException in subscribe
+    @NotNull
+    public static Observable<String> deployArtifactToADLS(@NotNull String artifactLocalPath,
+                                                 @NotNull String adlRootPath,
+                                                 @NotNull String accessToken) {
+        return Observable.fromCallable(() -> {
+            File localFile = new File(artifactLocalPath);
+
+            URI remote = URI.create(adlRootPath)
+                    .resolve("SparkSubmission/")
+                    .resolve(getFormatPathByDate() + "/")
+                    .resolve(localFile.getName());
+
+            ADLStoreClient storeClient = ADLStoreClient.createClient(remote.getHost(), accessToken);
+
+            try (OutputStream adlsOutputStream = storeClient.createFile(remote.getPath(), IfExists.OVERWRITE, "755", true)) {
+                long size = IOUtils.copyLarge(new FileInputStream(localFile), adlsOutputStream);
+
+                adlsOutputStream.flush();
+                adlsOutputStream.close();
+
+                return remote.toString();
+            }
+        });
     }
 
     public static Observable<String> deployArtifact(@NotNull String artifactLocalPath,

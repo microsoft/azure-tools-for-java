@@ -25,6 +25,8 @@ package com.microsoft.azure.sparkserverless.serverexplore.ui;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.application.ApplicationManager;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azure.sparkserverless.serverexplore.SparkServerlessClusterProvisionSettingsModel;
 import com.microsoft.azure.sparkserverless.serverexplore.SparkServerlessClusterUpdateCtrlProvider;
@@ -91,7 +93,7 @@ public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvision
                 .validateAndUpdate()
                 .doOnEach(notification -> getOKAction().setEnabled(true))
                 .subscribe(
-                        toUpdate -> close(OK_EXIT_CODE),
+                        toUpdate ->  ApplicationManager.getApplication().invokeAndWait(()->close(OK_EXIT_CODE) , ModalityState.any()),
                         err -> log().warn("Error update a cluster. " + err.toString())
                 );
     }

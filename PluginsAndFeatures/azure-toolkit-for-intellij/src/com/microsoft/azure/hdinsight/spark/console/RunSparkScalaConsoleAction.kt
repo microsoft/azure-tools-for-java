@@ -28,6 +28,7 @@ import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.ConfigurationTypeUtil.findConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.execution.configurations.RuntimeConfigurationException
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.AnAction
@@ -124,6 +125,8 @@ abstract class RunSparkScalaConsoleAction
                 checkSettingsBeforeRun(environment.runProfile)
 
                 runner.execute(environment)
+            } catch (e: RuntimeConfigurationException) {
+                Messages.showErrorDialog(project, "Can't start Spark Console since the Run Configuration file has errors: ${e.message}", ExecutionBundle.message("error.common.title"))
             } catch (e: ExecutionException) {
                 Messages.showErrorDialog(project, e.message, ExecutionBundle.message("error.common.title"))
             }
