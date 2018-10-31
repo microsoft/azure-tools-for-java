@@ -30,5 +30,6 @@ package com.microsoft.azure.hdinsight.spark.common
 enum class SparkSubmitStorageType {
     BLOB,
     DEFAULT_STORAGE_ACCOUNT,
-    SPARK_INTERACTIVE_SESSION
+    SPARK_INTERACTIVE_SESSION,
+    ADLS_GEN1
 }

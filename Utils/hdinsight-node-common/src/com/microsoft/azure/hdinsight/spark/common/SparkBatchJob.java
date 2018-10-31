@@ -80,9 +80,9 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     }
 
     public enum DriverLogConversionMode {
-        ORIGINAL,
         WITHOUT_PORT,
-        WITH_PORT;
+        WITH_PORT,
+        ORIGINAL;
 
         @Nullable
         public static DriverLogConversionMode next(@Nullable DriverLogConversionMode current) {
@@ -153,22 +153,35 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Nullable
     private IHDIStorageAccount storageAccount;
 
+    /**
+     * Access token used for uploading files to ADLS storage account
+     */
+    @Nullable
+    private String accessToken;
+
+    @Nullable
+    private String adlRootPath;
+
     public SparkBatchJob(
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        this(submissionParameter, sparkBatchSubmission, ctrlSubject, null);
+        this(submissionParameter, sparkBatchSubmission, ctrlSubject, null, null, null);
     }
 
     public SparkBatchJob(
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
-            @Nullable IHDIStorageAccount storageAccount) {
+            @Nullable IHDIStorageAccount storageAccount,
+            @Nullable String accessToken,
+            @Nullable String adlRootPath) {
         this.submissionParameter = submissionParameter;
         this.storageAccount = storageAccount;
         this.submission = sparkBatchSubmission;
         this.ctrlSubject = ctrlSubject;
+        this.accessToken = accessToken;
+        this.adlRootPath = adlRootPath;
     }
 
     /**
@@ -1088,7 +1101,13 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        if (storageAccount == null) {
+        if (accessToken != null) {
+            return JobUtils.deployArtifactToADLS(artifactPath, adlRootPath, accessToken)
+                    .map(path -> {
+                        getSubmissionParameter().setFilePath(path);
+                        return this;
+                    });
+        } else if (storageAccount == null) {
             return JobUtils.deployArtifact(artifactPath, getSubmissionParameter().getClusterName(), getCtrlSubject())
                     .map(clusterArtifactUriPair -> {
                         getSubmissionParameter().setFilePath(clusterArtifactUriPair.getValue());

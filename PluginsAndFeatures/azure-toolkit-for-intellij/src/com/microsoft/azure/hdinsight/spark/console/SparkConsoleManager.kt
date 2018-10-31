@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.console.ConsoleHistoryController
 import com.intellij.execution.process.ProcessHandler
+import com.intellij.execution.ui.RunContentManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 
@@ -52,10 +53,19 @@ object SparkConsoleManager {
         }
     }
 
+    // Get current selected Spark Console with the predicate condition
     fun get(project: Project, predicate: (SparkConsoleDetail) -> Boolean = { true }): SparkConsoleDetail? {
         synchronized(allProjectConsoles) {
-            return allProjectConsoles[project]?.find(predicate)
+            return allProjectConsoles[project]?.asSequence()
+                    ?.filter(predicate)
+                    ?.find { isSelected(it) }
         }
+    }
+
+    fun isSelected(consoleDetail: SparkConsoleDetail?): Boolean {
+        val console = consoleDetail?.console ?: return false
+
+        return RunContentManager.getInstance(console.project).selectedContent?.executionConsole == console
     }
 
     fun get(editor: Editor): SparkConsoleDetail? {

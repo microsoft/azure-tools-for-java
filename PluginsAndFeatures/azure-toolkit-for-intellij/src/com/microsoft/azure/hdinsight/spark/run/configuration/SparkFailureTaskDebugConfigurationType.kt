@@ -30,7 +30,7 @@ import javax.swing.Icon
 
 class SparkFailureTaskDebugConfigurationType : ConfigurationType {
     override fun getIcon(): Icon {
-        return PluginUtil.getIcon(CommonConst.SparkFailureTaskDebugIconPath)
+        return PluginUtil.getIcon(CommonConst.SparkFailureTaskDebugIcon_13x_Path)
     }
 
     override fun getConfigurationTypeDescription(): String {

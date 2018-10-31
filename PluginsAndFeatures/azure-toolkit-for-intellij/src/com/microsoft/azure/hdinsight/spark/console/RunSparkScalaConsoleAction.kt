@@ -23,11 +23,12 @@
 package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.*
+import com.intellij.execution.configuration.AbstractRunConfiguration
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.ConfigurationTypeUtil.findConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.execution.configurations.RuntimeConfigurationException
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.AnAction
@@ -36,14 +37,13 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiFile
+import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.intellij.util.runInReadAction
 import org.jetbrains.plugins.scala.console.RunConsoleAction
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
-import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
-import com.microsoft.intellij.util.runInReadAction
 import scala.Function1
 import scala.runtime.BoxedUnit
 
@@ -125,6 +125,8 @@ abstract class RunSparkScalaConsoleAction
                 checkSettingsBeforeRun(environment.runProfile)
 
                 runner.execute(environment)
+            } catch (e: RuntimeConfigurationException) {
+                Messages.showErrorDialog(project, "Can't start Spark Console since the Run Configuration file has errors: ${e.message}", ExecutionBundle.message("error.common.title"))
             } catch (e: ExecutionException) {
                 Messages.showErrorDialog(project, e.message, ExecutionBundle.message("error.common.title"))
             }
@@ -132,7 +134,7 @@ abstract class RunSparkScalaConsoleAction
     }
 
     open fun checkSettingsBeforeRun(runProfile: RunProfile?) {
-        (runProfile as? RunConfigurationBase)?.checkSettingsBeforeRun()
+        (runProfile as? AbstractRunConfiguration)?.checkSettingsBeforeRun()
     }
 
     override fun getMyConfigurationType(): RemoteDebugRunConfigurationType? =

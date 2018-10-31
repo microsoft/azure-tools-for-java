@@ -23,6 +23,7 @@
 package com.microsoft.azure.hdinsight.spark.run.configuration
 
 import com.intellij.execution.Executor
+import com.intellij.execution.configuration.AbstractRunConfiguration
 import com.intellij.execution.configurations.*
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.executors.DefaultRunExecutor
@@ -37,7 +38,7 @@ import org.jdom.Element
 class SparkFailureTaskDebugConfiguration(name: String,
                                          val module: SparkFailureTaskDebugConfigurableModel,
                                          factory: ConfigurationFactory) :
-        ModuleBasedConfiguration<RunConfigurationModule>(name, module, factory) {
+        AbstractRunConfiguration(name, module, factory) {
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
         return SparkFailureTaskDebugSettingsEditor(module.project)
     }

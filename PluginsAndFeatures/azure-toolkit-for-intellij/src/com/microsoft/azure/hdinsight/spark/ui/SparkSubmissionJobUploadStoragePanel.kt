@@ -35,13 +35,14 @@ class SparkSubmissionJobUploadStoragePanel: JPanel() {
     val azureBlobCard = SparkSubmissionJobUploadStorageAzureBlobCard()
     val sparkInteractiveSessionCard = SparkSubmissionJobUploadStorageSparkInteractiveSessionCard()
     val clusterDefaultStorageCard = SparkSubmissionJobUploadStorageClusterDefaultStorageCard()
-    val storageTypeComboBox = ComboBox(arrayOf(azureBlobCard.title, sparkInteractiveSessionCard.title, clusterDefaultStorageCard.title))
+    val adlsCard = SparkSubmissionJobUploadStorageAdlsCard()
+    val storageTypeComboBox = ComboBox(arrayOf(azureBlobCard.title, sparkInteractiveSessionCard.title, clusterDefaultStorageCard.title, adlsCard.title))
     val storageCardsPanel = JPanel(CardLayout()).apply {
         add(azureBlobCard, azureBlobCard.title)
         add(sparkInteractiveSessionCard, sparkInteractiveSessionCard.title)
         add(clusterDefaultStorageCard, clusterDefaultStorageCard.title)
+        add(adlsCard, adlsCard.title)
     }
-    var storageAccountType: SparkSubmitStorageType = SparkSubmitStorageType.BLOB
     var errorMessage: String? = notFinishCheckMessage
 
     init {

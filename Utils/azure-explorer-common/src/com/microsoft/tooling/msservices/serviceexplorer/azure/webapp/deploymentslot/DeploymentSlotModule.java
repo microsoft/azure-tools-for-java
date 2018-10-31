@@ -1,8 +1,11 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
+import java.io.IOException;
+
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
@@ -26,6 +29,17 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
     }
 
     @Override
+    public void removeNode(final String sid, final String name, Node node) {
+        try {
+            presenter.onDeleteDeploymentSlot(sid, this.webAppId, name);
+            removeDirectChildNode(node);
+        } catch (Exception e) {
+            DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Deployment Slot",
+                e, "Azure Services Explorer - Error Deleting Deployment Slot", false, true);
+        }
+    }
+
+    @Override
     protected void refreshItems() throws AzureCmdException {
         try {
             presenter.onRefreshDeploymentSlotModule(this.subscriptionId, this.webAppId);
@@ -37,7 +51,8 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
     @Override
     public void renderDeploymentSlots(@NotNull final List<DeploymentSlot> slots) {
         slots.forEach(slot -> addChildNode(
-            new DeploymentSlotNode(slot.id(), slot.parent().id(), this, slot.name(), slot.state(),
-                slot.operatingSystem().toString(), this.subscriptionId, slot.defaultHostName())));
+            new DeploymentSlotNode(slot.id(), slot.parent().id(), slot.parent().name(),
+                this, slot.name(), slot.state(), slot.operatingSystem().toString(),
+                this.subscriptionId, slot.defaultHostName())));
     }
 }

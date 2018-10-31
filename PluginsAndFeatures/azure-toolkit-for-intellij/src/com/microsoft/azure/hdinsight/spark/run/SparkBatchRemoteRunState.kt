@@ -65,9 +65,11 @@ open class SparkBatchRemoteRunState(val serverlessSparkSubmitModel: SparkSubmitM
                             else ->
                             {
                                 consoleView!!.print("ERROR: ${messageWithType.value}\n", ConsoleViewContentType.ERROR_OUTPUT)
-                                ClassifiedExceptionFactory
+
+                                val classifiedEx = ClassifiedExceptionFactory
                                         .createClassifiedException(YarnDiagnosticsException(messageWithType.value))
-                                        .logStackTrace()
+                                classifiedEx.logStackTrace()
+                                classifiedEx.handleByUser()
                             }
                         }
                     },
@@ -81,6 +83,7 @@ open class SparkBatchRemoteRunState(val serverlessSparkSubmitModel: SparkSubmitM
                                 "SubmitFailedReason" to HDInsightUtil.normalizeTelemetryMessage(errMessage)))
 
                         consoleView!!.print("ERROR: $errMessage", ConsoleViewContentType.ERROR_OUTPUT)
+                        classifiedEx.handleByUser()
                     },
                     { onSuccess(it) })
 
@@ -98,7 +101,7 @@ open class SparkBatchRemoteRunState(val serverlessSparkSubmitModel: SparkSubmitM
             throw ExecutionException("The HDInsight cluster to submit is not selected, please config it at 'Run/Debug configuration -> Remotely Run in Cluster'.")
         }
 
-        if (parameter.artifactName.isNullOrBlank()) {
+        if (parameter.artifactName.isNullOrBlank() && parameter.localArtifactPath.isNullOrBlank()) {
             throw ExecutionException("The artifact to submit is not selected, please config it at 'Run/Debug configuration -> Remotely Run in Cluster'.")
         }
 

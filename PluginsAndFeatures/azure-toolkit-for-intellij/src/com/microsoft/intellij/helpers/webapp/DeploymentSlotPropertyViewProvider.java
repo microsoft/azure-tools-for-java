@@ -20,30 +20,29 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.ui
+package com.microsoft.intellij.helpers.webapp;
 
-import com.intellij.ui.HideableTitledPanel
-import java.awt.GridBagConstraints
-import java.awt.Insets
+import org.jetbrains.annotations.NotNull;
 
-class SparkSubmissionDebuggableContentPanel : SparkSubmissionContentPanel() {
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.intellij.helpers.UIHelperImpl;
 
-    val advancedConfigPanel = SparkSubmissionAdvancedConfigPanel()
-    private val hidableAdvancedConfigPanel = HideableTitledPanel(
-            "Advanced Configuration (Remote Debugging)", true, this.advancedConfigPanel, false)
+public class DeploymentSlotPropertyViewProvider extends WebAppBasePropertyViewProvider {
+    public static final String TYPE ="DEPLOYMENT_SLOT_PROPERTY";
 
-
-    init {
-        addAdvancedConfigLineItem()
+    @NotNull
+    @Override
+    public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
+        final String sid = virtualFile.getUserData(UIHelperImpl.SUBSCRIPTION_ID);
+        final String webAppId = virtualFile.getUserData(UIHelperImpl.WEBAPP_ID);
+        final String name = virtualFile.getUserData(UIHelperImpl.SLOT_NAME);
+        return DeploymentSlotPropertyView.create(project, sid, webAppId, name);
     }
 
-    private fun addAdvancedConfigLineItem() {
-        add(hidableAdvancedConfigPanel,
-                GridBagConstraints(0, ++displayLayoutCurrentRow,
-                        0, 1,
-                        0.0, 0.0,
-                        GridBagConstraints.SOUTHWEST, GridBagConstraints.HORIZONTAL,
-                        Insets(margin, margin, 0, 0), 0, 0))
-
+    @Override
+    protected String getType() {
+        return TYPE;
     }
 }

@@ -26,9 +26,9 @@ import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.configurations.RuntimeConfigurationWarning;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.components.JBScrollPane;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -37,7 +37,8 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
     private JTabbedPane executionTypeTabPane;
     private JPanel myWholePanel;
     private SparkLocalRunConfigurable myLocalRunConfigurable;
-    private SparkSubmissionContentPanelConfigurable myClusterSubmissionConfigurable;
+    private JScrollPane remoteConfigScrollPane;
+    private SparkSubmissionContentPanelConfigurable submissionContentPanelConfigurable;
 
     @NotNull
     private final Project myProject;
@@ -52,28 +53,32 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
     }
 
     protected void createUIComponents() {
-        myLocalRunConfigurable = new SparkLocalRunConfigurable(myProject);
-        myClusterSubmissionConfigurable = new SparkSubmissionDebuggablePanelConfigurable(
-                myProject, new SparkSubmissionDebuggableContentPanel());
+        myLocalRunConfigurable = new SparkLocalRunConfigurable(getProject());
+        remoteConfigScrollPane = new JBScrollPane();
+        setClusterSubmissionConfigurable(createSubmissionPanel());
+    }
+
+    protected SparkSubmissionContentPanelConfigurable createSubmissionPanel() {
+        return new SparkSubmissionDebuggablePanelConfigurable(getProject());
     }
 
     @Override
     public void setData(@NotNull SparkBatchJobConfigurableModel data) {
         // Data -> Component
         myLocalRunConfigurable.setData(data.getLocalRunConfigurableModel());
-        myClusterSubmissionConfigurable.setData(data.getSubmitModel());
+        submissionContentPanelConfigurable.setData(data.getSubmitModel());
         executionTypeTabPane.setSelectedIndex(data.getFocusedTabIndex());
 
         // Presentation only
         setLocalRunConfigEnabled(data.isLocalRunConfigEnabled());
-        myClusterSubmissionConfigurable.setClusterSelectionEnabled(data.isClusterSelectionEnabled());
+        submissionContentPanelConfigurable.setClusterSelectionEnabled(data.isClusterSelectionEnabled());
     }
 
     @Override
     public void getData(@NotNull SparkBatchJobConfigurableModel data) {
         // Component -> Data
         myLocalRunConfigurable.getData(data.getLocalRunConfigurableModel());
-        myClusterSubmissionConfigurable.getData(data.getSubmitModel());
+        submissionContentPanelConfigurable.getData(data.getSubmitModel());
         data.setFocusedTabIndex(executionTypeTabPane.getSelectedIndex());
     }
 
@@ -82,7 +87,7 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
     }
 
     public SparkSubmissionContentPanelConfigurable getClusterSubmissionConfigurable() {
-        return myClusterSubmissionConfigurable;
+        return submissionContentPanelConfigurable;
     }
 
     @NotNull
@@ -95,16 +100,17 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
     }
 
     protected void setClusterSubmissionConfigurable(SparkSubmissionContentPanelConfigurable myClusterSubmissionConfigurable) {
-        this.myClusterSubmissionConfigurable = myClusterSubmissionConfigurable;
+        this.submissionContentPanelConfigurable = myClusterSubmissionConfigurable;
+        remoteConfigScrollPane.setViewportView(myClusterSubmissionConfigurable.getComponent());
     }
 
     private void setLocalRunConfigEnabled(boolean enabled) {
         executionTypeTabPane.setEnabledAt(0, enabled);
     }
 
-    public void validate() throws ConfigurationException{
+    public void validate() throws ConfigurationException {
         try {
-            myClusterSubmissionConfigurable.validate();
+            submissionContentPanelConfigurable.validate();
         } catch (ConfigurationException e) {
             String remoteRunPrefix = "[Remotely Run in Cluster] ";
             if (e instanceof RuntimeConfigurationError) {

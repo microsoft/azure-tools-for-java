@@ -23,9 +23,11 @@
 package com.microsoft.azure.hdinsight.spark.run.action
 
 import com.intellij.execution.*
-import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.execution.configurations.RunnerSettings
+import com.intellij.execution.configurations.RuntimeConfigurationException
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
+import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
@@ -47,13 +49,12 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
             setting.configuration is RemoteDebugRunConfiguration &&
                     RunnerRegistry.getInstance().getRunner(runExecutor.id, setting.configuration) != null
 
-    override fun update(actionEvent: AnActionEvent?) {
-        super.update(actionEvent)
+    override fun update(actionEvent: AnActionEvent) {
+        val presentation = actionEvent.presentation.apply { isEnabled = false }
 
-        val project = actionEvent?.project ?: return
+        val project = actionEvent.project ?: return
         val runManagerEx = RunManagerEx.getInstanceEx(project)
         val selectedConfigSettings = runManagerEx.selectedConfiguration ?: return
-        val presentation = actionEvent.presentation
 
         presentation.isEnabled = canRun(selectedConfigSettings)
     }
@@ -83,16 +84,23 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
 
         try {
             val environment = ExecutionEnvironmentBuilder.create(runExecutor, configuration).build()
-            checkSettingsBeforeRun(environment.runProfile)
 
-            runner.execute(environment)
-        } catch (e: ExecutionException) {
+            try {
+                checkRunnerSettings(environment.runProfile, runner)
+                setting.isEditBeforeRun = false
+            } catch (configError: RuntimeConfigurationException) {
+                log().warn("Found configuration error $configError, pop up run configuration dialog")
+                setting.isEditBeforeRun = true
+            }
+
+            ProgramRunnerUtil.executeConfiguration(setting, runExecutor)
+        } catch (e: Exception) {
             Messages.showErrorDialog(project, e.message, ExecutionBundle.message("error.common.title"))
         }
     }
 
-    open fun checkSettingsBeforeRun(runProfile: RunProfile?) {
-        (runProfile as? RunConfigurationBase)?.checkSettingsBeforeRun()
+    open fun checkRunnerSettings(runProfile: RunProfile?, runner: ProgramRunner<RunnerSettings>) {
+        (runProfile as? RemoteDebugRunConfiguration)?.checkRunnerSettings(runner, null, null)
     }
 
 }

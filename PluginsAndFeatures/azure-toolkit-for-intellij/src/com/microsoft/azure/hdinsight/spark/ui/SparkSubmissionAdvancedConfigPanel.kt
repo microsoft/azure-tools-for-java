@@ -109,7 +109,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         add(sshUseKeyFileRadioButton)
     }
 
-    internal val checkSshCertIndicator = BackgroundTaskIndicator("Verify SSH Authentication...")
+    val checkSshCertIndicator = BackgroundTaskIndicator("Verify SSH Authentication...")
 
     private val helpButton = InplaceButton(IconButton("Help about connection to HDInsight using SSH", Help)) {
         BrowserUtil.browse(helpUrl)
@@ -161,7 +161,13 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
 
         // To enable/disable all options
-        enableRemoteDebugCheckBox.addItemListener { setSshAuthenticationUIEnabled(it.stateChange == SELECTED) }
+        enableRemoteDebugCheckBox.addItemListener {
+            setSshAuthenticationUIEnabled(it.stateChange == SELECTED)
+
+            if (it.stateChange == SELECTED) {
+                sshCheckSubject.onNext("Enabled remote debug")
+            }
+        }
 
         // To trigger SSH authentication background check
         val inputListener = object : DocumentAdapter() {
