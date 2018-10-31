@@ -81,14 +81,14 @@ chmod +x ./tools/IntellijVersionHelper
 if [ $INJECT_INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper $IJ_DISPLAY_VERSION_LATEST
 fi
-(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-$IJ_VERSION_LATEST -Pdep_plugins=$IJ_SCALA_VERSION_LATEST)
+(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-$IJ_VERSION_LATEST -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_LATEST)
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-$IJ_DISPLAY_VERSION_LATEST.zip
 
 # Build intellij plugin for fallback version
 if [ $INJECT_INTELLIJ_VERSION == "true" ] ; then
     ./tools/IntellijVersionHelper $IJ_DISPLAY_VERSION_FALLBACK
 fi
-(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-$IJ_VERSION_FALLBACK -Pdep_plugins=$IJ_SCALA_VERSION_FALLBACK)
+(cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-$IJ_VERSION_FALLBACK -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_FALLBACK)
 cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-$IJ_DISPLAY_VERSION_FALLBACK.zip
 
 # Extract jars to sign
