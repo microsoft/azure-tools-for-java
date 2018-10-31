@@ -33,19 +33,24 @@ import javafx.scene.Scene;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.WindowEvent;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
-/**
- * Created by vlashch on 10/17/16.
- */
 class LoginWindow extends AzureDialogWrapper {
     public final String redirectUri;
     public final String requestUri;
     private String res = null;
 
-    private final JFXPanel fxPanel;
+    private JFXPanel fxPanel;
 
     private void setResult(String res) {
         this.res = res;
@@ -57,13 +62,31 @@ class LoginWindow extends AzureDialogWrapper {
 
     public LoginWindow(String requestUri, String redirectUri) {
         super(null, false, IdeModalityType.IDE);
-
         this.redirectUri =  redirectUri;
         this.requestUri =  requestUri;
-
-        fxPanel = new JFXPanel();
         setModal(true);
         setTitle("Azure Login Dialog");
+
+        // Set timeout to initialize JavaFX panel, as a workaround to prevent potential deadlock.
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<JFXPanel> future = executor.submit(new Callable<JFXPanel>() {
+            @Override
+            public JFXPanel call() {
+                return new JFXPanel();
+            }
+        });
+
+        try {
+            fxPanel = future.get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            // do nothing.
+        }
+
+        if (fxPanel == null) {
+            init();
+            return;
+        }
+
         fxPanel.setPreferredSize(new Dimension(500, 750));
         Platform.setImplicitExit(false);
         Runnable fxWorker = new Runnable() {
@@ -84,19 +107,25 @@ class LoginWindow extends AzureDialogWrapper {
                 });
 
                 Scene scene = new Scene(browser);
+
                 fxPanel.setScene(scene);
                 webEngine.load(requestUri);
             }
         };
-
         Platform.runLater(fxWorker);
-
         init();
     }
 
     @Override
     protected JComponent createCenterPanel() {
-        return fxPanel;
+        if (fxPanel != null) {
+            return fxPanel;
+        }
+
+        JPanel panel = new JPanel();
+        panel.add(new JLabel("Fail to initialize JavaFX panel."));
+        panel.setPreferredSize(new Dimension(500, 750));
+        return panel;
     }
 
     private void closeDlg() {
