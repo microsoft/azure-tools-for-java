@@ -73,7 +73,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         // get storage account and access token from submitModel
         IHDIStorageAccount storageAccount = null;
         String accessToken = null;
-        String adlRootPath = null;
+        String normalizedAdlRootPath = null;
         IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(
                 submitModel.getSubmissionParameter().getClusterName()).orElse(null);
 
@@ -98,23 +98,27 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
             case SPARK_INTERACTIVE_SESSION:
                 break;
             case ADLS_GEN1:
-                adlRootPath = submitModel.getJobUploadStorageModel().getAdlsRootPath();
-                adlRootPath = adlRootPath.endsWith("/") ? adlRootPath : adlRootPath + "/";
+                String rawRootPath = submitModel.getJobUploadStorageModel().getAdlsRootPath();
+                normalizedAdlRootPath = rawRootPath.endsWith("/") ? rawRootPath : rawRootPath + "/";
                 // e.g. for adl://john.azuredatalakestore.net/root/path, adlsAccountName is john
-                String adlsAccountName =  adlRootPath.split("\\.")[0].substring(6);
+                String adlsAccountName =  normalizedAdlRootPath.split("\\.")[0].split("//")[1];
                 SubscriptionDetail subscriptionDetail =
                         AzureSparkClusterManager.getInstance().getSubscriptionDetailByStoreAccountName(adlsAccountName)
                                 .toBlocking().singleOrDefault(null);
+                if (subscriptionDetail == null) {
+                    throw new ExecutionException(String.format("Error getting subscription info by ADLS root path. Please check if the ADLS account is %s's storage account", submitModel.getClusterName()));
+                }
                 // get Access Token
                 try {
                     accessToken = AzureSparkClusterManager.getInstance().getAccessToken(subscriptionDetail.getTenantId());
                 } catch (IOException ex) {
-                    log().warn("Error get access token. " + ExceptionUtils.getStackTrace(ex));
+                    log().warn("Error getting access token based on the given ADLS root path. " + ExceptionUtils.getStackTrace(ex));
+                    throw new ExecutionException("Error getting access token based on the given ADLS root path");
                 }
                 break;
         }
 
-        return new SparkBatchJob(submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount, accessToken, adlRootPath);
+        return new SparkBatchJob(submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount, accessToken, normalizedAdlRootPath);
     }
 
     @Nullable

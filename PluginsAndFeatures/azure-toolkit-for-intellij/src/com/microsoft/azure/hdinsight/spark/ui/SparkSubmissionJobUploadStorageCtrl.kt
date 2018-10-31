@@ -201,11 +201,12 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                             errorMsg = "ADLS Gen 1 storage type requires user to sign in first"
                         } else {
                             // basic validation for ADLS root path
-                            if (adlsRootPath != null && !ADLS_ROOT_PATH_PATTERN.matches(adlsRootPath!!)) {
+                            // pattern for adl root path. e.g. adl://john.azuredatalakestore.net/root/path/
+                            if (adlsRootPath != null && !"adl://([^/.]+\\.)+[^/.]+(/[^/.]+)*/?$".toRegex().matches(adlsRootPath!!)) {
                                 uploadPath = "-"
                                 errorMsg = "ADLS Root Path is invalid"
                             } else {
-                                val formatAdlsRootPath = if (adlsRootPath?.endsWith("/")!!) adlsRootPath else "$adlsRootPath/"
+                                val formatAdlsRootPath = if (adlsRootPath?.endsWith("/") == true) adlsRootPath else "$adlsRootPath/"
                                 uploadPath = "${formatAdlsRootPath}SparkSubmission/"
                                 errorMsg = null
                             }

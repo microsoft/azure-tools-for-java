@@ -61,13 +61,13 @@ class SparkSubmissionJobUploadStorageAdlsCard: SparkSubmissionJobUploadStorageBa
                 }
             }
             row {
-                c(adlsRootPathLabel) {}; c(adlsRootPathField) {}
+                c(adlsRootPathLabel); c(adlsRootPathField)
             }
             row {
-                c(authMethodLabel) {}; c(authMethodComboBox) {}
+                c(authMethodLabel); c(authMethodComboBox)
             }
             row {
-                c(null) {}; c(azureAccountCards) {}
+                c(); c(azureAccountCards)
             }
         }
         layout = formBuilder.createGridLayoutManager()

@@ -47,7 +47,7 @@ class SparkSubmissionJobUploadStorageAdlsSignOutCard: SparkSubmissionJobUploadSt
                     anchor = ANCHOR_WEST
                 }
                 row {
-                    c(azureAccountLabel) {}; c(signOutLink) {}
+                    c(azureAccountLabel); c(signOutLink)
                 }
             }
         }

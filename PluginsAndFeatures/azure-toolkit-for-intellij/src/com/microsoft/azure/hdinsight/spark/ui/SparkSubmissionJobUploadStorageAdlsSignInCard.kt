@@ -41,7 +41,7 @@ class SparkSubmissionJobUploadStorageAdlsSignInCard: SparkSubmissionJobUploadSto
                 }
             }
             row {
-                c(signInLink) {}
+                c(signInLink)
             }
         }
         layout = formBuilder.createGridLayoutManager()

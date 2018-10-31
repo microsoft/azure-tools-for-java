@@ -57,9 +57,6 @@ class SparkSubmitJobUploadStorageModel: ILogger {
     @get:Transient @set:Transient var errorMsg: String? = null
 
     // model for ADLS Gen 1 storage type
-    // pattern for adl root path. e.g. adl://john.azuredatalakestore.net/root/path/
-    val ADLS_ROOT_PATH_PATTERN = "adl://([^/.]+\\.)+[^/.]+(/[^/.]+)*/?$".toRegex()
-
     @Attribute("adl_root_path")
     var adlsRootPath: String? = null
 
