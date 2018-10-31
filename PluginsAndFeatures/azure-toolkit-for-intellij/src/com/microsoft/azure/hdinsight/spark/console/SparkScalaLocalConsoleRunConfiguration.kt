@@ -73,13 +73,15 @@ class SparkScalaLocalConsoleRunConfiguration(
 
         // Check repl dependence and prompt the user to fix it
         checkReplDependenceAndTryToFix(replLibraryCoord)
+        params.classPath.addAll(getDependencyClassPaths(replLibraryCoord))
 
-        val library = getReplLibrary(replLibraryCoord) ?: throw ExecutionException("""
-                The library $replLibraryCoord is not in project dependencies, please add it as the top one of list.
-                ( Refer to https://www.jetbrains.com/help/idea/library.html#add-library-to-module-dependencies )
-                """.trimIndent())
+        // Workaround for Spark 2.3 jline issue, refer to:
+        // - https://github.com/Microsoft/azure-tools-for-java/issues/2285
+        // - https://issues.apache.org/jira/browse/SPARK-13710
+        val jlineLibraryCoord = "jline:jline:2.12.1"
+        promptAndFix(jlineLibraryCoord)
+        params.classPath.addAll(getDependencyClassPaths(jlineLibraryCoord))
 
-        params.classPath.addAll(library.getFiles(OrderRootType.CLASSES).map { it.presentableUrl })
         params.classPath.addAll(localRunParams.classPath.pathList)
         params.mainClass = mainClass()
 
@@ -100,6 +102,15 @@ class SparkScalaLocalConsoleRunConfiguration(
         localRunParams.env.forEach { name, value -> params.addEnv(name, value) }
 
         return params
+    }
+
+    private fun getDependencyClassPaths(libraryCoord: String): List<String> {
+        val library = getLibraryByCoord(libraryCoord) ?: throw ExecutionException("""
+                The library $libraryCoord is not in project dependencies, please add it as the top one of list.
+                ( Refer to https://www.jetbrains.com/help/idea/library.html#add-library-to-module-dependencies )
+                """.trimIndent())
+
+        return library.getFiles(OrderRootType.CLASSES).map { it.presentableUrl }
     }
 
     private fun findReplCoord(): String? {
@@ -123,37 +134,42 @@ class SparkScalaLocalConsoleRunConfiguration(
     }
 
     private fun checkReplDependenceAndTryToFix(replLibraryCoord: String) {
-        if (getReplLibrary(replLibraryCoord) == null
+        if (getLibraryByCoord(replLibraryCoord) == null
                 && JavaPsiFacade.getInstance(project).findClass(replMain, ProjectScope.getLibrariesScope(project)) == null) {
             // `repl.Main` is not in the project class path
-            val toFixDialog = object : ErrorWindow(
-                    project,
-                    "The library $replLibraryCoord is not in project dependencies, would you like to auto fix it?",
-                    "Auto fix dependency issue to confirm") {
-                init {
-                    setOKButtonText("Auto Fix")
-                }
-
-                override fun createActions(): Array<Action> {
-                    return arrayOf(okAction, cancelAction)
-                }
-            }
-
-            val toFix = toFixDialog.showAndGet()
-
-            if (toFix) {
-                fixReplDependence(replLibraryCoord)
-            }
+            promptAndFix(replLibraryCoord)
         }
     }
 
-    private fun fixReplDependence(replLibraryCoord: String) {
+    private fun promptAndFix(libraryCoord: String) {
+        val toFixDialog = object : ErrorWindow(
+                project,
+                "The library $libraryCoord is not in project dependencies, would you like to auto fix it?",
+                "Auto fix dependency issue to confirm") {
+            init {
+                setOKButtonText("Auto Fix")
+            }
+
+            override fun createActions(): Array<Action> {
+                return arrayOf(okAction, cancelAction)
+            }
+        }
+
+        val toFix = toFixDialog.showAndGet()
+
+        if (toFix) {
+            fixDependence(libraryCoord)
+        }
+
+    }
+
+    private fun fixDependence(libraryCoord: String) {
         runInWriteAction {
             val projectRepositories = RemoteRepositoriesConfiguration.getInstance(project).repositories
             val newLibConf: NewLibraryConfiguration = JarRepositoryManager.resolveAndDownload(
-                    project, replLibraryCoord, false, false, true, null, projectRepositories) ?: return@runInWriteAction
+                    project, libraryCoord, false, false, true, null, projectRepositories) ?: return@runInWriteAction
             val libraryType = newLibConf.libraryType
-            val library = ProjectLibraryTable.getInstance(project).createLibrary("Spark Console(auto-fix): $replLibraryCoord")
+            val library = ProjectLibraryTable.getInstance(project).createLibrary("Spark Console(auto-fix): $libraryCoord")
 
             val editor = NewLibraryEditor(libraryType, newLibConf.properties)
             newLibConf.addRoots(editor)
@@ -163,8 +179,8 @@ class SparkScalaLocalConsoleRunConfiguration(
         }
     }
 
-    private fun getReplLibrary(replLibraryCoord: String): Library? = ProjectLibraryTable.getInstance(project)
-            .libraries.firstOrNull { it.name?.endsWith(replLibraryCoord) == true }
+    private fun getLibraryByCoord(libraryCoord: String): Library? = ProjectLibraryTable.getInstance(project)
+            .libraries.firstOrNull { it.name?.endsWith(libraryCoord) == true }
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
         val state = object : JavaCommandLineState(env) {

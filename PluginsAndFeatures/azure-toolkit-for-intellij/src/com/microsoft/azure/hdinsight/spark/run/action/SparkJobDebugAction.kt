@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.spark.run.action
 import com.intellij.execution.Executor
 import com.intellij.execution.ExecutorRegistry
 import com.intellij.icons.AllIcons
+import com.microsoft.azure.hdinsight.common.CommonConst
 import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor.EXECUTOR_ID
 
@@ -32,7 +33,7 @@ class SparkJobDebugAction
     : SparkRunConfigurationAction(
         "SparkJobDebug",
         "Submit Spark Application to remote cluster with debugging support",
-        StreamUtil.getImageResourceFile("/icons/ToolWindowSparkJobDebug.png")?: AllIcons.Toolwindows.ToolWindowDebugger) {
+        StreamUtil.getImageResourceFile(CommonConst.ToolWindowSparkJobDebugIcon_13x_Path)?: AllIcons.Toolwindows.ToolWindowDebugger) {
     override val runExecutor: Executor
         get() = ExecutorRegistry.getInstance().getExecutorById(EXECUTOR_ID)
 }

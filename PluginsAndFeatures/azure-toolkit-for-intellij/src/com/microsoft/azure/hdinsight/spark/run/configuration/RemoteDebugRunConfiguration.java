@@ -161,6 +161,11 @@ public class RemoteDebugRunConfiguration extends AbstractRunConfiguration
                     "The specified local artifact path %s doesn't exist", parameter.getLocalArtifactPath()));
         }
 
+        if (!getSubmitModel().getArtifactPath().isPresent()) {
+            throw new RuntimeConfigurationError(String.format(
+                    "No artifact selected or selected artifact %s is gone.", getSubmitModel().getArtifactName()));
+        }
+
         if (StringUtils.isBlank(parameter.getMainClassName())) {
             throw new RuntimeConfigurationError("The main class name should not be empty");
         }

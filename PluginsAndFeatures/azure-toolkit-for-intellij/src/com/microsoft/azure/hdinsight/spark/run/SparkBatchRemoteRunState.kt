@@ -101,7 +101,7 @@ open class SparkBatchRemoteRunState(val serverlessSparkSubmitModel: SparkSubmitM
             throw ExecutionException("The HDInsight cluster to submit is not selected, please config it at 'Run/Debug configuration -> Remotely Run in Cluster'.")
         }
 
-        if (parameter.artifactName.isNullOrBlank()) {
+        if (parameter.artifactName.isNullOrBlank() && parameter.localArtifactPath.isNullOrBlank()) {
             throw ExecutionException("The artifact to submit is not selected, please config it at 'Run/Debug configuration -> Remotely Run in Cluster'.")
         }
 

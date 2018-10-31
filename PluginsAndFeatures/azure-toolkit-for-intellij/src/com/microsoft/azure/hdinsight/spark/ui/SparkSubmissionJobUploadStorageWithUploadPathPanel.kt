@@ -103,7 +103,11 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
     override fun setData(data: SparkSubmitJobUploadStorageModel) {
         // data -> Component
         val applyData: () -> Unit = {
-            storagePanel.storageTypeComboBox.selectedIndex = findStorageTypeComboBoxSelectedIndex(data.storageAccountType)
+            // Only set for changed
+            if (storagePanel.storageTypeComboBox.selectedIndex != findStorageTypeComboBoxSelectedIndex(data.storageAccountType)) {
+                storagePanel.storageTypeComboBox.selectedIndex = findStorageTypeComboBoxSelectedIndex(data.storageAccountType)
+            }
+
             storagePanel.errorMessage = data.errorMsg
             storagePanel.storageAccountType = data.storageAccountType
             uploadPathField.text = data.uploadPath

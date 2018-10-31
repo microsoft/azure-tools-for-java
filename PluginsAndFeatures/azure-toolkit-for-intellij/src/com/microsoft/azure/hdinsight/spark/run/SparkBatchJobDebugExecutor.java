@@ -29,9 +29,9 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.common.CommonConst;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-
 import javax.swing.*;
 import java.util.Optional;
+
 
 public class SparkBatchJobDebugExecutor extends Executor {
     @NonNls
@@ -44,7 +44,7 @@ public class SparkBatchJobDebugExecutor extends Executor {
 
     @Override
     public Icon getToolWindowIcon() {
-        return Optional.ofNullable(StreamUtil.getImageResourceFile("/icons/ToolWindowSparkJobDebug.png"))
+        return Optional.ofNullable(StreamUtil.getImageResourceFile(com.microsoft.azure.hdinsight.common.CommonConst.ToolWindowSparkJobDebugIcon_13x_Path))
                 .map(Icon.class::cast)
                 .orElse(AllIcons.General.Debug);
     }
@@ -52,7 +52,7 @@ public class SparkBatchJobDebugExecutor extends Executor {
     @NotNull
     @Override
     public Icon getIcon() {
-        return Optional.ofNullable(StreamUtil.getImageResourceFile("/icons/ToolWindowSparkJobDebug.png"))
+        return Optional.ofNullable(StreamUtil.getImageResourceFile(com.microsoft.azure.hdinsight.common.CommonConst.ToolWindowSparkJobDebugIcon_16x_Path))
                 .map(Icon.class::cast)
                 .orElse(AllIcons.General.Debug);
     }

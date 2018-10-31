@@ -20,21 +20,22 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.run.action
+package com.microsoft.intellij.lang
 
-import com.intellij.execution.Executor
-import com.intellij.execution.ExecutorRegistry
-import com.intellij.icons.AllIcons
-import com.microsoft.azure.hdinsight.common.CommonConst
-import com.microsoft.azure.hdinsight.common.StreamUtil
-import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor.EXECUTOR_ID
+fun String.containsNonAsciiChars(): Boolean = this.contains(Spaces.nonAsciiChars)
 
-class SparkJobRunAction
-    : SparkRunConfigurationAction(
-        "SparkJobRun",
-        "Submit Spark Application to remote cluster",
-        StreamUtil.getImageResourceFile(CommonConst.ToolWindowSparkJobRunIcon_13x_Path)?: AllIcons.Actions.Upload) {
+fun String.containsAsciiControlChars(): Boolean = this.contains(Spaces.asciiControlChars)
 
-    override val runExecutor: Executor
-        get() = ExecutorRegistry.getInstance().getExecutorById(EXECUTOR_ID)
-}
+fun String.containsNonPrintUnicodeChars(): Boolean = this.contains(Spaces.nonPrintUnicodeChars)
+
+fun String.containsInvisibleChars(): Boolean =
+        this.containsNonAsciiChars() || this.containsAsciiControlChars() || this.containsNonPrintUnicodeChars()
+
+fun String.tagNonAsciiChars(tag: String): String = this.replace(Spaces.nonAsciiChars, tag)
+
+fun String.tagAsciiControlChars(tag: String): String = this.replace(Spaces.asciiControlChars, tag)
+
+fun String.tagNonPrintUnicodeChars(tag: String): String = this.replace(Spaces.nonPrintUnicodeChars, tag)
+
+fun String.tagInvisibleChars(tag: String): String =
+        this.tagNonAsciiChars(tag).tagAsciiControlChars(tag).tagNonPrintUnicodeChars(tag)

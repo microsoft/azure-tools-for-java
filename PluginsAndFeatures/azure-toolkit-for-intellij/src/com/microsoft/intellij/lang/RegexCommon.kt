@@ -20,21 +20,13 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.run.action
+package com.microsoft.intellij.lang
 
-import com.intellij.execution.Executor
-import com.intellij.execution.ExecutorRegistry
-import com.intellij.icons.AllIcons
-import com.microsoft.azure.hdinsight.common.CommonConst
-import com.microsoft.azure.hdinsight.common.StreamUtil
-import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor.EXECUTOR_ID
+// Spaces and characters
+object Spaces {
+    val nonAsciiChars = """[^\x00-\x7F]+""".toRegex()
 
-class SparkJobRunAction
-    : SparkRunConfigurationAction(
-        "SparkJobRun",
-        "Submit Spark Application to remote cluster",
-        StreamUtil.getImageResourceFile(CommonConst.ToolWindowSparkJobRunIcon_13x_Path)?: AllIcons.Actions.Upload) {
+    val asciiControlChars = """[\p{Cntrl}&&[^\r\n\t]]+""".toRegex()
 
-    override val runExecutor: Executor
-        get() = ExecutorRegistry.getInstance().getExecutorById(EXECUTOR_ID)
+    val nonPrintUnicodeChars = """[\p{C}]+""".toRegex()
 }
