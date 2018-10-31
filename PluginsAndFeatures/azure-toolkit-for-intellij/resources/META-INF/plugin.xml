@@ -19,6 +19,28 @@
   <change-notes>
     <![CDATA[
     <html>
+    <h3>[3.14.0]</h3>
+      <h4>Added</h4>
+      <ul>
+        <li>Support to show application settings of Deployment Slot.</li>
+        <li>Support to delete a Deployment Slot in Azure Explorer.</li>
+      </ul>
+      <h4>Changed</h4>
+      <ul>
+        <li>Change the Deployment Slot area in "Run on Web App" to be hideable.</li>
+        <li>Use Azul Zulu JDK in Dockerfile of Web App for Containers.</li>
+      </ul>
+      <h4>Fixed</h4>
+      <ul>
+        <li>
+          <a href="https://github.com/Microsoft/azure-tools-for-java/issues/2215" rel="nofollow">#2215</a>
+          Fix the prompt warning message on deleting web app not correct issue.
+        </li>
+        <li>
+          <a href="https://github.com/Microsoft/azure-tools-for-java/issues/2310" rel="nofollow">#2310</a>
+          Fix the discarding of changes on Web App application settings too slow issue.
+        </li>
+      </ul>
       <h3>[3.13.0]</h3>
       <h4>Added</h4>
       <ul>
