@@ -161,6 +161,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
                 for (String key : editedAppSettings.keySet()) {
                     tableModel.addRow(new String[]{key, editedAppSettings.get(key)});
                 }
+                tableModel.fireTableDataChanged();
             }
         });
 
