@@ -101,7 +101,7 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
     // Getters / setters
     //
 
-    @NotNull
+    @Nullable
     public List<NameValuePair> getAccountFilter() {
         return Collections.singletonList(ODataParam.filter(ACCOUNT_FILTER));
     }

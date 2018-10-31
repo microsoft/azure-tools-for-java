@@ -30,6 +30,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
@@ -194,13 +195,13 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                             errorMsg = null
                         }
                     }
-                    SparkSubmitStorageType.ADLS -> it.apply {
-                        if (!isSignedIn) {
+                    SparkSubmitStorageType.ADLS_GEN1 -> it.apply {
+                        if (!AzureSparkClusterManager.getInstance().isSignedIn()) {
                             uploadPath = "-"
                             errorMsg = "ADLS Gen 1 storage type requires user to sign in first"
                         } else {
                             // basic validation for ADLS root path
-                            if (adlsRootPath != null && !ADLS_ROOT_PATH_PATTERN.matcher(adlsRootPath).find()) {
+                            if (adlsRootPath != null && !ADLS_ROOT_PATH_PATTERN.matches(adlsRootPath!!)) {
                                 uploadPath = "-"
                                 errorMsg = "ADLS Root Path is invalid"
                             } else {

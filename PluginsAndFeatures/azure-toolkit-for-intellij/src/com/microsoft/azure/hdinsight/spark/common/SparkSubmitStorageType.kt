@@ -31,5 +31,5 @@ enum class SparkSubmitStorageType {
     BLOB,
     DEFAULT_STORAGE_ACCOUNT,
     SPARK_INTERACTIVE_SESSION,
-    ADLS
+    ADLS_GEN1
 }

@@ -31,7 +31,9 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.NameValuePair;
 import rx.Observable;
 
@@ -49,6 +51,7 @@ public class AzureSparkClusterManager extends AzureSparkServerlessClusterManager
         return AzureSparkClusterManager.LazyHolder.INSTANCE;
     }
 
+    @Nullable
     @Override
     public List<NameValuePair> getAccountFilter() {
         return null;
@@ -83,5 +86,25 @@ public class AzureSparkClusterManager extends AzureSparkServerlessClusterManager
         }
 
         return AdAuthManager.getInstance().getAccessToken(tenantId, getResourceEndpoint(), PromptBehavior.Auto);
+    }
+
+    public boolean isSignedIn() {
+        try {
+            return AuthMethodManager.getInstance().isSignedIn();
+        } catch (Exception ex) {
+            log().warn("Exception happens when we try to know if user signed in. " + ExceptionUtils.getStackTrace(ex));
+            return false;
+        }
+    }
+
+    @Nullable
+    public String getAzureAccountEmail() {
+        if (AuthMethodManager.getInstance() == null || AuthMethodManager.getInstance().getAuthMethodDetails() == null) {
+            return null;
+        } else if (AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail() == null) {
+            return AuthMethodManager.getInstance().getAuthMethodDetails().getCredFilePath();
+        } else {
+            return AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
+        }
     }
 }

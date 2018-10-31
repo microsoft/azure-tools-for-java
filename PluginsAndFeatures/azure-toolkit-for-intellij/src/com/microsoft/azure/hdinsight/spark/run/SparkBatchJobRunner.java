@@ -44,12 +44,7 @@ import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction;
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
-import com.microsoft.azuretools.adauth.AuthException;
-import com.microsoft.azuretools.adauth.PromptBehavior;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
@@ -102,7 +97,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 break;
             case SPARK_INTERACTIVE_SESSION:
                 break;
-            case ADLS:
+            case ADLS_GEN1:
                 adlRootPath = submitModel.getJobUploadStorageModel().getAdlsRootPath();
                 adlRootPath = adlRootPath.endsWith("/") ? adlRootPath : adlRootPath + "/";
                 // e.g. for adl://john.azuredatalakestore.net/root/path, adlsAccountName is john

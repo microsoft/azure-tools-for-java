@@ -31,9 +31,6 @@ import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.Transient
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azuretools.authmanage.AuthMethodManager
-import org.apache.commons.lang3.exception.ExceptionUtils
-import java.util.regex.Pattern
 import javax.swing.DefaultComboBoxModel
 
 @Tag("job_upload_storage")
@@ -61,18 +58,7 @@ class SparkSubmitJobUploadStorageModel: ILogger {
 
     // model for ADLS Gen 1 storage type
     // pattern for adl root path. e.g. adl://john.azuredatalakestore.net/root/path/
-    val ADLS_ROOT_PATH_PATTERN = Pattern.compile("adl://([^/.]+\\.)+[^/.]+(/[^/.]+)*/?$")
-
-    @get:Transient @set:Transient var isSignedIn: Boolean = false
-        get() = try {
-            AuthMethodManager.getInstance()?.isSignedIn ?: false
-        } catch (ex: Exception) {
-            log().warn("Exception happens when we try to know if user signed in. Error: ${ExceptionUtils.getStackTrace(ex)}")
-            false
-        }
-
-    @get:Transient @set:Transient var azureAccountEmail: String? = null
-        get() = AuthMethodManager.getInstance()?.authMethodDetails?.accountEmail ?: AuthMethodManager.getInstance()?.authMethodDetails?.credFilePath
+    val ADLS_ROOT_PATH_PATTERN = "adl://([^/.]+\\.)+[^/.]+(/[^/.]+)*/?$".toRegex()
 
     @Attribute("adl_root_path")
     var adlsRootPath: String? = null

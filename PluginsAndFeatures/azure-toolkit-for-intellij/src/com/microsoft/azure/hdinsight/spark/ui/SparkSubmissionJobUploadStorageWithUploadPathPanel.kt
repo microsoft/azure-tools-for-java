@@ -27,6 +27,7 @@ import com.intellij.openapi.application.ModalityState
 import com.intellij.ui.HideableTitledPanel
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
+import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azuretools.securestore.SecureStore
@@ -99,7 +100,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
                 data.storageAccountType = SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
             }
             storagePanel.adlsCard.title -> {
-                data.storageAccountType = SparkSubmitStorageType.ADLS
+                data.storageAccountType = SparkSubmitStorageType.ADLS_GEN1
                 data.adlsRootPath = storagePanel.adlsCard.adlsRootPathField.text
             }
         }
@@ -131,7 +132,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
                         storagePanel.azureBlobCard.storageContainerUI.comboBox.model = data.containersModel as DefaultComboBoxModel<Any>
                     }
                 }
-                SparkSubmitStorageType.ADLS -> {
+                SparkSubmitStorageType.ADLS_GEN1 -> {
                     // Only set for changed
                     if (storagePanel.adlsCard.adlsRootPathField.text != data.adlsRootPath) {
                         storagePanel.adlsCard.adlsRootPathField.text = data.adlsRootPath
@@ -139,9 +140,9 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
 
                     // show sign in/out panel based on whether user has signed in or not
                     val curLayout = storagePanel.adlsCard.azureAccountCards.layout as CardLayout
-                    if (data.isSignedIn) {
+                    if (AzureSparkClusterManager.getInstance().isSignedIn()) {
                         curLayout.show(storagePanel.adlsCard.azureAccountCards, storagePanel.adlsCard.signOutCard.title)
-                        storagePanel.adlsCard.signOutCard.azureAccountLabel.text = data.azureAccountEmail ?: "signed in with credential file"
+                        storagePanel.adlsCard.signOutCard.azureAccountLabel.text = AzureSparkClusterManager.getInstance().getAzureAccountEmail()
                     } else {
                         curLayout.show(storagePanel.adlsCard.azureAccountCards, storagePanel.adlsCard.signInCard.title)
                     }
@@ -156,7 +157,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
             if ((storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.azureBlobCard.title && storageAccountType == SparkSubmitStorageType.BLOB) ||
                     (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.sparkInteractiveSessionCard.title && storageAccountType == SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION) ||
                     (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.clusterDefaultStorageCard.title && storageAccountType == SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT) ||
-                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.adlsCard.title && storageAccountType == SparkSubmitStorageType.ADLS)) {
+                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.adlsCard.title && storageAccountType == SparkSubmitStorageType.ADLS_GEN1)) {
                 return it
             }
         }
