@@ -215,7 +215,7 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
     public boolean isConfigurationFromContext(RemoteDebugRunConfiguration jobConfiguration, ConfigurationContext context) {
         return getMainClassFromContext(context)
                 .filter(mcPair -> getNormalizedClassName(mcPair.getValue())
-                            .map(name -> name.equals(jobConfiguration.getModel().getLocalRunConfigurableModel().getRunClass()))
+                            .map(name -> name.equals(jobConfiguration.getModel().getSubmitModel().getMainClassName()))
                             .orElse(false))
                 .filter(mcPair -> Optional.of(mcPair.getKey())
                             .filter(e -> e instanceof PsiMethod)

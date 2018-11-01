@@ -269,7 +269,7 @@ public class RemoteDebugRunConfiguration extends AbstractRunConfiguration
     @Nullable
     @Override
     public String suggestedName() {
-        return Optional.ofNullable(getModel().getLocalRunConfigurableModel().getRunClass())
+        return Optional.ofNullable(getModel().getSubmitModel().getMainClassName())
                 .map(JavaExecutionUtil::getPresentableClassName)
                 .map(className -> "[Spark Job] " + className)
                 .orElse(null);
