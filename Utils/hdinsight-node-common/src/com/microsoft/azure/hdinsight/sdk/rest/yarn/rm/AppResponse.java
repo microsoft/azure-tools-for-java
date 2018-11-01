@@ -21,8 +21,10 @@
  */
 package com.microsoft.azure.hdinsight.sdk.rest.yarn.rm;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AppResponse implements IConvertible {
     private App app;
 
