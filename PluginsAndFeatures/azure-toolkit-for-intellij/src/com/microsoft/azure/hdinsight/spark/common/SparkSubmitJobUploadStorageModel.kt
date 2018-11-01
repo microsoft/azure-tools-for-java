@@ -30,10 +30,11 @@ package com.microsoft.azure.hdinsight.spark.common
 import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.Transient
+import com.microsoft.azure.hdinsight.common.logger.ILogger
 import javax.swing.DefaultComboBoxModel
 
 @Tag("job_upload_storage")
-class SparkSubmitJobUploadStorageModel {
+class SparkSubmitJobUploadStorageModel: ILogger {
     @get:Transient val SERVICE_NAME_PREFIX = "Azure IntelliJ Plugin Job Upload Storage Azure Blob - "
 
     @Attribute("storage_account")
@@ -54,6 +55,10 @@ class SparkSubmitJobUploadStorageModel {
     var storageAccountType: SparkSubmitStorageType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
 
     @get:Transient @set:Transient var errorMsg: String? = null
+
+    // model for ADLS Gen 1 storage type
+    @Attribute("adl_root_path")
+    var adlsRootPath: String? = null
 
     fun getCredentialAzureBlobAccount(): String? = storageAccount?.let{ SERVICE_NAME_PREFIX + storageAccount }
 }

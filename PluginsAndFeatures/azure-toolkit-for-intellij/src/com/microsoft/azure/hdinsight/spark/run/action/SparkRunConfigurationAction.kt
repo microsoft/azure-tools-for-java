@@ -94,6 +94,7 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
             }
 
             ProgramRunnerUtil.executeConfiguration(setting, runExecutor)
+            setting.isEditBeforeRun = false
         } catch (e: Exception) {
             Messages.showErrorDialog(project, e.message, ExecutionBundle.message("error.common.title"))
         }
