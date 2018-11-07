@@ -34,21 +34,25 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
 import java.net.URI
 
-class SparkScalaLivyConsoleRunConfiguration(project: Project,
+open class SparkScalaLivyConsoleRunConfiguration(project: Project,
                                             configurationFactory: SparkScalaLivyConsoleRunConfigurationFactory,
                                             batchRunConfiguration: RemoteDebugRunConfiguration?,
                                             name: String)
     : AbstractRunConfiguration (
         name, batchRunConfiguration?.configurationModule ?: RunConfigurationModule(project), configurationFactory)
 {
+    protected open var batchRunConfiguration = batchRunConfiguration
 
-    var clusterName = batchRunConfiguration?.submitModel?.submissionParameter?.clusterName
+    protected open fun getSubmitModel() : SparkSubmitModel? = batchRunConfiguration?.submitModel?: null
+
+    protected open var clusterName : String = getSubmitModel()?.submissionParameter?.clusterName
             ?: throw RuntimeConfigurationWarning("A Spark Run Configuration should be selected to start a console")
 
-    private lateinit var cluster: IClusterDetail
+    protected lateinit var cluster: IClusterDetail
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> =
             SparkScalaLivyConsoleRunConfigurationEditor()

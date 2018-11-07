@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.spark.console
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.ServerlessSparkConfiguration
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 
 class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaLivyConsoleConfigurationType)
@@ -35,10 +36,10 @@ class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaL
 
     override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
         // Create a Spark Scala Livy run configuration based on Spark Batch run configuration
-        return SparkScalaLivyConsoleRunConfiguration(
-                template.project,
-                this,
-                template as? RemoteDebugRunConfiguration,
-                "${template.name ?: ""} >> Spark Livy Interactive Session Console(Scala)")
+        if(template is ServerlessSparkConfiguration) {
+            return ServerlessSparkScalaLivyConsoleRunConfiguration(template.project, this, template, "${template.name} >> Azure Data Lake Spark Livy Interactive Session Console(Scala)")
+        } else {
+            return SparkScalaLivyConsoleRunConfiguration(template.project, this, template as RemoteDebugRunConfiguration, "${template.name} >> Spark Livy Interactive Session Console(Scala)")
+        }
     }
 }
