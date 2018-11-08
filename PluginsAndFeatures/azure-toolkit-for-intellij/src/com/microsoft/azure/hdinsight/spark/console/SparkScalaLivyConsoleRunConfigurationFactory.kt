@@ -34,12 +34,21 @@ class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaL
         return SparkScalaLivyConsoleRunConfiguration(project, this, null, "")
     }
 
-    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
-        // Create a Spark Scala Livy run configuration based on Spark Batch run configuration
-        if(template is ServerlessSparkConfiguration) {
-            return ServerlessSparkScalaLivyConsoleRunConfiguration(template.project, this, template, "${template.name} >> Azure Data Lake Spark Livy Interactive Session Console(Scala)")
-        } else {
-            return SparkScalaLivyConsoleRunConfiguration(template.project, this, template as RemoteDebugRunConfiguration, "${template.name} >> Spark Livy Interactive Session Console(Scala)")
-        }
-    }
+    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration =
+            // Create a Spark Scala Livy run configuration based on Spark Batch run configuration
+            if (template is ServerlessSparkConfiguration) {
+                ServerlessSparkScalaLivyConsoleRunConfiguration(
+                        template.project,
+                        this,
+                        template,
+                        "${template.name} >> Azure Data Lake Spark Livy Interactive Session Console(Scala)"
+                )
+            } else {
+                SparkScalaLivyConsoleRunConfiguration(
+                        template.project,
+                        this,
+                        template as RemoteDebugRunConfiguration,
+                        "${template.name} >> Spark Livy Interactive Session Console(Scala)"
+                )
+            }
 }

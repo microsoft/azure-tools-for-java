@@ -39,18 +39,20 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfi
 import java.net.URI
 
 open class SparkScalaLivyConsoleRunConfiguration(project: Project,
-                                            configurationFactory: SparkScalaLivyConsoleRunConfigurationFactory,
-                                            batchRunConfiguration: RemoteDebugRunConfiguration?,
-                                            name: String)
+                                                 configurationFactory: SparkScalaLivyConsoleRunConfigurationFactory,
+                                                 private val batchRunConfiguration: RemoteDebugRunConfiguration?,
+                                                 name: String)
     : AbstractRunConfiguration (
         name, batchRunConfiguration?.configurationModule ?: RunConfigurationModule(project), configurationFactory)
 {
-    protected open var batchRunConfiguration = batchRunConfiguration
+    open val runConfigurationTypeName = "HDInsight Spark Run Configuration"
 
-    protected open fun getSubmitModel() : SparkSubmitModel? = batchRunConfiguration?.submitModel?: null
+    protected open val submitModel : SparkSubmitModel?
+        get() = batchRunConfiguration?.submitModel
 
-    protected open var clusterName : String = getSubmitModel()?.submissionParameter?.clusterName
-            ?: throw RuntimeConfigurationWarning("A Spark Run Configuration should be selected to start a console")
+    protected open var clusterName : String = ""
+        get() = submitModel?.submissionParameter?.clusterName
+            ?: throw RuntimeConfigurationWarning("A $runConfigurationTypeName should be selected to start a console")
 
     protected lateinit var cluster: IClusterDetail
 

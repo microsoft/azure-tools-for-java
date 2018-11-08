@@ -25,7 +25,6 @@ package com.microsoft.azure.hdinsight.spark.console
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.configurations.RuntimeConfigurationError
-import com.intellij.execution.configurations.RuntimeConfigurationWarning
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
@@ -41,19 +40,18 @@ class ServerlessSparkScalaLivyConsoleRunConfiguration(project: Project,
     : SparkScalaLivyConsoleRunConfiguration(
         project, configurationFactory, batchRunConfiguration, name)
 {
-    override var clusterName : String = getSubmitModel()?.submissionParameter?.clusterName
-            ?: throw RuntimeConfigurationWarning("An Azure Data Lake Spark Run Configuration should be selected to start a console")
+    override val runConfigurationTypeName = "Azure Data Lake Spark Run Configuration"
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
-        var sparkCluster = cluster as? AzureSparkServerlessCluster ?: return null
+        val sparkCluster = cluster as? AzureSparkServerlessCluster ?: return null
 
-        var livyUrl = (sparkCluster?.livyUri?.toString()?:return null).trimEnd('/') + '/'
+        val livyUrl = (sparkCluster.livyUri?.toString() ?: return null).trimEnd('/') + "/"
 
         val session = ServerlessSparkSession(
                 name,
                 URI.create(livyUrl),
-                sparkCluster?.tenantId,
-                sparkCluster?.account)
+                sparkCluster.tenantId,
+                sparkCluster.account)
 
         return SparkScalaLivyConsoleRunProfileState(SparkScalaConsoleBuilder(project), session)
     }
@@ -63,6 +61,6 @@ class ServerlessSparkScalaLivyConsoleRunConfiguration(project: Project,
                 .getInstance()
                 .clusters
                 .find { it.name == this.clusterName }
-                ?:throw RuntimeConfigurationError("Can't find the target cluster $clusterName");
+                ?:throw RuntimeConfigurationError("Can't find the target cluster $clusterName")
     }
 }

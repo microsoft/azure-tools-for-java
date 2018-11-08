@@ -25,23 +25,15 @@ package com.microsoft.azure.hdinsight.sdk.common.livy.interactive;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.common.ServerlessSparkHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
-import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.SessionKind;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
-import java.util.List;
-import java.util.ArrayList;
-
-import rx.Observable;
 
 public class ServerlessSparkSession extends SparkSession {
     @NotNull
     private ServerlessSparkHttpObservable http;
 
-    public ServerlessSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId, @NotNull AzureSparkServerlessAccount adlAccount) throws Exception {
+    public ServerlessSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId, @NotNull AzureSparkServerlessAccount adlAccount) {
         super(name, baseUrl);
         this.http = new ServerlessSparkHttpObservable(tenantId, adlAccount);
     }
