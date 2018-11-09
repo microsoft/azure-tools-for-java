@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class AdAuthManager {
     private static final Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
@@ -137,6 +138,72 @@ public class AdAuthManager {
         return false;
     }
 
+    public AuthResult deviceLogin() throws IOException {
+        cleanCache();
+        final AuthContext ac = createContext(getCommonTenantId(), null);
+        final AuthResult result = ac.acquireToken(env.managementEndpoint(), true, null, null);
+        if (!result.isUserIdDisplayble()) {
+            // todo refactor the words
+            throw new IllegalArgumentException("User Info is null");
+        }
+
+        // todo: copied from signIn need refactoring
+        final String userId = result.getUserId();
+        final Map<String, List<String>> tidToSidsMap = new HashMap<>();
+        final List<Tenant> tenants = AccessTokenAzureManager.getTenants(getCommonTenantId());
+        for (final Tenant tenant: tenants) {
+            final String tid = tenant.tenantId();
+            final AuthContext act = createContext(tid, null);
+            try {
+                act.acquireToken(env.managementEndpoint(), false, userId, null);
+            } catch (AuthException e) {
+                act.acquireToken(env.managementEndpoint(), true, userId, null);
+            }
+
+            try {
+                act.acquireToken(env.resourceManagerEndpoint(), false, userId, null);
+            } catch (AuthException e) {
+                if (CommonSettings.getEnvironment() instanceof ProvidedEnvironment) {
+                    // Swallow the exception since some provided environments are not full featured
+                    LOGGER.warning("Can't get " + env.resourceManagerEndpoint() + " access token from environment " +
+                        CommonSettings.getEnvironment().getName());
+                } else {
+                    throw e;
+                }
+            }
+
+            try {
+                act.acquireToken(env.graphEndpoint(), false, userId, null);
+            } catch (AuthException e) {
+                if (CommonSettings.getEnvironment() instanceof ProvidedEnvironment) {
+                    // Swallow the exception since some provided environments are not full featured
+                    LOGGER.warning("Can't get " + env.graphEndpoint() + " access token from environment " +
+                        CommonSettings.getEnvironment().getName());
+                } else {
+                    throw e;
+                }
+            }
+
+            // ADL account access token
+            try {
+                act.acquireToken(env.dataLakeEndpointResourceId(), false, userId, null);
+            } catch (AuthException e) {
+                LOGGER.warning("Can't get " + env.dataLakeEndpointResourceId() + " access token from environment " +
+                    CommonSettings.getEnvironment().getName() + "for user " + userId);
+
+            }
+
+            tidToSidsMap.put(tid, AccessTokenAzureManager.getSubscriptions(tid)
+                .stream()
+                .map((s) -> s.subscriptionId()).collect(Collectors.toList()));
+        }
+
+        adAuthDetails.setAccountEmail(userId);
+        adAuthDetails.setTidToSidsMap(null);
+        saveToSecureStore(result);
+        return result;
+    }
+
     /**
      * Sign in azure account.
      * @return AuthResult, auth result.
@@ -163,6 +230,8 @@ public class AdAuthManager {
         if (savedAuth == null) {
             cleanCache();
             AuthContext ac = createContext(getCommonTenantId(), null);
+            // todo: to determine which acquireToken to call, device login or interactive login
+            // todo: https://github.com/Microsoft/azure-tools-for-java/pull/1623
             result = ac.acquireToken(env.managementEndpoint(), true, null, false);
         } else {
             result = savedAuth;

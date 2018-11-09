@@ -45,6 +45,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jdesktop.swingx.JXHyperlink;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -59,6 +60,7 @@ import java.util.Map;
 
 public class SignInWindow extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(SignInWindow.class);
+    private static final String SIGN_IN_ERROR = "Sign In Error";
 
     private JPanel contentPane;
 
@@ -165,7 +167,40 @@ public class SignInWindow extends AzureDialogWrapper {
         }
     }
 
-    private void doSignIn() {
+    private void doDeviceLogin() {
+        try {
+            final AdAuthManager adAuthManager = AdAuthManager.getInstance();
+            if (adAuthManager.isSignedIn()) {
+                doSingOut();
+            }
+            deviceLoginAsync(adAuthManager);
+            accountEmail = adAuthManager.getAccountEmail();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
+        }
+    }
+
+    private void deviceLoginAsync(@NotNull final AdAuthManager adAuthManager) {
+        ProgressManager.getInstance().run(
+            new Task.Modal(project, "Sign In Progress", false) {
+                @Override
+                public void run(ProgressIndicator indicator) {
+                    // todo UI part
+                    try {
+                        adAuthManager.deviceLogin();
+                    } catch (AuthCanceledException ex) {
+                        System.out.println(ex.getMessage());
+                    } catch (Exception ex) {
+                        ApplicationManager.getApplication().invokeLater(() ->
+                            ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
+                    }
+                }
+            }
+        );
+    }
+
+    private void doInteractiveLogin() {
         try {
             AdAuthManager adAuthManager = AdAuthManager.getInstance();
             if (adAuthManager.isSignedIn()) {
@@ -176,7 +211,7 @@ public class SignInWindow extends AzureDialogWrapper {
         } catch (Exception ex) {
             ex.printStackTrace();
             //LOGGER.error("doSignIn", ex);
-            ErrorWindow.show(project, ex.getMessage(), "Sign In Error");
+            ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
         }
     }
 
@@ -195,7 +230,7 @@ public class SignInWindow extends AzureDialogWrapper {
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                ErrorWindow.show(project, ex.getMessage(), "Sign In Error");
+                                ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
                             }
                         });
                     }
@@ -323,7 +358,7 @@ public class SignInWindow extends AzureDialogWrapper {
     protected void doOKAction() {
         authMethodDetailsResult = new AuthMethodDetails();
         if (interactiveRadioButton.isSelected()) {
-            doSignIn();
+            doInteractiveLogin();
             if (StringUtils.isNullOrEmpty(accountEmail)) {
                 System.out.println("Canceled by the user.");
                 return;
@@ -331,7 +366,7 @@ public class SignInWindow extends AzureDialogWrapper {
             authMethodDetailsResult.setAuthMethod(AuthMethod.AD);
             authMethodDetailsResult.setAccountEmail(accountEmail);
             authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
-        } else { // automated
+        } else if (automatedRadioButton.isSelected()){ // automated
             String authPath = authFileTextField.getText();
             if (StringUtils.isNullOrWhiteSpace(authPath)) {
                 JOptionPane.showMessageDialog(contentPane,
@@ -344,6 +379,15 @@ public class SignInWindow extends AzureDialogWrapper {
             authMethodDetailsResult.setAuthMethod(AuthMethod.SP);
             // TODO: check field is empty, check file is valid
             authMethodDetailsResult.setCredFilePath(authPath);
+        } else { // todo, UI device login
+            doDeviceLogin();
+            if (StringUtils.isNullOrEmpty(accountEmail)) {
+                System.out.println("Canceled by the user.");
+                return;
+            }
+            authMethodDetailsResult.setAuthMethod(AuthMethod.DC);
+            authMethodDetailsResult.setAccountEmail(accountEmail);
+            authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
         }
 
         super.doOKAction();

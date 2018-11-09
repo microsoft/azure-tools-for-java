@@ -123,6 +123,7 @@ public class AuthMethodManager {
                 if (localAzureManagerRef == null) {
                     switch (authMethod) {
                         case AD:
+                        case DC:
                             if (StringUtils.isNullOrEmpty(authMethodDetails.getAccountEmail()) ||
                                     (!AdAuthManager.getInstance().isSignedIn() &&
                                             !AdAuthManager.getInstance().tryRestoreSignIn(authMethodDetails))) {

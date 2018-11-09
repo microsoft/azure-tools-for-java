@@ -22,10 +22,15 @@
 
 package com.microsoft.azuretools.adauth;
 
+import com.microsoft.aad.adal4j.AdalErrorCode;
+import com.microsoft.aad.adal4j.AuthenticationCallback;
+import com.microsoft.aad.adal4j.AuthenticationContext;
+import com.microsoft.aad.adal4j.AuthenticationException;
+import com.microsoft.aad.adal4j.AuthenticationResult;
+import com.microsoft.aad.adal4j.DeviceCode;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-
 import org.apache.commons.codec.binary.Base64;
-
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,10 +38,11 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import java.io.UnsupportedEncodingException;
 
 public class AuthContext {
     private static final Logger log = Logger.getLogger(AuthContext.class.getName());
@@ -127,6 +133,73 @@ public class AuthContext {
             }
         }
     }
+
+    /**
+     * Get token for resource and user.
+     * @param resource String resource url.
+     * @param newDeviceCode String need to get new device code.
+     * @param userId String userId.
+     * @return AuthResult auth result with the tokens.
+     * @throws AuthException exception during get token.
+     */
+    public AuthResult acquireToken(@NotNull final String resource, final boolean newDeviceCode, final String userId,
+                                   final AuthenticationCallback<AuthenticationResult> callback) throws AuthException {
+        if (!newDeviceCode) {
+            final AuthResult result = acquireTokenFromCache(resource, userId);
+            if (result == null) {
+                throw new AuthException(AuthError.UnknownUser);
+            }
+            return result;
+        }
+
+        try {
+            final ExecutorService service = Executors.newSingleThreadExecutor();
+            final AuthenticationContext ctx = new AuthenticationContext(authority, true, service);
+            final DeviceCode deviceCode = ctx.acquireDeviceCode(clientId, resource, null).get();
+            return acquireTokenByDeviceCode(ctx, resource, deviceCode, callback);
+        } catch (Exception e) {
+            log.log(Level.SEVERE, e.getMessage(), e);
+            throw new AuthException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Acquire the device code for device login.
+     */
+    private AuthResult acquireTokenByDeviceCode(@NotNull final AuthenticationContext ctx,
+                                                @NotNull final String resource,
+                                                @NotNull final DeviceCode deviceCode,
+                                                final AuthenticationCallback<AuthenticationResult> callback)
+        throws ExecutionException, InterruptedException, AuthException {
+
+        final long interval = deviceCode.getInterval();
+        long remaining = deviceCode.getExpiresIn();
+        AuthenticationResult result = null;
+        while (result == null && remaining > 0) {
+            try {
+                result = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
+                Thread.sleep(interval * 1000);
+                remaining -= interval;
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof AuthenticationException &&
+                    ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
+                    // swallow the pending exception
+                } else {
+                    throw e;
+                }
+            }
+        }
+        if (result == null) {
+            throw new AuthException(AuthError.UnknownUser);
+        }
+
+        final AuthResult finalResult = new AuthResult(result.getAccessTokenType(), result.getAccessToken(),
+            result.getRefreshToken(), result.getExpiresAfter(),
+            UserInfo.createFromAdAlUserInfo(result.getUserInfo()), resource);
+        driver.createAddEntry(finalResult, resource);
+        return finalResult;
+    }
+
 
     private String acquireAuthCode(@NotNull final String resource, String userDisplayableId) throws AuthException {
         AuthCode code = null;
