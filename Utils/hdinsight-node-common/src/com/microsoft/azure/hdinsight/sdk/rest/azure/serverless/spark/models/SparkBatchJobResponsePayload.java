@@ -23,78 +23,87 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
+import java.util.Map;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * List of resource pools.
+ * Spark Batch job information equivalent to livy response payload in OSS.
  */
-public class SparkResourcePoolList {
+public class SparkBatchJobResponsePayload {
     /**
-     * the list of resource pools.
+     * The session id.
      */
-    @JsonProperty(value = "value", access = JsonProperty.Access.WRITE_ONLY)
-    private List<SparkResourcePool> value;
+    @JsonProperty(value = "id", access = JsonProperty.Access.WRITE_ONLY)
+    private Integer id;
 
     /**
-     * The nextLink property.
+     * The application Id of the session.
      */
-    @JsonProperty(value = "nextLink")
-    private String nextLink;
+    @JsonProperty(value = "appId", access = JsonProperty.Access.WRITE_ONLY)
+    private String appId;
 
     /**
-     * The count property.
+     * The detailed applicationInfo.
      */
-    @JsonProperty(value = "count")
-    private Integer count;
+    @JsonProperty(value = "appInfo", access = JsonProperty.Access.WRITE_ONLY)
+    private Map<String, String> appInfo;
 
     /**
-     * Get the list of resource pools.
+     * The log lines.
+     */
+    @JsonProperty(value = "log", access = JsonProperty.Access.WRITE_ONLY)
+    private List<String> log;
+
+    /**
+     * The batch state.
+     */
+    @JsonProperty(value = "state", access = JsonProperty.Access.WRITE_ONLY)
+    private String state;
+
+    /**
+     * Get the session id.
      *
-     * @return the value value
+     * @return the id value
      */
-    public List<SparkResourcePool> value() {
-        return this.value;
+    public Integer id() {
+        return this.id;
     }
 
     /**
-     * Get the nextLink value.
+     * Get the application Id of the session.
      *
-     * @return the nextLink value
+     * @return the appId value
      */
-    public String nextLink() {
-        return this.nextLink;
+    public String appId() {
+        return this.appId;
     }
 
     /**
-     * Set the nextLink value.
+     * Get the detailed applicationInfo.
      *
-     * @param nextLink the nextLink value to set
-     * @return the SparkResourcePoolList object itself.
+     * @return the appInfo value
      */
-    public SparkResourcePoolList withNextLink(String nextLink) {
-        this.nextLink = nextLink;
-        return this;
+    public Map<String, String> appInfo() {
+        return this.appInfo;
     }
 
     /**
-     * Get the count value.
+     * Get the log lines.
      *
-     * @return the count value
+     * @return the log value
      */
-    public Integer count() {
-        return this.count;
+    public List<String> log() {
+        return this.log;
     }
 
     /**
-     * Set the count value.
+     * Get the batch state.
      *
-     * @param count the count value to set
-     * @return the SparkResourcePoolList object itself.
+     * @return the state value
      */
-    public SparkResourcePoolList withCount(Integer count) {
-        this.count = count;
-        return this;
+    public String state() {
+        return this.state;
     }
 
 }

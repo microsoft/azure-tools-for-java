@@ -24,26 +24,31 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
 /**
- * Parameters used to submit a new Data Lake Analytics resource pool creation request.
+ * Parameters used to submit a new Data Lake Analytics spark batch job creation request.
  */
-public class CreateSparkResourcePool implements IConvertible {
+public class CreateSparkBatchJob {
     /**
-     * Friendly name of the resource pool to submit.
+     * Friendly name of the spark batch job to submit.
      */
     @JsonProperty(value = "name", required = true)
     private String name;
 
     /**
-     * The spark resource pool specific properties.
+     * Priority of the spark batch job in the account queue. Default is 1000, same as Scope jobs.
      */
-    @JsonProperty(value = "properties", required = true)
-    private CreateSparkResourcePoolParameters properties;
+    @JsonProperty(value = "priority")
+    private Integer priority;
 
     /**
-     * Get friendly name of the resource pool to submit.
+     * The spark batch job specific properties.
+     */
+    @JsonProperty(value = "properties", required = true)
+    private CreateSparkBatchJobParameters properties;
+
+    /**
+     * Get friendly name of the spark batch job to submit.
      *
      * @return the name value
      */
@@ -52,32 +57,52 @@ public class CreateSparkResourcePool implements IConvertible {
     }
 
     /**
-     * Set friendly name of the resource pool to submit.
+     * Set friendly name of the spark batch job to submit.
      *
      * @param name the name value to set
-     * @return the CreateSparkResourcePool object itself.
+     * @return the CreateSparkBatchJob object itself.
      */
-    public CreateSparkResourcePool withName(String name) {
+    public CreateSparkBatchJob withName(String name) {
         this.name = name;
         return this;
     }
 
     /**
-     * Get the spark resource pool specific properties.
+     * Get priority of the spark batch job in the account queue. Default is 1000, same as Scope jobs.
+     *
+     * @return the priority value
+     */
+    public Integer priority() {
+        return this.priority;
+    }
+
+    /**
+     * Set priority of the spark batch job in the account queue. Default is 1000, same as Scope jobs.
+     *
+     * @param priority the priority value to set
+     * @return the CreateSparkBatchJob object itself.
+     */
+    public CreateSparkBatchJob withPriority(Integer priority) {
+        this.priority = priority;
+        return this;
+    }
+
+    /**
+     * Get the spark batch job specific properties.
      *
      * @return the properties value
      */
-    public CreateSparkResourcePoolParameters properties() {
+    public CreateSparkBatchJobParameters properties() {
         return this.properties;
     }
 
     /**
-     * Set the spark resource pool specific properties.
+     * Set the spark batch job specific properties.
      *
      * @param properties the properties value to set
-     * @return the CreateSparkResourcePool object itself.
+     * @return the CreateSparkBatchJob object itself.
      */
-    public CreateSparkResourcePool withProperties(CreateSparkResourcePoolParameters properties) {
+    public CreateSparkBatchJob withProperties(CreateSparkBatchJobParameters properties) {
         this.properties = properties;
         return this;
     }

@@ -27,14 +27,14 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * List of resource pools.
+ * List of spark batch jobs.
  */
-public class SparkResourcePoolList {
+public class SparkBatchJobList {
     /**
-     * the list of resource pools.
+     * the list of spark batch jobs.
      */
     @JsonProperty(value = "value", access = JsonProperty.Access.WRITE_ONLY)
-    private List<SparkResourcePool> value;
+    private List<SparkBatchJob> value;
 
     /**
      * The nextLink property.
@@ -49,11 +49,11 @@ public class SparkResourcePoolList {
     private Integer count;
 
     /**
-     * Get the list of resource pools.
+     * Get the list of spark batch jobs.
      *
      * @return the value value
      */
-    public List<SparkResourcePool> value() {
+    public List<SparkBatchJob> value() {
         return this.value;
     }
 
@@ -70,9 +70,9 @@ public class SparkResourcePoolList {
      * Set the nextLink value.
      *
      * @param nextLink the nextLink value to set
-     * @return the SparkResourcePoolList object itself.
+     * @return the SparkBatchJobList object itself.
      */
-    public SparkResourcePoolList withNextLink(String nextLink) {
+    public SparkBatchJobList withNextLink(String nextLink) {
         this.nextLink = nextLink;
         return this;
     }
@@ -90,9 +90,9 @@ public class SparkResourcePoolList {
      * Set the count value.
      *
      * @param count the count value to set
-     * @return the SparkResourcePoolList object itself.
+     * @return the SparkBatchJobList object itself.
      */
-    public SparkResourcePoolList withCount(Integer count) {
+    public SparkBatchJobList withCount(Integer count) {
         this.count = count;
         return this;
     }

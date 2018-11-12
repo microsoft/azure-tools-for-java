@@ -32,28 +32,13 @@ import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
  */
 public class UpdateSparkResourcePool implements IConvertible {
     /**
-     * Friendly name of the resource pool to submit.
-     */
-    @JsonProperty(value = "name", required = true)
-    private String name;
-
-    /**
      * The spark resource pool specific properties.
      */
     @JsonProperty(value = "properties")
     private UpdateSparkResourcePoolParameters properties;
 
     /**
-     * Get the name value.
-     *
-     * @return the name value
-     */
-    public String name() {
-        return this.name;
-    }
-
-    /**
-     * Get the properties value.
+     * Get the spark resource pool specific properties.
      *
      * @return the properties value
      */
@@ -62,18 +47,7 @@ public class UpdateSparkResourcePool implements IConvertible {
     }
 
     /**
-     * Set the name value.
-     *
-     * @param name the name value to set
-     * @return the UpdateSparkResourcePool object itself.
-     */
-    public UpdateSparkResourcePool withName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    /**
-     * Set the properties value.
+     * Set the spark resource pool specific properties.
      *
      * @param properties the properties value to set
      * @return the UpdateSparkResourcePool object itself.

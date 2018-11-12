@@ -34,24 +34,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SparkResourcePoolProperties {
     /**
-     * Version of the template used while deploying the resource pool.
-     */
-    @JsonProperty(value = "resourcePoolVersion", access = JsonProperty.Access.WRITE_ONLY)
-    private String resourcePoolVersion;
-
-    /**
-     * Spark version to be deployed on the instances of the resource pool.
-     */
-    @JsonProperty(value = "sparkVersion", access = JsonProperty.Access.WRITE_ONLY)
-    private String sparkVersion;
-
-    /**
-     * ADLS directory path to store Spark events and logs.
-     */
-    @JsonProperty(value = "sparkEventsDirectoryPath")
-    private String sparkEventsDirectoryPath;
-
-    /**
      * The sparkResourceCollection property.
      */
     @JsonProperty(value = "sparkResourceCollection", access = JsonProperty.Access.WRITE_ONLY)
@@ -62,51 +44,13 @@ public class SparkResourcePoolProperties {
      * 'Running', 'Rediscovering', 'Ending', 'Ended'.
      */
     @JsonProperty(value = "state")
-    private ResourcePoolState state;
+    private SparkResourcePoolState state;
 
     /**
      * Definition of Spark Uri Collection.
      */
     @JsonProperty(value = "sparkUriCollection", access = JsonProperty.Access.WRITE_ONLY)
     private SparkResourcePoolUriItemProperties sparkUriCollection;
-
-    /**
-     * Get the resourcePoolVersion value.
-     *
-     * @return the resourcePoolVersion value
-     */
-    public String resourcePoolVersion() {
-        return this.resourcePoolVersion;
-    }
-
-    /**
-     * Get the sparkVersion value.
-     *
-     * @return the sparkVersion value
-     */
-    public String sparkVersion() {
-        return this.sparkVersion;
-    }
-
-    /**
-     * Get the sparkEventsDirectoryPath value.
-     *
-     * @return the sparkEventsDirectoryPath value
-     */
-    public String sparkEventsDirectoryPath() {
-        return this.sparkEventsDirectoryPath;
-    }
-
-    /**
-     * Set the sparkEventsDirectoryPath value.
-     *
-     * @param sparkEventsDirectoryPath the sparkEventsDirectoryPath value to set
-     * @return the SparkResourcePoolProperties object itself.
-     */
-    public SparkResourcePoolProperties withSparkEventsDirectoryPath(String sparkEventsDirectoryPath) {
-        this.sparkEventsDirectoryPath = sparkEventsDirectoryPath;
-        return this;
-    }
 
     /**
      * Get the sparkResourceCollection value.
@@ -118,27 +62,27 @@ public class SparkResourcePoolProperties {
     }
 
     /**
-     * Get the state value.
+     * Get state of the Activity. Possible values include: 'New', 'Queued', 'Scheduling', 'Starting', 'Launching', 'Running', 'Rediscovering', 'Ending', 'Ended'.
      *
      * @return the state value
      */
-    public ResourcePoolState state() {
+    public SparkResourcePoolState state() {
         return this.state;
     }
 
     /**
-     * Set the state value.
+     * Set state of the Activity. Possible values include: 'New', 'Queued', 'Scheduling', 'Starting', 'Launching', 'Running', 'Rediscovering', 'Ending', 'Ended'.
      *
      * @param state the state value to set
      * @return the SparkResourcePoolProperties object itself.
      */
-    public SparkResourcePoolProperties withState(ResourcePoolState state) {
+    public SparkResourcePoolProperties withState(SparkResourcePoolState state) {
         this.state = state;
         return this;
     }
 
     /**
-     * Get the sparkUriCollection value.
+     * Get definition of Spark Uri Collection.
      *
      * @return the sparkUriCollection value
      */

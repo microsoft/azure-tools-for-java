@@ -23,36 +23,37 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Collection;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.microsoft.rest.ExpandableStringEnum;
 
 /**
- * Full definition of the spark resource pool entity.
+ * Defines values for EntityType.
  */
-public class SparkResourcePool extends ResourcePool {
-    /**
-     * The spark resource pool specific properties.
-     */
-    @JsonProperty(value = "properties")
-    private SparkResourcePoolProperties properties;
+public final class EntityType extends ExpandableStringEnum<EntityType> {
+    /** Static value ResourcePools for EntityType. */
+    public static final EntityType RESOURCE_POOLS = fromString("ResourcePools");
+
+    /** Static value BatchJobs for EntityType. */
+    public static final EntityType BATCH_JOBS = fromString("BatchJobs");
+
+    /** Static value StreamingJobs for EntityType. */
+    public static final EntityType STREAMING_JOBS = fromString("StreamingJobs");
 
     /**
-     * Get the spark resource pool specific properties.
-     *
-     * @return the properties value
+     * Creates or finds a EntityType from its string representation.
+     * @param name a name to look for
+     * @return the corresponding EntityType
      */
-    public SparkResourcePoolProperties properties() {
-        return this.properties;
+    @JsonCreator
+    public static EntityType fromString(String name) {
+        return fromString(name, EntityType.class);
     }
 
     /**
-     * Set the spark resource pool specific properties.
-     *
-     * @param properties the properties value to set
-     * @return the SparkResourcePool object itself.
+     * @return known EntityType values
      */
-    public SparkResourcePool withProperties(SparkResourcePoolProperties properties) {
-        this.properties = properties;
-        return this;
+    public static Collection<EntityType> values() {
+        return values(EntityType.class);
     }
-
 }

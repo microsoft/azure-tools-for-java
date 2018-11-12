@@ -28,29 +28,44 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.microsoft.rest.ExpandableStringEnum;
 
 /**
- * Defines values for SparkNodeType.
+ * Defines values for SchedulerState.
  */
-public final class SparkNodeType extends ExpandableStringEnum<SparkNodeType> {
-    /** Static value SparkMaster for SparkNodeType. */
-    public static final SparkNodeType SPARK_MASTER = fromString("SparkMaster");
+public final class SchedulerState extends ExpandableStringEnum<SchedulerState> {
+    /** Static value Any for SchedulerState. */
+    public static final SchedulerState ANY = fromString("Any");
 
-    /** Static value SparkWorker for SparkNodeType. */
-    public static final SparkNodeType SPARK_WORKER = fromString("SparkWorker");
+    /** Static value Submitted for SchedulerState. */
+    public static final SchedulerState SUBMITTED = fromString("Submitted");
+
+    /** Static value Preparing for SchedulerState. */
+    public static final SchedulerState PREPARING = fromString("Preparing");
+
+    /** Static value Queued for SchedulerState. */
+    public static final SchedulerState QUEUED = fromString("Queued");
+
+    /** Static value Scheduled for SchedulerState. */
+    public static final SchedulerState SCHEDULED = fromString("Scheduled");
+
+    /** Static value Finalizing for SchedulerState. */
+    public static final SchedulerState FINALIZING = fromString("Finalizing");
+
+    /** Static value Ended for SchedulerState. */
+    public static final SchedulerState ENDED = fromString("Ended");
 
     /**
-     * Creates or finds a SparkNodeType from its string representation.
+     * Creates or finds a SchedulerState from its string representation.
      * @param name a name to look for
-     * @return the corresponding SparkNodeType
+     * @return the corresponding SchedulerState
      */
     @JsonCreator
-    public static SparkNodeType fromString(String name) {
-        return fromString(name, SparkNodeType.class);
+    public static SchedulerState fromString(String name) {
+        return fromString(name, SchedulerState.class);
     }
 
     /**
-     * @return known SparkNodeType values
+     * @return known SchedulerState values
      */
-    public static Collection<SparkNodeType> values() {
-        return values(SparkNodeType.class);
+    public static Collection<SchedulerState> values() {
+        return values(SchedulerState.class);
     }
 }

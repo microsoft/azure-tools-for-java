@@ -86,7 +86,7 @@ public class SparkResourcePoolItemProperties {
     private Integer failedInstanceCount;
 
     /**
-     * Get the name value.
+     * Get label for spark worker or spark master. Possible values include: 'SparkMaster', 'SparkWorker'.
      *
      * @return the name value
      */
@@ -95,7 +95,7 @@ public class SparkResourcePoolItemProperties {
     }
 
     /**
-     * Set the name value.
+     * Set label for spark worker or spark master. Possible values include: 'SparkMaster', 'SparkWorker'.
      *
      * @param name the name value to set
      * @return the SparkResourcePoolItemProperties object itself.
@@ -106,7 +106,7 @@ public class SparkResourcePoolItemProperties {
     }
 
     /**
-     * Get the targetInstanceCount value.
+     * Get number of instances of spark master or spark worker.
      *
      * @return the targetInstanceCount value
      */
@@ -115,7 +115,7 @@ public class SparkResourcePoolItemProperties {
     }
 
     /**
-     * Get the perInstanceCoreCount value.
+     * Get number of cores in each started instance of spark master or spark workers.
      *
      * @return the perInstanceCoreCount value
      */
@@ -124,7 +124,7 @@ public class SparkResourcePoolItemProperties {
     }
 
     /**
-     * Get the perInstanceMemoryInGB value.
+     * Get allocated memory in GB for each started instance of spark master or spark workers.
      *
      * @return the perInstanceMemoryInGB value
      */
@@ -133,7 +133,7 @@ public class SparkResourcePoolItemProperties {
     }
 
     /**
-     * Get the id value.
+     * Get guid represting the spark master or worker.
      *
      * @return the id value
      */
@@ -142,7 +142,7 @@ public class SparkResourcePoolItemProperties {
     }
 
     /**
-     * Get the status value.
+     * Get state of the Activity. Possible values include: 'Waiting', 'Launch', 'Release', 'Stable', 'Idle', 'Failed', 'Shutdown', 'Completed'.
      *
      * @return the status value
      */
@@ -151,7 +151,7 @@ public class SparkResourcePoolItemProperties {
     }
 
     /**
-     * Set the status value.
+     * Set state of the Activity. Possible values include: 'Waiting', 'Launch', 'Release', 'Stable', 'Idle', 'Failed', 'Shutdown', 'Completed'.
      *
      * @param status the status value to set
      * @return the SparkResourcePoolItemProperties object itself.
@@ -162,7 +162,7 @@ public class SparkResourcePoolItemProperties {
     }
 
     /**
-     * Get the runningInstanceCount value.
+     * Get number of instances running.
      *
      * @return the runningInstanceCount value
      */
@@ -171,7 +171,7 @@ public class SparkResourcePoolItemProperties {
     }
 
     /**
-     * Get the outstandingInstanceCount value.
+     * Get number of instances yet to be launched.
      *
      * @return the outstandingInstanceCount value
      */
@@ -180,7 +180,7 @@ public class SparkResourcePoolItemProperties {
     }
 
     /**
-     * Get the failedInstanceCount value.
+     * Get number of instances that failed to launch.
      *
      * @return the failedInstanceCount value
      */

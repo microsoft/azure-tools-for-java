@@ -23,78 +23,51 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * List of resource pools.
+ * Spark Batch job information.
  */
-public class SparkResourcePoolList {
+public class SparkBatchJobProperties {
     /**
-     * the list of resource pools.
+     * Livy like response payload for the spark serverless job.
      */
-    @JsonProperty(value = "value", access = JsonProperty.Access.WRITE_ONLY)
-    private List<SparkResourcePool> value;
+    @JsonProperty(value = "responsePayload")
+    private SparkBatchJobResponsePayload responsePayload;
 
     /**
-     * The nextLink property.
+     * Spark Master UI Url. Only available when the job is running.
      */
-    @JsonProperty(value = "nextLink")
-    private String nextLink;
+    @JsonProperty(value = "sparkMasterUI", access = JsonProperty.Access.WRITE_ONLY)
+    private String sparkMasterUI;
 
     /**
-     * The count property.
-     */
-    @JsonProperty(value = "count")
-    private Integer count;
-
-    /**
-     * Get the list of resource pools.
+     * Get livy like response payload for the spark serverless job.
      *
-     * @return the value value
+     * @return the responsePayload value
      */
-    public List<SparkResourcePool> value() {
-        return this.value;
+    public SparkBatchJobResponsePayload responsePayload() {
+        return this.responsePayload;
     }
 
     /**
-     * Get the nextLink value.
+     * Set livy like response payload for the spark serverless job.
      *
-     * @return the nextLink value
+     * @param responsePayload the responsePayload value to set
+     * @return the SparkBatchJobProperties object itself.
      */
-    public String nextLink() {
-        return this.nextLink;
-    }
-
-    /**
-     * Set the nextLink value.
-     *
-     * @param nextLink the nextLink value to set
-     * @return the SparkResourcePoolList object itself.
-     */
-    public SparkResourcePoolList withNextLink(String nextLink) {
-        this.nextLink = nextLink;
+    public SparkBatchJobProperties withResponsePayload(SparkBatchJobResponsePayload responsePayload) {
+        this.responsePayload = responsePayload;
         return this;
     }
 
     /**
-     * Get the count value.
+     * Get spark Master UI Url. Only available when the job is running.
      *
-     * @return the count value
+     * @return the sparkMasterUI value
      */
-    public Integer count() {
-        return this.count;
-    }
-
-    /**
-     * Set the count value.
-     *
-     * @param count the count value to set
-     * @return the SparkResourcePoolList object itself.
-     */
-    public SparkResourcePoolList withCount(Integer count) {
-        this.count = count;
-        return this;
+    public String sparkMasterUI() {
+        return this.sparkMasterUI;
     }
 
 }

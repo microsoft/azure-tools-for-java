@@ -26,33 +26,38 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Full definition of the spark resource pool entity.
+ * Base analytics job.
  */
-public class SparkResourcePool extends ResourcePool {
+public class AnalyticsJob extends AnalyticsActivity {
     /**
-     * The spark resource pool specific properties.
+     * The priority value to use for the current job. Lower numbers have a higher priority. By default, a job has a
+     * priority of 1000. This must be greater than 0.
      */
-    @JsonProperty(value = "properties")
-    private SparkResourcePoolProperties properties;
+    @JsonProperty(value = "priority", access = JsonProperty.Access.WRITE_ONLY)
+    private Integer priority;
 
     /**
-     * Get the spark resource pool specific properties.
-     *
-     * @return the properties value
+     * the recurring batch job relationship information properties.
      */
-    public SparkResourcePoolProperties properties() {
-        return this.properties;
+    @JsonProperty(value = "related", access = JsonProperty.Access.WRITE_ONLY)
+    private JobRelationshipProperties related;
+
+    /**
+     * Get the priority value to use for the current job. Lower numbers have a higher priority. By default, a job has a priority of 1000. This must be greater than 0.
+     *
+     * @return the priority value
+     */
+    public Integer priority() {
+        return this.priority;
     }
 
     /**
-     * Set the spark resource pool specific properties.
+     * Get the recurring batch job relationship information properties.
      *
-     * @param properties the properties value to set
-     * @return the SparkResourcePool object itself.
+     * @return the related value
      */
-    public SparkResourcePool withProperties(SparkResourcePoolProperties properties) {
-        this.properties = properties;
-        return this;
+    public JobRelationshipProperties related() {
+        return this.related;
     }
 
 }

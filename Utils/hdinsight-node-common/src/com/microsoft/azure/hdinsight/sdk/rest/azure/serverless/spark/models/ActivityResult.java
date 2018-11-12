@@ -23,61 +23,40 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
+import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.microsoft.rest.ExpandableStringEnum;
 
 /**
- * Defines values for ActivityState.
+ * Defines values for ActivityResult.
  */
-public enum ActivityState {
-    /** Enum value Any. */
-    ANY("Any"),
+public final class ActivityResult extends ExpandableStringEnum<ActivityResult> {
+    /** Static value None for ActivityResult. */
+    public static final ActivityResult NONE = fromString("None");
 
-    /** Enum value Submitted. */
-    SUBMITTED("Submitted"),
+    /** Static value Succeeded for ActivityResult. */
+    public static final ActivityResult SUCCEEDED = fromString("Succeeded");
 
-    /** Enum value Preparing. */
-    PREPARING("Preparing"),
+    /** Static value Cancelled for ActivityResult. */
+    public static final ActivityResult CANCELLED = fromString("Cancelled");
 
-    /** Enum value Queued. */
-    QUEUED("Queued"),
+    /** Static value Failed for ActivityResult. */
+    public static final ActivityResult FAILED = fromString("Failed");
 
-    /** Enum value Scheduled. */
-    SCHEDULED("Scheduled"),
-
-    /** Enum value Finalizing. */
-    FINALIZING("Finalizing"),
-
-    /** Enum value Ended. */
-    ENDED("Ended");
-
-    /** The actual serialized value for a ActivityState instance. */
-    private String value;
-
-    ActivityState(String value) {
-        this.value = value;
+    /**
+     * Creates or finds a ActivityResult from its string representation.
+     * @param name a name to look for
+     * @return the corresponding ActivityResult
+     */
+    @JsonCreator
+    public static ActivityResult fromString(String name) {
+        return fromString(name, ActivityResult.class);
     }
 
     /**
-     * Parses a serialized value to a ActivityState instance.
-     *
-     * @param value the serialized value to parse.
-     * @return the parsed ActivityState object, or null if unable to parse.
+     * @return known ActivityResult values
      */
-    @JsonCreator
-    public static ActivityState fromString(String value) {
-        ActivityState[] items = ActivityState.values();
-        for (ActivityState item : items) {
-            if (item.toString().equalsIgnoreCase(value)) {
-                return item;
-            }
-        }
-        return null;
-    }
-
-    @JsonValue
-    @Override
-    public String toString() {
-        return this.value;
+    public static Collection<ActivityResult> values() {
+        return values(ActivityResult.class);
     }
 }

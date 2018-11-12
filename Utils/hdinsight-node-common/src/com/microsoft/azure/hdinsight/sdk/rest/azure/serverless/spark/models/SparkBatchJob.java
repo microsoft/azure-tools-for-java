@@ -24,60 +24,33 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
 /**
- * Parameters used to submit a new Data Lake Analytics resource pool creation request.
+ * Full definition of the spark batch job entity.
  */
-public class CreateSparkResourcePool implements IConvertible {
+public class SparkBatchJob extends AnalyticsJob {
     /**
-     * Friendly name of the resource pool to submit.
+     * Properties specific to a serverless spark job.
      */
-    @JsonProperty(value = "name", required = true)
-    private String name;
+    @JsonProperty(value = "properties")
+    private SparkBatchJobProperties properties;
 
     /**
-     * The spark resource pool specific properties.
-     */
-    @JsonProperty(value = "properties", required = true)
-    private CreateSparkResourcePoolParameters properties;
-
-    /**
-     * Get friendly name of the resource pool to submit.
-     *
-     * @return the name value
-     */
-    public String name() {
-        return this.name;
-    }
-
-    /**
-     * Set friendly name of the resource pool to submit.
-     *
-     * @param name the name value to set
-     * @return the CreateSparkResourcePool object itself.
-     */
-    public CreateSparkResourcePool withName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    /**
-     * Get the spark resource pool specific properties.
+     * Get properties specific to a serverless spark job.
      *
      * @return the properties value
      */
-    public CreateSparkResourcePoolParameters properties() {
+    public SparkBatchJobProperties properties() {
         return this.properties;
     }
 
     /**
-     * Set the spark resource pool specific properties.
+     * Set properties specific to a serverless spark job.
      *
      * @param properties the properties value to set
-     * @return the CreateSparkResourcePool object itself.
+     * @return the SparkBatchJob object itself.
      */
-    public CreateSparkResourcePool withProperties(CreateSparkResourcePoolParameters properties) {
+    public SparkBatchJob withProperties(SparkBatchJobProperties properties) {
         this.properties = properties;
         return this;
     }
