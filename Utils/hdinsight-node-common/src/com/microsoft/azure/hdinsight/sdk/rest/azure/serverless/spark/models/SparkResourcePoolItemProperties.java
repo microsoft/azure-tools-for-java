@@ -24,11 +24,14 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Data Lake Analytics Spark Resource Pool creation request.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SparkResourcePoolItemProperties {
     /**
      * Label for spark worker or spark master. Possible values include: 'SparkMaster', 'SparkWorker'.

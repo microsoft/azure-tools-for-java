@@ -25,11 +25,14 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Parameters used to submit a new Data Lake Analytics spark batch job request.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CreateSparkBatchJobParameters {
     /**
      * ADLS directory path to store Spark events and logs.

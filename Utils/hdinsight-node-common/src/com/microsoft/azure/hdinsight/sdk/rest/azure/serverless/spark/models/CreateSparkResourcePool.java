@@ -23,12 +23,14 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
 /**
  * Parameters used to submit a new Data Lake Analytics resource pool creation request.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CreateSparkResourcePool implements IConvertible {
     /**
      * Friendly name of the resource pool to submit.

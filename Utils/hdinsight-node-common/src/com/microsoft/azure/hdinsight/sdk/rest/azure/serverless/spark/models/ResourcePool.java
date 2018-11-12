@@ -24,8 +24,11 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Base resource pool.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ResourcePool extends AnalyticsActivity {
 }

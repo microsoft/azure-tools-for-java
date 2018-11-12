@@ -24,11 +24,14 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * List of activities.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AnalyticsActivityList {
     /**
      * the list of resource pools.

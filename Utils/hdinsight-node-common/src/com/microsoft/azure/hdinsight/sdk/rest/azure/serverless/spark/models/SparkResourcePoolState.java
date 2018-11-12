@@ -25,11 +25,13 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.rest.ExpandableStringEnum;
 
 /**
  * Defines values for SparkResourcePoolState.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class SparkResourcePoolState extends ExpandableStringEnum<SparkResourcePoolState> {
     /** Static value New for SparkResourcePoolState. */
     public static final SparkResourcePoolState NEW = fromString("New");

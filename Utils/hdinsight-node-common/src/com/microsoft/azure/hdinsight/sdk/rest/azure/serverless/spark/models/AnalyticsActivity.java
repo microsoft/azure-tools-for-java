@@ -26,11 +26,14 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 import java.util.Date;
 import java.util.UUID;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * The common Data Lake Analytics activity information.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AnalyticsActivity {
     /**
      * the activity's unique identifier (a GUID).

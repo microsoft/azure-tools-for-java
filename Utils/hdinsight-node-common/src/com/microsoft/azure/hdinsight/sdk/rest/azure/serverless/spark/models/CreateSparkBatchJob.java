@@ -23,11 +23,13 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Parameters used to submit a new Data Lake Analytics spark batch job creation request.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CreateSparkBatchJob {
     /**
      * Friendly name of the spark batch job to submit.

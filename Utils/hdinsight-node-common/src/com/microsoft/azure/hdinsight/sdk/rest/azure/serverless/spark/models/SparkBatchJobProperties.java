@@ -23,11 +23,13 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Spark Batch job information.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SparkBatchJobProperties {
     /**
      * Livy like response payload for the spark serverless job.

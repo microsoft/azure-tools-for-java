@@ -25,11 +25,13 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.rest.ExpandableStringEnum;
 
 /**
  * Defines values for SparkItemGroupState.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class SparkItemGroupState extends ExpandableStringEnum<SparkItemGroupState> {
     /** Static value Waiting for SparkItemGroupState. */
     public static final SparkItemGroupState WAITING = fromString("Waiting");

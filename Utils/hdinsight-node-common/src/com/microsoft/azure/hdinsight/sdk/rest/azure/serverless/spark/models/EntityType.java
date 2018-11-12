@@ -25,11 +25,13 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.rest.ExpandableStringEnum;
 
 /**
  * Defines values for EntityType.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class EntityType extends ExpandableStringEnum<EntityType> {
     /** Static value ResourcePools for EntityType. */
     public static final EntityType RESOURCE_POOLS = fromString("ResourcePools");

@@ -25,11 +25,13 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.rest.ExpandableStringEnum;
 
 /**
  * Defines values for SparkNodeType.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class SparkNodeType extends ExpandableStringEnum<SparkNodeType> {
     /** Static value SparkMaster for SparkNodeType. */
     public static final SparkNodeType SPARK_MASTER = fromString("SparkMaster");

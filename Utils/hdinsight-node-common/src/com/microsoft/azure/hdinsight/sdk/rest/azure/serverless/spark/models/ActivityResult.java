@@ -25,11 +25,13 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.rest.ExpandableStringEnum;
 
 /**
  * Defines values for ActivityResult.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class ActivityResult extends ExpandableStringEnum<ActivityResult> {
     /** Static value None for ActivityResult. */
     public static final ActivityResult NONE = fromString("None");

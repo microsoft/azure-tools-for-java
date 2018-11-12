@@ -25,11 +25,14 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.Map;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Spark Batch job information equivalent to livy response payload in OSS.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SparkBatchJobResponsePayload {
     /**
      * The session id.

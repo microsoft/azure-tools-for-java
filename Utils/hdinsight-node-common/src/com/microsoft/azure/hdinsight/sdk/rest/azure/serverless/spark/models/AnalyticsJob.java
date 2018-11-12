@@ -23,11 +23,13 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Base analytics job.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AnalyticsJob extends AnalyticsActivity {
     /**
      * The priority value to use for the current job. Lower numbers have a higher priority. By default, a job has a

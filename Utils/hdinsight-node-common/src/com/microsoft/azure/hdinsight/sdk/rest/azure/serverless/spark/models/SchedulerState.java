@@ -25,11 +25,13 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.rest.ExpandableStringEnum;
 
 /**
  * Defines values for SchedulerState.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class SchedulerState extends ExpandableStringEnum<SchedulerState> {
     /** Static value Any for SchedulerState. */
     public static final SchedulerState ANY = fromString("Any");
