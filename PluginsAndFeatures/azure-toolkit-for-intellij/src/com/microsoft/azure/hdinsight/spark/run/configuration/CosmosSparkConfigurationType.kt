@@ -22,10 +22,30 @@
 
 package com.microsoft.azure.hdinsight.spark.run.configuration
 
-import com.intellij.execution.configurations.RunConfigurationModule
-import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.spark.common.ServerlessSparkBatchConfigurableModel
+import com.intellij.execution.configurations.ConfigurationFactory
+import com.intellij.execution.configurations.ConfigurationType
+import com.microsoft.azure.hdinsight.common.CommonConst
+import com.microsoft.intellij.util.PluginUtil
+import javax.swing.Icon
 
-class ServerlessSparkConfigurationModule(project: Project) : RunConfigurationModule(project) {
-    val model = ServerlessSparkBatchConfigurableModel(project)
+class CosmosSparkConfigurationType : ConfigurationType {
+    override fun getIcon(): Icon {
+        return PluginUtil.getIcon("/icons/${CommonConst.AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH}")
+    }
+
+    override fun getConfigurationTypeDescription(): String {
+        return "Cosmos ADL Spark Job Configuration"
+    }
+
+    override fun getId(): String {
+        return "CosmosADLSparkConfiguration"
+    }
+
+    override fun getDisplayName(): String {
+        return "Azure Data Lake Spark Pool"
+    }
+
+    override fun getConfigurationFactories(): Array<ConfigurationFactory> {
+        return arrayOf(CosmosSparkConfigurationFactory(this))
+    }
 }

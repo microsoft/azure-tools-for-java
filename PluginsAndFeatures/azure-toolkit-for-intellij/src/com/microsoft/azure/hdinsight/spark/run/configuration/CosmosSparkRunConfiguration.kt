@@ -22,22 +22,27 @@
 
 package com.microsoft.azure.hdinsight.spark.run.configuration
 
-import com.intellij.execution.configuration.ConfigurationFactoryEx
-import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.options.SettingsEditor
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel
+import com.microsoft.azure.hdinsight.spark.ui.ServerlessSparkConfigurable
 
-class ServerlessSparkConfigurationFactory (type: ConfigurationType) :
-        ConfigurationFactoryEx<ServerlessSparkConfiguration>(type) {
-    companion object {
-        @JvmStatic val NAME = "Azure Data Lake Spark"
+class CosmosSparkRunConfiguration (name: String,
+                                   val module: CosmosSparkConfigurationModule,
+                                   factory: ConfigurationFactory)
+    : LivySparkBatchJobRunConfiguration(module.model, factory, module, name) {
+    override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
+        return LivySparkRunConfigurationSettingsEditor(ServerlessSparkConfigurable(module.project))
     }
 
-    override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return ServerlessSparkConfiguration(NAME, ServerlessSparkConfigurationModule(project), this)
+    // Validation
+    override fun getValidModules(): MutableCollection<Module> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun getName(): String {
-        return NAME
+    override fun getModel(): SparkBatchJobConfigurableModel {
+        return module.model
     }
 }

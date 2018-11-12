@@ -32,7 +32,7 @@ import com.microsoft.azure.hdinsight.spark.common.ServerlessSparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import rx.Observable
 
-class ServerlessSparkSubmissionPanelConfigurable(project: Project)
+class CosmosSparkSubmissionPanelConfigurable(project: Project)
     : SparkSubmissionContentPanelConfigurable(project), ILogger {
     override fun getType(): String = "Azure Data Lake Spark Pool"
 

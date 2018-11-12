@@ -30,13 +30,13 @@ import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.ServerlessSparkSession
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import java.net.URI
 
-class ServerlessSparkScalaLivyConsoleRunConfiguration(project: Project,
-                                            configurationFactory: SparkScalaLivyConsoleRunConfigurationFactory,
-                                            batchRunConfiguration: RemoteDebugRunConfiguration?,
-                                            name: String)
+class CosmosSparkScalaLivyConsoleRunConfiguration(project: Project,
+                                                  configurationFactory: SparkScalaLivyConsoleRunConfigurationFactory,
+                                                  batchRunConfiguration: LivySparkBatchJobRunConfiguration?,
+                                                  name: String)
     : SparkScalaLivyConsoleRunConfiguration(
         project, configurationFactory, batchRunConfiguration, name)
 {

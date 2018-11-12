@@ -55,7 +55,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class RemoteDebugRunConfiguration extends AbstractRunConfiguration
+public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
 {
     enum RunMode {
         LOCAL,
@@ -74,14 +74,14 @@ public class RemoteDebugRunConfiguration extends AbstractRunConfiguration
     @NotNull
     final private Properties actionProperties = new Properties();
 
-    public RemoteDebugRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, @NotNull RunConfigurationModule configurationModule, @NotNull String name) {
+    public LivySparkBatchJobRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, @NotNull RunConfigurationModule configurationModule, @NotNull String name) {
         this(new SparkBatchJobConfigurableModel(project), factory, configurationModule, name);
     }
 
-    public RemoteDebugRunConfiguration(@NotNull SparkBatchJobConfigurableModel jobModel,
-                                       @NotNull ConfigurationFactory factory,
-                                       @NotNull RunConfigurationModule configurationModule,
-                                       @NotNull String name) {
+    public LivySparkBatchJobRunConfiguration(@NotNull SparkBatchJobConfigurableModel jobModel,
+                                             @NotNull ConfigurationFactory factory,
+                                             @NotNull RunConfigurationModule configurationModule,
+                                             @NotNull String name) {
         super(name, configurationModule, factory);
 
         this.jobModel = jobModel;
@@ -120,7 +120,7 @@ public class RemoteDebugRunConfiguration extends AbstractRunConfiguration
     @NotNull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new RemoteDebugSettingsEditor(new SparkBatchJobConfigurable(getProject()));
+        return new LivySparkRunConfigurationSettingsEditor(new SparkBatchJobConfigurable(getProject()));
     }
 
     @Override

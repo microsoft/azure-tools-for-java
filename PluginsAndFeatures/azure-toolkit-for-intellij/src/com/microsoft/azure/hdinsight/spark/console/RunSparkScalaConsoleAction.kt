@@ -38,8 +38,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiFile
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.intellij.util.runInReadAction
 import org.jetbrains.plugins.scala.console.RunConsoleAction
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
@@ -48,7 +48,7 @@ import scala.Function1
 import scala.runtime.BoxedUnit
 
 abstract class RunSparkScalaConsoleAction
-    : AnAction(), RunConsoleAction.RunActionBase<RemoteDebugRunConfigurationType>, ILogger {
+    : AnAction(), RunConsoleAction.RunActionBase<LivySparkBatchJobRunConfigurationType>, ILogger {
     abstract val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
 
     override fun actionPerformed(event: AnActionEvent) {
@@ -64,12 +64,12 @@ abstract class RunSparkScalaConsoleAction
         val selectedConfigSettings = runManagerEx.selectedConfiguration
 
         // Try current selected Configuration
-        (selectedConfigSettings?.configuration as? RemoteDebugRunConfiguration)?.run {
+        (selectedConfigSettings?.configuration as? LivySparkBatchJobRunConfiguration)?.run {
             runExisting(selectedConfigSettings, runManagerEx, project)
             return
         }
 
-        val batchConfigurationType = findConfigurationType(RemoteDebugRunConfigurationType::class.java)
+        val batchConfigurationType = findConfigurationType(LivySparkBatchJobRunConfigurationType::class.java)
         val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
 
         // Try to find one from the same type list
@@ -109,7 +109,7 @@ abstract class RunSparkScalaConsoleAction
         val runner = RunnerRegistry.getInstance().getRunner(runExecutor.id, configuration)
         if (runner != null) {
             try {
-                val batchRunConfiguration = setting.configuration as? RemoteDebugRunConfiguration
+                val batchRunConfiguration = setting.configuration as? LivySparkBatchJobRunConfiguration
 
                 if (batchRunConfiguration == null) {
                     log().warn("Can't find Spark Run Configuration to start console")
@@ -137,8 +137,8 @@ abstract class RunSparkScalaConsoleAction
         (runProfile as? AbstractRunConfiguration)?.checkSettingsBeforeRun()
     }
 
-    override fun getMyConfigurationType(): RemoteDebugRunConfigurationType? =
-        findConfigurationType(RemoteDebugRunConfigurationType::class.java)
+    override fun getMyConfigurationType(): LivySparkBatchJobRunConfigurationType? =
+        findConfigurationType(LivySparkBatchJobRunConfigurationType::class.java)
 
     override fun checkFile(psiFile: PsiFile): Boolean = psiFile is ScalaFile
 }
