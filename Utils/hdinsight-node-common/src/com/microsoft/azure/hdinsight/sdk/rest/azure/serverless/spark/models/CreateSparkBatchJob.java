@@ -25,12 +25,13 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
 /**
  * Parameters used to submit a new Data Lake Analytics spark batch job creation request.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CreateSparkBatchJob {
+public class CreateSparkBatchJob implements IConvertible {
     /**
      * Friendly name of the spark batch job to submit.
      */

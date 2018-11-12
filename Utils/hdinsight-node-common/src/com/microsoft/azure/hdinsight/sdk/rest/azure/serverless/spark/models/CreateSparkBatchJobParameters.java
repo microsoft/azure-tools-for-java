@@ -23,17 +23,18 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 
 /**
  * Parameters used to submit a new Data Lake Analytics spark batch job request.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CreateSparkBatchJobParameters {
+public class CreateSparkBatchJobParameters extends SparkSubmissionParameter {
+    @JsonIgnoreProperties
+    private String adlAccountName;
+
     /**
      * ADLS directory path to store Spark events and logs.
      */
@@ -43,74 +44,74 @@ public class CreateSparkBatchJobParameters {
     /**
      * File containing the application to run.
      */
-    @JsonProperty(value = "file", required = true)
-    private String file;
+//    @JsonProperty(value = "file", required = true)
+//    private String file;
 
     /**
      * Application Java or Spark main class.
      */
-    @JsonProperty(value = "className", required = true)
-    private String className;
+//    @JsonProperty(value = "className", required = true)
+//    private String className;
 
     /**
      * Command line arguments for the application.
      */
-    @JsonProperty(value = "args")
-    private List<String> args;
+//    @JsonProperty(value = "args")
+//    private List<String> args;
 
     /**
      * Jar files to be used in the session.
      */
-    @JsonProperty(value = "jars")
-    private List<String> jars;
+//    @JsonProperty(value = "jars")
+//    private List<String> jars;
 
     /**
      * Python files to be used in this session.
      */
-    @JsonProperty(value = "pyFiles")
-    private List<String> pyFiles;
+//    @JsonProperty(value = "pyFiles")
+//    private List<String> pyFiles;
 
     /**
      * Other files to be used in the session.
      */
-    @JsonProperty(value = "files")
-    private List<String> files;
+//    @JsonProperty(value = "files")
+//    private List<String> files;
 
     /**
      * Amount of memory to use for the driver process.
      */
-    @JsonProperty(value = "driverMemory", required = true)
-    private String driverMemory;
+//    @JsonProperty(value = "driverMemory", required = true)
+//    private String driverMemory;
 
     /**
      * Number of Cores to use for the driver process.
      */
-    @JsonProperty(value = "driverCores", required = true)
-    private int driverCores;
+//    @JsonProperty(value = "driverCores", required = true)
+//    private int driverCores;
 
     /**
      * Amount of memory to use for each executor process.
      */
-    @JsonProperty(value = "executorMemory", required = true)
-    private String executorMemory;
+//    @JsonProperty(value = "executorMemory", required = true)
+//    private String executorMemory;
 
     /**
      * Number of cores to use for each executor.
      */
-    @JsonProperty(value = "executorCores", required = true)
-    private int executorCores;
+//    @JsonProperty(value = "executorCores", required = true)
+//    private int executorCores;
 
     /**
      * Number of executors to launch for this session.
      */
-    @JsonProperty(value = "numExecutors", required = true)
-    private int numExecutors;
+//    @JsonProperty(value = "numExecutors", required = true)
+//    private int numExecutors;
 
     /**
      * Archives to be used in this session.
      */
-    @JsonProperty(value = "archives")
-    private List<String> archives;
+//    @JsonProperty(value = "archives")
+//    private List<String> archives;
 
     /**
      * Name of the session.
@@ -121,8 +122,17 @@ public class CreateSparkBatchJobParameters {
     /**
      * Spark Configuration Properties.
      */
-    @JsonProperty(value = "conf")
-    private Map<String, String> conf;
+//    @JsonProperty(value = "conf")
+//    private Map<String, String> conf;
+
+    public String adlAccountName() {
+        return adlAccountName;
+    }
+
+    public CreateSparkBatchJobParameters withAdlAccountName(String adlAccountName) {
+        this.adlAccountName = adlAccountName;
+        return this;
+    }
 
     /**
      * Get aDLS directory path to store Spark events and logs.
@@ -149,9 +159,9 @@ public class CreateSparkBatchJobParameters {
      *
      * @return the file value
      */
-    public String file() {
-        return this.file;
-    }
+//    public String file() {
+//        return this.file;
+//    }
 
     /**
      * Set file containing the application to run.
@@ -159,19 +169,19 @@ public class CreateSparkBatchJobParameters {
      * @param file the file value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withFile(String file) {
-        this.file = file;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withFile(String file) {
+//        this.file = file;
+//        return this;
+//    }
 
     /**
      * Get application Java or Spark main class.
      *
      * @return the className value
      */
-    public String className() {
-        return this.className;
-    }
+//    public String className() {
+//        return this.className;
+//    }
 
     /**
      * Set application Java or Spark main class.
@@ -179,19 +189,19 @@ public class CreateSparkBatchJobParameters {
      * @param className the className value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withClassName(String className) {
-        this.className = className;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withClassName(String className) {
+//        this.className = className;
+//        return this;
+//    }
 
     /**
      * Get command line arguments for the application.
      *
      * @return the args value
      */
-    public List<String> args() {
-        return this.args;
-    }
+//    public List<String> args() {
+//        return this.args;
+//    }
 
     /**
      * Set command line arguments for the application.
@@ -199,19 +209,19 @@ public class CreateSparkBatchJobParameters {
      * @param args the args value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withArgs(List<String> args) {
-        this.args = args;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withArgs(List<String> args) {
+//        this.args = args;
+//        return this;
+//    }
 
     /**
      * Get jar files to be used in the session.
      *
      * @return the jars value
      */
-    public List<String> jars() {
-        return this.jars;
-    }
+//    public List<String> jars() {
+//        return this.jars;
+//    }
 
     /**
      * Set jar files to be used in the session.
@@ -219,19 +229,19 @@ public class CreateSparkBatchJobParameters {
      * @param jars the jars value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withJars(List<String> jars) {
-        this.jars = jars;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withJars(List<String> jars) {
+//        this.jars = jars;
+//        return this;
+//    }
 
     /**
      * Get python files to be used in this session.
      *
      * @return the pyFiles value
      */
-    public List<String> pyFiles() {
-        return this.pyFiles;
-    }
+//    public List<String> pyFiles() {
+//        return this.pyFiles;
+//    }
 
     /**
      * Set python files to be used in this session.
@@ -239,19 +249,19 @@ public class CreateSparkBatchJobParameters {
      * @param pyFiles the pyFiles value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withPyFiles(List<String> pyFiles) {
-        this.pyFiles = pyFiles;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withPyFiles(List<String> pyFiles) {
+//        this.pyFiles = pyFiles;
+//        return this;
+//    }
 
     /**
      * Get other files to be used in the session.
      *
      * @return the files value
      */
-    public List<String> files() {
-        return this.files;
-    }
+//    public List<String> files() {
+//        return this.files;
+//    }
 
     /**
      * Set other files to be used in the session.
@@ -259,19 +269,19 @@ public class CreateSparkBatchJobParameters {
      * @param files the files value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withFiles(List<String> files) {
-        this.files = files;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withFiles(List<String> files) {
+//        this.files = files;
+//        return this;
+//    }
 
     /**
      * Get amount of memory to use for the driver process.
      *
      * @return the driverMemory value
      */
-    public String driverMemory() {
-        return this.driverMemory;
-    }
+//    public String driverMemory() {
+//        return this.driverMemory;
+//    }
 
     /**
      * Set amount of memory to use for the driver process.
@@ -279,19 +289,19 @@ public class CreateSparkBatchJobParameters {
      * @param driverMemory the driverMemory value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withDriverMemory(String driverMemory) {
-        this.driverMemory = driverMemory;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withDriverMemory(String driverMemory) {
+//        this.driverMemory = driverMemory;
+//        return this;
+//    }
 
     /**
      * Get number of Cores to use for the driver process.
      *
      * @return the driverCores value
      */
-    public int driverCores() {
-        return this.driverCores;
-    }
+//    public int driverCores() {
+//        return this.driverCores;
+//    }
 
     /**
      * Set number of Cores to use for the driver process.
@@ -299,19 +309,19 @@ public class CreateSparkBatchJobParameters {
      * @param driverCores the driverCores value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withDriverCores(int driverCores) {
-        this.driverCores = driverCores;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withDriverCores(int driverCores) {
+//        this.driverCores = driverCores;
+//        return this;
+//    }
 
     /**
      * Get amount of memory to use for each executor process.
      *
      * @return the executorMemory value
      */
-    public String executorMemory() {
-        return this.executorMemory;
-    }
+//    public String executorMemory() {
+//        return this.executorMemory;
+//    }
 
     /**
      * Set amount of memory to use for each executor process.
@@ -319,19 +329,19 @@ public class CreateSparkBatchJobParameters {
      * @param executorMemory the executorMemory value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withExecutorMemory(String executorMemory) {
-        this.executorMemory = executorMemory;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withExecutorMemory(String executorMemory) {
+//        this.executorMemory = executorMemory;
+//        return this;
+//    }
 
     /**
      * Get number of cores to use for each executor.
      *
      * @return the executorCores value
      */
-    public int executorCores() {
-        return this.executorCores;
-    }
+//    public int executorCores() {
+//        return this.executorCores;
+//    }
 
     /**
      * Set number of cores to use for each executor.
@@ -339,19 +349,19 @@ public class CreateSparkBatchJobParameters {
      * @param executorCores the executorCores value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withExecutorCores(int executorCores) {
-        this.executorCores = executorCores;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withExecutorCores(int executorCores) {
+//        this.executorCores = executorCores;
+//        return this;
+//    }
 
     /**
      * Get number of executors to launch for this session.
      *
      * @return the numExecutors value
      */
-    public int numExecutors() {
-        return this.numExecutors;
-    }
+//    public int numExecutors() {
+//        return this.numExecutors;
+//    }
 
     /**
      * Set number of executors to launch for this session.
@@ -359,19 +369,19 @@ public class CreateSparkBatchJobParameters {
      * @param numExecutors the numExecutors value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withNumExecutors(int numExecutors) {
-        this.numExecutors = numExecutors;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withNumExecutors(int numExecutors) {
+//        this.numExecutors = numExecutors;
+//        return this;
+//    }
 
     /**
      * Get archives to be used in this session.
      *
      * @return the archives value
      */
-    public List<String> archives() {
-        return this.archives;
-    }
+//    public List<String> archives() {
+//        return this.archives;
+//    }
 
     /**
      * Set archives to be used in this session.
@@ -379,10 +389,10 @@ public class CreateSparkBatchJobParameters {
      * @param archives the archives value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withArchives(List<String> archives) {
-        this.archives = archives;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withArchives(List<String> archives) {
+//        this.archives = archives;
+//        return this;
+//    }
 
     /**
      * Get name of the session.
@@ -409,9 +419,9 @@ public class CreateSparkBatchJobParameters {
      *
      * @return the conf value
      */
-    public Map<String, String> conf() {
-        return this.conf;
-    }
+//    public Map<String, String> conf() {
+//        return this.conf;
+//    }
 
     /**
      * Set spark Configuration Properties.
@@ -419,9 +429,9 @@ public class CreateSparkBatchJobParameters {
      * @param conf the conf value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withConf(Map<String, String> conf) {
-        this.conf = conf;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withConf(Map<String, String> conf) {
+//        this.conf = conf;
+//        return this;
+//    }
 
 }
