@@ -82,9 +82,9 @@ public class AzureSignInAction extends AzureAnAction {
             AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
             boolean isSignIn = authMethodManager.isSignedIn();
             if (isSignIn) {
-                String artifact = (authMethodManager.getAuthMethod() == AuthMethod.AD)
-                        ? "Signed in as " + authMethodManager.getAuthMethodDetails().getAccountEmail()
-                        : "Signed in using file \"" + authMethodManager.getAuthMethodDetails().getCredFilePath() + "\"";
+                String artifact = (authMethodManager.getAuthMethod() == AuthMethod.SP)
+                        ? "Signed in using file \"" + authMethodManager.getAuthMethodDetails().getCredFilePath() + "\""
+                        : "Signed in as " + authMethodManager.getAuthMethodDetails().getAccountEmail();
                 int res = JOptionPane.showConfirmDialog(frame,
                         artifact + "\n"
                                 + "Do you really want to sign out?",

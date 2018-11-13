@@ -169,11 +169,6 @@ public class AuthError {
     public static final String UnknownUser = "unknown_user";
 
     /// <summary>
-    /// Device Code request failed.
-    /// </summary>
-    public static final String DeviceCodeRequestFailed = "device_code_request_failed";
-
-    /// <summary>
     /// User Realm Discovery Failed.
     /// </summary>
     public static final String UserRealmDiscoveryFailed = "user_realm_discovery_failed";

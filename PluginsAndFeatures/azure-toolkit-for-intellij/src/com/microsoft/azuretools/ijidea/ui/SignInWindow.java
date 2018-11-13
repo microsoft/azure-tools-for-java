@@ -65,6 +65,7 @@ public class SignInWindow extends AzureDialogWrapper {
     private JPanel contentPane;
 
     private JRadioButton interactiveRadioButton;
+    private JRadioButton deviceLoginRadioButton;
 
     private JRadioButton automatedRadioButton;
     private JLabel authFileLabel;
@@ -73,6 +74,7 @@ public class SignInWindow extends AzureDialogWrapper {
     private JButton createNewAuthenticationFileButton;
     private JLabel automatedCommentLabel;
     private JLabel interactiveCommentLabel;
+    private JLabel deviceLoginCommentLabel;
 
     private AuthMethodDetails authMethodDetails;
     private AuthMethodDetails authMethodDetailsResult;
@@ -107,13 +109,20 @@ public class SignInWindow extends AzureDialogWrapper {
 
         interactiveRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onInteractiveRadioButton();
+                refreshAuthControlElements();
             }
         });
 
         automatedRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onAutomatedRadioButton();
+                refreshAuthControlElements();
+            }
+        });
+
+        deviceLoginRadioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                refreshAuthControlElements();
             }
         });
 
@@ -131,27 +140,20 @@ public class SignInWindow extends AzureDialogWrapper {
 
         Font labelFont = UIManager.getFont("Label.font");
 
-        interactiveRadioButton.setSelected(true);
-        onInteractiveRadioButton();
+        deviceLoginRadioButton.setSelected(true);
+        refreshAuthControlElements();
 
         init();
     }
 
-    private void onInteractiveRadioButton() {
-        enableAutomatedAuthControls(false);
-    }
-
-    private void onAutomatedRadioButton() {
-        enableAutomatedAuthControls(true);
-    }
-
-    private void enableAutomatedAuthControls(boolean enabled) {
-        interactiveCommentLabel.setEnabled(!enabled);
-        automatedCommentLabel.setEnabled(enabled);
-        authFileLabel.setEnabled(enabled);
-        authFileTextField.setEnabled(enabled);
-        browseButton.setEnabled(enabled);
-        createNewAuthenticationFileButton.setEnabled(enabled);
+    private void refreshAuthControlElements() {
+        interactiveCommentLabel.setEnabled(interactiveRadioButton.isSelected());
+        deviceLoginCommentLabel.setEnabled(deviceLoginRadioButton.isSelected());
+        automatedCommentLabel.setEnabled(automatedRadioButton.isSelected());
+        authFileLabel.setEnabled(automatedRadioButton.isSelected());
+        authFileTextField.setEnabled(automatedRadioButton.isSelected());
+        browseButton.setEnabled(automatedRadioButton.isSelected());
+        createNewAuthenticationFileButton.setEnabled(automatedRadioButton.isSelected());
     }
 
     private void doSelectCredFilepath() {
@@ -186,18 +188,16 @@ public class SignInWindow extends AzureDialogWrapper {
             new Task.Modal(project, "Sign In Progress", false) {
                 @Override
                 public void run(ProgressIndicator indicator) {
-                    // todo UI part
                     try {
-                        adAuthManager.deviceLogin();
+                        adAuthManager.deviceLogin(null);
                     } catch (AuthCanceledException ex) {
                         System.out.println(ex.getMessage());
                     } catch (Exception ex) {
-                        ApplicationManager.getApplication().invokeLater(() ->
-                            ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
+                        ApplicationManager.getApplication().invokeLater(
+                            () -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
                     }
                 }
-            }
-        );
+            });
     }
 
     private void doInteractiveLogin() {
@@ -379,7 +379,7 @@ public class SignInWindow extends AzureDialogWrapper {
             authMethodDetailsResult.setAuthMethod(AuthMethod.SP);
             // TODO: check field is empty, check file is valid
             authMethodDetailsResult.setCredFilePath(authPath);
-        } else { // todo, UI device login
+        } else if (deviceLoginRadioButton.isSelected()){
             doDeviceLogin();
             if (StringUtils.isNullOrEmpty(accountEmail)) {
                 System.out.println("Canceled by the user.");

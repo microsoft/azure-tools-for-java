@@ -28,6 +28,7 @@ import com.microsoft.aad.adal4j.AuthenticationContext;
 import com.microsoft.aad.adal4j.AuthenticationException;
 import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.aad.adal4j.DeviceCode;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.codec.binary.Base64;
 import java.io.UnsupportedEncodingException;
@@ -135,62 +136,62 @@ public class AuthContext {
     }
 
     /**
-     * Get token for resource and user.
-     * @param resource String resource url.
-     * @param newDeviceCode String need to get new device code.
-     * @param userId String userId.
-     * @return AuthResult auth result with the tokens.
-     * @throws AuthException exception during get token.
+     * Acquire token for resource by device code.
      */
-    public AuthResult acquireToken(@NotNull final String resource, final boolean newDeviceCode, final String userId,
+    public AuthResult acquireToken(@NotNull final String resource, final boolean newDeviceCode, final String uid,
                                    final AuthenticationCallback<AuthenticationResult> callback) throws AuthException {
-        if (!newDeviceCode) {
-            final AuthResult result = acquireTokenFromCache(resource, userId);
-            if (result == null) {
-                throw new AuthException(AuthError.UnknownUser);
-            }
-            return result;
-        }
-
         try {
-            final ExecutorService service = Executors.newSingleThreadExecutor();
+            if (!newDeviceCode) {
+                final AuthResult result = acquireTokenFromCache(resource, uid);
+                if (result != null) {
+                    return result;
+                } else {
+                    throw new AuthException(AuthError.UnknownUser);
+                }
+            }
+            final ExecutorService service = Executors.newFixedThreadPool(5);
             final AuthenticationContext ctx = new AuthenticationContext(authority, true, service);
+            final IDeviceLoginUI deviceLoginUI = CommonSettings.getUiFactory().getDeviceLoginUI();
             final DeviceCode deviceCode = ctx.acquireDeviceCode(clientId, resource, null).get();
-            return acquireTokenByDeviceCode(ctx, resource, deviceCode, callback);
+            deviceLoginUI.showDeviceLoginMessage(deviceCode.getMessage());
+            final AuthResult result = acquireTokenByDeviceCode(ctx, resource, deviceCode, deviceLoginUI, callback);
+            deviceLoginUI.close();
+            return result;
         } catch (Exception e) {
-            log.log(Level.SEVERE, e.getMessage(), e);
             throw new AuthException(e.getMessage(), e);
         }
     }
 
     /**
-     * Acquire the device code for device login.
+     * Acquire the token by device code.
      */
     private AuthResult acquireTokenByDeviceCode(@NotNull final AuthenticationContext ctx,
                                                 @NotNull final String resource,
                                                 @NotNull final DeviceCode deviceCode,
+                                                @NotNull final IDeviceLoginUI deviceLoginUI,
                                                 final AuthenticationCallback<AuthenticationResult> callback)
         throws ExecutionException, InterruptedException, AuthException {
 
         final long interval = deviceCode.getInterval();
         long remaining = deviceCode.getExpiresIn();
         AuthenticationResult result = null;
-        while (result == null && remaining > 0) {
+        while (result == null && remaining > 0 && !deviceLoginUI.isCancelled()) {
             try {
                 result = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
-                Thread.sleep(interval * 1000);
                 remaining -= interval;
             } catch (ExecutionException e) {
                 if (e.getCause() instanceof AuthenticationException &&
                     ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
                     // swallow the pending exception
+                    Thread.sleep(interval * 1000);
                 } else {
                     throw e;
                 }
             }
         }
         if (result == null) {
-            throw new AuthException(AuthError.UnknownUser);
+            throw new AuthException(deviceLoginUI.isCancelled() ? "The device login was cancelled." :
+                "Unknown User.");
         }
 
         final AuthResult finalResult = new AuthResult(result.getAccessTokenType(), result.getAccessToken(),
