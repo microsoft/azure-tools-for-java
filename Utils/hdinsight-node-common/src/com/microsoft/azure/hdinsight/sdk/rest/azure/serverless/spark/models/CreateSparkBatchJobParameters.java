@@ -28,6 +28,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 
 /**
+ * To leverage Livy(HDInsight) Spark Batch Job codes, some fields are commented
+ * since they can be inherited from the base class SparkSubmissionParameter
+ *
  * Parameters used to submit a new Data Lake Analytics spark batch job request.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
