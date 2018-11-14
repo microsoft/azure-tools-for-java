@@ -56,6 +56,15 @@ public class NodeJavaActionsMap extends NodeActionsMap {
         node2Actions.put(HDInsightRootModuleImpl.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(AddNewClusterAction.class, AddNewEmulatorAction.class).build());
+
+        //noinspection unchecked
+        node2Actions.put(DockerHostNode.class,
+                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                        .add(DeployDockerContainerAction.class).build());
+        //noinspection unchecked
+        node2Actions.put(DockerHostModule.class,
+                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                        .add(PublishDockerContainerAction.class).build());
     }
 
     @Override

@@ -68,12 +68,11 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
         //noinspection unchecked
         node2Actions.put(DockerHostNode.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(ViewDockerHostAction.class, DeployDockerContainerAction.class,
-                                DeleteDockerHostAction.class).build());
+                        .add(ViewDockerHostAction.class, DeleteDockerHostAction.class).build());
         //noinspection unchecked
         node2Actions.put(DockerHostModule.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(CreateNewDockerHostAction.class, PublishDockerContainerAction.class).build());
+                        .add(CreateNewDockerHostAction.class).build());
     }
 
     @Override
