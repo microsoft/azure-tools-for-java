@@ -21,6 +21,7 @@
   <idea-version since-build="181.*" until-build="181.*"/>
 
   <depends>com.intellij.modules.rider</depends>
+  <depends>com.intellij.database</depends>
   <depends>org.jetbrains.plugins.terminal</depends>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -32,6 +33,10 @@
     <configurationType implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfigurationType"/>
     <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppRunner"/>
     <rider.publishConfigurationProvider implementation="com.microsoft.intellij.runner.webapp.AzureDotNetWebAppContextPublishProvider" order="last" />
+  </extensions>
+
+  <extensions defaultExtensionNs="com.microsoft.intellij">
+    <nodeActionsMap implementation="com.microsoft.intellij.serviceexplorer.RiderNodeActionsMap" />
   </extensions>
 
   <application-components>
