@@ -16,7 +16,7 @@ intellij {
     pluginName = 'azure-toolkit-for-rider'
     version = rider_version
 
-    plugins 'terminal', 'com.intellij.database:183.4139.35'
+    plugins 'terminal', dep_plugins_rider
 }
 
 instrumentCode {
