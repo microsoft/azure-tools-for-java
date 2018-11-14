@@ -36,6 +36,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureDatabaseModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
@@ -68,6 +69,8 @@ public class AzureModule extends AzureRefreshableNode {
     private DockerHostModule dockerHostModule;
     @NotNull
     private ContainerRegistryModule containerRegistryModule;
+    @NotNull
+    private AzureDatabaseModule azureDatabaseModule;
 
     /**
      * Constructor.
@@ -84,6 +87,7 @@ public class AzureModule extends AzureRefreshableNode {
         redisCacheModule = new RedisCacheModule(this);
         dockerHostModule = new DockerHostModule(this);
         containerRegistryModule = new ContainerRegistryModule(this);
+        azureDatabaseModule = new AzureDatabaseModule(this);
         try {
             SignInOutListener signInOutListener = new SignInOutListener();
             AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
@@ -161,6 +165,9 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(containerRegistryModule)) {
             addChildNode(containerRegistryModule);
         }
+        if (!isDirectChild(azureDatabaseModule)) {
+            addChildNode(azureDatabaseModule);
+        }
     }
 
     @Override
@@ -187,6 +194,8 @@ public class AzureModule extends AzureRefreshableNode {
 
                 dockerHostModule.load(true);
                 containerRegistryModule.load(true);
+
+                azureDatabaseModule.load(true);
             }
         } catch (Exception e) {
             throw new AzureCmdException("Error loading Azure Explorer modules", e);
