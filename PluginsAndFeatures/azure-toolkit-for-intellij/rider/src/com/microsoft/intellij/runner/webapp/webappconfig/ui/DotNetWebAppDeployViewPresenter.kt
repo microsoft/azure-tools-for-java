@@ -26,7 +26,6 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.util.idea.application
-import com.jetbrains.rider.util.idea.getLogger
 import com.jetbrains.rider.util.lifetime.Lifetime
 import com.jetbrains.rider.util.lifetime.isAlive
 import com.jetbrains.rider.util.reactive.Signal
@@ -50,8 +49,6 @@ import com.microsoft.tooling.msservices.components.DefaultLoader
 class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : AzureMvpPresenter<V>() {
 
     companion object {
-
-        private val LOG = getLogger(this)
 
         private const val TASK_SUBSCRIPTION = "Collect Azure subscriptions"
         private const val TASK_WEB_APP = "Collect Azure web apps"
@@ -165,7 +162,6 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : AzureMvpP
     private fun errorHandler(message: String, e: Exception) {
         DefaultLoader.getIdeHelper().invokeLater {
             if (isViewDetached) return@invokeLater
-            LOG.error(message)
             mvpView.onErrorWithException(message, e)
         }
     }
