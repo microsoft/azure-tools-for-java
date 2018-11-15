@@ -148,13 +148,25 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private void refreshAuthControlElements() {
-        interactiveCommentLabel.setEnabled(interactiveRadioButton.isSelected());
-        deviceLoginCommentLabel.setEnabled(deviceLoginRadioButton.isSelected());
+        refreshAutomateLoginElements();
+        refreshDeviceLoginElements();
+        refreshInteractiveLoginElements();
+    }
+
+    private void refreshAutomateLoginElements() {
         automatedCommentLabel.setEnabled(automatedRadioButton.isSelected());
         authFileLabel.setEnabled(automatedRadioButton.isSelected());
         authFileTextField.setEnabled(automatedRadioButton.isSelected());
         browseButton.setEnabled(automatedRadioButton.isSelected());
         createNewAuthenticationFileButton.setEnabled(automatedRadioButton.isSelected());
+    }
+
+    private void refreshDeviceLoginElements() {
+        deviceLoginCommentLabel.setEnabled(deviceLoginRadioButton.isSelected());
+    }
+
+    private void refreshInteractiveLoginElements() {
+        interactiveCommentLabel.setEnabled(interactiveRadioButton.isSelected());
     }
 
     private void doSelectCredFilepath() {
