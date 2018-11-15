@@ -24,26 +24,53 @@ package org.jetbrains.plugins.azure.cloudshell.controlchannel
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.intellij.ide.BrowserUtil
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.progress.PerformInBackgroundOption
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
+import org.jetbrains.plugins.azure.util.WaitForUrl
 
 class UrlControlMessageHandler(
-        private val gson: Gson)
+        private val gson: Gson,
+        private val project: Project)
     : ControlMessageHandler {
 
     companion object {
         private val logger = Logger.getInstance(UrlControlMessageHandler::class.java)
+
+        private const val waitingText = "Waiting for cloud shell URL to become available..."
     }
 
     override fun handle(jsonControlMessage: String) {
         val message = gson.fromJson(jsonControlMessage, UrlControlMessage::class.java)
 
         if (!message.url.isEmpty()) {
-            logger.info("Opening browser for URL: {message.url}")
+            logger.info("Waiting for success status code for URL: {message.url}")
 
-            // Azure needs some time to get ready to serve the URL, otherwise we will open a 404/500 error page
-            Thread.sleep(2000)
+            ProgressManager.getInstance().run(object : Task.Backgroundable(project, waitingText, true, PerformInBackgroundOption.DEAF) {
+                override fun run(indicator: ProgressIndicator) {
+                    try {
+                        WaitForUrl(message.url).withRetries(30,
+                                { attempt, of -> indicator.text = "$waitingText (attempt ${attempt + 1}/$of)" },
+                                { it.code() in 200..400 })
 
-            BrowserUtil.browse(message.url)
+                        logger.info("Opening browser for URL: {message.url}")
+                        BrowserUtil.browse(message.url)
+                    } catch (e: Exception) {
+                        logger.error("Opening browser failed for URL: {message.url}", e)
+
+                        AzureCloudShellNotifications.notify(project,
+                                "Failed to browse cloud shell URL",
+                                "An error occurred while browsing cloud shell URL",
+                                "Error browsing {message.url}: " + e.message,
+                                NotificationType.ERROR)
+                    }
+                }
+            })
         }
     }
 

@@ -49,7 +49,7 @@ class CloudConsoleControlChannelWebSocket(private val project: Project,
                         DownloadControlMessageHandler(gson, project, cloudConsoleService, cloudConsoleBaseUrl)
                             .handle(message)
                     controlMessage.audience == "url" ->
-                        UrlControlMessageHandler(gson)
+                        UrlControlMessageHandler(gson, project)
                             .handle(message)
                 }
             } catch (e: JsonSyntaxException) {

@@ -28,7 +28,7 @@ class AzureCloudShellNotifications {
     companion object {
         val notificationGroup = NotificationGroup("Azure", NotificationDisplayType.BALLOON, true, null, null)
 
-        fun notify(project: Project, title: String?, subtitle: String?, content: String?, type: NotificationType, listener: NotificationListener?) {
+        fun notify(project: Project, title: String?, subtitle: String?, content: String?, type: NotificationType, listener: NotificationListener? = null) {
             val notification = notificationGroup.createNotification(
                     title, subtitle, content, type, listener)
 
