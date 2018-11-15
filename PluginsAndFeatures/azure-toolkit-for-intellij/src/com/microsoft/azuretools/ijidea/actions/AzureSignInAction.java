@@ -83,17 +83,17 @@ public class AzureSignInAction extends AzureAnAction {
         final String warningMessage;
         switch (authMethod) {
             case SP:
-                warningMessage = "Signed in using file \"" + authMethodDetails.getCredFilePath() + "\"";
+                warningMessage = String.format("Signed in using file \"%s\"", authMethodDetails.getCredFilePath());
                 break;
             case AD:
             case DC:
-                warningMessage = "Signed in as " + authMethodDetails.getAccountEmail();
+                warningMessage = String.format("Signed in as %s", authMethodDetails.getAccountEmail());
                 break;
             default:
-                warningMessage = "Unknown authentication method.";
+                warningMessage = "Signed in by unknown authentication method.";
                 break;
         }
-        return warningMessage + "\n" + "Do you really want to sign out?";
+        return String.format("%s\n Do you really want to sign out?", warningMessage);
     }
 
     public static void onAzureSignIn(Project project) {

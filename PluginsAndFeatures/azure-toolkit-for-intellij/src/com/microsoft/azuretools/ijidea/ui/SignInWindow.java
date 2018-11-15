@@ -38,6 +38,7 @@ import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azuretools.authmanage.DCAuthManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.interact.AuthMethod;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
@@ -171,25 +172,25 @@ public class SignInWindow extends AzureDialogWrapper {
 
     private void doDeviceLogin() {
         try {
-            final AdAuthManager adAuthManager = AdAuthManager.getInstance();
-            if (adAuthManager.isSignedIn()) {
+            final DCAuthManager dcAuthManager = DCAuthManager.getInstance();
+            if (dcAuthManager.isSignedIn()) {
                 doSingOut();
             }
-            deviceLoginAsync(adAuthManager);
-            accountEmail = adAuthManager.getAccountEmail();
+            deviceLoginAsync(dcAuthManager);
+            accountEmail = dcAuthManager.getAccountEmail();
         } catch (Exception ex) {
             ex.printStackTrace();
             ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
         }
     }
 
-    private void deviceLoginAsync(@NotNull final AdAuthManager adAuthManager) {
+    private void deviceLoginAsync(@NotNull final DCAuthManager dcAuthManager) {
         ProgressManager.getInstance().run(
             new Task.Modal(project, "Sign In Progress", false) {
                 @Override
                 public void run(ProgressIndicator indicator) {
                     try {
-                        adAuthManager.deviceLogin(null);
+                        dcAuthManager.deviceLogin(null);
                     } catch (AuthCanceledException ex) {
                         System.out.println(ex.getMessage());
                     } catch (Exception ex) {

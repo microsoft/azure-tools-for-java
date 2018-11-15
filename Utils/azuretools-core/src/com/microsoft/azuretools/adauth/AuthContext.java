@@ -72,8 +72,10 @@ public class AuthContext {
      * @param correlationId UUID request correlation id.
      * @throws MalformedURLException exception thrown when parse url from authority.
      */
+    // todo: webUi should not be a property of AuthContext, it is only used for interactive login
+    // todo: make it nullable as first step, then remove it and get it as parameter when acquire token by auth code
     public AuthContext(@NotNull String authority, @NotNull String clientId, @NotNull String redirectUrl,
-            @NotNull IWebUi webUi, final boolean validateAuthority, UUID correlationId)
+                       IWebUi webUi, final boolean validateAuthority, UUID correlationId)
             throws MalformedURLException {
         this.authority = this.canonicalizeUri(authority);
         this.clientId = clientId;
