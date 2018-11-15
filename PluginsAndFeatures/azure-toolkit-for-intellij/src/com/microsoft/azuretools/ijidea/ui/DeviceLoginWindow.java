@@ -68,7 +68,8 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
     }
 
     private String createHtmlFormatMessage(final String message) {
-        final Matcher matcher = Pattern.compile("http\\S+").matcher(message);
+        final String pattern = "(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+        final Matcher matcher = Pattern.compile(pattern).matcher(message);
         if (matcher.find()) {
             final String deviceLoginUrl = matcher.group(0);
             return "<p>"
