@@ -13,12 +13,17 @@ The plugin can be downloaded and installed in JetBrains Rider and is available [
 * Basic management of container hosts (create/delete, start/stop, view details)
 * List container registries
 * Basic management of Redis caches (create/delete, start/stop, view details, list keys/values)
+* Basic management of Sql databases (list, delete, connect to database in database tools)
 * Basic management of storage accounts (create/delete, list/create/delete blob container, list/upload/download/delete blobs)
 * Basic management of virtual machines (create/delete, start/stop, view details)
 * Basic management of web apps (create/delete, start/stop, view details, edit settings)
 * Run configuration to deploy ASP.NET web apps (can also provision SQL database)
   * ASP.NET Core web apps (any platform)
   * .NET framework web apps (Windows)
+* Azure Cloud Shell support
+  * Connect to cloud shell and work with terminal
+  * Upload file action in Rider, support `download <file>` command in terminal
+  * Support for `az aks browse` command opening browser
 
 Feature requests can be logged in our [issue tracker](https://github.com/JetBrains/azure-tools-for-intellij/issues), we also welcome contributions.
 
