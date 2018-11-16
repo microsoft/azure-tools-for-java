@@ -39,19 +39,18 @@ import java.util.Map;
 
 public class AdAuthManager extends BaseADAuthManager {
     private IWebUi webUi;
-    private static AdAuthManager instance = null;
     private static final String AUTHORIZATIONREQUIRED = "Authorization is required, please sign out and sign in again";
+
+    private static class LazyLoader {
+        static final AdAuthManager INSTANCE = new AdAuthManager();;
+    }
 
     /**
      * Get the AdAuthManager singleton instance.
      * @return AdAuthManager singleton instance.
-     * @throws IOException thrown when there is exception.
      */
-    public static AdAuthManager getInstance() throws IOException {
-        if (instance == null) {
-            instance = new AdAuthManager();
-        }
-        return instance;
+    public static AdAuthManager getInstance() {
+        return LazyLoader.INSTANCE;
     }
 
     public String getAccessToken(String tid) throws IOException {
@@ -260,7 +259,7 @@ public class AdAuthManager extends BaseADAuthManager {
         return null;
     }
 
-    private AdAuthManager() throws IOException {
+    private AdAuthManager() {
         super();
         webUi = CommonSettings.getUiFactory().getWebUi();
     }

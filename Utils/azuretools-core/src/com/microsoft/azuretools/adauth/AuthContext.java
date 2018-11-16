@@ -174,6 +174,8 @@ public class AuthContext {
                 service.shutdownNow();
             }
         } catch (InterruptedException e) {
+            // swallow interrupted exception
+        } finally {
             service.shutdownNow();
         }
         driver.createAddEntry(authResult, resource);

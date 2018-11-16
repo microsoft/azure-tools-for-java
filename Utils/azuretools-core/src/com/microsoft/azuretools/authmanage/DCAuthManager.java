@@ -30,17 +30,16 @@ import com.microsoft.azuretools.adauth.AuthResult;
 import java.io.IOException;
 
 public class DCAuthManager extends BaseADAuthManager {
-    private static DCAuthManager instance = null;
-
-    public static DCAuthManager getInstance() throws IOException {
-        if (instance == null) {
-            instance = new DCAuthManager();
-        }
-        return instance;
+    private static class LazyLoader {
+        static final DCAuthManager INSTANCE = new DCAuthManager();
     }
 
-    private DCAuthManager() throws IOException {
+    private DCAuthManager() {
         super();
+    }
+
+    public static DCAuthManager getInstance() {
+        return LazyLoader.INSTANCE;
     }
 
     public AuthResult deviceLogin(final AuthenticationCallback<AuthenticationResult> callback) throws IOException {

@@ -52,11 +52,11 @@ public class BaseADAuthManager {
     @Nullable
     final protected SecureStore secureStore;
 
-    public BaseADAuthManager() throws IOException {
+    public BaseADAuthManager() {
         adAuthDetails = new AdAuthDetails();
         env = CommonSettings.getAdEnvironment();
         if (env == null) {
-            throw new IOException("Azure environment is not setup");
+            throw new ExceptionInInitializerError("Azure environment is not setup");
         }
 
         secureStore = ServiceManager.getServiceProvider(SecureStore.class);
