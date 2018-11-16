@@ -29,12 +29,12 @@ import com.intellij.openapi.options.SettingsEditor
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel
 import com.microsoft.azure.hdinsight.spark.ui.ServerlessSparkConfigurable
 
-class ServerlessSparkConfiguration (name: String,
-                                    val module: ServerlessSparkConfigurationModule,
-                                    factory: ConfigurationFactory)
-    : RemoteDebugRunConfiguration(module.model, factory, module, name) {
+class CosmosSparkRunConfiguration (name: String,
+                                   val module: CosmosSparkConfigurationModule,
+                                   factory: ConfigurationFactory)
+    : LivySparkBatchJobRunConfiguration(module.model, factory, module, name) {
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
-        return RemoteDebugSettingsEditor(ServerlessSparkConfigurable(module.project))
+        return LivySparkRunConfigurationSettingsEditor(ServerlessSparkConfigurable(module.project))
     }
 
     // Validation

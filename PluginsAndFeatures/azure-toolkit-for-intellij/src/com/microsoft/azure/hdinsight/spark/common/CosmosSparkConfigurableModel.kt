@@ -20,11 +20,15 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.ui
+package com.microsoft.azure.hdinsight.spark.common
 
 import com.intellij.openapi.project.Project
 
-class ServerlessSparkConfigurable(project: Project) : SparkBatchJobConfigurable(project) {
-    override fun createSubmissionPanel(): SparkSubmissionContentPanelConfigurable =
-            CosmosSparkSubmissionPanelConfigurable(project)
+class CosmosSparkConfigurableModel(project: Project) : SparkBatchJobConfigurableModel(project) {
+    val serverlessSparkSubmitModel = ServerlessSparkSubmitModel(project)
+
+    init {
+        localRunConfigurableModel = SparkLocalRunConfigurableModel(project)
+        submitModel = serverlessSparkSubmitModel
+    }
 }

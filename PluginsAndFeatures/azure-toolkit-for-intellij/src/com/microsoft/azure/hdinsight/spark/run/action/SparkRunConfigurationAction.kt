@@ -32,7 +32,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.intellij.util.runInReadAction
 import javax.swing.Icon
@@ -46,7 +46,7 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
     abstract val runExecutor: Executor
 
     open fun canRun(setting: RunnerAndConfigurationSettings): Boolean =
-            setting.configuration is RemoteDebugRunConfiguration &&
+            setting.configuration is LivySparkBatchJobRunConfiguration &&
                     RunnerRegistry.getInstance().getRunner(runExecutor.id, setting.configuration) != null
 
     override fun update(actionEvent: AnActionEvent) {
@@ -101,7 +101,7 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
     }
 
     open fun checkRunnerSettings(runProfile: RunProfile?, runner: ProgramRunner<RunnerSettings>) {
-        (runProfile as? RemoteDebugRunConfiguration)?.checkRunnerSettings(runner, null, null)
+        (runProfile as? LivySparkBatchJobRunConfiguration)?.checkRunnerSettings(runner, null, null)
     }
 
 }

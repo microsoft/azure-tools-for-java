@@ -34,21 +34,27 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import java.net.URI
 
-class SparkScalaLivyConsoleRunConfiguration(project: Project,
-                                            configurationFactory: SparkScalaLivyConsoleRunConfigurationFactory,
-                                            batchRunConfiguration: RemoteDebugRunConfiguration?,
-                                            name: String)
+open class SparkScalaLivyConsoleRunConfiguration(project: Project,
+                                                 configurationFactory: SparkScalaLivyConsoleRunConfigurationFactory,
+                                                 private val batchRunConfiguration: LivySparkBatchJobRunConfiguration?,
+                                                 name: String)
     : AbstractRunConfiguration (
         name, batchRunConfiguration?.configurationModule ?: RunConfigurationModule(project), configurationFactory)
 {
+    open val runConfigurationTypeName = "HDInsight Spark Run Configuration"
 
-    var clusterName = batchRunConfiguration?.submitModel?.submissionParameter?.clusterName
-            ?: throw RuntimeConfigurationWarning("A Spark Run Configuration should be selected to start a console")
+    protected open val submitModel : SparkSubmitModel?
+        get() = batchRunConfiguration?.submitModel
 
-    private lateinit var cluster: IClusterDetail
+    protected open var clusterName : String = ""
+        get() = submitModel?.submissionParameter?.clusterName
+            ?: throw RuntimeConfigurationWarning("A $runConfigurationTypeName should be selected to start a console")
+
+    protected lateinit var cluster: IClusterDetail
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> =
             SparkScalaLivyConsoleRunConfigurationEditor()

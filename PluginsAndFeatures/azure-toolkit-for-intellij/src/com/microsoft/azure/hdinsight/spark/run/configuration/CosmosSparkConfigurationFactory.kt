@@ -22,10 +22,22 @@
 
 package com.microsoft.azure.hdinsight.spark.run.configuration
 
-import com.intellij.execution.configurations.RunConfigurationModule
+import com.intellij.execution.configuration.ConfigurationFactoryEx
+import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.spark.common.ServerlessSparkBatchConfigurableModel
 
-class ServerlessSparkConfigurationModule(project: Project) : RunConfigurationModule(project) {
-    val model = ServerlessSparkBatchConfigurableModel(project)
+class CosmosSparkConfigurationFactory (type: ConfigurationType) :
+        ConfigurationFactoryEx<CosmosSparkRunConfiguration>(type) {
+    companion object {
+        @JvmStatic val NAME = "Azure Data Lake Spark"
+    }
+
+    override fun createTemplateConfiguration(project: Project): RunConfiguration {
+        return CosmosSparkRunConfiguration(NAME, CosmosSparkConfigurationModule(project), this)
+    }
+
+    override fun getName(): String {
+        return NAME
+    }
 }
