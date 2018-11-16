@@ -23,38 +23,30 @@
 package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.microsoft.aad.adal4j.AuthenticationCallback;
+import com.microsoft.aad.adal4j.AuthenticationContext;
+import com.microsoft.aad.adal4j.AuthenticationResult;
+import com.microsoft.aad.adal4j.DeviceCode;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 
 public class DeviceLoginUI implements IDeviceLoginUI {
     private DeviceLoginWindow deviceLoginWindow;
-    private static final String TITLE = "Azure Device Login";
 
     @Override
-    public boolean isCancelled() {
-        if (deviceLoginWindow == null) {
-            return false;
-        }
-        return deviceLoginWindow.getIsCancelled();
-    }
+    public AuthenticationResult authenticate(final AuthenticationContext ctx, final DeviceCode deviceCode,
+                                             final AuthenticationCallback<AuthenticationResult> callback) {
 
-    @Override
-    public void close() {
-        if (deviceLoginWindow != null) {
-            deviceLoginWindow.close();
-        }
-    }
-
-    @Override
-    public void showDeviceLoginMessage(final String message) {
-        if(ApplicationManager.getApplication().isDispatchThread()) {
-            buildAndShow(message);
+        if (ApplicationManager.getApplication().isDispatchThread()) {
+            buildAndShow(ctx, deviceCode, callback);
         } else {
-            ApplicationManager.getApplication().invokeLater(() -> buildAndShow(message));
+            ApplicationManager.getApplication().invokeAndWait(() -> buildAndShow(ctx, deviceCode, callback));
         }
+        return deviceLoginWindow.getAuthenticationResult();
     }
 
-    private void buildAndShow(final String message) {
-        deviceLoginWindow = new DeviceLoginWindow(message, TITLE);
+    private void buildAndShow(final AuthenticationContext ctx, final DeviceCode deviceCode,
+                              final AuthenticationCallback<AuthenticationResult> callback) {
+        deviceLoginWindow = new DeviceLoginWindow(ctx, deviceCode, callback);
         deviceLoginWindow.show();
     }
 }

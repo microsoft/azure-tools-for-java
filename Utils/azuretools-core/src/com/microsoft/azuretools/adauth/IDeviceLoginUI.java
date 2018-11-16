@@ -22,10 +22,12 @@
 
 package com.microsoft.azuretools.adauth;
 
+import com.microsoft.aad.adal4j.AuthenticationCallback;
+import com.microsoft.aad.adal4j.AuthenticationContext;
+import com.microsoft.aad.adal4j.AuthenticationResult;
+import com.microsoft.aad.adal4j.DeviceCode;
+
 public interface IDeviceLoginUI {
-    boolean isCancelled();
-
-    void showDeviceLoginMessage(final String message);
-
-    void close();
+    AuthenticationResult authenticate(final AuthenticationContext ctx, final DeviceCode deviceCode,
+                                      final AuthenticationCallback<AuthenticationResult> callback);
 }

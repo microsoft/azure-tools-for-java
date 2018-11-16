@@ -24,6 +24,12 @@ package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.microsoft.aad.adal4j.AdalErrorCode;
+import com.microsoft.aad.adal4j.AuthenticationCallback;
+import com.microsoft.aad.adal4j.AuthenticationContext;
+import com.microsoft.aad.adal4j.AuthenticationException;
+import com.microsoft.aad.adal4j.AuthenticationResult;
+import com.microsoft.aad.adal4j.DeviceCode;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 import java.awt.Desktop;
@@ -31,6 +37,8 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.Action;
@@ -42,29 +50,54 @@ import javax.swing.event.HyperlinkEvent;
 public class DeviceLoginWindow extends AzureDialogWrapper {
     private JPanel jPanel;
     private JEditorPane editorPanel;
-    private boolean isCancelled;
+    private AuthenticationResult authenticationResult = null;
+    private Future<?> authExecutor;
+    private static final String TITLE = "Azure Device Login";
 
-    public boolean getIsCancelled() {
-        return this.isCancelled;
+    public AuthenticationResult getAuthenticationResult() {
+        return authenticationResult;
     }
 
-    public DeviceLoginWindow(String message, final String title) {
-        super(null, true, IdeModalityType.PROJECT);
+    public DeviceLoginWindow(final AuthenticationContext ctx, final DeviceCode deviceCode,
+                             final AuthenticationCallback<AuthenticationResult> callBack) {
+        super(null, false, IdeModalityType.PROJECT);
         setModal(true);
-        setTitle(title);
-        editorPanel.setText(createHtmlFormatMessage(message));
+        setTitle(TITLE);
+        editorPanel.setText(createHtmlFormatMessage(deviceCode.getMessage()));
         editorPanel.addHyperlinkListener(e -> {
-            if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                 try {
                     Desktop.getDesktop().browse(e.getURL().toURI());
-                } catch (IOException e1) {
-                    // todo
-                } catch (URISyntaxException e1) {
-                    // todo
+                } catch (IOException | URISyntaxException e1) {
+                    // swallow exceptions
                 }
             }
         });
+        authExecutor = ApplicationManager.getApplication()
+            .executeOnPooledThread(() -> setAuthenticationResultByDeviceCode(ctx, deviceCode, callBack));
         init();
+    }
+
+    private void setAuthenticationResultByDeviceCode(final AuthenticationContext ctx, final DeviceCode deviceCode,
+                                                     final AuthenticationCallback<AuthenticationResult> callback) {
+        final long interval = deviceCode.getInterval();
+        long remaining = deviceCode.getExpiresIn();
+        while (remaining > 0 && authenticationResult == null) {
+            try {
+                remaining -= interval;
+                Thread.sleep(interval * 1000);
+                authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
+            } catch (ExecutionException | InterruptedException e) {
+                if (e.getCause() instanceof AuthenticationException &&
+                    ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
+                    // swallow the pending exception
+                } else {
+                    e.printStackTrace();
+                    break;
+                }
+            }
+        }
+        closeDialog();
     }
 
     private String createHtmlFormatMessage(final String message) {
@@ -73,22 +106,22 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         if (matcher.find()) {
             final String deviceLoginUrl = matcher.group(0);
             return "<p>"
-                + message.replace(deviceLoginUrl, String.format("<a href=\"%s\">%s</a>", deviceLoginUrl, deviceLoginUrl))
-                + "</p>";
+                + message.replace(deviceLoginUrl, String.format("<a href=\"%s\">%s</a>", deviceLoginUrl,
+                deviceLoginUrl))
+                + "</p><p>Waiting for signing in with the code ...</p>";
         }
         return message;
     }
 
     @Override
     public void doCancelAction() {
-        close();
-        isCancelled = true;
+        authExecutor.cancel(true);
         super.doCancelAction();
     }
 
-    public void close() {
+    private void closeDialog() {
         ApplicationManager.getApplication().invokeLater(() -> {
-            Window w = getWindow();
+            final Window w = getWindow();
             w.dispatchEvent(new WindowEvent(w, WindowEvent.WINDOW_CLOSING));
         }, ModalityState.stateForComponent(jPanel));
     }
