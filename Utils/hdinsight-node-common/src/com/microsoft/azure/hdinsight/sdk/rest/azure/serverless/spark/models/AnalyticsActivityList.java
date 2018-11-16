@@ -29,33 +29,74 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Update spark workers.
+ * List of activities.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UpdateSparkResourcePoolParameters {
+public class AnalyticsActivityList {
     /**
-     * Definition of spark workers.
+     * the list of resource pools.
      */
-    @JsonProperty(value = "sparkResourceCollection")
-    private List<UpdateSparkResourcePoolItemParameters> sparkResourceCollection;
+    @JsonProperty(value = "value", access = JsonProperty.Access.WRITE_ONLY)
+    private List<AnalyticsActivity> value;
 
     /**
-     * Get definition of spark workers.
-     *
-     * @return the sparkResourceCollection value
+     * The nextLink property.
      */
-    public List<UpdateSparkResourcePoolItemParameters> sparkResourceCollection() {
-        return this.sparkResourceCollection;
+    @JsonProperty(value = "nextLink")
+    private String nextLink;
+
+    /**
+     * The count property.
+     */
+    @JsonProperty(value = "count")
+    private Integer count;
+
+    /**
+     * Get the list of resource pools.
+     *
+     * @return the value value
+     */
+    public List<AnalyticsActivity> value() {
+        return this.value;
     }
 
     /**
-     * Set definition of spark workers.
+     * Get the nextLink value.
      *
-     * @param sparkResourceCollection the sparkResourceCollection value to set
-     * @return the UpdateSparkResourcePoolParameters object itself.
+     * @return the nextLink value
      */
-    public UpdateSparkResourcePoolParameters withSparkResourceCollection(List<UpdateSparkResourcePoolItemParameters> sparkResourceCollection) {
-        this.sparkResourceCollection = sparkResourceCollection;
+    public String nextLink() {
+        return this.nextLink;
+    }
+
+    /**
+     * Set the nextLink value.
+     *
+     * @param nextLink the nextLink value to set
+     * @return the AnalyticsActivityList object itself.
+     */
+    public AnalyticsActivityList withNextLink(String nextLink) {
+        this.nextLink = nextLink;
+        return this;
+    }
+
+    /**
+     * Get the count value.
+     *
+     * @return the count value
+     */
+    public Integer count() {
+        return this.count;
+    }
+
+    /**
+     * Set the count value.
+     *
+     * @param count the count value to set
+     * @return the AnalyticsActivityList object itself.
+     */
+    public AnalyticsActivityList withCount(Integer count) {
+        this.count = count;
         return this;
     }
 

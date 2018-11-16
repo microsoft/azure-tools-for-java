@@ -29,30 +29,36 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.rest.ExpandableStringEnum;
 
 /**
- * Defines values for SparkNodeType.
+ * Defines values for ActivityResult.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class SparkNodeType extends ExpandableStringEnum<SparkNodeType> {
-    /** Static value SparkMaster for SparkNodeType. */
-    public static final SparkNodeType SPARK_MASTER = fromString("SparkMaster");
+public final class ActivityResult extends ExpandableStringEnum<ActivityResult> {
+    /** Static value None for ActivityResult. */
+    public static final ActivityResult NONE = fromString("None");
 
-    /** Static value SparkWorker for SparkNodeType. */
-    public static final SparkNodeType SPARK_WORKER = fromString("SparkWorker");
+    /** Static value Succeeded for ActivityResult. */
+    public static final ActivityResult SUCCEEDED = fromString("Succeeded");
+
+    /** Static value Cancelled for ActivityResult. */
+    public static final ActivityResult CANCELLED = fromString("Cancelled");
+
+    /** Static value Failed for ActivityResult. */
+    public static final ActivityResult FAILED = fromString("Failed");
 
     /**
-     * Creates or finds a SparkNodeType from its string representation.
+     * Creates or finds a ActivityResult from its string representation.
      * @param name a name to look for
-     * @return the corresponding SparkNodeType
+     * @return the corresponding ActivityResult
      */
     @JsonCreator
-    public static SparkNodeType fromString(String name) {
-        return fromString(name, SparkNodeType.class);
+    public static ActivityResult fromString(String name) {
+        return fromString(name, ActivityResult.class);
     }
 
     /**
-     * @return known SparkNodeType values
+     * @return known ActivityResult values
      */
-    public static Collection<SparkNodeType> values() {
-        return values(SparkNodeType.class);
+    public static Collection<ActivityResult> values() {
+        return values(ActivityResult.class);
     }
 }

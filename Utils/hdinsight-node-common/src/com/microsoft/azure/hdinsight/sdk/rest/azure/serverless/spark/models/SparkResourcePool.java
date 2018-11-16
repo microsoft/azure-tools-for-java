@@ -23,12 +23,14 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Full definition of the spark resource pool entity.
  */
-public class SparkResourcePool extends AnalyticsActivity {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class SparkResourcePool extends ResourcePool {
     /**
      * The spark resource pool specific properties.
      */
@@ -36,7 +38,7 @@ public class SparkResourcePool extends AnalyticsActivity {
     private SparkResourcePoolProperties properties;
 
     /**
-     * Get the properties value.
+     * Get the spark resource pool specific properties.
      *
      * @return the properties value
      */
@@ -45,7 +47,7 @@ public class SparkResourcePool extends AnalyticsActivity {
     }
 
     /**
-     * Set the properties value.
+     * Set the spark resource pool specific properties.
      *
      * @param properties the properties value to set
      * @return the SparkResourcePool object itself.
