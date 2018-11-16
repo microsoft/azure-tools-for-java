@@ -74,12 +74,12 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
             }
         });
         authExecutor = ApplicationManager.getApplication()
-            .executeOnPooledThread(() -> setAuthenticationResultByDeviceCode(ctx, deviceCode, callBack));
+            .executeOnPooledThread(() -> pullAuthenticationResult(ctx, deviceCode, callBack));
         init();
     }
 
-    private void setAuthenticationResultByDeviceCode(final AuthenticationContext ctx, final DeviceCode deviceCode,
-                                                     final AuthenticationCallback<AuthenticationResult> callback) {
+    private void pullAuthenticationResult(final AuthenticationContext ctx, final DeviceCode deviceCode,
+                                          final AuthenticationCallback<AuthenticationResult> callback) {
         final long interval = deviceCode.getInterval();
         long remaining = deviceCode.getExpiresIn();
         while (remaining > 0 && authenticationResult == null) {
