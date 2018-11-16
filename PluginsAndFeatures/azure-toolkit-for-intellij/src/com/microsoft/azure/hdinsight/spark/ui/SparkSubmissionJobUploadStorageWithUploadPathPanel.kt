@@ -73,7 +73,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
         formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }
 
-    val storageCheckSubject: PublishSubject<String> = PublishSubject.create()
+    val storageCheckSubject: PublishSubject<SparkSubmissionJobUploadStorageCtrl.StorageCheckEvent> = PublishSubject.create()
 
     override fun removeNotify() {
         super.removeNotify()

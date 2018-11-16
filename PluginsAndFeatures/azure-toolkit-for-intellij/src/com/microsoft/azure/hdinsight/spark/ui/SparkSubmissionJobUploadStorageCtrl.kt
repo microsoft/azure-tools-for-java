@@ -29,6 +29,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
@@ -58,6 +59,13 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
         get() = StringUtils.isEmpty(resultMessage)
     val resultMessage
         get() = view.storagePanel.errorMessage
+
+    //storage check event for storageCheckSubject in panel
+    open class StorageCheckEvent(val message: String)
+    class StorageCheckSelectedClusterEvent(val clusterName: String) : StorageCheckEvent("Selected cluster $clusterName")
+    class StorageCheckSignInOutEvent() : StorageCheckEvent("After user clicked sign in/off in ADLS Gen 1 storage type")
+    class StorageCheckPathFocusLostEvent(val rootPathType: String) : StorageCheckEvent("$rootPathType root path focus lost")
+    class StorageCheckSelectedStorageTypeEvent(val storageType: String) : StorageCheckEvent("Selected storage type: $storageType")
 
     abstract fun getClusterName(): String?
 
@@ -104,7 +112,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
             val curLayout = view.storagePanel.storageCardsPanel.layout as CardLayout
             curLayout.show(view.storagePanel.storageCardsPanel, itemEvent.item as String)
             if (itemEvent?.stateChange == ItemEvent.SELECTED) {
-                view.storageCheckSubject.onNext("Selected storage type: ${itemEvent.item}")
+                view.storageCheckSubject.onNext(StorageCheckSelectedStorageTypeEvent(itemEvent.item as String))
             }
         }
 
@@ -113,40 +121,59 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
             .forEach {
                 it.addActionListener {
                     AzureSignInAction.onAzureSignIn(null)
-                    view.storageCheckSubject.onNext("After user clicked sign in/off in ADLS Gen 1 storage type")
+                    view.storageCheckSubject.onNext(StorageCheckSignInOutEvent())
                 }
             }
 
         // validate storage info when ADLS Root Path field focus lost
         view.storagePanel.adlsCard.adlsRootPathField.addFocusListener( object : FocusAdapter() {
             override fun focusLost(e: FocusEvent?) {
-                view.storageCheckSubject.onNext("ADLS root path focus lost")
+                view.storageCheckSubject.onNext(StorageCheckPathFocusLostEvent("ADLS"))
             }
         })
     }
 
     fun selectCluster(clusterName: String) {
-        view.storageCheckSubject.onNext("Selected cluster $clusterName")
+        view.storageCheckSubject.onNext(StorageCheckSelectedClusterEvent(clusterName))
     }
 
     private fun registerStorageInfoCheck(): Subscription = view.storageCheckSubject
             .throttleWithTimeout(500, TimeUnit.MILLISECONDS)
             .doOnNext { log().debug("Receive checking message $it") }
-            .flatMap { validateStorageInfo() }
+            .flatMap { validateStorageInfo(it) }
             .subscribe(
                     { },
                     { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
 
     abstract fun getClusterDetail(): IClusterDetail?
 
-    private fun validateStorageInfo(): Observable<SparkSubmitJobUploadStorageModel> {
+    private fun setDefaultStorageType(checkEvent:StorageCheckEvent) {
+        if (checkEvent is StorageCheckSelectedClusterEvent) {
+            val clusterDetail = getClusterDetail()
+            if (clusterDetail is HDInsightLivyLinkClusterDetail) {
+                view.storagePanel.storageTypeComboBox.selectedItem = view.storagePanel.sparkInteractiveSessionCard.title
+            } else {
+                view.storagePanel.storageTypeComboBox.selectedItem = view.storagePanel.clusterDefaultStorageCard.title
+            }
+        }
+    }
+
+    private fun validateStorageInfo(checkEvent:StorageCheckEvent):
+            Observable<SparkSubmitJobUploadStorageModel> {
         return Observable.just(SparkSubmitJobUploadStorageModel())
             .doOnNext(view::getData)
+            .doOnNext { setDefaultStorageType(checkEvent) }
             // set error message to prevent user from applying the changes when validation is not completed
-            .map { it.apply { errorMsg = "validating storage info is not completed" } }
+            .map {
+                it.apply {
+                    errorMsg = "validating storage info is not completed"
+                }
+            }
             .doOnNext(view::setData)
             .observeOn(Schedulers.io())
+            .doOnNext(view::getData)
             .map {
+
                 when (it.storageAccountType) {
                     SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION -> it.apply {
                         if (getClusterDetail() != null) {
