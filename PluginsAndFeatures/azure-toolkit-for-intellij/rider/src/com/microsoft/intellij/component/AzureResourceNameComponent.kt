@@ -20,26 +20,23 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig
+package com.microsoft.intellij.component
 
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.ui.components.Label
+import net.miginfocom.swing.MigLayout
+import javax.swing.JPanel
+import javax.swing.JTextField
 
-class RiderWebAppConfigurationFactory(type: ConfigurationType) : ConfigurationFactory(type) {
+class AzureResourceNameComponent(text: String = "Name") : JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")), AzureComponent {
 
-    companion object {
-        private const val FACTORY_NAME = "Azure Web App"
+    private val lblName = Label(text)
+    val txtNameValue = JTextField()
+
+    init {
+        add(lblName)
+        add(txtNameValue, "growx")
     }
 
-    override fun getName() = FACTORY_NAME
-
-    override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return RiderWebAppConfiguration(project, this, project.name)
-    }
-
-    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
-        return RiderWebAppConfiguration(template.project, this, name)
-    }
+    override fun validateComponent(): ValidationInfo? = null
 }

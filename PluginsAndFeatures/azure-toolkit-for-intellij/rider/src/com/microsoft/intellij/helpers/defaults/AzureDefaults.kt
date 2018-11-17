@@ -20,26 +20,16 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig
+package com.microsoft.intellij.helpers.defaults
 
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.openapi.project.Project
+import com.microsoft.azure.management.resources.fluentcore.arm.Region
+import com.microsoft.azure.management.sql.DatabaseEditions
 
-class RiderWebAppConfigurationFactory(type: ConfigurationType) : ConfigurationFactory(type) {
+object AzureDefaults {
 
-    companion object {
-        private const val FACTORY_NAME = "Azure Web App"
-    }
+    val databaseEdition: DatabaseEditions = DatabaseEditions.BASIC
 
-    override fun getName() = FACTORY_NAME
+    const val SQL_DATABASE_COLLATION = "SQL_Latin1_General_CP1_CI_AS"
 
-    override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return RiderWebAppConfiguration(project, this, project.name)
-    }
-
-    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
-        return RiderWebAppConfiguration(template.project, this, name)
-    }
+    val location: Region = Region.US_EAST
 }

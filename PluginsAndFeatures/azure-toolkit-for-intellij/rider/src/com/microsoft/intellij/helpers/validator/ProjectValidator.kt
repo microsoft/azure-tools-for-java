@@ -20,16 +20,15 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig.validator
+package com.microsoft.intellij.helpers.validator
 
-import com.intellij.execution.configurations.RuntimeConfigurationError
-import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.util.SystemInfo
 import com.jetbrains.rd.framework.impl.RpcTimeouts
 import com.jetbrains.rider.model.PublishableProjectModel
-import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
 
-object ProjectValidator : ConfigurationValidator() {
+object ProjectValidator : AzureResourceValidator() {
+
+    private const val PROJECT_NOT_DEFINED = "Project is not defined"
 
     private const val PROJECT_PUBLISHING_NOT_SUPPORTED =
             "Selected project '%s' cannot be published. Please select a Web App"
@@ -40,6 +39,8 @@ object ProjectValidator : ConfigurationValidator() {
     private const val PROJECT_TARGETS_NOT_DEFINED =
             "Selected project '%s' cannot be published. Required target '%s' was not found."
 
+    private const val WEB_APP_TARGET_NAME = "Microsoft.WebApplication.targets"
+
     private val timeouts = RpcTimeouts(500L, 2000L)
 
     /**
@@ -47,25 +48,26 @@ object ProjectValidator : ConfigurationValidator() {
      *
      * Note: for .NET web apps we ned to check for the "WebApplication" targets
      *       that contains tasks for generating publishable package
-     *
-     * @throws [ConfigurationException] in case validation is failed
      */
-    @Throws(RuntimeConfigurationError::class)
-    fun validateProject(publishableProject: PublishableProjectModel?) {
+    fun validateProject(publishableProject: PublishableProjectModel?): ValidationResult {
 
-        publishableProject ?: throw RuntimeConfigurationError(UiConstants.PROJECT_NOT_DEFINED)
+        val status = ValidationResult()
+
+        publishableProject ?: return status.setInvalid(PROJECT_NOT_DEFINED)
 
         if (!publishableProject.isWeb)
-            throw RuntimeConfigurationError(
+            return status.setInvalid(
                     String.format(PROJECT_PUBLISHING_NOT_SUPPORTED, publishableProject.projectName))
 
         if (!isPublishSupported(publishableProject))
-            throw RuntimeConfigurationError(
+            return status.setInvalid(
                     String.format(PROJECT_PUBLISHING_OS_NOT_SUPPORTED, publishableProject.projectName, SystemInfo.OS_NAME))
 
         if (!publishableProject.isDotNetCore && !isWebTargetsPresent(publishableProject))
-            throw RuntimeConfigurationError(
-                    String.format(PROJECT_TARGETS_NOT_DEFINED, publishableProject.projectName, UiConstants.WEB_APP_TARGET_NAME))
+            return status.setInvalid(
+                    String.format(PROJECT_TARGETS_NOT_DEFINED, publishableProject.projectName, WEB_APP_TARGET_NAME))
+
+        return status
     }
 
     private fun isPublishSupported(publishableProject: PublishableProjectModel) =
@@ -78,5 +80,5 @@ object ProjectValidator : ConfigurationValidator() {
      * @return [Boolean] whether WebApplication targets are present in publishable project
      */
     private fun isWebTargetsPresent(publishableProject: PublishableProjectModel) =
-            publishableProject.hasTarget.sync(UiConstants.WEB_APP_TARGET_NAME, timeouts)
+            publishableProject.hasTarget.sync(WEB_APP_TARGET_NAME, timeouts)
 }

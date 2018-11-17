@@ -19,17 +19,20 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.intellij.serviceexplorer
 
 import com.google.common.collect.ImmutableList
 import com.microsoft.intellij.serviceexplorer.azure.database.actions.*
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
+import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureDatabaseModule
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
 import java.util.*
 
 class RiderNodeActionsMap : NodeActionsMap() {
+
     override fun getMap(): Map<Class<out Node>, ImmutableList<Class<out NodeActionListener>>> {
         return node2Actions
     }
@@ -38,7 +41,12 @@ class RiderNodeActionsMap : NodeActionsMap() {
         private val node2Actions = HashMap<Class<out Node>, ImmutableList<Class<out NodeActionListener>>>()
 
         init {
+            node2Actions[AzureDatabaseModule::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
+                    .add(SqlServerCreateAction::class.java)
+                    .build()
+
             node2Actions[SqlServerNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
+                    .add(SqlDatabaseCreateAction::class.java)
                     .add(SqlServerOpenInBrowserAction::class.java)
                     .add(SqlServerAddCurrentIpAddressToFirewallAction::class.java)
                     .add(SqlServerConnectDataSourceAction::class.java)

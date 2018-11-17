@@ -20,26 +20,13 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig
+package com.microsoft.intellij.component.extension
 
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.openapi.project.Project
+import javax.swing.JComponent
 
-class RiderWebAppConfigurationFactory(type: ConfigurationType) : ConfigurationFactory(type) {
-
-    companion object {
-        private const val FACTORY_NAME = "Azure Web App"
-    }
-
-    override fun getName() = FACTORY_NAME
-
-    override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return RiderWebAppConfiguration(project, this, project.name)
-    }
-
-    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
-        return RiderWebAppConfiguration(template.project, this, name)
-    }
+fun setComponentsEnabled(isEnabled: Boolean, vararg components: JComponent) {
+    components.forEach { it.isEnabled = isEnabled }
+}
+fun setComponentsVisible(isVisible: Boolean, vararg components: JComponent) {
+    components.forEach { it.isVisible = isVisible }
 }

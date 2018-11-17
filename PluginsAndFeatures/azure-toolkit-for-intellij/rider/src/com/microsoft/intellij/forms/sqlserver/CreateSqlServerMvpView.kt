@@ -20,26 +20,18 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig
+package com.microsoft.intellij.forms.sqlserver
 
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.openapi.project.Project
+import com.microsoft.azure.management.resources.Location
+import com.microsoft.azure.management.resources.ResourceGroup
+import com.microsoft.azure.management.resources.Subscription
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView
 
-class RiderWebAppConfigurationFactory(type: ConfigurationType) : ConfigurationFactory(type) {
+interface CreateSqlServerMvpView : MvpView {
 
-    companion object {
-        private const val FACTORY_NAME = "Azure Web App"
-    }
+    fun fillSubscription(subscriptions: List<Subscription>)
 
-    override fun getName() = FACTORY_NAME
+    fun fillResourceGroup(resourceGroups: List<ResourceGroup>)
 
-    override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return RiderWebAppConfiguration(project, this, project.name)
-    }
-
-    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
-        return RiderWebAppConfiguration(template.project, this, name)
-    }
+    fun fillLocation(locations: List<Location>)
 }

@@ -27,6 +27,7 @@ import com.intellij.ide.BrowserUtil
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.actionSystem.ActionToolbarPosition
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -56,11 +57,15 @@ import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
+import com.microsoft.intellij.component.extension.createDefaultRenderer
+import com.microsoft.intellij.component.extension.getSelectedValue
+import com.microsoft.intellij.component.extension.setComponentsVisible
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
-import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.model.DatabasePublishModel
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
@@ -83,8 +88,10 @@ import javax.swing.table.TableRowSorter
  */
 class RiderWebAppSettingPanel(private val lifetime: Lifetime,
                               project: Project,
-                              private val configuration: RiderWebAppConfiguration)
-    : AzureRiderSettingPanel<RiderWebAppConfiguration>(project), DotNetWebAppDeployMvpView, Activatable {
+                              private val configuration: RiderWebAppConfiguration) :
+        AzureRiderSettingPanel<RiderWebAppConfiguration>(project),
+        DotNetWebAppDeployMvpView,
+        Activatable {
 
     companion object {
 
@@ -443,8 +450,8 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun applyWebAppConfig(model: WebAppPublishModel) {
-        model.subscription = getSelectedItem(cbSubscription)
-        model.publishableProject = getSelectedItem(cbProject) ?: model.publishableProject
+        model.subscription = cbSubscription.getSelectedValue()
+        model.publishableProject = cbProject.getSelectedValue() ?: model.publishableProject
 
         model.isCreatingWebApp = rdoCreateNewWebApp.isSelected
         if (rdoCreateNewWebApp.isSelected) {
@@ -460,7 +467,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
             if (rdoOperatingSystemWindows.isSelected) {
                 model.operatingSystem = OperatingSystem.WINDOWS
                 // Set .Net Framework version based on project config
-                val publishableProject = getSelectedItem(cbProject) ?: model.publishableProject
+                val publishableProject = cbProject.getSelectedValue() ?: model.publishableProject
                 if (publishableProject != null && !publishableProject.isDotNetCore) {
                     model.netFrameworkVersion =
                             if (getProjectNetFrameworkVersion(publishableProject).startsWith("4")) NetFrameworkVersion.fromString("4.7")
@@ -479,10 +486,10 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
             model.isCreatingAppServicePlan = rdoCreateAppServicePlan.isSelected
             if (rdoCreateAppServicePlan.isSelected) {
                 model.appServicePlanName = txtAppServicePlanName.text
-                model.location = getSelectedItem(cbLocation)?.name() ?: model.location
-                model.pricingTier = getSelectedItem(cbPricingTier) ?: model.pricingTier
+                model.location = cbLocation.getSelectedValue()?.name() ?: model.location
+                model.pricingTier = cbPricingTier.getSelectedValue() ?: model.pricingTier
             } else {
-                model.appServicePlanId = getSelectedItem(cbAppServicePlan)?.id() ?: model.appServicePlanId
+                model.appServicePlanId = cbAppServicePlan.getSelectedValue()?.id() ?: model.appServicePlanId
             }
         } else {
             val selectedWebApp = lastSelectedWebApp?.resource
@@ -499,7 +506,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun applyDatabaseConfig(model: DatabasePublishModel) {
-        model.subscription = getSelectedItem(cbSubscription)
+        model.subscription = cbSubscription.getSelectedValue()
         model.isDatabaseConnectionEnabled = checkBoxEnableDbConnection.isSelected
 
         if (checkBoxEnableDbConnection.isSelected) {
@@ -513,25 +520,25 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
                 if (rdoDbCreateResourceGroup.isSelected) {
                     model.dbResourceGroupName = txtDbNewResourceGroup.text
                 } else {
-                    model.dbResourceGroupName = getSelectedItem(cbDbResourceGroup)?.name() ?: ""
+                    model.dbResourceGroupName = cbDbResourceGroup.getSelectedValue()?.name() ?: ""
                 }
 
                 model.isCreatingSqlServer = rdoCreateSqlServer.isSelected
                 if (rdoCreateSqlServer.isSelected) {
                     model.sqlServerName = txtNewSqlServerName.text
-                    model.sqlServerLocation = getSelectedItem(cbSqlServerLocation)?.name() ?: model.sqlServerLocation
+                    model.sqlServerLocation = cbSqlServerLocation.getSelectedValue()?.name() ?: model.sqlServerLocation
                     model.sqlServerAdminLogin = txtNewSqlServerAdminLogin.text
                     model.sqlServerAdminPassword = passNewSqlServerAdminPass.password
                     model.sqlServerAdminPasswordConfirm = passNewSqlServerAdminPassConfirm.password
                 } else {
-                    model.sqlServerId = getSelectedItem(cbExistSqlServer)?.id() ?: ""
+                    model.sqlServerId = cbExistSqlServer.getSelectedValue()?.id() ?: ""
                     model.sqlServerAdminLogin = lblExistingSqlServerAdminLogin.text
                     model.sqlServerAdminPassword = passExistingSqlServerAdminPassword.password
                 }
 
                 model.collation = txtCollationValue.text
             } else {
-                model.database = getSelectedItem(cbDatabase) ?: model.database
+                model.database = cbDatabase.getSelectedValue() ?: model.database
                 model.sqlServerAdminLogin = lblSqlDbAdminLogin.text
                 model.sqlServerAdminPassword = passExistingDbAdminPassword.password
             }
@@ -880,7 +887,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
             // This is not visible on the UI, but is used to preform a re-validation over selected web app from the table
             txtSelectedWebApp.text = webApp.resource.name()
 
-            val publishableProject = getSelectedItem(cbProject) ?: return@addListSelectionListener
+            val publishableProject = cbProject.getSelectedValue() ?: return@addListSelectionListener
             checkSelectedProjectAgainstWebAppRuntime(webApp.resource, publishableProject)
         }
     }
@@ -1196,10 +1203,10 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
 
     private fun initSubscriptionComboBox() {
 
-        cbSubscription.renderer = createDefaultComboBoxRenderer(EMPTY_SUBSCRIPTION_MESSAGE) { subscription -> subscription.displayName() }
+        cbSubscription.renderer = cbSubscription.createDefaultRenderer(EMPTY_SUBSCRIPTION_MESSAGE) { it.displayName() }
 
         cbSubscription.addActionListener {
-            val subscription = getSelectedItem(cbSubscription) ?: return@addActionListener
+            val subscription = cbSubscription.getSelectedValue() ?: return@addActionListener
             val selectedSid = subscription.subscriptionId()
 
             if (lastSelectedSubscriptionId == selectedSid) return@addActionListener
@@ -1216,24 +1223,24 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initResourceGroupComboBox() {
-        val renderer = createDefaultComboBoxRenderer<ResourceGroup>(EMPTY_RESOURCE_GROUP_MESSAGE) { resourceGroup -> resourceGroup.name() }
-        cbResourceGroup.renderer = renderer
-        cbDbResourceGroup.renderer = renderer
+        cbResourceGroup.renderer = cbResourceGroup.createDefaultRenderer(EMPTY_RESOURCE_GROUP_MESSAGE) { it.name() }
 
         cbResourceGroup.addActionListener {
-            lastSelectedResourceGroupName = getSelectedItem(cbResourceGroup)?.name() ?: return@addActionListener
+            lastSelectedResourceGroupName = cbResourceGroup.getSelectedValue()?.name() ?: return@addActionListener
         }
 
+        cbDbResourceGroup.renderer = cbDbResourceGroup.createDefaultRenderer(EMPTY_RESOURCE_GROUP_MESSAGE) { it.name() }
+
         cbDbResourceGroup.addActionListener {
-            lastSelectedDbResourceGroupName = getSelectedItem(cbDbResourceGroup)?.name() ?: return@addActionListener
+            lastSelectedDbResourceGroupName = cbDbResourceGroup.getSelectedValue()?.name() ?: return@addActionListener
         }
     }
 
     private fun initAppServicePlanComboBox() {
-        cbAppServicePlan.renderer = createDefaultComboBoxRenderer(EMPTY_APP_SERVICE_PLAN_MESSAGE) { appPlan -> appPlan.name() }
+        cbAppServicePlan.renderer = cbAppServicePlan.createDefaultRenderer(EMPTY_APP_SERVICE_PLAN_MESSAGE) { it.name() }
 
         cbAppServicePlan.addActionListener {
-            val plan = getSelectedItem(cbAppServicePlan) ?: return@addActionListener
+            val plan = cbAppServicePlan.getSelectedValue() ?: return@addActionListener
             lblLocation.text = plan.regionName()
             val pricingTier = plan.pricingTier()
             val skuDescription = pricingTier.toSkuDescription()
@@ -1242,27 +1249,27 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initLocationComboBox() {
-        val renderer = createDefaultComboBoxRenderer<Location>(EMPTY_LOCATION_MESSAGE) { location -> location.displayName() }
-        cbLocation.renderer = renderer
-        cbSqlServerLocation.renderer = renderer
+        cbLocation.renderer = cbLocation.createDefaultRenderer(EMPTY_LOCATION_MESSAGE) { it.displayName() }
 
         cbLocation.addActionListener {
-            lastSelectedLocation = getSelectedItem(cbLocation)?.name() ?: return@addActionListener
+            lastSelectedLocation = cbLocation.getSelectedValue()?.name() ?: return@addActionListener
         }
 
+        cbSqlServerLocation.renderer = cbSqlServerLocation.createDefaultRenderer(EMPTY_LOCATION_MESSAGE) { it.displayName() }
+
         cbSqlServerLocation.addActionListener {
-            lastSelectedDbLocation = getSelectedItem(cbSqlServerLocation)?.name() ?: return@addActionListener
+            lastSelectedDbLocation = cbSqlServerLocation.getSelectedValue()?.name() ?: return@addActionListener
         }
     }
 
     private fun initPricingTierComboBox() {
-        cbPricingTier.renderer = createDefaultComboBoxRenderer(EMPTY_PRICING_TIER_MESSAGE) { pricing ->
-            val skuDescription = pricing.toSkuDescription()
+        cbPricingTier.renderer = cbPricingTier.createDefaultRenderer(EMPTY_PRICING_TIER_MESSAGE) {
+            val skuDescription = it.toSkuDescription()
             "${skuDescription.name()} (${skuDescription.tier()})"
         }
 
         cbPricingTier.addActionListener {
-            val pricingTier = getSelectedItem(cbPricingTier) ?: return@addActionListener
+            val pricingTier = cbPricingTier.getSelectedValue() ?: return@addActionListener
             lastSelectedPriceTier = pricingTier
         }
     }
@@ -1315,7 +1322,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         }
 
         cbProject.addActionListener {
-            val publishableProject = getSelectedItem(cbProject) ?: return@addActionListener
+            val publishableProject = cbProject.getSelectedValue() ?: return@addActionListener
             if (publishableProject == lastSelectedProject) return@addActionListener
 
             setOperatingSystemRadioButtons(publishableProject)
@@ -1330,25 +1337,29 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initSqlDatabaseComboBox() {
-        cbDatabase.renderer = createDefaultComboBoxRenderer(
+        cbDatabase.renderer = cbDatabase.createDefaultRenderer(
                 EMPTY_SQL_DATABASES_MESSAGE,
                 IconLoader.getIcon("icons/Database.svg")) { database -> "${database.name()} (${database.resourceGroupName()})" }
 
         cbDatabase.addActionListener {
-            val database = getSelectedItem(cbDatabase) ?: return@addActionListener
-            if (lastSelectedDatabase == database) return@addActionListener
+            val database = cbDatabase.getSelectedValue() ?: return@addActionListener
+            if (lastSelectedDatabase != database) {
 
-            AzureDatabaseMvpModel
-                    .getSqlServerAdminLoginAsync(lastSelectedSubscriptionId, database)
-                    .subscribe { lblSqlDbAdminLogin.text = it }
+                ApplicationManager.getApplication().invokeLater {
+                    val sqlServer =
+                    AzureSqlServerMvpModel.listSqlServersBySubscriptionId(lastSelectedSubscriptionId)
+                            .first { subscription -> subscription.resource.name() == database.sqlServerName() }.resource
+                    lblSqlDbAdminLogin.text = sqlServer.administratorLogin()
+                }
 
-            lastSelectedDatabase = database
+                lastSelectedDatabase = database
+            }
         }
     }
 
     private fun initSqlServerComboBox() {
         cbExistSqlServer.renderer =
-                createDefaultComboBoxRenderer(EMPTY_SQL_SERVER_MESSAGE) { sqlServer -> "${sqlServer.name()} (${sqlServer.resourceGroupName()})" }
+                cbExistSqlServer.createDefaultRenderer(EMPTY_SQL_SERVER_MESSAGE) { "${it.name()} (${it.resourceGroupName()})" }
 
         cbExistSqlServer.addActionListener {
             val sqlServer = cbExistSqlServer.getItemAt(cbExistSqlServer.selectedIndex) ?: return@addActionListener
@@ -1469,7 +1480,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
                 indicator.isIndeterminate = true
                 AzureModelController.updateSubscriptionMaps(UpdateProgressIndicator(indicator))
                 AzureModelController.updateResourceGroupMaps(UpdateProgressIndicator(indicator))
-                AzureDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
+                AzureSqlDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
             }
         })
     }
@@ -1544,15 +1555,6 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
             if (rdoOperatingSystemWindows.isSelected) OperatingSystem.WINDOWS else OperatingSystem.LINUX
 
     /**
-     * Wrapper to get a typed Combo Box object
-     */
-    private fun <T>getSelectedItem(comboBox: JComboBox<T>): T? {
-        val index = comboBox.selectedIndex
-        if (index == -1) return null
-        return comboBox.getItemAt(index)
-    }
-
-    /**
      * Set all provided components to a specified enabled state
      */
     private fun setComponentsEnabled(isEnabled: Boolean, vararg components: JComponent) {
@@ -1562,32 +1564,9 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         }
     }
 
-    /**
-     * Set all provided components to a specified visibility state
-     */
-    private fun setComponentsVisible(isVisible: Boolean, vararg components: JComponent) {
-        components.forEach { it.isVisible = isVisible }
-    }
-
     private fun initLinkLabel(linkComponent: LinkLabel<String>, linkUri: String) {
         linkComponent.icon = null
         linkComponent.setListener({ _, link -> BrowserUtil.browse(link) }, linkUri)
-    }
-
-    private fun <T>createDefaultComboBoxRenderer(errorMessage: String,
-                                                 icon: Icon? = null,
-                                                 getValueString: (T) -> String): ListCellRenderer<T> {
-        return object : ListCellRendererWrapper<T>() {
-            override fun customize(list: JList<*>, value: T?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
-                if (value == null) {
-                    setText(errorMessage)
-                    return
-                }
-                setText(getValueString(value))
-
-                if (icon != null) setIcon(icon)
-            }
-        }
     }
 
     //endregion Private Methods and Operators

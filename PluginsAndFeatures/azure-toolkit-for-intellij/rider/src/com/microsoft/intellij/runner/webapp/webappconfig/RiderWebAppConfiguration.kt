@@ -29,26 +29,19 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
-import com.jetbrains.rider.util.idea.getLogger
-import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.azuretools.utils.AzureModel
+import com.jetbrains.rider.model.publishableProjectsModel
+import com.jetbrains.rider.projectView.solution
 import com.microsoft.intellij.runner.AzureRunConfigurationBase
-import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.model.DotNetWebAppSettingModel
-import com.microsoft.intellij.runner.webapp.webappconfig.validator.ProjectValidator.validateProject
-import com.microsoft.intellij.runner.webapp.webappconfig.validator.SqlDatabaseValidator
-import com.microsoft.intellij.runner.webapp.webappconfig.validator.SqlDatabaseValidator.validateDatabaseConnection
-import com.microsoft.intellij.runner.webapp.webappconfig.validator.WebAppValidator.validateWebApp
+import com.microsoft.intellij.runner.webapp.webappconfig.validator.ConfigurationValidator
+import com.microsoft.intellij.runner.webapp.webappconfig.validator.ProjectConfigValidator
+import com.microsoft.intellij.runner.webapp.webappconfig.validator.SqlDatabaseConfigValidator
+import com.microsoft.intellij.runner.webapp.webappconfig.validator.WebAppConfigValidator
 
 class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, name: String?) :
         AzureRunConfigurationBase<DotNetWebAppSettingModel>(project, factory, name) {
-
-    companion object {
-        private val LOG = getLogger<RiderWebAppConfiguration>()
-    }
 
     private val myModel = DotNetWebAppSettingModel()
 
@@ -86,54 +79,15 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
      */
     @Throws(RuntimeConfigurationError::class)
     override fun checkConfiguration() {
-        validateAzureAccountIsSignedIn()
+        ConfigurationValidator().validateAzureAccountIsSignedIn()
 
-        validateProject(myModel.webAppModel.publishableProject)
-        validateWebApp(myModel.webAppModel)
-        validateDatabaseConnection(myModel.databaseModel)
+        ProjectConfigValidator.validateProject(myModel.webAppModel.publishableProject)
+        WebAppConfigValidator.validateWebApp(myModel.webAppModel)
+        SqlDatabaseConfigValidator.validateDatabaseConnection(myModel.databaseModel)
 
         if (myModel.databaseModel.isDatabaseConnectionEnabled) {
-            checkConnectionStringNameExistence(myModel.databaseModel.connectionStringName, myModel.webAppModel.webAppId)
+            WebAppConfigValidator.checkConnectionStringNameExistence(
+                    myModel.databaseModel.connectionStringName, myModel.webAppModel.webAppId)
         }
-    }
-
-    /**
-     * Check whether user is signed in to Azure account
-     *
-     * @throws [ConfigurationException] in case validation is failed
-     */
-    @Throws(RuntimeConfigurationError::class)
-    private fun validateAzureAccountIsSignedIn() {
-        try {
-            if (!AuthMethodManager.getInstance().isSignedIn) {
-                val message = UiConstants.SIGN_IN_REQUIRED
-                throw RuntimeConfigurationError(message)
-            }
-        } catch (e: Throwable) {
-            throw RuntimeConfigurationError(UiConstants.SIGN_IN_REQUIRED)
-        }
-    }
-
-    /**
-     * Check Connection String name existence for a web app
-     *
-     * @param name connection string name
-     * @param webAppId a web app to check
-     * @throws [RuntimeConfigurationError] when connection string with a specified name already configured for a web app
-     */
-    @Throws(RuntimeConfigurationError::class)
-    private fun checkConnectionStringNameExistence(name: String, webAppId: String) {
-        SqlDatabaseValidator.checkValueIsSet(name, UiConstants.CONNECTION_STRING_NAME_NOT_DEFINED)
-        val resourceGroupToWebAppMap = AzureModel.getInstance().resourceGroupToWebAppMap
-        if (resourceGroupToWebAppMap == null) {
-            LOG.warn("AzureModel.resourceGroupToWebAppMap map is NULL")
-            return
-        }
-        val webApp = resourceGroupToWebAppMap
-                .flatMap { it.value }
-                .firstOrNull { it.id() == webAppId } ?: return
-
-        if (AzureDotNetWebAppMvpModel.checkConnectionStringNameExists(webApp, name))
-            throw RuntimeConfigurationError(String.format(UiConstants.CONNECTION_STRING_NAME_ALREADY_EXISTS, name))
     }
 }

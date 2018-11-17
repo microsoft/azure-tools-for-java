@@ -19,31 +19,29 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.intellij.serviceexplorer.azure.database.actions
 
-import com.intellij.database.autoconfig.DataSourceDetector
+import com.intellij.openapi.project.Project
+import com.jetbrains.rdclient.util.idea.defineNestedLifetime
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
+import com.microsoft.intellij.forms.sqldatabase.CreateSqlDatabaseOnServerDialog
 import com.microsoft.tooling.msservices.helpers.Name
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
 
-@Name("Connect to database")
-class SqlDatabaseConnectDataSourceAction(private val databaseNode: SqlDatabaseNode)
-    : ConnectDataSourceAction(databaseNode) {
+@Name("New SQL Database")
+class SqlDatabaseCreateAction(private val sqlServerNode: SqlServerNode) : NodeActionListener() {
 
-    override fun populateConnectionBuilder(builder: DataSourceDetector.Builder): DataSourceDetector.Builder? {
-        val databaseServerNode = databaseNode.parent as SqlServerNode
+    override fun actionPerformed(event: NodeActionEvent?) {
+        event ?: return
 
-        val sqlServer = AzureSqlServerMvpModel.getSqlServerById(databaseServerNode.subscriptionId, databaseServerNode.sqlServerId)
+        val project = sqlServerNode.project as? Project ?: return
 
-        return builder
-                .withName("Azure SQL Database - "  + databaseServerNode.sqlServerName + " - " + databaseNode.sqlDatabaseName)
-                .withDriverClass(AzureSqlConnectionStringBuilder.defaultDriverClass)
-                .withUrl(AzureSqlConnectionStringBuilder.build(
-                        sqlServer.fullyQualifiedDomainName(),
-                        databaseNode.sqlDatabaseName
-                ))
-                .withUser(sqlServer.administratorLogin())
+        val sqlServer = AzureSqlServerMvpModel.getSqlServerById(sqlServerNode.subscriptionId, sqlServerNode.sqlServerId)
+        val createSqlDatabaseForm =
+                CreateSqlDatabaseOnServerDialog(project.defineNestedLifetime(), project, sqlServer, Runnable { sqlServerNode.load(true) })
+        createSqlDatabaseForm.show()
     }
 }
-

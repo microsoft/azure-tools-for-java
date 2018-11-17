@@ -89,10 +89,12 @@ public final class AzureDeploymentProgressNotification {
     /**
      * Unlike Eclipse plugin, here startDate is deployment start time, not the event timestamp
      */
-    public void notifyProgress(String deploymentId, Date startDate,
+    public void notifyProgress(String deploymentId,
+                               Date startDate,
                                String deploymentURL,
                                int progress,
-                               String message, Object... args) {
+                               String message,
+                               Object... args) {
 
         DeploymentEventArgs arg = new DeploymentEventArgs(this);
         arg.setId(deploymentId);

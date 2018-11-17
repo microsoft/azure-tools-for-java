@@ -19,6 +19,16 @@
   <change-notes>
     <![CDATA[
       <html>
+        <p>[3.14.0-2019.1]</p>
+        <ul>
+          <li>Sql Databases in Azure Explorer
+            <ul>
+              <li>Create SQL Server from Azure Explorer (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/134">#134</a>)</li>
+              <li>Create SQL Database from Azure Explorer (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/135">#135</a>)</li>
+            </ul>
+          </li>
+        </ul>
+      
         <p>[3.14.0-2018.3.1]</p>
         <ul>
           <li>Various bugfixes:</li>

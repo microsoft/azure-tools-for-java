@@ -20,26 +20,30 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig
+package com.microsoft.intellij.helpers.validator
 
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ValidationInfo
+import javax.swing.JComponent
 
-class RiderWebAppConfigurationFactory(type: ConfigurationType) : ConfigurationFactory(type) {
+class ValidationResult {
 
-    companion object {
-        private const val FACTORY_NAME = "Azure Web App"
+    val errors = mutableListOf<String>()
+
+    val isValid: Boolean
+        get() = errors.isEmpty()
+
+    fun setInvalid(message: String): ValidationResult {
+        errors.add(message)
+        return this
     }
 
-    override fun getName() = FACTORY_NAME
-
-    override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return RiderWebAppConfiguration(project, this, project.name)
+    fun merge(other: ValidationResult): ValidationResult {
+        errors.addAll(other.errors)
+        return this
     }
 
-    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
-        return RiderWebAppConfiguration(template.project, this, name)
+    fun toValidationInfo(component: JComponent? = null): ValidationInfo? {
+        if (isValid) return null
+        return ValidationInfo(errors.first(), component)
     }
 }

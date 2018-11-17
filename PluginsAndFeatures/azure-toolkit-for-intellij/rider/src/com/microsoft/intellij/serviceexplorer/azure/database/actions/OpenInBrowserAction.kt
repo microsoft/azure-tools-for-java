@@ -22,7 +22,10 @@
 package com.microsoft.intellij.serviceexplorer.azure.database.actions
 
 import com.intellij.ide.BrowserUtil
+import com.intellij.openapi.project.Project
+import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
+import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.intellij.AzurePlugin
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
@@ -33,6 +36,9 @@ abstract class OpenInBrowserAction(private val subscriptionId: String, private v
 
     override fun actionPerformed(event: NodeActionEvent?) {
         try {
+            val project = node.project as? Project ?: return
+            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return
+
             val url = AzureMvpModel.getInstance().getResourceUri(subscriptionId, node.id)
                     ?: throw RuntimeException("Unable to get URL for resource: '${node.id}'")
 

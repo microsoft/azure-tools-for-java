@@ -20,26 +20,15 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig
+package com.microsoft.intellij.deploy
 
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.openapi.project.Project
+object NotificationConstant {
+    const val WEB_APP_STOP = "Stop Web App"
+    const val WEB_APP_START = "Start Web App"
+    const val WEB_APP_CREATE = "Create Web App"
+    const val WEB_APP_DEPLOY = "Deploy to Web App"
+    const val WEB_APP_UPDATE = "Update Web App"
 
-class RiderWebAppConfigurationFactory(type: ConfigurationType) : ConfigurationFactory(type) {
-
-    companion object {
-        private const val FACTORY_NAME = "Azure Web App"
-    }
-
-    override fun getName() = FACTORY_NAME
-
-    override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return RiderWebAppConfiguration(project, this, project.name)
-    }
-
-    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
-        return RiderWebAppConfiguration(template.project, this, name)
-    }
+    const val SQL_DATABASE_CREATE = "Create SQL Database"
+    const val SQL_SERVER_CREATE = "Create SQL Server"
 }

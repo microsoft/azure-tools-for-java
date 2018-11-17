@@ -33,8 +33,8 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.IconLoader
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.authmanage.AuthMethodManager
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
-import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
@@ -64,7 +64,7 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
             else -> return
         }
 
-        val sqlServer = AzureDatabaseMvpModel.getSqlServerById(databaseServerNode.subscriptionId, databaseServerNode.sqlServerId)
+        val sqlServer = AzureSqlServerMvpModel.getSqlServerById(databaseServerNode.subscriptionId, databaseServerNode.sqlServerId)
 
         // Fetch current IP address
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Retrieving current public IP address...", true, PerformInBackgroundOption.DEAF) {
@@ -125,7 +125,7 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
         })
     }
 
-    private class IpAddressInputValidator() : InputValidator {
+    private class IpAddressInputValidator : InputValidator {
         companion object {
             val INSTANCE = IpAddressInputValidator()
         }

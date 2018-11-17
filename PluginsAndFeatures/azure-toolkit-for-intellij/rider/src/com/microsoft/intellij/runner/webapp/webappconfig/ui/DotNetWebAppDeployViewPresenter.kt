@@ -39,16 +39,16 @@ import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import com.microsoft.intellij.helpers.base.AzureMvpPresenter
-import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
 
 class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : AzureMvpPresenter<V>() {
 
     companion object {
-
         private const val TASK_SUBSCRIPTION = "Collect Azure subscriptions"
         private const val TASK_WEB_APP = "Collect Azure web apps"
         private const val TASK_RESOURCE_GROUP = "Collect Azure resource groups"
@@ -118,13 +118,15 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : AzureMvpP
 
     fun onLoadSqlDatabase(lifetime: Lifetime, subscriptionId: String) {
         subscribe(lifetime, sqlDatabaseSignal, TASK_SQL_DATABASE, CANNOT_LIST_SQL_DATABASE,
-                { AzureDatabaseMvpModel.listSqlDatabasesBySubscriptionId(subscriptionId).filter { it.name() != "master" } },
+                { AzureSqlDatabaseMvpModel.listSqlDatabasesBySubscriptionId(subscriptionId)
+                        .filter { it.resource.name() != "master" }
+                        .map { it.resource } },
                 { mvpView.fillSqlDatabase(it) })
     }
 
     fun onLoadSqlServers(lifetime: Lifetime, subscriptionId: String) {
         subscribe(lifetime, sqlServerSignal, TASK_SQL_SERVER, CANNOT_LIST_SQL_SERVER,
-                { AzureDatabaseMvpModel.listSqlServersBySubscriptionId(subscriptionId, true).map { it.resource } },
+                { AzureSqlServerMvpModel.listSqlServersBySubscriptionId(subscriptionId, true).map { it.resource } },
                 { mvpView.fillSqlServer(it) })
     }
 

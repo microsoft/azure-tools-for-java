@@ -34,12 +34,12 @@ import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.utils.AzureUIRefreshCore
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import com.microsoft.intellij.runner.AzureRunProfileState
 import com.microsoft.intellij.runner.RunProcessHandler
-import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.model.DatabasePublishModel
 import com.microsoft.intellij.runner.webapp.model.DotNetWebAppSettingModel
@@ -164,7 +164,7 @@ class RiderWebAppRunState(project: Project,
             AzureDotNetWebAppMvpModel.refreshSubscriptionToWebAppMap()
 
         if (isDatabaseCreated)
-            AzureDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
+            AzureSqlDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
 
         showPublishNotification(TOOL_NOTIFICATION_PUBLISH_FAILED, NotificationType.ERROR)
 
@@ -183,7 +183,7 @@ class RiderWebAppRunState(project: Project,
 
     private fun refreshDatabaseAfterPublish(sqlDatabase: SqlDatabase, model: DatabasePublishModel) {
         model.resetOnPublish(sqlDatabase)
-        AzureDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
+        AzureSqlDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
     }
 
     private fun showPublishNotification(text: String, type: NotificationType) {

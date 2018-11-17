@@ -26,13 +26,13 @@ import com.jetbrains.rider.model.PublishableProjectModel
 import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
+import com.microsoft.intellij.helpers.defaults.AzureDefaults
 
 class WebAppPublishModel {
 
     companion object {
         val defaultOperatingSystem = OperatingSystem.WINDOWS
         val defaultPricingTier: PricingTier = PricingTier.STANDARD_S1
-        val defaultLocation: String = Region.US_EAST.name()
         val defaultNetFrameworkVersion: NetFrameworkVersion = NetFrameworkVersion.fromString("4.7")
         val defaultRuntime = RuntimeStack("DOTNETCORE", "2.1")
     }
@@ -52,7 +52,7 @@ class WebAppPublishModel {
     var appServicePlanId = ""
     var appServicePlanName = ""
     var operatingSystem = defaultOperatingSystem
-    var location = defaultLocation
+    var location = AzureDefaults.location.name()
     var pricingTier = defaultPricingTier
 
     var netFrameworkVersion = defaultNetFrameworkVersion

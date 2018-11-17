@@ -24,17 +24,16 @@ package com.microsoft.intellij.runner.webapp.webappconfig.runstate
 
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
+import com.microsoft.intellij.deploy.NotificationConstant
 import com.microsoft.intellij.runner.RunProcessHandler
-import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.model.DatabasePublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
 import java.util.*
 
 object DatabaseRunState {
-
-    private const val NOTIFICATION_SQL_DB_CREATE = "Create SQL Database"
-    private const val NOTIFICATION_SQL_SERVER_CREATE = "Create SQL Server"
 
     private val activityNotifier = AzureDeploymentProgressNotification(null)
 
@@ -57,11 +56,14 @@ object DatabaseRunState {
         processHandler.setText(String.format(UiConstants.SQL_DATABASE_CREATE, model.databaseName))
 
         if (model.databaseName.isEmpty()) throw RuntimeException(UiConstants.SQL_DATABASE_NAME_NOT_DEFINED)
-        val database = AzureDatabaseMvpModel.createSqlDatabase(sqlServer, model.databaseName, model.collation)
+        val database = AzureSqlDatabaseMvpModel.createSqlDatabase(
+                databaseName = model.databaseName,
+                sqlServer = sqlServer,
+                collation = model.collation)
 
         val message = String.format(UiConstants.SQL_DATABASE_CREATE_SUCCESSFUL, database.id())
         processHandler.setText(message)
-        activityNotifier.notifyProgress(NOTIFICATION_SQL_DB_CREATE, Date(), null, 100, message)
+        activityNotifier.notifyProgress(NotificationConstant.SQL_DATABASE_CREATE, Date(), null, 100, message)
 
         return database
     }
@@ -80,7 +82,7 @@ object DatabaseRunState {
             if (model.sqlServerAdminLogin.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
             if (model.sqlServerAdminPassword.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
 
-            val sqlServer = AzureDatabaseMvpModel.createSqlServer(
+            val sqlServer = AzureSqlServerMvpModel.createSqlServer(
                     subscriptionId,
                     model.sqlServerName,
                     model.sqlServerLocation,
@@ -91,7 +93,7 @@ object DatabaseRunState {
 
             val message = String.format(UiConstants.SQL_SERVER_CREATE_SUCCESSFUL, sqlServer.id())
             processHandler.setText(message)
-            activityNotifier.notifyProgress(NOTIFICATION_SQL_SERVER_CREATE, Date(), null, 100, message)
+            activityNotifier.notifyProgress(NotificationConstant.SQL_SERVER_CREATE, Date(), null, 100, message)
 
             return sqlServer
         }
@@ -99,6 +101,6 @@ object DatabaseRunState {
         processHandler.setText(String.format(UiConstants.SQL_SERVER_GET_EXISTING, model.sqlServerId))
 
         if (model.sqlServerId.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ID_NOT_DEFINED)
-        return AzureDatabaseMvpModel.getSqlServerById(subscriptionId, model.sqlServerId)
+        return AzureSqlServerMvpModel.getSqlServerById(subscriptionId, model.sqlServerId)
     }
 }

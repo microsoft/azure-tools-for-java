@@ -40,10 +40,11 @@ import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.RuntimeStack
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.sql.SqlDatabase
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
+import com.microsoft.intellij.deploy.NotificationConstant
 import com.microsoft.intellij.runner.RunProcessHandler
-import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.utils.WebAppDeploySession
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
@@ -75,12 +76,6 @@ object WebAppRunState {
     private const val WEB_APP_IS_NOT_STARTED = "Web app is not started. State: '%s'"
     private const val WEB_APP_STATE_RUNNING = "Running"
 
-    private const val NOTIFICATION_WEB_APP_STOP = "Stop Web App"
-    private const val NOTIFICATION_WEB_APP_START = "Start Web App"
-    private const val NOTIFICATION_WEB_APP_CREATE = "Create Web App"
-    private const val NOTIFICATION_WEB_APP_DEPLOY = "Deploy to Web App"
-    private const val NOTIFICATION_WEB_APP_UPDATE = "Update Web App"
-
     private val activityNotifier = AzureDeploymentProgressNotification(null)
 
     var projectAssemblyRelativePath = ""
@@ -89,14 +84,14 @@ object WebAppRunState {
         val message = String.format(UiConstants.WEB_APP_START, webApp.name())
         processHandler.setText(message)
         webApp.start()
-        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_START, Date(), webApp.defaultHostName(), 100, message)
+        activityNotifier.notifyProgress(NotificationConstant.WEB_APP_START, Date(), webApp.defaultHostName(), 100, message)
     }
 
     fun webAppStop(webApp: WebApp, processHandler: RunProcessHandler) {
         val message = String.format(UiConstants.WEB_APP_STOP, webApp.name())
         processHandler.setText(message)
         webApp.stop()
-        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_STOP, Date(), webApp.defaultHostName(), 100, message)
+        activityNotifier.notifyProgress(NotificationConstant.WEB_APP_STOP, Date(), webApp.defaultHostName(), 100, message)
     }
 
     fun getOrCreateWebAppFromConfiguration(model: WebAppPublishModel,
@@ -154,7 +149,7 @@ object WebAppRunState {
 
             val message = String.format(UiConstants.WEB_APP_CREATE_SUCCESSFUL, webApp.name())
             processHandler.setText(message)
-            activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_CREATE, Date(), webApp.defaultHostName(), 100, message)
+            activityNotifier.notifyProgress(NotificationConstant.WEB_APP_CREATE, Date(), webApp.defaultHostName(), 100, message)
             return webApp
         }
 
@@ -204,7 +199,7 @@ object WebAppRunState {
                 .apply()
 
         webApp.update().withoutAppSetting(UiConstants.WEB_APP_SETTING_DOCKER_CUSTOM_IMAGE_NAME).apply()
-        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_UPDATE, Date(), webApp.defaultHostName(), 100, message)
+        activityNotifier.notifyProgress(NotificationConstant.WEB_APP_UPDATE, Date(), webApp.defaultHostName(), 100, message)
     }
 
     fun addConnectionString(subscriptionId: String,
@@ -215,7 +210,7 @@ object WebAppRunState {
                             adminPassword: CharArray,
                             processHandler: RunProcessHandler) {
 
-        val sqlServer = AzureDatabaseMvpModel.getSqlServerByName(subscriptionId, database.sqlServerName(), true)
+        val sqlServer = AzureSqlServerMvpModel.getSqlServerByName(subscriptionId, database.sqlServerName(), true)
 
         if (sqlServer == null) {
             val message = String.format(UiConstants.SQL_SERVER_CANNOT_GET, database.sqlServerName())
@@ -411,7 +406,7 @@ object WebAppRunState {
             }
 
             val message = UiConstants.ZIP_DEPLOY_PUBLISH_SUCCESS
-            activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_DEPLOY, Date(), defaultHostName(), 100, message)
+            activityNotifier.notifyProgress(NotificationConstant.WEB_APP_DEPLOY, Date(), defaultHostName(), 100, message)
             processHandler.setText(message)
 
         } finally {
@@ -453,6 +448,6 @@ object WebAppRunState {
         processHandler.setText(message)
         webApp.update().withConnectionString(name, value, ConnectionStringType.SQLAZURE).apply()
 
-        activityNotifier.notifyProgress(NOTIFICATION_WEB_APP_UPDATE, Date(), webApp.defaultHostName(), 100, message)
+        activityNotifier.notifyProgress(NotificationConstant.WEB_APP_UPDATE, Date(), webApp.defaultHostName(), 100, message)
     }
 }

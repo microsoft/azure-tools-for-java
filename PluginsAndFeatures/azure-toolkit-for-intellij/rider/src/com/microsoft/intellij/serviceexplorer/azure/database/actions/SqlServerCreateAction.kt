@@ -21,29 +21,26 @@
  */
 package com.microsoft.intellij.serviceexplorer.azure.database.actions
 
-import com.intellij.database.autoconfig.DataSourceDetector
-import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
+import com.intellij.openapi.project.Project
+import com.jetbrains.rdclient.util.idea.defineNestedLifetime
+import com.microsoft.azuretools.authmanage.AuthMethodManager
+import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
+import com.microsoft.intellij.forms.sqlserver.CreateSqlServerDialog
 import com.microsoft.tooling.msservices.helpers.Name
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
+import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureDatabaseModule
 
-@Name("Connect to database")
-class SqlDatabaseConnectDataSourceAction(private val databaseNode: SqlDatabaseNode)
-    : ConnectDataSourceAction(databaseNode) {
+@Name("New SQL Server")
+class SqlServerCreateAction(private val databasesModule: AzureDatabaseModule) : NodeActionListener() {
 
-    override fun populateConnectionBuilder(builder: DataSourceDetector.Builder): DataSourceDetector.Builder? {
-        val databaseServerNode = databaseNode.parent as SqlServerNode
+    override fun actionPerformed(event: NodeActionEvent?) {
+        val project = databasesModule.project as? Project ?: return
+        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return
 
-        val sqlServer = AzureSqlServerMvpModel.getSqlServerById(databaseServerNode.subscriptionId, databaseServerNode.sqlServerId)
+        val createSqlServerForm =
+                CreateSqlServerDialog(project.defineNestedLifetime(), project, Runnable { databasesModule.load(true) })
 
-        return builder
-                .withName("Azure SQL Database - "  + databaseServerNode.sqlServerName + " - " + databaseNode.sqlDatabaseName)
-                .withDriverClass(AzureSqlConnectionStringBuilder.defaultDriverClass)
-                .withUrl(AzureSqlConnectionStringBuilder.build(
-                        sqlServer.fullyQualifiedDomainName(),
-                        databaseNode.sqlDatabaseName
-                ))
-                .withUser(sqlServer.administratorLogin())
+        createSqlServerForm.show()
     }
 }
-

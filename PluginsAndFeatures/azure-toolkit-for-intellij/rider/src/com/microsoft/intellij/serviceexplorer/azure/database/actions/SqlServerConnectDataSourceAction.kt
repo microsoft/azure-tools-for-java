@@ -22,7 +22,7 @@
 package com.microsoft.intellij.serviceexplorer.azure.database.actions
 
 import com.intellij.database.autoconfig.DataSourceDetector
-import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
 
@@ -31,7 +31,7 @@ class SqlServerConnectDataSourceAction(private val databaseServerNode: SqlServer
     : ConnectDataSourceAction(databaseServerNode) {
 
     override fun populateConnectionBuilder(builder: DataSourceDetector.Builder): DataSourceDetector.Builder? {
-        val sqlServer = AzureDatabaseMvpModel.getSqlServerById(databaseServerNode.subscriptionId, databaseServerNode.sqlServerId)
+        val sqlServer = AzureSqlServerMvpModel.getSqlServerById(databaseServerNode.subscriptionId, databaseServerNode.sqlServerId)
 
         return builder
                 .withName("Azure SQL Database Server - " + databaseServerNode.sqlServerName)

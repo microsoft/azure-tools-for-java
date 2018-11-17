@@ -22,18 +22,37 @@
 
 package com.microsoft.azuretools.core.mvp.model.database
 
+import com.microsoft.azure.management.sql.DatabaseEditions
+import com.microsoft.azure.management.sql.ServiceObjectiveName
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel.listSqlServers
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel.refreshSubscriptionToSqlServerMap
 import java.io.IOException
+import java.lang.reflect.Modifier
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.logging.Logger
 
 object AzureSqlDatabaseMvpModel {
 
+    private val logger = Logger.getLogger(this::class.java.name)
+
     private val sqlServerToSqlDatabasesMap = ConcurrentHashMap<SqlServer, List<SqlDatabase>>()
+
+    private const val DEFAULT_COLLATION = "SQL_Latin1_General_CP1_CI_AS"
+
+    fun refreshSqlServerToSqlDatabaseMap() {
+        refreshSubscriptionToSqlServerMap()
+        val sqlServers = listSqlServers()
+
+        for (sqlServerRes in sqlServers) {
+            listSqlDatabasesBySqlServer(sqlServerRes.resource, true)
+        }
+    }
 
     fun listSqlDatabasesByServerId(subscriptionId: String, sqlServerId: String): List<SqlDatabase> {
         try {
@@ -41,7 +60,7 @@ object AzureSqlDatabaseMvpModel {
             val sqlServer = azure.sqlServers().getById(sqlServerId)
             return sqlServer.databases().list()
         } catch (e: Throwable) {
-            e.printStackTrace()
+            logger.warning(e.toString())
         }
 
         return ArrayList()
@@ -61,7 +80,7 @@ object AzureSqlDatabaseMvpModel {
                 }
             }
         } catch (e: IOException) {
-            e.printStackTrace()
+            logger.warning(e.toString())
         }
 
         return sqlDatabaseList
@@ -88,6 +107,47 @@ object AzureSqlDatabaseMvpModel {
             }
         }
     }
+
+    fun listSqlDatabasesBySqlServer(sqlServer: SqlServer,
+                                    force: Boolean = false): List<SqlDatabase> {
+
+        if (!force && sqlServerToSqlDatabasesMap.containsKey(sqlServer)) {
+            val sqlDatabases = sqlServerToSqlDatabasesMap[sqlServer]
+            if (sqlDatabases != null) return sqlDatabases
+        }
+
+        val databases = sqlServer.databases().list()
+        sqlServerToSqlDatabasesMap[sqlServer] = databases
+
+        return databases
+    }
+
+    fun createSqlDatabase(databaseName: String,
+                          sqlServer: SqlServer,
+                          collation: String = DEFAULT_COLLATION,
+                          edition: DatabaseEditions = DatabaseEditions.BASIC,
+                          serviceObjectiveName: ServiceObjectiveName = ServiceObjectiveName.BASIC) =
+            sqlServer.databases()
+                    .define(databaseName)
+                    .withEdition(edition)
+                    .withServiceObjective(serviceObjectiveName)
+                    .withCollation(collation)
+                    .create()
+
+    fun listDatabaseEditions(): List<DatabaseEditions> {
+        val databaseEditions = mutableListOf<DatabaseEditions>()
+        val editions = DatabaseEditions::class.java.declaredFields
+        val editionsArraySize = editions.size
+
+        for (editionIndex in 0 until editionsArraySize) {
+            val field = editions[editionIndex]
+            val modifier = field.modifiers
+            if (Modifier.isPublic(modifier) && Modifier.isStatic(modifier) && Modifier.isFinal(modifier)) {
+                val pt = field.get(null as Any?) as DatabaseEditions
+                databaseEditions.add(pt)
+            }
+        }
+
+        return databaseEditions
+    }
 }
-
-

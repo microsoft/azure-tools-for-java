@@ -41,7 +41,7 @@ class AzureDatabaseModulePresenter : MvpPresenter<AzureDatabaseModule>() {
     fun onModuleRefresh() {
         mvpView ?: return
 
-        val sqlServerList = AzureSqlServerMvpModel.listSqlServers()
+        val sqlServerList = AzureSqlServerMvpModel.listSqlServers(true)
 
         for (sqlServerRes in sqlServerList) {
             val subscriptionId = sqlServerRes.subscriptionId
