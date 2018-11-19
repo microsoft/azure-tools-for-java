@@ -30,7 +30,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
 import com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys.*
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor
-import com.microsoft.azure.hdinsight.spark.run.configuration.*
+import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 
 class SparkSubmitJobAction : AzureAnAction() {

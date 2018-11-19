@@ -68,7 +68,7 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
         return Optional.ofNullable(context.getModule())
                 .map(Module::getProject)
                 .flatMap(project -> getMainClassFromContext(context)
-                                        .filter(mcPair -> isSparkContext(project, mcPair.getKey().getContainingFile())))
+                        .filter(mcPair -> isSparkContext(project, mcPair.getKey().getContainingFile())))
                 .map(mcPair -> {
                     setupConfiguration(configuration, mcPair.getValue(), context);
 
@@ -112,11 +112,11 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
 
     private static Optional<String> getNormalizedClassName(@NotNull PsiClass clazz) {
         return Optional.ofNullable(JavaExecutionUtil.getRuntimeQualifiedName(clazz))
-                       .map(mainClass -> mainClass.substring(
-                               0,
-                               Optional.of(mainClass.lastIndexOf('$'))
-                                       .filter(o -> o >= 0)
-                                       .orElse(mainClass.length())));
+                .map(mainClass -> mainClass.substring(
+                        0,
+                        Optional.of(mainClass.lastIndexOf('$'))
+                                .filter(o -> o >= 0)
+                                .orElse(mainClass.length())));
     }
 
     private static Optional<SimpleImmutableEntry<PsiElement, PsiClass>> findMainMethod(PsiElement element) {
@@ -215,13 +215,13 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
     public boolean isConfigurationFromContext(RemoteDebugRunConfiguration jobConfiguration, ConfigurationContext context) {
         return getMainClassFromContext(context)
                 .filter(mcPair -> getNormalizedClassName(mcPair.getValue())
-                            .map(name -> name.equals(jobConfiguration.getModel().getLocalRunConfigurableModel().getRunClass()))
-                            .orElse(false))
+                        .map(name -> name.equals(jobConfiguration.getModel().getLocalRunConfigurableModel().getRunClass()))
+                        .orElse(false))
                 .filter(mcPair -> Optional.of(mcPair.getKey())
-                            .filter(e -> e instanceof PsiMethod)
-                            .map(PsiMethod.class::cast)
-                            .map(method -> !TestFrameworks.getInstance().isTestMethod(method))
-                            .orElse(true))
+                        .filter(e -> e instanceof PsiMethod)
+                        .map(PsiMethod.class::cast)
+                        .map(method -> !TestFrameworks.getInstance().isTestMethod(method))
+                        .orElse(true))
                 .map(mcPair -> {
                     final Module configurationModule = jobConfiguration.getConfigurationModule().getModule();
 

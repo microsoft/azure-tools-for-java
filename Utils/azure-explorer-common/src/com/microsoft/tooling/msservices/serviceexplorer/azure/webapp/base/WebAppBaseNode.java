@@ -45,8 +45,8 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     protected static final String ACTION_RESTART = "Restart";
     protected static final String ACTION_OPEN_IN_BROWSER = "Open In Browser";
     protected static final String ACTION_SHOW_PROPERTY = "Show Properties";
-    protected static final String ICON_RUNNING_POSTFIX = "Running_16.png";
-    protected static final String ICON_STOPPED_POSTFIX = "Stopped_16.png";
+    protected static final String ICON_RUNNING_POSTFIX = "Running.svg";
+    protected static final String ICON_STOPPED_POSTFIX = "Stopped.svg";
 
     protected final String subscriptionId;
     protected final String hostName;

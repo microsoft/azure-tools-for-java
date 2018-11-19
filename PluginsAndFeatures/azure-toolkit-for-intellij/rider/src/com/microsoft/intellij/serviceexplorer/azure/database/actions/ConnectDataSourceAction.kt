@@ -34,7 +34,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 abstract class ConnectDataSourceAction(protected val node: Node) : NodeActionListener() {
 
     public override fun actionPerformed(e: NodeActionEvent) {
-        val project = node.project as Project ?: return
+        val project = node.project as? Project ?: return
 
         try {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return

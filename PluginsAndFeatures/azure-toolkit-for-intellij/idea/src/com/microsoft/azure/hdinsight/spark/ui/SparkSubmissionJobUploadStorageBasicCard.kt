@@ -22,29 +22,8 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
-import com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST
-import com.microsoft.azure.sparkserverless.common.JXHyperLinkWithUri
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
-import com.microsoft.intellij.forms.dsl.panel
+import javax.swing.JPanel
 
-class SparkSubmissionJobUploadStorageAdlsSignInCard: SparkSubmissionJobUploadStorageBasicCard() {
-    override val title: String = "Sign In"
-    val signInLink = JXHyperLinkWithUri().apply {
-        text = "Sign In"
-    }
-
-    init {
-        val formBuilder = panel {
-            columnTemplate {
-                col {
-                    anchor = ANCHOR_WEST
-                }
-            }
-            row {
-                c(signInLink)
-            }
-        }
-        layout = formBuilder.createGridLayoutManager()
-        formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
-    }
+abstract class SparkSubmissionJobUploadStorageBasicCard: JPanel() {
+    abstract val title: String
 }

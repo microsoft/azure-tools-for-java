@@ -189,7 +189,7 @@ open class SparkSubmissionContentPanel : JPanel() {
 
     val jobConfigPrompt: JLabel = JLabel("Job configurations")
 
-    val jobConfigurationTable: JBTable = JBTable(SubmissionTableModel()).apply {
+    val jobConfigurationTable: JBTable = JBTable(com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel()).apply {
         preferredScrollableViewportSize = Dimension(580, 100)
 
         surrendersFocusOnKeystroke = true
@@ -229,7 +229,7 @@ open class SparkSubmissionContentPanel : JPanel() {
     }
 
     val storageWithUploadPathPanel: SparkSubmissionJobUploadStorageWithUploadPathPanel =
-        SparkSubmissionJobUploadStorageWithUploadPathPanel()
+            SparkSubmissionJobUploadStorageWithUploadPathPanel()
 
     val clusterSelectedSubject: BehaviorSubject<String> = BehaviorSubject.create<String>()
 
@@ -344,7 +344,7 @@ open class SparkSubmissionContentPanel : JPanel() {
                 setVisibleForFixedErrorMessage(ErrorMessage.LocalArtifact, true)
             }
 
-            if (!SparkSubmitHelper.isLocalArtifactPath(localArtifactTextField.text)) {
+            if (!com.microsoft.azure.hdinsight.spark.common.SparkSubmitHelper.isLocalArtifactPath(localArtifactTextField.text)) {
                 setVisibleForFixedErrorMessage(ErrorMessage.LocalArtifact, true)
             }
         }

@@ -126,7 +126,7 @@ open class SparkBatchLocalRunState(val myProject: Project, val model: SparkLocal
                 .addAt(0, "--master local[" + (if (model.isIsParallelExecution) 2 else 1) + "]")
 
         if (SystemUtils.IS_OS_WINDOWS) {
-            if (!Optional.ofNullable(params.env[SparkLocalRunConfigurable.HADOOP_HOME_ENV])
+            if (!Optional.ofNullable(params.env[com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunConfigurable.HADOOP_HOME_ENV])
                             .map { hadoopHome -> Paths.get(hadoopHome, "bin", SparkLocalRunConfigurable.WINUTILS_EXE_NAME).toString() }
                             .map { File(it) }
                             .map { it.exists() }

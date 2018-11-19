@@ -39,7 +39,7 @@ import java.net.URI
 import java.util.*
 
 open class SparkBatchRemoteRunState(val serverlessSparkSubmitModel: SparkSubmitModel)
-    : RunProfileStateWithAppInsightsEvent, SparkBatchRemoteRunProfileState  {
+    : RunProfileStateWithAppInsightsEvent, SparkBatchRemoteRunProfileState {
     override var remoteProcessCtrlLogHandler: SparkBatchJobProcessCtrlLogOut? = null
     override var executionResult: ExecutionResult? = null
     override var consoleView: ConsoleView? = null

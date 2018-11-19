@@ -56,7 +56,7 @@ import javax.swing.*
 import javax.swing.event.DocumentEvent
 
 // View and Control combined class
-class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitAdvancedConfigModel> {
+class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel> {
 
     private val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
 

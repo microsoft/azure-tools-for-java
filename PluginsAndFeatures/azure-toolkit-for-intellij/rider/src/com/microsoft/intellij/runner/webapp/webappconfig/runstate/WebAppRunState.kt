@@ -399,7 +399,6 @@ object WebAppRunState {
                             DEPLOY_TIMEOUT_MS)
                     success = response.isSuccessful
                 } catch (e: Throwable) {
-                    LOG.error(e)
                     processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: $e")
                 }
 
@@ -427,7 +426,7 @@ object WebAppRunState {
         try {
             Thread.sleep(timeout)
         } catch (e: InterruptedException) {
-            LOG.error(e)
+            LOG.warn(e)
         }
 
         return true

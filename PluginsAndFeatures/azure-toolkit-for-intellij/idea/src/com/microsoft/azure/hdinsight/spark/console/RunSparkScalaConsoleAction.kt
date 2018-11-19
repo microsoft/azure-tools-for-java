@@ -138,7 +138,7 @@ abstract class RunSparkScalaConsoleAction
     }
 
     override fun getMyConfigurationType(): RemoteDebugRunConfigurationType? =
-        findConfigurationType(RemoteDebugRunConfigurationType::class.java)
+            findConfigurationType(RemoteDebugRunConfigurationType::class.java)
 
     override fun checkFile(psiFile: PsiFile): Boolean = psiFile is ScalaFile
 }

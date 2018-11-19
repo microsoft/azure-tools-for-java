@@ -277,7 +277,6 @@
           canCloseContents="false"
           icon="/icons/AzureExplorer.svg"
           order="after Project" />
-    <actionPromoter implementation="com.microsoft.azure.hdinsight.spark.console.SparkExecuteInConsoleActionPromoterDelegate"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.microsoft.intellij">

@@ -32,8 +32,6 @@ import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.util.containers.hash.HashMap;
-import com.microsoft.azure.sparkserverless.SparkServerlessClusterOpsCtrl;
-import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterOps;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -112,16 +110,15 @@ public abstract class AzureActionsComponent implements ApplicationComponent, Plu
 
     public void initComponent() {
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
+
             ServiceManager.setServiceProvider(SecureStore.class, IdeaSecureStore.getInstance());
-            // enable spark serverless node subscribe actions
-            ServiceManager.setServiceProvider(SparkServerlessClusterOpsCtrl.class,
-                    new SparkServerlessClusterOpsCtrl(SparkServerlessClusterOps.getInstance()));
             initAuthManage();
             ActionManager am = ActionManager.getInstance();
             DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
             toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
             loadWebApps();
         }
+
         try {
             PlatformDependent.isAndroid();
         } catch (Throwable ignored) {

@@ -25,9 +25,6 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
-import com.microsoft.azuretools.ijidea.ui.HintTextField
 import com.microsoft.intellij.forms.dsl.panel
 import java.awt.CardLayout
 import javax.swing.JLabel

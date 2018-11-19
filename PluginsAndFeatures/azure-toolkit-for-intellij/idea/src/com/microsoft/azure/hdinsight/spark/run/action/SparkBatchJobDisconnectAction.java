@@ -26,10 +26,8 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.project.DumbAware;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRemoteProcess;
-import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunProcessHandler;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobSubmittedEvent;
 import org.jetbrains.annotations.Nullable;
 

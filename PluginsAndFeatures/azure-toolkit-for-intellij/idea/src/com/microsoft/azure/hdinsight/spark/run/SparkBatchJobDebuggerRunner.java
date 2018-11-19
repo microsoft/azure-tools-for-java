@@ -32,6 +32,7 @@ import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
+import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.project.Project;
@@ -109,7 +110,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
      * Running in Event dispatch thread
      */
     @Override
-    protected void execute(ExecutionEnvironment environment, Callback callback, RunProfileState state) throws ExecutionException {
+    protected void execute(ExecutionEnvironment environment, ProgramRunner.Callback callback, RunProfileState state) throws ExecutionException {
         final AsyncPromise<ExecutionEnvironment> jobDriverEnvReady = new AsyncPromise<> ();
         final SparkBatchRemoteDebugState submissionState = (SparkBatchRemoteDebugState) state;
 

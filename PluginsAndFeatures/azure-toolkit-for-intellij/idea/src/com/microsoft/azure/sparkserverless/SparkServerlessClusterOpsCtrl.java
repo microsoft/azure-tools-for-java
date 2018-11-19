@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2018 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -24,6 +25,7 @@ package com.microsoft.azure.sparkserverless;
 
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.execution.configurations.ConfigurationTypeUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
@@ -31,6 +33,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azure.hdinsight.spark.actions.SparkAppSubmitContext;
+import com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys;
 import com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction;
 import com.microsoft.azure.hdinsight.spark.run.configuration.ServerlessSparkConfigurationFactory;
 import com.microsoft.azure.hdinsight.spark.run.configuration.ServerlessSparkConfigurationType;

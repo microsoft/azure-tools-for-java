@@ -32,7 +32,6 @@ import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitHelper;
-import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.IToolWindowProcessor;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;

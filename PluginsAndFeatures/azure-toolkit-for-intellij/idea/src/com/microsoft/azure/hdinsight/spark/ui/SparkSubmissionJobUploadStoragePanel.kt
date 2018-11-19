@@ -24,7 +24,6 @@ package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.uiDesigner.core.GridConstraints.*
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.intellij.forms.dsl.panel
 import java.awt.CardLayout
 import javax.swing.*
