@@ -33,26 +33,28 @@ import com.microsoft.aad.adal4j.DeviceCode;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 import java.awt.Desktop;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.event.HyperlinkEvent;
 
 public class DeviceLoginWindow extends AzureDialogWrapper {
+    private static final String TITLE = "Azure Device Login";
     private JPanel jPanel;
     private JEditorPane editorPanel;
     private AuthenticationResult authenticationResult = null;
     private Future<?> authExecutor;
-    private static final String TITLE = "Azure Device Login";
+    private final DeviceCode deviceCode;
 
     public AuthenticationResult getAuthenticationResult() {
         return authenticationResult;
@@ -61,15 +63,17 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
     public DeviceLoginWindow(final AuthenticationContext ctx, final DeviceCode deviceCode,
                              final AuthenticationCallback<AuthenticationResult> callBack) {
         super(null, false, IdeModalityType.PROJECT);
+        super.setOKButtonText("Copy&&Open");
+        this.deviceCode = deviceCode;
         setModal(true);
         setTitle(TITLE);
-        editorPanel.setText(createHtmlFormatMessage(deviceCode.getMessage()));
+        editorPanel.setText(createHtmlFormatMessage());
         editorPanel.addHyperlinkListener(e -> {
             if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                 try {
                     Desktop.getDesktop().browse(e.getURL().toURI());
                 } catch (IOException | URISyntaxException e1) {
-                    // swallow exceptions
+                    e1.printStackTrace();
                 }
             }
         });
@@ -100,17 +104,12 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         closeDialog();
     }
 
-    private String createHtmlFormatMessage(final String message) {
-        final String pattern = "(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
-        final Matcher matcher = Pattern.compile(pattern).matcher(message);
-        if (matcher.find()) {
-            final String deviceLoginUrl = matcher.group(0);
-            return "<p>"
-                + message.replace(deviceLoginUrl, String.format("<a href=\"%s\">%s</a>", deviceLoginUrl,
-                deviceLoginUrl))
-                + "</p><p>Waiting for signing in with the code ...</p>";
-        }
-        return message;
+    private String createHtmlFormatMessage() {
+        final String verificationUrl = deviceCode.getVerificationUrl();
+        return "<p>"
+            + deviceCode.getMessage().replace(verificationUrl, String.format("<a href=\"%s\">%s</a>", verificationUrl,
+            verificationUrl))
+            + "</p><p>Waiting for signing in with the code ...</p>";
     }
 
     @Override
@@ -119,16 +118,23 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         super.doCancelAction();
     }
 
+    @Override
+    protected void doOKAction() {
+        final StringSelection selection = new StringSelection(deviceCode.getUserCode());
+        final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(selection, selection);
+        try {
+            Desktop.getDesktop().browse(new URI(deviceCode.getVerificationUrl()));
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void closeDialog() {
         ApplicationManager.getApplication().invokeLater(() -> {
             final Window w = getWindow();
             w.dispatchEvent(new WindowEvent(w, WindowEvent.WINDOW_CLOSING));
         }, ModalityState.stateForComponent(jPanel));
-    }
-
-    @Override
-    protected Action[] createActions() {
-        return new Action[]{this.getCancelAction()};
     }
 
     @Nullable
