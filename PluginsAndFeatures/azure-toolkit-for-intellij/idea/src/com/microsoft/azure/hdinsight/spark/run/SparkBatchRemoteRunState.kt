@@ -31,15 +31,14 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.ide.BrowserUtil
 import com.microsoft.azure.hdinsight.common.HDInsightUtil
 import com.microsoft.azure.hdinsight.common.MessageInfoType
-import com.microsoft.azure.hdinsight.spark.common.ServerlessSparkSubmitModel
+import com.microsoft.azure.hdinsight.common.classifiedexception.*
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
+import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle
-import java.io.PrintWriter
-import java.io.StringWriter
 import java.net.URI
 import java.util.*
 
-class SparkBatchRemoteRunState(val serverlessSparkSubmitModel: ServerlessSparkSubmitModel)
+open class SparkBatchRemoteRunState(val serverlessSparkSubmitModel: SparkSubmitModel)
     : RunProfileStateWithAppInsightsEvent, SparkBatchRemoteRunProfileState  {
     override var remoteProcessCtrlLogHandler: SparkBatchJobProcessCtrlLogOut? = null
     override var executionResult: ExecutionResult? = null
@@ -64,23 +63,29 @@ class SparkBatchRemoteRunState(val serverlessSparkSubmitModel: ServerlessSparkSu
                             MessageInfoType.Hyperlink ->
                                 BrowserUtil.browse(URI.create(messageWithType.value))
                             else ->
+                            {
                                 consoleView!!.print("ERROR: ${messageWithType.value}\n", ConsoleViewContentType.ERROR_OUTPUT)
+
+                                val classifiedEx = ClassifiedExceptionFactory
+                                        .createClassifiedException(YarnDiagnosticsException(messageWithType.value))
+                                classifiedEx.logStackTrace()
+                                classifiedEx.handleByUser()
+                            }
                         }
                     },
                     { err ->
-                        val errWriter = StringWriter()
-                        err.printStackTrace(PrintWriter(errWriter))
+                        val classifiedEx = ClassifiedExceptionFactory.createClassifiedException(err)
+                        classifiedEx.logStackTrace()
 
-                        val errMessage = Optional.ofNullable(err.message)
-                                .orElse(err.toString()) + "\n stack trace: " + errWriter.buffer.toString()
-
+                        val errMessage = classifiedEx.message
                         createAppInsightEvent(it, mapOf(
                                 "IsSubmitSucceed" to "false",
                                 "SubmitFailedReason" to HDInsightUtil.normalizeTelemetryMessage(errMessage)))
 
                         consoleView!!.print("ERROR: $errMessage", ConsoleViewContentType.ERROR_OUTPUT)
+                        classifiedEx.handleByUser()
                     },
-                    { createAppInsightEvent(it, mapOf("IsSubmitSucceed" to "true")) })
+                    { onSuccess(it) })
 
             programRunner.onProcessStarted(null, executionResult)
 
@@ -96,7 +101,7 @@ class SparkBatchRemoteRunState(val serverlessSparkSubmitModel: ServerlessSparkSu
             throw ExecutionException("The HDInsight cluster to submit is not selected, please config it at 'Run/Debug configuration -> Remotely Run in Cluster'.")
         }
 
-        if (parameter.artifactName.isNullOrBlank()) {
+        if (parameter.artifactName.isNullOrBlank() && parameter.localArtifactPath.isNullOrBlank()) {
             throw ExecutionException("The artifact to submit is not selected, please config it at 'Run/Debug configuration -> Remotely Run in Cluster'.")
         }
 
@@ -107,5 +112,9 @@ class SparkBatchRemoteRunState(val serverlessSparkSubmitModel: ServerlessSparkSu
 
     override fun getSubmitModel(): SparkSubmitModel {
         return serverlessSparkSubmitModel
+    }
+
+    open fun onSuccess(executor: Executor) {
+        createAppInsightEvent(executor, mapOf("IsSubmitSucceed" to "true"))
     }
 }

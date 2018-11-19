@@ -30,12 +30,16 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.jcraft.jsch.*;
+import com.microsoft.azure.datalake.store.ADLStoreClient;
+import com.microsoft.azure.datalake.store.IfExists;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession;
@@ -60,6 +64,7 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.sun.net.httpserver.HttpExchange;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -550,7 +555,10 @@ public class JobUtils {
         String username = selectedClusterDetail.getHttpUserName();
         String password = selectedClusterDetail.getHttpPassword();
         String sessionName = "Helper session to upload " + destUri.toString();
-        URI livyUri = getLivyBaseUri(selectedClusterDetail);
+
+        URI livyUri = selectedClusterDetail instanceof LivyCluster ?
+                URI.create(((LivyCluster) selectedClusterDetail).getLivyConnectionUrl()) :
+                URI.create(selectedClusterDetail.getConnectionUrl());
 
         logSubject.onNext(new SimpleImmutableEntry<>(Info, "Create Spark helper interactive session..."));
 
@@ -607,18 +615,43 @@ public class JobUtils {
                                 null));
     }
 
-    public static String getLivyConnectionURL(IClusterDetail clusterDetail) {
-        return getLivyBaseUri(clusterDetail).resolve("batches").toString();
+    // Have to catch IOException in subscribe
+    @NotNull
+    public static Observable<String> deployArtifactToADLS(@NotNull String artifactLocalPath,
+                                                 @NotNull String adlRootPath,
+                                                 @NotNull String accessToken) {
+        return Observable.fromCallable(() -> {
+            File localFile = new File(artifactLocalPath);
+
+            URI remote = URI.create(adlRootPath)
+                    .resolve("SparkSubmission/")
+                    .resolve(getFormatPathByDate() + "/")
+                    .resolve(localFile.getName());
+
+            ADLStoreClient storeClient = ADLStoreClient.createClient(remote.getHost(), accessToken);
+
+            try (OutputStream adlsOutputStream = storeClient.createFile(remote.getPath(), IfExists.OVERWRITE, "755", true)) {
+                long size = IOUtils.copyLarge(new FileInputStream(localFile), adlsOutputStream);
+
+                adlsOutputStream.flush();
+                adlsOutputStream.close();
+
+                return remote.toString();
+            }
+        });
     }
 
-    public static URI getLivyBaseUri(IClusterDetail clusterDetail) {
-        if(clusterDetail.isEmulator()){
-            return URI.create(clusterDetail.getConnectionUrl()).resolve("/");
-        }
-
-        return URI.create(clusterDetail.getConnectionUrl()).resolve("/livy/");
+    public static Observable<String> deployArtifact(@NotNull String artifactLocalPath,
+                                                    @NotNull final IHDIStorageAccount storageAccount,
+                                                    @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) {
+        return Observable.fromCallable(() -> JobUtils.uploadFileToAzure(
+                new File(artifactLocalPath),
+                storageAccount,
+                storageAccount.getDefaultContainerOrRootPath(),
+                getFormatPathByDate(),
+                logSubject,
+                null));
     }
-
 
     public static Single<SimpleImmutableEntry<IClusterDetail, String>> deployArtifact(@NotNull String artifactLocalPath,
                                                         @NotNull String clusterName,
@@ -649,10 +682,15 @@ public class JobUtils {
     public static AbstractMap.SimpleImmutableEntry<Integer, Map<String, List<String>>>
     authenticate(IClusterDetail clusterDetail) throws HDIException, IOException {
         SparkBatchSubmission submission = SparkBatchSubmission.getInstance();
-        submission.setUsernamePasswordCredential(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
-        String livyUrl = URI.create(ClusterManagerEx.getInstance().getClusterConnectionString(clusterDetail.getName()))
-                .resolve("/livy/batches")
-                .toString();
+        if (!StringUtils.isEmpty(clusterDetail.getHttpUserName()) && !StringUtils.isEmpty(clusterDetail.getHttpPassword())) {
+            submission.setUsernamePasswordCredential(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
+        }
+
+        String livyUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyBatchUrl() : null;
+        if (livyUrl == null) {
+            throw new IOException("Can't get livy connection Url");
+        }
+
         com.microsoft.azure.hdinsight.sdk.common.HttpResponse response = submission.getHttpResponseViaHead(livyUrl);
 
         int statusCode = response.getCode();

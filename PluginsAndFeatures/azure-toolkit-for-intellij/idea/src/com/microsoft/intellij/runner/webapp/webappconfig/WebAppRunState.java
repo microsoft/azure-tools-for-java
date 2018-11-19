@@ -39,9 +39,11 @@ import org.jetbrains.idea.maven.model.MavenConstants;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
@@ -53,17 +55,21 @@ import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 
-public class WebAppRunState extends AzureRunProfileState<WebApp> {
+public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     private static final String CREATE_WEBAPP = "Creating new Web App...";
+    private static final String CREATE_DEPLOYMENT_SLOT = "Creating new Deployment Slot...";
     private static final String CREATE_FAILED = "Failed to create Web App. Error: %s ...";
+    private static final String CREATE_SLOT_FAILED = "Failed to create Deployment Slot. Error: %s ...";
     private static final String GETTING_DEPLOYMENT_CREDENTIAL = "Getting Deployment Credential...";
     private static final String CONNECTING_FTP = "Connecting to FTP server...";
     private static final String UPLOADING_ARTIFACT = "Uploading artifact to: %s ...";
     private static final String UPLOADING_WEB_CONFIG = "Uploading web.config (check more details at: https://aka.ms/spring-boot)...";
     private static final String UPLOADING_SUCCESSFUL = "Uploading successfully...";
     private static final String STOP_WEB_APP = "Stopping Web App...";
+    private static final String STOP_DEPLOYMENT_SLOT = "Stopping Deployment Slot...";
     private static final String START_WEB_APP = "Starting Web App...";
+    private static final String START_DEPLOYMENT_SLOT = "Starting Deployment Slot...";
     private static final String LOGGING_OUT = "Logging out of FTP server...";
     private static final String DEPLOY_SUCCESSFUL = "Deploy successfully!";
     private static final String STOP_DEPLOY = "Deploy Failed!";
@@ -93,16 +99,15 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
 
     @Nullable
     @Override
-    public WebApp executeSteps(@NotNull RunProcessHandler processHandler
+    public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
             , @NotNull Map<String, String> telemetryMap) throws Exception {
         File file = new File(webAppSettingModel.getTargetPath());
         if (!file.exists()) {
             throw new FileNotFoundException(String.format(NO_TARGET_FILE, webAppSettingModel.getTargetPath()));
         }
-        WebApp webApp = getWebAppAccordingToConfiguration(processHandler);
-
-        processHandler.setText(STOP_WEB_APP);
-        webApp.stop();
+        WebAppBase deployTarget = getDeployTargetByConfiguration(processHandler);
+        processHandler.setText(isDeployToSlot() ? STOP_DEPLOYMENT_SLOT : STOP_WEB_APP);
+        deployTarget.stop();
 
         int indexOfDot = webAppSettingModel.getTargetName().lastIndexOf(".");
         String fileName = webAppSettingModel.getTargetName().substring(0, indexOfDot);
@@ -111,35 +116,39 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         switch (fileType) {
             case MavenConstants.TYPE_WAR:
                 try (FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath())) {
-                    uploadWarArtifact(input, webApp, fileName, processHandler, telemetryMap);
+                    uploadWarArtifact(input, deployTarget, fileName, processHandler, telemetryMap);
                 }
                 break;
             case MavenConstants.TYPE_JAR:
                 try (FileInputStream input = new FileInputStream(webAppSettingModel.getTargetPath())) {
-                    uploadJarArtifactViaFTP(input, webApp, processHandler, telemetryMap);
+                    uploadJarArtifactViaFTP(input, deployTarget, processHandler, telemetryMap);
                 }
                 break;
             default:
                 break;
         }
 
-        processHandler.setText(START_WEB_APP);
-        webApp.start();
+        processHandler.setText(isDeployToSlot() ? START_DEPLOYMENT_SLOT : START_WEB_APP);
+        deployTarget.start();
 
-        String url = getUrl(webApp, fileName, fileType);
+        String url = getUrl(deployTarget, fileName, fileType);
         processHandler.setText(DEPLOY_SUCCESSFUL);
         processHandler.setText("URL: " + url);
-        return webApp;
+        return deployTarget;
+    }
+
+    private boolean isDeployToSlot() {
+        return !webAppSettingModel.isCreatingNew() && webAppSettingModel.isDeployToSlot();
     }
 
     @Override
-    protected void onSuccess(WebApp result, @NotNull RunProcessHandler processHandler) {
+    protected void onSuccess(WebAppBase result, @NotNull RunProcessHandler processHandler) {
         processHandler.notifyComplete();
         if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,null));
         }
         updateConfigurationDataModel(result);
-        AzureWebAppMvpModel.getInstance().listAllWebAppsOnWindows(true /*force*/);
+        AzureWebAppMvpModel.getInstance().listAllWebApps(true /*force*/);
     }
 
     @Override
@@ -150,7 +159,7 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
 
     @Override
     protected String getDeployTarget() {
-        return "Webapp";
+        return isDeployToSlot() ? "DeploymentSlot" : "WebApp";
     }
 
     @Override
@@ -163,25 +172,47 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
     }
 
     @NotNull
-    private WebApp getWebAppAccordingToConfiguration(@NotNull RunProcessHandler processHandler) throws Exception {
-        WebApp webApp;
+    private WebAppBase getDeployTargetByConfiguration(@NotNull RunProcessHandler processHandler) throws Exception {
         if (webAppSettingModel.isCreatingNew()) {
-            processHandler.setText(CREATE_WEBAPP);
-            try {
-                webApp = AzureWebAppMvpModel.getInstance().createWebApp(webAppSettingModel);
-            } catch (Exception e) {
-                processHandler.setText(STOP_DEPLOY);
-                throw new Exception(String.format(CREATE_FAILED, e.getMessage()));
-            }
-        } else {
-            webApp = AzureWebAppMvpModel.getInstance()
-                    .getWebAppById(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppId());
+            return createWebApp(processHandler);
         }
+
+        final WebApp webApp = AzureWebAppMvpModel.getInstance()
+            .getWebAppById(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppId());
         if (webApp == null) {
             processHandler.setText(STOP_DEPLOY);
             throw new Exception(NO_WEB_APP);
         }
-        return webApp;
+
+        if (isDeployToSlot()) {
+            if (webAppSettingModel.getSlotName() == Constants.CREATE_NEW_SLOT) {
+                return createDeploymentSlot(processHandler);
+            } else {
+                return webApp.deploymentSlots().getByName(webAppSettingModel.getSlotName());
+            }
+        } else {
+            return webApp;
+        }
+    }
+
+    private WebApp createWebApp(@NotNull RunProcessHandler processHandler) throws Exception {
+        processHandler.setText(CREATE_WEBAPP);
+        try {
+            return AzureWebAppMvpModel.getInstance().createWebApp(webAppSettingModel);
+        } catch (Exception e) {
+            processHandler.setText(STOP_DEPLOY);
+            throw new Exception(String.format(CREATE_FAILED, e.getMessage()));
+        }
+    }
+
+    private DeploymentSlot createDeploymentSlot(@NotNull RunProcessHandler processHandler) throws Exception {
+        processHandler.setText(CREATE_DEPLOYMENT_SLOT);
+        try {
+            return AzureWebAppMvpModel.getInstance().createDeploymentSlot(webAppSettingModel);
+        } catch (Exception e) {
+            processHandler.setText(STOP_DEPLOY);
+            throw new Exception(String.format(CREATE_SLOT_FAILED, e.getMessage()));
+        }
     }
 
     private File prepareWebConfig() throws Exception {
@@ -200,7 +231,7 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         return artifact;
     }
 
-    private void uploadWarArtifact(@NotNull final FileInputStream input, @NotNull final WebApp webApp,
+    private void uploadWarArtifact(@NotNull final FileInputStream input, @NotNull final WebAppBase webApp,
                                    @NotNull final String fileName, @NotNull final RunProcessHandler processHandler,
                                    @NotNull final Map<String, String> telemetryMap) throws IOException {
         processHandler.setText(GETTING_DEPLOYMENT_CREDENTIAL);
@@ -246,7 +277,7 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         }
     }
 
-    private void uploadJarArtifact(@NotNull String fileName, @NotNull WebApp webApp,
+    private void uploadJarArtifact(@NotNull String fileName, @NotNull WebAppBase webApp,
                                    @NotNull RunProcessHandler processHandler,
                                    @NotNull Map<String, String> telemetryMap) throws Exception {
         final File targetZipFile = File.createTempFile(TEMP_FILE_PREFIX, ".zip");
@@ -268,7 +299,7 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         telemetryMap.put("artifactUploadCount", String.valueOf(uploadCount));
     }
 
-    private void uploadJarArtifactViaFTP(@NotNull final FileInputStream input, @NotNull WebApp webApp,
+    private void uploadJarArtifactViaFTP(@NotNull final FileInputStream input, @NotNull WebAppBase webApp,
                                          @NotNull RunProcessHandler processHandler,
                                          @NotNull Map<String, String> telemetryMap) throws Exception {
         processHandler.setText(GETTING_DEPLOYMENT_CREDENTIAL);
@@ -293,7 +324,7 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
     // Add retry logic here to avoid Kudu's socket timeout issue.
     // For each try, the method will wait 5 seconds.
     // More details: https://github.com/Microsoft/azure-maven-plugins/issues/339
-    private int uploadFileViaZipDeploy(@NotNull WebApp webapp, @NotNull File zipFile,
+    private int uploadFileViaZipDeploy(@NotNull WebAppBase webapp, @NotNull File zipFile,
                                        @NotNull RunProcessHandler processHandler) throws Exception {
         int uploadCount = 0;
         while (uploadCount < UPLOADING_MAX_TRY) {
@@ -336,7 +367,7 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
     }
 
     @NotNull
-    private String getUrl(@NotNull WebApp webApp, @NotNull String fileName, @NotNull String fileType) {
+    private String getUrl(@NotNull WebAppBase webApp, @NotNull String fileName, @NotNull String fileType) {
         String url = "https://" + webApp.defaultHostName();
         if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)
                 && !webAppSettingModel.isDeployToRoot()) {
@@ -345,9 +376,17 @@ public class WebAppRunState extends AzureRunProfileState<WebApp> {
         return url;
     }
 
-    private void updateConfigurationDataModel(@NotNull WebApp app) {
+    private void updateConfigurationDataModel(@NotNull WebAppBase app) {
         webAppSettingModel.setCreatingNew(false);
-        webAppSettingModel.setWebAppId(app.id());
+        // todo: add flag to indicate create new slot or not
+        if (app instanceof DeploymentSlot) {
+            webAppSettingModel.setSlotName(app.name());
+            webAppSettingModel.setNewSlotConfigurationSource(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
+            webAppSettingModel.setNewSlotName("");
+            webAppSettingModel.setWebAppId(((DeploymentSlot)app).parent().id());
+        } else {
+            webAppSettingModel.setWebAppId(app.id());
+        }
         webAppSettingModel.setWebAppName("");
         webAppSettingModel.setResourceGroup("");
         webAppSettingModel.setAppServicePlanName("");

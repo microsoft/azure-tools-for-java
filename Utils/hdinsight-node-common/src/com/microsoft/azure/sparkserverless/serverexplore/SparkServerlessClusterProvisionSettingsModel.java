@@ -24,45 +24,47 @@ package com.microsoft.azure.sparkserverless.serverexplore;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
-public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
+public class SparkServerlessClusterProvisionSettingsModel {
     @NotNull
     private String clusterName;
     @NotNull
     private String adlAccount;
     @NotNull
     private String sparkEvents;
-    @NotNull
     private int masterCores;
-    @NotNull
     private int masterMemory;
-    @NotNull
     private int workerCores;
-    @NotNull
     private int workerMemory;
-    @NotNull
     private int workerNumberOfContainers = 0;
-    @NotNull
     private int availableAU;
-    @NotNull
     private int totalAU;
-    @NotNull
     private int calculatedAU;
+    private boolean refreshEnabled;
     @Nullable
     private String clusterGuid;
-
     @NotNull
     private String storageRootPathLabelTitle;
-
     @Nullable
     private String errorMessage;
     @Nullable
     private String requestId;
+
+    public boolean getRefreshEnabled() {
+        return refreshEnabled;
+    }
+
+    @NotNull
+    public SparkServerlessClusterProvisionSettingsModel setRefreshEnabled(boolean refreshEnabled) {
+        this.refreshEnabled = refreshEnabled;
+        return this;
+    }
 
     @Nullable
     public String getRequestId() {
         return requestId;
     }
 
+    @NotNull
     public SparkServerlessClusterProvisionSettingsModel setRequestId(@Nullable String requestId) {
         this.requestId = requestId;
         return this;
@@ -101,7 +103,6 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return this;
     }
 
-    @NotNull
     public int getAvailableAU() {
         return availableAU;
     }
@@ -112,68 +113,62 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
         return this;
     }
 
-    @NotNull
     public int getTotalAU() {
         return totalAU;
     }
 
     @NotNull
-    public SparkServerlessClusterProvisionSettingsModel setTotalAU(@NotNull int totalAU) {
+    public SparkServerlessClusterProvisionSettingsModel setTotalAU(int totalAU) {
         this.totalAU = totalAU;
         return this;
     }
 
-    @NotNull
     public int getCalculatedAU() {
         return calculatedAU;
     }
 
     @NotNull
-    public SparkServerlessClusterProvisionSettingsModel setCalculatedAU(@NotNull int calculatedAU) {
+    public SparkServerlessClusterProvisionSettingsModel setCalculatedAU(int calculatedAU) {
         this.calculatedAU = calculatedAU;
         return this;
     }
 
-    @NotNull
     public int getMasterCores() {
         return masterCores;
     }
 
     @NotNull
-    public SparkServerlessClusterProvisionSettingsModel setMasterCores(@NotNull int masterCores) {
+    public SparkServerlessClusterProvisionSettingsModel setMasterCores(int masterCores) {
         this.masterCores = masterCores;
         return this;
     }
 
-    @NotNull
     public int getMasterMemory() {
         return masterMemory;
     }
 
     @NotNull
-    public SparkServerlessClusterProvisionSettingsModel setMasterMemory(@NotNull int masterMemory) {
+    public SparkServerlessClusterProvisionSettingsModel setMasterMemory(int masterMemory) {
         this.masterMemory = masterMemory;
         return this;
     }
 
-    @NotNull
     public int getWorkerCores() {
         return workerCores;
     }
 
     @NotNull
-    public SparkServerlessClusterProvisionSettingsModel setWorkerCores(@NotNull int workerCores) {
+    public SparkServerlessClusterProvisionSettingsModel setWorkerCores(int workerCores) {
         this.workerCores = workerCores;
         return this;
     }
 
-    @NotNull
     public int getWorkerMemory() {
         return workerMemory;
     }
 
     @NotNull
-    public SparkServerlessClusterProvisionSettingsModel setWorkerMemory(@NotNull int workerMemory) {
+    public SparkServerlessClusterProvisionSettingsModel setWorkerMemory(int workerMemory) {
         this.workerMemory = workerMemory;
         return this;
     }
@@ -189,8 +184,7 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
     }
 
     @NotNull
-    public SparkServerlessClusterProvisionSettingsModel setWorkerNumberOfContainers(
-            @NotNull int workerNumberOfContainers) {
+    public SparkServerlessClusterProvisionSettingsModel setWorkerNumberOfContainers(int workerNumberOfContainers) {
         this.workerNumberOfContainers = workerNumberOfContainers;
         return this;
     }
@@ -221,11 +215,5 @@ public class SparkServerlessClusterProvisionSettingsModel implements Cloneable {
     public SparkServerlessClusterProvisionSettingsModel setClusterGuid(@NotNull String clusterGuid) {
         this.clusterGuid = clusterGuid;
         return this;
-    }
-
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        // Here is a shadow clone, not deep clone
-        return super.clone();
     }
 }

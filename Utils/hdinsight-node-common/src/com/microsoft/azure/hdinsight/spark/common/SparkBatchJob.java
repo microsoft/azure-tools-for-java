@@ -31,6 +31,8 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
+import com.microsoft.azure.hdinsight.sdk.cluster.YarnCluster;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
@@ -38,6 +40,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.App;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttempt;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttemptsResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppResponse;
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -78,7 +81,8 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
     public enum DriverLogConversionMode {
         WITHOUT_PORT,
-        WITH_PORT;
+        WITH_PORT,
+        ORIGINAL;
 
         @Nullable
         public static DriverLogConversionMode next(@Nullable DriverLogConversionMode current) {
@@ -103,6 +107,12 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      */
     @Nullable
     private URI connectUri;
+
+    /**
+     * The base connection URI for HDInsight Yarn application service, such as: http://hn0-spark2:8088/cluster/app
+     */
+    @Nullable
+    private URI yarnConnectUri;
 
     /**
      * The LIVY Spark batch job ID got from job submission
@@ -140,13 +150,38 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Nullable
     private DriverLogConversionMode driverLogConversionMode = null;
 
+    @Nullable
+    private IHDIStorageAccount storageAccount;
+
+    /**
+     * Access token used for uploading files to ADLS storage account
+     */
+    @Nullable
+    private String accessToken;
+
+    @Nullable
+    private String adlRootPath;
+
     public SparkBatchJob(
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+        this(submissionParameter, sparkBatchSubmission, ctrlSubject, null, null, null);
+    }
+
+    public SparkBatchJob(
+            SparkSubmissionParameter submissionParameter,
+            SparkBatchSubmission sparkBatchSubmission,
+            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
+            @Nullable IHDIStorageAccount storageAccount,
+            @Nullable String accessToken,
+            @Nullable String adlRootPath) {
         this.submissionParameter = submissionParameter;
+        this.storageAccount = storageAccount;
         this.submission = sparkBatchSubmission;
         this.ctrlSubject = ctrlSubject;
+        this.accessToken = accessToken;
+        this.adlRootPath = adlRootPath;
     }
 
     /**
@@ -189,13 +224,47 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                     log().warn("No credential provided for Spark batch job.");
                 }
 
-                this.connectUri = URI.create(JobUtils.getLivyConnectionURL(cluster.get()));
+                this.connectUri = cluster.filter(c -> c instanceof LivyCluster)
+                        .map(c -> ((LivyCluster) c).getLivyBatchUrl())
+                        .map(URI::create)
+                        .orElse(null);
             } else {
                 log().warn("No cluster found for " + getSubmissionParameter().getClusterName());
             }
         }
 
         return connectUri;
+    }
+
+    @Nullable
+    public URI getYarnNMConnectUri() {
+        if (yarnConnectUri == null) {
+            Optional<IClusterDetail> cluster = ClusterManagerEx.getInstance()
+                    .getClusterDetailByName(getSubmissionParameter().getClusterName());
+
+            if (cluster.isPresent()) {
+                try {
+                    SparkBatchSubmission.getInstance()
+                            .setUsernamePasswordCredential(cluster.get().getHttpUserName(), cluster.get().getHttpPassword());
+                } catch (HDIException e) {
+                    log().warn("No credential provided for Spark batch job.");
+                }
+
+                this.yarnConnectUri = cluster.filter(c -> c instanceof YarnCluster)
+                        .map(c -> ((YarnCluster) c).getYarnNMConnectionUrl())
+                        .map(URI::create)
+                        .orElse(null);
+            } else {
+                log().warn("No cluster found for " + getSubmissionParameter().getClusterName());
+            }
+        }
+
+        return yarnConnectUri;
+    }
+
+    @Nullable
+    public IHDIStorageAccount getStorageAccount() {
+        return storageAccount;
     }
 
     /**
@@ -331,12 +400,18 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                         return Observable.empty();
                     }
 
-                    return Observable.just(new SimpleImmutableEntry<>(JobUtils.getInformationFromYarnLogDom(
+                    String logGot = JobUtils.getInformationFromYarnLogDom(
                             getSubmission().getCredentialsProvider(),
                             getCurrentLogUrl(),
                             type,
                             offset,
-                            size), offset));
+                            size);
+
+                    if (StringUtils.isEmpty(logGot)) {
+                        return Observable.empty();
+                    }
+
+                    return Observable.just(new SimpleImmutableEntry<>(logGot, offset));
                 });
     }
 
@@ -448,12 +523,16 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      * @return the Yarn application got
      * @throws IOException exceptions in transaction
      */
-    private App getSparkJobYarnApplication(URI batchBaseUri, String applicationID) throws IOException {
+    private App getSparkJobYarnApplication(URI yarnConnectUri, String applicationID) throws Exception {
+        if (yarnConnectUri == null) {
+            return null;
+        }
+
         int retries = 0;
 
         do {
             // TODO: An issue here when the yarnui not sharing root with Livy batch job URI
-            URI getYarnClusterAppURI = batchBaseUri.resolve("/yarnui/ws/v1/cluster/apps/" + applicationID);
+            URI getYarnClusterAppURI = URI.create(yarnConnectUri.toString() + applicationID);
 
             try {
                 HttpResponse httpResponse = this.getSubmission()
@@ -531,8 +610,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
         return getSparkJobApplicationIdObservable()
                 .flatMap(appId -> {
-                    URI getYarnAppAttemptsURI = getConnectUri().resolve("/yarnui/ws/v1/cluster/apps/" + appId +
-                                                                        "/appattempts");
+                    URI getYarnAppAttemptsURI = URI.create(getYarnNMConnectUri() + appId + "/appattempts");
 
                     try {
                         HttpResponse httpResponse = this.getSubmission()
@@ -735,7 +813,11 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
             String applicationId = this.getSparkJobApplicationId(this.getConnectUri(), this.getBatchId());
 
-            App yarnApp = this.getSparkJobYarnApplication(this.getConnectUri(), applicationId);
+            App yarnApp = this.getSparkJobYarnApplication(this.getYarnNMConnectUri(), applicationId);
+
+            if (yarnApp == null) {
+                throw new Exception("Can not access yarn applicaition since yarnConnectUri is null");
+            }
 
             if (yarnApp.isFinished()) {
                 throw new UnknownServiceException("The Livy job " + this.getBatchId() + " on yarn is not running.");
@@ -902,11 +984,10 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     private Observable<String> getJobLogAggregationDoneObservable() {
         return getSparkJobApplicationIdObservable()
                 .flatMap(applicationId ->
-                        Observable.fromCallable(() -> getSparkJobYarnApplication(
-                                        // if getConnectUri() is null, the getSparkJobApplicationIdObservable() would
-                                        // return Observable.error()
-                                        Objects.requireNonNull(this.getConnectUri()), applicationId))
+                        Observable.fromCallable(() ->
+                                getSparkJobYarnApplication(this.getYarnNMConnectUri(), applicationId))
                                 .repeatWhen(ob -> ob.delay(getDelaySeconds(), TimeUnit.SECONDS))
+                                .filter(app -> app != null)
                                 .takeUntil(this::isYarnAppLogAggregationDone)
                                 .filter(this::isYarnAppLogAggregationDone))
                 .map(yarnApp -> yarnApp.getLogAggregationStatus().toUpperCase());
@@ -963,6 +1044,8 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                                     internalLogUrl.getHost(),
                                     internalLogUrl.getPort(),
                                     normalizedPath)));
+                case ORIGINAL:
+                    return Optional.of(internalLogUrl);
             }
         }
 
@@ -1018,12 +1101,26 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        return JobUtils.deployArtifact(artifactPath, getSubmissionParameter().getClusterName(), getCtrlSubject())
-                .map(clusterArtifactUriPair -> {
-                    getSubmissionParameter().setFilePath(clusterArtifactUriPair.getValue());
-                    return this;
-                })
-                .toObservable();
+        if (accessToken != null) {
+            return JobUtils.deployArtifactToADLS(artifactPath, adlRootPath, accessToken)
+                    .map(path -> {
+                        getSubmissionParameter().setFilePath(path);
+                        return this;
+                    });
+        } else if (storageAccount == null) {
+            return JobUtils.deployArtifact(artifactPath, getSubmissionParameter().getClusterName(), getCtrlSubject())
+                    .map(clusterArtifactUriPair -> {
+                        getSubmissionParameter().setFilePath(clusterArtifactUriPair.getValue());
+                        return this;
+                    })
+                    .toObservable();
+        } else {
+            return JobUtils.deployArtifact(artifactPath, storageAccount, getCtrlSubject())
+                    .map(path -> {
+                        getSubmissionParameter().setFilePath(path);
+                        return this;
+                    });
+        }
     }
 
     /**

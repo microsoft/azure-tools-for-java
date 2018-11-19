@@ -38,6 +38,7 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
     private static final String CANNOT_LIST_SUBSCRIPTION = "Failed to list subscriptions.";
     private static final String CANNOT_LIST_LOCATION = "Failed to list locations.";
     private static final String CANNOT_LIST_PRICING_TIER = "Failed to list pricing tier.";
+    private static final String CANNOT_GET_DEPLOYMENT_SLOTS = "Failed to get the deployment slots.";
 
     public void onRefresh() {
         loadWebApps(true /*forceRefresh*/);
@@ -150,6 +151,20 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
         getMvpView().fillLinuxRuntime(AzureWebAppMvpModel.getInstance().getLinuxRuntimes());
     }
 
+    /**
+     * Load the deployment slots of the selected web app.
+     */
+    public void onLoadDeploymentSlots(final String subscriptionId, final String webAppId) {
+        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().getDeploymentSlots(subscriptionId, webAppId))
+            .subscribeOn(getSchedulerProvider().io())
+            .subscribe(slots -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
+                getMvpView().fillDeploymentSlots(slots);
+            }), e -> errorHandler(CANNOT_GET_DEPLOYMENT_SLOTS, (Exception) e));
+    }
+
     private void loadWebApps(boolean forceRefresh) {
         Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().listAllWebApps(forceRefresh))
                 .subscribeOn(getSchedulerProvider().io())
@@ -158,6 +173,7 @@ public class WebAppDeployViewPresenter<V extends WebAppDeployMvpView> extends Mv
                         return;
                     }
                     getMvpView().renderWebAppsTable(webAppList);
+                    getMvpView().enableDeploymentSlotPanel();
                 }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
     }
 

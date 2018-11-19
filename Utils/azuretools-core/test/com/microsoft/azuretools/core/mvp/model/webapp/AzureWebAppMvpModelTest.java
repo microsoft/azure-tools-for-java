@@ -89,8 +89,7 @@ public class AzureWebAppMvpModelTest {
 
     @After
     public void tearDown() {
-        azureWebAppMvpModel.cleanWebAppsOnWindows();
-        azureWebAppMvpModel.cleanWebAppsOnLinux();
+        azureWebAppMvpModel.clearWebAppsCache();
         reset(webAppsMock);
         reset(azureMock);
         reset(authMethodManagerMock);

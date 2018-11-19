@@ -30,6 +30,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ClusterDetail implements IClusterDetail {
+public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
 
     private static final String ADL_HOME_PREFIX = "adl://home";
     private static final String ADLS_HOME_HOST_NAME = "dfs.adls.home.hostname";
@@ -319,4 +320,13 @@ public class ClusterDetail implements IClusterDetail {
 
         return null;
     }
+
+    public String getLivyConnectionUrl() {
+        return URI.create(getConnectionUrl()).resolve("livy/").toString();
+    }
+
+    public String getYarnNMConnectionUrl() {
+        return URI.create(getConnectionUrl()).resolve("yarnui/ws/v1/cluster/apps/").toString();
+    }
+
 }

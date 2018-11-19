@@ -23,6 +23,7 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttempt;
+import com.microsoft.azuretools.utils.Pair;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
@@ -32,10 +33,7 @@ import org.slf4j.Logger;
 import rx.Observable;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -76,19 +74,15 @@ public class SparkBatchRemoteDebugJobScenario {
     public void createBatchSparkJobWithDriverDebuggingConfig(
             String connectUrl,
             Map<String, Object> sparkConfig) throws Throwable {
-        SparkSubmissionParameter parameter = new SparkSubmissionParameterScenario()
-                .mockSparkSubmissionParameterWithJobConf(new HashMap<String, Object>() {{
-                    Map<String, Object> cleanedConf = sparkConfig.entrySet().stream()
-                            .filter(entry -> !entry.getKey().isEmpty() || !entry.getValue().toString().isEmpty())
-                            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-
-                    if (!cleanedConf.isEmpty()) { put("conf", new SparkConfigures(cleanedConf)); }
-                }});
+        SparkSubmissionParameterScenario scenario = new SparkSubmissionParameterScenario();
+        scenario.sparkSubmissionParameter.applyFlattedJobConf(new ArrayList<Pair<String, String>>() {{
+                sparkConfig.forEach((k, v) -> add(new Pair<>(k, (String) v)));
+        }});
 
         caught = null;
 
         try {
-            debugSubmissionParameter = SparkBatchRemoteDebugJob.convertToDebugParameter(parameter);
+            debugSubmissionParameter = SparkBatchRemoteDebugJob.convertToDebugParameter(scenario.sparkSubmissionParameter);
         } catch (Exception e) {
             caught = e;
         }
@@ -198,7 +192,9 @@ public class SparkBatchRemoteDebugJobScenario {
             String connectUrl,
             int batchId,
             int expectedPort) throws Throwable {
-        when(debugJobMock.getConnectUri()).thenReturn(new URI(httpServerMock.completeUrl(connectUrl)));
+        URI mockConnUri = new URI(httpServerMock.completeUrl(connectUrl));
+        when(debugJobMock.getConnectUri()).thenReturn(mockConnUri);
+        doReturn(mockConnUri.resolve("/yarnui/ws/v1/cluster/apps/")).when(debugJobMock).getYarnNMConnectUri();
         when(debugJobMock.getBatchId()).thenReturn(batchId);
 
         try {
@@ -215,7 +211,9 @@ public class SparkBatchRemoteDebugJobScenario {
             String connectUrl,
             int batchId,
             String expectedHost) throws Throwable {
-        when(debugJobMock.getConnectUri()).thenReturn(new URI(httpServerMock.completeUrl(connectUrl)));
+        URI mockConnUri = new URI(httpServerMock.completeUrl(connectUrl));
+        when(debugJobMock.getConnectUri()).thenReturn(mockConnUri);
+        doReturn(mockConnUri.resolve("/yarnui/ws/v1/cluster/apps/")).when(debugJobMock).getYarnNMConnectUri();
         when(debugJobMock.getBatchId()).thenReturn(batchId);
 
         try {
@@ -233,7 +231,9 @@ public class SparkBatchRemoteDebugJobScenario {
 
     @Then("^getting current Yarn App attempt should be '(.+)'$")
     public void checkGetCurrentYarnAppAttemptResult(String appAttemptIdExpect) {
-        when(debugJobMock.getConnectUri()).thenReturn(URI.create(httpServerMock.completeUrl("/")));
+        URI mockConnUri = URI.create(httpServerMock.completeUrl("/"));
+        when(debugJobMock.getConnectUri()).thenReturn(mockConnUri);
+        doReturn(mockConnUri.resolve("/yarnui/ws/v1/cluster/apps/")).when(debugJobMock).getYarnNMConnectUri();
 
         AppAttempt appAttempt = debugJobMock
                 .getSparkJobYarnCurrentAppAttempt()

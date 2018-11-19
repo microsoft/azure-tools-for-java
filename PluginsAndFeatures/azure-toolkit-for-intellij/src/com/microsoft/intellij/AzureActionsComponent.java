@@ -154,8 +154,7 @@ public abstract class AzureActionsComponent implements ApplicationComponent, Plu
     private void loadWebApps() {
         System.out.println("AzurePlugin@loadWebApps");
         Runnable forceCleanWebAppsAction = () -> {
-            AzureWebAppMvpModel.getInstance().cleanWebAppsOnLinux();
-            AzureWebAppMvpModel.getInstance().cleanWebAppsOnWindows();
+            AzureWebAppMvpModel.getInstance().clearWebAppsCache();
         };
 
         AuthMethodManager.getInstance().addSignOutEventListener(forceCleanWebAppsAction);

@@ -49,12 +49,4 @@ public class RemoteDebugConfigurationFactory extends ConfigurationFactoryEx {
                 new RunConfigurationModule(project),
                 NAME);
     }
-
-    @Override
-    public void onNewConfigurationCreated(@org.jetbrains.annotations.NotNull RunConfiguration configuration) {
-        RemoteDebugRunConfiguration sparkRemoteDebugConfiguration = (RemoteDebugRunConfiguration) configuration;
-        sparkRemoteDebugConfiguration.setAsNew();
-
-        super.onNewConfigurationCreated(configuration);
-    }
 }

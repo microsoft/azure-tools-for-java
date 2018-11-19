@@ -8,10 +8,11 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.3.4"
+    id "org.jetbrains.intellij" version "0.3.12"
     id "org.jetbrains.kotlin.jvm" version "1.2.50"
 }
 
+import org.apache.tools.ant.filters.*
 processResources {
     filesMatching('**/ApplicationInsights.xml') {
         filter(ReplaceTokens, tokens: ["applicationinsights.key": project.property("applicationinsights.key")])
@@ -27,22 +28,25 @@ dependencies {
     compile fileTree(dir: '../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies', include: ['applicationinsights-management-1.0.3.jar'])
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
     compile 'commons-io:commons-io:2.5'
-    compile 'com.microsoft.azure:azure-client-runtime:1.6.0', { force = true }
-    compile 'com.microsoft.azure:azure-client-authentication:1.6.0', { force = true }
+    compile 'net.minidev:json-smart:2.3'
+    compile 'com.microsoft.azure:azure-client-runtime:1.6.2', { force = true }
+    compile 'com.microsoft.azure:azure-client-authentication:1.6.2', { force = true }
     compile 'com.microsoft.azure:adal4j:1.6.0', { force = true }
-    compile 'com.microsoft.azuretools:azuretools-core:3.12.0', {
+    
+    compile 'com.microsoft.azuretools:azuretools-core:3.14.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.12.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.14.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
     }
     compile 'com.microsoft.azuretools:spark-tools:0.1.0'
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.12.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.14.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
     }
+    
     compile 'com.spotify:docker-client:8.11.7'
     compile 'com.fasterxml.jackson.module:jackson-module-kotlin:2.9.4'
 }
@@ -68,14 +72,16 @@ allprojects {
     }
 
     compileJava {
-        sourceCompatibility = javaVersion
-        targetCompatibility = javaVersion
+    	sourceCompatibility = javaVersion
+    	targetCompatibility = javaVersion
     }
 
     compileKotlin {
-        kotlinOptions {
-            jvmTarget = javaVersion
-        }
+    	kotlinOptions.jvmTarget = javaVersion
+    }
+
+    compileTestKotlin {
+    	kotlinOptions.jvmTarget = javaVersion
     }
 
     tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
