@@ -26,6 +26,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.ResourceGroups;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.adauth.IWebUi;
 import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -298,6 +299,11 @@ public class Program {
 
         @Override
         public IWebUi getWebUi() {
+            return null;
+        }
+
+        @Override
+        public IDeviceLoginUI getDeviceLoginUI() {
             return null;
         }
 
