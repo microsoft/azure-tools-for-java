@@ -37,7 +37,6 @@ import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail;
-import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
@@ -49,8 +48,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.ApplicationMasterLogs;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
-import com.microsoft.azure.hdinsight.sdk.storage.adls.WebHDFSUtils;
-import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParam;
+import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParams;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivyBatchesInformation;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivySession;
@@ -94,13 +92,13 @@ import rx.Observer;
 import rx.*;
 import rx.schedulers.Schedulers;
 
-import javax.xml.bind.DatatypeConverter;
 import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.UnknownServiceException;
 import java.util.*;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
@@ -696,9 +694,9 @@ public class JobUtils {
             String webHdfsUploadPath = destinationRootPath.concat(file.getName());
             String redirectUri = null;
 
-            List<NameValuePair> params = new ArrayList<>();
-            params.add(WebHdfsParam.CREATE);
-            params.add(WebHdfsParam.OVERWRITE);
+           List<NameValuePair> params = new WebHdfsParams("create")
+                   .setOverwrite("true")
+                   .build();
 
             URIBuilder uriBuilder = new URIBuilder(webHdfsUploadPath);
             uriBuilder.addParameters(params);
@@ -715,6 +713,10 @@ public class JobUtils {
                 redirectUri = response
                         .getFirstHeader("Location")
                         .getValue();
+
+                if(redirectUri == null || redirectUri.isEmpty()){
+                    throw new UnknownServiceException("can not get valid redirect uri using webhdfs");
+                }
             }
 
             InputStreamEntity reqEntity = new InputStreamEntity(
@@ -733,8 +735,8 @@ public class JobUtils {
 
             // execute put request
             try (CloseableHttpResponse putResp = httpclient.execute(req)) {
-                params.clear();
-                params.add(WebHdfsParam.OPEN);
+                params = new WebHdfsParams("open")
+                        .build();
                 uriBuilder = new URIBuilder(webHdfsUploadPath);
                 uriBuilder.addParameters(params);
 

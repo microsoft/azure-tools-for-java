@@ -67,7 +67,7 @@ import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
 
 public class SparkBatchJob implements ISparkBatchJob, ILogger {
-    public static final String WebHDFSPathPattern = "^((http|https)://)(.*)(/webhdfs/v1){1}/(.*)";
+    public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
     public static final String AdlsPathPattern = "adl://([^/.]+\\.)+[^/.]+(/[^/.]+)*/?$";
 
     @Nullable

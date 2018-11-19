@@ -22,19 +22,25 @@
 package com.microsoft.azure.hdinsight.sdk.storage.webhdfs;
 
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import java.util.ArrayList;
+import java.util.List;
 
-public class WebHdfsParam extends BasicNameValuePair {
-    private WebHdfsParam(@NotNull String value) {
-        this("op", value);
+public class WebHdfsParams {
+    private List<NameValuePair> params = new ArrayList<>();
+    public WebHdfsParams(@NotNull String value) {
+        params.add(new BasicNameValuePair("op", value));
     }
 
-    private WebHdfsParam(@NotNull String name,@NotNull String value){
-        super(name,value);
+    public WebHdfsParams setOverwrite(@NotNull String value)
+    {
+        params.add(new BasicNameValuePair("overwrite",value));
+        return this;
     }
 
-    public static final WebHdfsParam CREATE = new WebHdfsParam("CREATE");
-    public static final WebHdfsParam OPEN = new WebHdfsParam("OPEN");
-    public static final WebHdfsParam OVERWRITE = new WebHdfsParam("overwrite","true");
+    public  List<NameValuePair> build(){
+        return params;
+    }
 }
 

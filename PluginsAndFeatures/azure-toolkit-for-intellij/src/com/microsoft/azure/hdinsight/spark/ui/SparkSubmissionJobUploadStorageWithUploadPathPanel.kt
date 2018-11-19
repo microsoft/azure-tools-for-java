@@ -180,12 +180,4 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
         }
         return -1
     }
-
-    private fun getAuthName(clusterName:String?):String{
-        val clusterDetail = ClusterManagerEx
-                .getInstance()
-                .getClusterDetailByName(clusterName)
-
-        return if(!clusterDetail.isPresent() || clusterName.isNullOrEmpty()) "No Account" else clusterDetail.get().httpUserName
-    }
 }

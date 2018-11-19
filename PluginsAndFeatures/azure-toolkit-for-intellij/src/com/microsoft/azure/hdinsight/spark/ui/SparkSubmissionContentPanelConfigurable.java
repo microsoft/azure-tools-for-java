@@ -37,7 +37,6 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.metadata.ClusterMetaDataService;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;

@@ -77,7 +77,8 @@ public class SparkBatchSubmission {
     public CloseableHttpClient getHttpClient() throws IOException {
         return HttpClients.custom()
                  .useSystemProperties()
-                 .setDefaultCredentialsProvider(credentialsProvider).build();
+                 .setDefaultCredentialsProvider(credentialsProvider)
+                 .build();
     }
 
     /**
