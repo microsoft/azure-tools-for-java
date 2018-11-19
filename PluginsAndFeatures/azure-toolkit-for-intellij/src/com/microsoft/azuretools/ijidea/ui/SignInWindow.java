@@ -188,7 +188,7 @@ public class SignInWindow extends AzureDialogWrapper {
         try {
             final DCAuthManager dcAuthManager = DCAuthManager.getInstance();
             if (dcAuthManager.isSignedIn()) {
-                doSingOut();
+                doSignOut();
             }
             deviceLoginAsync(dcAuthManager);
             accountEmail = dcAuthManager.getAccountEmail();
@@ -219,7 +219,7 @@ public class SignInWindow extends AzureDialogWrapper {
         try {
             AdAuthManager adAuthManager = AdAuthManager.getInstance();
             if (adAuthManager.isSignedIn()) {
-                doSingOut();
+                doSignOut();
             }
             signInAsync();
             accountEmail = adAuthManager.getAccountEmail();
@@ -254,13 +254,12 @@ public class SignInWindow extends AzureDialogWrapper {
         );
     }
 
-    private void doSingOut() {
+    private void doSignOut() {
         try {
             accountEmail = null;
             AdAuthManager.getInstance().signOut();
         } catch (Exception ex) {
             ex.printStackTrace();
-            //LOGGER.error("doSingOut", ex);
             ErrorWindow.show(project, ex.getMessage(), "Sign Out Error");
         }
     }
@@ -387,7 +386,7 @@ public class SignInWindow extends AzureDialogWrapper {
                 JOptionPane.showMessageDialog(
                     contentPane,
                     "Select authentication file",
-                    "Sing in dialog info",
+                    "Sign in dialog info",
                     JOptionPane.INFORMATION_MESSAGE);
                 return;
             }

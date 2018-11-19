@@ -39,12 +39,7 @@ public class DeviceLoginUI implements IDeviceLoginUI {
     public AuthenticationResult authenticate(@NotNull final AuthenticationContext ctx,
                                              @NotNull final DeviceCode deviceCode,
                                              final AuthenticationCallback<AuthenticationResult> callback) {
-
-        if (ApplicationManager.getApplication().isDispatchThread()) {
-            buildAndShow(ctx, deviceCode, callback);
-        } else {
-            ApplicationManager.getApplication().invokeAndWait(() -> buildAndShow(ctx, deviceCode, callback));
-        }
+        ApplicationManager.getApplication().invokeAndWait(() -> buildAndShow(ctx, deviceCode, callback));
         return deviceLoginWindow.getAuthenticationResult();
     }
 
