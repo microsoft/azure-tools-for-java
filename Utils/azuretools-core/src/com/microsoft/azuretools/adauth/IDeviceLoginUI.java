@@ -26,8 +26,10 @@ import com.microsoft.aad.adal4j.AuthenticationCallback;
 import com.microsoft.aad.adal4j.AuthenticationContext;
 import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.aad.adal4j.DeviceCode;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 public interface IDeviceLoginUI {
+    @Nullable
     AuthenticationResult authenticate(final AuthenticationContext ctx, final DeviceCode deviceCode,
                                       final AuthenticationCallback<AuthenticationResult> callback);
 }

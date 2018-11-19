@@ -141,7 +141,9 @@ public class SignInWindow extends AzureDialogWrapper {
 
         Font labelFont = UIManager.getFont("Label.font");
 
-        deviceLoginRadioButton.setSelected(true);
+        deviceLoginRadioButton.setVisible(CommonSettings.getDeviceLoginEnabled());
+        deviceLoginCommentLabel.setVisible(CommonSettings.getDeviceLoginEnabled());
+        interactiveRadioButton.setSelected(true);
         refreshAuthControlElements();
 
         init();
@@ -379,20 +381,21 @@ public class SignInWindow extends AzureDialogWrapper {
             authMethodDetailsResult.setAuthMethod(AuthMethod.AD);
             authMethodDetailsResult.setAccountEmail(accountEmail);
             authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
-        } else if (automatedRadioButton.isSelected()){ // automated
+        } else if (automatedRadioButton.isSelected()) { // automated
             String authPath = authFileTextField.getText();
             if (StringUtils.isNullOrWhiteSpace(authPath)) {
-                JOptionPane.showMessageDialog(contentPane,
-                        "Select authentication file",
-                        "Sing in dialog info",
-                        JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(
+                    contentPane,
+                    "Select authentication file",
+                    "Sing in dialog info",
+                    JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
 
             authMethodDetailsResult.setAuthMethod(AuthMethod.SP);
             // TODO: check field is empty, check file is valid
             authMethodDetailsResult.setCredFilePath(authPath);
-        } else if (deviceLoginRadioButton.isSelected()){
+        } else if (deviceLoginRadioButton.isSelected()) {
             doDeviceLogin();
             if (StringUtils.isNullOrEmpty(accountEmail)) {
                 System.out.println("Canceled by the user.");
