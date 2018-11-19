@@ -23,36 +23,38 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
-import java.util.Collection;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.microsoft.rest.ExpandableStringEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Defines values for SparkNodeType.
+ * Full definition of the spark batch job entity.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class SparkNodeType extends ExpandableStringEnum<SparkNodeType> {
-    /** Static value SparkMaster for SparkNodeType. */
-    public static final SparkNodeType SPARK_MASTER = fromString("SparkMaster");
-
-    /** Static value SparkWorker for SparkNodeType. */
-    public static final SparkNodeType SPARK_WORKER = fromString("SparkWorker");
+public class SparkBatchJob extends AnalyticsJob {
+    /**
+     * Properties specific to a serverless spark job.
+     */
+    @JsonProperty(value = "properties")
+    private SparkBatchJobProperties properties;
 
     /**
-     * Creates or finds a SparkNodeType from its string representation.
-     * @param name a name to look for
-     * @return the corresponding SparkNodeType
+     * Get properties specific to a serverless spark job.
+     *
+     * @return the properties value
      */
-    @JsonCreator
-    public static SparkNodeType fromString(String name) {
-        return fromString(name, SparkNodeType.class);
+    public SparkBatchJobProperties properties() {
+        return this.properties;
     }
 
     /**
-     * @return known SparkNodeType values
+     * Set properties specific to a serverless spark job.
+     *
+     * @param properties the properties value to set
+     * @return the SparkBatchJob object itself.
      */
-    public static Collection<SparkNodeType> values() {
-        return values(SparkNodeType.class);
+    public SparkBatchJob withProperties(SparkBatchJobProperties properties) {
+        this.properties = properties;
+        return this;
     }
+
 }

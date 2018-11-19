@@ -23,36 +23,53 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
-import java.util.Collection;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.microsoft.rest.ExpandableStringEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Defines values for SparkNodeType.
+ * Spark Batch job information.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class SparkNodeType extends ExpandableStringEnum<SparkNodeType> {
-    /** Static value SparkMaster for SparkNodeType. */
-    public static final SparkNodeType SPARK_MASTER = fromString("SparkMaster");
-
-    /** Static value SparkWorker for SparkNodeType. */
-    public static final SparkNodeType SPARK_WORKER = fromString("SparkWorker");
+public class SparkBatchJobProperties {
+    /**
+     * Livy like response payload for the spark serverless job.
+     */
+    @JsonProperty(value = "responsePayload")
+    private SparkBatchJobResponsePayload responsePayload;
 
     /**
-     * Creates or finds a SparkNodeType from its string representation.
-     * @param name a name to look for
-     * @return the corresponding SparkNodeType
+     * Spark Master UI Url. Only available when the job is running.
      */
-    @JsonCreator
-    public static SparkNodeType fromString(String name) {
-        return fromString(name, SparkNodeType.class);
+    @JsonProperty(value = "sparkMasterUI", access = JsonProperty.Access.WRITE_ONLY)
+    private String sparkMasterUI;
+
+    /**
+     * Get livy like response payload for the spark serverless job.
+     *
+     * @return the responsePayload value
+     */
+    public SparkBatchJobResponsePayload responsePayload() {
+        return this.responsePayload;
     }
 
     /**
-     * @return known SparkNodeType values
+     * Set livy like response payload for the spark serverless job.
+     *
+     * @param responsePayload the responsePayload value to set
+     * @return the SparkBatchJobProperties object itself.
      */
-    public static Collection<SparkNodeType> values() {
-        return values(SparkNodeType.class);
+    public SparkBatchJobProperties withResponsePayload(SparkBatchJobResponsePayload responsePayload) {
+        this.responsePayload = responsePayload;
+        return this;
     }
+
+    /**
+     * Get spark Master UI Url. Only available when the job is running.
+     *
+     * @return the sparkMasterUI value
+     */
+    public String sparkMasterUI() {
+        return this.sparkMasterUI;
+    }
+
 }

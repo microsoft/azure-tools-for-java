@@ -23,36 +23,43 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
-import java.util.Collection;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.microsoft.rest.ExpandableStringEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Defines values for SparkNodeType.
+ * Base analytics job.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class SparkNodeType extends ExpandableStringEnum<SparkNodeType> {
-    /** Static value SparkMaster for SparkNodeType. */
-    public static final SparkNodeType SPARK_MASTER = fromString("SparkMaster");
-
-    /** Static value SparkWorker for SparkNodeType. */
-    public static final SparkNodeType SPARK_WORKER = fromString("SparkWorker");
+public class AnalyticsJob extends AnalyticsActivity {
+    /**
+     * The priority value to use for the current job. Lower numbers have a higher priority. By default, a job has a
+     * priority of 1000. This must be greater than 0.
+     */
+    @JsonProperty(value = "priority", access = JsonProperty.Access.WRITE_ONLY)
+    private Integer priority;
 
     /**
-     * Creates or finds a SparkNodeType from its string representation.
-     * @param name a name to look for
-     * @return the corresponding SparkNodeType
+     * the recurring batch job relationship information properties.
      */
-    @JsonCreator
-    public static SparkNodeType fromString(String name) {
-        return fromString(name, SparkNodeType.class);
+    @JsonProperty(value = "related", access = JsonProperty.Access.WRITE_ONLY)
+    private JobRelationshipProperties related;
+
+    /**
+     * Get the priority value to use for the current job. Lower numbers have a higher priority. By default, a job has a priority of 1000. This must be greater than 0.
+     *
+     * @return the priority value
+     */
+    public Integer priority() {
+        return this.priority;
     }
 
     /**
-     * @return known SparkNodeType values
+     * Get the recurring batch job relationship information properties.
+     *
+     * @return the related value
      */
-    public static Collection<SparkNodeType> values() {
-        return values(SparkNodeType.class);
+    public JobRelationshipProperties related() {
+        return this.related;
     }
+
 }

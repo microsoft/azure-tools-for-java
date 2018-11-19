@@ -544,7 +544,6 @@ public class AzureSparkServerlessCluster extends SparkCluster
         UpdateSparkResourcePool patchBody = new UpdateSparkResourcePool();
 
         return patchBody
-                .withName(getName())
                 .withProperties(new UpdateSparkResourcePoolParameters()
                         .withSparkResourceCollection(Arrays.asList(
                                 new UpdateSparkResourcePoolItemParameters()
@@ -618,18 +617,6 @@ public class AzureSparkServerlessCluster extends SparkCluster
 
         SparkResourcePoolProperties respProp = resourcePoolResp.properties();
         if (respProp != null) {
-            if (respProp.resourcePoolVersion() != null) {
-                this.resourcePoolVersion = respProp.resourcePoolVersion();
-            }
-
-            if (respProp.sparkVersion() != null) {
-                this.sparkVersion = respProp.sparkVersion();
-            }
-
-            if (StringUtils.isNotBlank(respProp.sparkEventsDirectoryPath())) {
-                this.sparkEventsPath = respProp.sparkEventsDirectoryPath();
-            }
-
             if (respProp.sparkResourceCollection() != null) {
                 this.master = mapToSparkResource(respProp, SparkNodeType.SPARK_MASTER);
                 this.worker = mapToSparkResource(respProp, SparkNodeType.SPARK_WORKER);
@@ -638,10 +625,10 @@ public class AzureSparkServerlessCluster extends SparkCluster
             }
 
             if (respProp.sparkUriCollection() != null) {
-                this.livyUri = URI.create(respProp.sparkUriCollection().livyServerUrl());
-                this.livyUiUri = URI.create(respProp.sparkUriCollection().livyUiUrl());
-                this.sparkMasterUiUri = URI.create(respProp.sparkUriCollection().sparkMasterWebUiUrl());
-                this.sparkHistoryUiUri = URI.create(respProp.sparkUriCollection().sparkHistoryWebUiUrl());
+                this.livyUri = URI.create(respProp.sparkUriCollection().livyAPI());
+                this.livyUiUri = URI.create(respProp.sparkUriCollection().livyUI());
+                this.sparkMasterUiUri = URI.create(respProp.sparkUriCollection().sparkMasterUI());
+                this.sparkHistoryUiUri = URI.create(respProp.sparkUriCollection().sparkHistoryUI());
             }
 
 

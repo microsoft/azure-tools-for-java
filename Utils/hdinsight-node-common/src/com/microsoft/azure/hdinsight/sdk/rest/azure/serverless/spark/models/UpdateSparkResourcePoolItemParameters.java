@@ -23,11 +23,13 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Data Lake Analytics Spark Resource Pool update request parameters.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UpdateSparkResourcePoolItemParameters {
     /**
      * Label for spark worker / master. Possible values include: 'SparkMaster', 'SparkWorker'.
@@ -42,7 +44,7 @@ public class UpdateSparkResourcePoolItemParameters {
     private Integer targetInstanceCount;
 
     /**
-     * Get the name value.
+     * Get label for spark worker / master. Possible values include: 'SparkMaster', 'SparkWorker'.
      *
      * @return the name value
      */
@@ -51,7 +53,7 @@ public class UpdateSparkResourcePoolItemParameters {
     }
 
     /**
-     * Set the name value.
+     * Set label for spark worker / master. Possible values include: 'SparkMaster', 'SparkWorker'.
      *
      * @param name the name value to set
      * @return the UpdateSparkResourcePoolItemParameters object itself.
@@ -62,7 +64,7 @@ public class UpdateSparkResourcePoolItemParameters {
     }
 
     /**
-     * Get the targetInstanceCount value.
+     * Get number of instances of spark worker.
      *
      * @return the targetInstanceCount value
      */
@@ -71,7 +73,7 @@ public class UpdateSparkResourcePoolItemParameters {
     }
 
     /**
-     * Set the targetInstanceCount value.
+     * Set number of instances of spark worker.
      *
      * @param targetInstanceCount the targetInstanceCount value to set
      * @return the UpdateSparkResourcePoolItemParameters object itself.
