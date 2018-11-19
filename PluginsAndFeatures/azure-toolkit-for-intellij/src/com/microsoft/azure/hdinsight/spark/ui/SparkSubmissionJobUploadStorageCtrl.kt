@@ -36,6 +36,7 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServe
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
@@ -129,6 +130,13 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
         view.storagePanel.adlsCard.adlsRootPathField.addFocusListener( object : FocusAdapter() {
             override fun focusLost(e: FocusEvent?) {
                 view.storageCheckSubject.onNext(StorageCheckPathFocusLostEvent("ADLS"))
+            }
+        })
+
+        // validate storage info when webhdfs root path field lost
+        view.storagePanel.webHdfsCard.webHdfsRootPathField.addFocusListener( object : FocusAdapter() {
+            override fun focusLost(e: FocusEvent?) {
+                view.storageCheckSubject.onNext("WEBHDFS root path focus lost")
             }
         })
     }
@@ -229,7 +237,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                         } else {
                             // basic validation for ADLS root path
                             // pattern for adl root path. e.g. adl://john.azuredatalakestore.net/root/path/
-                            if (adlsRootPath != null && !"adl://([^/.]+\\.)+[^/.]+(/[^/.]+)*/?$".toRegex().matches(adlsRootPath!!)) {
+                            if (adlsRootPath != null && !SparkBatchJob.AdlsPathPattern.toRegex().matches(adlsRootPath!!)) {
                                 uploadPath = "-"
                                 errorMsg = "ADLS Root Path is invalid"
                             } else {
@@ -237,6 +245,25 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                                 uploadPath = "${formatAdlsRootPath}SparkSubmission/"
                                 errorMsg = null
                             }
+                        }
+                    }
+                    SparkSubmitStorageType.WEBHDFS -> it.apply{
+                        //pattern for webhdfs root path.e.g http://host/webhdfs/v1/
+                        if(webHdfsRootPath != null && !SparkBatchJob.WebHDFSPathPattern.toRegex().matches(webHdfsRootPath!!)){
+                            uploadPath = "-"
+                            errorMsg = "Webhdfs root path is not valid"
+                        }else{
+                            val formatWebHdfsRootPath = if (webHdfsRootPath?.endsWith("/") == true) webHdfsRootPath else "$webHdfsRootPath/"
+                            uploadPath = "${webHdfsRootPath}SparkSubmission/"
+
+                            try {
+                                val clusterDetail = getClusterDetail()
+                                webHdfsAuthUser = clusterDetail?.httpUserName
+                            } catch (ex: Exception) {
+                                webHdfsAuthUser = SparkSubmissionJobUploadWebHdfsSignOutCard.defaultAuthUser
+                            }
+
+                            errorMsg = null
                         }
                     }
                 }
