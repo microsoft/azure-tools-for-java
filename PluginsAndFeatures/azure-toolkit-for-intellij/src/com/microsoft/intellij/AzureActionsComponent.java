@@ -134,6 +134,7 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
                 Files.createDirectory(dirPath);
             }
             CommonSettings.setUpEnvironment(dirPath.toString());
+            CommonSettings.initDeviceLoginEnabled();
             initLoggerFileHandler();
         } catch (IOException ex) {
             LOG.error("initAuthManage()", ex);
