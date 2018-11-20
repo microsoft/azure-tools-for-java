@@ -27,7 +27,7 @@ import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
 
-class CosmosSparkConfigurationFactory (type: ConfigurationType) :
+open class CosmosSparkConfigurationFactory (type: ConfigurationType) :
         ConfigurationFactoryEx<CosmosSparkRunConfiguration>(type) {
     companion object {
         @JvmStatic val NAME = "Azure Data Lake Spark"

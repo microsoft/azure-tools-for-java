@@ -70,10 +70,10 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
     @Nullable
     private BehaviorSubject<String> clustersRefreshSub;
 
-    public SparkSubmissionContentPanelConfigurable(@NotNull Project project) {
+    public SparkSubmissionContentPanelConfigurable(@NotNull Project project, boolean withInit) {
         this.myProject = project;
 
-        registerCtrlListeners();
+        if(withInit) registerCtrlListeners();
 
         this.jobUploadStorageCtrl = new SparkSubmissionJobUploadStorageCtrl(getStorageWithUploadPathPanel()) {
             @Nullable
@@ -93,6 +93,10 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
             }
         };
         this.clustersRefreshSub = BehaviorSubject.create();
+    }
+
+    public SparkSubmissionContentPanelConfigurable(@NotNull Project project) {
+        this(project, true);
     }
 
     public SparkSubmissionJobUploadStorageWithUploadPathPanel getStorageWithUploadPathPanel() {
@@ -360,7 +364,7 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
     public void validate() throws ConfigurationException {
         getSubmissionPanel().checkInputs();
 
-        if (!jobUploadStorageCtrl.isCheckPassed()) {
+        if (submissionPanel.isStorageWithUploadPathPanelEnabled() && !jobUploadStorageCtrl.isCheckPassed()) {
             throw new RuntimeConfigurationError("Can't save the configuration since "
                     + jobUploadStorageCtrl.getResultMessage().toLowerCase());
         }

@@ -61,12 +61,19 @@ import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-open class SparkSubmissionContentPanel : JPanel() {
+open class SparkSubmissionContentPanel : JPanel {
     companion object {
         const val REFRESH_BUTTON_PATH = "/icons/refresh.png"
     }
 
-    private enum class ErrorMessage {
+    // We delay some initialization to subclass constructor
+    constructor(isInit: Boolean) : super() {
+        if (isInit) initialization()
+    }
+
+    constructor() : this(true)
+
+    protected enum class ErrorMessage {
         ClusterName,
         SystemArtifact,
         LocalArtifact,
@@ -90,7 +97,7 @@ open class SparkSubmissionContentPanel : JPanel() {
 
     private val errorMessageLabels = arrayOf(
             JLabel(if (isSignedIn) "Cluster Name Should not be null, please choose one for submission"
-                   else "Can't list cluster, please login within Azure Explorer (View -> Tool Windows -> Azure Explorer) and refresh")
+            else "Can't list cluster, please login within Azure Explorer (View -> Tool Windows -> Azure Explorer) and refresh")
                     .apply { foreground = currentErrorColor },
             JLabel("Artifact should not be null!")
                     .apply { foreground = currentErrorColor },
@@ -114,7 +121,7 @@ open class SparkSubmissionContentPanel : JPanel() {
 
         button.toolTipText = "Refresh"
         comboBox.toolTipText = clustersSelectionPrompt.toolTipText
-        comboBox.setRenderer(object: ListCellRendererWrapper<IClusterDetail>() {
+        comboBox.setRenderer(object : ListCellRendererWrapper<IClusterDetail>() {
             override fun customize(list: JList<*>?, cluster: IClusterDetail?, index: Int, selected: Boolean, hasFocus: Boolean) =
                     setText(cluster?.title)
         })
@@ -124,14 +131,14 @@ open class SparkSubmissionContentPanel : JPanel() {
         }
     }
 
-    private val artifactSelectLabel: JLabel = JLabel("Select an Artifact to submit").apply {
+    protected val artifactSelectLabel: JLabel = JLabel("Select an Artifact to submit").apply {
         toolTipText = "The Artifact you want to use"
     }
 
     val selectedArtifactComboBox: ComboBox<Artifact> = ComboBox<Artifact>().apply {
         toolTipText = artifactSelectLabel.toolTipText
 
-        setRenderer(object: ListCellRendererWrapper<Artifact>() {
+        setRenderer(object : ListCellRendererWrapper<Artifact>() {
             override fun customize(list: JList<*>?, artifact: Artifact?, index: Int, selected: Boolean, hasFocus: Boolean) =
                     setText(artifact?.name)
         })
@@ -204,7 +211,7 @@ open class SparkSubmissionContentPanel : JPanel() {
         minimumSize = jobConfigurationTable.preferredScrollableViewportSize
     }
 
-    private val commandLineArgsPrompt: JLabel = JLabel("Command line arguments").apply {
+    protected val commandLineArgsPrompt: JLabel = JLabel("Command line arguments").apply {
         toolTipText = "Command line arguments used in your main class; multiple arguments should be split by space."
     }
 
@@ -212,7 +219,7 @@ open class SparkSubmissionContentPanel : JPanel() {
         toolTipText = commandLineArgsPrompt.toolTipText
     }
 
-    private val refJarsPrompt: JLabel = JLabel("Referenced Jars(spark.jars)").apply {
+    protected val refJarsPrompt: JLabel = JLabel("Referenced Jars(spark.jars)").apply {
         toolTipText = "Files to be placed on the java classpath; The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;)"
     }
 
@@ -220,7 +227,7 @@ open class SparkSubmissionContentPanel : JPanel() {
         toolTipText = refJarsPrompt.toolTipText
     }
 
-    private val refFilesPrompt: JLabel = JLabel("Referenced Files(spark.files)").apply {
+    protected val refFilesPrompt: JLabel = JLabel("Referenced Files(spark.files)").apply {
         toolTipText = "Files to be placed in executor working directory. The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;) "
     }
 
@@ -228,8 +235,10 @@ open class SparkSubmissionContentPanel : JPanel() {
         toolTipText = refFilesPrompt.toolTipText
     }
 
-    val storageWithUploadPathPanel: SparkSubmissionJobUploadStorageWithUploadPathPanel =
-        SparkSubmissionJobUploadStorageWithUploadPathPanel()
+    var isStorageWithUploadPathPanelEnabled: Boolean = true
+
+    var storageWithUploadPathPanel: SparkSubmissionJobUploadStorageWithUploadPathPanel? =
+            SparkSubmissionJobUploadStorageWithUploadPathPanel()
 
     val clusterSelectedSubject: BehaviorSubject<String> = BehaviorSubject.create<String>()
 
@@ -241,16 +250,16 @@ open class SparkSubmissionContentPanel : JPanel() {
 
     private val errorMessages: List<String>
         get() = errorMessageLabels.filter { it.isVisible && it.foreground == currentErrorColor }
-                                  .map { it.text }
+                .map { it.text }
 
     @Suppress("UNCHECKED_CAST")
-    var clustersModel: ImmutableComboBoxModel<IClusterDetail>
+    open var clustersModel: ImmutableComboBoxModel<IClusterDetail>
         get() = clustersListComboBox.comboBox.model as ImmutableComboBoxModel<IClusterDetail>
         set(model) {
             clustersListComboBox.comboBox.model = model as ComboBoxModel<Any>
         }
 
-    init {
+    private fun createFormBuilder(): JPanel {
         val formBuilder = panel {
             columnTemplate {
                 col {
@@ -263,24 +272,35 @@ open class SparkSubmissionContentPanel : JPanel() {
                     fill = FILL_HORIZONTAL
                 }
             }
-            row { c(clustersSelectionPrompt);             c(clustersListComboBox) }
-            row { c();                                    c(errorMessageLabels[ErrorMessage.ClusterName.ordinal]) { fill = FILL_NONE } }
-            row { c(artifactSelectLabel) }
-            row {   c(ideaArtifactPrompt) { indent = 1 }; c(selectedArtifactComboBox) }
-            row {   c();                                  c(errorMessageLabels[ErrorMessage.SystemArtifact.ordinal]) { fill = FILL_NONE } }
-            row {   c(localArtifactPrompt){ indent = 1 }; c(localArtifactTextField) }
-            row {   c();                                  c(errorMessageLabels[ErrorMessage.LocalArtifact.ordinal]) { fill = FILL_NONE }}
-            row { c(mainClassPrompt);                     c(mainClassTextField) }
-            row { c();                                    c(errorMessageLabels[ErrorMessage.MainClass.ordinal]) }
-            row { c(jobConfigPrompt);                     c(jobConfTablScrollPane) }
-            row { c();                                    c(errorMessageLabels[ErrorMessage.JobConfiguration.ordinal]) }
-            row { c(commandLineArgsPrompt);               c(commandLineTextField) }
-            row { c(refJarsPrompt);                       c(referencedJarsTextField) }
-            row { c(refFilesPrompt);                      c(referencedFilesTextField) }
-            row { c(storageWithUploadPathPanel) { colSpan = 2; fill = FILL_HORIZONTAL }; }
-        }
 
-        this.add(formBuilder.buildPanel())
+            row { c(clustersSelectionPrompt); c(clustersListComboBox) }
+            row { c(); c(errorMessageLabels[ErrorMessage.ClusterName.ordinal]) { fill = FILL_NONE } }
+            row { c(artifactSelectLabel) }
+            row { c(ideaArtifactPrompt) { indent = 1 }; c(selectedArtifactComboBox) }
+            row { c(); c(errorMessageLabels[ErrorMessage.SystemArtifact.ordinal]) { fill = FILL_NONE } }
+            row { c(localArtifactPrompt) { indent = 1 }; c(localArtifactTextField) }
+            row { c(); c(errorMessageLabels[ErrorMessage.LocalArtifact.ordinal]) { fill = FILL_NONE } }
+            row { c(mainClassPrompt); c(mainClassTextField) }
+            row { c(); c(errorMessageLabels[ErrorMessage.MainClass.ordinal]) }
+            row { c(jobConfigPrompt); c(jobConfTablScrollPane) }
+            row { c(); c(errorMessageLabels[ErrorMessage.JobConfiguration.ordinal]) }
+            row { c(commandLineArgsPrompt); c(commandLineTextField) }
+            row { c(refJarsPrompt); c(referencedJarsTextField) }
+            row { c(refFilesPrompt); c(referencedFilesTextField) }
+
+            if (isStorageWithUploadPathPanelEnabled) {
+                row { c(storageWithUploadPathPanel) { colSpan = 2; fill = FILL_HORIZONTAL }; }
+            }
+        }
+        return formBuilder.buildPanel()
+    }
+
+    protected val sparkSubmissionPanel: JPanel by lazy {
+        createFormBuilder()
+    }
+
+    open fun initialization(): SparkSubmissionContentPanel {
+        this.add(sparkSubmissionPanel)
         this.addContainerListener(object : ContainerAdapter() {
             override fun componentRemoved(e: ContainerEvent) {
                 cleanUp()
@@ -288,6 +308,8 @@ open class SparkSubmissionContentPanel : JPanel() {
                 super.componentRemoved(e)
             }
         })
+
+        return this
     }
 
     fun setClustersListRefreshEnabled(enabled: Boolean) = clustersListComboBox.setButtonEnabled(enabled)
@@ -387,7 +409,7 @@ open class SparkSubmissionContentPanel : JPanel() {
         // Check for command arguments invisible chars
         if (commandLineTextField.text.containsInvisibleChars()) {
             throw ConfigurationException("Found invisible chars (not space) in Command line arguments(tagged with []): " +
-                                         commandLineTextField.text.tagInvisibleChars("[]"))
+                    commandLineTextField.text.tagInvisibleChars("[]"))
         }
     }
 }
