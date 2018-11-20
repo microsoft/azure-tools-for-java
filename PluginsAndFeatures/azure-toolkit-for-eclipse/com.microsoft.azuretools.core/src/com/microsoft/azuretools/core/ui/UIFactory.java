@@ -3,6 +3,7 @@ package com.microsoft.azuretools.core.ui;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
+import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.adauth.IWebUi;
 import com.microsoft.azuretools.authmanage.interact.INotification;
 import com.microsoft.azuretools.authmanage.interact.IUIFactory;
@@ -27,5 +28,11 @@ public class UIFactory implements IUIFactory {
     	Display display = Display.getDefault();
         Shell activeShell = display.getActiveShell();
         return new ProgressTaskModal(activeShell);
+    }
+
+    @Override
+    public IDeviceLoginUI getDeviceLoginUI() {
+        // unimplemented
+        return null;
     }
 }
