@@ -17,7 +17,7 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextField
 
-open class CosmosServerlessSparkSubmissionContentPanelConfigurable(project : Project) : SparkSubmissionContentPanelConfigurable(project, false) {
+open class CosmosServerlessSparkSubmissionContentPanelConfigurable(project : Project) : SparkSubmissionContentPanelConfigurable(project) {
     private val cosmosServerlessSubmissionPanel : JPanel by lazy {
         buildPanel()
     }
@@ -73,7 +73,7 @@ open class CosmosServerlessSparkSubmissionContentPanelConfigurable(project : Pro
     }
 
     private fun buildPanel() : JPanel {
-        submissionPanel.clustersSelectionPrompt.text = "ADL account"
+        this.submissionPanel.clustersSelectionPrompt.text = "ADL account"
         val formBuilder = panel {
             columnTemplate {
                 col {
