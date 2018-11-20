@@ -10,7 +10,7 @@ import java.util.stream.Stream
 
 class CosmosServerlessSparkSubmitModel(project: Project) : CosmosSparkSubmitModel(project) {
     private var submissionParameter : CreateSparkBatchJobParameters = CreateSparkBatchJobParameters()
-            .withSparkEventsDirectoryPath("spark-events")
+            .withSparkEventsDirectoryPath("sp1ark-events")
 
     @Attribute("sparkevents_directory")
     fun getSparkEventsDirectoryPath(): String {

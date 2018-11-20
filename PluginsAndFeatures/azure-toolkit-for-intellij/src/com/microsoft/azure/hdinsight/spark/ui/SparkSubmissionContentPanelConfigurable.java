@@ -63,18 +63,21 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
     @NotNull
     private final Project myProject;
 
-    private SparkSubmissionContentPanel submissionPanel = new SparkSubmissionContentPanel();
+    protected SparkSubmissionContentPanel submissionPanel;
     private SparkSubmissionJobUploadStorageCtrl jobUploadStorageCtrl;
 
     // Cluster refresh publish subject with preselected cluster name as event
     @Nullable
     private BehaviorSubject<String> clustersRefreshSub;
 
-    public SparkSubmissionContentPanelConfigurable(@NotNull Project project, boolean withInit) {
+    public SparkSubmissionContentPanelConfigurable(@NotNull Project project) {
+        this(project, true);
+    }
+
+    public SparkSubmissionContentPanelConfigurable(@NotNull Project project, boolean enableStoragePanel) {
         this.myProject = project;
-
-        if(withInit) registerCtrlListeners();
-
+        this.submissionPanel = new SparkSubmissionContentPanel(enableStoragePanel);
+        registerCtrlListeners();
         this.jobUploadStorageCtrl = new SparkSubmissionJobUploadStorageCtrl(getStorageWithUploadPathPanel()) {
             @Nullable
             @Override
@@ -93,10 +96,6 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
             }
         };
         this.clustersRefreshSub = BehaviorSubject.create();
-    }
-
-    public SparkSubmissionContentPanelConfigurable(@NotNull Project project) {
-        this(project, true);
     }
 
     public SparkSubmissionJobUploadStorageWithUploadPathPanel getStorageWithUploadPathPanel() {
@@ -364,7 +363,7 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
     public void validate() throws ConfigurationException {
         getSubmissionPanel().checkInputs();
 
-        if (submissionPanel.isStorageWithUploadPathPanelEnabled() && !jobUploadStorageCtrl.isCheckPassed()) {
+        if (submissionPanel.getEnableStoragePanel() && !jobUploadStorageCtrl.isCheckPassed()) {
             throw new RuntimeConfigurationError("Can't save the configuration since "
                     + jobUploadStorageCtrl.getResultMessage().toLowerCase());
         }

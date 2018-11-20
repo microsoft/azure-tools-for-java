@@ -23,7 +23,6 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.common.logger.ILogger
 
 class CosmosServerlessSparkSubmissionPanelConfigurable(project: Project)
     : CosmosServerlessSparkSubmissionContentPanelConfigurable(project) {

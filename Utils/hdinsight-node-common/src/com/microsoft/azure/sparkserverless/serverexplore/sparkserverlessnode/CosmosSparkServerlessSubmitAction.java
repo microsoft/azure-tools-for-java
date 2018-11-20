@@ -29,6 +29,7 @@ public class CosmosSparkServerlessSubmitAction extends NodeActionListener {
     }
 
     @Override
+    @NotNull
     protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
         provisionAction.onNext(Pair.of(adlAccount, adlAccountNode));
     }

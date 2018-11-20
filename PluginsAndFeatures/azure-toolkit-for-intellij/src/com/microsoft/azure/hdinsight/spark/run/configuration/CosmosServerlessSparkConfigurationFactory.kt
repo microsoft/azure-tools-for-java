@@ -12,13 +12,11 @@ open class CosmosServerlessSparkConfigurationFactory (type: ConfigurationType) :
         val NAME = "Cosmos Serverless Spark"
     }
 
-    override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return CosmosServerlessSparkConfiguration(
-                NAME,
-                CosmosServerlessSparkConfigurationModule(project),
-                this
-        )
-    }
+    override fun createTemplateConfiguration(project: Project): RunConfiguration = CosmosServerlessSparkConfiguration(
+            NAME,
+            CosmosServerlessSparkConfigurationModule(project),
+            this
+    )
 
     override fun getName(): String {
         return NAME
