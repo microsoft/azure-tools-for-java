@@ -32,7 +32,7 @@ import java.util.*;
 import static org.junit.Assert.assertEquals;
 
 public class SubmissionTableModelScenario {
-    SubmissionTableModel tableModel = new SubmissionTableModel(new String[] {"Key", "Value", ""});
+    SubmissionTableModel tableModel = new SubmissionTableModel();
 
     @Given("^create the SparkSubmissionTable with the following config$")
     public void createSparkSubmissionTable(Map<String, Object> tableConfig) {
@@ -44,6 +44,9 @@ public class SubmissionTableModelScenario {
     public void checkGetConfigMapByJSON(String jsonString) throws Throwable {
         Map<String, Object> target = new Gson().fromJson(jsonString, new TypeToken<Map<String, Object>>(){}.getType());
 
-        assertEquals(target, tableModel.getJobConfigMap());
+        SparkSubmissionParameter parameter = new SparkSubmissionParameter();
+        parameter.applyFlattedJobConf(tableModel.getJobConfigMap());
+
+        assertEquals(target, parameter.getJobConfig());
     }
 }

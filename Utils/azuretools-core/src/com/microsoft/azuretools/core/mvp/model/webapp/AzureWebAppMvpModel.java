@@ -47,6 +47,7 @@ import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.PublishingProfileFormat;
 import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
@@ -92,6 +93,33 @@ public class AzureWebAppMvpModel {
                 return createWebAppOnLinux(model);
             default:
                 throw new Exception("Invalid operating system setting: " + model.getOS());
+        }
+    }
+
+    /**
+     * API to create a new Deployment Slot by setting model.
+     */
+    public DeploymentSlot createDeploymentSlot(@NotNull WebAppSettingModel model) throws Exception {
+        final WebApp app = getWebAppById(model.getSubscriptionId(), model.getWebAppId());
+        final String name = model.getNewSlotName();
+        final String configurationSource = model.getNewSlotConfigurationSource();
+        final DeploymentSlot.DefinitionStages.Blank definedSlot = app.deploymentSlots().define(name);
+
+        if (configurationSource.equals(app.name())) {
+            return definedSlot.withConfigurationFromParent().create();
+        }
+
+        final DeploymentSlot configurationSourceSlot = app.deploymentSlots()
+            .list()
+            .stream()
+            .filter(s -> configurationSource.equals(s.name()))
+            .findAny()
+            .orElse(null);
+
+        if (configurationSourceSlot != null) {
+            return definedSlot.withConfigurationFromDeploymentSlot(configurationSourceSlot).create();
+        } else {
+            return definedSlot.withBrandNewConfiguration().create();
         }
     }
 
@@ -225,9 +253,9 @@ public class AzureWebAppMvpModel {
         // TODO
     }
 
-    public void deleteWebApp(String sid, String appid) throws IOException {
-        AuthMethodManager.getInstance().getAzureClient(sid).webApps().deleteById(appid);
-        // TODO: update cache
+    public void deleteWebApp(String sid, String appId) throws IOException {
+        AuthMethodManager.getInstance().getAzureClient(sid).webApps().deleteById(appId);
+        subscriptionIdToWebApps.remove(sid);
     }
 
     /**
@@ -350,6 +378,22 @@ public class AzureWebAppMvpModel {
         update.apply();
     }
 
+    /**
+     * Update app settings of deployment slot.
+     */
+    public void updateDeploymentSlotAppSettings(final String subsciptionId, final String webAppId,
+                                                final String slotName, final Map<String, String> toUpdate,
+                                                final Set<String> toRemove) throws Exception {
+        final DeploymentSlot slot = getWebAppById(subsciptionId, webAppId).deploymentSlots().getByName(slotName);
+        clearTags(slot);
+        com.microsoft.azure.management.appservice.WebAppBase.Update<DeploymentSlot> update = slot.update()
+            .withAppSettings(toUpdate);
+        for (String key : toRemove) {
+            update = update.withoutAppSetting(key);
+        }
+        update.apply();
+    }
+
     public void deleteWebAppOnLinux(String sid, String appid) throws IOException {
         deleteWebApp(sid, appid);
     }
@@ -364,6 +408,37 @@ public class AzureWebAppMvpModel {
 
     public void stopWebApp(String sid, String appid) throws IOException {
         AuthMethodManager.getInstance().getAzureClient(sid).webApps().getById(appid).stop();
+    }
+
+    public void startDeploymentSlot(final String subscriptionId, final String appId,
+                                    final String slotName) throws IOException {
+        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        app.deploymentSlots().getByName(slotName).start();
+    }
+
+    public void stopDeploymentSlot(final String subscriptionId, final String appId,
+                                   final String slotName) throws IOException {
+        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        app.deploymentSlots().getByName(slotName).stop();
+    }
+
+    public void restartDeploymentSlot(final String subscriptionId, final String appId,
+                                      final String slotName) throws IOException {
+        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        app.deploymentSlots().getByName(slotName).restart();
+    }
+
+    public void swapSlotWithProduction(final String subscriptionId, final String appId,
+                                       final String slotName) throws IOException {
+        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        final DeploymentSlot slot = app.deploymentSlots().getByName(slotName);
+        slot.swap("production");
+    }
+
+    public void deleteDeploymentSlotNode(final String subscriptionId, final String appId,
+                                         final String slotName) throws IOException {
+        final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        app.deploymentSlots().deleteByName(slotName);
     }
 
     /**
@@ -534,7 +609,7 @@ public class AzureWebAppMvpModel {
     }
 
     /**
-     * Download publish profile.
+     * Download publish profile of web app.
      *
      * @param sid      subscription id
      * @param webAppId webapp id
@@ -560,18 +635,30 @@ public class AzureWebAppMvpModel {
         }
     }
 
-    @Deprecated
-    public void cleanWebAppsOnWindows() {
-        // todo: remove the function
-        // todo: create a new function clearWebAppsCache clear cache web apps
-        // subscriptionIdToWebAppsOnWindowsMap.clear();
-        subscriptionIdToWebApps.clear();
+    /**
+     * Download publish profile of deployment slot.
+     */
+    public boolean getSlotPublishingProfileXmlWithSecrets(final String sid, final String webAppId, final String slotName,
+                                                          final String filePath) throws Exception {
+        final WebApp app = getWebAppById(sid, webAppId);
+        final DeploymentSlot slot = app.deploymentSlots().getByName(slotName);
+        final File file = new File(Paths.get(filePath, slotName + "_" + System.currentTimeMillis() + ".PublishSettings")
+            .toString());
+        file.createNewFile();
+        try (final InputStream inputStream = slot.manager().inner().webApps()
+            .listPublishingProfileXmlWithSecretsSlot(slot.resourceGroupName(), app.name(), slotName,
+                PublishingProfileFormat.FTP);
+             OutputStream outputStream = new FileOutputStream(file);
+        ) {
+            IOUtils.copy(inputStream, outputStream);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
-    @Deprecated
-    public void cleanWebAppsOnLinux() {
-        // todo: remove the function
-        // subscriptionIdToWebAppsOnLinuxMap.clear();
+    public void clearWebAppsCache() {
         subscriptionIdToWebApps.clear();
     }
 
@@ -579,10 +666,10 @@ public class AzureWebAppMvpModel {
      * Work Around:
      * When a web app is created from Azure Portal, there are hidden tags associated with the app.
      * It will be messed up when calling "update" API.
-     * An issue is logged at https://github.com/Azure/azure-sdk-for-java/issues/1755 .
+     * An issue is logged at https://github.com/Azure/azure-libraries-for-java/issues/508 .
      * Remove all tags here to make it work.
      */
-    private void clearTags(@NotNull final WebApp app) {
+    private void clearTags(@NotNull final WebAppBase app) {
         app.inner().withTags(null);
     }
 

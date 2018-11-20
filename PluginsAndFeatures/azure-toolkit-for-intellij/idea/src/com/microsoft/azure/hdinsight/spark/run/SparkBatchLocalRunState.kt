@@ -55,7 +55,7 @@ open class SparkBatchLocalRunState(val myProject: Project, val model: SparkLocal
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         // Spark Local Run/Debug
         val consoleView = SparkJobLogConsoleView(myProject)
-        val processHandler = KillableColoredProcessHandler(createCommandlineForLocal(model))
+        val processHandler = KillableColoredProcessHandler(createCommandlineForLocal())
 
         return executor?.let {
             processHandler.addProcessListener(object : ProcessAdapter() {
@@ -85,9 +85,16 @@ open class SparkBatchLocalRunState(val myProject: Project, val model: SparkLocal
     }
 
     @Throws(ExecutionException::class)
-    open fun createCommandlineForLocal(localRunConfigurableModel: SparkLocalRunConfigurableModel): GeneralCommandLine {
+    open fun createCommandlineForLocal(): GeneralCommandLine {
+        return createParams().toCommandLine()
+    }
+
+    fun createParams(hasClassPath: Boolean = true,
+                     hasMainClass: Boolean = true,
+                     hasJmockit: Boolean = true): JavaParameters {
         val params = JavaParameters()
-        JavaParametersUtil.configureConfiguration(params, localRunConfigurableModel)
+
+        JavaParametersUtil.configureConfiguration(params, model)
 
         val mainModule = ModuleManager.getInstance(myProject).findModuleByName(myProject.name)
 
@@ -97,23 +104,29 @@ open class SparkBatchLocalRunState(val myProject: Project, val model: SparkLocal
             JavaParametersUtil.configureProject(myProject, params, JavaParameters.JDK_AND_CLASSES_AND_TESTS, null)
         }
 
-        params.workingDirectory = Paths.get(localRunConfigurableModel.dataRootDirectory, "__default__", "user", "current").toString()
+        params.workingDirectory = Paths.get(model.dataRootDirectory, "__default__", "user", "current").toString()
 
-        params.vmParametersList.addAll(getCommandLineVmParameters(params))
+        if (hasJmockit) {
+            params.vmParametersList.addAll(getCommandLineVmParameters(params))
+        }
 
-        params.classPath.add(PathUtil.getJarPathForClass(SparkLocalRunner::class.java))
+        if (hasClassPath) {
+            params.classPath.add(PathUtil.getJarPathForClass(SparkLocalRunner::class.java))
+        }
+
+        if (hasMainClass) {
+            params.programParametersList
+                    .addAt(0,
+                            Optional.ofNullable(model.runClass)
+                                    .filter { mainClass -> !mainClass.trim().isEmpty() }
+                                    .orElseThrow { ExecutionException("Spark job's main class isn't set") })
+        }
 
         params.programParametersList
-                .addAt(0,
-                        Optional.ofNullable(localRunConfigurableModel.runClass)
-                                .filter { mainClass -> !mainClass.trim().isEmpty() }
-                                .orElseThrow { ExecutionException("Spark job's main class isn't set") })
-
-        params.programParametersList
-                .addAt(0, "--master local[" + (if (localRunConfigurableModel.isIsParallelExecution) 2 else 1) + "]")
+                .addAt(0, "--master local[" + (if (model.isIsParallelExecution) 2 else 1) + "]")
 
         if (SystemUtils.IS_OS_WINDOWS) {
-            if (!Optional.ofNullable(params.env[SparkLocalRunConfigurable.HADOOP_HOME_ENV])
+            if (!Optional.ofNullable(params.env[com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunConfigurable.HADOOP_HOME_ENV])
                             .map { hadoopHome -> Paths.get(hadoopHome, "bin", SparkLocalRunConfigurable.WINUTILS_EXE_NAME).toString() }
                             .map { File(it) }
                             .map { it.exists() }
@@ -124,6 +137,7 @@ open class SparkBatchLocalRunState(val myProject: Project, val model: SparkLocal
         }
 
         params.mainClass = SparkLocalRunner::class.java.canonicalName
-        return params.toCommandLine()
+
+        return params
     }
 }

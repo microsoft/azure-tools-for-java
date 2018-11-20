@@ -24,7 +24,7 @@ package com.microsoft.azure.hdinsight.spark.common
 
 import com.intellij.openapi.project.Project
 
-class ServerlessSparkBatchConfigurableModel(project: Project) : SparkBatchJobConfigurableModel() {
+class ServerlessSparkBatchConfigurableModel(project: Project) : SparkBatchJobConfigurableModel(project) {
     val serverlessSparkSubmitModel = ServerlessSparkSubmitModel(project)
 
     init {

@@ -27,7 +27,6 @@ import com.intellij.ide.plugins.cl.PluginClassLoader;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
@@ -40,7 +39,6 @@ import com.intellij.util.PlatformUtils;
 import com.intellij.util.containers.HashSet;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
-import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
@@ -48,7 +46,6 @@ import com.microsoft.azuretools.azurecommons.util.*;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.feedback.GithubIssue;
 import com.microsoft.intellij.feedback.NewGithubIssueAction;
@@ -58,19 +55,18 @@ import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
-import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 import rx.Observable;
 
 import javax.swing.event.EventListenerList;
-import java.io.*;
-import java.net.URL;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -101,6 +97,8 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private String _hashmac = GetHashMac.GetHashMac();
 
+    private Boolean firstInstallationByVersion;
+
     public AzurePlugin(Project project) {
         super(project);
         this.azureSettings = AzureSettings.getSafeInstance(project);
@@ -116,6 +114,12 @@ public class AzurePlugin extends AbstractProjectComponent {
     }
 
     private void initializeFeedbackNotification() {
+        if (IS_RIDER) return;
+
+        if (!isFirstInstallationByVersion()) {
+            return;
+        }
+
         Notification feedbackNotification = new Notification(
                 "Azure Toolkit plugin",
                 "We're listening",
@@ -142,7 +146,7 @@ public class AzurePlugin extends AbstractProjectComponent {
         if (IS_ANDROID_STUDIO || IS_RIDER) return;
 
         LOG.info("Starting Azure Plugin");
-        try {
+		try {
             //this code is for copying componentset.xml in plugins folder
             copyPluginComponents();
             initializeTelemetry();
@@ -379,5 +383,19 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     public static void log(String message) {
         LOG.info(message);
+    }
+
+    synchronized private boolean isFirstInstallationByVersion() {
+        if (firstInstallationByVersion != null) {
+            return firstInstallationByVersion.booleanValue();
+        }
+
+        if (new File(dataFile).exists()) {
+            String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
+            if (!StringHelper.isNullOrWhiteSpace(version) && version.equals(PLUGIN_VERSION)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

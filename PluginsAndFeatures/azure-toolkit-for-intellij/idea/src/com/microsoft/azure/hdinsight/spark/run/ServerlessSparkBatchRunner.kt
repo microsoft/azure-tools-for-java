@@ -29,6 +29,7 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServe
 import com.microsoft.azure.hdinsight.spark.common.*
 import com.microsoft.azure.hdinsight.spark.run.configuration.ServerlessSparkConfiguration
 import rx.Observer
+import java.net.URI
 import java.util.AbstractMap.SimpleImmutableEntry
 
 class ServerlessSparkBatchRunner : SparkBatchJobRunner() {
@@ -51,7 +52,7 @@ class ServerlessSparkBatchRunner : SparkBatchJobRunner() {
 
         val clusterId = submitModel.clusterId
         try {
-            val livyUri = submitModel.livyUri ?: AzureSparkServerlessClusterManager.getInstance()
+            val livyUri = submitModel.livyUri?.let { URI.create(it) } ?: AzureSparkServerlessClusterManager.getInstance()
                     .findCluster(accountName, clusterId)
                     .map { it.get().toBlocking().singleOrDefault(it).livyUri }
                     .toBlocking()

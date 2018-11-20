@@ -123,6 +123,34 @@ public class AILibraryHandler {
     }
 
     /**
+     * This method add a servlet context listener in web.xml.
+     */
+    public void setAIServletContextListener() {
+        if (webXMLDoc == null) {
+            return;
+        }
+        try {
+            final XPath xpath = XPathFactory.newInstance().newXPath();
+            final Element eleListenerMapping = (Element) xpath.evaluate(message("exprListener"), webXMLDoc, XPathConstants.NODE);
+            if (eleListenerMapping == null) {
+                final Element listenerMapping = webXMLDoc.createElement(message("listenerTag"));
+                final Element listenerName = webXMLDoc.createElement(message("listenerClassEle"));
+                listenerName.setTextContent(message("aiServletContextListener"));
+                listenerMapping.appendChild(listenerName);
+
+                final NodeList existingListenerNodeList = webXMLDoc.getElementsByTagName(message("listenerTag"));
+                final Node existingListenerNode = existingListenerNodeList != null
+                    && existingListenerNodeList.getLength() > 0
+                    ? existingListenerNodeList.item(0) : null;
+
+                webXMLDoc.getDocumentElement().insertBefore(listenerMapping, existingListenerNode);
+            }
+        } catch (Exception ex) {
+            AzurePlugin.log(ex.getMessage(), ex);
+        }
+    }
+
+    /**
      * This method adds filter mapping tags in web.xml.
      */
     private void setFilterMapping() {
@@ -206,6 +234,24 @@ public class AILibraryHandler {
             }
 
         } catch (Exception ex) {
+            ex.printStackTrace();
+            AzurePlugin.log(ex.getMessage(), ex);
+            throw new Exception(String.format("%s%s", message("aiRemoveErr"), ex.getMessage()));
+        }
+    }
+
+    public void removeAIServletContextListener() throws Exception {
+        if (webXMLDoc == null) {
+            return;
+        }
+        try {
+            final XPath xpath = XPathFactory.newInstance().newXPath();
+            final String exprListener = message("exprListener");
+            final Element eleListener = (Element) xpath.evaluate(exprListener, webXMLDoc, XPathConstants.NODE);
+            if (eleListener != null) {
+                eleListener.getParentNode().removeChild(eleListener);
+            }
+        } catch(Exception ex) {
             ex.printStackTrace();
             AzurePlugin.log(ex.getMessage(), ex);
             throw new Exception(String.format("%s%s", message("aiRemoveErr"), ex.getMessage()));

@@ -22,49 +22,92 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
+import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.common.CallBack
+import com.intellij.ui.HideableTitledPanel
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UsePassword
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UseKeyFile
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
-import java.awt.event.ActionListener
+import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionAdvancedConfigCtrl.Companion.passedText
+import com.microsoft.intellij.forms.dsl.panel
+import org.apache.commons.lang3.StringUtils
+import javax.swing.JComponent
 
-class SparkSubmissionDebuggablePanelConfigurable(project: Project,
-                                                 callBack: CallBack?,
-                                                 submissionPanel: SparkSubmissionDebuggableContentPanel)
-    : SparkSubmissionContentPanelConfigurable(project, callBack, submissionPanel) {
-    private val submissionDebuggablePanel
-        get() = submissionPanel as SparkSubmissionDebuggableContentPanel
+class SparkSubmissionDebuggablePanelConfigurable(project: Project)
+    : SparkSubmissionContentPanelConfigurable(project) {
 
-    override fun createUIComponents() {
-        super.createUIComponents()
+    private val advancedConfigPanel = SparkSubmissionAdvancedConfigPanel()
+    private val submissionDebuggablePanel by lazy {
+        val hidableAdvancedConfigPanel = HideableTitledPanel(
+                "Advanced Configuration (Remote Debugging)", true, advancedConfigPanel, false)
 
-        val advConfDialog = this.submissionDebuggablePanel.advancedConfigDialog
-        advConfDialog.addCallbackOnOk {
-            advConfDialog.getData(submitModel.advancedConfigModel)
+        val formBuilder = panel {
+            row { c(super.getComponent()) }
+            row { c(hidableAdvancedConfigPanel) }
         }
 
-        this.submissionDebuggablePanel.addAdvancedConfigurationButtonActionListener(ActionListener {
-            // Read the current panel setting into current model
+        formBuilder.buildPanel()
+    }
 
-            advConfDialog.setAuthenticationAutoVerify(submitModel.selectedClusterDetail
-                    .map(IClusterDetail::getName)
-                    .orElse(null))
-            advConfDialog.isModal = true
-            advConfDialog.isVisible = true
-        })
+    private val advancedConfigCtrl = object
+        : SparkSubmissionAdvancedConfigCtrl(advancedConfigPanel, advancedConfigPanel.sshCheckSubject) {
+        override fun getClusterNameToCheck(): String? = selectedClusterDetail?.name
+    }
+
+    override fun onClusterSelected(cluster: IClusterDetail) {
+        super.onClusterSelected(cluster)
+
+        advancedConfigCtrl.selectCluster(cluster.name)
+    }
+
+    override fun getComponent(): JComponent {
+        return submissionDebuggablePanel
     }
 
     override fun setData(data: SparkSubmitModel) {
+        // Data -> Components
         super.setData(data)
 
-        // Advanced Configuration Dialog
-        submissionDebuggablePanel.advancedConfigDialog.setData(data.advancedConfigModel)
+        // Advanced Configuration panel
+        advancedConfigPanel.setData(data.advancedConfigModel.apply { clusterName = data.clusterName })
     }
 
     override fun getData(data: SparkSubmitModel) {
+        // Components -> Data
         super.getData(data)
 
-        // Advanced Configuration Dialog
-        submissionDebuggablePanel.advancedConfigDialog.getData(data.advancedConfigModel)
+        // Advanced Configuration panel
+        advancedConfigPanel.getData(data.advancedConfigModel)
+        data.advancedConfigModel.clusterName = selectedClusterDetail?.name
+    }
+
+
+    private val isSshCheckPassed
+        get() = advancedConfigPanel.checkSshCertIndicator.text.endsWith(passedText, true)
+
+    private val sshCheckResultMessage
+        get() = advancedConfigPanel.checkSshCertIndicator.text
+
+
+    override fun validate() {
+        super.validate()
+
+        if (advancedConfigPanel.isRemoteDebugEnabled) {
+            if (!sshCheckResultMessage.isNullOrBlank() && !isSshCheckPassed) {
+                throw RuntimeConfigurationError("Can't save the configuration since $sshCheckResultMessage")
+            }
+
+            val advModel = advancedConfigPanel.model
+            when (advModel.sshAuthType) {
+                UsePassword -> if (StringUtils.isBlank(advModel.sshPassword)) {
+                    throw RuntimeConfigurationError("Can't save the configuration since password is blank")
+                }
+                UseKeyFile -> if (advModel.sshKeyFile?.exists() != true) {
+                    throw RuntimeConfigurationError("Can't save the configuration since SSh key file isn't set or doesn't exist")
+                }
+                else -> {}
+            }
+        }
     }
 }

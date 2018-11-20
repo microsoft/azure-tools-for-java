@@ -23,6 +23,7 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.ui;
 
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
@@ -41,6 +42,10 @@ import java.util.List;
 public interface WebAppDeployMvpView extends MvpView {
 
     void renderWebAppsTable(@NotNull List<ResourceEx<WebApp>> webAppLists);
+
+    void enableDeploymentSlotPanel();
+
+    void fillDeploymentSlots(@NotNull List<DeploymentSlot> slots);
 
     void fillSubscription(@NotNull List<Subscription> subscriptions);
 

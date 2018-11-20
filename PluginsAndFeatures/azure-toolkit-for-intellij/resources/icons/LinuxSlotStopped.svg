@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <title>DeploymentSlotStopped</title>
+  <g>
+    <rect width="16" height="16" fill="#ffdbff" opacity="0"/>
+    <g>
+      <path d="M7.1,2.1h.8V9.9H7.1V2.1M7,1A1,1,0,0,0,6,2v8a1,1,0,0,0,1,1H8a1,1,0,0,0,1-1V2A1,1,0,0,0,8,1Z" fill="#9aa7b0" opacity="0.8"/>
+      <rect x="2" y="1" width="3" height="10" rx="1" ry="1" transform="translate(7 12) rotate(-180)" fill="#9aa7b0" opacity="0.8"/>
+      <path d="M11.1,2.1h.8V9H13V2a1,1,0,0,0-1-1H11a1,1,0,0,0-1,1V9h1.1Z" fill="#9aa7b0" opacity="0.8"/>
+      <rect x="10" y="10" width="6" height="6" fill="#e05555"/>
+      <path d="M9,12H1.5a.5.5,0,0,1-.5-.5v-1H0v1A1.5,1.5,0,0,0,1.5,13H9Z" fill="#9aa7b0" opacity="0.8"/>
+    </g>
+  </g>
+</svg>

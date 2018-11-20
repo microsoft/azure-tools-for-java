@@ -22,6 +22,9 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.yarn.rm;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AppAttempt {
     private int id;                  // The app attempt id
     private String nodeId;           // The node id of the node the attempt ran on

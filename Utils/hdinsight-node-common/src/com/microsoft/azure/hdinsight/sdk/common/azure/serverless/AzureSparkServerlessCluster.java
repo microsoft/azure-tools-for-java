@@ -24,9 +24,7 @@ package com.microsoft.azure.hdinsight.sdk.common.azure.serverless;
 
 import com.microsoft.azure.datalake.store.ADLStoreClient;
 import com.microsoft.azure.datalake.store.IfExists;
-import com.microsoft.azure.hdinsight.sdk.cluster.DestroyableCluster;
-import com.microsoft.azure.hdinsight.sdk.cluster.ProvisionableCluster;
-import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
+import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azure.hdinsight.sdk.common.AzureDataLakeHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
@@ -58,6 +56,8 @@ public class AzureSparkServerlessCluster extends SparkCluster
                                          implements ProvisionableCluster,
                                                     ServerlessCluster,
                                                     DestroyableCluster,
+                                                    LivyCluster,
+                                                    YarnCluster,
                                                     Comparable<AzureSparkServerlessCluster> {
     public static class SparkResource {
         int instances;
@@ -800,4 +800,13 @@ public class AzureSparkServerlessCluster extends SparkCluster
             }
         });
     }
+
+    public String getLivyConnectionUrl() {
+        return URI.create(getConnectionUrl()).resolve("livy/").toString();
+    }
+
+    public String getYarnNMConnectionUrl() {
+        return URI.create(getConnectionUrl()).resolve("yarnui/ws/v1/cluster/apps/").toString();
+    }
+
 }

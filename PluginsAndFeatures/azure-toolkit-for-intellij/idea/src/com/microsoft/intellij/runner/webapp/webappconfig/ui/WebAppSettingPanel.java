@@ -24,6 +24,7 @@ package com.microsoft.intellij.runner.webapp.webappconfig.ui;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -57,6 +58,7 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.RuntimeStack;
@@ -81,10 +83,12 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     private static final String RESOURCE_GROUP = "Resource Group";
     private static final String APP_SERVICE_PLAN = "App Service Plan";
     private static final String RUNTIME = "Runtime";
+    private static final String DEPLOYMENT_SLOT = "Deployment Slot";
     private static final String NOT_APPLICABLE = "N/A";
     private static final String TABLE_LOADING_MESSAGE = "Loading ... ";
     private static final String TABLE_EMPTY_MESSAGE = "No available Web App.";
     private static final String DEFAULT_APP_NAME = "webapp-";
+    private static final String DEFAULT_SLOT_NAME = "slot-";
     private static final String DEFAULT_PLAN_NAME = "appsp-";
     private static final String DEFAULT_RGP_NAME = "rg-webapp-";
     private static final String WEB_CONFIG_URL_FORMAT = "https://%s/dev/wwwroot/web.config";
@@ -146,6 +150,12 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     private JRadioButton rdoLinuxOS;
     private JRadioButton rdoWindowsOS;
     private JLabel lblJavaVersion;
+    private JCheckBox cbDeployToSlot;
+    private JComboBox cbDeploymentSlots;
+    private JTextField txtNewSlotName;
+    private JComboBox cbSlotConfigurationSource;
+    private JPanel pnlSlot;
+    private JPanel pnlSlotHolder;
     private JBTable table;
     private AnActionButton btnRefresh;
     /**
@@ -181,6 +191,9 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         btnGrpForOperatingSystem.add(rdoWindowsOS);
         rdoLinuxOS.addActionListener(e -> onOperatingSystemChange(OperatingSystem.LINUX));
         rdoWindowsOS.addActionListener(e -> onOperatingSystemChange(OperatingSystem.WINDOWS));
+
+        cbDeployToSlot.addActionListener(e -> toggleSlotPanel(cbDeployToSlot.isSelected()));
+        cbDeploymentSlots.addActionListener(e -> toggleNewSlotPanel());
 
         cbExistResGrp.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
             @Override
@@ -304,6 +317,10 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         javaDecorator.setContentComponent(pnlJava);
         javaDecorator.setOn(true);
 
+        HideableDecorator slotDecorator = new HideableDecorator(pnlSlotHolder, DEPLOYMENT_SLOT, true);
+        slotDecorator.setContentComponent(pnlSlot);
+        slotDecorator.setOn(true);
+
         lblJarDeployHint.setHyperlinkText(NON_WAR_FILE_DEPLOY_HINT);
     }
 
@@ -359,6 +376,13 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         } else {
             txtWebAppName.setText(webAppConfiguration.getWebAppName());
         }
+
+        if (StringUtils.isEmpty(webAppConfiguration.getNewSlotName())) {
+            txtNewSlotName.setText(DEFAULT_SLOT_NAME + date);
+        } else {
+            txtNewSlotName.setText(webAppConfiguration.getNewSlotName());
+        }
+
         if (webAppConfiguration.getAppServicePlanName().isEmpty()) {
             txtCreateAppServicePlan.setText(DEFAULT_PLAN_NAME + date);
         } else {
@@ -419,7 +443,13 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         if (rdoUseExist.isSelected()) {
             webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
             webAppConfiguration.setSubscriptionId(selectedWebApp == null ? "" : selectedWebApp.getSubscriptionId());
+            webAppConfiguration.setDeployToSlot(cbDeployToSlot.isSelected());
+            webAppConfiguration.setSlotName((String)cbDeploymentSlots.getSelectedItem());
             webAppConfiguration.setCreatingNew(false);
+            if (cbDeployToSlot.isSelected() && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT) {
+                webAppConfiguration.setNewSlotName(txtNewSlotName.getText());
+                webAppConfiguration.setNewSlotConfigurationSource((String) cbSlotConfigurationSource.getSelectedItem());
+            }
         } else if (rdoCreateNew.isSelected()) {
             webAppConfiguration.setWebAppName(txtWebAppName.getText());
             webAppConfiguration.setSubscriptionId(lastSelectedSid);
@@ -470,6 +500,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             webAppConfiguration.setCreatingNew(true);
         }
         webAppConfiguration.setDeployToRoot(chkToRoot.isVisible() && chkToRoot.isSelected());
+        webAppConfiguration.setDeployToSlot(cbDeployToSlot.isSelected());
     }
 
     @Override
@@ -496,6 +527,17 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
                     table.setRowSelectionInterval(i, i);
                 }
             }
+        }
+    }
+
+    @Override
+    public void enableDeploymentSlotPanel() {
+        if (selectedWebApp == null) {
+            return;
+        }
+        cbDeployToSlot.setEnabled(true);
+        if (webAppConfiguration.isDeployToSlot()) {
+            toggleSlotPanel(true);
         }
     }
 
@@ -588,6 +630,60 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         txtSelectedWebApp.setText("");
     }
 
+    private void toggleSlotPanel(final boolean isDeployToSlot) {
+        cbDeployToSlot.setSelected(isDeployToSlot);
+        if (selectedWebApp == null) {
+            cbDeployToSlot.setEnabled(false);
+            return;
+        }
+        if (!isDeployToSlot) {
+            cbDeploymentSlots.setEnabled(false);
+            txtNewSlotName.setEnabled(false);
+            cbSlotConfigurationSource.setEnabled(false);
+            return;
+        }
+        cbDeploymentSlots.removeAllItems();
+        cbSlotConfigurationSource.removeAllItems();
+        cbDeploymentSlots.setEnabled(true);
+        webAppDeployViewPresenter.onLoadDeploymentSlots(selectedWebApp.getSubscriptionId(), selectedWebApp.getResource().id());
+    }
+
+    @Override
+    public void fillDeploymentSlots(@NotNull final List<DeploymentSlot> slots) {
+        cbDeploymentSlots.removeAllItems();
+        cbSlotConfigurationSource.removeAllItems();
+        final List<String> configurationSources = new ArrayList<String>();
+        final List<String> deploymentSlots = new ArrayList<String>();
+        configurationSources.add(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
+        configurationSources.add(selectedWebApp.getResource().name());
+
+        slots.stream().forEach(slot -> {
+            deploymentSlots.add(slot.name());
+            configurationSources.add(slot.name());
+        });
+        deploymentSlots.add(Constants.CREATE_NEW_SLOT);
+        deploymentSlots.forEach(s -> {
+            cbDeploymentSlots.addItem(s);
+            if (Comparing.equal(s, webAppConfiguration.getSlotName())) {
+                cbDeploymentSlots.setSelectedItem(s);
+            }
+        });
+        configurationSources.forEach(c -> {
+            cbSlotConfigurationSource.addItem(c);
+            if (Comparing.equal(c, webAppConfiguration.getNewSlotConfigurationSource())) {
+                cbSlotConfigurationSource.setSelectedItem(c);
+            }
+        });
+    }
+
+    private void toggleNewSlotPanel() {
+        final boolean isCreatingNewSlot = cbDeployToSlot.isSelected()
+            && cbDeploymentSlots.isEnabled()
+            && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT;
+        cbSlotConfigurationSource.setEnabled(isCreatingNewSlot);
+        txtNewSlotName.setEnabled(isCreatingNewSlot);
+    }
+
     private void createUIComponents() {
         DefaultTableModel tableModel = new DefaultTableModel() {
             @Override
@@ -615,7 +711,9 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
                 return;
             }
             selectedWebApp = cachedWebAppList.get(selectedRow);
+            cbDeployToSlot.setEnabled(true);
             txtSelectedWebApp.setText(selectedWebApp.toString());
+            toggleSlotPanel(false);
             try {
                 String scmSuffix = AuthMethodManager.getInstance().getAzureManager().getScmSuffix();
                 lblJarDeployHint.setHyperlinkTarget(String.format(WEB_CONFIG_URL_FORMAT, selectedWebApp.getResource()

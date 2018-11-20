@@ -32,7 +32,6 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
-import com.jetbrains.rdclient.util.idea.defineNestedLifetime
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.util.idea.getLogger
@@ -115,11 +114,9 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         try {
             if (!AuthMethodManager.getInstance().isSignedIn) {
                 val message = UiConstants.SIGN_IN_REQUIRED
-                LOG.error(message)
                 throw RuntimeConfigurationError(message)
             }
         } catch (e: Throwable) {
-            LOG.error(e)
             throw RuntimeConfigurationError(UiConstants.SIGN_IN_REQUIRED)
         }
     }
@@ -136,7 +133,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         SqlDatabaseValidator.checkValueIsSet(name, UiConstants.CONNECTION_STRING_NAME_NOT_DEFINED)
         val resourceGroupToWebAppMap = AzureModel.getInstance().resourceGroupToWebAppMap
         if (resourceGroupToWebAppMap == null) {
-            LOG.error("AzureModel.resourceGroupToWebAppMap map is NULL")
+            LOG.warn("AzureModel.resourceGroupToWebAppMap map is NULL")
             return
         }
         val webApp = resourceGroupToWebAppMap

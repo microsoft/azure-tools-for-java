@@ -80,8 +80,8 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode implements 
     protected void loadActions() {
         super.loadActions();
         String suffix = "/?adlaAccountName=" + adlAccount.getName();
-        addAction("Delete", new SparkServerlessDestroyAction(
-                this, cluster, adlAccount, SparkServerlessClusterOps.getInstance().getDestroyAction()));
+        addAction("Submit Job", new SparkServerlessSubmitAction(
+                this, cluster, SparkServerlessClusterOps.getInstance().getSubmitAction()));
         addAction("View Cluster Status", new SparkServerlessMonitorAction(
                 this, cluster, SparkServerlessClusterOps.getInstance().getMonitorAction()));
 
@@ -89,6 +89,8 @@ public class SparkServerlessClusterNode extends AzureRefreshableNode implements 
                 this, cluster, SparkServerlessClusterOps.getInstance().getUpdateAction()));
         updateAction.setEnabled(isClusterStable());
         
+        addAction("Delete", new SparkServerlessDestroyAction(
+                this, cluster, adlAccount, SparkServerlessClusterOps.getInstance().getDestroyAction()));
         addAction("Open Spark Master UI", new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {

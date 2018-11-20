@@ -21,19 +21,24 @@
 
 package com.microsoft.azure.hdinsight.spark.ui;
 
+import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.execution.configurations.RuntimeConfigurationException;
+import com.intellij.execution.configurations.RuntimeConfigurationWarning;
+import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.components.JBScrollPane;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.util.Optional;
 
 public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobConfigurableModel> {
     private JTabbedPane executionTypeTabPane;
     private JPanel myWholePanel;
     private SparkLocalRunConfigurable myLocalRunConfigurable;
-    private SparkSubmissionContentPanelConfigurable myClusterSubmissionConfigurable;
+    private JScrollPane remoteConfigScrollPane;
+    private SparkSubmissionContentPanelConfigurable submissionContentPanelConfigurable;
 
     @NotNull
     private final Project myProject;
@@ -48,31 +53,41 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
     }
 
     protected void createUIComponents() {
-        myLocalRunConfigurable = new SparkLocalRunConfigurable(myProject);
-        myClusterSubmissionConfigurable = new SparkSubmissionDebuggablePanelConfigurable(
-                myProject, () -> {}, new SparkSubmissionDebuggableContentPanel(null));
+        myLocalRunConfigurable = new SparkLocalRunConfigurable(getProject());
+        remoteConfigScrollPane = new JBScrollPane();
+        setClusterSubmissionConfigurable(createSubmissionPanel());
+    }
+
+    protected SparkSubmissionContentPanelConfigurable createSubmissionPanel() {
+        return new SparkSubmissionDebuggablePanelConfigurable(getProject());
     }
 
     @Override
     public void setData(@NotNull SparkBatchJobConfigurableModel data) {
         // Data -> Component
         myLocalRunConfigurable.setData(data.getLocalRunConfigurableModel());
-        myClusterSubmissionConfigurable.setData(data.getSubmitModel());
+        submissionContentPanelConfigurable.setData(data.getSubmitModel());
+        executionTypeTabPane.setSelectedIndex(data.getFocusedTabIndex());
+
+        // Presentation only
+        setLocalRunConfigEnabled(data.isLocalRunConfigEnabled());
+        submissionContentPanelConfigurable.setClusterSelectionEnabled(data.isClusterSelectionEnabled());
     }
 
     @Override
     public void getData(@NotNull SparkBatchJobConfigurableModel data) {
         // Component -> Data
         myLocalRunConfigurable.getData(data.getLocalRunConfigurableModel());
-        myClusterSubmissionConfigurable.getData(data.getSubmitModel());
+        submissionContentPanelConfigurable.getData(data.getSubmitModel());
+        data.setFocusedTabIndex(executionTypeTabPane.getSelectedIndex());
     }
 
-    public SparkLocalRunConfigurable getMyLocalRunConfigurable() {
+    public SparkLocalRunConfigurable getLocalRunConfigurable() {
         return myLocalRunConfigurable;
     }
 
-    public SparkSubmissionContentPanelConfigurable getMyClusterSubmissionConfigurable() {
-        return myClusterSubmissionConfigurable;
+    public SparkSubmissionContentPanelConfigurable getClusterSubmissionConfigurable() {
+        return submissionContentPanelConfigurable;
     }
 
     @NotNull
@@ -80,11 +95,33 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
         return myProject;
     }
 
-    protected void setMyLocalRunConfigurable(SparkLocalRunConfigurable myLocalRunConfigurable) {
+    protected void setLocalRunConfigurable(SparkLocalRunConfigurable myLocalRunConfigurable) {
         this.myLocalRunConfigurable = myLocalRunConfigurable;
     }
 
-    protected void setMyClusterSubmissionConfigurable(SparkSubmissionContentPanelConfigurable myClusterSubmissionConfigurable) {
-        this.myClusterSubmissionConfigurable = myClusterSubmissionConfigurable;
+    protected void setClusterSubmissionConfigurable(SparkSubmissionContentPanelConfigurable myClusterSubmissionConfigurable) {
+        this.submissionContentPanelConfigurable = myClusterSubmissionConfigurable;
+        remoteConfigScrollPane.setViewportView(myClusterSubmissionConfigurable.getComponent());
+    }
+
+    private void setLocalRunConfigEnabled(boolean enabled) {
+        executionTypeTabPane.setEnabledAt(0, enabled);
+    }
+
+    public void validate() throws ConfigurationException {
+        try {
+            submissionContentPanelConfigurable.validate();
+        } catch (ConfigurationException e) {
+            String remoteRunPrefix = "[Remotely Run in Cluster] ";
+            if (e instanceof RuntimeConfigurationError) {
+                throw new RuntimeConfigurationError(remoteRunPrefix + e.getMessage(), e.getQuickFix());
+            } else if (e instanceof RuntimeConfigurationWarning) {
+                throw new RuntimeConfigurationWarning(remoteRunPrefix + e.getMessage(), e.getQuickFix());
+            } else if (e instanceof RuntimeConfigurationException) {
+                throw new RuntimeConfigurationException(remoteRunPrefix + e.getMessage(), remoteRunPrefix + e.getTitle());
+            } else {
+                throw new ConfigurationException(remoteRunPrefix + e.getMessage(), remoteRunPrefix + e.getTitle());
+            }
+        }
     }
 }
