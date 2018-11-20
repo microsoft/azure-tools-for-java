@@ -33,18 +33,18 @@ import com.intellij.openapi.util.Disposer
 import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable
 import javax.swing.JComponent
 
-class RemoteDebugSettingsEditor(val jobConfigurable: SparkBatchJobConfigurable) : SettingsEditor<RemoteDebugRunConfiguration>() {
+class LivySparkRunConfigurationSettingsEditor(val jobConfigurable: SparkBatchJobConfigurable) : SettingsEditor<LivySparkBatchJobRunConfiguration>() {
 
-    override fun resetEditorFrom(remoteDebugRunConfiguration: RemoteDebugRunConfiguration) {
+    override fun resetEditorFrom(livySparkBatchJobRunConfiguration: LivySparkBatchJobRunConfiguration) {
         // Reset the panel from the RunConfiguration
-        jobConfigurable.setData(remoteDebugRunConfiguration.model)
+        jobConfigurable.setData(livySparkBatchJobRunConfiguration.model)
     }
 
     @Throws(ConfigurationException::class)
-    override fun applyEditorTo(remoteDebugRunConfiguration: RemoteDebugRunConfiguration) {
+    override fun applyEditorTo(livySparkBatchJobRunConfiguration: LivySparkBatchJobRunConfiguration) {
         // Apply the panel's setting to RunConfiguration
         jobConfigurable.validate()
-        jobConfigurable.getData(remoteDebugRunConfiguration.model)
+        jobConfigurable.getData(livySparkBatchJobRunConfiguration.model)
     }
 
     override fun createEditor(): JComponent {

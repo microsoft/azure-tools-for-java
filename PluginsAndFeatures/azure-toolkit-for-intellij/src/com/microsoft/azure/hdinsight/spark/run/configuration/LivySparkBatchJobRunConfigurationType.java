@@ -30,7 +30,7 @@ import com.microsoft.intellij.util.PluginUtil;
 
 import javax.swing.*;
 
-public class RemoteDebugRunConfigurationType implements ConfigurationType {
+public class LivySparkBatchJobRunConfigurationType implements ConfigurationType {
 
     private static final String DISPLAY_NAME = "Azure HDInsight Spark";
     private static final String ID = "SubmitSparkJob_Configuration";
@@ -59,11 +59,11 @@ public class RemoteDebugRunConfigurationType implements ConfigurationType {
 
     @Override
     public ConfigurationFactory[] getConfigurationFactories() {
-        return new ConfigurationFactory[] { new RemoteDebugConfigurationFactory(this) };
+        return new ConfigurationFactory[] { new LivySparkBatchJobConfigurationFactory(this) };
     }
 
     @NotNull
-    public static RemoteDebugRunConfigurationType getInstance() {
-        return ConfigurationTypeUtil.findConfigurationType(RemoteDebugRunConfigurationType.class);
+    public static LivySparkBatchJobRunConfigurationType getInstance() {
+        return ConfigurationTypeUtil.findConfigurationType(LivySparkBatchJobRunConfigurationType.class);
     }
 }

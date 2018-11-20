@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.authmanage.interact;
 
+import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.adauth.IWebUi;
 import com.microsoft.azuretools.utils.IProgressTaskImpl;
 
@@ -32,5 +33,6 @@ public interface IUIFactory {
 //    ISelectAuthMethod getAuthMethodDialog();
     INotification getNotificationWindow();
     IWebUi getWebUi();
+    IDeviceLoginUI getDeviceLoginUI();
     IProgressTaskImpl getProgressTaskImpl();
 }

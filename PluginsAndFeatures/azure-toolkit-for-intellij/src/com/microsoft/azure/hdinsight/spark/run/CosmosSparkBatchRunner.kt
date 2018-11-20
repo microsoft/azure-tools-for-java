@@ -27,14 +27,14 @@ import com.intellij.execution.configurations.RunProfile
 import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager
 import com.microsoft.azure.hdinsight.spark.common.*
-import com.microsoft.azure.hdinsight.spark.run.configuration.ServerlessSparkConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration
 import rx.Observer
 import java.net.URI
 import java.util.AbstractMap.SimpleImmutableEntry
 
-class ServerlessSparkBatchRunner : SparkBatchJobRunner() {
+class CosmosSparkBatchRunner : SparkBatchJobRunner() {
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
-        return SparkBatchJobRunExecutor.EXECUTOR_ID == executorId && profile is ServerlessSparkConfiguration
+        return SparkBatchJobRunExecutor.EXECUTOR_ID == executorId && profile is CosmosSparkRunConfiguration
     }
 
     override fun getRunnerId(): String {

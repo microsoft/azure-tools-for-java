@@ -26,5 +26,5 @@ import com.intellij.openapi.project.Project
 
 class ServerlessSparkConfigurable(project: Project) : SparkBatchJobConfigurable(project) {
     override fun createSubmissionPanel(): SparkSubmissionContentPanelConfigurable =
-            ServerlessSparkSubmissionPanelConfigurable(project)
+            CosmosSparkSubmissionPanelConfigurable(project)
 }

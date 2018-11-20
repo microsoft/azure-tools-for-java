@@ -22,10 +22,14 @@
 
 package com.microsoft.azuretools.adauth;
 
+import com.microsoft.aad.adal4j.AuthenticationCallback;
+import com.microsoft.aad.adal4j.AuthenticationContext;
+import com.microsoft.aad.adal4j.AuthenticationResult;
+import com.microsoft.aad.adal4j.DeviceCode;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-
 import org.apache.commons.codec.binary.Base64;
-
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,10 +37,11 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import java.io.UnsupportedEncodingException;
 
 public class AuthContext {
     private static final Logger log = Logger.getLogger(AuthContext.class.getName());
@@ -65,8 +70,10 @@ public class AuthContext {
      * @param correlationId UUID request correlation id.
      * @throws MalformedURLException exception thrown when parse url from authority.
      */
+    // todo: webUi should not be a property of AuthContext, it is only used for interactive login
+    // todo: make it nullable as first step, then remove it and get it as parameter when acquire token by auth code
     public AuthContext(@NotNull String authority, @NotNull String clientId, @NotNull String redirectUrl,
-            @NotNull IWebUi webUi, final boolean validateAuthority, UUID correlationId)
+                       IWebUi webUi, final boolean validateAuthority, UUID correlationId)
             throws MalformedURLException {
         this.authority = this.canonicalizeUri(authority);
         this.clientId = clientId;
@@ -126,6 +133,53 @@ public class AuthContext {
                 throw new AuthException(AuthError.UnknownUser);
             }
         }
+    }
+
+    /**
+     * Acquire token for resource by device code.
+     */
+    public AuthResult acquireToken(@NotNull final String resource, final boolean newDeviceCode, final String uid,
+                                   final AuthenticationCallback<AuthenticationResult> callback) throws AuthException {
+
+        if (!newDeviceCode) {
+            final AuthResult result = acquireTokenFromCache(resource, uid);
+            if (result != null) {
+                return result;
+            } else {
+                throw new AuthException(AuthError.UnknownUser);
+            }
+        }
+
+        final AuthenticationResult result;
+        final ExecutorService service = Executors.newSingleThreadExecutor();
+        try {
+            final AuthenticationContext ctx = new AuthenticationContext(authority, true, service);
+            final DeviceCode deviceCode = ctx.acquireDeviceCode(clientId, resource, null).get();
+            final IDeviceLoginUI deviceLoginUI = CommonSettings.getUiFactory().getDeviceLoginUI();
+            result = deviceLoginUI.authenticate(ctx, deviceCode, callback);
+        } catch (Exception e) {
+            throw new AuthException(e.getMessage(), e);
+        }
+
+        if (result == null) {
+            throw new AuthException("Device login failed or was cancelled.");
+        }
+
+        final AuthResult authResult = new AuthResult(result.getAccessTokenType(), result.getAccessToken(),
+            result.getRefreshToken(), result.getExpiresAfter(),
+            UserInfo.createFromAdAlUserInfo(result.getUserInfo()), resource);
+
+        try {
+            if (!service.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                service.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            // swallow interrupted exception
+        } finally {
+            service.shutdownNow();
+        }
+        driver.createAddEntry(authResult, resource);
+        return authResult;
     }
 
     private String acquireAuthCode(@NotNull final String resource, String userDisplayableId) throws AuthException {

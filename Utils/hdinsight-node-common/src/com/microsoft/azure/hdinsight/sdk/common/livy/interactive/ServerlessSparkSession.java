@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  * <p/>
  * All rights reserved.
@@ -19,34 +19,28 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.spark.run.configuration;
 
-import com.intellij.execution.configuration.ConfigurationFactoryEx;
-import com.intellij.execution.configurations.ConfigurationType;
-import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.execution.configurations.RunConfigurationModule;
-import com.intellij.openapi.project.Project;
+package com.microsoft.azure.hdinsight.sdk.common.livy.interactive;
+
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
+import com.microsoft.azure.hdinsight.sdk.common.ServerlessSparkHttpObservable;
+import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
-public class RemoteDebugConfigurationFactory extends ConfigurationFactoryEx {
-    private static final String NAME = "HDInsight Spark";
+import java.net.URI;
 
-    public RemoteDebugConfigurationFactory(@NotNull ConfigurationType type) {
-        super(type);
-    }
-
-    @Override
-    public String getName() {
-        return NAME;
-    }
-
+public class ServerlessSparkSession extends SparkSession {
     @NotNull
-    @Override
-    public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-        return new RemoteDebugRunConfiguration(
-                project,
-                this,
-                new RunConfigurationModule(project),
-                NAME);
+    private ServerlessSparkHttpObservable http;
+
+    public ServerlessSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId, @NotNull AzureSparkServerlessAccount adlAccount) {
+        super(name, baseUrl);
+        this.http = new ServerlessSparkHttpObservable(tenantId, adlAccount);
     }
+
+    @Override
+    @NotNull
+    public HttpObservable getHttp() {
+        return this.http;
+    }    
 }

@@ -23,46 +23,36 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
+import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.microsoft.rest.ExpandableStringEnum;
 
 /**
  * Defines values for SparkNodeType.
  */
-public enum SparkNodeType {
-    /** Enum value SparkMaster. */
-    SPARK_MASTER("SparkMaster"),
+@JsonIgnoreProperties(ignoreUnknown = true)
+public final class SparkNodeType extends ExpandableStringEnum<SparkNodeType> {
+    /** Static value SparkMaster for SparkNodeType. */
+    public static final SparkNodeType SPARK_MASTER = fromString("SparkMaster");
 
-    /** Enum value SparkWorker. */
-    SPARK_WORKER("SparkWorker");
+    /** Static value SparkWorker for SparkNodeType. */
+    public static final SparkNodeType SPARK_WORKER = fromString("SparkWorker");
 
-    /** The actual serialized value for a SparkNodeType instance. */
-    private String value;
-
-    SparkNodeType(String value) {
-        this.value = value;
+    /**
+     * Creates or finds a SparkNodeType from its string representation.
+     * @param name a name to look for
+     * @return the corresponding SparkNodeType
+     */
+    @JsonCreator
+    public static SparkNodeType fromString(String name) {
+        return fromString(name, SparkNodeType.class);
     }
 
     /**
-     * Parses a serialized value to a SparkNodeType instance.
-     *
-     * @param value the serialized value to parse.
-     * @return the parsed SparkNodeType object, or null if unable to parse.
+     * @return known SparkNodeType values
      */
-    @JsonCreator
-    public static SparkNodeType fromString(String value) {
-        SparkNodeType[] items = SparkNodeType.values();
-        for (SparkNodeType item : items) {
-            if (item.toString().equalsIgnoreCase(value)) {
-                return item;
-            }
-        }
-        return null;
-    }
-
-    @JsonValue
-    @Override
-    public String toString() {
-        return this.value;
+    public static Collection<SparkNodeType> values() {
+        return values(SparkNodeType.class);
     }
 }

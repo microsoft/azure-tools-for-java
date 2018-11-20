@@ -32,8 +32,8 @@ import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azure.hdinsight.spark.actions.SparkAppSubmitContext;
 import com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction;
-import com.microsoft.azure.hdinsight.spark.run.configuration.ServerlessSparkConfigurationFactory;
-import com.microsoft.azure.hdinsight.spark.run.configuration.ServerlessSparkConfigurationType;
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationFactory;
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType;
 import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterOps;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterDestoryDialog;
 import com.microsoft.azure.sparkserverless.serverexplore.ui.SparkServerlessClusterMonitorDialog;
@@ -112,7 +112,7 @@ public class SparkServerlessClusterOpsCtrl implements ILogger {
 
                         final RunManager runManager = RunManager.getInstance(project);
                         final List<RunnerAndConfigurationSettings> batchConfigSettings = runManager
-                                .getConfigurationSettingsList(findConfigurationType(ServerlessSparkConfigurationType.class));
+                                .getConfigurationSettingsList(findConfigurationType(CosmosSparkConfigurationType.class));
 
                         final String runConfigName = "[Azure Data Lake Spark] " + cluster.getName();
                         final RunnerAndConfigurationSettings runConfigurationSetting = batchConfigSettings.stream()
@@ -120,7 +120,7 @@ public class SparkServerlessClusterOpsCtrl implements ILogger {
                                 .findFirst()
                                 .orElseGet(() -> runManager.createRunConfiguration(
                                         runConfigName,
-                                        new ServerlessSparkConfigurationFactory(new ServerlessSparkConfigurationType())));
+                                        new CosmosSparkConfigurationFactory(new CosmosSparkConfigurationType())));
 
                         context.putData(RUN_CONFIGURATION_SETTING, runConfigurationSetting)
                                 .putData(CLUSTER, cluster);

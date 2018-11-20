@@ -35,8 +35,8 @@ import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.JobInfoListResult;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.JobState;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ResourcePoolState;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkResourcePoolList;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkResourcePoolState;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -207,8 +207,8 @@ public class AzureSparkServerlessAccount implements ClusterContainer, Comparable
     public ImmutableSortedSet<? extends IClusterDetail> getClusters() {
         return ImmutableSortedSet.copyOf(getRawClusters().stream().filter(cluster -> {
             String clusterState = cluster.getState();
-            return !clusterState.equals(ResourcePoolState.ENDED.toString()) &&
-                    !clusterState.equals(ResourcePoolState.ENDING.toString());
+            return !clusterState.equals(SparkResourcePoolState.ENDED.toString()) &&
+                    !clusterState.equals(SparkResourcePoolState.ENDING.toString());
         }).iterator());
     }
 

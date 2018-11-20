@@ -24,11 +24,14 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Update spark workers.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UpdateSparkResourcePoolParameters {
     /**
      * Definition of spark workers.
@@ -37,7 +40,7 @@ public class UpdateSparkResourcePoolParameters {
     private List<UpdateSparkResourcePoolItemParameters> sparkResourceCollection;
 
     /**
-     * Get the sparkResourceCollection value.
+     * Get definition of spark workers.
      *
      * @return the sparkResourceCollection value
      */
@@ -46,7 +49,7 @@ public class UpdateSparkResourcePoolParameters {
     }
 
     /**
-     * Set the sparkResourceCollection value.
+     * Set definition of spark workers.
      *
      * @param sparkResourceCollection the sparkResourceCollection value to set
      * @return the UpdateSparkResourcePoolParameters object itself.

@@ -590,6 +590,7 @@ public class AzureWebAppMvpModel {
         final List<RuntimeStack> runtimes = new ArrayList<>();
         runtimes.add(RuntimeStack.TOMCAT_8_5_JRE8);
         runtimes.add(RuntimeStack.TOMCAT_9_0_JRE8);
+        runtimes.add(RuntimeStack.WILDFLY_14_JRE8);
         runtimes.add(RuntimeStack.JAVA_8_JRE8);
         return runtimes;
     }

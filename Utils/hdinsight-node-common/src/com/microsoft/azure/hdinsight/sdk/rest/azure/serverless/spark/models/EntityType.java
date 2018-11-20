@@ -23,61 +23,39 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
+import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.microsoft.rest.ExpandableStringEnum;
 
 /**
- * Defines values for ActivityState.
+ * Defines values for EntityType.
  */
-public enum ActivityState {
-    /** Enum value Any. */
-    ANY("Any"),
+@JsonIgnoreProperties(ignoreUnknown = true)
+public final class EntityType extends ExpandableStringEnum<EntityType> {
+    /** Static value ResourcePools for EntityType. */
+    public static final EntityType RESOURCE_POOLS = fromString("ResourcePools");
 
-    /** Enum value Submitted. */
-    SUBMITTED("Submitted"),
+    /** Static value BatchJobs for EntityType. */
+    public static final EntityType BATCH_JOBS = fromString("BatchJobs");
 
-    /** Enum value Preparing. */
-    PREPARING("Preparing"),
+    /** Static value StreamingJobs for EntityType. */
+    public static final EntityType STREAMING_JOBS = fromString("StreamingJobs");
 
-    /** Enum value Queued. */
-    QUEUED("Queued"),
-
-    /** Enum value Scheduled. */
-    SCHEDULED("Scheduled"),
-
-    /** Enum value Finalizing. */
-    FINALIZING("Finalizing"),
-
-    /** Enum value Ended. */
-    ENDED("Ended");
-
-    /** The actual serialized value for a ActivityState instance. */
-    private String value;
-
-    ActivityState(String value) {
-        this.value = value;
+    /**
+     * Creates or finds a EntityType from its string representation.
+     * @param name a name to look for
+     * @return the corresponding EntityType
+     */
+    @JsonCreator
+    public static EntityType fromString(String name) {
+        return fromString(name, EntityType.class);
     }
 
     /**
-     * Parses a serialized value to a ActivityState instance.
-     *
-     * @param value the serialized value to parse.
-     * @return the parsed ActivityState object, or null if unable to parse.
+     * @return known EntityType values
      */
-    @JsonCreator
-    public static ActivityState fromString(String value) {
-        ActivityState[] items = ActivityState.values();
-        for (ActivityState item : items) {
-            if (item.toString().equalsIgnoreCase(value)) {
-                return item;
-            }
-        }
-        return null;
-    }
-
-    @JsonValue
-    @Override
-    public String toString() {
-        return this.value;
+    public static Collection<EntityType> values() {
+        return values(EntityType.class);
     }
 }

@@ -27,5 +27,6 @@ package com.microsoft.azuretools.authmanage.interact;
  */
 public enum AuthMethod {
     AD,
+    DC,
     SP,
 }

@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
@@ -18,17 +18,43 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.microsoft.azure.hdinsight.spark.common
+package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
-import com.intellij.openapi.project.Project
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-class ServerlessSparkBatchConfigurableModel(project: Project) : SparkBatchJobConfigurableModel(project) {
-    val serverlessSparkSubmitModel = ServerlessSparkSubmitModel(project)
+/**
+ * Full definition of the spark batch job entity.
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class SparkBatchJob extends AnalyticsJob {
+    /**
+     * Properties specific to a serverless spark job.
+     */
+    @JsonProperty(value = "properties")
+    private SparkBatchJobProperties properties;
 
-    init {
-        localRunConfigurableModel = SparkLocalRunConfigurableModel(project)
-        submitModel = serverlessSparkSubmitModel
+    /**
+     * Get properties specific to a serverless spark job.
+     *
+     * @return the properties value
+     */
+    public SparkBatchJobProperties properties() {
+        return this.properties;
     }
+
+    /**
+     * Set properties specific to a serverless spark job.
+     *
+     * @param properties the properties value to set
+     * @return the SparkBatchJob object itself.
+     */
+    public SparkBatchJob withProperties(SparkBatchJobProperties properties) {
+        this.properties = properties;
+        return this;
+    }
+
 }

@@ -43,10 +43,35 @@ public class CommonSettings {
     public static final String authMethodDetailsFileName = "AuthMethodDetails.json";
 
     private static String settingsBaseDir = null;
+    private static boolean deviceLoginEnabled = false;
     private static final String AAD_PROVIDER_FILENAME = "AadProvider.json";
     private static final String ENV_NAME_KEY = "EnvironmentName";
+    private static final String ENABLE_DEVICE_LOGIN_KEY = "EnableDeviceLogin";
     private static IUIFactory uiFactory;
     private static Environment ENV = Environment.GLOBAL;
+
+    public static boolean getDeviceLoginEnabled() {
+        return deviceLoginEnabled;
+    }
+
+    public static void initDeviceLoginEnabled() {
+        final String aadProviderFile = Paths.get(CommonSettings.settingsBaseDir, AAD_PROVIDER_FILENAME).toString();
+        final File f = new File(aadProviderFile);
+        if (!f.exists() || !f.isFile()) {
+            return;
+        }
+
+        try (final FileReader fileReader = new FileReader(aadProviderFile)) {
+            final JsonElement jsonTree = new JsonParser().parse(fileReader);
+            if (jsonTree.isJsonObject()) {
+                final JsonObject jsonObject = jsonTree.getAsJsonObject();
+                final JsonElement isDeviceLoginEnabledElement = jsonObject.get(ENABLE_DEVICE_LOGIN_KEY);
+                deviceLoginEnabled = (isDeviceLoginEnabledElement != null ? isDeviceLoginEnabledElement.getAsBoolean() : false);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public static String getSettingsBaseDir() {
         return settingsBaseDir;
@@ -102,6 +127,7 @@ public class CommonSettings {
             e.printStackTrace();
         }
     }
+
     public static IUIFactory getUiFactory() {
         return uiFactory;
     }
