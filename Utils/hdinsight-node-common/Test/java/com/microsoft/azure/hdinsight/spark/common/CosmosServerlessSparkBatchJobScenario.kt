@@ -35,6 +35,7 @@ import org.apache.http.entity.StringEntity
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.*
 import org.slf4j.Logger
+import rx.Observable
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
@@ -66,7 +67,7 @@ class CosmosServerlessSparkBatchJobScenario {
         // the real request body is defined with variable "requestJsonBody"
         doReturn(submissionParameter).`when`(serverlessJobMock).getSubmissionParameter()
         doReturn(connectUri).`when`(serverlessJobMock).connectUri
-
+        doReturn(Observable.just(true)).`when`(serverlessJobMock).prepareSparkEventsLogFolder()
     }
 
     @Given("^setup a mock cosmos serverless service for '(.+)' detail request '(.+)' with body '(.+)' to return '(.+)' with status code (\\d+)$")

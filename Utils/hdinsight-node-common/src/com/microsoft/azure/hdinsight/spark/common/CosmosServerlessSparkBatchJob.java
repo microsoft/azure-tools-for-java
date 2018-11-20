@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.microsoft.azure.datalake.store.ADLStoreClient;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.sdk.common.AzureDataLakeHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
@@ -85,6 +86,28 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
         return jobUuid;
     }
 
+
+    /**
+     * Prepare spark event log path for job submission
+     * @return whether spark events log path preparation succeed or not
+     */
+    public Observable<Boolean> prepareSparkEventsLogFolder() {
+        return Observable.fromCallable(() -> {
+            try {
+                String path = getSubmissionParameter().sparkEventsDirectoryPath();
+                String accessToken = getHttp().getAccessToken();
+                ADLStoreClient storeClient = ADLStoreClient.createClient(URI.create(path).getHost(), accessToken);
+                if (storeClient.checkExists(path)) {
+                    return true;
+                } else {
+                    return storeClient.createDirectory(path);
+                }
+            } catch (Exception ex) {
+                throw new IOException("Spark events log path preparation failed", ex);
+            }
+        });
+    }
+
     /**
      * Create Serverless Spark batch job
      */
@@ -143,7 +166,14 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> submit() {
-        return createSparkBatchJobRequest(getJobUuid(), getSubmissionParameter())
+        return prepareSparkEventsLogFolder()
+                .flatMap(isSucceed -> {
+                            if (isSucceed) {
+                                return createSparkBatchJobRequest(getJobUuid(), getSubmissionParameter());
+                            } else {
+                                return Observable.error(new IOException("Spark events log path preparation failed."));
+                            }
+                        })
                 .flatMap(sparkBatchJob -> getSparkBatchJobRequest(getJobUuid()))
                 .doOnNext(sparkBatchJob -> {
                     if (sparkBatchJob != null && sparkBatchJob.properties() != null && sparkBatchJob.properties().responsePayload() != null) {
