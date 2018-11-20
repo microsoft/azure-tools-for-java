@@ -48,7 +48,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.ApplicationMasterLogs;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
-import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParams;
+import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParamsBuilder;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivyBatchesInformation;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivySession;
@@ -694,9 +694,9 @@ public class JobUtils {
             String webHdfsUploadPath = destinationRootPath.concat(file.getName());
             String redirectUri = null;
 
-           List<NameValuePair> params = new WebHdfsParams("create")
-                   .setOverwrite("true")
-                   .build();
+            List<NameValuePair> params = new WebHdfsParamsBuilder("CREATE")
+                    .setOverwrite("true")
+                    .build();
 
             URIBuilder uriBuilder = new URIBuilder(webHdfsUploadPath);
             uriBuilder.addParameters(params);
@@ -714,9 +714,11 @@ public class JobUtils {
                         .getFirstHeader("Location")
                         .getValue();
 
-                if(redirectUri == null || redirectUri.isEmpty()){
+                if (StringUtils.isBlank(redirectUri)) {
                     throw new UnknownServiceException("can not get valid redirect uri using webhdfs");
                 }
+            } catch (Exception ex) {
+                throw new UnknownServiceException("using webhdfs encounter problem:".concat(ex.toString()));
             }
 
             InputStreamEntity reqEntity = new InputStreamEntity(
@@ -735,7 +737,7 @@ public class JobUtils {
 
             // execute put request
             try (CloseableHttpResponse putResp = httpclient.execute(req)) {
-                params = new WebHdfsParams("open")
+                params = new WebHdfsParamsBuilder("OPEN")
                         .build();
                 uriBuilder = new URIBuilder(webHdfsUploadPath);
                 uriBuilder.addParameters(params);

@@ -29,8 +29,8 @@ package com.microsoft.azure.hdinsight.spark.ui
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
@@ -248,20 +248,25 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                             }
                         }
                     }
-                    SparkSubmitStorageType.WEBHDFS -> it.apply{
+                    SparkSubmitStorageType.WEBHDFS -> it.apply {
                         //pattern for webhdfs root path.e.g http://host/webhdfs/v1/
-                        if(webHdfsRootPath != null && !SparkBatchJob.WebHDFSPathPattern.toRegex().matches(webHdfsRootPath!!)){
+                        val rootPath = webHdfsRootPath?.trim() ?: return@apply
+                        if (!SparkBatchJob.WebHDFSPathPattern.toRegex().matches(rootPath)) {
                             uploadPath = "-"
                             errorMsg = "Webhdfs root path is not valid"
-                        }else {
-                            val formatWebHdfsRootPath = if (webHdfsRootPath?.endsWith("/") == true) webHdfsRootPath else "$webHdfsRootPath/"
-                            uploadPath = "${webHdfsRootPath}SparkSubmission/"
+                        } else {
+                            val formatWebHdfsRootPath = if (rootPath.endsWith("/") == true)
+                                rootPath.trimEnd('/')
+                            else rootPath
+
+                            uploadPath = "${formatWebHdfsRootPath}/SparkSubmission/"
 
                             val clusterDetail = getClusterDetail()
                             when (clusterDetail) {
-                                is HDInsightAdditionalClusterDetail -> webHdfsAuthUser = clusterDetail?.httpUserName
+                                is HDInsightAdditionalClusterDetail -> webHdfsAuthUser = clusterDetail.httpUserName
                                 else -> webHdfsAuthUser = SparkSubmissionJobUploadWebHdfsSignOutCard.defaultAuthUser
                             }
+
                             errorMsg = null
                         }
                     }
