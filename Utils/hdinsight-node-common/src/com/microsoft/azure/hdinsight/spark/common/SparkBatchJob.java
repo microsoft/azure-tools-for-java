@@ -127,7 +127,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     /**
      * The Spark Batch Job submission parameter
      */
-    private SparkSubmissionParameter submissionParameter;
+    protected SparkSubmissionParameter submissionParameter;
 
     /**
      * The Spark Batch Job submission for RestAPI transaction
@@ -303,7 +303,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      *
      * @param batchId the LIVY Spark batch job ID
      */
-    private void setBatchId(int batchId) {
+    protected void setBatchId(int batchId) {
         this.batchId = batchId;
     }
 
@@ -385,7 +385,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      * @return the current instance for chain calling
      */
     @Override
-    public Observable<ISparkBatchJob> killBatchJob() {
+    public Observable<? extends ISparkBatchJob> killBatchJob() {
         return Observable.fromCallable(() -> {
             if (getConnectUri() == null) {
                 throw new SparkJobNotConfiguredException("Can't get Spark job connection URI, " +
@@ -1211,7 +1211,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      * @return Spark Job observable
      */
     @NotNull
-    public Observable<SparkSubmitResponse> getStatus() {
+    public Observable<? extends SparkSubmitResponse> getStatus() {
         if (getConnectUri() == null) {
             return Observable.error(new SparkJobNotConfiguredException("Can't get Spark job connection URI, " +
                     "please configure Spark cluster which the Spark job will be submitted."));
