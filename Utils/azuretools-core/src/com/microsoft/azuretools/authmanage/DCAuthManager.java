@@ -44,7 +44,7 @@ public class DCAuthManager extends BaseADAuthManager {
 
     public AuthResult deviceLogin(final AuthenticationCallback<AuthenticationResult> callback) throws IOException {
         cleanCache();
-        final AuthContext ac = createContext(getCommonTenantId(), null, null);
+        final AuthContext ac = createContext(getCommonTenantId(), null);
         final AuthResult result = ac.acquireToken(env.managementEndpoint(), true, null, callback);
         if (!result.isUserIdDisplayble()) {
             // todo refactor the words

@@ -119,9 +119,7 @@ public class BaseADAuthManager {
         }
     }
 
-    // todo: webUi and redirectUri is only used by interactive login, they should not be the properties of authcontext
-    protected AuthContext createContext(@NotNull final String tid, final UUID corrId,
-                                        final IWebUi webUi) throws IOException {
+    protected AuthContext createContext(@NotNull final String tid, final UUID corrId) throws IOException {
         String authority = null;
         final String endpoint = env.activeDirectoryEndpoint();
         if (StringUtils.isNullOrEmpty(endpoint)) {
@@ -132,6 +130,6 @@ public class BaseADAuthManager {
         } else {
             authority = endpoint + "/" + tid;
         }
-        return new AuthContext(authority, Constants.clientId, Constants.redirectUri, webUi, true, corrId);
+        return new AuthContext(authority, Constants.clientId, true, corrId);
     }
 }

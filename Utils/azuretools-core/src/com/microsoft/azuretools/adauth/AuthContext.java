@@ -45,13 +45,9 @@ import java.util.logging.Logger;
 
 public class AuthContext {
     private static final Logger log = Logger.getLogger(AuthContext.class.getName());
-    // TODO: move the cast later after package change
-    private final IWebUi webUi;
-    
     private final String clientId;
     private final String authority;
     private UUID correlationId;
-    private final String redirectUrl;
     private final AuthenticationAuthority authenticationAuthority;
     private final boolean validateAuthority;
     private CacheDriver driver;
@@ -64,24 +60,17 @@ public class AuthContext {
      * AuthContext to acquire token.
      * @param authority String not null.
      * @param clientId String not null.
-     * @param redirectUrl String not null.
-     * @param webUi IWebUi ui to get auth token interactively.
      * @param validateAuthority boolean whether to validate the authority url.
      * @param correlationId UUID request correlation id.
      * @throws MalformedURLException exception thrown when parse url from authority.
      */
-    // todo: webUi should not be a property of AuthContext, it is only used for interactive login
-    // todo: make it nullable as first step, then remove it and get it as parameter when acquire token by auth code
-    public AuthContext(@NotNull String authority, @NotNull String clientId, @NotNull String redirectUrl,
-                       IWebUi webUi, final boolean validateAuthority, UUID correlationId)
-            throws MalformedURLException {
+    public AuthContext(@NotNull final String authority, @NotNull final String clientId,
+                       final boolean validateAuthority, final UUID correlationId) throws MalformedURLException {
         this.authority = this.canonicalizeUri(authority);
         this.clientId = clientId;
         this.correlationId = (correlationId != null) ? correlationId : UUID.randomUUID();
-        this.redirectUrl = redirectUrl;
         this.validateAuthority = validateAuthority;
         authenticationAuthority = new AuthenticationAuthority(new URL(this.authority), this.validateAuthority);
-        this.webUi = webUi;
         initDriver();
     }
     
@@ -97,13 +86,17 @@ public class AuthContext {
      * Get token from last authentication result
      *
      * @param lastResult last authentication result
+     * @param webUi web ui
+     * @param redirectUrl redirect url
      * @return authentication result with updated tokens
      * @throws AuthException exception during getting token
      */
-    public AuthResult acquireToken(@NotNull AuthResult lastResult) throws AuthException {
+    public AuthResult acquireToken(@NotNull final AuthResult lastResult, final IWebUi webUi,
+                                   final String redirectUrl) throws AuthException {
         driver.createAddEntry(lastResult, null);
 
-        return acquireToken(lastResult.getResource(), false, lastResult.getUserId(), lastResult.isMultipleResourceRefreshToken());
+        return acquireToken(lastResult.getResource(), false, lastResult.getUserId(),
+            lastResult.isMultipleResourceRefreshToken(), webUi, redirectUrl);
     }
 
     /**
@@ -112,18 +105,21 @@ public class AuthContext {
      * @param newAuthCode String need to get new auth code.
      * @param userId String userId.
      * @param isDisplayable boolean whether the userId is displayable id.
+     * @param webUi web ui
+     * @param redirectUrl redirect url
      * @return AuthResult auth result with the tokens.
      * @throws AuthException exception during get token.
      */
-    public AuthResult acquireToken(@NotNull String resource, boolean newAuthCode,
-                                   String userId, boolean isDisplayable) throws AuthException {
+    public AuthResult acquireToken(@NotNull final String resource, final boolean newAuthCode, final String userId,
+                                   final boolean isDisplayable, final IWebUi webUi,
+                                   final String redirectUrl) throws AuthException {
         String userDisplayableId = null;
         if (null != userId && isDisplayable) {
             userDisplayableId = userId;
         }
         if (newAuthCode) {
-            String code = acquireAuthCode(resource, userDisplayableId);
-            return getTokenWithAuthCode(code, resource);
+            String code = acquireAuthCode(resource, userDisplayableId, webUi, redirectUrl);
+            return getTokenWithAuthCode(code, resource, redirectUrl);
         } else {
             AuthResult result = null;
             result = acquireTokenFromCache(resource, userId);
@@ -182,11 +178,12 @@ public class AuthContext {
         return authResult;
     }
 
-    private String acquireAuthCode(@NotNull final String resource, String userDisplayableId) throws AuthException {
+    private String acquireAuthCode(@NotNull final String resource, final String userDisplayableId,
+        final IWebUi webUi, final String redirectUrl) throws AuthException {
         AuthCode code = null;
         try {
             AuthCodeInteractiveHandler handler = new AuthCodeInteractiveHandler(this.authenticationAuthority,
-                    this.clientId, this.webUi, this.redirectUrl, resource, userDisplayableId);
+                this.clientId, webUi, redirectUrl, resource, userDisplayableId);
             String response = handler.acquireAuthCode(this.correlationId);
             code = parseAuthorizeResponse(response, this.correlationId);
         } catch (Exception e) {
@@ -195,7 +192,7 @@ public class AuthContext {
         }
 
         log.log(Level.FINEST, "==> authorization code: " + code.getCode());
-            
+
         if (code.getStatus() == AuthorizationStatus.Success) {
             return code.getCode();
         } else {
@@ -204,8 +201,8 @@ public class AuthContext {
             }
 
             String message = code.getError()
-                    + (code.getErrorDescription() == null ? "" : ": ")
-                    + code.getErrorDescription();
+                + (code.getErrorDescription() == null ? "" : ": ")
+                + code.getErrorDescription();
             log.log(Level.SEVERE, message);
             throw new AuthException(code.getError(), code.getErrorDescription());
         }
@@ -220,7 +217,8 @@ public class AuthContext {
     }
  
     private AuthResult getTokenWithAuthCode(@NotNull final String code,
-                                            @NotNull final String resource) throws AuthException {
+                                            @NotNull final String resource,
+                                            final String redirectUrl) throws AuthException {
         Map<String, String> requestParameters = new HashMap<>();
         requestParameters.put(OAuthParameter.Resource, resource);
         requestParameters.put(OAuthParameter.ClientId, clientId);

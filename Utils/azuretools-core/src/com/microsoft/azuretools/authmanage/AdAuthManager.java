@@ -24,6 +24,7 @@ package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.adauth.*;
 import com.microsoft.azuretools.authmanage.models.AdAuthDetails;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
@@ -66,10 +67,11 @@ public class AdAuthManager extends BaseADAuthManager {
      * @throws IOException thrown when fail to get access token.
      */
     public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
-        AuthContext ac = createContext(tid, null, this.webUi);
+        AuthContext ac = createContext(tid, null);
         AuthResult result = null;
         try {
-            result = ac.acquireToken(resource, false, adAuthDetails.getAccountEmail(), false);
+            result = ac.acquireToken(resource, false, adAuthDetails.getAccountEmail(), false,
+                this.webUi, Constants.redirectUri);
         } catch (AuthException e) {
             if (AuthError.InvalidGrant.equalsIgnoreCase(e.getError())
                     || AuthError.InteractionRequired.equalsIgnoreCase(e.getError())) {
@@ -142,10 +144,11 @@ public class AdAuthManager extends BaseADAuthManager {
 
         if (savedAuth == null) {
             cleanCache();
-            AuthContext ac = createContext(getCommonTenantId(), null, this.webUi);
+            AuthContext ac = createContext(getCommonTenantId(), null);
             // todo: to determine which acquireToken to call, device login or interactive login
             // todo: https://github.com/Microsoft/azure-tools-for-java/pull/1623
-            result = ac.acquireToken(env.managementEndpoint(), true, null, false);
+            result = ac.acquireToken(env.managementEndpoint(), true, null,
+                false, this.webUi, Constants.redirectUri);
         } else {
             result = savedAuth;
         }
@@ -158,31 +161,35 @@ public class AdAuthManager extends BaseADAuthManager {
         List<Tenant> tenants = AccessTokenAzureManager.getTenants(getCommonTenantId());
         for (Tenant t : tenants) {
             String tid = t.tenantId();
-            AuthContext ac1 = createContext(tid, null, this.webUi);
+            AuthContext ac1 = createContext(tid, null);
             // put tokens into the cache
             try {
-                ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable);
+                ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable,
+                    this.webUi, Constants.redirectUri);
             } catch (AuthException e) {
                 //TODO: should narrow to AuthError.InteractionRequired
-                ac1.acquireToken(env.managementEndpoint(), true, userId, isDisplayable);
+                ac1.acquireToken(env.managementEndpoint(), true, userId, isDisplayable,
+                    this.webUi, Constants.redirectUri);
             }
 
             // FIXME!!! Some environments and subscriptions can't get the resource manager token
             // Let the log in process passed, and throwing the errors when to access those resources
             try {
-                ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable);
+                ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable,
+                    this.webUi, Constants.redirectUri);
             } catch (AuthException e) {
                 if (CommonSettings.getEnvironment() instanceof ProvidedEnvironment) {
                     // Swallow the exception since some provided environments are not full featured
                     LOGGER.warning("Can't get " + env.resourceManagerEndpoint() + " access token from environment " +
-                            CommonSettings.getEnvironment().getName());
+                        CommonSettings.getEnvironment().getName());
                 } else {
                     throw e;
                 }
             }
 
             try {
-                ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable);
+                ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable,
+                    this.webUi, Constants.redirectUri);
             } catch (AuthException e) {
                 if (CommonSettings.getEnvironment() instanceof ProvidedEnvironment) {
                     // Swallow the exception since some provided environments are not full featured
@@ -195,7 +202,8 @@ public class AdAuthManager extends BaseADAuthManager {
 
             // ADL account access token
             try {
-                ac1.acquireToken(env.dataLakeEndpointResourceId(), false, userId, isDisplayable);
+                ac1.acquireToken(env.dataLakeEndpointResourceId(), false, userId, isDisplayable,
+                    this.webUi, Constants.redirectUri);
             } catch (AuthException e) {
                 LOGGER.warning("Can't get " + env.dataLakeEndpointResourceId() + " access token from environment " +
                         CommonSettings.getEnvironment().getName() + "for user " + userId);
@@ -245,8 +253,8 @@ public class AdAuthManager extends BaseADAuthManager {
                 String tenantId = StringUtils.isNullOrWhiteSpace(savedAuth.getUserInfo().getTenantId()) ? COMMON_TID :
                         savedAuth.getUserInfo().getTenantId();
 
-                AuthContext ac = createContext(tenantId, null, this.webUi);
-                AuthResult updatedAuth = ac.acquireToken(savedAuth);
+                AuthContext ac = createContext(tenantId, null);
+                AuthResult updatedAuth = ac.acquireToken(savedAuth, this.webUi, Constants.redirectUri);
 
                 saveToSecureStore(updatedAuth);
 
