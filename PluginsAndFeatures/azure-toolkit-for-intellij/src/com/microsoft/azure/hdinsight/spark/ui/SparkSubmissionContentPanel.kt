@@ -61,15 +61,9 @@ import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-open class SparkSubmissionContentPanel : JPanel {
+open class SparkSubmissionContentPanel : JPanel() {
     companion object {
         const val REFRESH_BUTTON_PATH = "/icons/refresh.png"
-    }
-
-    val enableStoragePanel : Boolean
-
-    constructor(enableStoragePanel : Boolean = true) : super() {
-        this.enableStoragePanel = enableStoragePanel
     }
 
     private enum class ErrorMessage {
@@ -250,13 +244,13 @@ open class SparkSubmissionContentPanel : JPanel {
                                   .map { it.text }
 
     @Suppress("UNCHECKED_CAST")
-    open var clustersModel: ImmutableComboBoxModel<IClusterDetail>
+    var clustersModel: ImmutableComboBoxModel<IClusterDetail>
         get() = clustersListComboBox.comboBox.model as ImmutableComboBoxModel<IClusterDetail>
         set(model) {
             clustersListComboBox.comboBox.model = model as ComboBoxModel<Any>
         }
 
-    private fun buildPanel(): JPanel {
+    init {
         val formBuilder = panel {
             columnTemplate {
                 col {
@@ -269,7 +263,6 @@ open class SparkSubmissionContentPanel : JPanel {
                     fill = FILL_HORIZONTAL
                 }
             }
-
             row { c(clustersSelectionPrompt);             c(clustersListComboBox) }
             row { c();                                    c(errorMessageLabels[ErrorMessage.ClusterName.ordinal]) { fill = FILL_NONE } }
             row { c(artifactSelectLabel) }
@@ -284,20 +277,10 @@ open class SparkSubmissionContentPanel : JPanel {
             row { c(commandLineArgsPrompt);               c(commandLineTextField) }
             row { c(refJarsPrompt);                       c(referencedJarsTextField) }
             row { c(refFilesPrompt);                      c(referencedFilesTextField) }
-
-            if (enableStoragePanel) {
-                row { c(storageWithUploadPathPanel) { colSpan = 2; fill = FILL_HORIZONTAL }; }
-            }
+            row { c(storageWithUploadPathPanel) { colSpan = 2; fill = FILL_HORIZONTAL }; }
         }
-        return formBuilder.buildPanel()
-    }
 
-    private val sparkSubmissionPanel: JPanel by lazy {
-        buildPanel()
-    }
-
-    init {
-        this.add(sparkSubmissionPanel)
+        this.add(formBuilder.buildPanel())
         this.addContainerListener(object : ContainerAdapter() {
             override fun componentRemoved(e: ContainerEvent) {
                 cleanUp()

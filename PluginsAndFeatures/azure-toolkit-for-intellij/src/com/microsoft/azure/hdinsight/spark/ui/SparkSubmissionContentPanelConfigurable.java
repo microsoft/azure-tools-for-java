@@ -76,7 +76,7 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
 
     public SparkSubmissionContentPanelConfigurable(@NotNull Project project, boolean enableStoragePanel) {
         this.myProject = project;
-        this.submissionPanel = new SparkSubmissionContentPanel(enableStoragePanel);
+        this.submissionPanel = new SparkSubmissionContentPanel();
         registerCtrlListeners();
         this.jobUploadStorageCtrl = new SparkSubmissionJobUploadStorageCtrl(getStorageWithUploadPathPanel()) {
             @Nullable
@@ -363,7 +363,7 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
     public void validate() throws ConfigurationException {
         getSubmissionPanel().checkInputs();
 
-        if (submissionPanel.getEnableStoragePanel() && !jobUploadStorageCtrl.isCheckPassed()) {
+        if (!jobUploadStorageCtrl.isCheckPassed()) {
             throw new RuntimeConfigurationError("Can't save the configuration since "
                     + jobUploadStorageCtrl.getResultMessage().toLowerCase());
         }
