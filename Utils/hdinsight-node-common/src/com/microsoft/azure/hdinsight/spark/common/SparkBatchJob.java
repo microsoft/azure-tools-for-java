@@ -45,6 +45,8 @@ import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
@@ -65,6 +67,9 @@ import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
 
 public class SparkBatchJob implements ISparkBatchJob, ILogger {
+    public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
+    public static final String AdlsPathPattern = "adl://([^/.]+\\.)+[^/.]+(/[^/.]+)*/?$";
+
     @Nullable
     private String currentLogUrl;
     @NotNull
@@ -160,7 +165,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     private String accessToken;
 
     @Nullable
-    private String adlRootPath;
+    private String destinationRootPath;
 
     public SparkBatchJob(
             SparkSubmissionParameter submissionParameter,
@@ -169,19 +174,37 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         this(submissionParameter, sparkBatchSubmission, ctrlSubject, null, null, null);
     }
 
+
     public SparkBatchJob(
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
             @Nullable IHDIStorageAccount storageAccount,
             @Nullable String accessToken,
-            @Nullable String adlRootPath) {
+            @Nullable String destinationRootPath) {
         this.submissionParameter = submissionParameter;
         this.storageAccount = storageAccount;
         this.submission = sparkBatchSubmission;
         this.ctrlSubject = ctrlSubject;
         this.accessToken = accessToken;
-        this.adlRootPath = adlRootPath;
+        this.destinationRootPath = destinationRootPath;
+
+        tryInitAuthInfo(submissionParameter.getClusterName(),submission);
+    }
+
+    private void tryInitAuthInfo(String clusterName, SparkBatchSubmission submission) {
+        try {
+              IClusterDetail clusterDetail = ClusterManagerEx
+                    .getInstance()
+                    .getClusterDetailByName(clusterName)
+                    .orElseThrow(() -> new HDIException("No cluster name matched selection: " + clusterName));
+
+             if (!StringUtils.isEmpty(clusterDetail.getHttpUserName()) && !StringUtils.isEmpty(clusterDetail.getHttpPassword())) {
+                submission.setUsernamePasswordCredential(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
+             }
+        } catch (Exception ex) {
+             log().warn("try to set authorization info fail: " + ex.toString());
+        }
     }
 
     /**
@@ -192,8 +215,6 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     public SparkSubmissionParameter getSubmissionParameter() {
         return submissionParameter;
     }
-
-
 
     /**
      * Getter of the Spark Batch Job submission for RestAPI transaction
@@ -1101,13 +1122,22 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        if (accessToken != null) {
-            return JobUtils.deployArtifactToADLS(artifactPath, adlRootPath, accessToken)
+        if (destinationRootPath != null && destinationRootPath.matches(AdlsPathPattern) && accessToken != null) {
+            //use ADLS GEN1
+            return JobUtils.deployArtifactToADLS(artifactPath, destinationRootPath, accessToken)
                     .map(path -> {
                         getSubmissionParameter().setFilePath(path);
                         return this;
                     });
+        } else if (destinationRootPath != null && destinationRootPath.matches(WebHDFSPathPattern)) {
+            //use webhdfs
+            return JobUtils.deployArtifact(this.getSubmission(), destinationRootPath, artifactPath)
+                    .map(redirectPath -> {
+                        getSubmissionParameter().setFilePath(redirectPath);
+                        return this;
+                    });
         } else if (storageAccount == null) {
+            //use livy session
             return JobUtils.deployArtifact(artifactPath, getSubmissionParameter().getClusterName(), getCtrlSubject())
                     .map(clusterArtifactUriPair -> {
                         getSubmissionParameter().setFilePath(clusterArtifactUriPair.getValue());
@@ -1115,6 +1145,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                     })
                     .toObservable();
         } else {
+            //use default storage account
             return JobUtils.deployArtifact(artifactPath, storageAccount, getCtrlSubject())
                     .map(path -> {
                         getSubmissionParameter().setFilePath(path);

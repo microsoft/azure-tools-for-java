@@ -43,7 +43,7 @@ class CosmosSparkBatchRunner : SparkBatchJobRunner() {
 
     @Throws(ExecutionException::class)
     override fun buildSparkBatchJob(submitModel: SparkSubmitModel, ctrlSubject: Observer<SimpleImmutableEntry<MessageInfoType, String>>): ISparkBatchJob {
-        val tenantId = (submitModel as ServerlessSparkSubmitModel).tenantId
+        val tenantId = (submitModel as CosmosSparkSubmitModel).tenantId
         val accountName = submitModel.accountName
 
         if (submitModel.clusterId == null) {

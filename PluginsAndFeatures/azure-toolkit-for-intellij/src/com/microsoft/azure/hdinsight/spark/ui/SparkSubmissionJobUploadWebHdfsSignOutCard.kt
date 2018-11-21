@@ -20,32 +20,41 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.run.configuration
+package com.microsoft.azure.hdinsight.spark.ui
 
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.microsoft.azure.hdinsight.common.CommonConst
-import com.microsoft.intellij.util.PluginUtil
-import javax.swing.Icon
+import com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST
+import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
+import com.microsoft.intellij.forms.dsl.panel
+import javax.swing.JLabel
 
-open class CosmosSparkConfigurationType : ConfigurationType {
-    override fun getIcon(): Icon {
-        return PluginUtil.getIcon("/icons/${CommonConst.AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH}")
+class SparkSubmissionJobUploadWebHdfsSignOutCard : SparkSubmissionJobUploadStorageBasicCard() {
+    override val title: String = "Sign Out"
+
+    companion object {
+        val defaultAuthUser = "No Available Account"
     }
 
-    override fun getConfigurationTypeDescription(): String {
-        return "Cosmos ADL Spark Job Configuration"
+    val authUserHintLabel = JLabel("Present Account")
+    val authUserNameLabel = JLabel().apply {
+        text = defaultAuthUser
     }
 
-    override fun getId(): String {
-        return "CosmosADLSparkConfiguration"
-    }
+    init {
+        val formBuilder = panel {
+            columnTemplate {
+                col {
+                    anchor = ANCHOR_WEST
+                }
+                col {
+                    anchor = ANCHOR_WEST
+                }
+                row {
+                    c(authUserHintLabel); c(authUserNameLabel)
+                }
+            }
+        }
 
-    override fun getDisplayName(): String {
-        return "Azure Data Lake Spark Pool"
-    }
-
-    override fun getConfigurationFactories(): Array<ConfigurationFactory> {
-        return arrayOf(CosmosSparkConfigurationFactory(this))
+        layout = formBuilder.createGridLayoutManager()
+        formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }
 }

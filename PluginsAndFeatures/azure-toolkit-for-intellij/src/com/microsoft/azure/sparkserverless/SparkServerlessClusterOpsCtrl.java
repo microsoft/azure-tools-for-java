@@ -29,9 +29,12 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azure.hdinsight.spark.actions.SparkAppSubmitContext;
 import com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction;
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationFactory;
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType;
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationFactory;
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType;
 import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterOps;
@@ -139,6 +142,46 @@ public class SparkServerlessClusterOpsCtrl implements ILogger {
                         log().error(ex.getMessage());
                     }
                 }, ex -> log().error(ex.getMessage(), ex));
-    }
 
+        this.sparkServerlessClusterOps.getServerlessSubmitAction()
+                .observeOn(ideSchedulers.dispatchUIThread())
+                .subscribe(accountNodePair -> {
+                    log().info(String.format("Submit message received. account: %s, node: %s",
+                            accountNodePair.getLeft().getName(), accountNodePair.getRight().getName()));
+
+                    try {
+                        AzureSparkServerlessAccount adlAccount = accountNodePair.getLeft();
+                        SparkAppSubmitContext context = new SparkAppSubmitContext();
+                        Project project = (Project) accountNodePair.getRight().getProject();
+
+                        final RunManager runManager = RunManager.getInstance(project);
+                        final List<RunnerAndConfigurationSettings> batchConfigSettings = runManager
+                                .getConfigurationSettingsList(findConfigurationType(CosmosServerlessSparkConfigurationType.class));
+
+                        final String runConfigName = "[Cosmos Serverless Spark] " + adlAccount.getName();
+                        final RunnerAndConfigurationSettings runConfigurationSetting = batchConfigSettings.stream()
+                                .filter(settings -> settings.getConfiguration().getName().startsWith(runConfigName))
+                                .findFirst()
+                                .orElseGet(() -> runManager.createRunConfiguration(
+                                        runConfigName,
+                                        new CosmosServerlessSparkConfigurationFactory(new CosmosServerlessSparkConfigurationType())));
+
+                        context.putData(RUN_CONFIGURATION_SETTING, runConfigurationSetting)
+                                .putData(CLUSTER, adlAccount);
+
+                        Presentation actionPresentation = new Presentation("Submit Cosmos Serverless Spark Job");
+                        actionPresentation.setDescription("Submit specified Spark application into the remote cluster");
+
+                        AnActionEvent event = AnActionEvent.createFromDataContext(
+                                String.format("Cosmos Serverless Cluster %s:%s context menu",
+                                        adlAccount.getName(), adlAccount.getName()),
+                                actionPresentation,
+                                context);
+
+                        new SparkSubmitJobAction().actionPerformed(event);
+                    } catch (Exception ex) {
+                        log().error(ex.getMessage());
+                    }
+                }, ex -> log().error(ex.getMessage(), ex));
+    }
 }
