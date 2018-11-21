@@ -117,6 +117,14 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
     }
 
     @Nullable
+    public AzureSparkServerlessAccount getAccountByName(@NotNull String name) {
+        return getAccounts().stream()
+                .filter(account -> account.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Nullable
     public AzureManager getAzureManager() {
         try {
             return AuthMethodManager.getInstance().getAzureManager();

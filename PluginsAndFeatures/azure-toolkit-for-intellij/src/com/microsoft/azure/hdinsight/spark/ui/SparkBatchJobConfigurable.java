@@ -38,7 +38,7 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
     private JPanel myWholePanel;
     private SparkLocalRunConfigurable myLocalRunConfigurable;
     private JScrollPane remoteConfigScrollPane;
-    private SparkSubmissionContentPanelConfigurable submissionContentPanelConfigurable;
+    protected SparkSubmissionContentPanelConfigurable submissionContentPanelConfigurable;
 
     @NotNull
     private final Project myProject;

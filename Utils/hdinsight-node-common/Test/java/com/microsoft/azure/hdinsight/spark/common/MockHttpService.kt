@@ -31,13 +31,13 @@ import groovy.text.SimpleTemplateEngine
 class MockHttpService {
     val livyServerMock: WireMockServer = WireMockServer(wireMockConfig().dynamicPort())
 
-    public val port: Int
+    val port: Int
         get() = this.livyServerMock.port()
 
-    public val templateProperties: Map<String, String>
+    val templateProperties: Map<String, String>
         get() = hashMapOf("port" to port.toString())
 
-    public fun stub(action: String, uri: String, statusCode: Int, response: String) {
+    fun stub(action: String, uri: String, statusCode: Int, response: String) {
         WireMock.configureFor(port)
         WireMock.stubFor(WireMock.request(
                                 action, WireMock.urlEqualTo(uri))
@@ -45,7 +45,7 @@ class MockHttpService {
                                 .withStatus(statusCode).withBody(normalizeResponse(response))))
     }
 
-    public fun stubWithHeader(action: String, uri: String, statusCode: Int, response: String, header: Map<String, String>) {
+    fun stubWithHeader(action: String, uri: String, statusCode: Int, response: String, header: Map<String, String>) {
         WireMock.configureFor(port)
         WireMock.stubFor(WireMock.request(
                 action, WireMock.urlEqualTo(uri))
@@ -55,12 +55,22 @@ class MockHttpService {
                         .withBody(normalizeResponse(response))))
     }
 
-    public fun normalizeResponse(rawResponse: String): String {
+    fun stubWithBody(action: String, uri: String, body: String, statusCode: Int, response: String) {
+        WireMock.configureFor(port)
+        WireMock.stubFor(
+            WireMock.request(action, WireMock.urlEqualTo(uri))
+                .withRequestBody(WireMock.equalToJson(body))
+                .willReturn(WireMock.aResponse()
+                    .withStatus(statusCode)
+                    .withBody(normalizeResponse(response))))
+    }
+
+    fun normalizeResponse(rawResponse: String): String {
         val engine = SimpleTemplateEngine()
         return engine.createTemplate(rawResponse).make(templateProperties).toString()
     }
 
-    public fun completeUrl(absoluteUri: String): String {
+    fun completeUrl(absoluteUri: String): String {
         return "http://localhost:$port/${absoluteUri.trimStart('/')}"
     }
 
