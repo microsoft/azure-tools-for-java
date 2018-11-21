@@ -55,12 +55,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
 
-/**
- * Created by vlashch on 1/19/17.
- */
 public class WebAppUtils {
 
     public static final String TYPE_WAR = "war";
@@ -414,6 +409,7 @@ public class WebAppUtils {
                 final boolean isJavaLinuxRuntimeWithWebContainer = getAllJavaLinuxRuntimeStacks()
                     .stream()
                     .map(r -> r.stack())
+                    .filter(w -> !w.equalsIgnoreCase("java"))
                     .anyMatch(w -> w.equalsIgnoreCase(webContainer));
                 if (isJavaLinuxRuntimeWithWebContainer) {
                     // TOMCAT|8.5-jre8 -> Tomcat 8.5 (JRE8)
