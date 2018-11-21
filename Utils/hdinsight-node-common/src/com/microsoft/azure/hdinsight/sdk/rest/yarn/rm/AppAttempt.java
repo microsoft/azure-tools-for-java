@@ -21,7 +21,6 @@
  */
 
 package com.microsoft.azure.hdinsight.sdk.rest.yarn.rm;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)

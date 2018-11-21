@@ -31,13 +31,25 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContextBuilder;
 import rx.Observable;
 import rx.schedulers.Schedulers;
+
+
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -72,12 +84,29 @@ public class SparkBatchSubmission {
         return HDInsightLoader.getHDInsightHelper().getInstallationId();
     }
 
-    @NotNull
     public CloseableHttpClient getHttpClient() throws IOException {
-        return HttpClients.custom()
-                 .useSystemProperties()
-                 .setDefaultCredentialsProvider(credentialsProvider)
-                 .build();
+        HttpClientBuilder builder = HttpClients.custom()
+                .useSystemProperties()
+                .setDefaultCredentialsProvider(credentialsProvider);
+
+        try {
+            SSLContext sslContext = new SSLContextBuilder()
+                    .loadTrustMaterial(null, (x509CertChain, authType) -> true)
+                    .build();
+            return builder
+                    .setSSLContext(sslContext)
+                    .setConnectionManager(
+                            new PoolingHttpClientConnectionManager(
+                                    RegistryBuilder.<ConnectionSocketFactory>create()
+                                            .register("http", PlainConnectionSocketFactory.INSTANCE)
+                                            .register("https", new SSLConnectionSocketFactory(sslContext,
+                                                    NoopHostnameVerifier.INSTANCE))
+                                            .build()
+                            ))
+                    .build();
+        } catch (Exception ignored) {
+            return builder.build();
+        }
     }
 
     /**

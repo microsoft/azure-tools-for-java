@@ -259,6 +259,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                                 rootPath.trimEnd('/')
                             else rootPath
 
+
                             uploadPath = "${formatWebHdfsRootPath}/SparkSubmission/"
 
                             val clusterDetail = getClusterDetail()

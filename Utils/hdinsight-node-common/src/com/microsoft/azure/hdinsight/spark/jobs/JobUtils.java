@@ -739,6 +739,7 @@ public class JobUtils {
             try (CloseableHttpResponse putResp = httpclient.execute(req)) {
                 params = new WebHdfsParamsBuilder("OPEN")
                         .build();
+
                 uriBuilder = new URIBuilder(webHdfsUploadPath);
                 uriBuilder.addParameters(params);
 

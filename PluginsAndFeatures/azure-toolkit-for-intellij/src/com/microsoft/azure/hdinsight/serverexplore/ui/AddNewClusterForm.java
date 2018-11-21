@@ -52,15 +52,15 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     private JPanel clusterPanel;
     private JPanel authenticationPanel;
     private JPanel comboBoxPanel;
-    private JComboBox clusterComboBox;
-    private JPanel clusterCardsPanel;
+    protected JComboBox clusterComboBox;
+    protected JPanel clusterCardsPanel;
     private JPanel hdInsightClusterCard;
     private JTextField clusterNameOrUrlField;
     private JPanel livyServiceCard;
     private JTextField livyEndpointField;
     private JTextField errorMessageField;
     private JPanel authComboBoxPanel;
-    private JComboBox authComboBox;
+    protected JComboBox authComboBox;
     private JPanel authCardsPanel;
     private JPanel basicAuthCard;
     private JTextField userNameField;
@@ -88,7 +88,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         init();
         this.hdInsightModule = hdInsightModule;
 
-        this.setTitle("Link A New HDInsight Cluster");
+        this.setTitle("Link A Cluster");
 
         errorMessageField.setBackground(this.wholePanel.getBackground());
         errorMessageField.setBorder(BorderFactory.createEmptyBorder());
