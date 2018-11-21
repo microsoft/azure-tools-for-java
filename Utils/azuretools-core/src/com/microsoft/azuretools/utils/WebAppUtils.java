@@ -411,10 +411,11 @@ public class WebAppUtils {
                 webContainer = versions[0].toLowerCase();
                 final String webContainerVersion = versions[1];
                 final String jreVersion = versions[2];
-                final List<String> allJavaLinuxWebContainers = getAllJavaLinuxRuntimeStacks().stream()
-                    .filter(r -> r != RuntimeStack.JAVA_8_JRE8)
-                    .map(r -> r.stack().toLowerCase(Locale.ENGLISH)).collect(Collectors.toList());
-                if (allJavaLinuxWebContainers.contains(webContainer)) {
+                final boolean isJavaLinuxRuntimeWithWebContainer = getAllJavaLinuxRuntimeStacks()
+                    .stream()
+                    .map(r -> r.stack())
+                    .anyMatch(w -> w.equalsIgnoreCase(webContainer));
+                if (isJavaLinuxRuntimeWithWebContainer) {
                     // TOMCAT|8.5-jre8 -> Tomcat 8.5 (JRE8)
                     return String.format("%s %s (%s)", StringUtils.capitalize(webContainer), webContainerVersion, jreVersion.toUpperCase());
                 } else {
@@ -428,7 +429,9 @@ public class WebAppUtils {
 
     public static List<RuntimeStack> getAllJavaLinuxRuntimeStacks() {
         return Arrays.asList(new RuntimeStack[]{
-            RuntimeStack.TOMCAT_8_5_JRE8, RuntimeStack.TOMCAT_9_0_JRE8,
-            RuntimeStack.WILDFLY_14_JRE8, RuntimeStack.JAVA_8_JRE8});
+            RuntimeStack.TOMCAT_8_5_JRE8,
+            RuntimeStack.TOMCAT_9_0_JRE8,
+            RuntimeStack.WILDFLY_14_JRE8,
+            RuntimeStack.JAVA_8_JRE8});
     }
 }
