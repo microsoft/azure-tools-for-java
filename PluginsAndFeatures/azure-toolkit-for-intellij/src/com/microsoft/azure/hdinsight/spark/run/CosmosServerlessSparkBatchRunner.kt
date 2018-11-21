@@ -26,45 +26,39 @@ import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.RunProfile
 import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager
+import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.CreateSparkBatchJobParameters
 import com.microsoft.azure.hdinsight.spark.common.*
-import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration
+import org.apache.commons.lang3.exception.ExceptionUtils
 import rx.Observer
-import java.net.URI
-import java.util.AbstractMap.SimpleImmutableEntry
+import java.io.IOException
+import java.util.AbstractMap
 
-class CosmosSparkBatchRunner : SparkBatchJobRunner() {
+class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
-        return SparkBatchJobRunExecutor.EXECUTOR_ID == executorId && profile is CosmosSparkRunConfiguration
+//        FIXME: should be as below
+//        return SparkBatchJobRunExecutor.EXECUTOR_ID == executorId && profile is CosmosServerlessSparkRunConfiguration
+        return SparkBatchJobRunExecutor.EXECUTOR_ID == executorId
     }
 
     override fun getRunnerId(): String {
-        return "CosmosSparkBatchRun"
+        return "CosmosServerlessSparkBatchRun"
     }
 
     @Throws(ExecutionException::class)
-    override fun buildSparkBatchJob(submitModel: SparkSubmitModel, ctrlSubject: Observer<SimpleImmutableEntry<MessageInfoType, String>>): ISparkBatchJob {
-        val tenantId = (submitModel as CosmosSparkSubmitModel).tenantId
-        val accountName = submitModel.accountName
+    override fun buildSparkBatchJob(submitModel: SparkSubmitModel, ctrlSubject: Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>): ISparkBatchJob {
+        val submissionParameter = submitModel.submissionParameter as CreateSparkBatchJobParameters
+        val adlAccountName = submissionParameter.adlAccountName()
+        val account = AzureSparkServerlessClusterManager.getInstance().getAccountByName(adlAccountName)
+        account ?: throw ExecutionException("Can't find ADLA account '$adlAccountName'")
 
-        if (submitModel.clusterId == null) {
-            throw ExecutionException("Can't get the Azure Serverless Spark cluster, please sign in and refresh.")
+        val accessToken = try {
+            account.http.accessToken
+        } catch (ex: IOException) {
+            log().warn("Error getting access token. " + ExceptionUtils.getStackTrace(ex))
+            throw ExecutionException("Error getting access token.", ex)
         }
+        val storageRootPath = account.storageRootPath ?: throw ExecutionException("Error getting ADLS storage root path for account ${account.name}")
 
-        val clusterId = submitModel.clusterId
-        try {
-            val livyUri = submitModel.livyUri?.let { URI.create(it) } ?: AzureSparkServerlessClusterManager.getInstance()
-                    .findCluster(accountName, clusterId)
-                    .map { it.get().toBlocking().singleOrDefault(it).livyUri }
-                    .toBlocking()
-                    .firstOrDefault(null)
-
-            return ServerlessSparkBatchJob(
-                    submitModel.submissionParameter,
-                    SparkBatchAzureSubmission(tenantId, accountName, clusterId, livyUri),
-                    ctrlSubject)
-        } catch (e: Exception) {
-            throw ExecutionException("Can't get the Azure Serverless Spark cluster, please sign in and refresh.", e)
-        }
-
+        return CosmosServerlessSparkBatchJob(account, AdlsDeploy(storageRootPath, accessToken),submissionParameter, SparkBatchSubmission.getInstance(), ctrlSubject)
     }
 }

@@ -26,6 +26,6 @@ import com.intellij.execution.configurations.RunConfigurationModule
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.spark.common.CosmosSparkConfigurableModel
 
-class CosmosSparkConfigurationModule(project: Project) : RunConfigurationModule(project) {
-    val model = CosmosSparkConfigurableModel(project)
+open class CosmosSparkConfigurationModule(project: Project) : RunConfigurationModule(project) {
+    open val model = CosmosSparkConfigurableModel(project)
 }
