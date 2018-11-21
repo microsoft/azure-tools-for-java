@@ -29,6 +29,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
@@ -36,6 +37,7 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServe
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
@@ -129,6 +131,13 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
         view.storagePanel.adlsCard.adlsRootPathField.addFocusListener( object : FocusAdapter() {
             override fun focusLost(e: FocusEvent?) {
                 view.storageCheckSubject.onNext(StorageCheckPathFocusLostEvent("ADLS"))
+            }
+        })
+
+        // validate storage info when webhdfs root path field lost
+        view.storagePanel.webHdfsCard.webHdfsRootPathField.addFocusListener( object : FocusAdapter() {
+            override fun focusLost(e: FocusEvent?) {
+                view.storageCheckSubject.onNext(StorageCheckPathFocusLostEvent("WEBHDFS"))
             }
         })
     }
@@ -229,7 +238,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                         } else {
                             // basic validation for ADLS root path
                             // pattern for adl root path. e.g. adl://john.azuredatalakestore.net/root/path/
-                            if (adlsRootPath != null && !"adl://([^/.]+\\.)+[^/.]+(/[^/.]+)*/?$".toRegex().matches(adlsRootPath!!)) {
+                            if (adlsRootPath != null && !SparkBatchJob.AdlsPathPattern.toRegex().matches(adlsRootPath!!)) {
                                 uploadPath = "-"
                                 errorMsg = "ADLS Root Path is invalid"
                             } else {
@@ -237,6 +246,28 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                                 uploadPath = "${formatAdlsRootPath}SparkSubmission/"
                                 errorMsg = null
                             }
+                        }
+                    }
+                    SparkSubmitStorageType.WEBHDFS -> it.apply {
+                        //pattern for webhdfs root path.e.g http://host/webhdfs/v1/
+                        val rootPath = webHdfsRootPath?.trim() ?: return@apply
+                        if (!SparkBatchJob.WebHDFSPathPattern.toRegex().matches(rootPath)) {
+                            uploadPath = "-"
+                            errorMsg = "Webhdfs root path is not valid"
+                        } else {
+                            val formatWebHdfsRootPath = if (rootPath.endsWith("/") == true)
+                                rootPath.trimEnd('/')
+                            else rootPath
+
+                            uploadPath = "${formatWebHdfsRootPath}/SparkSubmission/"
+
+                            val clusterDetail = getClusterDetail()
+                            when (clusterDetail) {
+                                is HDInsightAdditionalClusterDetail -> webHdfsAuthUser = clusterDetail.httpUserName
+                                else -> webHdfsAuthUser = SparkSubmissionJobUploadWebHdfsSignOutCard.defaultAuthUser
+                            }
+
+                            errorMsg = null
                         }
                     }
                 }

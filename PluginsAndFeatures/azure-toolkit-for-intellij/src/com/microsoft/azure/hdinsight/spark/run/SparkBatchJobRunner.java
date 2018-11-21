@@ -73,7 +73,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         // get storage account and access token from submitModel
         IHDIStorageAccount storageAccount = null;
         String accessToken = null;
-        String normalizedAdlRootPath = null;
+        String destinationRootPath = null;
         IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(
                 submitModel.getSubmissionParameter().getClusterName()).orElse(null);
 
@@ -99,9 +99,9 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 break;
             case ADLS_GEN1:
                 String rawRootPath = submitModel.getJobUploadStorageModel().getAdlsRootPath();
-                normalizedAdlRootPath = rawRootPath.endsWith("/") ? rawRootPath : rawRootPath + "/";
+                destinationRootPath = rawRootPath.endsWith("/") ? rawRootPath : rawRootPath + "/";
                 // e.g. for adl://john.azuredatalakestore.net/root/path, adlsAccountName is john
-                String adlsAccountName =  normalizedAdlRootPath.split("\\.")[0].split("//")[1];
+                String adlsAccountName =  destinationRootPath.split("\\.")[0].split("//")[1];
                 SubscriptionDetail subscriptionDetail =
                         AzureSparkClusterManager.getInstance().getSubscriptionDetailByStoreAccountName(adlsAccountName)
                                 .toBlocking().singleOrDefault(null);
@@ -116,9 +116,12 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                     throw new ExecutionException("Error getting access token based on the given ADLS root path");
                 }
                 break;
+            case WEBHDFS:
+                destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
+                break;
         }
 
-        return new SparkBatchJob(submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount, accessToken, normalizedAdlRootPath);
+        return new SparkBatchJob(submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount, accessToken, destinationRootPath);
     }
 
     @Nullable
