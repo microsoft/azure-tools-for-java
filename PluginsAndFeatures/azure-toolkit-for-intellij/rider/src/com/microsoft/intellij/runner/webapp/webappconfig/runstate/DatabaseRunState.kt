@@ -24,14 +24,12 @@ package com.microsoft.intellij.runner.webapp.webappconfig.runstate
 
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
-import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.intellij.runner.webapp.model.DatabasePublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
-import java.net.URI
-import java.util.Date
+import java.util.*
 
 object DatabaseRunState {
 
@@ -50,19 +48,6 @@ object DatabaseRunState {
 
         processHandler.setText(String.format(UiConstants.SQL_DATABASE_GET_EXISTING, database.name()))
         return database
-    }
-
-    fun getSqlDatabaseUri(subscriptionId: String, database: SqlDatabase): URI? {
-        val azureManager = AuthMethodManager.getInstance().azureManager
-        val portalUrl = azureManager.portalUrl
-
-        // Note: [SubscriptionManager.getSubscriptionTenant()] method does not update Subscription to TenantId map while
-        //       [SubscriptionManager.getSubscriptionDetails()] force to update and get the correct value
-        val tenantId = azureManager.subscriptionManager.subscriptionDetails
-                .find { it.subscriptionId == subscriptionId }?.tenantId ?: return null
-
-        val path = "/#@$tenantId/resource/${database.id()}/overview".replace("/+".toRegex(), "/")
-        return URI.create("$portalUrl/$path").normalize()
     }
 
     private fun createDatabase(sqlServer: SqlServer,

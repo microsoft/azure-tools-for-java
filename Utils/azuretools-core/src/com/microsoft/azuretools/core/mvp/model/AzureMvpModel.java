@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2018 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -35,6 +36,7 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -166,6 +168,30 @@ public class AzureMvpModel {
             }
         }
         return ret;
+    }
+
+    public URI getResourceUri(String subscriptionId, String id) throws IOException {
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        String portalUrl = azureManager.getPortalUrl();
+
+        // Note: [SubscriptionManager.getSubscriptionTenant()] method does not update Subscription to TenantId map while
+        //       [SubscriptionManager.getSubscriptionDetails()] force to update and get the correct value
+        List<SubscriptionDetail> subscriptionDetails = azureManager.getSubscriptionManager().getSubscriptionDetails();
+        String tenantId = null;
+        for (SubscriptionDetail subscriptionDetail : subscriptionDetails) {
+            if (subscriptionDetail.getSubscriptionId().equals(subscriptionId)) {
+                tenantId = subscriptionDetail.getTenantId();
+                break;
+            }
+        }
+
+        if (tenantId == null) {
+            return null;
+        }
+
+        String path = "/#@" + tenantId + "/resource/" + id + "/overview".replaceAll("/+", "/");
+
+        return URI.create(portalUrl + "/" + path).normalize();
     }
 
     private static final class SingletonHolder {

@@ -33,6 +33,7 @@ import com.intellij.openapi.wm.ToolWindowId
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.sql.SqlDatabase
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.utils.AzureUIRefreshCore
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent
 import com.microsoft.intellij.configuration.AzureRiderSettings
@@ -44,7 +45,6 @@ import com.microsoft.intellij.runner.webapp.model.DatabasePublishModel
 import com.microsoft.intellij.runner.webapp.model.DotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.DatabaseRunState.getOrCreateSqlDatabaseFromConfig
-import com.microsoft.intellij.runner.webapp.webappconfig.runstate.DatabaseRunState.getSqlDatabaseUri
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.addConnectionString
 import com.microsoft.intellij.runner.webapp.webappconfig.runstate.WebAppRunState.deployToAzureWebApp
@@ -103,7 +103,7 @@ class RiderWebAppRunState(project: Project,
         if (myModel.databaseModel.isDatabaseConnectionEnabled) {
             database = getOrCreateSqlDatabaseFromConfig(myModel.databaseModel, processHandler)
 
-            val databaseUri = getSqlDatabaseUri(subscriptionId, database)
+            val databaseUri = AzureMvpModel.getInstance().getResourceUri(subscriptionId, database.id())
             if (databaseUri != null)
                 processHandler.setText(String.format(UiConstants.SQL_DATABASE_URL, databaseUri))
 
@@ -152,8 +152,9 @@ class RiderWebAppRunState(project: Project,
                 AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
                 AzureRiderSettings.openInBrowserDefaultValue)
 
-        if (isOpenBrowser)
+        if (isOpenBrowser) {
             openWebAppInBrowser(webApp, processHandler)
+        }
     }
 
     override fun onFail(errMsg: String, processHandler: RunProcessHandler) {

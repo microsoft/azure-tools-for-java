@@ -19,34 +19,28 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.intellij.serviceexplorer
+package com.microsoft.intellij.serviceexplorer.azure.database.actions
 
-import com.google.common.collect.ImmutableList
-import com.microsoft.intellij.serviceexplorer.azure.database.actions.*
+import com.intellij.ide.BrowserUtil
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
+import com.microsoft.intellij.AzurePlugin
 import com.microsoft.tooling.msservices.serviceexplorer.Node
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
-import java.util.*
 
-class RiderNodeActionsMap : NodeActionsMap() {
-    override fun getMap(): Map<Class<out Node>, ImmutableList<Class<out NodeActionListener>>> {
-        return node2Actions
-    }
+abstract class OpenInBrowserAction(private val subscriptionId: String, private val node: Node)
+    : NodeActionListener() {
 
-    companion object {
-        private val node2Actions = HashMap<Class<out Node>, ImmutableList<Class<out NodeActionListener>>>()
+    override fun actionPerformed(event: NodeActionEvent?) {
+        try {
+            val url = AzureMvpModel.getInstance().getResourceUri(subscriptionId, node.id)
+                    ?: throw RuntimeException("Unable to get URL for resource: '${node.id}'")
 
-        init {
-            node2Actions[SqlServerNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
-                    .add(SqlServerOpenInBrowserAction::class.java)
-                    .add(ConnectServerAction::class.java)
-                    .build()
-
-            node2Actions[SqlDatabaseNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
-                    .add(SqlDatabaseOpenInBrowserAction::class.java)
-                    .add(ConnectDatabaseAction::class.java)
-                    .build()
+            BrowserUtil.browse(url)
+        } catch (e: Throwable) {
+            val message = "Error opening resource with id '${node.id}' in browser: $e"
+            AzurePlugin.log(message)
+            throw RuntimeException(message)
         }
     }
 }
