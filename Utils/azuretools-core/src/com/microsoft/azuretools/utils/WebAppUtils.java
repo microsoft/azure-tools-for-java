@@ -28,6 +28,7 @@ import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PublishingProfile;
+import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -52,6 +53,10 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * Created by vlashch on 1/19/17.
@@ -406,7 +411,10 @@ public class WebAppUtils {
                 webContainer = versions[0].toLowerCase();
                 final String webContainerVersion = versions[1];
                 final String jreVersion = versions[2];
-                if (webContainer.contains("tomcat")) {
+                final List<String> allJavaLinuxWebContainers = getAllJavaLinuxRuntimeStacks().stream()
+                    .filter(r -> r != RuntimeStack.JAVA_8_JRE8)
+                    .map(r -> r.stack().toLowerCase(Locale.ENGLISH)).collect(Collectors.toList());
+                if (allJavaLinuxWebContainers.contains(webContainer)) {
                     // TOMCAT|8.5-jre8 -> Tomcat 8.5 (JRE8)
                     return String.format("%s %s (%s)", StringUtils.capitalize(webContainer), webContainerVersion, jreVersion.toUpperCase());
                 } else {
@@ -416,5 +424,11 @@ public class WebAppUtils {
             default:
                 return DEFAULT_VALUE_WHEN_VERSION_INVALID;
         }
+    }
+
+    public static List<RuntimeStack> getAllJavaLinuxRuntimeStacks() {
+        return Arrays.asList(new RuntimeStack[]{
+            RuntimeStack.TOMCAT_8_5_JRE8, RuntimeStack.TOMCAT_9_0_JRE8,
+            RuntimeStack.WILDFLY_14_JRE8, RuntimeStack.JAVA_8_JRE8});
     }
 }
