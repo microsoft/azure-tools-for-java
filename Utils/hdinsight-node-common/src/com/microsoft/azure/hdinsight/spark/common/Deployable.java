@@ -20,32 +20,19 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.run.configuration
+package com.microsoft.azure.hdinsight.spark.common;
 
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.microsoft.azure.hdinsight.common.CommonConst
-import com.microsoft.intellij.util.PluginUtil
-import javax.swing.Icon
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import rx.Observable;
 
-open class CosmosSparkConfigurationType : ConfigurationType {
-    override fun getIcon(): Icon {
-        return PluginUtil.getIcon("/icons/${CommonConst.AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH}")
-    }
-
-    override fun getConfigurationTypeDescription(): String {
-        return "Cosmos ADL Spark Job Configuration"
-    }
-
-    override fun getId(): String {
-        return "CosmosADLSparkConfiguration"
-    }
-
-    override fun getDisplayName(): String {
-        return "Azure Data Lake Spark Pool"
-    }
-
-    override fun getConfigurationFactories(): Array<ConfigurationFactory> {
-        return arrayOf(CosmosSparkConfigurationFactory(this))
-    }
+public interface Deployable {
+    /**
+     * Deploy the job artifact into cluster
+     *
+     * @param artifactPath the artifact to deploy
+     * @return Observable: upload path
+     *         Observable Error: IOException;
+     */
+    @NotNull
+    Observable<String> deploy(@NotNull String artifactPath);
 }

@@ -63,7 +63,7 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
     @NotNull
     private final Project myProject;
 
-    private SparkSubmissionContentPanel submissionPanel = new SparkSubmissionContentPanel();
+    protected SparkSubmissionContentPanel submissionPanel = new SparkSubmissionContentPanel();
     private SparkSubmissionJobUploadStorageCtrl jobUploadStorageCtrl;
 
     // Cluster refresh publish subject with preselected cluster name as event

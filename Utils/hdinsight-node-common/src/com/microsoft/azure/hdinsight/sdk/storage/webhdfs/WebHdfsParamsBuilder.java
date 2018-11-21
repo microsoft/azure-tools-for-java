@@ -19,33 +19,28 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.microsoft.azure.hdinsight.sdk.storage.webhdfs;
 
-package com.microsoft.azure.hdinsight.spark.run.configuration
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.microsoft.azure.hdinsight.common.CommonConst
-import com.microsoft.intellij.util.PluginUtil
-import javax.swing.Icon
+import java.util.ArrayList;
+import java.util.List;
 
-open class CosmosSparkConfigurationType : ConfigurationType {
-    override fun getIcon(): Icon {
-        return PluginUtil.getIcon("/icons/${CommonConst.AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH}")
+public class WebHdfsParamsBuilder {
+    private List<NameValuePair> params = new ArrayList<>();
+
+    public WebHdfsParamsBuilder(@NotNull String operation) {
+        params.add(new BasicNameValuePair("op", operation));
     }
 
-    override fun getConfigurationTypeDescription(): String {
-        return "Cosmos ADL Spark Job Configuration"
+    public WebHdfsParamsBuilder setOverwrite(@NotNull String value) {
+        params.add(new BasicNameValuePair("overwrite", value));
+        return this;
     }
 
-    override fun getId(): String {
-        return "CosmosADLSparkConfiguration"
-    }
-
-    override fun getDisplayName(): String {
-        return "Azure Data Lake Spark Pool"
-    }
-
-    override fun getConfigurationFactories(): Array<ConfigurationFactory> {
-        return arrayOf(CosmosSparkConfigurationFactory(this))
+    public List<NameValuePair> build() {
+        return params;
     }
 }

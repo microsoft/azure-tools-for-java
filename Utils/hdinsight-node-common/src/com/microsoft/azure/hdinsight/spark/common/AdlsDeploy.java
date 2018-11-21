@@ -20,32 +20,26 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.run.configuration
+package com.microsoft.azure.hdinsight.spark.common;
 
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.microsoft.azure.hdinsight.common.CommonConst
-import com.microsoft.intellij.util.PluginUtil
-import javax.swing.Icon
+import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import rx.Observable;
 
-open class CosmosSparkConfigurationType : ConfigurationType {
-    override fun getIcon(): Icon {
-        return PluginUtil.getIcon("/icons/${CommonConst.AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH}")
+public class AdlsDeploy implements Deployable {
+    @NotNull
+    private String adlsRootPath;
+    @NotNull
+    private String accessToken;
+
+    public AdlsDeploy(@NotNull String adlsRootPath,
+                      @NotNull String accessToken) {
+        this.adlsRootPath = adlsRootPath;
+        this.accessToken = accessToken;
     }
 
-    override fun getConfigurationTypeDescription(): String {
-        return "Cosmos ADL Spark Job Configuration"
-    }
-
-    override fun getId(): String {
-        return "CosmosADLSparkConfiguration"
-    }
-
-    override fun getDisplayName(): String {
-        return "Azure Data Lake Spark Pool"
-    }
-
-    override fun getConfigurationFactories(): Array<ConfigurationFactory> {
-        return arrayOf(CosmosSparkConfigurationFactory(this))
+    @NotNull
+    public Observable<String> deploy(@NotNull String artifactPath) {
+        return JobUtils.deployArtifactToADLS(artifactPath, adlsRootPath, accessToken);
     }
 }

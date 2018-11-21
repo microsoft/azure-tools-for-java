@@ -310,6 +310,18 @@ public class AzurePlugin extends AbstractProjectComponent {
     private void copyPluginComponents() {
         try {
             extractJobViewResource();
+        } catch (ExtractHdiJobViewException e) {
+            Notification hdiSparkJobListNaNotification = new Notification(
+                    "Azure Toolkit plugin",
+                    e.getMessage(),
+                    "The HDInsight cluster Spark Job list feature is not available since " + e.getCause().toString() +
+                    " Reinstall the plugin to fix that.",
+                    NotificationType.WARNING);
+
+            Notifications.Bus.notify(hdiSparkJobListNaNotification);
+        }
+
+        try {
             for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
                 if (azureLibrary.getLocation() != null) {
                     if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
@@ -393,7 +405,13 @@ public class AzurePlugin extends AbstractProjectComponent {
         return true;
     }
 
-    private void extractJobViewResource() {
+    static class ExtractHdiJobViewException extends IOException {
+        ExtractHdiJobViewException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    private synchronized void extractJobViewResource() throws ExtractHdiJobViewException {
         File indexRootFile = new File(PluginUtil.getPluginRootDirectory() + File.separator + "com.microsoft.hdinsight");
 
         if (isFirstInstallationByVersion() || isDebugModel()) {
@@ -401,7 +419,7 @@ public class AzurePlugin extends AbstractProjectComponent {
                 try {
                     FileUtils.deleteDirectory(indexRootFile);
                 } catch (IOException e) {
-                    LOG.error("delete HDInsight job view folder error", e);
+                    throw new ExtractHdiJobViewException("Delete HDInsight job view folder error", e);
                 }
             }
         }
@@ -411,12 +429,32 @@ public class AzurePlugin extends AbstractProjectComponent {
             File toFile = new File(indexRootFile.getAbsolutePath(), HTML_ZIP_FILE_NAME);
             try {
                 FileUtils.copyURLToFile(url, toFile);
+
+                // Need to wait for OS native process finished, otherwise, may get the following exception:
+                // message=Extract Job View Folder, throwable=java.io.FileNotFoundException: xxx.zip
+                // (The process cannot access the file because it is being used by another process)
+                int retryCount = 60;
+                while (!toFile.renameTo(toFile) && retryCount-- > 0) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ignored) {
+                        break;
+                    }
+                }
+
+                if (!toFile.renameTo(toFile)) {
+                    throw new ExtractHdiJobViewException("Copying Job view zip file are not finished",
+                            new IOException("The native file system has not finished the file copy for " +
+                            toFile.getPath() + " in 1 minute"));
+                }
+
                 unzip(toFile.getAbsolutePath(), toFile.getParent());
             } catch (IOException e) {
-                LOG.error("Extract Job View Folder", e);
+                throw new ExtractHdiJobViewException("Extract Job View Folder error", e);
             }
         } else {
-            LOG.error("Can't find HDInsight job view zip package");
+            throw new ExtractHdiJobViewException("Can't find HDInsight job view zip package",
+                    new FileNotFoundException("The HDInsight Job view zip file " + HTML_ZIP_FILE_NAME + " is not found"));
         }
     }
 

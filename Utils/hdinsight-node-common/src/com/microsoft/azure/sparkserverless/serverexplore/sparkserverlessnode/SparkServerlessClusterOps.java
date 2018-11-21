@@ -44,6 +44,8 @@ public class SparkServerlessClusterOps {
     private final PublishSubject<Pair<AzureSparkServerlessCluster, SparkServerlessClusterNode>> updateAction;
     @NotNull
     private final PublishSubject<Pair<AzureSparkServerlessCluster, SparkServerlessClusterNode>> submitAction;
+    @NotNull
+    private final PublishSubject<Pair<AzureSparkServerlessAccount,SparkServerlessADLAccountNode>> serverlessSubmitAction;
 
     private SparkServerlessClusterOps() {
         destroyAction = PublishSubject.create();
@@ -51,6 +53,7 @@ public class SparkServerlessClusterOps {
         monitorAction = PublishSubject.create();
         updateAction = PublishSubject.create();
         submitAction = PublishSubject.create();
+        serverlessSubmitAction = PublishSubject.create();
     }
 
     @NotNull
@@ -82,5 +85,10 @@ public class SparkServerlessClusterOps {
     @NotNull
     public PublishSubject<Pair<AzureSparkServerlessCluster,SparkServerlessClusterNode>> getSubmitAction() {
         return submitAction;
+    }
+
+    @NotNull
+    public PublishSubject<Pair<AzureSparkServerlessAccount,SparkServerlessADLAccountNode>> getServerlessSubmitAction() {
+        return serverlessSubmitAction;
     }
 }

@@ -27,7 +27,7 @@ import com.intellij.util.xmlb.annotations.Attribute
 import com.microsoft.azuretools.utils.Pair
 import java.util.stream.Stream
 
-class ServerlessSparkSubmitModel : SparkSubmitModel {
+open class CosmosSparkSubmitModel : SparkSubmitModel {
     @Attribute("tenant_id")
     var tenantId: String = "common"
     @Attribute("account_name")
