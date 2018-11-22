@@ -1,5 +1,5 @@
 <idea-plugin url="https://github.com/JetBrains/azure-tools-for-intellij">
-  <version>3.14.0</version>
+  <!--<version>3.14.0</version>-->
 
   <change-notes>
     <![CDATA[
