@@ -134,6 +134,18 @@ public class SparkServerlessClusterProvisionCtrlProvider implements ILogger {
                 .doOnNext(controllableView::setData);
     }
 
+    public Observable<SparkServerlessClusterProvisionSettingsModel> updateCalculatedAU() {
+        return Observable.just(getModel())
+                .map(toUpdate -> toUpdate.setCalculatedAU(
+                        getCalculatedAU(
+                                toUpdate.getMasterCores(),
+                                toUpdate.getWorkerCores(),
+                                toUpdate.getMasterMemory(),
+                                toUpdate.getWorkerMemory(),
+                                toUpdate.getWorkerNumberOfContainers())))
+                .doOnNext(controllableView::setData);
+    }
+
     @NotNull
     private Observable<AzureSparkServerlessCluster> buildCluster(@NotNull SparkServerlessClusterProvisionSettingsModel toUpdate) {
         return Observable.just(new AzureSparkServerlessCluster.Builder(account)

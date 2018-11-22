@@ -155,13 +155,10 @@ public class SparkServerlessProvisionDialog extends DialogWrapper
                     @Override
                     public void focusLost(FocusEvent e) {
                         if (isAllAURelatedFieldsLegal()) {
-                            // update calculated AU
-                            calculatedAUField.setText(String.valueOf(ctrlProvider.getCalculatedAU(
-                                    Integer.valueOf(masterCoresField.getText()),
-                                    Integer.valueOf(workerCoresField.getText()),
-                                    Integer.valueOf(masterMemoryField.getText()),
-                                    Integer.valueOf(workerMemoryField.getText()),
-                                    Integer.valueOf(workerNumberOfContainersField.getText()))));
+                            ctrlProvider.updateCalculatedAU().subscribe(
+                                    data -> {},
+                                    err -> log().warn("Update AU Required in provision cluster dialog get exceptions. Error: "
+                                            + ExceptionUtils.getStackTrace(err)));
                         }
                         super.focusLost(e);
                     }
