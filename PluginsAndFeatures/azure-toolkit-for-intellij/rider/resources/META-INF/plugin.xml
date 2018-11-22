@@ -15,6 +15,57 @@
       </html>
     ]]></description>
 
+  <change-notes>
+    <![CDATA[
+      <html>
+        <p>[3.14.0-2018.3]</p>
+        <ul>
+          <li>Support for Rider 2018.3 (only) <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/74">#74</a></li>
+          <li>Azure Cloud Shell support <a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/62">#62</a></li>
+          <li>Connect to cloud shell and work with terminal
+            <ul>
+              <li>Upload file action in Rider</li>
+              <li>Support download <file> command in terminal</li>
+              <li>Support for az aks browse command opening browser <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/102">#102</a></li>
+            </ul>
+          </li>
+          <li>Add Sql Databases in Azure Explorer
+            <ul>
+              <li>List/delete servers and databases</li>
+              <li>Open SQL Server/SQL Database in browser</li>
+              <li>Connect to database using Rider database tools</li>
+            </ul>
+          </li>
+          <li>Various bugfixes:
+            <ul>
+              <li><a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/43">#43</a></li>
+              <li><a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/44">#44</a></li>
+              <li><a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/48">#48</a></li>
+              <li><a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/61">#61</a></li>
+              <li><a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/75">#75</a></li>
+            </ul>
+          </li>
+        </ul>
+
+        <p>Changes from <a href="https://github.com/Microsoft/azure-tools-for-java">https://github.com/Microsoft/azure-tools-for-java</a>:</p>
+          <ul>
+            <li>Web apps support
+              <ul>
+                <li>Show application settings of Deployment Slot</li>
+                <li>Delete a Deployment Slot in Azure Explorer</li>
+                <li>Swap deployment slots</li>
+              </ul>
+            </li>
+            <li>Various bugfixes
+              <ul>
+                <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2215">Microsoft#2215</a> The prompt warning message on deleting web app is not correct issue.</li>
+                <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2310">Microsoft#2310</a> Discarding of changes on Web App application settings is too slow issue.</li>
+              </ul>
+            </li>
+          </ul>
+      </html>]]>
+  </change-notes>
+
   <xi:include href="/META-INF/platformPlugin.xml" xpointer="xpointer(/idea-plugin/*)"/>
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
