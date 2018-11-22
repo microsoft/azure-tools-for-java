@@ -344,26 +344,26 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     /**
      * when upload file to FTP, the plugin will retry 3 times in case of unexpected errors.
-     * For each try, the method will wait 5 seconds.
      */
     private int uploadFileToFtp(@NotNull FTPClient ftp, @NotNull String path,
-                                 @NotNull InputStream stream, RunProcessHandler processHandler) throws IOException {
-        boolean success = false;
-        int count = 0;
-        while (!success && ++count < UPLOADING_MAX_TRY) {
+                                @NotNull InputStream stream, RunProcessHandler processHandler) throws IOException {
+        int retry = UPLOADING_MAX_TRY;
+        while (retry > 0) {
+            try {
+                retry -= 1;
+                ftp.storeFile(path, stream);
+                processHandler.setText(UPLOADING_SUCCESSFUL);
+                return UPLOADING_MAX_TRY - retry;
+            } catch (IOException e) {
+                // swallow exception
+            }
             try {
                 Thread.sleep(SLEEP_TIME);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                // swallow exception
             }
-            success = ftp.storeFile(path, stream);
         }
-        if (!success) {
-            int rc = ftp.getReplyCode();
-            throw new IOException(String.format(FAIL_FTP_STORE, rc));
-        }
-        processHandler.setText(UPLOADING_SUCCESSFUL);
-        return count;
+        throw new IOException(String.format(FAIL_FTP_STORE, ftp.getReplyCode()));
     }
 
     @NotNull
