@@ -10,7 +10,8 @@
         <ul>
           <li>Azure App Services: Create and deploy your .Net Core Web applications on Azure Web App on any platform, and .Net Web application on Windows</li>
           <li>SQL Database: Create and deploy SQL Database and SQL Servers while publishing a web app. The web app will be linked with created database
-          <li>Azure Explorer: View and manage your Azure resources (web apps, virtual machines, storage accounts, redis caches, docker hosts, container registries)</li>
+          <li>Azure Explorer: View and manage your Azure resources (web apps, sql databases, virtual machines, storage accounts, redis caches, docker hosts, container registries)</li>
+          <li>Azure Cloud Shell: Use a Cloud Shell terminal (select subscription to run, upload to cloud shell action, intercept download command and open browser to fetch file from cloud shell)</li>
         </ul>
       </html>
     ]]></description>
