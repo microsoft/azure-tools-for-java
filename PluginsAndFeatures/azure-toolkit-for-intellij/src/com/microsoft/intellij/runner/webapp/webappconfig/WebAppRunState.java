@@ -351,9 +351,10 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         while (retry > 0) {
             try {
                 retry -= 1;
-                ftp.storeFile(path, stream);
-                processHandler.setText(UPLOADING_SUCCESSFUL);
-                return UPLOADING_MAX_TRY - retry;
+                if (ftp.storeFile(path, stream)) {
+                    processHandler.setText(UPLOADING_SUCCESSFUL);
+                    return UPLOADING_MAX_TRY - retry;
+                }
             } catch (IOException e) {
                 // swallow exception
             }
