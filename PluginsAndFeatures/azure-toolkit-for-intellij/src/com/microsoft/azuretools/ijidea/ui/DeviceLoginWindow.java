@@ -32,6 +32,7 @@ import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.aad.adal4j.DeviceCode;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
+
 import java.awt.Desktop;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -55,6 +56,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
     private AuthenticationResult authenticationResult = null;
     private Future<?> authExecutor;
     private final DeviceCode deviceCode;
+    private boolean isCancelled = false;
 
     public AuthenticationResult getAuthenticationResult() {
         return authenticationResult;
@@ -86,21 +88,24 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
                                           final AuthenticationCallback<AuthenticationResult> callback) {
         final long interval = deviceCode.getInterval();
         long remaining = deviceCode.getExpiresIn();
-        while (remaining > 0 && authenticationResult == null) {
+        while (remaining > 0 && authenticationResult == null && !isCancelled) {
             try {
                 remaining -= interval;
-                Thread.sleep(interval * 1000);
-                authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
+                authenticationResult =  ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
             } catch (ExecutionException | InterruptedException e) {
                 if (e.getCause() instanceof AuthenticationException &&
                     ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
-                    // swallow the pending exception
+                    try {
+                        Thread.sleep(interval * 1000);
+                    } catch (InterruptedException e1) {
+                        // swallow the exception
+                    }
                 } else {
                     e.printStackTrace();
                     break;
                 }
             }
-        }
+     }
         closeDialog();
     }
 
@@ -114,6 +119,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
 
     @Override
     public void doCancelAction() {
+        isCancelled = true;
         authExecutor.cancel(true);
         super.doCancelAction();
     }
