@@ -81,7 +81,7 @@ public class SparkBatchAzureSubmission extends SparkBatchSubmission {
 
     @NotNull
     @Override
-    protected CloseableHttpClient getHttpClient() throws IOException {
+    public CloseableHttpClient getHttpClient() throws IOException {
         return HttpClients.custom()
                 .useSystemProperties()
                 .setDefaultHeaders(Arrays.asList(

@@ -26,7 +26,9 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.ui.HideableTitledPanel
 import com.intellij.uiDesigner.core.GridConstraints.*
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
+import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
@@ -103,6 +105,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
                 data.storageAccountType = SparkSubmitStorageType.ADLS_GEN1
                 data.adlsRootPath = storagePanel.adlsCard.adlsRootPathField.text
             }
+            storagePanel.webHdfsCard.title -> {
+                data.storageAccountType = SparkSubmitStorageType.WEBHDFS
+                data.webHdfsRootPath= storagePanel.webHdfsCard.webHdfsRootPathField.text
+            }
         }
     }
 
@@ -147,6 +153,16 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
                         curLayout.show(storagePanel.adlsCard.azureAccountCards, storagePanel.adlsCard.signInCard.title)
                     }
                 }
+                SparkSubmitStorageType.WEBHDFS -> {
+                    if(storagePanel.webHdfsCard.webHdfsRootPathField.text != data.webHdfsRootPath){
+                        storagePanel.webHdfsCard.webHdfsRootPathField.text = data.webHdfsRootPath
+                    }
+
+                    // show sign in/out panel based on whether user has signed in or not
+                    val curLayout = storagePanel.webHdfsCard.authAccountForWebHdfsCards.layout as CardLayout
+                    curLayout.show(storagePanel.webHdfsCard.authAccountForWebHdfsCards,storagePanel.webHdfsCard.signOutCard.title)
+                    storagePanel.webHdfsCard.signOutCard.authUserNameLabel.text = data.webHdfsAuthUser
+                }
             }
         }
         ApplicationManager.getApplication().invokeLater(applyData, ModalityState.any())
@@ -157,7 +173,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
             if ((storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.azureBlobCard.title && storageAccountType == SparkSubmitStorageType.BLOB) ||
                     (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.sparkInteractiveSessionCard.title && storageAccountType == SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION) ||
                     (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.clusterDefaultStorageCard.title && storageAccountType == SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT) ||
-                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.adlsCard.title && storageAccountType == SparkSubmitStorageType.ADLS_GEN1)) {
+                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.adlsCard.title && storageAccountType == SparkSubmitStorageType.ADLS_GEN1) ||
+                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.webHdfsCard.title && storageAccountType == SparkSubmitStorageType.WEBHDFS)) {
                 return it
             }
         }

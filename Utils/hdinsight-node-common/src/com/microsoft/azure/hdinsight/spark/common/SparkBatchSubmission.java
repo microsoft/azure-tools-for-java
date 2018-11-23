@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.common.appinsight.AppInsightsHttpRequestIns
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -37,13 +38,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import rx.Observable;
 import rx.schedulers.Schedulers;
-
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class SparkBatchSubmission {
-
     SparkBatchSubmission() {
     }
 
@@ -74,10 +73,11 @@ public class SparkBatchSubmission {
     }
 
     @NotNull
-    protected CloseableHttpClient getHttpClient() throws IOException {
+    public CloseableHttpClient getHttpClient() throws IOException {
         return HttpClients.custom()
-                .useSystemProperties()
-                .setDefaultCredentialsProvider(credentialsProvider).build();
+                 .useSystemProperties()
+                 .setDefaultCredentialsProvider(credentialsProvider)
+                 .build();
     }
 
     /**

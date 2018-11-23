@@ -24,11 +24,11 @@ package com.microsoft.azure.hdinsight.spark.common
 
 import com.intellij.openapi.project.Project
 
-class CosmosSparkConfigurableModel(project: Project) : SparkBatchJobConfigurableModel(project) {
-    val serverlessSparkSubmitModel = ServerlessSparkSubmitModel(project)
+open class CosmosSparkConfigurableModel(project: Project) : SparkBatchJobConfigurableModel(project) {
+    private val cosmosSparkSubmitModel = CosmosSparkSubmitModel(project)
 
     init {
         localRunConfigurableModel = SparkLocalRunConfigurableModel(project)
-        submitModel = serverlessSparkSubmitModel
+        submitModel = cosmosSparkSubmitModel
     }
 }

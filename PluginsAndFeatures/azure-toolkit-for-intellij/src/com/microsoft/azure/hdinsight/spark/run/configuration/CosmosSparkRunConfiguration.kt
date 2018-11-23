@@ -29,20 +29,11 @@ import com.intellij.openapi.options.SettingsEditor
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel
 import com.microsoft.azure.hdinsight.spark.ui.ServerlessSparkConfigurable
 
-class CosmosSparkRunConfiguration (name: String,
-                                   val module: CosmosSparkConfigurationModule,
-                                   factory: ConfigurationFactory)
+open class CosmosSparkRunConfiguration (name: String,
+                                        open val module: CosmosSparkConfigurationModule,
+                                        factory: ConfigurationFactory)
     : LivySparkBatchJobRunConfiguration(module.model, factory, module, name) {
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
         return LivySparkRunConfigurationSettingsEditor(ServerlessSparkConfigurable(module.project))
-    }
-
-    // Validation
-    override fun getValidModules(): MutableCollection<Module> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getModel(): SparkBatchJobConfigurableModel {
-        return module.model
     }
 }
