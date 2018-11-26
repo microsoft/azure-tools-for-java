@@ -21,30 +21,9 @@
  */
 package com.microsoft.intellij.serviceexplorer.azure.database.actions
 
-import com.intellij.database.autoconfig.DataSourceDetector
-import com.microsoft.intellij.runner.db.AzureDatabaseMvpModel
 import com.microsoft.tooling.msservices.helpers.Name
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
 
-
-@Name("Connect to database")
-class ConnectDatabaseAction(private val databaseNode: SqlDatabaseNode)
-    : ConnectDataSourceAction(databaseNode) {
-
-    override fun populateConnectionBuilder(builder: DataSourceDetector.Builder): DataSourceDetector.Builder? {
-        val databaseServerNode = databaseNode.parent as SqlServerNode
-
-        val sqlServer = AzureDatabaseMvpModel.getSqlServerById(databaseServerNode.subscriptionId, databaseServerNode.sqlServerId)
-
-        return builder
-                .withName("Azure SQL Database - "  + databaseServerNode.sqlServerName + " - " + databaseNode.sqlDatabaseName)
-                .withDriverClass(AzureSqlConnectionStringBuilder.defaultDriverClass)
-                .withUrl(AzureSqlConnectionStringBuilder.build(
-                        sqlServer.fullyQualifiedDomainName(),
-                        databaseNode.sqlDatabaseName
-                ))
-                .withUser(sqlServer.administratorLogin())
-    }
-}
-
+@Name("Add firewall rule for my IP")
+class SqlServerAddCurrentIpAddressToFirewallAction(private val sqlServerNode: SqlServerNode)
+    : AddCurrentIpAddressToFirewallAction(sqlServerNode)

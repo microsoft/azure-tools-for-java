@@ -40,12 +40,14 @@ class RiderNodeActionsMap : NodeActionsMap() {
         init {
             node2Actions[SqlServerNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
                     .add(SqlServerOpenInBrowserAction::class.java)
-                    .add(ConnectServerAction::class.java)
+                    .add(SqlServerAddCurrentIpAddressToFirewallAction::class.java)
+                    .add(SqlServerConnectDataSourceAction::class.java)
                     .build()
 
             node2Actions[SqlDatabaseNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
                     .add(SqlDatabaseOpenInBrowserAction::class.java)
-                    .add(ConnectDatabaseAction::class.java)
+                    .add(SqlDatabaseAddCurrentIpAddressToFirewallAction::class.java)
+                    .add(SqlDatabaseConnectDataSourceAction::class.java)
                     .build()
         }
     }
