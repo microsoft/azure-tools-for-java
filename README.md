@@ -13,7 +13,7 @@ The plugin can be downloaded and installed in JetBrains Rider and is available [
 * Basic management of container hosts (create/delete, start/stop, view details)
 * List container registries
 * Basic management of Redis caches (create/delete, start/stop, view details, list keys/values)
-* Basic management of Sql databases (list, delete, open in browser, connect to database in database tools)
+* Basic management of Sql databases (list, delete, open in browser, add firewall rule for current public IP, connect to database in database tools)
 * Basic management of storage accounts (create/delete, list/create/delete blob container, list/upload/download/delete blobs)
 * Basic management of virtual machines (create/delete, start/stop, view details)
 * Basic management of web apps and deployment slots (create/delete, start/stop, view details, edit settings, swap slot)
