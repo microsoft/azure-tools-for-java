@@ -28,9 +28,9 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.InputValidator
+import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.IconLoader
-import com.intellij.openapi.vcs.VcsShowConfirmationOption
-import com.intellij.util.ui.ConfirmationDialog
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
@@ -42,6 +42,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldataba
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
 import org.jetbrains.plugins.azure.util.PublicIpAddressProvider
+import sun.net.util.IPAddressUtil
 import java.time.Clock
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -68,7 +69,7 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
 
                 if (publicIpAddressResult != PublicIpAddressProvider.Result.none) {
                     ApplicationManager.getApplication().invokeLater {
-                        requestAddFirewallRule(project, databaseServerNode, sqlServer, publicIpAddressResult)
+                        requestAddFirewallRule(project, sqlServer, publicIpAddressResult)
                     }
                 } else {
                     AzureCloudShellNotifications.notify(project,
@@ -81,36 +82,56 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
         })
     }
 
-    private fun requestAddFirewallRule(project: Project, databaseServerNode: SqlServerNode, sqlServer: SqlServer, publicIpAddressResult: PublicIpAddressProvider.Result) {
-        if (!ConfirmationDialog.requestForConfirmation(VcsShowConfirmationOption.STATIC_SHOW_CONFIRMATION, project,
-                        "Do you want to add a firewall rule for your public IP address '${publicIpAddressResult.ipv4address}' to Sql Database server '${databaseServerNode.name}'?",
-                        "Confirm add firewall rule", IconLoader.getIcon("/icons/Database.svg")))
-            return
+    private fun requestAddFirewallRule(project: Project, sqlServer: SqlServer, publicIpAddressResult: PublicIpAddressProvider.Result) {
+        val ipAddressInput = Messages.showInputDialog(project,
+                "Add firewall rule for IP address:",
+                "Add firewall rule",
+                IconLoader.getIcon("/icons/Database.svg"),
+                publicIpAddressResult.ipv4address,
+                IpAddressInputValidator.INSTANCE)
 
-        // Add current IP address
+        if (ipAddressInput.isNullOrEmpty()) return
+
+        val ipAddressForRule = ipAddressInput!!.trim()
+
+        // Add IP address
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Adding firewall rule for current public IP address...", true, PerformInBackgroundOption.DEAF) {
             override fun run(indicator: ProgressIndicator) {
                 val currentFirewallRules = sqlServer.firewallRules().list()
 
                 if (!currentFirewallRules.any {
-                            it.startIPAddress() == publicIpAddressResult.ipv4address
-                                    || it.endIPAddress() == publicIpAddressResult.ipv4address }) {
+                            it.startIPAddress() == ipAddressForRule
+                                    || it.endIPAddress() == ipAddressForRule }) {
 
                     val formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss")
                     val now = LocalDateTime.now(Clock.systemUTC())
 
                     sqlServer.firewallRules()
                             .define("ClientIPAddress_${now.format(formatter)}")
-                            .withIPAddressRange(publicIpAddressResult.ipv4address, publicIpAddressResult.ipv4address)
+                            .withIPAddressRange(ipAddressForRule, ipAddressForRule)
                             .create()
                 }
 
                 AzureCloudShellNotifications.notify(project,
                         "Added firewall rule",
-                        "Added firewall rule for your current public IP address",
+                        "Firewall rule for your current public IP address has been added",
                         "You can now connect to your Sql Database from within the IDE.",
                         NotificationType.INFORMATION)
             }
         })
+    }
+
+    private class IpAddressInputValidator() : InputValidator {
+        companion object {
+            val INSTANCE = IpAddressInputValidator()
+        }
+
+        override fun checkInput(input: String?): Boolean {
+            return !input.isNullOrEmpty() && IPAddressUtil.isIPv4LiteralAddress(input)
+        }
+
+        override fun canClose(input: String?): Boolean {
+            return checkInput(input)
+        }
     }
 }
