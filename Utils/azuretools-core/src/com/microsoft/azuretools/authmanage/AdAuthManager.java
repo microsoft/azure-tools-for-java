@@ -181,9 +181,7 @@ public class AdAuthManager extends BaseADAuthManager {
                 if (CommonSettings.getEnvironment() instanceof ProvidedEnvironment) {
                     // Swallow the exception since some provided environments are not full featured
                     LOGGER.warning("Can't get " + env.resourceManagerEndpoint() + " access token from environment " +
-                        CommonSettings.getEnvironment().getName());
-                } else {
-                    throw e;
+                            CommonSettings.getEnvironment().getName());
                 }
             }
 
@@ -195,8 +193,6 @@ public class AdAuthManager extends BaseADAuthManager {
                     // Swallow the exception since some provided environments are not full featured
                     LOGGER.warning("Can't get " + env.graphEndpoint() + " access token from environment " +
                             CommonSettings.getEnvironment().getName());
-                } else {
-                    throw e;
                 }
             }
 

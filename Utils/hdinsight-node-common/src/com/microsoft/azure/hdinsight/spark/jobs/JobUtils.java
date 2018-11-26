@@ -37,7 +37,6 @@ import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail;
-import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
@@ -49,6 +48,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.ApplicationMasterLogs;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParamsBuilder;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivyBatchesInformation;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivySession;
@@ -68,12 +68,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.BufferedHttpEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +98,7 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.UnknownServiceException;
 import java.util.*;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
@@ -671,6 +682,68 @@ public class JobUtils {
                 ob.onSuccess(new SimpleImmutableEntry<>(clusterDetail, jobArtifactUri));
             } catch (Exception e) {
                 ob.onError(e);
+            }
+        });
+    }
+
+    public static Observable<String> deployArtifact(@NotNull SparkBatchSubmission submission,
+                                                    @NotNull String destinationRootPath,
+                                                    @NotNull String artifactPath) {
+        return Observable.fromCallable(() -> {
+            File file = new File(artifactPath);
+            String webHdfsUploadPath = destinationRootPath.concat(file.getName());
+            String redirectUri = null;
+
+            List<NameValuePair> params = new WebHdfsParamsBuilder("CREATE")
+                    .setOverwrite("true")
+                    .build();
+
+            URIBuilder uriBuilder = new URIBuilder(webHdfsUploadPath);
+            uriBuilder.addParameters(params);
+
+            HttpUriRequest req = RequestBuilder
+                    .put(uriBuilder.build())
+                    .build();
+
+            CloseableHttpClient httpclient = submission.getHttpClient();
+            try (CloseableHttpResponse response = httpclient.execute(req)) {
+                //two steps to upload via webhdfs
+                // 1.put request the get 307 redirect uri from response
+                // 2.put redirect request with file content as setEntity
+                redirectUri = response
+                        .getFirstHeader("Location")
+                        .getValue();
+
+                if (StringUtils.isBlank(redirectUri)) {
+                    throw new UnknownServiceException("can not get valid redirect uri using webhdfs");
+                }
+            } catch (Exception ex) {
+                throw new UnknownServiceException("using webhdfs encounter problem:".concat(ex.toString()));
+            }
+
+            InputStreamEntity reqEntity = new InputStreamEntity(
+                    new FileInputStream(file),
+                    -1,
+                    ContentType.APPLICATION_OCTET_STREAM);
+            reqEntity.setChunked(true);
+            BufferedHttpEntity reqEntityBuf = new BufferedHttpEntity(reqEntity);
+
+            //setup url with redirect url and entity ,config 100 continue to header
+            req = RequestBuilder
+                    .put(redirectUri)
+                    .setEntity(reqEntityBuf)
+                    .setConfig(RequestConfig.custom().setExpectContinueEnabled(true).build())
+                    .build();
+
+            // execute put request
+            try (CloseableHttpResponse putResp = httpclient.execute(req)) {
+                params = new WebHdfsParamsBuilder("OPEN")
+                        .build();
+                uriBuilder = new URIBuilder(webHdfsUploadPath);
+                uriBuilder.addParameters(params);
+
+                //return get file uri
+                return uriBuilder.build().toString();
             }
         });
     }

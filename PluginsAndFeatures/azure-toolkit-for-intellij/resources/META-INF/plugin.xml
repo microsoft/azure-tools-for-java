@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.14.0</version>
+  <version>3.15.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -19,6 +19,30 @@
   <change-notes>
     <![CDATA[
     <html>
+    <h3>[3.15.0]</h3>
+      <h4>Added</h4>
+      <ul>
+        <li>Support new runtime WildFly 14 for Web App on Linux.</li>
+        <li>Support to connect Spark Cosmos resource pool with Spark Interactive Console.</li>
+        <li>Support to deploy Spark Application JAR artifacts by WebHDFS service (only support Basic authentication method).</li>
+      </ul>
+      <h4>Fixed</h4>
+      <ul>
+        <li>
+          <a href="https://github.com/Microsoft/azure-tools-for-java/issues/2381" rel="nofollow">#2381</a>
+          Spark local interactive console jline dependence auto-fix dialog always popped up issue.
+        </li>
+        <li>
+          <a href="https://github.com/Microsoft/azure-tools-for-java/issues/2326" rel="nofollow">#2326</a>
+          The Spark Run Configuration dialog always popped up issue for correct config.
+        </li>
+        <li>
+          <a href="https://github.com/Microsoft/azure-tools-for-java/issues/2116" rel="nofollow">#2116</a>
+          <a href="https://github.com/Microsoft/azure-tools-for-java/issues/2345" rel="nofollow">#2345</a>
+          <a href="https://github.com/Microsoft/azure-tools-for-java/issues/2339" rel="nofollow">#2339</a>
+          User feedback issues.
+        </li>
+      </ul>
     <h3>[3.14.0]</h3>
       <h4>Added</h4>
       <ul>
@@ -316,6 +340,7 @@
     <configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType"/>
+    <!--<configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType"/>-->
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.SparkFailureTaskDebugConfigurationType"/>
     <actionPromoter implementation="com.microsoft.azure.hdinsight.spark.console.SparkExecuteInConsoleActionPromoterDelegate"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobLocalRunConfigurationProducer"/>

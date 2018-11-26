@@ -79,7 +79,9 @@ class SparkScalaLocalConsoleRunConfiguration(
         // - https://github.com/Microsoft/azure-tools-for-java/issues/2285
         // - https://issues.apache.org/jira/browse/SPARK-13710
         val jlineLibraryCoord = "jline:jline:2.12.1"
-        promptAndFix(jlineLibraryCoord)
+        if (getLibraryByCoord(jlineLibraryCoord) == null) {
+            promptAndFix(jlineLibraryCoord)
+        }
         params.classPath.addAll(getDependencyClassPaths(jlineLibraryCoord))
 
         params.classPath.addAll(localRunParams.classPath.pathList)

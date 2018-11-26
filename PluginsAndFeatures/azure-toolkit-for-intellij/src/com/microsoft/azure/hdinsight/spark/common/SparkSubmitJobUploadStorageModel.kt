@@ -60,5 +60,12 @@ class SparkSubmitJobUploadStorageModel: ILogger {
     @Attribute("adl_root_path")
     var adlsRootPath: String? = null
 
+    // model for webhdfs  type
+    @Attribute("webhdfs_root_path")
+    var webHdfsRootPath: String? = null
+
+    @Attribute("auth_user_for_webhdfs")
+    var webHdfsAuthUser:String? = null
+
     fun getCredentialAzureBlobAccount(): String? = storageAccount?.let{ SERVICE_NAME_PREFIX + storageAccount }
 }

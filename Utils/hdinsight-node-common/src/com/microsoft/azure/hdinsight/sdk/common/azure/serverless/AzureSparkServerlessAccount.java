@@ -25,9 +25,11 @@ package com.microsoft.azure.hdinsight.sdk.common.azure.serverless;
 import com.google.common.collect.ImmutableSortedSet;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterType;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureDataLakeHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
+import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.ODataParam;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccountBasic;
@@ -37,8 +39,11 @@ import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.model
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkResourcePoolList;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkResourcePoolState;
+import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -51,7 +56,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
-public class AzureSparkServerlessAccount implements ClusterContainer, Comparable<AzureSparkServerlessAccount>, ILogger {
+public class AzureSparkServerlessAccount implements IClusterDetail, ClusterContainer, Comparable<AzureSparkServerlessAccount>, ILogger {
     private static final String REST_SEGMENT_SPARK_RESOURCEPOOLS = "/activityTypes/spark/resourcePools";
     private static final String REST_SEGMENT_JOB_LIST = "/Jobs";
     private static final String REST_SEGMENT_JOB_MANAGEMENT_TENANTID = "/#@";
@@ -100,6 +105,51 @@ public class AzureSparkServerlessAccount implements ClusterContainer, Comparable
     @NotNull
     public SubscriptionDetail getSubscription() {
         return subscription;
+    }
+
+    @Override
+    public int getDataNodes() {
+        return 0;
+    }
+
+    @Override
+    public String getHttpUserName() throws HDIException {
+        return null;
+    }
+
+    @Override
+    public String getHttpPassword() throws HDIException {
+        return null;
+    }
+
+    @Override
+    public String getOSType() {
+        return null;
+    }
+
+    @Override
+    public String getResourceGroup() {
+        return null;
+    }
+
+    @Override
+    public IHDIStorageAccount getStorageAccount() throws HDIException {
+        return null;
+    }
+
+    @Override
+    public List<HDStorageAccount> getAdditionalStorageAccounts() {
+        return null;
+    }
+
+    @Override
+    public void getConfigurationInfo() throws IOException, HDIException, AzureCmdException {
+
+    }
+
+    @Override
+    public String getSparkVersion() {
+        return null;
     }
 
     @NotNull
@@ -247,9 +297,54 @@ public class AzureSparkServerlessAccount implements ClusterContainer, Comparable
         return this;
     }
 
+    @Override
+    public boolean isEmulator() {
+        return false;
+    }
+
+    @Override
+    public boolean isConfigInfoAvailable() {
+        return false;
+    }
+
     @NotNull
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getTitle() {
+        return name;
+    }
+
+    @Override
+    public String getState() {
+        return null;
+    }
+
+    @Override
+    public String getLocation() {
+        return null;
+    }
+
+    @Override
+    public String getConnectionUrl() {
+        return null;
+    }
+
+    @Override
+    public String getCreateDate() {
+        return null;
+    }
+
+    @Override
+    public ClusterType getType() {
+        return null;
+    }
+
+    @Override
+    public String getVersion() {
+        return null;
     }
 
     public int getSystemMaxDegreeOfParallelism() {

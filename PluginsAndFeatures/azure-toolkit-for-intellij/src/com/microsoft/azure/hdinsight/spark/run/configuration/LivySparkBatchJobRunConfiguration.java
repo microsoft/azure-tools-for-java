@@ -271,8 +271,12 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
     public String suggestedName() {
         return Optional.ofNullable(getModel().getLocalRunConfigurableModel().getRunClass())
                 .map(JavaExecutionUtil::getPresentableClassName)
-                .map(className -> "[Spark Job] " + className)
+                .map(className -> getSuggestedNamePrefix() + " " + className)
                 .orElse(null);
+    }
+
+    public String getSuggestedNamePrefix() {
+        return "[Spark Job]";
     }
 }
 

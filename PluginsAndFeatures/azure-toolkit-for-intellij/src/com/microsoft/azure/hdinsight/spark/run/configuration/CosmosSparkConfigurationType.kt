@@ -28,7 +28,7 @@ import com.microsoft.azure.hdinsight.common.CommonConst
 import com.microsoft.intellij.util.PluginUtil
 import javax.swing.Icon
 
-class CosmosSparkConfigurationType : ConfigurationType {
+open class CosmosSparkConfigurationType : ConfigurationType {
     override fun getIcon(): Icon {
         return PluginUtil.getIcon("/icons/${CommonConst.AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH}")
     }
