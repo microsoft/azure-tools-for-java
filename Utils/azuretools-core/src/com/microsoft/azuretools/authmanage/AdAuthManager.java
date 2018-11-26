@@ -236,24 +236,19 @@ public class AdAuthManager extends BaseADAuthManager {
             return null;
         }
 
-        String authJson = secureStore.loadPassword(SECURE_STORE_SERVICE, SECURE_STORE_KEY);
-
+        final String authJson = secureStore.loadPassword(SECURE_STORE_SERVICE, SECURE_STORE_KEY);
         if (authJson != null) {
             try {
-                AuthResult savedAuth = JsonHelper.deserialize(AuthResult.class, authJson);
-
+                final AuthResult savedAuth = JsonHelper.deserialize(AuthResult.class, authJson);
                 if (!savedAuth.getUserId().equals(adAuthDetails.getAccountEmail())) {
                     return null;
                 }
 
-                String tenantId = StringUtils.isNullOrWhiteSpace(savedAuth.getUserInfo().getTenantId()) ? COMMON_TID :
-                        savedAuth.getUserInfo().getTenantId();
-
-                AuthContext ac = createContext(tenantId, null);
-                AuthResult updatedAuth = ac.acquireToken(savedAuth, this.webUi, Constants.redirectUri);
-
+                final String tenantId = StringUtils.isNullOrWhiteSpace(savedAuth.getUserInfo().getTenantId()) ?
+                        COMMON_TID : savedAuth.getUserInfo().getTenantId();
+                final AuthContext ac = createContext(tenantId, null);
+                final AuthResult updatedAuth = ac.acquireToken(savedAuth);
                 saveToSecureStore(updatedAuth);
-
                 return updatedAuth;
             } catch (IOException e) {
                 LOGGER.warning("Can't restore the authentication cache: " + e.getMessage());

@@ -86,17 +86,18 @@ public class AuthContext {
      * Get token from last authentication result
      *
      * @param lastResult last authentication result
-     * @param webUi web ui
-     * @param redirectUrl redirect url
      * @return authentication result with updated tokens
      * @throws AuthException exception during getting token
      */
-    public AuthResult acquireToken(@NotNull final AuthResult lastResult, final IWebUi webUi,
-                                   final String redirectUrl) throws AuthException {
+    public AuthResult acquireToken(@NotNull final AuthResult lastResult) throws AuthException {
         driver.createAddEntry(lastResult, null);
 
-        return acquireToken(lastResult.getResource(), false, lastResult.getUserId(),
-            lastResult.isMultipleResourceRefreshToken(), webUi, redirectUrl);
+        final AuthResult result = acquireTokenFromCache(lastResult.getResource(), lastResult.getUserId());
+        if (result != null) {
+            return result;
+        } else {
+            throw new AuthException(AuthError.UnknownUser);
+        }
     }
 
     /**
