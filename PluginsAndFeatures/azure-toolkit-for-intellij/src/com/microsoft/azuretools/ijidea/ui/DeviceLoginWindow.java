@@ -24,6 +24,7 @@ package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.vcs.impl.CancellableRunnable;
 import com.microsoft.aad.adal4j.AdalErrorCode;
 import com.microsoft.aad.adal4j.AuthenticationCallback;
 import com.microsoft.aad.adal4j.AuthenticationContext;
@@ -42,8 +43,8 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -54,16 +55,16 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
     private JPanel jPanel;
     private JEditorPane editorPanel;
     private AuthenticationResult authenticationResult = null;
-    private Future<?> authExecutor;
     private final DeviceCode deviceCode;
-    private boolean isCancelled = false;
+    private final CancellableRunnable runnable;
+    private final Future<?> future;
 
     public AuthenticationResult getAuthenticationResult() {
         return authenticationResult;
     }
 
     public DeviceLoginWindow(final AuthenticationContext ctx, final DeviceCode deviceCode,
-                             final AuthenticationCallback<AuthenticationResult> callBack) {
+                             final AuthenticationCallback<AuthenticationResult> callback) {
         super(null, false, IdeModalityType.PROJECT);
         super.setOKButtonText("Copy&&Open");
         this.deviceCode = deviceCode;
@@ -79,34 +80,55 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
                 }
             }
         });
-        authExecutor = ApplicationManager.getApplication()
-            .executeOnPooledThread(() -> pullAuthenticationResult(ctx, deviceCode, callBack));
-        init();
-    }
 
-    private void pullAuthenticationResult(final AuthenticationContext ctx, final DeviceCode deviceCode,
-                                          final AuthenticationCallback<AuthenticationResult> callback) {
-        final long interval = deviceCode.getInterval();
-        long remaining = deviceCode.getExpiresIn();
-        while (remaining > 0 && authenticationResult == null && !isCancelled) {
-            try {
-                remaining -= interval;
-                authenticationResult =  ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
-            } catch (ExecutionException | InterruptedException e) {
-                if (e.getCause() instanceof AuthenticationException &&
-                    ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
+        runnable = new CancellableRunnable() {
+            private AtomicBoolean cancel = new AtomicBoolean();
+            final long interval = deviceCode.getInterval();
+            long remaining = deviceCode.getExpiresIn();
+
+            @Override
+            public void cancel() {
+                cancel.set(true);
+            }
+
+            @Override
+            public void run() {
+                while (!cancel.get() && remaining > 0) {
+                    try {
+                        remaining -= interval;
+                        authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
+                        break;
+                    } catch (ExecutionException | InterruptedException e) {
+                        if (e instanceof InterruptedException || e.getCause() instanceof AuthenticationException &&
+                                ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
+                        } else {
+                            e.printStackTrace();
+                            break;
+                        }
+                    }
                     try {
                         Thread.sleep(interval * 1000);
                     } catch (InterruptedException e1) {
                         // swallow the exception
                     }
-                } else {
-                    e.printStackTrace();
-                    break;
                 }
+                closeDialog();
             }
-     }
-        closeDialog();
+        };
+        final ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                return new Thread(r) {
+                    @Override
+                    public void interrupt() {
+                        super.interrupt();
+                        runnable.cancel();
+                    }
+                };
+            }
+        });
+        future = executor.submit(runnable);
+        init();
     }
 
     private String createHtmlFormatMessage() {
@@ -119,8 +141,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
 
     @Override
     public void doCancelAction() {
-        isCancelled = true;
-        authExecutor.cancel(true);
+        future.cancel(true);
         super.doCancelAction();
     }
 
