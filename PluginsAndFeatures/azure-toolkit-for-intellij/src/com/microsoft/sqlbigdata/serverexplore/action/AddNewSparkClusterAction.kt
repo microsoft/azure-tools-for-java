@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.privatecloud.sqlbigdata.serverexplore.action
+package com.microsoft.sqlbigdata.serverexplore.action
 
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.aris.serverexplore.SQLBigDataClusterModule
