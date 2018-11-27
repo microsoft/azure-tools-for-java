@@ -49,7 +49,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -62,6 +63,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
     private AuthenticationResult authenticationResult = null;
     private final DeviceCode deviceCode;
     private final CancellableRunnable runnable;
+    private final ExecutorService executor;
     private final Future<?> future;
 
     public AuthenticationResult getAuthenticationResult() {
@@ -106,11 +108,14 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
                     }
                     try {
                         remaining -= interval;
-                        authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
+                        authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback)
+                                .get(200, TimeUnit.MICROSECONDS);
                         break;
-                    } catch (ExecutionException | InterruptedException e) {
-                        if (e instanceof InterruptedException || e.getCause() instanceof AuthenticationException &&
-                                ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
+                    } catch (ExecutionException | InterruptedException | TimeoutException e) {
+                        if (e instanceof InterruptedException || e instanceof TimeoutException ||
+                                e.getCause() instanceof AuthenticationException &&
+                                        ((AuthenticationException) e.getCause()).getErrorCode() ==
+                                                AdalErrorCode.AUTHORIZATION_PENDING) {
                         } else {
                             e.printStackTrace();
                             break;
@@ -125,7 +130,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
                 closeDialog();
             }
         };
-        final ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+        executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 return new Thread(r) {
@@ -152,6 +157,14 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
     @Override
     public void doCancelAction() {
         future.cancel(true);
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(800, TimeUnit.MICROSECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+        }
         super.doCancelAction();
     }
 
