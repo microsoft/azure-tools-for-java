@@ -39,13 +39,13 @@ import java.awt.event.WindowEvent;
 public class SparkServerlessClusterUpdateDialog extends SparkServerlessProvisionDialog implements ILogger {
     @NotNull
     private SparkServerlessClusterUpdateCtrlProvider ctrlProvider;
-    private static final String auWarningTip = "Currently, there are not enough available AU for your serverless cluster Updating. Please adjust your cluster configuration or the updating request will be submitted into the queue with PENDING status.";
+    private static final String AU_WARNING_TIP = "Currently, there are not enough available AU for your serverless cluster Updating. Please adjust your cluster configuration or the updating request will be submitted into the queue with PENDING status.";
 
     public SparkServerlessClusterUpdateDialog(@NotNull SparkServerlessClusterNode clusterNode,
                                               @NotNull AzureSparkServerlessCluster cluster) {
         super((SparkServerlessADLAccountNode) clusterNode.getParent(), cluster.getAccount());
         this.setTitle("Update Cluster");
-        this.auWarningLabel.setToolTipText(auWarningTip);
+        this.auWarningLabel.setToolTipText(AU_WARNING_TIP);
         disableUneditableFields();
         ctrlProvider = new SparkServerlessClusterUpdateCtrlProvider(
                 this, new IdeaSchedulers((Project)clusterNode.getProject()), cluster);
