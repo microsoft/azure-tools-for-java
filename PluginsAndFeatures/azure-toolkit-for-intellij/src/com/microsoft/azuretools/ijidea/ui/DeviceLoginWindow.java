@@ -24,6 +24,7 @@ package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vcs.impl.CancellableRunnable;
 import com.microsoft.aad.adal4j.AdalErrorCode;
 import com.microsoft.aad.adal4j.AuthenticationCallback;
@@ -86,18 +87,23 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         });
 
         runnable = new CancellableRunnable() {
-            private AtomicBoolean cancel = new AtomicBoolean();
+            private boolean isCancelled = false;
             final long interval = deviceCode.getInterval();
             long remaining = deviceCode.getExpiresIn();
 
             @Override
             public void cancel() {
-                cancel.set(true);
+                ApplicationManager.getApplication().runWriteAction(() -> {
+                    isCancelled = true;
+                });
             }
 
             @Override
             public void run() {
-                while (!cancel.get() && remaining > 0) {
+                while (remaining > 0) {
+                    if (ApplicationManager.getApplication().runReadAction((Computable<Boolean>) () -> isCancelled)) {
+                        break;
+                    }
                     try {
                         remaining -= interval;
                         authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
