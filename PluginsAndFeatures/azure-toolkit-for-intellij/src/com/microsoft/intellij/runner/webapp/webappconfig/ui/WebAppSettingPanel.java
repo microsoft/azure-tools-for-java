@@ -806,12 +806,17 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     }
 
     @Override
-    public void fillPricingTier(@NotNull List<PricingTier> prices) {
+    public void fillPricingTier(@NotNull final List<PricingTier> prices) {
         cbPricing.removeAllItems();
-        for (PricingTier price : prices) {
+        // workaround for SDK not updated the PREMIUM pricing tiers to latest ones
+        // https://github.com/Azure/azure-libraries-for-java/issues/660
+        final PricingTier defaultValue = new PricingTier("Premium", "P1V2");
+        for (final PricingTier price : prices) {
             cbPricing.addItem(price);
             if (Comparing.equal(price.toString(), webAppConfiguration.getPricing())) {
                 cbPricing.setSelectedItem(price);
+            } else if (Comparing.equal(price.toString(), defaultValue.toString())){
+                cbPricing.setSelectedItem(defaultValue);
             }
         }
     }
