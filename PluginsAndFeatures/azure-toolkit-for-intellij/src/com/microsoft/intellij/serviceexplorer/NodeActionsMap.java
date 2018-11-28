@@ -23,10 +23,10 @@
 package com.microsoft.intellij.serviceexplorer;
 
 import com.google.common.collect.ImmutableList;
-import com.microsoft.azure.aris.serverexplore.SQLBigDataClusterModule;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewEmulatorAction;
+import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
 import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.CreateNewDockerHostAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.DeleteDockerHostAction;
@@ -89,7 +89,7 @@ public class NodeActionsMap {
         node2Actions.put(HDInsightRootModuleImpl.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(AddNewClusterAction.class, AddNewEmulatorAction.class).build());
-        node2Actions.put(SQLBigDataClusterModule.class,
+        node2Actions.put(SqlBigDataClusterModule.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(AddNewSparkClusterAction.class).build());
         //noinspection unchecked

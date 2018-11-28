@@ -39,6 +39,7 @@ import com.microsoft.azure.hdinsight.metadata.ClusterMetaDataService;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel;
+import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.helpers.ManifestFileUtilsEx;
@@ -102,12 +103,16 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
     @NotNull
     protected ImmutableSortedSet<? extends IClusterDetail> getClusterDetails() {
         return ImmutableSortedSet.copyOf((x, y) -> x.getTitle().compareToIgnoreCase(y.getTitle()),
-                                         ClusterMetaDataService.getInstance().getCachedClusterDetails());
+                ClusterMetaDataService.getInstance().getCachedClusterDetails().stream()
+                        .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                        .collect(Collectors.toList()));
     }
 
     @NotNull
     protected Observable<ImmutableSortedSet<? extends IClusterDetail>> getClusterDetailsWithRefresh() {
-        return Observable.fromCallable(() -> ClusterManagerEx.getInstance().getClusterDetails())
+        return Observable.fromCallable(() -> ClusterManagerEx.getInstance().getClusterDetails().stream()
+                .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                .collect(Collectors.toList()))
                 .map(list -> ImmutableSortedSet.copyOf((x, y) -> x.getTitle().compareToIgnoreCase(y.getTitle()), list));
     }
 

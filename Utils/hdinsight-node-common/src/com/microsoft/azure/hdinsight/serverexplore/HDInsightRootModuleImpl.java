@@ -26,12 +26,14 @@ import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.ClusterNode;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
+import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class HDInsightRootModuleImpl extends HDInsightRootModule {
 
@@ -55,7 +57,9 @@ public class HDInsightRootModuleImpl extends HDInsightRootModule {
         synchronized (this) { //todo???
 //            TelemetryManager.postEvent(TelemetryCommon.HDInsightExplorerHDInsightNodeExpand, null, null);
 
-            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails();
+            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails().stream()
+                    .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                    .collect(Collectors.toList());
 
             if (clusterDetailList != null) {
                 for (IClusterDetail clusterDetail : clusterDetailList) {
@@ -71,7 +75,9 @@ public class HDInsightRootModuleImpl extends HDInsightRootModule {
             removeAllChildNodes();
 
             // refresh the cluster list with invalidating the cache
-            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails();
+            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails().stream()
+                    .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                    .collect(Collectors.toList());
 
             if (clusterDetailList != null) {
                 for (IClusterDetail clusterDetail : clusterDetailList) {

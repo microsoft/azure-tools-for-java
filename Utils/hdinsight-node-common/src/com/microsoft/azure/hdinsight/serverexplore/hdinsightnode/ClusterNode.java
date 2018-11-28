@@ -24,6 +24,8 @@ package com.microsoft.azure.hdinsight.serverexplore.hdinsightnode;
 import com.microsoft.azure.hdinsight.common.*;
 import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azure.hdinsight.sdk.common.CommonConstant;
+import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
+import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -58,7 +60,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
     protected void loadActions() {
         super.loadActions();
 
-        if (!(clusterDetail instanceof HDInsightLivyLinkClusterDetail)) {
+        if (!(clusterDetail instanceof HDInsightLivyLinkClusterDetail) && !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail)) {
             addAction("Open Spark History UI", new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) {
@@ -115,15 +117,27 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
             });
         }
 
-        if (clusterDetail instanceof HDInsightAdditionalClusterDetail) {
+        if (clusterDetail instanceof HDInsightAdditionalClusterDetail || clusterDetail instanceof HDInsightLivyLinkClusterDetail) {
             addAction("Unlink", new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) {
                     boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the HDInsight cluster?",
                             "Unlink HDInsight Cluster", new String[]{"Yes", "No"}, null);
                     if(choice) {
-                        ClusterManagerEx.getInstance().removeHDInsightAdditionalCluster((HDInsightAdditionalClusterDetail)clusterDetail);
+                        ClusterManagerEx.getInstance().removeHDInsightAdditionalCluster(clusterDetail);
                         ((HDInsightRootModule) getParent()).refreshWithoutAsync();
+                    }
+                }
+            });
+        } else if (clusterDetail instanceof SqlBigDataLivyLinkClusterDetail) {
+            addAction("Unlink", new NodeActionListener() {
+                @Override
+                protected void actionPerformed(NodeActionEvent e) {
+                    boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the SQL big data cluster?",
+                            "Unlink SQL Big Data Cluster", new String[]{"Yes", "No"}, null);
+                    if(choice) {
+                        ClusterManagerEx.getInstance().removeSqlBigDataAdditionalCluster(clusterDetail);
+                        ((SqlBigDataClusterModule) getParent()).refreshWithoutAsync();
                     }
                 }
             });

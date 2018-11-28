@@ -25,12 +25,11 @@ package com.microsoft.azure.hdinsight.serverexplore;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
-import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail;
-import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail;
-import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
+import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
+import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
@@ -86,12 +85,14 @@ public class AddNewClusterCtrlProvider {
      * 1. clusters under user's azure account subscription
      * 2. linked HDI cluster by user
      * 3. linked livy cluster by user
+     * 4. Emulator cluster
      * @param clusterName
-     * @return whether livy endpoint exists or not
+     * @return whether cluster name exists or not
      */
-    public boolean doesClusterNameExistInAllClusters(@NotNull String clusterName) {
-        return ClusterManagerEx.getInstance().getCachedClusters().stream().anyMatch(clusterDetail ->
-                clusterDetail.getName().equals(clusterName));
+    public boolean doesClusterNameExistInAllHDInsightClusters(@NotNull String clusterName) {
+        return ClusterManagerEx.getInstance().getCachedClusters().stream()
+                .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                .anyMatch(clusterDetail -> clusterDetail.getName().equals(clusterName));
     }
 
     /**
@@ -99,11 +100,11 @@ public class AddNewClusterCtrlProvider {
      * 1. linked HDI cluster by user
      * 2. linked livy cluster by user
      * @param clusterName
-     * @return whether livy endpoint exists or not
+     * @return whether cluster name exists or not
      */
-    public boolean doesClusterNameExistInLinkedClusters(@NotNull String clusterName) {
-        return ClusterManagerEx.getInstance().getCachedClusters().stream()
-                .filter(clusterDetail -> clusterDetail instanceof HDInsightAdditionalClusterDetail)
+    public boolean doesClusterNameExistInLinkedHDInsightClusters(@NotNull String clusterName) {
+        return ClusterManagerEx.getInstance().getAdditionalClusterDetails().stream()
+                .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
                 .anyMatch(clusterDetail -> clusterDetail.getName().equals(clusterName));
     }
 
@@ -115,12 +116,40 @@ public class AddNewClusterCtrlProvider {
      * @param livyEndpoint
      * @return whether livy endpoint exists or not
      */
-    public boolean doesClusterLivyEndpointExistInAllClusters(@NotNull String livyEndpoint) {
+    public boolean doesClusterLivyEndpointExistInAllHDInsightClusters(@NotNull String livyEndpoint) {
         return ClusterManagerEx.getInstance().getCachedClusters().stream()
-                .filter(cluster -> cluster instanceof LivyCluster)
+                .filter(clusterDetail ->
+                        clusterDetail instanceof LivyCluster &&
+                                !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
                 .anyMatch(clusterDetail ->
-                        URI.create(((LivyCluster) clusterDetail).getLivyConnectionUrl()).resolve("/").toString()
-                                .equals(URI.create(livyEndpoint).resolve("/").toString()));
+                        URI.create(((LivyCluster) clusterDetail).getLivyConnectionUrl()).getHost()
+                                .equals(URI.create(livyEndpoint).getHost()));
+    }
+
+    /**
+     * Check if cluster name exists in:
+     * 1. Livy Linked SQL Big Data clusters
+     * @param clusterName
+     * @return whether cluster name exists or not
+     */
+    public boolean doesClusterNameExistInSqlBigDataClusters(@NotNull String clusterName) {
+        return ClusterManagerEx.getInstance().getAdditionalClusterDetails().stream()
+                .filter(clusterDetail -> clusterDetail instanceof SqlBigDataLivyLinkClusterDetail)
+                .anyMatch(clusterDetail -> clusterDetail.getName().equals(clusterName));
+    }
+
+    /**
+     * Check if livy endpoint exists in:
+     * 1. Livy Linked SQL Big Data clusters
+     * @param livyEndpoint
+     * @return whether livy endpoint exists or not
+     */
+    public boolean doesClusterLivyEndpointExistInSqlBigDataClusters(@NotNull String livyEndpoint) {
+        return ClusterManagerEx.getInstance().getAdditionalClusterDetails().stream()
+                .filter(clusterDetail -> clusterDetail instanceof SqlBigDataLivyLinkClusterDetail)
+                .anyMatch(clusterDetail ->
+                        URI.create(((LivyCluster) clusterDetail).getLivyConnectionUrl()).getHost()
+                                .equals(URI.create(livyEndpoint).getHost()));
     }
 
     public Observable<AddNewClusterModel> refreshContainers() {
@@ -159,6 +188,7 @@ public class AddNewClusterCtrlProvider {
                 .doOnNext(controllableView::getData)
                 .observeOn(ideSchedulers.processBarVisibleAsync("Validating the cluster settings..."))
                 .map(toUpdate -> {
+                    SparkClusterType sparkClusterType = toUpdate.getSparkClusterType();
                     String clusterNameOrUrl = toUpdate.getClusterName();
                     String userName = Optional.ofNullable(toUpdate.getUserName()).orElse("");
                     String storageName = toUpdate.getStorageName();
@@ -166,7 +196,6 @@ public class AddNewClusterCtrlProvider {
                     String password = Optional.ofNullable(toUpdate.getPassword()).orElse("");
                     URI livyEndpoint = toUpdate.getLivyEndpoint();
                     URI yarnEndpoint = toUpdate.getYarnEndpoint();
-                    Boolean isHDInsightClusterSelected = toUpdate.getHDInsightClusterSelected();
                     int selectedContainerIndex = toUpdate.getSelectedContainerIndex();
 
                     // These validation check are redundant for intelliJ sicne intellij does full check at view level
@@ -204,8 +233,9 @@ public class AddNewClusterCtrlProvider {
                     }
 
                     // Duplication check
-                    if (ClusterManagerEx.getInstance().getHdinsightAdditionalClusterDetails().stream().anyMatch(clusterDetail ->
-                            clusterDetail.getName().equals(clusterName))) {
+                    if (ClusterManagerEx.getInstance().getAdditionalClusterDetails().stream()
+                            .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                            .anyMatch(clusterDetail -> clusterDetail.getName().equals(clusterName))) {
                         return toUpdate.setErrorMessage("Cluster already exists in linked list");
                     }
 
@@ -237,13 +267,24 @@ public class AddNewClusterCtrlProvider {
                     }
 
 
-                    HDInsightAdditionalClusterDetail hdInsightAdditionalClusterDetail = isHDInsightClusterSelected ?
-                            new HDInsightAdditionalClusterDetail(clusterName, userName, password, storageAccount) :
-                            new HDInsightLivyLinkClusterDetail(livyEndpoint, yarnEndpoint, clusterName, userName, password);
+                    IClusterDetail additionalClusterDetail = null;
+                    switch (sparkClusterType) {
+                        case HDINSIGHT_CLUSTER:
+                            additionalClusterDetail =
+                                    new HDInsightAdditionalClusterDetail(clusterName, userName, password, storageAccount);
+                            break;
+                        case LIVY_LINK_CLUSTER:
+                            additionalClusterDetail =
+                                    new HDInsightLivyLinkClusterDetail(livyEndpoint, yarnEndpoint, clusterName, userName, password);
+                            break;
+                        case SQL_BIG_DATA_CLUSTER:
+                            additionalClusterDetail =
+                                    new SqlBigDataLivyLinkClusterDetail(livyEndpoint, yarnEndpoint, clusterName, userName, password);
+                    }
 
                     // Account certificate check
                     try {
-                        JobUtils.authenticate(hdInsightAdditionalClusterDetail);
+                        JobUtils.authenticate(additionalClusterDetail);
                     } catch (AuthenticationException authErr) {
                         return toUpdate.setErrorMessage("Authentication Error: " + Optional.ofNullable(authErr.getMessage())
                                 .filter(msg -> !msg.isEmpty())
@@ -254,7 +295,14 @@ public class AddNewClusterCtrlProvider {
                     }
 
                     // No issue
-                    ClusterManagerEx.getInstance().addHDInsightAdditionalCluster(hdInsightAdditionalClusterDetail);
+                    switch (sparkClusterType) {
+                        case HDINSIGHT_CLUSTER: case LIVY_LINK_CLUSTER:
+                            ClusterManagerEx.getInstance().addHDInsightAdditionalCluster(additionalClusterDetail);
+                            break;
+                        case SQL_BIG_DATA_CLUSTER:
+                            ClusterManagerEx.getInstance().addSqlBigDataAdditionalCluster(additionalClusterDetail);
+                    }
+
 
                     return toUpdate.setErrorMessage(null);
                 })

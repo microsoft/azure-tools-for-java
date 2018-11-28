@@ -53,6 +53,7 @@ public class CommonConst {
 
     public static final String HDINSIGHT_ADDITIONAL_CLUSTERS = "com.microsoft.azure.hdinsight.AdditionalClusters";
     public static final String HDINSIGHT_LIVY_LINK_CLUSTERS = "com.microsoft.azure.hdinsight.LivyLinkClusters";
+    public static final String SQL_BIG_DATA_LIVY_LINK_CLUSTERS = "com.microsoft.azure.sqlbigdata.SqlBigDataLivyLinkClusters";
     public static final String EMULATOR_CLUSTERS = "com.microsoft.azure.hdinsight.EmulatorClusters";
     public static final String CACHED_SPARK_SDK_PATHS = "com.microsoft.azure.hdinsight.cachedSparkSDKpath";
     public static final String SPARK_FAILURE_TASK_CONTEXT_EXTENSION = "ftd";

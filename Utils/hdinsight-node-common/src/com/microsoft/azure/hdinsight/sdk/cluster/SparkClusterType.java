@@ -20,19 +20,10 @@
  * SOFTWARE.
  */
 
-package com.microsoft.sqlbigdata.serverexplore.action
+package com.microsoft.azure.hdinsight.sdk.cluster;
 
-import com.intellij.openapi.project.Project
-import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule
-import com.microsoft.sqlbigdata.serverexplore.ui.AddNewSqlBigDataClusterForm
-import com.microsoft.tooling.msservices.helpers.Name
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
-
-@Name("Link A Spark Cluster")
-class AddNewSparkClusterAction(private val sqlBigDataClusterModule: SqlBigDataClusterModule): NodeActionListener(sqlBigDataClusterModule) {
-    override fun actionPerformed(e: NodeActionEvent?) {
-        val form = AddNewSqlBigDataClusterForm(sqlBigDataClusterModule.project as Project, sqlBigDataClusterModule)
-        form.show()
-    }
+public enum SparkClusterType {
+    HDINSIGHT_CLUSTER,
+    LIVY_LINK_CLUSTER,
+    SQL_BIG_DATA_CLUSTER
 }

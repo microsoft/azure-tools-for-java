@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.serverexplore;
 
+import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
@@ -35,6 +36,8 @@ public class AddNewClusterModel implements Cloneable {
     private String userNameLabelTitle;
     private String passwordLabelTitle;
 
+    @NotNull
+    private SparkClusterType sparkClusterType;
     private String clusterName;
     private String userName;
     private String password;
@@ -42,7 +45,6 @@ public class AddNewClusterModel implements Cloneable {
     private URI livyEndpoint;
     @Nullable
     private URI yarnEndpoint;
-    private boolean isHDInsightClusterSelected = true;
 
     private String storageName;
     private String storageKey;
@@ -81,6 +83,15 @@ public class AddNewClusterModel implements Cloneable {
     public AddNewClusterModel setPasswordLabelTitle(String passwordLabelTitle) {
         this.passwordLabelTitle = passwordLabelTitle;
 
+        return this;
+    }
+
+    public SparkClusterType getSparkClusterType() {
+        return sparkClusterType;
+    }
+
+    public AddNewClusterModel setSparkClusterType(@NotNull SparkClusterType sparkClusterType) {
+        this.sparkClusterType = sparkClusterType;
         return this;
     }
 
@@ -151,15 +162,6 @@ public class AddNewClusterModel implements Cloneable {
 
     public AddNewClusterModel setYarnEndpoint(@Nullable URI yarnEndpoint) {
         this.yarnEndpoint = yarnEndpoint;
-        return this;
-    }
-
-    public boolean getHDInsightClusterSelected() {
-        return isHDInsightClusterSelected;
-    }
-
-    public AddNewClusterModel setHDInsightClusterSelected(boolean HDInsightClusterSelected) {
-        isHDInsightClusterSelected = HDInsightClusterSelected;
         return this;
     }
 

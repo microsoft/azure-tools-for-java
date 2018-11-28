@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.aris.serverexplore;
+package com.microsoft.azure.sqlbigdata.serverexplore;
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.CommonConst;
@@ -28,31 +28,35 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.ClusterNode;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
+import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class SQLBigDataClusterModule extends HDInsightRootModule implements ILogger {
-    private static final String ARIS_SERVICE_MODULE_ID = SQLBigDataClusterModule.class.getName();
+public class SqlBigDataClusterModule extends HDInsightRootModule implements ILogger {
+    private static final String ARIS_SERVICE_MODULE_ID = SqlBigDataClusterModule.class.getName();
     private static final String BASE_MODULE_NAME = "SQL Big Data Cluster";
     private static final String ICON_PATH = CommonConst.HDExplorerIcon_16x_Path;
 
-    public SQLBigDataClusterModule(@NotNull Node parent) {
+    public SqlBigDataClusterModule(@NotNull Node parent) {
         super(ARIS_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
     }
 
     @Override
     public HDInsightRootModule getNewNode(Node parent) {
-        return new SQLBigDataClusterModule(parent);
+        return new SqlBigDataClusterModule(parent);
     }
 
     @Override
     protected void refreshItems() throws AzureCmdException {
         synchronized (this) {
-            List<IClusterDetail> clusterDetailList = ClusterManagerEx.getInstance().getHdinsightAdditionalClusterDetails();
+            List<IClusterDetail> clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails().stream()
+                    .filter(clusterDetail -> clusterDetail instanceof SqlBigDataLivyLinkClusterDetail)
+                    .collect(Collectors.toList());
 
             if (clusterDetailList != null) {
                 for (IClusterDetail clusterDetail : clusterDetailList) {
@@ -67,7 +71,9 @@ public class SQLBigDataClusterModule extends HDInsightRootModule implements ILog
         synchronized (this) {
             removeAllChildNodes();
 
-            List<IClusterDetail> clusterDetailList = ClusterManagerEx.getInstance().getHdinsightAdditionalClusterDetails();
+            List<IClusterDetail> clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails().stream()
+                    .filter(clusterDetail -> clusterDetail instanceof SqlBigDataLivyLinkClusterDetail)
+                    .collect(Collectors.toList());
 
             if (clusterDetailList != null) {
                 for (IClusterDetail clusterDetail : clusterDetailList) {
