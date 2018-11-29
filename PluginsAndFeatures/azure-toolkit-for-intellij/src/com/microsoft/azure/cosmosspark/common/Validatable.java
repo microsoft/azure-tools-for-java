@@ -20,30 +20,13 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.ui
+package com.microsoft.azure.cosmosspark.common;
 
-import com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST
-import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri
-import com.microsoft.intellij.forms.dsl.panel
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
-class SparkSubmissionJobUploadStorageAdlsSignInCard: SparkSubmissionJobUploadStorageBasicCard() {
-    override val title: String = "Sign In"
-    val signInLink = JXHyperLinkWithUri().apply {
-        text = "Sign In"
-    }
+public interface Validatable {
+    boolean isLegal();
 
-    init {
-        val formBuilder = panel {
-            columnTemplate {
-                col {
-                    anchor = ANCHOR_WEST
-                }
-            }
-            row {
-                c(signInLink)
-            }
-        }
-        layout = formBuilder.createGridLayoutManager()
-        formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
-    }
+    @Nullable
+    String getErrorMessage();
 }

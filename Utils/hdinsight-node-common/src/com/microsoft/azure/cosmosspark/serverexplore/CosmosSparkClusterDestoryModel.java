@@ -20,30 +20,41 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.ui
+package com.microsoft.azure.cosmosspark.serverexplore;
 
-import com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST
-import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri
-import com.microsoft.intellij.forms.dsl.panel
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
-class SparkSubmissionJobUploadStorageAdlsSignInCard: SparkSubmissionJobUploadStorageBasicCard() {
-    override val title: String = "Sign In"
-    val signInLink = JXHyperLinkWithUri().apply {
-        text = "Sign In"
+public class CosmosSparkClusterDestoryModel implements Cloneable {
+    @NotNull
+    private String clusterName;
+
+    @Nullable
+    private String errorMessage;
+
+    @NotNull
+    public String getClusterName() {
+        return clusterName;
     }
 
-    init {
-        val formBuilder = panel {
-            columnTemplate {
-                col {
-                    anchor = ANCHOR_WEST
-                }
-            }
-            row {
-                c(signInLink)
-            }
-        }
-        layout = formBuilder.createGridLayoutManager()
-        formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
+    public CosmosSparkClusterDestoryModel setClusterName(@NotNull String clusterName) {
+        this.clusterName = clusterName;
+        return this;
+    }
+
+    @Nullable
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public CosmosSparkClusterDestoryModel setErrorMessage(@Nullable String errorMessage) {
+        this.errorMessage = errorMessage;
+        return this;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        // Here is a shadow clone, not deep clone
+        return super.clone();
     }
 }
