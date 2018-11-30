@@ -1,5 +1,6 @@
 /**
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2018 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -27,7 +28,7 @@ import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.projectView.impl.ProjectRootsUtil;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
@@ -84,12 +85,12 @@ public class PluginUtil {
      */
     public static Project getSelectedProject() {
         DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
-        return DataKeys.PROJECT.getData(dataContext);
+        return LangDataKeys.PROJECT.getData(dataContext);
     }
 
     public static Module getSelectedModule() {
         DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
-        return DataKeys.MODULE.getData(dataContext);
+        return LangDataKeys.MODULE.getData(dataContext);
     }
 
     public static String getModulePath(Module module) {

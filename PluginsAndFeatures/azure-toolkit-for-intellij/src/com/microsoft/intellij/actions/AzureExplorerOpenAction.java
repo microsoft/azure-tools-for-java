@@ -1,5 +1,6 @@
 /**
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2018 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -22,7 +23,7 @@
 package com.microsoft.intellij.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
@@ -31,7 +32,7 @@ import com.microsoft.intellij.components.ServerExplorerToolWindowFactory;
 public class AzureExplorerOpenAction  extends AzureAnAction {
     @Override
     public void onActionPerformed(AnActionEvent event) {
-        Project project = DataKeys.PROJECT.getData(event.getDataContext());
+        Project project = LangDataKeys.PROJECT.getData(event.getDataContext());
         ToolWindowManager.getInstance(project).getToolWindow(ServerExplorerToolWindowFactory.EXPLORER_WINDOW).activate(null);
     }
 }

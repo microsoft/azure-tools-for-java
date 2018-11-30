@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2018 JetBrains s.r.o.
  *   <p/>
  *  All rights reserved.
  *   <p/>
@@ -22,7 +23,7 @@
 package com.microsoft.azuretools.ijidea.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
@@ -54,7 +55,7 @@ public class AzureSignInAction extends AzureAnAction {
 
     @Override
     public void onActionPerformed(AnActionEvent e) {
-        Project project = DataKeys.PROJECT.getData(e.getDataContext());
+        Project project = LangDataKeys.PROJECT.getData(e.getDataContext());
         onAzureSignIn(project);
     }
 
