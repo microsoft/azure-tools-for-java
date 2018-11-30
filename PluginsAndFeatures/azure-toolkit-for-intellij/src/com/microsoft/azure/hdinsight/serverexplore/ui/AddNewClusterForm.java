@@ -153,7 +153,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                         .setUserNameLabelTitle(userNameLabel.getText())
                         .setPasswordLabelTitle(passwordLabel.getText());
                 break;
-            case LIVY_LINK_CLUSTER: case SQL_BIG_DATA_CLUSTER:
+            case LIVY_LINK_CLUSTER:
                 data.setLivyEndpoint(URI.create(livyEndpointField.getText().trim()))
                         .setYarnEndpoint(StringUtils.isBlank(yarnEndpointField.getText()) ? null : URI.create(yarnEndpointField.getText().trim()))
                         .setClusterName(livyClusterNameField.getText().trim())
@@ -165,6 +165,8 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                     data.setUserName(userNameField.getText().trim())
                             .setPassword(passwordField.getText().trim());
                 }
+                break;
+            default:
                 break;
         }
     }

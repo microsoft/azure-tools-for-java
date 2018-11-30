@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 public class SqlBigDataClusterModule extends HDInsightRootModule implements ILogger {
     private static final String ARIS_SERVICE_MODULE_ID = SqlBigDataClusterModule.class.getName();
     private static final String BASE_MODULE_NAME = "SQL Big Data Cluster";
-    private static final String ICON_PATH = CommonConst.HDExplorerIcon_16x_Path;
+    private static final String ICON_PATH = CommonConst.SQL_BIG_DATA_CLUSTER_MODULE_ICON_PATH;
 
     public SqlBigDataClusterModule(@NotNull Node parent) {
         super(ARIS_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);

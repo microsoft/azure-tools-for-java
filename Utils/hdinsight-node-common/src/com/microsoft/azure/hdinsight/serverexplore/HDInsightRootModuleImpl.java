@@ -23,10 +23,9 @@ package com.microsoft.azure.hdinsight.serverexplore;
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.CommonConst;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.ClusterNode;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
-import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -58,7 +57,7 @@ public class HDInsightRootModuleImpl extends HDInsightRootModule {
 //            TelemetryManager.postEvent(TelemetryCommon.HDInsightExplorerHDInsightNodeExpand, null, null);
 
             clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails().stream()
-                    .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                    .filter(ClusterManagerEx.getInstance().getHDInsightClusterFilterPredicate())
                     .collect(Collectors.toList());
 
             if (clusterDetailList != null) {
@@ -76,7 +75,7 @@ public class HDInsightRootModuleImpl extends HDInsightRootModule {
 
             // refresh the cluster list with invalidating the cache
             clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails().stream()
-                    .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                    .filter(ClusterManagerEx.getInstance().getHDInsightClusterFilterPredicate())
                     .collect(Collectors.toList());
 
             if (clusterDetailList != null) {

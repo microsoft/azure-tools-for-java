@@ -60,4 +60,6 @@ public class CommonConst {
 
     public static final String AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH = "AzureServerlessSparkRoot.png";
     public static final String AZURE_SERVERLESS_SPARK_ACCOUNT_ICON_PATH = "AzureServerlessSparkAccount.png";
+
+    public static final String SQL_BIG_DATA_CLUSTER_MODULE_ICON_PATH = "SqlBigDataClusterRoot.png";
 }

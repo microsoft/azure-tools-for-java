@@ -91,7 +91,7 @@ public class AddNewClusterCtrlProvider {
      */
     public boolean doesClusterNameExistInAllHDInsightClusters(@NotNull String clusterName) {
         return ClusterManagerEx.getInstance().getCachedClusters().stream()
-                .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                .filter(ClusterManagerEx.getInstance().getHDInsightClusterFilterPredicate())
                 .anyMatch(clusterDetail -> clusterDetail.getName().equals(clusterName));
     }
 
@@ -104,7 +104,8 @@ public class AddNewClusterCtrlProvider {
      */
     public boolean doesClusterNameExistInLinkedHDInsightClusters(@NotNull String clusterName) {
         return ClusterManagerEx.getInstance().getAdditionalClusterDetails().stream()
-                .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                .filter(clusterDetail -> clusterDetail instanceof HDInsightAdditionalClusterDetail ||
+                        clusterDetail instanceof HDInsightLivyLinkClusterDetail)
                 .anyMatch(clusterDetail -> clusterDetail.getName().equals(clusterName));
     }
 
@@ -118,9 +119,9 @@ public class AddNewClusterCtrlProvider {
      */
     public boolean doesClusterLivyEndpointExistInAllHDInsightClusters(@NotNull String livyEndpoint) {
         return ClusterManagerEx.getInstance().getCachedClusters().stream()
-                .filter(clusterDetail ->
-                        clusterDetail instanceof LivyCluster &&
-                                !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                .filter(clusterDetail -> clusterDetail instanceof ClusterDetail ||
+                        clusterDetail instanceof HDInsightAdditionalClusterDetail ||
+                        clusterDetail instanceof HDInsightLivyLinkClusterDetail)
                 .anyMatch(clusterDetail ->
                         URI.create(((LivyCluster) clusterDetail).getLivyConnectionUrl()).getHost()
                                 .equals(URI.create(livyEndpoint).getHost()));
@@ -295,14 +296,7 @@ public class AddNewClusterCtrlProvider {
                     }
 
                     // No issue
-                    switch (sparkClusterType) {
-                        case HDINSIGHT_CLUSTER: case LIVY_LINK_CLUSTER:
-                            ClusterManagerEx.getInstance().addHDInsightAdditionalCluster(additionalClusterDetail);
-                            break;
-                        case SQL_BIG_DATA_CLUSTER:
-                            ClusterManagerEx.getInstance().addSqlBigDataAdditionalCluster(additionalClusterDetail);
-                    }
-
+                    ClusterManagerEx.getInstance().addAdditionalCluster(additionalClusterDetail);
 
                     return toUpdate.setErrorMessage(null);
                 })

@@ -60,7 +60,8 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
     protected void loadActions() {
         super.loadActions();
 
-        if (!(clusterDetail instanceof HDInsightLivyLinkClusterDetail) && !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail)) {
+        if (clusterDetail instanceof ClusterDetail || clusterDetail instanceof HDInsightAdditionalClusterDetail ||
+                clusterDetail instanceof EmulatorClusterDetail) {
             addAction("Open Spark History UI", new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) {
@@ -123,8 +124,8 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
                 protected void actionPerformed(NodeActionEvent e) {
                     boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the HDInsight cluster?",
                             "Unlink HDInsight Cluster", new String[]{"Yes", "No"}, null);
-                    if(choice) {
-                        ClusterManagerEx.getInstance().removeHDInsightAdditionalCluster(clusterDetail);
+                    if (choice) {
+                        ClusterManagerEx.getInstance().removeAdditionalCluster(clusterDetail);
                         ((HDInsightRootModule) getParent()).refreshWithoutAsync();
                     }
                 }
@@ -135,21 +136,19 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
                 protected void actionPerformed(NodeActionEvent e) {
                     boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the SQL big data cluster?",
                             "Unlink SQL Big Data Cluster", new String[]{"Yes", "No"}, null);
-                    if(choice) {
-                        ClusterManagerEx.getInstance().removeSqlBigDataAdditionalCluster(clusterDetail);
+                    if (choice) {
+                        ClusterManagerEx.getInstance().removeAdditionalCluster(clusterDetail);
                         ((SqlBigDataClusterModule) getParent()).refreshWithoutAsync();
                     }
                 }
             });
-        }
-
-        if(clusterDetail instanceof EmulatorClusterDetail) {
+        } else if (clusterDetail instanceof EmulatorClusterDetail) {
             addAction("Unlink", new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) {
                     boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the Emulator cluster?",
-                            "Unlink HDInsight Cluster", new String[]{"Yes", "No"}, null);
-                    if(choice) {
+                            "Unlink Emulator Cluster", new String[]{"Yes", "No"}, null);
+                    if (choice) {
                         ClusterManagerEx.getInstance().removeEmulatorCluster((EmulatorClusterDetail) clusterDetail);
                         ((HDInsightRootModule) getParent()).refreshWithoutAsync();
                     }

@@ -36,10 +36,9 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.metadata.ClusterMetaDataService;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel;
-import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.helpers.ManifestFileUtilsEx;
@@ -104,14 +103,14 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
     protected ImmutableSortedSet<? extends IClusterDetail> getClusterDetails() {
         return ImmutableSortedSet.copyOf((x, y) -> x.getTitle().compareToIgnoreCase(y.getTitle()),
                 ClusterMetaDataService.getInstance().getCachedClusterDetails().stream()
-                        .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                        .filter(ClusterManagerEx.getInstance().getHDInsightClusterFilterPredicate())
                         .collect(Collectors.toList()));
     }
 
     @NotNull
     protected Observable<ImmutableSortedSet<? extends IClusterDetail>> getClusterDetailsWithRefresh() {
         return Observable.fromCallable(() -> ClusterManagerEx.getInstance().getClusterDetails().stream()
-                .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                .filter(ClusterManagerEx.getInstance().getHDInsightClusterFilterPredicate())
                 .collect(Collectors.toList()))
                 .map(list -> ImmutableSortedSet.copyOf((x, y) -> x.getTitle().compareToIgnoreCase(y.getTitle()), list));
     }

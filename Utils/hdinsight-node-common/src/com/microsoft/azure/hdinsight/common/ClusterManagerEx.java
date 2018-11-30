@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -149,6 +150,13 @@ public class ClusterManagerEx {
 
     public synchronized ImmutableList<IClusterDetail> getCachedClusters() {
         return ClusterMetaDataService.getInstance().getCachedClusterDetails();
+    }
+
+    public Predicate<IClusterDetail> getHDInsightClusterFilterPredicate() {
+        return clusterDetail -> clusterDetail instanceof ClusterDetail ||
+                clusterDetail instanceof HDInsightAdditionalClusterDetail ||
+                clusterDetail instanceof HDInsightLivyLinkClusterDetail ||
+                clusterDetail instanceof EmulatorClusterDetail;
     }
 
     synchronized Optional<List<IClusterDetail>> getSubscriptionHDInsightClustersOfType(
@@ -273,9 +281,7 @@ public class ClusterManagerEx {
         saveEmulatorClusters();
     }
 
-    public synchronized void addHDInsightAdditionalCluster(@NotNull IClusterDetail hdInsightClusterDetail) {
-        assert hdInsightClusterDetail instanceof HDInsightAdditionalClusterDetail ||
-                hdInsightClusterDetail instanceof HDInsightLivyLinkClusterDetail : "trying to add a non-hdinsight-linked cluster";
+    public synchronized void addAdditionalCluster(@NotNull IClusterDetail hdInsightClusterDetail) {
         additionalClusterDetails.add(hdInsightClusterDetail);
         ClusterMetaDataService.getInstance().addClusterToCache(hdInsightClusterDetail);
         saveAdditionalClusters();
@@ -288,24 +294,9 @@ public class ClusterManagerEx {
         saveEmulatorClusters();
     }
 
-    public synchronized void removeHDInsightAdditionalCluster(@NotNull IClusterDetail hdInsightClusterDetail) {
-        assert hdInsightClusterDetail instanceof HDInsightAdditionalClusterDetail ||
-                hdInsightClusterDetail instanceof HDInsightLivyLinkClusterDetail : "trying to remove a non-hdinsight-linked cluster";
+    public synchronized void removeAdditionalCluster(@NotNull IClusterDetail hdInsightClusterDetail) {
         additionalClusterDetails.remove(hdInsightClusterDetail);
         ClusterMetaDataService.getInstance().removeClusterFromCache(hdInsightClusterDetail);
-        saveAdditionalClusters();
-    }
-
-    public synchronized void addSqlBigDataAdditionalCluster(@NotNull IClusterDetail sqlBigDataClusterDetail) {
-        assert sqlBigDataClusterDetail instanceof SqlBigDataLivyLinkClusterDetail : "trying to add a non-sqlBigData-linked cluster";
-        additionalClusterDetails.add(sqlBigDataClusterDetail);
-        ClusterMetaDataService.getInstance().addClusterToCache(sqlBigDataClusterDetail);
-    }
-
-    public synchronized void removeSqlBigDataAdditionalCluster(@NotNull IClusterDetail sqlBigDataClusterDetail) {
-        assert sqlBigDataClusterDetail instanceof SqlBigDataLivyLinkClusterDetail : "trying to remove a non-sqlBigData-linked cluster";
-        additionalClusterDetails.remove(sqlBigDataClusterDetail);
-        ClusterMetaDataService.getInstance().removeClusterFromCache(sqlBigDataClusterDetail);
         saveAdditionalClusters();
     }
 
