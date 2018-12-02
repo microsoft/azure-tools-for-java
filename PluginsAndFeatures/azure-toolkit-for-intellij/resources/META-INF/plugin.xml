@@ -344,6 +344,7 @@
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.SparkFailureTaskDebugConfigurationType"/>
     <actionPromoter implementation="com.microsoft.azure.hdinsight.spark.console.SparkExecuteInConsoleActionPromoterDelegate"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobLocalRunConfigurationProducer"/>
+    <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkRunConfigurationProducer"/>
     <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkBatchRunner" />
@@ -492,6 +493,23 @@
       <add-to-group group-id="ToolsMenu" anchor="last"/>
       <reference ref="Spark.RunScalaLocalConsole"/>
       <reference ref="Spark.RunScalaLivyConsole"/>
+    </group>
+
+    <group id="SetDefaultRunConfigGroup" text="Set default spark run configuration" description="Default Spark Run Configuration" popup="true">
+      <add-to-group group-id="RunMenu" anchor="after" relative-to-action="SparkJobDebug"/>
+      <add-to-group group-id="RunContextPopupGroup" anchor="after" relative-to-action="SparkJobDebug"/>
+      <action id="SetDefaultSparkRunConfigurationTypeNone"
+        class="com.microsoft.azure.hdinsight.spark.run.action.SetDefaultSparkRunConfigurationTypeAction$None" text="None" >
+      </action>
+      <action id="SetDefaultSparkRunConfigurationTypeHDInsight"
+              class="com.microsoft.azure.hdinsight.spark.run.action.SetDefaultSparkRunConfigurationTypeAction$HDInsight" text="HDInsight" >
+      </action>
+      <action id="SetDefaultSparkRunConfigurationTypeCosmosSpark"
+              class="com.microsoft.azure.hdinsight.spark.run.action.SetDefaultSparkRunConfigurationTypeAction$CosmosSpark" text="CosmosSpark" >
+      </action>
+      <action id="SetDefaultSparkRunConfigurationTypeCosmosServerlessSpark"
+              class="com.microsoft.azure.hdinsight.spark.run.action.SetDefaultSparkRunConfigurationTypeAction$CosmosServerlessSpark" text="CosmosServerlessSpark" >
+      </action>
     </group>
   </actions>
 

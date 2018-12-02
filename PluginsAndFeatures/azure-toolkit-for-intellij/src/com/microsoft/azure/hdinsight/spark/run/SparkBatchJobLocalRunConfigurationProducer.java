@@ -45,6 +45,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiMethodUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
+import com.microsoft.azure.hdinsight.spark.run.action.SetDefaultSparkRunConfigurationTypeAction;
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType;
 import org.jetbrains.annotations.NotNull;
@@ -65,7 +66,7 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
 
     @Override
     protected boolean setupConfigurationFromContext(LivySparkBatchJobRunConfiguration configuration, ConfigurationContext context, Ref<PsiElement> sourceElement) {
-        return Optional.ofNullable(context.getModule())
+        return SetDefaultSparkRunConfigurationTypeAction.Companion.getCurrentSparkRunConfigurationType() == SetDefaultSparkRunConfigurationTypeAction.SparkRunConfigurationType.HDInsight && Optional.ofNullable(context.getModule())
                 .map(Module::getProject)
                 .flatMap(project -> getMainClassFromContext(context)
                                         .filter(mcPair -> isSparkContext(project, mcPair.getKey().getContainingFile())))
