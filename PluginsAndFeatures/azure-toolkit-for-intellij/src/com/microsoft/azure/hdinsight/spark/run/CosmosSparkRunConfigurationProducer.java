@@ -23,7 +23,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiMethodUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
-import com.microsoft.azure.hdinsight.spark.run.action.SetDefaultSparkRunConfigurationTypeAction;
+import com.microsoft.azure.hdinsight.spark.run.action.DefaultSparkApplicationTypeAction;
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType;
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -44,8 +44,10 @@ public class CosmosSparkRunConfigurationProducer extends JavaRunConfigurationPro
 
     @Override
     protected boolean setupConfigurationFromContext(CosmosSparkRunConfiguration configuration, ConfigurationContext context, Ref<PsiElement> sourceElement) {
-        return SetDefaultSparkRunConfigurationTypeAction.Companion.getCurrentSparkRunConfigurationType() == SetDefaultSparkRunConfigurationTypeAction.SparkRunConfigurationType.CosmosSpark
-        && Optional.ofNullable(context.getModule())
+        if(DefaultSparkApplicationTypeAction.getSparkApplicationType() != DefaultSparkApplicationTypeAction.SparkApplicationType.CosmosSpark) {
+            return false;
+        }
+        return Optional.ofNullable(context.getModule())
                 .map(Module::getProject)
                 .flatMap(project -> getMainClassFromContext(context)
                         .filter(mcPair -> isSparkContext(project, mcPair.getKey().getContainingFile())))
