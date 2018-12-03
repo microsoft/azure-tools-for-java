@@ -20,35 +20,17 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.common
+package com.microsoft.azure.hdinsight.common.mvc
 
-import com.intellij.testFramework.IdeaTestCase
-import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable
-import org.junit.Before
-import org.junit.Ignore
-import org.junit.Test
-import javax.swing.JDialog
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
 
-/*
- * Ignore those UI tests, since they are helpers to do manually tests
- */
-@Ignore
-open class SparkUITest : IdeaTestCase() {
-    protected var dialog: JDialog? = null
+interface IdeaSettableControlView<T> : SettableControl<T> {
+    fun getModel(clazz: Class<T>): T = clazz.newInstance().apply { getData(this) }
 
-    @Before
-    override fun setUp() {
-        super.setUp()
-
-        dialog = JDialog().apply { isModal = true }
+    override fun setData(from: T) {
+        ApplicationManager.getApplication().invokeAndWait({ setDataInDispatch(from) }, ModalityState.any())
     }
 
-    @Test
-    fun testSparkBatchJobConfigurable() {
-        dialog!!.apply {
-            contentPane.add(SparkBatchJobConfigurable(project).component)
-            pack()
-            isVisible = true
-        }
-    }
+    fun setDataInDispatch(from: T)
 }
