@@ -10,7 +10,7 @@ open class DefaultSparkApplicationTypeAction(private val sparkApplicationType : 
     : ToggleAction() {
     companion object {
         @JvmStatic
-        fun getSparkApplicationType() : SparkApplicationType {
+        fun getSelectedSparkApplicationType() : SparkApplicationType {
             var isExist = DefaultLoader.getIdeHelper().isApplicationPropertySet(CommonConst.SPARK_APPLICATION_TYPE)
             if(!isExist) {
                 return SparkApplicationType.HDInsight
@@ -19,21 +19,18 @@ open class DefaultSparkApplicationTypeAction(private val sparkApplicationType : 
         }
     }
 
-    override fun isSelected(p0: AnActionEvent): Boolean {
-        return sparkApplicationType == getSparkApplicationType()
-    }
+    override fun isSelected(p0: AnActionEvent): Boolean = this.sparkApplicationType == getSelectedSparkApplicationType()
 
-    override fun setSelected(p0: AnActionEvent, p1: Boolean) {
-        DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.SPARK_APPLICATION_TYPE, sparkApplicationType.toString())
-    }
-
-    enum class SparkApplicationType {
-        HDInsight,
-        CosmosSpark,
-        CosmosServerlessSpark
-    }
+    override fun setSelected(p0: AnActionEvent, p1: Boolean) =
+            DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.SPARK_APPLICATION_TYPE, this.sparkApplicationType.toString())
 
     class HDInsight : DefaultSparkApplicationTypeAction(SparkApplicationType.HDInsight)
     class CosmosSpark : DefaultSparkApplicationTypeAction(SparkApplicationType.CosmosSpark)
     class CosmosServerlessSpark : DefaultSparkApplicationTypeAction(SparkApplicationType.CosmosServerlessSpark)
+}
+
+enum class SparkApplicationType {
+    HDInsight,
+    CosmosSpark,
+    CosmosServerlessSpark
 }
