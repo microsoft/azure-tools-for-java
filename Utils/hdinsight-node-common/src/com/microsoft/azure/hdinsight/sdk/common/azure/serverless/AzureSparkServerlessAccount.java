@@ -37,6 +37,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.JobInfoListResult;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.JobState;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJobList;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkResourcePoolList;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkResourcePoolState;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
@@ -58,6 +59,7 @@ import java.util.List;
 
 public class AzureSparkServerlessAccount implements IClusterDetail, ClusterContainer, Comparable<AzureSparkServerlessAccount>, ILogger {
     private static final String REST_SEGMENT_SPARK_RESOURCEPOOLS = "/activityTypes/spark/resourcePools";
+    private static final String REST_SEGMENT_SPARK_BATCH_JOB = "/activityTypes/spark/batchJobs";
     private static final String REST_SEGMENT_JOB_LIST = "/Jobs";
     private static final String REST_SEGMENT_JOB_MANAGEMENT_TENANTID = "/#@";
     private static final String REST_SEGMENT_JOB_MANAGEMENT_RESOURCE = "/resource";
@@ -203,6 +205,14 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
     //
     // RestFUL API operations
     //
+
+    public Observable<SparkBatchJobList> getSparkBatchJobList() {
+        URI uri = getUri().resolve(REST_SEGMENT_SPARK_BATCH_JOB);
+
+        return getHttp()
+                .withUuidUserAgent()
+                .get(uri.toString(), null, null, SparkBatchJobList.class);
+    }
 
     public Observable<Integer> getJobDegreeOfParallelism() {
         return getJobs()

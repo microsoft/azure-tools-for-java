@@ -46,6 +46,8 @@ public class CosmosSparkClusterOps {
     private final PublishSubject<Pair<AzureSparkServerlessCluster, CosmosSparkClusterNode>> submitAction;
     @NotNull
     private final PublishSubject<Pair<AzureSparkServerlessAccount, CosmosSparkADLAccountNode>> serverlessSubmitAction;
+    @NotNull
+    private final PublishSubject<Pair<AzureSparkServerlessAccount, CosmosSparkADLAccountNode>> viewServerlessJobsAction;
 
     private CosmosSparkClusterOps() {
         destroyAction = PublishSubject.create();
@@ -54,6 +56,7 @@ public class CosmosSparkClusterOps {
         updateAction = PublishSubject.create();
         submitAction = PublishSubject.create();
         serverlessSubmitAction = PublishSubject.create();
+        viewServerlessJobsAction = PublishSubject.create();
     }
 
     @NotNull
@@ -90,5 +93,9 @@ public class CosmosSparkClusterOps {
     @NotNull
     public PublishSubject<Pair<AzureSparkServerlessAccount, CosmosSparkADLAccountNode>> getServerlessSubmitAction() {
         return serverlessSubmitAction;
+    }
+
+    public PublishSubject<Pair<AzureSparkServerlessAccount, CosmosSparkADLAccountNode>> getViewServerlessJobsAction() {
+        return viewServerlessJobsAction;
     }
 }

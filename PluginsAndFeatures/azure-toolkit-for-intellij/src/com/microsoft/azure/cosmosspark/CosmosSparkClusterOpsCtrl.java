@@ -44,6 +44,7 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigur
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.List;
 
@@ -70,7 +71,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                     CosmosSparkClusterDestoryDialog destroyDialog = new CosmosSparkClusterDestoryDialog(
                             triplet.getRight(), triplet.getMiddle());
                     destroyDialog.show();
-                }, ex -> log().warn(ex.getMessage(), ex));
+                }, ex -> log().error(ExceptionUtils.getStackTrace(ex)));
 
         this.sparkServerlessClusterOps.getProvisionAction()
                 .observeOn(ideSchedulers.dispatchUIThread())
@@ -80,7 +81,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                     CosmosSparkProvisionDialog provisionDialog = new CosmosSparkProvisionDialog(
                             pair.getRight(), pair.getLeft());
                     provisionDialog.show();
-                }, ex -> log().warn(ex.getMessage(), ex));
+                }, ex -> log().error(ExceptionUtils.getStackTrace(ex)));
 
         this.sparkServerlessClusterOps.getMonitorAction()
                 .observeOn(ideSchedulers.dispatchUIThread())
@@ -90,7 +91,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                     CosmosSparkClusterMonitorDialog monitorDialog = new CosmosSparkClusterMonitorDialog(
                             pair.getRight(), pair.getLeft());
                     monitorDialog.show();
-                }, ex -> log().warn(ex.getMessage(), ex));
+                }, ex -> log().error(ExceptionUtils.getStackTrace(ex)));
 
         this.sparkServerlessClusterOps.getUpdateAction()
                 .observeOn(ideSchedulers.dispatchUIThread())
@@ -100,7 +101,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                     CosmosSparkClusterUpdateDialog updateDialog = new CosmosSparkClusterUpdateDialog(
                             pair.getRight(), pair.getLeft());
                     updateDialog.show();
-                }, ex -> log().warn(ex.getMessage(), ex));
+                }, ex -> log().error(ExceptionUtils.getStackTrace(ex)));
 
         this.sparkServerlessClusterOps.getSubmitAction()
                 .observeOn(ideSchedulers.dispatchUIThread())
@@ -141,7 +142,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                     } catch (Exception ex) {
                         log().error(ex.getMessage());
                     }
-                }, ex -> log().error(ex.getMessage(), ex));
+                }, ex -> log().error(ExceptionUtils.getStackTrace(ex)));
 
         this.sparkServerlessClusterOps.getServerlessSubmitAction()
                 .observeOn(ideSchedulers.dispatchUIThread())
@@ -183,5 +184,14 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                         log().error(ex.getMessage());
                     }
                 }, ex -> log().error(ex.getMessage(), ex));
+
+        this.sparkServerlessClusterOps.getViewServerlessJobsAction()
+                .observeOn(ideSchedulers.processBarVisibleAsync("Getting Serverless Spark Jobs"))
+                .flatMap(accountNodePair -> {
+                    log().info(String.format("View serverless jobs message received. account: %s, node: %s",
+                            accountNodePair.getLeft().getName(), accountNodePair.getRight().getName()));
+                    return accountNodePair.getLeft().getSparkBatchJobList();
+                })
+                .subscribe(jobList -> {},  ex -> log().error(ExceptionUtils.getStackTrace(ex)));
     }
 }
