@@ -70,7 +70,7 @@ public class SubmitHandler extends AzureAbstractHandler {
                     } else {
                         HDInsightUtil.showErrorMessageOnSubmissionMessageWindow("Error : Failed to list spark clusters.");
                     }
-                    if (ClusterManagerEx.getInstance().isLIstAdditionalClusterSuccess()) {
+                    if (ClusterManagerEx.getInstance().isListAdditionalClusterSuccess()) {
                         HDInsightUtil.showInfoOnSubmissionMessageWindow("List additional spark clusters successfully");
                     } else {
                         HDInsightUtil.showErrorMessageOnSubmissionMessageWindow("Error: Failed to list additional cluster");
