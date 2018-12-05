@@ -55,7 +55,7 @@ public class ExternalStorageNode extends ClientStorageNode {
         }
     }
 
-    private static final String WAIT_ICON_PATH = "externalstorageaccount.png";
+    private static final String WAIT_ICON_PATH = "ExternalStorageAccount.svg";
 
     public ExternalStorageNode(StorageModule parent, ClientStorageAccount sm) {
         super(sm.getName(), sm.getName(), parent, WAIT_ICON_PATH, sm, true);

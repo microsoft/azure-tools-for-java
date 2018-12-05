@@ -45,15 +45,21 @@ public class ContainerNode extends Node implements TelemetryProperties{
     @Override
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
-        properties.put(AppInsightsConstants.SubscriptionId, ResourceId.fromString(this.storageAccount.id()).subscriptionId());
-        properties.put(AppInsightsConstants.Region, this.storageAccount.regionName());
+        if (this.storageAccount != null) {
+            properties.put(AppInsightsConstants.SubscriptionId, ResourceId.fromString(this.storageAccount.id()).subscriptionId());
+            properties.put(AppInsightsConstants.Region, this.storageAccount.regionName());
+        }
         return properties;
     }
 
     public class RefreshAction extends NodeActionListener {
         @Override
         public void actionPerformed(NodeActionEvent e) {
-            DefaultLoader.getUIHelper().refreshBlobs(getProject(), storageAccount.name(), blobContainer);
+            DefaultLoader.getUIHelper().refreshBlobs(getProject(),
+                    storageAccount != null
+                            ? storageAccount.name()
+                            : clientStorageAccount.getName(),
+                    blobContainer);
         }
     }
 
@@ -74,14 +80,22 @@ public class ContainerNode extends Node implements TelemetryProperties{
         @Override
         protected void azureNodeAction(NodeActionEvent e)
                 throws AzureCmdException {
-            Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(), storageAccount.name(), blobContainer);
+            Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(),
+                    storageAccount != null
+                        ? storageAccount.name()
+                        : clientStorageAccount.getName(),
+                    blobContainer);
 
             if (openedFile != null) {
                 DefaultLoader.getIdeHelper().closeFile(getProject(), openedFile);
             }
 
             try {
-                StorageClientSDKManager.getManager().deleteBlobContainer(storageAccount, blobContainer);
+                if (storageAccount != null) {
+                    StorageClientSDKManager.getManager().deleteBlobContainer(storageAccount, blobContainer);
+                } else {
+                    StorageClientSDKManager.getManager().deleteBlobContainer(clientStorageAccount, blobContainer);
+                }
 
                 parent.removeAllChildNodes();
                 ((RefreshableNode) parent).load(false);
@@ -122,10 +136,18 @@ public class ContainerNode extends Node implements TelemetryProperties{
 
     @Override
     protected void onNodeClick(NodeActionEvent e) {
-        final Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(), storageAccount.name(), blobContainer);
+        final Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(),
+                storageAccount != null
+                        ? storageAccount.name()
+                        : clientStorageAccount.getName()
+                , blobContainer);
 
         if (openedFile == null) {
-            DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, blobContainer, " [Container]", "BlobContainer", "BlobFile.svg");
+            if (storageAccount != null) {
+                DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, blobContainer, " [Container]", "BlobContainer", "BlobFile.svg");
+            } else {
+                DefaultLoader.getUIHelper().openItem(getProject(), clientStorageAccount, blobContainer, " [Container]", "BlobContainer", "BlobFile.svg");
+            }
         } else {
             DefaultLoader.getUIHelper().openItem(getProject(), openedFile);
         }

@@ -55,7 +55,7 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
         node2Actions.put(BlobModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateBlobContainer.class).build());
         node2Actions.put(StorageModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateStorageAccountAction.class).build());
+                .add(CreateStorageAccountAction.class, AttachExternalStorageAccountAction.class).build());
         node2Actions.put(RedisCacheModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateRedisCacheAction.class).build());
         node2Actions.put(StorageNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()

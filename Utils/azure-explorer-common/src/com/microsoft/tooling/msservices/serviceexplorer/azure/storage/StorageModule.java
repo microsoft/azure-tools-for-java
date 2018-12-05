@@ -106,8 +106,9 @@ public class StorageModule extends AzureRefreshableNode {
         for (ClientStorageAccount clientStorageAccount : ExternalStorageHelper.getList(getProject())) {
             ClientStorageAccount storageAccount = StorageClientSDKManager.getManager().getStorageAccount(clientStorageAccount.getConnectionString());
 
-//            addChildNode(new ExternalStorageNode(this, storageAccount));
+            addChildNode(new ExternalStorageNode(this, storageAccount));
         }
+
         if (!failedSubscriptions.isEmpty()) {
             StringBuilder errorMessage = new StringBuilder("An error occurred when trying to load Storage Accounts for the subscriptions:\n\n");
             for (Pair error : failedSubscriptions) {
