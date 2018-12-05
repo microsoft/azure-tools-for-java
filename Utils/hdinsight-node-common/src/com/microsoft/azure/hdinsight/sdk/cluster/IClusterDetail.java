@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.io.IOException;
@@ -34,43 +35,74 @@ import java.util.List;
 
 public interface IClusterDetail {
 
-    boolean isEmulator();
-
-    boolean isConfigInfoAvailable();
+    default boolean isEmulator() {
+        return false;
+    }
+    default boolean isConfigInfoAvailable() {
+        return false;
+    }
 
     String getName();
 
     String getTitle();
 
-    String getState();
+    default String getState() {
+        return null;
+    }
 
-    String getLocation();
+    default String getLocation() {
+        return null;
+    }
 
     String getConnectionUrl();
 
-    String getCreateDate();
+    default String getCreateDate() {
+        return null;
+    }
 
-    ClusterType getType();
+    default ClusterType getType() {
+        return null;
+    }
 
-    String getVersion();
+    default String getVersion() {
+        return null;
+    }
 
     SubscriptionDetail getSubscription();
 
-    int getDataNodes();
+    default int getDataNodes() {
+        return 0;
+    }
 
-    String getHttpUserName() throws HDIException;
+    default String getHttpUserName() throws HDIException {
+        return null;
+    }
 
-    String getHttpPassword() throws HDIException;
+    default String getHttpPassword() throws HDIException {
+        return null;
+    }
 
-    String getOSType();
+    default String getOSType() {
+        return null;
+    }
 
-    String getResourceGroup();
+    default String getResourceGroup() {
+        return null;
+    }
 
-    @Nullable IHDIStorageAccount getStorageAccount() throws HDIException;
+    @Nullable
+    default IHDIStorageAccount getStorageAccount() throws HDIException {
+        return null;
+    }
 
-    List<HDStorageAccount> getAdditionalStorageAccounts();
+    default List<HDStorageAccount> getAdditionalStorageAccounts() {
+        return null;
+    }
 
-    void getConfigurationInfo() throws IOException, HDIException, AzureCmdException;
+    default void getConfigurationInfo() throws IOException, HDIException, AzureCmdException {
+    }
 
-    String getSparkVersion();
+    default String getSparkVersion() {
+        return null;
+    }
 }

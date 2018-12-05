@@ -20,35 +20,19 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.common
+package com.microsoft.sqlbigdata.serverexplore.action
 
-import com.intellij.testFramework.IdeaTestCase
-import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable
-import org.junit.Before
-import org.junit.Ignore
-import org.junit.Test
-import javax.swing.JDialog
+import com.intellij.openapi.project.Project
+import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule
+import com.microsoft.sqlbigdata.serverexplore.ui.AddNewSqlBigDataClusterForm
+import com.microsoft.tooling.msservices.helpers.Name
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 
-/*
- * Ignore those UI tests, since they are helpers to do manually tests
- */
-@Ignore
-open class SparkUITest : IdeaTestCase() {
-    protected var dialog: JDialog? = null
-
-    @Before
-    override fun setUp() {
-        super.setUp()
-
-        dialog = JDialog().apply { isModal = true }
-    }
-
-    @Test
-    fun testSparkBatchJobConfigurable() {
-        dialog!!.apply {
-            contentPane.add(SparkBatchJobConfigurable(project).component)
-            pack()
-            isVisible = true
-        }
+@Name("Link A Spark Cluster")
+class AddNewSparkClusterAction(private val sqlBigDataClusterModule: SqlBigDataClusterModule): NodeActionListener(sqlBigDataClusterModule) {
+    override fun actionPerformed(e: NodeActionEvent?) {
+        val form = AddNewSqlBigDataClusterForm(sqlBigDataClusterModule.project as Project, sqlBigDataClusterModule)
+        form.show()
     }
 }

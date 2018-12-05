@@ -22,24 +22,34 @@
 
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
+import com.microsoft.azure.hdinsight.sdk.common.HDIException;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.net.URI;
 import java.util.Optional;
 
-public class HDInsightLivyLinkClusterDetail extends HDInsightAdditionalClusterDetail {
+public class HDInsightLivyLinkClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     @NotNull
     private final URI livyEndpoint;
     @Nullable
     private final URI yarnEndpoint;
+    @NotNull
+    private String clusterName;
+    @Nullable
+    private String userName;
+    @Nullable
+    private String password;
 
     public HDInsightLivyLinkClusterDetail(@NotNull URI livyEndpoint,
                                           @Nullable URI yarnEndpoint,
                                           @NotNull String clusterName,
                                           @Nullable String userName,
-                                          @Nullable String passWord) {
-        super(clusterName, userName, passWord, null);
+                                          @Nullable String password) {
+        this.clusterName = clusterName;
+        this.userName = userName;
+        this.password = password;
         this.livyEndpoint = livyEndpoint;
         this.yarnEndpoint = yarnEndpoint;
     }
@@ -64,5 +74,38 @@ public class HDInsightLivyLinkClusterDetail extends HDInsightAdditionalClusterDe
                 .map(endpoint -> endpoint.toString().endsWith("/") ? endpoint.toString() : endpoint.toString() + "/")
                 .map(url -> url + "ws/v1/cluster/apps/")
                 .orElse(null);
+    }
+
+    @Override
+    @NotNull
+    public String getName() {
+        return clusterName;
+    }
+
+    @Override
+    @NotNull
+    public String getTitle() {
+        return Optional.ofNullable(getSparkVersion())
+                .filter(ver -> !ver.trim().isEmpty())
+                .map(ver -> getName() + " (Spark: " + ver + " Linked)")
+                .orElse(getName() + " [Linked]");
+    }
+
+    @Override
+    @NotNull
+    public SubscriptionDetail getSubscription() {
+        return new SubscriptionDetail("[LinkedCluster]", "[NoSubscription]", "", false);
+    }
+
+    @Override
+    @Nullable
+    public String getHttpUserName() throws HDIException {
+        return userName;
+    }
+
+    @Override
+    @Nullable
+    public String getHttpPassword() throws HDIException {
+        return password;
     }
 }
