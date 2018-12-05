@@ -35,6 +35,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostM
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.*;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.asm.ClientBlobModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 
 import java.util.HashMap;
@@ -55,11 +56,15 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
         node2Actions.put(BlobModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateBlobContainer.class).build());
         node2Actions.put(StorageModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateStorageAccountAction.class, AttachExternalStorageAccountAction.class).build());
+                .add(CreateStorageAccountAction.class, AttachExternalStorageAccountAction.class, AttachStorageEmulatorAccountAction.class).build());
+        node2Actions.put(ClientBlobModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateBlobContainer.class).build());
+
         node2Actions.put(RedisCacheModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateRedisCacheAction.class).build());
         node2Actions.put(StorageNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateBlobContainer.class).build());
+
         // todo: what is ConfirmDialogAction?
         //noinspection unchecked
         node2Actions.put(ExternalStorageNode.class,

@@ -31,12 +31,17 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.BlobModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.asm.ClientBlobModule;
 
 @Name("Create blob container")
 public class CreateBlobContainer extends NodeActionListener {
     private RefreshableNode parent;
 
     public CreateBlobContainer(BlobModule parent) {
+        this.parent = parent;
+    }
+
+    public CreateBlobContainer(ClientBlobModule parent) {
         this.parent = parent;
     }
 
@@ -49,6 +54,8 @@ public class CreateBlobContainer extends NodeActionListener {
         CreateBlobContainerForm form = new CreateBlobContainerForm((Project) parent.getProject());
         if (parent instanceof BlobModule) {
             form.setConnectionString(StorageClientSDKManager.getConnectionString(((BlobModule) parent).getStorageAccount()));
+        } else if (parent instanceof ClientBlobModule) {
+            form.setConnectionString(((ClientBlobModule) parent).getStorageAccount().getConnectionString());
         } else if (parent instanceof StorageNode) {
             form.setConnectionString(StorageClientSDKManager.getConnectionString(((StorageNode) parent).getStorageAccount()));
             form.setSubscription(new SubscriptionDetail(((StorageNode)parent).getSubscriptionId(), null, null, true));
