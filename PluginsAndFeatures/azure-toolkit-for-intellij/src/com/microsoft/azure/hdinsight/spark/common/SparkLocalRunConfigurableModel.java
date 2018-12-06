@@ -68,6 +68,9 @@ public class SparkLocalRunConfigurableModel implements CommonJavaRunConfiguratio
     @Tag("main-class")
     @Nullable
     private String mainClass;
+    @Tag("classpath-module")
+    @Nullable
+    private String classpathModule;
     @Tag("data-root")
     @Nullable
     private String dataRootDirectory;
@@ -226,5 +229,14 @@ public class SparkLocalRunConfigurableModel implements CommonJavaRunConfiguratio
     @Override
     public String getPackage() {
         return null;
+    }
+
+    @Nullable
+    public String getClasspathModule() {
+        return classpathModule;
+    }
+
+    public void setClasspathModule(@Nullable String classpathModule) {
+        this.classpathModule = classpathModule;
     }
 }

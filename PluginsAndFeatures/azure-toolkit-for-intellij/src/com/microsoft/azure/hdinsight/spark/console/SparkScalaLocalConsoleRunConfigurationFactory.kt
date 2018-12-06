@@ -36,9 +36,15 @@ class SparkScalaLocalConsoleRunConfigurationFactory(sparkConsoleType: SparkScala
 
     override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
         // Create a Spark Scala Console run configuration based on Spark Batch run configuration
+        val localClassModule =
+                (template as? LivySparkBatchJobRunConfiguration)?.model?.localRunConfigurableModel?.classpathModule
+
         val configuration = createTemplateConfiguration(template.project) as SparkScalaLocalConsoleRunConfiguration
         configuration.name = "${template.name} >> Spark Local Console(Scala)"
-        configuration.module = ModuleManager.getInstance(template.project).findModuleByName(template.project.name)
+        val moduleManager = ModuleManager.getInstance(template.project)
+        configuration.module = localClassModule?.let { moduleManager.findModuleByName(it) }
+                ?: moduleManager.modules.first { it.name.equals(template.project.name, ignoreCase = true) }
+
         configuration.batchRunConfiguration = template as LivySparkBatchJobRunConfiguration
 
         return configuration

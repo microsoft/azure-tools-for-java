@@ -53,7 +53,7 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
     }
 
     protected void createUIComponents() {
-        myLocalRunConfigurable = new SparkLocalRunConfigurable(getProject());
+        myLocalRunConfigurable = new SparkLocalRunConfigurable(getProject()).withInitialize();
         remoteConfigScrollPane = new JBScrollPane();
         setClusterSubmissionConfigurable(createSubmissionPanel());
     }

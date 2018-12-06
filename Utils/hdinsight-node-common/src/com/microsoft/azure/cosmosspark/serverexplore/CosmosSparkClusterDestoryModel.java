@@ -18,16 +18,43 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
-package com.microsoft.intellij.runner.webapp;
+package com.microsoft.azure.cosmosspark.serverexplore;
 
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
-public class Constants {
-    public static final String LINUX_JAVA_SE_RUNTIME = "JAVA|8-jre8";
-    public static final String CREATE_NEW_SLOT = "+ Create new deployment slot";
-    public static final String DO_NOT_CLONE_SLOT_CONFIGURATION = "Don't clone configuration from an existing slot";
-    public static final String WEBAPP_DEFAULT_PRICING_TIER = new PricingTier("Premium", "P1V2").toString();
+public class CosmosSparkClusterDestoryModel implements Cloneable {
+    @NotNull
+    private String clusterName;
+
+    @Nullable
+    private String errorMessage;
+
+    @NotNull
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public CosmosSparkClusterDestoryModel setClusterName(@NotNull String clusterName) {
+        this.clusterName = clusterName;
+        return this;
+    }
+
+    @Nullable
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public CosmosSparkClusterDestoryModel setErrorMessage(@Nullable String errorMessage) {
+        this.errorMessage = errorMessage;
+        return this;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        // Here is a shadow clone, not deep clone
+        return super.clone();
+    }
 }

@@ -60,8 +60,12 @@ open class SparkScalaLivyConsoleRunConfiguration(project: Project,
             SparkScalaLivyConsoleRunConfigurationEditor()
 
     override fun getValidModules(): MutableCollection<Module> {
-        return ModuleManager.getInstance(project).findModuleByName(project.name)?.let { mutableListOf(it) }
-                ?: mutableListOf()
+        val moduleName = batchRunConfiguration?.model?.localRunConfigurableModel?.classpathModule
+        val moduleManager = ModuleManager.getInstance(project)
+        val module = moduleName?.let { moduleManager.findModuleByName(it) }
+                ?: moduleManager.modules.first { it.name.equals(project.name, ignoreCase = true) }
+
+        return module?.let { mutableListOf(it) } ?: mutableListOf()
     }
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
