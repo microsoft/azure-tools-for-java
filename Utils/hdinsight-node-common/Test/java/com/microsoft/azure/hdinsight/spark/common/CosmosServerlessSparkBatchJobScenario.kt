@@ -26,6 +26,7 @@ package com.microsoft.azure.hdinsight.spark.common
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.CreateSparkBatchJobParameters
 import cucumber.api.java.Before
@@ -44,6 +45,7 @@ class CosmosServerlessSparkBatchJobScenario {
     private val httpServerMock = MockHttpService()
     private val jobUuid = "46c07889-3590-48f8-b2bc-7f52622b5a0b"
     private var serverlessJobMock = mock(CosmosServerlessSparkBatchJob::class.java, CALLS_REAL_METHODS)
+    private val adlAccount = mock(AzureSparkServerlessAccount::class.java, CALLS_REAL_METHODS)
     private val loggerMock = mock(Logger::class.java)
     private var caught: Throwable? = null
     private var submissionParameter = CreateSparkBatchJobParameters()
@@ -63,6 +65,7 @@ class CosmosServerlessSparkBatchJobScenario {
         doReturn(jobUuid).`when`(serverlessJobMock).jobUuid
         doReturn(loggerMock).`when`(serverlessJobMock).log()
         doReturn(http).`when`(serverlessJobMock).http
+        doReturn(adlAccount).`when`(serverlessJobMock).account
         // Actually submissionParameter is merely set to make serverlessJobMock.getSubmissionParameter() not break
         // the real request body is defined with variable "requestJsonBody"
         doReturn(submissionParameter).`when`(serverlessJobMock).getSubmissionParameter()
@@ -89,7 +92,7 @@ class CosmosServerlessSparkBatchJobScenario {
         // therefore, we need to use json from .feature file to make the real request body exactly same as the mocked one
         val entity = StringEntity(requestJsonBody, StandardCharsets.UTF_8)
         val request = http.withUuidUserAgent().put(requestUrl, entity, null, null, com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJob::class.java)
-        doReturn(request).`when`(serverlessJobMock).createSparkBatchJobRequest(ArgumentMatchers.anyString(), ArgumentMatchers.eq(submissionParameter))
+        doReturn(request).`when`(adlAccount).createSparkBatchJobRequest(ArgumentMatchers.anyString(), ArgumentMatchers.eq(submissionParameter))
 
         caught = null
 

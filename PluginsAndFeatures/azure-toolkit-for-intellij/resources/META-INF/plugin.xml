@@ -330,9 +330,9 @@
     <moduleBuilder builderClass="com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder"/>
     <toolWindow
         anchor="bottom"
-        factoryClass="com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionToolWindowFactory"
-        id="HDInsight Spark Submission"
-        canCloseContents="false"
+        factoryClass="com.microsoft.azure.cosmosserverlessspark.spark.ui.CosmosServerlessSparkJobsToolWindowFactory"
+        id="Cosmos Serverless Spark Jobs"
+        canCloseContents="true"
         icon="/icons/SparkSubmissionToolWindow.png"/>
 
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />

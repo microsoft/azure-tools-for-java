@@ -316,6 +316,14 @@ public class HttpObservable {
     /*
      * RESTful API operations with response conversion for specified type
      */
+    public Observable<HttpResponse> requestWithHttpResponse(@NotNull final HttpRequestBase httpRequest,
+                                                            @Nullable final HttpEntity entity,
+                                                            @Nullable final List<NameValuePair> parameters,
+                                                            @Nullable final List<Header> addOrReplaceHeaders) {
+        return request(httpRequest, entity, parameters, addOrReplaceHeaders)
+                .flatMap(HttpObservable::toStringOnlyOkResponse);
+    }
+
     public Observable<HttpResponse> head(@NotNull final String uri,
                                          @NotNull final List<NameValuePair> parameters,
                                          @NotNull final List<Header> addOrReplaceHeaders) {
