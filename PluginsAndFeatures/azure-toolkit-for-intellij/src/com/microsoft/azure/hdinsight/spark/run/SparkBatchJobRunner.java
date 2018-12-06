@@ -42,6 +42,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction;
+import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfiguration;
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -64,7 +65,9 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-        return SparkBatchJobRunExecutor.EXECUTOR_ID.equals(executorId) && profile.getClass() == LivySparkBatchJobRunConfiguration.class;
+        return SparkBatchJobRunExecutor.EXECUTOR_ID.equals(executorId)
+                && (profile.getClass() == LivySparkBatchJobRunConfiguration.class
+                || profile.getClass() == ArisSparkConfiguration.class);
     }
 
     @NotNull

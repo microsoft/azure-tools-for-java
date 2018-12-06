@@ -413,7 +413,11 @@ public class ClusterManagerEx {
 
         isListAdditionalClusterSuccess = true;
         Stream<IClusterDetail> hdiLinkedClusters = Stream.concat(hdiAdditionalClusters.stream(), hdiLivyLinkClusters.stream());
-        return Stream.concat(hdiLinkedClusters, sqlBigDataClusters.stream()).collect(Collectors.toList());
+        if (sqlBigDataClusters == null) {
+            return hdiLinkedClusters.collect(Collectors.toList());
+        } else {
+            return Stream.concat(hdiLinkedClusters, sqlBigDataClusters.stream()).collect(Collectors.toList());
+        }
     }
 
         List<IClusterDetail> getEmulatorClusters() {

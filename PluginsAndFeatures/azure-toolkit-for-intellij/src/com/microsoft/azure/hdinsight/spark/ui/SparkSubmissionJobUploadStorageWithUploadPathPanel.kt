@@ -40,16 +40,17 @@ import rx.subjects.PublishSubject
 import java.awt.CardLayout
 import javax.swing.*
 
-class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableControl<SparkSubmitJobUploadStorageModel> {
+open class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableControl<SparkSubmitJobUploadStorageModel> {
     val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
-    private val jobUploadStorageTitle = "Job Upload Storage"
+    val jobUploadStorageTitle = "Job Upload Storage"
     private val uploadPathLabel = JLabel("Upload Path")
     private val uploadPathField = JTextField().apply {
         isEditable = false
         border = BorderFactory.createEmptyBorder()
     }
-    val storagePanel = SparkSubmissionJobUploadStoragePanel()
-    private val hideableJobUploadStoragePanel = HideableTitledPanel(jobUploadStorageTitle, true, storagePanel, false)
+
+    val storagePanel = createStoragePanel()
+    val hideableJobUploadStoragePanel = createHideableJobUploadStoragePanel()
 
     init {
         val formBuilder = panel {
@@ -74,6 +75,9 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel : JPanel(), SettableCon
         layout = formBuilder.createGridLayoutManager()
         formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }
+
+    open fun createStoragePanel() = SparkSubmissionJobUploadStoragePanel()
+    open fun createHideableJobUploadStoragePanel() = HideableTitledPanel(jobUploadStorageTitle, true, storagePanel, false)
 
     val storageCheckSubject: PublishSubject<SparkSubmissionJobUploadStorageCtrl.StorageCheckEvent> = PublishSubject.create()
 

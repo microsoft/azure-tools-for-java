@@ -29,7 +29,7 @@ import com.microsoft.intellij.forms.dsl.panel
 import java.awt.CardLayout
 import javax.swing.*
 
-class SparkSubmissionJobUploadStoragePanel: JPanel() {
+open class SparkSubmissionJobUploadStoragePanel: JPanel() {
     private val notFinishCheckMessage = "job upload storage validation check is not finished"
     private val storageTypeLabel = JLabel("Storage Type")
     val azureBlobCard = SparkSubmissionJobUploadStorageAzureBlobCard()
@@ -37,14 +37,8 @@ class SparkSubmissionJobUploadStoragePanel: JPanel() {
     val clusterDefaultStorageCard = SparkSubmissionJobUploadStorageClusterDefaultStorageCard()
     val adlsCard = SparkSubmissionJobUploadStorageAdlsCard()
     val webHdfsCard = SparkSubmissionJobUploadStorageWebHdfsCard()
-    val storageTypeComboBox = ComboBox(arrayOf(azureBlobCard.title, sparkInteractiveSessionCard.title, clusterDefaultStorageCard.title, adlsCard.title, webHdfsCard.title))
-    val storageCardsPanel = JPanel(CardLayout()).apply {
-        add(azureBlobCard, azureBlobCard.title)
-        add(sparkInteractiveSessionCard, sparkInteractiveSessionCard.title)
-        add(clusterDefaultStorageCard, clusterDefaultStorageCard.title)
-        add(adlsCard, adlsCard.title)
-        add(webHdfsCard, webHdfsCard.title)
-    }
+    val storageTypeComboBox = createStorageTypeComboBox()
+    val storageCardsPanel = createStorageCardsPanel()
     var errorMessage: String? = notFinishCheckMessage
 
     init {
@@ -69,5 +63,14 @@ class SparkSubmissionJobUploadStoragePanel: JPanel() {
 
         layout = formBuilder.createGridLayoutManager()
         formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
+    }
+
+    open fun createStorageTypeComboBox() = ComboBox(arrayOf(azureBlobCard.title, sparkInteractiveSessionCard.title, clusterDefaultStorageCard.title, adlsCard.title, webHdfsCard.title))
+    open fun createStorageCardsPanel() = JPanel(CardLayout()).apply {
+        add(azureBlobCard, azureBlobCard.title)
+        add(sparkInteractiveSessionCard, sparkInteractiveSessionCard.title)
+        add(clusterDefaultStorageCard, clusterDefaultStorageCard.title)
+        add(adlsCard, adlsCard.title)
+        add(webHdfsCard, webHdfsCard.title)
     }
 }

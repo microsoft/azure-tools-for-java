@@ -40,6 +40,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
+import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
 import com.microsoft.tooling.msservices.model.storage.BlobContainer
@@ -156,7 +157,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
 
     abstract fun getClusterDetail(): IClusterDetail?
 
-    private fun setDefaultStorageType(checkEvent:StorageCheckEvent) {
+    open fun setDefaultStorageType(checkEvent:StorageCheckEvent) {
         if (checkEvent is StorageCheckSelectedClusterEvent) {
             val clusterDetail = getClusterDetail()
             if (clusterDetail is HDInsightLivyLinkClusterDetail) {
@@ -263,7 +264,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
 
                             val clusterDetail = getClusterDetail()
                             when (clusterDetail) {
-                                is HDInsightAdditionalClusterDetail -> webHdfsAuthUser = clusterDetail.httpUserName
+                                is SqlBigDataLivyLinkClusterDetail -> webHdfsAuthUser = clusterDetail.httpUserName
                                 else -> webHdfsAuthUser = SparkSubmissionJobUploadWebHdfsSignOutCard.defaultAuthUser
                             }
 
