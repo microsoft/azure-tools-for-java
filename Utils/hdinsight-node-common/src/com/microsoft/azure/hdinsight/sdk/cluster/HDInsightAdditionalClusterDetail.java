@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.io.IOException;
@@ -35,19 +36,24 @@ import java.util.List;
 import java.util.Optional;
 
 public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
-
+    @NotNull
     private String clusterName;
+    @NotNull
     private String userName;
-    private String passWord;
+    @NotNull
+    private String password;
 
     @Expose
     @Nullable
     private HDStorageAccount defaultStorageAccount;
 
-    public HDInsightAdditionalClusterDetail(String clusterName, String userName, String passWord, @Nullable HDStorageAccount storageAccount) {
+    public HDInsightAdditionalClusterDetail(@NotNull String clusterName,
+                                            @NotNull String userName,
+                                            @NotNull String password,
+                                            @Nullable HDStorageAccount storageAccount) {
         this.clusterName = clusterName;
         this.userName = userName;
-        this.passWord = passWord;
+        this.password = password;
         defaultStorageAccount = storageAccount;
     }
 
@@ -137,7 +143,7 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
 
     @Override
     public String getHttpPassword() throws HDIException {
-        return passWord;
+        return password;
     }
 
     @Override

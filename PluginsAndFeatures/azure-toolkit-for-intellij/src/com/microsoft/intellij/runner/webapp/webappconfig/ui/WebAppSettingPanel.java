@@ -808,9 +808,11 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     @Override
     public void fillPricingTier(@NotNull List<PricingTier> prices) {
         cbPricing.removeAllItems();
+        final String pricingTier = StringUtils.isEmpty(webAppConfiguration.getPricing())
+            ? Constants.WEBAPP_DEFAULT_PRICING_TIER : webAppConfiguration.getPricing();
         for (PricingTier price : prices) {
             cbPricing.addItem(price);
-            if (Comparing.equal(price.toString(), webAppConfiguration.getPricing())) {
+            if (Comparing.equal(price.toString(), pricingTier)) {
                 cbPricing.setSelectedItem(price);
             }
         }

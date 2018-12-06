@@ -18,16 +18,21 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
-package com.microsoft.intellij.runner.webapp;
+package com.microsoft.sqlbigdata.serverexplore.action
 
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.intellij.openapi.project.Project
+import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule
+import com.microsoft.sqlbigdata.serverexplore.ui.AddNewSqlBigDataClusterForm
+import com.microsoft.tooling.msservices.helpers.Name
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 
-public class Constants {
-    public static final String LINUX_JAVA_SE_RUNTIME = "JAVA|8-jre8";
-    public static final String CREATE_NEW_SLOT = "+ Create new deployment slot";
-    public static final String DO_NOT_CLONE_SLOT_CONFIGURATION = "Don't clone configuration from an existing slot";
-    public static final String WEBAPP_DEFAULT_PRICING_TIER = new PricingTier("Premium", "P1V2").toString();
+@Name("Link A Spark Cluster")
+class AddNewSparkClusterAction(private val sqlBigDataClusterModule: SqlBigDataClusterModule): NodeActionListener(sqlBigDataClusterModule) {
+    override fun actionPerformed(e: NodeActionEvent?) {
+        val form = AddNewSqlBigDataClusterForm(sqlBigDataClusterModule.project as Project, sqlBigDataClusterModule)
+        form.show()
+    }
 }

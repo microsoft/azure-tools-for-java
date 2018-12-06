@@ -23,6 +23,7 @@
 package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
 import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.intellij.runner.container.utils.Constant;
 import icons.MavenIcons;
 
 import com.intellij.icons.AllIcons;
@@ -52,6 +53,7 @@ import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeploy
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployView;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
@@ -468,7 +470,9 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         defaultSubscriptionId = conf.getSubscriptionId();
         defaultWebAppId = conf.getWebAppId();
         defaultLocationName = conf.getLocationName();
-        defaultPricingTier = new PricingTier(conf.getPricingSkuTier(), conf.getPricingSkuSize()).toString();
+        defaultPricingTier = StringUtils.isEmpty(conf.getPricingSkuTier()) ?
+            Constant.WEBAPP_CONTAINER_DEFAULT_PRICING_TIER :
+            new PricingTier(conf.getPricingSkuTier(), conf.getPricingSkuSize()).toString();
         defaultResourceGroup = conf.getResourceGroupName();
         defaultAppServicePlanId = conf.getAppServicePlanId();
 
@@ -670,11 +674,9 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
                 cbPricing.addItem(item);
                 if (Comparing.equal(item.toString(), defaultPricingTier)) {
                     cbPricing.setSelectedItem(item);
-                    defaultPricingTier = null;
                 }
             });
         }
-
     }
 
     /**
