@@ -71,19 +71,20 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
 
     @Override
     public boolean setupConfigurationFromContext(LivySparkBatchJobRunConfiguration configuration, ConfigurationContext context, Ref<PsiElement> sourceElement) {
-        if(DefaultSparkApplicationTypeAction.getSelectedSparkApplicationType() != this.applicationType) {
+        if (DefaultSparkApplicationTypeAction.getSelectedSparkApplicationType() != this.applicationType) {
             return false;
-        }
-        return Optional.ofNullable(context.getModule())
-                .map(Module::getProject)
-                .flatMap(project -> getMainClassFromContext(context)
-                                        .filter(mcPair -> isSparkContext(project, mcPair.getKey().getContainingFile())))
-                .map(mcPair -> {
-                    setupConfiguration(configuration, mcPair.getValue(), context);
+        } else {
+            return Optional.ofNullable(context.getModule())
+                    .map(Module::getProject)
+                    .flatMap(project -> getMainClassFromContext(context)
+                            .filter(mcPair -> isSparkContext(project, mcPair.getKey().getContainingFile())))
+                    .map(mcPair -> {
+                        setupConfiguration(configuration, mcPair.getValue(), context);
 
-                    return true;
-                })
-                .orElse(false);
+                        return true;
+                    })
+                    .orElse(false);
+        }
     }
 
     private boolean isSparkContext(Project project, PsiFile sourceFile) {

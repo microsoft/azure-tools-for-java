@@ -52,7 +52,7 @@ open class CosmosSparkConfigurationType : ConfigurationType {
 
     companion object {
         @JvmStatic
-        fun getInstance() : ConfigurationType {
+        fun getInstance() : CosmosSparkConfigurationType {
             return ConfigurationTypeUtil.findConfigurationType(CosmosSparkConfigurationType::class.java)
         }
     }

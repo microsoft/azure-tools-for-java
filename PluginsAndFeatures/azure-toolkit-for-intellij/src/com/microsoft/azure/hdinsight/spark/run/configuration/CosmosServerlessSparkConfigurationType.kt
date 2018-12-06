@@ -19,8 +19,8 @@ class CosmosServerlessSparkConfigurationType : CosmosSparkConfigurationType() {
 
     companion object {
         @JvmStatic
-        fun getInstance(): ConfigurationType {
-            return ConfigurationTypeUtil.findConfigurationType(CosmosSparkConfigurationType::class.java)
+        fun getInstance(): CosmosServerlessSparkConfigurationType {
+            return ConfigurationTypeUtil.findConfigurationType(CosmosServerlessSparkConfigurationType::class.java)
         }
     }
 }
