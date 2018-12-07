@@ -49,6 +49,6 @@ class CosmosServerlessSparkBatchJobsTableSchema :
         submitTimeColName to jobDetailsResponse.submitTime()?.toString(),
         submitterColName to jobDetailsResponse.submitter(),
         jobStateColName to jobDetailsResponse.state().toString(),
-        killActionColName to KillCosmosServerlessSparkBatchJobAction(account, jobDetailsResponse.id().toString(), jobDetailsResponse.name(), jobDetailsResponse.state())
+        killActionColName to KillCosmosServerlessSparkBatchJobAction(account, jobDetailsResponse)
     )
 }

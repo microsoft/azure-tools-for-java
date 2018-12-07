@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobTableModel
 import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobViewer
 import com.microsoft.azure.hdinsight.spark.ui.livy.batch.UniqueColumnNameTableSchema
 import org.apache.commons.lang3.exception.ExceptionUtils
+import rx.Observable
 
 class CosmosServerlessSparkBatchJobsViewerControl(private val view: CosmosServerlessSparkBatchJobsViewer) : LivyBatchJobViewer.Control, ILogger {
     override fun onNextPage(nextPageLink: String?): LivyBatchJobTableModel.JobPage? {
@@ -35,8 +36,11 @@ class CosmosServerlessSparkBatchJobsViewerControl(private val view: CosmosServer
     }
 
     override fun onJobSelected(jobSelected: UniqueColumnNameTableSchema.RowDescriptor?) {
-        val jobDesc = jobSelected as CosmosServerlessSparkBatchJobsTableSchema.CosmosServerlessSparkJobDescriptor
-        view.account.getSparkBatchJobWithRawHttpResponse(jobDesc[jobUuidColName].toString())
+        val jobDesc = (jobSelected as? CosmosServerlessSparkBatchJobsTableSchema.CosmosServerlessSparkJobDescriptor)?.let { arrayOf(it) }
+            ?: emptyArray()
+
+        Observable.from(jobDesc)
+            .flatMap { view.account.getSparkBatchJobWithRawHttpResponse(it[jobUuidColName].toString()) }
             .doOnNext {
                 view.setData(
                     view.getModel(LivyBatchJobViewer.Model::class.java).apply {

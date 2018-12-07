@@ -53,6 +53,7 @@ public class SparkSubmissionParameter implements IConvertible {
      * name	            Name of the application	string
      * conf             Spark configuration properties  Map of key=val
      */
+    private String name = "";
     private String file = "";
     private String className = "";
 
@@ -111,6 +112,10 @@ public class SparkSubmissionParameter implements IConvertible {
         this.args = args;
     }
 
+    public void setName(@NotNull String name) {
+        this.name = name;
+    }
+
     public void setFile(String file) {
         this.file = file;
     }
@@ -153,6 +158,11 @@ public class SparkSubmissionParameter implements IConvertible {
 
     public void setLocalArtifactPath(String path) {
         localArtifactPath = path;
+    }
+
+    @JsonProperty(NAME)
+    public String getName() {
+        return name;
     }
 
     @JsonProperty("file")

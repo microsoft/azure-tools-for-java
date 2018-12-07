@@ -25,6 +25,6 @@ package com.microsoft.azure.cosmosserverlessspark.spark.ui.livy.batch
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobViewer
 
-class CosmosServerlessSparkBatchJobsViewer(val account: AzureSparkServerlessAccount) : LivyBatchJobViewer() {
+open class CosmosServerlessSparkBatchJobsViewer(val account: AzureSparkServerlessAccount) : LivyBatchJobViewer() {
     override val jobViewerControl: Control by lazy { CosmosServerlessSparkBatchJobsViewerControl(this@CosmosServerlessSparkBatchJobsViewer) }
 }

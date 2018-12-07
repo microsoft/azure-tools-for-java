@@ -223,8 +223,7 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
     public CreateSparkBatchJob prepareCreateSparkBatchJob(@NotNull String jobUuid,
                                                           @NotNull CreateSparkBatchJobParameters parameters) {
         return new CreateSparkBatchJob()
-                // TODO: Replace name with a meaningful name
-                .withName("CosmosServerlessSpark_" + jobUuid)
+                .withName(parameters.getName())
                 .withProperties(parameters);
     }
 

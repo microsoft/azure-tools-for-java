@@ -27,29 +27,28 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SchedulerState
+import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJob
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.intellij.util.PluginUtil
 import org.apache.commons.lang3.exception.ExceptionUtils
 
 class KillCosmosServerlessSparkBatchJobAction(private val account: AzureSparkServerlessAccount,
-                                              private val jobUuid: String,
-                                              private val jobName: String,
-                                              private val jobState: SchedulerState) : AzureAnAction(AllIcons.Actions.Cancel), ILogger {
+                                              private val job: SparkBatchJob) : AzureAnAction(AllIcons.Actions.Cancel), ILogger {
     override fun onActionPerformed(anActionEvent: AnActionEvent?) {
-        if (jobState == SchedulerState.ENDED) {
-            PluginUtil.displayInfoDialog("Kill Serverless Spark Job", "Can't kill spark job $jobName. It's in 'Ended' state!")
+        if (job.state() == SchedulerState.ENDED) {
+            PluginUtil.displayInfoDialog("Kill Serverless Spark Job", "Can't kill spark job ${job.name()}. It's in 'Ended' state!")
         } else {
-            account.killSparkBatchJobRequest(jobUuid)
+            account.killSparkBatchJobRequest(job.id()?.toString())
                 .subscribe(
                     { resp ->
                         if (resp.code >= 300) {
-                            PluginUtil.displayErrorDialog("Kill Serverless Spark Job", "Failed to kill spark job $jobName. ${resp.message}")
+                            PluginUtil.displayErrorDialog("Kill Serverless Spark Job", "Failed to kill spark job ${job.name()}. ${resp.message}")
                         } else {
-                            PluginUtil.displayInfoDialog("Kill Serverless Spark Job", "Successfully killed Spark Job $jobName!")
+                            PluginUtil.displayInfoDialog("Kill Serverless Spark Job", "Successfully killed Spark Job ${job.name()}!")
                         }
                     },
                     { err ->
-                        PluginUtil.displayErrorDialog("Kill Serverless Spark Job", "Failed to kill spark job $jobName. ${err.message}")
+                        PluginUtil.displayErrorDialog("Kill Serverless Spark Job", "Failed to kill spark job ${job.name()}. ${err.message}")
                         log().warn("Failed to kill serverless spark job. " + ExceptionUtils.getStackTrace(err))
                     }
                 )
