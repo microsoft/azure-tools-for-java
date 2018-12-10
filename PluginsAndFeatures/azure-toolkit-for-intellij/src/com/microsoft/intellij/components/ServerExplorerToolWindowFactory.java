@@ -33,8 +33,8 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
+import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
-import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterRootModuleImpl;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
@@ -86,7 +86,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         AzureModule azureModule = new AzureModuleImpl(project);
 
         HDInsightUtil.setHDInsightRootModule(azureModule);
-        azureModule.setSparkServerlessModule(new SparkServerlessClusterRootModuleImpl(azureModule));
+        azureModule.setSparkServerlessModule(new CosmosSparkClusterRootModuleImpl(azureModule));
         azureModule.setSQLBigDataClusterModule(new SqlBigDataClusterModule(azureModule));
 
         // initialize with all the service modules

@@ -21,7 +21,9 @@
 
 package com.microsoft.azure.hdinsight.spark.ui;
 
+import com.intellij.application.options.ModuleDescriptionsComboBox;
 import com.intellij.execution.configurations.ConfigurationUtil;
+import com.intellij.execution.ui.ConfigurationModuleSelector;
 import com.intellij.execution.util.JreVersionDetector;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -46,6 +48,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Optional;
 
 public class SparkLocalRunConfigurable {
@@ -61,6 +64,10 @@ public class SparkLocalRunConfigurable {
     private JLabel myDataDefaultDirectory;
     private JLabel myHadoopUserDefaultDirectoryLabel;
     private JPanel myWinutilsLocationPanel;
+    private ModuleDescriptionsComboBox modules;
+    private LabeledComponent<ModuleDescriptionsComboBox> myClasspathModule;
+    @Nullable
+    private ConfigurationModuleSelector myModuleSelector;
 
     @Nullable
     private JComponent myAnchor;
@@ -73,9 +80,8 @@ public class SparkLocalRunConfigurable {
         this.myProject = project;
         myVersionDetector = new JreVersionDetector();
 
-        myAnchor = UIUtil.mergeComponentsWithAnchor(myMainClass, myCommonProgramParameters);
+        myAnchor = UIUtil.mergeComponentsWithAnchor(myMainClass, myCommonProgramParameters, myClasspathModule);
 
-        myCommonProgramParameters.setModuleContext(ModuleManager.getInstance(project).findModuleByName(project.getName()));
         // Connect the workingDirectory update event with dataRootDirectory update
         myCommonProgramParameters.addWorkingDirectoryUpdateListener(new DocumentAdapter() {
             @Override
@@ -108,6 +114,18 @@ public class SparkLocalRunConfigurable {
         } else {
             myWinutilsLocationPanel.setVisible(false);
         }
+    }
+
+    public SparkLocalRunConfigurable withInitialize() {
+        myModuleSelector = new ConfigurationModuleSelector(myProject, myClasspathModule.getComponent());
+        myCommonProgramParameters.setModuleContext(myModuleSelector.getModule());
+        modules.setSelectedModule(
+                Arrays.stream(ModuleManager.getInstance(myProject).getModules())
+                        .filter(module -> module.getName().equalsIgnoreCase(myProject.getName()))
+                        .findFirst()
+                        .orElse(null));
+
+        return this;
     }
 
     private void updateWinUtilsPathTextField(@Nullable String hadoopHomeEnv) {
@@ -154,6 +172,10 @@ public class SparkLocalRunConfigurable {
                 myMainClass.getComponent().setText(selected.getQualifiedName());
             }
         });
+
+        modules = new ModuleDescriptionsComboBox();
+        modules.setAllModulesFromProject(myProject);
+        myClasspathModule = LabeledComponent.create(modules, "Use classpath of module:");
     }
 
     public void setData(@NotNull SparkLocalRunConfigurableModel data) {
@@ -161,6 +183,11 @@ public class SparkLocalRunConfigurable {
         myParallelExecutionCheckbox.setSelected(data.isIsParallelExecution());
         myMainClass.getComponent().setText(data.getRunClass());
         myCommonProgramParameters.reset(data);
+
+        final String classpathModuleNameToSet = data.getClasspathModule();
+        if (classpathModuleNameToSet != null) {
+            modules.setSelectedModule(myProject, classpathModuleNameToSet);
+        }
 
         if (!data.getDataRootDirectory().trim().isEmpty()) {
             myDataRootDirectoryFieldWithBrowseButton.setText(data.getDataRootDirectory());
@@ -176,6 +203,10 @@ public class SparkLocalRunConfigurable {
         data.setRunClass(myMainClass.getComponent().getText());
         myCommonProgramParameters.applyTo(data);
         data.setDataRootDirectory(myDataRootDirectoryFieldWithBrowseButton.getText());
+
+        data.setClasspathModule(Optional.ofNullable(myModuleSelector)
+                                        .map(ConfigurationModuleSelector::getModuleName)
+                                        .orElse(null));
 
         Optional.of(myWinutilsPathTextFieldWithBrowserButton.getText())
                 .map((winUtilsFilePath) -> Paths.get(winUtilsFilePath))

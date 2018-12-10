@@ -23,12 +23,13 @@
 package com.microsoft.azure.hdinsight.spark.ui.livy.batch
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.undo.UndoUtil
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.EditorKind
 import com.microsoft.azure.hdinsight.common.mvc.IdeaSettableControlView
-import java.awt.Component
+import javax.swing.JComponent
 import javax.swing.JSplitPane
 import javax.swing.JSplitPane.HORIZONTAL_SPLIT
 
@@ -42,7 +43,7 @@ abstract class LivyBatchJobViewer : Disposable, IdeaSettableControlView<LivyBatc
 
     private val jobDetailNotSetMessage = "<Click the job item row to get details>"
 
-    private val jobTableViewport : LivyBatchJobTableViewport = object : LivyBatchJobTableViewport() {
+    val jobTableViewport : LivyBatchJobTableViewport = object : LivyBatchJobTableViewport() {
         override val viewportControl: Control by lazy { jobViewerControl }
     }
 
@@ -53,8 +54,12 @@ abstract class LivyBatchJobViewer : Disposable, IdeaSettableControlView<LivyBatc
 
     abstract val jobViewerControl : Control
 
-    val component: Component by lazy {
-        JSplitPane(HORIZONTAL_SPLIT, jobTableViewport.component, jobDetailViewer.component).apply {
+    open fun refreshActionPerformed(anActionEvent: AnActionEvent?) {}
+
+    private val jobTableViewerWithToolBar = LivyBatchJobTableViewerWithToolBar(jobTableViewport, this::refreshActionPerformed)
+
+    val component: JComponent by lazy {
+        JSplitPane(HORIZONTAL_SPLIT, jobTableViewerWithToolBar, jobDetailViewer.component).apply {
             dividerSize = 6
             dividerLocation = 600
         }

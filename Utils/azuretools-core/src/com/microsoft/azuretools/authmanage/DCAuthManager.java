@@ -27,6 +27,12 @@ import com.microsoft.aad.adal4j.AuthenticationCallback;
 import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.azuretools.adauth.AuthContext;
 import com.microsoft.azuretools.adauth.AuthResult;
+import com.microsoft.azuretools.adauth.StringUtils;
+import com.microsoft.azuretools.authmanage.models.AdAuthDetails;
+import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+
 import java.io.IOException;
 
 public class DCAuthManager extends BaseADAuthManager {
@@ -40,6 +46,40 @@ public class DCAuthManager extends BaseADAuthManager {
 
     public static DCAuthManager getInstance() {
         return LazyLoader.INSTANCE;
+    }
+
+    /**
+     * Try to sign in with persisted authentication result.
+     *
+     * @param authMethodDetails The authentication method detail for helping
+     * @return true for success
+     */
+    @Override
+    public synchronized boolean tryRestoreSignIn(@NotNull final AuthMethodDetails authMethodDetails) {
+        final String azureEnvironment = authMethodDetails.getAzureEnv();
+        if (secureStore == null || StringUtils.isNullOrEmpty(azureEnvironment) ||
+                // Restore only for the same saved Azure environment with current
+                !CommonSettings.getEnvironment().getName().equals(azureEnvironment)) {
+            return false;
+        }
+
+        final AdAuthDetails originAdAuthDetails = adAuthDetails;
+        adAuthDetails = new AdAuthDetails();
+        adAuthDetails.setAccountEmail(authMethodDetails.getAccountEmail());
+
+        try {
+            final AuthResult savedAuth = loadFromSecureStore();
+            if (savedAuth != null) {
+                saveToSecureStore(savedAuth);
+                return true;
+            }
+        } catch (Exception ignored) {
+            LOGGER.info("The cached token is expired, can't restore it.");
+            cleanCache();
+        }
+
+        adAuthDetails = originAdAuthDetails;
+        return false;
     }
 
     public AuthResult deviceLogin(final AuthenticationCallback<AuthenticationResult> callback) throws IOException {

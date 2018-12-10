@@ -316,19 +316,25 @@ public class HttpObservable {
     /*
      * RESTful API operations with response conversion for specified type
      */
+    public Observable<HttpResponse> requestWithHttpResponse(@NotNull final HttpRequestBase httpRequest,
+                                                            @Nullable final HttpEntity entity,
+                                                            @Nullable final List<NameValuePair> parameters,
+                                                            @Nullable final List<Header> addOrReplaceHeaders) {
+        return request(httpRequest, entity, parameters, addOrReplaceHeaders)
+                .flatMap(HttpObservable::toStringOnlyOkResponse);
+    }
+
     public Observable<HttpResponse> head(@NotNull final String uri,
                                          @NotNull final List<NameValuePair> parameters,
                                          @NotNull final List<Header> addOrReplaceHeaders) {
-        return request(new HttpHead(uri), null, parameters, addOrReplaceHeaders)
-                .flatMap(HttpObservable::toStringOnlyOkResponse);
+        return requestWithHttpResponse(new HttpHead(uri), null, parameters, addOrReplaceHeaders);
     }
 
     public <T> Observable<T> get(@NotNull final String uri,
                                  @Nullable final List<NameValuePair> parameters,
                                  @Nullable final List<Header> addOrReplaceHeaders,
                                  @NotNull final Class<T> clazz) {
-        return request(new HttpGet(uri), null, parameters, addOrReplaceHeaders)
-                .flatMap(HttpObservable::toStringOnlyOkResponse)
+        return requestWithHttpResponse(new HttpGet(uri), null, parameters, addOrReplaceHeaders)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 
@@ -337,8 +343,7 @@ public class HttpObservable {
                                  @Nullable final List<NameValuePair> parameters,
                                  @Nullable final List<Header> addOrReplaceHeaders,
                                  @NotNull final Class<T> clazz) {
-        return request(new HttpPut(uri), entity, parameters, addOrReplaceHeaders)
-                .flatMap(HttpObservable::toStringOnlyOkResponse)
+        return requestWithHttpResponse(new HttpPut(uri), entity, parameters, addOrReplaceHeaders)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 
@@ -347,16 +352,14 @@ public class HttpObservable {
                                   @Nullable final List<NameValuePair> parameters,
                                   @Nullable final List<Header> addOrReplaceHeaders,
                                   @NotNull final Class<T> clazz) {
-        return request(new HttpPost(uri), entity, parameters, addOrReplaceHeaders)
-                .flatMap(HttpObservable::toStringOnlyOkResponse)
+        return requestWithHttpResponse(new HttpPost(uri), entity, parameters, addOrReplaceHeaders)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 
     public Observable<HttpResponse> delete(@NotNull final String uri,
                                            @Nullable final List<NameValuePair> parameters,
                                            @Nullable final List<Header> addOrReplaceHeaders) {
-        return request(new HttpDelete(uri), null, parameters, addOrReplaceHeaders)
-                .flatMap(HttpObservable::toStringOnlyOkResponse);
+        return requestWithHttpResponse(new HttpDelete(uri), null, parameters, addOrReplaceHeaders);
     }
 
     public <T> Observable<T> patch(@NotNull final String uri,
@@ -364,8 +367,7 @@ public class HttpObservable {
                                    @Nullable final List<NameValuePair> parameters,
                                    @Nullable final List<Header> addOrReplaceHeaders,
                                    @NotNull final Class<T> clazz) {
-        return request(new HttpPatch(uri), entity, parameters, addOrReplaceHeaders)
-                .flatMap(HttpObservable::toStringOnlyOkResponse)
+        return requestWithHttpResponse(new HttpPatch(uri), entity, parameters, addOrReplaceHeaders)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 }

@@ -119,8 +119,8 @@ public class CreateSparkBatchJobParameters extends SparkSubmissionParameter {
     /**
      * Name of the session.
      */
-    @JsonProperty(value = "name", required = true)
-    private String name;
+//    @JsonProperty(value = "name", required = true)
+//    private String name;
 
     /**
      * Spark Configuration Properties.
@@ -402,9 +402,9 @@ public class CreateSparkBatchJobParameters extends SparkSubmissionParameter {
      *
      * @return the name value
      */
-    public String name() {
-        return this.name;
-    }
+//    public String name() {
+//        return this.name;
+//    }
 
     /**
      * Set name of the session.
@@ -412,10 +412,10 @@ public class CreateSparkBatchJobParameters extends SparkSubmissionParameter {
      * @param name the name value to set
      * @return the CreateSparkBatchJobParameters object itself.
      */
-    public CreateSparkBatchJobParameters withName(String name) {
-        this.name = name;
-        return this;
-    }
+//    public CreateSparkBatchJobParameters withName(String name) {
+//        this.name = name;
+//        return this;
+//    }
 
     /**
      * Get spark Configuration Properties.
