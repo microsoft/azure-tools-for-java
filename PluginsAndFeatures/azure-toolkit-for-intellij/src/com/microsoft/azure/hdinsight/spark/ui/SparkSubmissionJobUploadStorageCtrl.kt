@@ -29,10 +29,12 @@ package com.microsoft.azure.hdinsight.spark.ui
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
+import com.microsoft.azure.hdinsight.sdk.common.HDIException
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
@@ -148,22 +150,79 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
     }
 
     private fun registerStorageInfoCheck(): Subscription = view.storageCheckSubject
-            .throttleWithTimeout(500, TimeUnit.MILLISECONDS)
-            .doOnNext { log().debug("Receive checking message $it") }
-            .flatMap { validateStorageInfo(it) }
+            .groupBy { checkEvent -> checkEvent::class.java.typeName}
             .subscribe(
-                    { },
+                    { groupedOb ->
+                        groupedOb
+                                .throttleWithTimeout(200, TimeUnit.MILLISECONDS)
+                                .doOnNext { log().info("Receive checking message ${it.message}") }
+                                .flatMap { validateStorageInfo(it) }
+                                .subscribe()
+                    },
                     { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
 
     abstract fun getClusterDetail(): IClusterDetail?
 
-    open fun setDefaultStorageType(checkEvent:StorageCheckEvent) {
-        if (checkEvent is StorageCheckSelectedClusterEvent) {
-            val clusterDetail = getClusterDetail()
-            if (clusterDetail is HDInsightLivyLinkClusterDetail) {
-                view.storagePanel.storageTypeComboBox.selectedItem = view.storagePanel.sparkInteractiveSessionCard.title
-            } else {
-                view.storagePanel.storageTypeComboBox.selectedItem = view.storagePanel.clusterDefaultStorageCard.title
+    fun setDefaultStorageType(checkEvent:StorageCheckEvent) {
+        synchronized(view.storagePanel) {
+            if (checkEvent is StorageCheckSelectedClusterEvent) {
+
+                //check cluster type then reset storage combox
+                val defaultStorageTitle = view.storagePanel.clusterDefaultStorageCard.title
+                val sessionTitle = view.storagePanel.sparkInteractiveSessionCard.title
+                val webHdfsTitle = view.storagePanel.webHdfsCard.title
+                val azureBlobTitle = view.storagePanel.azureBlobCard.title
+                val adlsTitle = view.storagePanel.adlsCard.title
+
+                val clusterDetail = getClusterDetail()
+                view.storagePanel.storageTypeComboBox.selectedItem = null
+                view.storagePanel.storageTypeComboBox.model = when (clusterDetail) {
+                    is ClusterDetail ->{
+                        //get storageaccount may get HDIExpcetion for null value
+                        var storageAccount = try {
+                            clusterDetail.storageAccount
+                        }catch(ex: HDIException)
+                        {
+                            clusterDetail.getConfigurationInfo()
+                            clusterDetail.storageAccount
+                        }
+
+                        ImmutableComboBoxModel(arrayOf(
+                                defaultStorageTitle,
+                                when (storageAccount) {
+                                    is HDStorageAccount -> azureBlobTitle
+                                    is ADLSStorageAccount, is AzureSparkServerlessCluster.StorageAccount -> adlsTitle
+                                    else -> sessionTitle
+                                })).apply {
+                            selectedItem = defaultStorageTitle
+                        }
+                    }
+
+                    is HDInsightLivyLinkClusterDetail, is HDInsightAdditionalClusterDetail -> ImmutableComboBoxModel(arrayOf(
+                            azureBlobTitle,
+                            adlsTitle,
+                            sessionTitle)).apply {
+                        selectedItem = sessionTitle
+                    }
+
+                    is SqlBigDataLivyLinkClusterDetail -> {
+                        ImmutableComboBoxModel<String>(arrayOf(
+                                sessionTitle,
+                                webHdfsTitle
+                        )).apply {
+                            selectedItem = sessionTitle
+                        }
+                    }
+
+                    else -> ImmutableComboBoxModel<String>(arrayOf(
+                            defaultStorageTitle,
+                            azureBlobTitle,
+                            adlsTitle,
+                            sessionTitle,
+                            webHdfsTitle)).apply {
+                        selectedItem = defaultStorageTitle
+                    }
+                }
             }
         }
     }

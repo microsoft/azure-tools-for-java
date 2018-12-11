@@ -24,6 +24,8 @@ package com.microsoft.azure.hdinsight.spark.run.configuration;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ComboBox;
+import com.intellij.ui.HideableTitledPanel;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.metadata.ClusterMetaDataService;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
@@ -33,6 +35,9 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
 
+import javax.swing.*;
+import javax.swing.event.ListDataListener;
+import java.awt.*;
 import java.util.stream.Collectors;
 
 public class ArisSparkSubmissionContentPanel extends SparkSubmissionContentPanelConfigurable {
@@ -43,14 +48,6 @@ public class ArisSparkSubmissionContentPanel extends SparkSubmissionContentPanel
         super(project);
 
         this.myProject = project;
-        this.submissionPanel = new SparkSubmissionContentPanel() {
-            @NotNull
-            @Override
-            public SparkSubmissionJobUploadStorageWithUploadPathPanel createJobUploadStorageWithUploadPathPanel() {
-                return new ArisSubmissionJobUploadStorageWithUploadPathPanel();
-            }
-        };
-
         registerCtrlListeners();
         this.jobUploadStorageCtrl = new SparkSubmissionJobUploadStorageCtrl(getStorageWithUploadPathPanel()) {
             @Nullable
@@ -68,16 +65,6 @@ public class ArisSparkSubmissionContentPanel extends SparkSubmissionContentPanel
                         .filter(clusterDetail -> clusterDetail.getName().equals(getClusterName()))
                         .findFirst()
                         .orElse(null);
-            }
-
-            @Override
-            public void setDefaultStorageType(StorageCheckEvent checkEvent) {
-                if (checkEvent instanceof StorageCheckSelectedClusterEvent) {
-                    this.getView()
-                            .getStoragePanel()
-                            .getStorageTypeComboBox()
-                            .setSelectedItem(this.getView().getStoragePanel().getWebHdfsCard().getTitle());
-                }
             }
         };
     }
