@@ -34,7 +34,7 @@ import javax.swing.DefaultComboBoxModel
 
 class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterModule): AddNewClusterForm(project, module) {
     init {
-        title = "Link A Spark Cluster"
+        title = "Link SQL Big Data Cluster"
 
         val livyServiceTitle = "Livy Service"
         clusterComboBox.model = DefaultComboBoxModel(arrayOf(livyServiceTitle))

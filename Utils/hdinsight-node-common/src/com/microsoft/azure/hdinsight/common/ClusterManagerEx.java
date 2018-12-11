@@ -54,6 +54,12 @@ public class ClusterManagerEx {
 
     private static ClusterManagerEx instance = null;
 
+    /**
+     * additionalClusterDetails contains all kinds of linked clusters, which consists of:
+     * 1. HDInsightAdditionalClusterDetail
+     * 2. HDInsightLivyLinkClusterDetail
+     * 3. SqlBigDataLivyLinkClusterDetail
+     */
     private List<IClusterDetail> additionalClusterDetails = new ArrayList<>();
     private List<IClusterDetail> emulatorClusterDetails = new ArrayList<>();
 
@@ -257,6 +263,8 @@ public class ClusterManagerEx {
                 .filter(clusterDetail -> clusterDetail.getSubscription().isSelected())
                 .map(cluster -> { // replace the duplicated cluster with the linked one
                     Optional<IClusterDetail> inLinkedAndSubscriptionCluster = allAdditionalClusters.stream()
+                            .filter(linkedCluster -> linkedCluster instanceof HDInsightAdditionalClusterDetail ||
+                                    linkedCluster instanceof HDInsightLivyLinkClusterDetail)
                             .filter(linkedCluster -> linkedCluster.getName().equals(cluster.getName()))
                             .findFirst();
 
