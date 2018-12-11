@@ -130,13 +130,13 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                         final List<RunnerAndConfigurationSettings> batchConfigSettings = runManager
                                 .getConfigurationSettingsList(findConfigurationType(CosmosSparkConfigurationType.class));
 
-                        final String runConfigName = "[Azure Data Lake Spark] " + cluster.getName();
+                        final String runConfigName = "[Azure Data Lake Spark] " + cluster.getClusterNameWithAccountName();
                         final RunnerAndConfigurationSettings runConfigurationSetting = batchConfigSettings.stream()
                                 .filter(settings -> settings.getConfiguration().getName().startsWith(runConfigName))
                                 .findFirst()
                                 .orElseGet(() -> runManager.createRunConfiguration(
                                         runConfigName,
-                                        new CosmosSparkConfigurationFactory(new CosmosSparkConfigurationType())));
+                                        new CosmosSparkConfigurationFactory(findConfigurationType(CosmosSparkConfigurationType.class))));
 
                         context.putData(RUN_CONFIGURATION_SETTING, runConfigurationSetting)
                                 .putData(CLUSTER, cluster);

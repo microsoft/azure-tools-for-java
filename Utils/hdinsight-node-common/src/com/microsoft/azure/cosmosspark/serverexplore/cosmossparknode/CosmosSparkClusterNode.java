@@ -51,7 +51,7 @@ public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILog
                                   @NotNull AzureSparkServerlessCluster cluster,
                                   @NotNull AzureSparkServerlessAccount adlAccount) {
         super(String.format("%s_%s", adlAccount.getName(), cluster.getName()),
-                cluster.getTitle(),
+                cluster.getTitleForClusterNode(),
                 parent,
                 ICON_PATH,
                 true);
@@ -73,7 +73,7 @@ public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILog
 
     @Override
     protected void updateNodeNameAfterLoading() {
-        setName(cluster.getTitle());
+        setName(cluster.getTitleForClusterNode());
     }
 
     @Override

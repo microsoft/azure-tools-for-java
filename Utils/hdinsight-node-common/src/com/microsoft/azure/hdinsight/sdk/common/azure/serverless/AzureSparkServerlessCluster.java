@@ -38,7 +38,6 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.StringEntity;
 import rx.Observable;
 
@@ -366,11 +365,29 @@ public class AzureSparkServerlessCluster extends SparkCluster
         return name;
     }
 
+    public String getClusterStateForShow() {
+        return getMasterState() != null ? getMasterState().toUpperCase(): getState().toUpperCase();
+    }
+
+    public String getClusterNameWithAccountName() {
+        return String.format("%s@%s", getName(), account.getName());
+    }
+
+    /**
+     * This title is shown for drop-down cluster list in run configuration dialog
+     */
     @NotNull
     @Override
     public String getTitle() {
-        return String.format(
-                "%s [%s]", name, getMasterState() != null ? getMasterState().toUpperCase(): getState().toUpperCase());
+        return String.format("%s [%s]", getClusterNameWithAccountName(), getClusterStateForShow());
+    }
+
+    /**
+     * This title is shown for cluster node in Azure explorer tree view
+     */
+    @NotNull
+    public String getTitleForClusterNode() {
+        return String.format("%s [%s]", getName(), getClusterStateForShow());
     }
 
     @NotNull
@@ -746,7 +763,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
 
     @Override
     public int compareTo(@NotNull AzureSparkServerlessCluster other) {
-        return this.getTitle().compareTo(other.getTitle());
+        return this.getGuid().compareTo(other.getGuid());
     }
 
     @Nullable
