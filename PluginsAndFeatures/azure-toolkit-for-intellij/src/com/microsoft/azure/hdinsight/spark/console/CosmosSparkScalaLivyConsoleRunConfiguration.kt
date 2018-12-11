@@ -23,9 +23,12 @@
 package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.Executor
+import com.intellij.execution.configurations.ConfigurationPerRunnerSettings
 import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.configurations.RunnerSettings
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager
@@ -56,7 +59,9 @@ class CosmosSparkScalaLivyConsoleRunConfiguration(project: Project,
         return SparkScalaLivyConsoleRunProfileState(SparkScalaConsoleBuilder(project), session)
     }
 
-    override fun checkSettingsBeforeRun() {
+    override fun checkRunnerSettings(runner: ProgramRunner<*>, runnerSettings: RunnerSettings?, configurationPerRunnerSettings: ConfigurationPerRunnerSettings?) {
+        super.checkRunnerSettings(runner, runnerSettings, configurationPerRunnerSettings)
+
         cluster = AzureSparkServerlessClusterManager
                 .getInstance()
                 .clusters

@@ -72,12 +72,12 @@ open class SparkBatchLocalRunState(val myProject: Project, val model: SparkLocal
         }
     }
 
-    open fun getCommandLineVmParameters(params: JavaParameters): List<String> {
+    open fun getCommandLineVmParameters(params: JavaParameters, moduleName: String): List<String> {
         // Add jmockit as -javaagent
         val jmockitJarPath = params.classPath.pathList.stream()
                 .filter { path -> path.toLowerCase().matches(".*\\Wjmockit-.*\\.jar".toRegex()) }
                 .findFirst()
-                .orElseThrow { ExecutionException("Dependency jmockit hasn't been found in module `${params.moduleName}` classpath") }
+                .orElseThrow { ExecutionException("Dependency jmockit hasn't been found in module `$moduleName` classpath") }
 
         val javaAgentParam = "-javaagent:$jmockitJarPath"
 
@@ -101,7 +101,6 @@ open class SparkBatchLocalRunState(val myProject: Project, val model: SparkLocal
         } ?: ModuleManager.getInstance(myProject).modules.first { it.name.equals(myProject.name, ignoreCase = true) }
 
         if (mainModule != null) {
-            params.moduleName = mainModule.name
             params.configureByModule(mainModule, JavaParameters.JDK_AND_CLASSES_AND_TESTS)
         } else {
             JavaParametersUtil.configureProject(myProject, params, JavaParameters.JDK_AND_CLASSES_AND_TESTS, null)
@@ -110,7 +109,7 @@ open class SparkBatchLocalRunState(val myProject: Project, val model: SparkLocal
         params.workingDirectory = Paths.get(model.dataRootDirectory, "__default__", "user", "current").toString()
 
         if (hasJmockit) {
-            params.vmParametersList.addAll(getCommandLineVmParameters(params))
+            params.vmParametersList.addAll(getCommandLineVmParameters(params, mainModule.name))
         }
 
         if (hasClassPath) {

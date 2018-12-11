@@ -26,6 +26,7 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.sdk.common.HDIException
+import com.microsoft.azure.hdinsight.spark.common.DebugParameterDefinedException
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchDebugSession
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UseKeyFile
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UsePassword
@@ -42,6 +43,39 @@ abstract class SparkSubmissionAdvancedConfigCtrl(
         private val sshCheckSubject: PublishSubject<String>) : ILogger {
     companion object {
         const val passedText = "passed"
+
+        private fun isParameterReady(model: SparkSubmitAdvancedConfigModel) =
+                model.sshUserName.isNotBlank() && when (model.sshAuthType) {
+                    UsePassword -> model.sshPassword.isNotBlank()
+                    UseKeyFile -> model.sshKeyFile?.exists() == true
+                    else -> false
+                }
+
+        private fun probeAuth(modelToProbe: SparkSubmitAdvancedConfigModel): CheckResult = try {
+            val clusterDetail = ClusterManagerEx.getInstance()
+                    .getClusterDetailByName(modelToProbe.clusterName)
+                    .orElseThrow { HDIException( "No cluster name matched selection: ${modelToProbe.clusterName}") }
+
+            // Verify the certificate
+            val debugSession = SparkBatchDebugSession.factoryByAuth(clusterDetail.connectionUrl, modelToProbe)
+                    .open()
+                    .verifyCertificate()
+
+            debugSession.close()
+
+            CheckResult(modelToProbe, passedText)
+        } catch (ex: SparkBatchDebugSession.SshPasswordExpiredException) {
+            CheckResult(modelToProbe, "failed (password expired)")
+        } catch (ex: Exception) {
+            CheckResult(modelToProbe, "failed")
+        }
+
+        @Throws(DebugParameterDefinedException::class)
+        fun checkSettings(model: SparkSubmitAdvancedConfigModel) {
+            if (model.enableRemoteDebug && (!isParameterReady(model) || probeAuth(model).message != passedText)) {
+                throw DebugParameterDefinedException("SSH Authentication is failed")
+            }
+        }
     }
 
     data class CheckResult(val model: SparkSubmitAdvancedConfigModel, val message: String)
@@ -59,12 +93,7 @@ abstract class SparkSubmissionAdvancedConfigCtrl(
 
     abstract fun getClusterNameToCheck(): String?
 
-    private fun isReadyToCheck(model: SparkSubmitAdvancedConfigModel) =
-            model.enableRemoteDebug && model.sshUserName.isNotBlank() && when (model.sshAuthType) {
-                UsePassword -> model.sshPassword.isNotBlank()
-                UseKeyFile -> model.sshKeyFile != null
-                else -> false
-            }
+    private fun isReadyToCheck(model: SparkSubmitAdvancedConfigModel) = model.enableRemoteDebug && isParameterReady(model)
 
     private fun registerAsyncSshAuthCheck(): Subscription = sshCheckSubject
             .throttleWithTimeout(500, TimeUnit.MILLISECONDS)
@@ -82,28 +111,12 @@ abstract class SparkSubmissionAdvancedConfigCtrl(
                     isChecking = true
                 })
             }
-            .map { modelToProbe ->
-                try {
-                    val clusterDetail = ClusterManagerEx.getInstance()
-                            .getClusterDetailByName(modelToProbe.clusterName)
-                            .orElseThrow { HDIException( "No cluster name matched selection: ${modelToProbe.clusterName}") }
-
-                    // Verify the certificate
-                    val debugSession = SparkBatchDebugSession.factoryByAuth(clusterDetail.connectionUrl, modelToProbe)
-                            .open()
-                            .verifyCertificate()
-
-                    debugSession.close()
-
+            .map { probeAuth(it).apply {
+                if (this.message == passedText) {
                     ServiceManager.getServiceProvider(SecureStore::class.java)?.savePassword(
-                            modelToProbe.credentialStoreAccount, modelToProbe.sshUserName, modelToProbe.sshPassword)
-                    CheckResult(modelToProbe, passedText)
-                } catch (ex: SparkBatchDebugSession.SshPasswordExpiredException) {
-                    CheckResult(modelToProbe, "failed (password expired)")
-                } catch (ex: Exception) {
-                    CheckResult(modelToProbe, "failed")
+                            model.credentialStoreAccount, model.sshUserName, model.sshPassword)
                 }
-            }
+            }}
             .subscribe { (probedModel, message) ->
                 log().info("...Result: $message")
 

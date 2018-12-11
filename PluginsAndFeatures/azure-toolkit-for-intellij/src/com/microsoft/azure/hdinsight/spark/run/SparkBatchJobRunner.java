@@ -26,8 +26,10 @@ package com.microsoft.azure.hdinsight.spark.run;
 import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.configurations.RunnerSettings;
 import com.intellij.execution.runners.DefaultProgramRunner;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
@@ -70,6 +72,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 || profile.getClass() == ArisSparkConfiguration.class);
     }
 
+    @Override
     @NotNull
     public ISparkBatchJob buildSparkBatchJob(@NotNull SparkSubmitModel submitModel,
                                              @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) throws ExecutionException {
@@ -77,13 +80,18 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         IHDIStorageAccount storageAccount = null;
         String accessToken = null;
         String destinationRootPath = null;
-        IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(
-                submitModel.getSubmissionParameter().getClusterName()).orElse(null);
+        String clusterName = submitModel.getSubmissionParameter().getClusterName();
+        IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
+                .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
 
         SparkSubmitStorageType storageAcccountType = submitModel.getJobUploadStorageModel().getStorageAccountType();
         switch (storageAcccountType) {
             case BLOB:
                 String storageAccountName = submitModel.getJobUploadStorageModel().getStorageAccount();
+                if (storageAccountName == null) {
+                    throw new ExecutionException("Can't get the default storage account.");
+                }
+
                 String fullStorageBlobName = ClusterManagerEx.getInstance().getBlobFullName(storageAccountName);
                 String key = submitModel.getJobUploadStorageModel().getStorageKey();
                 String container = submitModel.getJobUploadStorageModel().getSelectedContainer();
@@ -102,6 +110,10 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 break;
             case ADLS_GEN1:
                 String rawRootPath = submitModel.getJobUploadStorageModel().getAdlsRootPath();
+                if (rawRootPath == null) {
+                    throw new ExecutionException("Can't get the raw root path since it's null.");
+                }
+
                 destinationRootPath = rawRootPath.endsWith("/") ? rawRootPath : rawRootPath + "/";
                 // e.g. for adl://john.azuredatalakestore.net/root/path, adlsAccountName is john
                 String adlsAccountName =  destinationRootPath.split("\\.")[0].split("//")[1];
@@ -166,5 +178,13 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 () -> disconnectAction.setEnabled(false));
 
         return super.doExecute(state, environment);
+    }
+
+    @Override
+    public void setFocus(@NotNull RunConfiguration runConfiguration) {
+        if (runConfiguration instanceof LivySparkBatchJobRunConfiguration) {
+            LivySparkBatchJobRunConfiguration livyRunConfig = (LivySparkBatchJobRunConfiguration) runConfiguration;
+            livyRunConfig.getModel().setFocusedTabIndex(1);
+        }
     }
 }

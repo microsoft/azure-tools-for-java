@@ -49,6 +49,9 @@ public class SparkSubmitAdvancedConfigModel extends SparkBatchRemoteDebugJobSshA
     public boolean enableRemoteDebug = false;
 
     @Transient
+    private boolean isUIExpanded = false;
+
+    @Transient
     @Nullable
     public String getClusterName() {
         return clusterName;
@@ -132,5 +135,15 @@ public class SparkSubmitAdvancedConfigModel extends SparkBatchRemoteDebugJobSshA
     @Transient
     public void setCheckingMessage(@NotNull String checkingMessage) {
         this.checkingMessage = checkingMessage;
+    }
+
+    @Transient
+    public boolean isUIExpanded() {
+        return isUIExpanded;
+    }
+
+    @Transient
+    public void setUIExpanded(boolean UIExpanded) {
+        isUIExpanded = UIExpanded;
     }
 }
