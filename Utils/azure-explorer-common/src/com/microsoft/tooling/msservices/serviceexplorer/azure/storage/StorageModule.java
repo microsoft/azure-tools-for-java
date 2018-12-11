@@ -103,6 +103,7 @@ public class StorageModule extends AzureRefreshableNode {
 //            }
         //TODO
         // load External Accounts
+        addChildNode(new EmulatorStorageNode(this));
         for (ClientStorageAccount clientStorageAccount : ExternalStorageHelper.getList(getProject())) {
             ClientStorageAccount storageAccount = StorageClientSDKManager.getManager().getStorageAccount(clientStorageAccount.getConnectionString());
 
