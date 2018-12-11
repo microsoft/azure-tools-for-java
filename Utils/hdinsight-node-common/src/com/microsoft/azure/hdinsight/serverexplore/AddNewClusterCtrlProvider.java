@@ -228,45 +228,46 @@ public class AddNewClusterCtrlProvider {
 
                     String clusterName = getClusterName(clusterNameOrUrl);
 
-                    // Cluster name check
-                    if (clusterName == null) {
-                        return toUpdate.setErrorMessage("Wrong cluster name or endpoint");
-                    }
-
-                    // Duplication check
-                    if (ClusterManagerEx.getInstance().getAdditionalClusterDetails().stream()
-                            .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
-                            .anyMatch(clusterDetail -> clusterDetail.getName().equals(clusterName))) {
-                        return toUpdate.setErrorMessage("Cluster already exists in linked list");
-                    }
-
-                    // Storage access check
                     HDStorageAccount storageAccount = null;
-                    if (StringUtils.isNotEmpty(storageName)) {
-                        ClientStorageAccount storageAccountClient = new ClientStorageAccount(storageName);
-                        storageAccountClient.setPrimaryKey(storageKey);
-
-                        // Storage Key check
-                        try {
-                            StorageClientSDKManager.getCloudStorageAccount(storageAccountClient.getConnectionString());
-                        } catch (Exception ex) {
-                            return toUpdate.setErrorMessage("Storage key doesn't match the account.");
+                    if (sparkClusterType == SparkClusterType.HDINSIGHT_CLUSTER) {
+                        // Cluster name check
+                        if (clusterName == null) {
+                            return toUpdate.setErrorMessage("Wrong cluster name or endpoint");
                         }
 
-                        // Containers selection check
-                        if (selectedContainerIndex < 0 ||
-                                selectedContainerIndex >= toUpdate.getContainers().size()) {
-                            return toUpdate.setErrorMessage("The storage container isn't selected");
+                        // Duplication check
+                        if (ClusterManagerEx.getInstance().getAdditionalClusterDetails().stream()
+                                .filter(clusterDetail -> !(clusterDetail instanceof SqlBigDataLivyLinkClusterDetail))
+                                .anyMatch(clusterDetail -> clusterDetail.getName().equals(clusterName))) {
+                            return toUpdate.setErrorMessage("Cluster already exists in linked list");
                         }
 
-                        storageAccount = new HDStorageAccount(
-                                null,
-                                ClusterManagerEx.getInstance().getBlobFullName(storageName),
-                                storageKey,
-                                false,
-                                toUpdate.getContainers().get(selectedContainerIndex));
+                        // Storage access check
+                        if (StringUtils.isNotEmpty(storageName)) {
+                            ClientStorageAccount storageAccountClient = new ClientStorageAccount(storageName);
+                            storageAccountClient.setPrimaryKey(storageKey);
+
+                            // Storage Key check
+                            try {
+                                StorageClientSDKManager.getCloudStorageAccount(storageAccountClient.getConnectionString());
+                            } catch (Exception ex) {
+                                return toUpdate.setErrorMessage("Storage key doesn't match the account.");
+                            }
+
+                            // Containers selection check
+                            if (selectedContainerIndex < 0 ||
+                                    selectedContainerIndex >= toUpdate.getContainers().size()) {
+                                return toUpdate.setErrorMessage("The storage container isn't selected");
+                            }
+
+                            storageAccount = new HDStorageAccount(
+                                    null,
+                                    ClusterManagerEx.getInstance().getBlobFullName(storageName),
+                                    storageKey,
+                                    false,
+                                    toUpdate.getContainers().get(selectedContainerIndex));
+                        }
                     }
-
 
                     IClusterDetail additionalClusterDetail = null;
                     switch (sparkClusterType) {
