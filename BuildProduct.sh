@@ -6,7 +6,7 @@ SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 cd "$SCRIPTPATH"
 
-VERSION="3.15.0"
+VERSION="3.16.0"
 MAVEN_QUIET=""
 INJECT_INTELLIJ_VERSION=false
 
