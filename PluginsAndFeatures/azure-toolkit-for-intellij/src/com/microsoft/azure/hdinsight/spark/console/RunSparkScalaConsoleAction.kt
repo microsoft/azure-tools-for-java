@@ -61,7 +61,7 @@ abstract class RunSparkScalaConsoleAction
             return
         }
 
-        val batchConfigurationType = findConfigurationType(LivySparkBatchJobRunConfigurationType::class.java)
+        val batchConfigurationType = LivySparkBatchJobRunConfigurationType.getInstance()
         val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
 
         // Try to find one from the same type list
@@ -111,7 +111,7 @@ abstract class RunSparkScalaConsoleAction
     }
 
     override fun getMyConfigurationType(): LivySparkBatchJobRunConfigurationType? =
-        findConfigurationType(LivySparkBatchJobRunConfigurationType::class.java)
+        LivySparkBatchJobRunConfigurationType.getInstance()
 
     override fun checkFile(psiFile: PsiFile): Boolean = psiFile is ScalaFile
 }
