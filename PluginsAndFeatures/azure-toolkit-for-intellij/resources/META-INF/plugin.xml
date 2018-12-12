@@ -19,6 +19,29 @@
   <change-notes>
     <![CDATA[
     <html>
+    <h3>[3.16.0]</h3>
+      <h4>Added</h4>
+      <ul>
+        <li>Support to sign in with OAuth 2.0 device code flow.</li>
+        <li>Support both dedicated Azure explorer node and run configuration for Aris linked clusters.</li>
+        <li>Support Spark local run classpath modules selection.</li>
+      </ul>
+      <h4>Changed</h4>
+      <ul>
+        <li>Use P1V2 as the default pricing tier for App Service.</li>
+        <li>Spark run configuration validate checking is moved from before saving to before running.</li>
+      </ul>
+      <h4>Fixed</h4>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2468" rel="nofollow">#2468</a> Spark Livy interactive console regression of IDEA183 win process</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2424" rel="nofollow">#2424</a> Spark Livy interactive console blocking UI issue</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2318" rel="nofollow">#2318</a>, <a href="https://github.com/Microsoft/azure-tools-for-java/issues/2283" rel="nofollow">#2283</a> Cosmos Spark provision dialog AU warning issue</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2420" rel="nofollow">#2420</a> Spark cluster name duplicated issue in the run configuration</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/pull/2478" rel="nofollow">#2478</a> Cosmos Spark submit action can't find the right run configuration issue</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2419" rel="nofollow">#2419</a> The user can submit Spark job to unstable Cosmos Spark cluster issue</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2484" rel="nofollow">#2484</a>, <a href="https://github.com/Microsoft/azure-tools-for-java/issues/2316" rel="nofollow">#2316</a> The uploading storage config issues of Spark run configuration</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2341" rel="nofollow">#2341</a> Authentication regression of <code>InvalidAuthenticationTokenAudience</code></li>
+      <ul>
+      </ul>
     <h3>[3.15.0]</h3>
       <h4>Added</h4>
       <ul>
