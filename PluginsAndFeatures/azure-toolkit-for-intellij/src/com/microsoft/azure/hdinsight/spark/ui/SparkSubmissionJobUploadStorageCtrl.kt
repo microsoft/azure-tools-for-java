@@ -169,7 +169,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
 
                 //check cluster type then reset storage combox
                 val defaultStorageTitle = view.storagePanel.clusterDefaultStorageCard.title
-                val sessionTitle = view.storagePanel.sparkInteractiveSessionCard.title
+                val helpSessionTitle = view.storagePanel.sparkInteractiveSessionCard.title
                 val webHdfsTitle = view.storagePanel.webHdfsCard.title
                 val azureBlobTitle = view.storagePanel.azureBlobCard.title
                 val adlsTitle = view.storagePanel.adlsCard.title
@@ -181,8 +181,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                         //get storageaccount may get HDIExpcetion for null value
                         var storageAccount = try {
                             clusterDetail.storageAccount
-                        }catch(ex: HDIException)
-                        {
+                        } catch (igonred: HDIException) {
                             clusterDetail.getConfigurationInfo()
                             clusterDetail.storageAccount
                         }
@@ -192,7 +191,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                                 when (storageAccount) {
                                     is HDStorageAccount -> azureBlobTitle
                                     is ADLSStorageAccount, is AzureSparkServerlessCluster.StorageAccount -> adlsTitle
-                                    else -> sessionTitle
+                                    else -> helpSessionTitle
                                 })).apply {
                             selectedItem = defaultStorageTitle
                         }
@@ -201,24 +200,24 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                     is HDInsightLivyLinkClusterDetail, is HDInsightAdditionalClusterDetail -> ImmutableComboBoxModel(arrayOf(
                             azureBlobTitle,
                             adlsTitle,
-                            sessionTitle)).apply {
-                        selectedItem = sessionTitle
+                            helpSessionTitle)).apply {
+                        selectedItem = helpSessionTitle
                     }
 
                     is SqlBigDataLivyLinkClusterDetail -> {
-                        ImmutableComboBoxModel<String>(arrayOf(
-                                sessionTitle,
+                        ImmutableComboBoxModel(arrayOf(
+                                helpSessionTitle,
                                 webHdfsTitle
                         )).apply {
-                            selectedItem = sessionTitle
+                            selectedItem = helpSessionTitle
                         }
                     }
 
-                    else -> ImmutableComboBoxModel<String>(arrayOf(
+                    else -> ImmutableComboBoxModel(arrayOf(
                             defaultStorageTitle,
                             azureBlobTitle,
                             adlsTitle,
-                            sessionTitle,
+                            helpSessionTitle,
                             webHdfsTitle)).apply {
                         selectedItem = defaultStorageTitle
                     }
