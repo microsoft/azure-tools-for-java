@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <title>ExternalStorageAccounts</title>
+  <g>
+    <rect width="16" height="16" fill="#ffdbff" opacity="0"/>
+    <rect x="3" y="11" width="10" height="1" fill="#ffb347"/>
+    <rect x="3" y="9" width="10" height="1" fill="#ffb347"/>
+    <rect x="3" y="7" width="10" height="1" fill="#9aa7b0"/>
+    <path d="M13.75,3H2.25A1.25,1.25,0,0,0,1,4.25v8.5A1.25,1.25,0,0,0,2.25,14h11.5A1.25,1.25,0,0,0,15,12.75V4.25A1.25,1.25,0,0,0,13.75,3ZM14,12.75a.25.25,0,0,1-.25.25H2.25A.25.25,0,0,1,2,12.75V6H14Z" fill="#9aa7b0"/>
+  </g>
+</svg>

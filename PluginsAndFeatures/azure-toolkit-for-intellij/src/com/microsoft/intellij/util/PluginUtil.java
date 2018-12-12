@@ -85,11 +85,17 @@ public class PluginUtil {
      */
     public static Project getSelectedProject() {
         DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
+        if (dataContext == null) {
+            dataContext = DataManager.getInstance().getDataContext();
+        }
         return LangDataKeys.PROJECT.getData(dataContext);
     }
 
     public static Module getSelectedModule() {
         DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
+        if (dataContext == null) {
+            dataContext = DataManager.getInstance().getDataContext();
+        }
         return LangDataKeys.MODULE.getData(dataContext);
     }
 

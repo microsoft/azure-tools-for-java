@@ -203,6 +203,18 @@ public class StorageClientSDKManager {
         }
     }
 
+    public void deleteBlobContainer(@NotNull ClientStorageAccount clientStorageAccount, @NotNull BlobContainer blobContainer)
+            throws AzureCmdException {
+        try {
+            CloudBlobClient client = getCloudBlobClient(clientStorageAccount.getConnectionString());
+
+            CloudBlobContainer container = client.getContainerReference(blobContainer.getName());
+            container.deleteIfExists();
+        } catch (Throwable t) {
+            throw new AzureCmdException("Error deleting the Blob Container", t);
+        }
+    }
+
     @NotNull
     public BlobDirectory getRootDirectory(@NotNull String connectionString, @NotNull BlobContainer blobContainer)
             throws AzureCmdException {
