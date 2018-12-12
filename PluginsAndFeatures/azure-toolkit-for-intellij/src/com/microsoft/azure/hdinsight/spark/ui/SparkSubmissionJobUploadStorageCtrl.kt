@@ -275,7 +275,7 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                                     }
                                 }
                             } catch (ex: Exception) {
-                                errorMsg = "Error getting cluster storage configuration"
+                                errorMsg = "Error getting cluster storage info"
                                 uploadPath = "-"
                                 log().warn(errorMsg + ". " + ExceptionUtils.getStackTrace(ex))
                             }
