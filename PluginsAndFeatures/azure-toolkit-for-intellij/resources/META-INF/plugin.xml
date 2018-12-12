@@ -19,6 +19,18 @@
   <change-notes>
     <![CDATA[
     <html>
+    <h3>[3.16.0]</h3>
+      <h4>Added</h4>
+      <ul>
+        <li>Support to sign in with OAuth 2.0 device code flow.</li>
+      </ul>
+      <h4>Changed</h4>
+      <ul>
+        <li>Use P1V2 as the default pricing tier for App Service.</li>
+      </ul>
+      <h4>Fixed</h4>
+      <ul>
+      </ul>
     <h3>[3.15.0]</h3>
       <h4>Added</h4>
       <ul>
