@@ -67,6 +67,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         this.deviceCode = deviceCode;
         setModal(true);
         setTitle(TITLE);
+        editorPanel.setBackground(jPanel.getBackground());
         editorPanel.setText(createHtmlFormatMessage());
         editorPanel.addHyperlinkListener(e -> {
             if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {

@@ -55,7 +55,7 @@ open class SparkScalaLivyConsoleRunConfiguration(project: Project,
         get() = submitModel?.submissionParameter?.clusterName
             ?: throw RuntimeConfigurationWarning("A $runConfigurationTypeName should be selected to start a console")
 
-    protected lateinit var cluster: IClusterDetail
+    protected var cluster: IClusterDetail? = null
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> =
             SparkScalaLivyConsoleRunConfigurationEditor()
@@ -70,6 +70,8 @@ open class SparkScalaLivyConsoleRunConfiguration(project: Project,
     }
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
+        val cluster = cluster ?: return null
+
         val session = SparkSession(
                 name,
                 URI.create((cluster as? LivyCluster)?.livyConnectionUrl ?: return null),
@@ -80,8 +82,6 @@ open class SparkScalaLivyConsoleRunConfiguration(project: Project,
     }
 
     override fun checkRunnerSettings(runner: ProgramRunner<*>, runnerSettings: RunnerSettings?, configurationPerRunnerSettings: ConfigurationPerRunnerSettings?) {
-        super.checkRunnerSettings(runner, runnerSettings, configurationPerRunnerSettings)
-
         cluster = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
                 .orElseThrow { RuntimeConfigurationError("Can't find the target cluster $clusterName") }
     }

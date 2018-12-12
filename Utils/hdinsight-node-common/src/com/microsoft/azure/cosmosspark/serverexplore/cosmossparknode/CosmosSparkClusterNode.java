@@ -38,6 +38,7 @@ import java.util.Optional;
 
 public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILogger {
     private static final String UPDATE_ACTION_NAME = "Update";
+    private static final String SUBMIT_COSMOS_SPARK_JOB_ACTION_NAME = "Submit Job";
     @NotNull
     private final String CLUSTER_MODULE_ID;
     // TODO: Update icon path
@@ -66,6 +67,7 @@ public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILog
         try {
             cluster.get().toBlocking().singleOrDefault(cluster);
             getNodeActionByName(UPDATE_ACTION_NAME).setEnabled(isClusterStable());
+            getNodeActionByName(SUBMIT_COSMOS_SPARK_JOB_ACTION_NAME).setEnabled(isClusterStable());
         } catch (Exception ex) {
             log().warn(String.format("Can't get the cluster %s details: %s", cluster.getName(), ex));
         }
@@ -79,9 +81,12 @@ public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILog
     @Override
     protected void loadActions() {
         super.loadActions();
+
         String suffix = "/?adlaAccountName=" + adlAccount.getName();
-        addAction("Submit Job", new CosmosSparkSubmitAction(
-                this, cluster, CosmosSparkClusterOps.getInstance().getSubmitAction()));
+        NodeAction submitCosmosSparkJobAction = addAction(SUBMIT_COSMOS_SPARK_JOB_ACTION_NAME,
+                new CosmosSparkSubmitAction(this, cluster, CosmosSparkClusterOps.getInstance().getSubmitAction()));
+        submitCosmosSparkJobAction.setEnabled(isClusterStable());
+
         addAction("View Cluster Status", new CosmosSparkMonitorAction(
                 this, cluster, CosmosSparkClusterOps.getInstance().getMonitorAction()));
 

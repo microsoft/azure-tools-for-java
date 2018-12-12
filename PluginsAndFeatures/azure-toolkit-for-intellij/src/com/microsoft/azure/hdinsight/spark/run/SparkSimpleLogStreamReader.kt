@@ -20,16 +20,30 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.ui
+package com.microsoft.azure.hdinsight.spark.run
 
-import com.intellij.openapi.ui.ComboBox
-import java.awt.CardLayout
-import javax.swing.JPanel
+import com.intellij.execution.process.ProcessHandler
+import com.intellij.openapi.util.Key
+import com.intellij.util.concurrency.AppExecutorUtil
+import com.intellij.util.io.BaseOutputReader
+import java.io.InputStream
+import java.nio.charset.Charset
+import java.util.concurrent.Future
 
-class ArisSubmissionJobUploadStoragePanel : SparkSubmissionJobUploadStoragePanel() {
-    override fun createStorageTypeComboBox() = ComboBox(arrayOf(sparkInteractiveSessionCard.title, webHdfsCard.title))
-    override fun createStorageCardsPanel() = JPanel(CardLayout()).apply {
-        add(sparkInteractiveSessionCard, sparkInteractiveSessionCard.title)
-        add(webHdfsCard, webHdfsCard.title)
+// A simple log reader to connect the input stream and process handler
+class SparkSimpleLogStreamReader(val processHandler: ProcessHandler, inputStream: InputStream, private val logType: Key<*>)
+    : BaseOutputReader(inputStream, Charset.forName("UTF-8")) {
+
+    init {
+        start("Reading Spark log " + logType.toString())
+    }
+
+    override fun onTextAvailable(s: String) {
+        // Call process handler's text notify
+        processHandler.notifyTextAvailable(s, logType)
+    }
+
+    override fun executeOnPooledThread(runnable: Runnable): Future<*> {
+        return AppExecutorUtil.getAppExecutorService().submit(runnable)
     }
 }

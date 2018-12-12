@@ -763,7 +763,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
 
     @Override
     public int compareTo(@NotNull AzureSparkServerlessCluster other) {
-        return this.getGuid().compareTo(other.getGuid());
+        return this.getTitle().compareTo(other.getTitle());
     }
 
     @Nullable

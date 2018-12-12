@@ -33,6 +33,8 @@ import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.ServerlessSparkSession
+import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkItemGroupState
+import com.microsoft.azure.hdinsight.spark.common.CosmosSparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import java.net.URI
 
@@ -60,12 +62,15 @@ class CosmosSparkScalaLivyConsoleRunConfiguration(project: Project,
     }
 
     override fun checkRunnerSettings(runner: ProgramRunner<*>, runnerSettings: RunnerSettings?, configurationPerRunnerSettings: ConfigurationPerRunnerSettings?) {
-        super.checkRunnerSettings(runner, runnerSettings, configurationPerRunnerSettings)
+        val adlAccount = (submitModel as? CosmosSparkSubmitModel)?.accountName
+                ?: throw RuntimeConfigurationError("Can't cast submitModel to CosmosSparkSubmitModel")
 
         cluster = AzureSparkServerlessClusterManager
                 .getInstance()
+                .getAccountByName(adlAccount)
                 .clusters
-                .find { it.name == this.clusterName }
-                ?:throw RuntimeConfigurationError("Can't find the target cluster $clusterName")
+                .find { it.name == this.clusterName &&
+                        (it as AzureSparkServerlessCluster).clusterStateForShow.equals(SparkItemGroupState.STABLE.toString(), ignoreCase = true )}
+                ?:throw RuntimeConfigurationError("Can't find the workable(STABLE) target cluster $clusterName@$adlAccount")
     }
 }

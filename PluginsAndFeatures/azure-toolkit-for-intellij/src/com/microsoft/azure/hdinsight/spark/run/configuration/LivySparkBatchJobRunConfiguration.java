@@ -174,9 +174,13 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
                         "No artifact selected or selected artifact %s is gone.", getSubmitModel().getArtifactName()));
             }
         } else {
+            if (StringUtils.isBlank(parameter.getLocalArtifactPath())) {
+                throw new RuntimeConfigurationError("The specified local artifact path is empty");
+            }
+
             if (!new File(parameter.getLocalArtifactPath()).exists()) {
                 throw new RuntimeConfigurationError(String.format(
-                        "The specified local artifact path %s doesn't exist", parameter.getLocalArtifactPath()));
+                        "The specified local artifact path '%s' doesn't exist", parameter.getLocalArtifactPath()));
             }
         }
 
@@ -189,9 +193,9 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
                     getSubmitModel().getTableModel().getFirstCheckResults().getMessaqge());
         }
 
-        if (StringUtils.isNotBlank(StringUtils.join(getSubmitModel().getErrors(), ""))) {
-            throw new RuntimeConfigurationError("There are errors in submit model: " +
-                    StringUtils.join(getSubmitModel().getErrors(), "\\n"));
+        String modelError = getSubmitModel().getErrors().stream().filter(StringUtils::isNotBlank).collect(Collectors.joining("\\n"));
+        if (StringUtils.isNotBlank(modelError)) {
+            throw new RuntimeConfigurationError("There are errors in submit model: " + modelError);
         }
 
         checkBuildSparkJobBeforeRun(runner, getSubmitModel());

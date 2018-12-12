@@ -245,7 +245,6 @@ public class SparkSubmissionContentPanelConfigurable implements SettableControl<
 
         if (clustersModel.getSelectedItem() != null) {
             onClusterSelected((IClusterDetail) clustersModel.getSelectedItem());
-
             return true;
         }
 
