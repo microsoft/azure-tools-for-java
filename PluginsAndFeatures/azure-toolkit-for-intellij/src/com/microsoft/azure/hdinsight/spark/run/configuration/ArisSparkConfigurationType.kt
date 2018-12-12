@@ -23,8 +23,22 @@
 package com.microsoft.azure.hdinsight.spark.run.configuration
 
 import com.intellij.execution.configurations.ConfigurationFactory
+import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.execution.configurations.ConfigurationTypeUtil
+import com.microsoft.azure.hdinsight.common.CommonConst
+import com.microsoft.intellij.util.PluginUtil
+import javax.swing.Icon
 
-class ArisSparkConfigurationType : LivySparkBatchJobRunConfigurationType() {
+class ArisSparkConfigurationType : ConfigurationType {
+    companion object {
+        @JvmStatic
+        val instance by lazy { ConfigurationTypeUtil.findConfigurationType(ArisSparkConfigurationType::class.java) }
+    }
+    override fun getIcon(): Icon {
+        // TODO: should use Aris config icon
+        return PluginUtil.getIcon(CommonConst.OpenSparkUIIconPath)
+    }
+
     override fun getDisplayName(): String {
         return "Aris On Spark"
     }

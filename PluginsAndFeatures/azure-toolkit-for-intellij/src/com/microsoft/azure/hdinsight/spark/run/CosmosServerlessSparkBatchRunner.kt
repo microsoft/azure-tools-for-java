@@ -49,7 +49,7 @@ class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
         val submissionParameter = submitModel.submissionParameter as CreateSparkBatchJobParameters
         val adlAccountName = submissionParameter.adlAccountName()
         val account = AzureSparkServerlessClusterManager.getInstance().getAccountByName(adlAccountName)
-        account ?: throw ExecutionException("Can't find ADLA account '$adlAccountName'")
+                ?: throw ExecutionException("Can't find ADLA account '$adlAccountName'")
 
         val accessToken = try {
             account.http.accessToken

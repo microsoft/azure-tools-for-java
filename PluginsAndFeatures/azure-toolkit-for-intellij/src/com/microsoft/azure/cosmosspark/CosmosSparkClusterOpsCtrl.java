@@ -128,7 +128,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
 
                         final RunManager runManager = RunManager.getInstance(project);
                         final List<RunnerAndConfigurationSettings> batchConfigSettings = runManager
-                                .getConfigurationSettingsList(findConfigurationType(CosmosSparkConfigurationType.class));
+                                .getConfigurationSettingsList(CosmosSparkConfigurationType.getInstance());
 
                         final String runConfigName = "[Azure Data Lake Spark] " + cluster.getClusterNameWithAccountName();
                         final RunnerAndConfigurationSettings runConfigurationSetting = batchConfigSettings.stream()
@@ -136,7 +136,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                                 .findFirst()
                                 .orElseGet(() -> runManager.createRunConfiguration(
                                         runConfigName,
-                                        new CosmosSparkConfigurationFactory(findConfigurationType(CosmosSparkConfigurationType.class))));
+                                        new CosmosSparkConfigurationFactory(CosmosSparkConfigurationType.getInstance())));
 
                         context.putData(RUN_CONFIGURATION_SETTING, runConfigurationSetting)
                                 .putData(CLUSTER, cluster);
@@ -169,7 +169,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
 
                         final RunManager runManager = RunManager.getInstance(project);
                         final List<RunnerAndConfigurationSettings> batchConfigSettings = runManager
-                                .getConfigurationSettingsList(findConfigurationType(CosmosServerlessSparkConfigurationType.class));
+                                .getConfigurationSettingsList(CosmosServerlessSparkConfigurationType.getInstance());
 
                         final String runConfigName = "[Cosmos Serverless Spark] " + adlAccount.getName();
                         final RunnerAndConfigurationSettings runConfigurationSetting = batchConfigSettings.stream()
@@ -177,7 +177,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                                 .findFirst()
                                 .orElseGet(() -> runManager.createRunConfiguration(
                                         runConfigName,
-                                        new CosmosServerlessSparkConfigurationFactory(new CosmosServerlessSparkConfigurationType())));
+                                        new CosmosServerlessSparkConfigurationFactory(CosmosServerlessSparkConfigurationType.getInstance())));
 
                         context.putData(RUN_CONFIGURATION_SETTING, runConfigurationSetting)
                                 .putData(CLUSTER, adlAccount);

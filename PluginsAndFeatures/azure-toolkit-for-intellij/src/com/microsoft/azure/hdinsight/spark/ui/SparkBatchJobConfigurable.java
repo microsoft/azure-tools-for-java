@@ -21,15 +21,12 @@
 
 package com.microsoft.azure.hdinsight.spark.ui;
 
-import com.intellij.execution.configurations.RuntimeConfigurationError;
-import com.intellij.execution.configurations.RuntimeConfigurationException;
-import com.intellij.execution.configurations.RuntimeConfigurationWarning;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBScrollPane;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
-import org.jetbrains.annotations.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import javax.swing.*;
 
@@ -108,20 +105,7 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
         executionTypeTabPane.setEnabledAt(0, enabled);
     }
 
-    public void validate() throws ConfigurationException {
-        try {
-            submissionContentPanelConfigurable.validate();
-        } catch (ConfigurationException e) {
-            String remoteRunPrefix = "[Remotely Run in Cluster] ";
-            if (e instanceof RuntimeConfigurationError) {
-                throw new RuntimeConfigurationError(remoteRunPrefix + e.getMessage(), e.getQuickFix());
-            } else if (e instanceof RuntimeConfigurationWarning) {
-                throw new RuntimeConfigurationWarning(remoteRunPrefix + e.getMessage(), e.getQuickFix());
-            } else if (e instanceof RuntimeConfigurationException) {
-                throw new RuntimeConfigurationException(remoteRunPrefix + e.getMessage(), remoteRunPrefix + e.getTitle());
-            } else {
-                throw new ConfigurationException(remoteRunPrefix + e.getMessage(), remoteRunPrefix + e.getTitle());
-            }
-        }
+    public void validateInputs() throws ConfigurationException {
+        submissionContentPanelConfigurable.validateInputs();
     }
 }

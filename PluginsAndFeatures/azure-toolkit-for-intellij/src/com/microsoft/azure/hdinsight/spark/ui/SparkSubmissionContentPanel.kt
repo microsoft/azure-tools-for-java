@@ -22,9 +22,6 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
-import com.intellij.execution.configurations.RuntimeConfigurationError
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.options.ConfigurationException
@@ -365,24 +362,21 @@ open class SparkSubmissionContentPanel : JPanel() {
     }
 
     @Throws(ConfigurationException::class)
-    fun checkInputs() {
-        ApplicationManager.getApplication().invokeAndWait({ this.checkInputsWithErrorLabels() }, ModalityState.any())
-
-        // Convert Error Labels into Configuration Exception
-        if (!errorMessages.isEmpty()) {
-            throw ConfigurationException(errorMessages.joinToString("; \n"))
-        }
-
+    fun validateInputs() {
         val confTableModel = jobConfigurationTable.model as SubmissionTableModel
         for (confEntry in confTableModel.jobConfigMap) {
             val entryKey = confEntry.first()
 
+            if (StringUtils.isBlank(confEntry.first()) && StringUtils.isNotBlank(confEntry.second())) {
+                throw ConfigurationException("The Spark config key shouldn't be empty for value: " + confEntry.second())
+            }
+
             if (!StringUtils.isAlpha(entryKey.substring(0, 1)) && !StringUtils.startsWith(entryKey, "_")) {
-                throw RuntimeConfigurationError("The Spark config key should start with a letter or underscore")
+                throw ConfigurationException("The Spark config key should start with a letter or underscore")
             }
 
             if (!StringUtils.containsOnly(entryKey.toLowerCase(), "abcdefghijklmnopqrstuvwxyz1234567890_-.")) {
-                throw RuntimeConfigurationError("The Spark config key should only contains letters, digits, hyphens, underscores, and periods: ($entryKey)")
+                throw ConfigurationException("The Spark config key should only contains letters, digits, hyphens, underscores, and periods: ($entryKey)")
             }
         }
 

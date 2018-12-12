@@ -91,11 +91,4 @@ open class CosmosServerlessSparkSubmissionContentPanelConfigurable(project : Pro
         }
         return formBuilder.buildPanel()
     }
-
-    override fun validate() {
-        super.validate()
-        if(sparkEventsDirectoryField.text.isNullOrEmpty()) {
-            throw RuntimeConfigurationError("Can't save the configuration since spark events directory is not specified.")
-        }
-    }
 }
