@@ -47,7 +47,7 @@ class EmulatorStorageNode(parent: StorageModule) : ExternalStorageNode(parent, e
     }
 
     override fun getName(): String {
-        return "(Development)"
+        return "Storage Emulator"
     }
 
     override fun initActions(): Map<String, Class<out NodeActionListener>>? {
