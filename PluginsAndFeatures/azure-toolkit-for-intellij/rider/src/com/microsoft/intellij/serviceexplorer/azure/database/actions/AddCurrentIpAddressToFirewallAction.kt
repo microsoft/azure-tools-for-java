@@ -48,6 +48,10 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : NodeActionListener() {
+    companion object {
+        private val firewallIcon = IconLoader.getIcon("/icons/Firewall.svg")
+    }
+
     public override fun actionPerformed(e: NodeActionEvent) {
         val project = node.project as? Project ?: return
 
@@ -86,7 +90,7 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
         val ipAddressInput = Messages.showInputDialog(project,
                 "Add firewall rule for IP address:",
                 "Add firewall rule",
-                IconLoader.getIcon("/icons/Database.svg"),
+                firewallIcon,
                 publicIpAddressResult.ipv4address,
                 IpAddressInputValidator.INSTANCE)
 

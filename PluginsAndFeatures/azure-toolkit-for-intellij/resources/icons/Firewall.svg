@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <title>Firewall</title>
+  <g>
+    <rect width="16" height="16" fill="#ffd0ff" opacity="0"/>
+    <g>
+      <path d="M8,11H5.5V7H8V5A1,1,0,0,0,7,6v.5H6V6A2,2,0,0,1,8,4V2L3.357,3.5C3.141,5.859,3,8.3,3,9.187c0,2.924,2.475,3.838,5,5.313Z" fill="#62b543" opacity="0.7"/>
+      <path d="M12.643,3.5,8,2V4a2,2,0,0,1,2,2v.5H9V6A1,1,0,0,0,8,5V7h2.5v4H8v3.5c2.525-1.475,5-2.389,5-5.313C13,8.3,12.859,5.859,12.643,3.5Z" fill="#62b543"/>
+    </g>
+  </g>
+</svg>
