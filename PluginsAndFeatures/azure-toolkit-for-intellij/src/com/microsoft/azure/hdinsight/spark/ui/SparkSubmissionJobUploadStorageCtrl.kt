@@ -175,52 +175,63 @@ abstract class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobU
                 val adlsTitle = view.storagePanel.adlsCard.title
 
                 val clusterDetail = getClusterDetail()
-                view.storagePanel.storageTypeComboBox.selectedItem = null
-                view.storagePanel.storageTypeComboBox.model = when (clusterDetail) {
-                    is ClusterDetail ->{
-                        //get storageaccount may get HDIExpcetion for null value
-                        var storageAccount = try {
-                            clusterDetail.storageAccount
-                        } catch (igonred: HDIException) {
-                            clusterDetail.getConfigurationInfo()
-                            clusterDetail.storageAccount
+                var selectedType: String? = null
+                view.storagePanel.storageTypeComboBox.apply {
+                    when (clusterDetail) {
+                        is ClusterDetail -> {
+                            //get storageaccount may get HDIExpcetion for null value
+                            var storageAccount = try {
+                                clusterDetail.storageAccount
+                            } catch (igonred: HDIException) {
+                                clusterDetail.getConfigurationInfo()
+                                clusterDetail.storageAccount
+                            }
+
+                            model = ImmutableComboBoxModel(arrayOf(
+                                    defaultStorageTitle,
+                                    when (storageAccount) {
+                                        is HDStorageAccount -> azureBlobTitle
+                                        is ADLSStorageAccount, is AzureSparkServerlessCluster.StorageAccount -> adlsTitle
+                                        else -> helpSessionTitle
+                                    }))
+
+                            selectedType = defaultStorageTitle
                         }
 
-                        ImmutableComboBoxModel(arrayOf(
-                                defaultStorageTitle,
-                                when (storageAccount) {
-                                    is HDStorageAccount -> azureBlobTitle
-                                    is ADLSStorageAccount, is AzureSparkServerlessCluster.StorageAccount -> adlsTitle
-                                    else -> helpSessionTitle
-                                })).apply {
+                        is HDInsightLivyLinkClusterDetail, is HDInsightAdditionalClusterDetail -> {
+                            model = ImmutableComboBoxModel(arrayOf(
+                                    azureBlobTitle,
+                                    adlsTitle,
+                                    helpSessionTitle))
+
+                            selectedType = helpSessionTitle
+                        }
+
+                        is SqlBigDataLivyLinkClusterDetail -> {
+                            model = ImmutableComboBoxModel(arrayOf(
+                                    helpSessionTitle,
+                                    webHdfsTitle
+                            ))
+
+                            selectedType = helpSessionTitle
+                        }
+
+                        else -> {
+                            model = ImmutableComboBoxModel(arrayOf(
+                                    defaultStorageTitle,
+                                    azureBlobTitle,
+                                    adlsTitle,
+                                    helpSessionTitle,
+                                    webHdfsTitle))
                             selectedItem = defaultStorageTitle
                         }
                     }
 
-                    is HDInsightLivyLinkClusterDetail, is HDInsightAdditionalClusterDetail -> ImmutableComboBoxModel(arrayOf(
-                            azureBlobTitle,
-                            adlsTitle,
-                            helpSessionTitle)).apply {
-                        selectedItem = helpSessionTitle
-                    }
+                    //if selectedItem is null ,will trigger combox deselected event and event.item is the model getSelectedItem which is model(0)
+                    selectedItem = null
 
-                    is SqlBigDataLivyLinkClusterDetail -> {
-                        ImmutableComboBoxModel(arrayOf(
-                                helpSessionTitle,
-                                webHdfsTitle
-                        )).apply {
-                            selectedItem = helpSessionTitle
-                        }
-                    }
-
-                    else -> ImmutableComboBoxModel(arrayOf(
-                            defaultStorageTitle,
-                            azureBlobTitle,
-                            adlsTitle,
-                            helpSessionTitle,
-                            webHdfsTitle)).apply {
-                        selectedItem = defaultStorageTitle
-                    }
+                    //reset then will trigger deselcted and selected event which will repaint the panel
+                    selectedItem = defaultStorageTitle
                 }
             }
         }
