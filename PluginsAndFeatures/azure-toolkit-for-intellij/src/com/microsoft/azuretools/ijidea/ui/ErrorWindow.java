@@ -92,6 +92,5 @@ public class ErrorWindow extends AzureDialogWrapper {
         if (this.okAction != null) {
             this.okAction.run();
         }
-
     }
 }
