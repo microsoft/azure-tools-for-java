@@ -22,7 +22,7 @@
     <h3>[3.16.0]</h3>
       <h4>Added</h4>
       <ul>
-        <li>Support to sign in with OAuth 2.0 device code flow.</li>
+        <li>Support to sign in with OAuth 2.0 Device Flow. (Experimental)</li>
         <li>Support both dedicated Azure explorer node and run configuration for Aris linked clusters.</li>
         <li>Support Spark local run classpath modules selection.</li>
       </ul>
