@@ -249,7 +249,6 @@ public class SignInWindow extends AzureDialogWrapper {
                                         authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
                                         SignInWindow.super.doOKAction();
                                     }
-
                                 });
                             }
                         });
