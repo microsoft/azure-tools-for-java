@@ -239,7 +239,18 @@ public class SignInWindow extends AzureDialogWrapper {
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
+                                // To revert after Device Flow is stable.
+                                ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR, "Try Device Flow", () -> {
+                                    authMethodDetailsResult = new AuthMethodDetails();
+                                    doDeviceLogin();
+                                    if (!StringUtils.isNullOrEmpty(accountEmail)) {
+                                        authMethodDetailsResult.setAuthMethod(AuthMethod.DC);
+                                        authMethodDetailsResult.setAccountEmail(accountEmail);
+                                        authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
+                                        SignInWindow.super.doOKAction();
+                                    }
+
+                                });
                             }
                         });
                     }

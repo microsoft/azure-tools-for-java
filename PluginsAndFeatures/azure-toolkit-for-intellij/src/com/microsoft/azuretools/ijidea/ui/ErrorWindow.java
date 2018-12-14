@@ -28,17 +28,28 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 
 public class ErrorWindow extends AzureDialogWrapper {
     private JPanel contentPane;
     private JTextPane textPane;
+    private Runnable okAction;
 
     public static void show(@Nullable Project project, String message, String title) {
-        ErrorWindow w = new ErrorWindow(project, message, title);
-        w.show();
+        show(project, message, title, null, null);
     }
 
-    protected ErrorWindow(@Nullable Project project, String message, String title) {
+    public static void show(@Nullable Project project, String message, String title, String okButtonText, Runnable okAction){
+        ErrorWindow w = new ErrorWindow(project, message, title, okButtonText, okAction);
+        w.show();
+
+    }
+
+    protected ErrorWindow(@Nullable Project project, String message, String title){
+        this(project, message, title, null, null);
+    }
+
+    protected ErrorWindow(@Nullable Project project, String message, String title, String okButtonText, Runnable okAction) {
         super(project, true, IdeModalityType.PROJECT);
         setModal(true);
         if (title != null && !title.isEmpty()) {
@@ -46,7 +57,10 @@ public class ErrorWindow extends AzureDialogWrapper {
         } else {
             setTitle("Error Notification");
         }
-
+        if (okButtonText != null) {
+            setOKButtonText(okButtonText);
+            this.okAction = okAction;
+        }
         setCancelButtonText("Close");
         textPane.setText(message);
 
@@ -64,12 +78,21 @@ public class ErrorWindow extends AzureDialogWrapper {
 
     @Override
     protected Action[] createActions() {
-        return new Action[]{this.getCancelAction()};
+        return new Action[]{this.getCancelAction(), this.okAction != null ? this.getOKAction() : null};
     }
 
     @Nullable
     @Override
     protected String getDimensionServiceKey() {
         return "ErrorWindow";
+    }
+
+    @Override
+    protected void doOKAction() {
+        super.doOKAction();
+        if (this.okAction != null) {
+            this.okAction.run();
+        }
+
     }
 }
