@@ -28,7 +28,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
 
 public class ErrorWindow extends AzureDialogWrapper {
     private JPanel contentPane;
