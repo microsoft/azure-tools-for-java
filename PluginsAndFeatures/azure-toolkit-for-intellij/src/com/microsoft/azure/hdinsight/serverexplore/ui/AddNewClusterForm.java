@@ -183,7 +183,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 .validateAndAdd()
                 .doOnEach(notification -> getOKAction().setEnabled(true))
                 .subscribe(toUpdate -> {
-                    hdInsightModule.refreshWithoutAsync();
+                    hdInsightModule.load(false);
                     AppInsightsClient.create(HDInsightBundle.message("HDInsightAddNewClusterAction"), null);
 
                     super.doOKAction();

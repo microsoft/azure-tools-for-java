@@ -24,48 +24,50 @@ package com.microsoft.azure.sqlbigdata.serverexplore;
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.CommonConst;
-import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
-import java.util.List;
-import java.util.stream.Collectors;
+public class SqlBigDataClusterNode extends RefreshableNode {
+    private static final String SQL_BIG_DATA_CLUSTER_ID = SqlBigDataClusterNode.class.getName();
+    private static final String ICON_PATH = CommonConst.ClusterIConPath;
 
-public class SqlBigDataClusterModule extends RefreshableNode implements ILogger {
-    private static final String ARIS_SERVICE_MODULE_ID = SqlBigDataClusterModule.class.getName();
-    private static final String BASE_MODULE_NAME = "SQL Big Data Cluster";
-    private static final String ICON_PATH = CommonConst.SQL_BIG_DATA_CLUSTER_MODULE_ICON_PATH;
-    @Nullable
-    private Object project;
+    @NotNull
+    private IClusterDetail clusterDetail;
 
-    public SqlBigDataClusterModule(@Nullable Object project) {
-        super(ARIS_SERVICE_MODULE_ID, BASE_MODULE_NAME, null, ICON_PATH);
-        this.project = project;
+    public SqlBigDataClusterNode(Node parent, @NotNull IClusterDetail clusterDetail) {
+        super(SQL_BIG_DATA_CLUSTER_ID, clusterDetail.getTitle(), parent, ICON_PATH, true);
+        this.clusterDetail = clusterDetail;
+        this.loadActions();
+        this.load(false);
+    }
+
+    @Override
+    protected void loadActions() {
+        super.loadActions();
+
+        // TODO: Add Master UI link and Yarn UI link
+
+        addAction("Unlink", new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the SQL big data cluster?",
+                        "Unlink SQL Big Data Cluster", new String[]{"Yes", "No"}, null);
+                if (choice) {
+                    ClusterManagerEx.getInstance().removeAdditionalCluster(clusterDetail);
+                    ((RefreshableNode) getParent()).load(false);
+                }
+            }
+        });
     }
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        synchronized (this) {
-            List<IClusterDetail> clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails().stream()
-                    .filter(clusterDetail -> clusterDetail instanceof SqlBigDataLivyLinkClusterDetail)
-                    .collect(Collectors.toList());
-
-            if (clusterDetailList != null) {
-                for (IClusterDetail clusterDetail : clusterDetailList) {
-                    addChildNode(new SqlBigDataClusterNode(this, clusterDetail));
-                }
-            }
-        }
-    }
-
-    @Nullable
-    @Override
-    public Object getProject() {
-        return project;
+        this.load(false);
     }
 }
