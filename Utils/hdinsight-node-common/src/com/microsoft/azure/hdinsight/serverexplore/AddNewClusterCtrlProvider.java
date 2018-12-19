@@ -226,7 +226,11 @@ public class AddNewClusterCtrlProvider {
                         }
                     }
 
-                    String clusterName = getClusterName(clusterNameOrUrl);
+                    // For HDInsight linked cluster, only real cluster name or real cluster endpoint(pattern as https://sparkcluster.azurehdinsight.net/) are allowed to be cluster name
+                    // For HDInsight livy linked or aris linked cluster, cluster name format is not restricted
+                    final String clusterName = sparkClusterType == SparkClusterType.HDINSIGHT_CLUSTER
+                            ? getClusterName(clusterNameOrUrl)
+                            : clusterNameOrUrl;
 
                     HDStorageAccount storageAccount = null;
                     if (sparkClusterType == SparkClusterType.HDINSIGHT_CLUSTER) {
