@@ -38,13 +38,20 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIUtils;
 import rx.Observable;
+import sun.security.validator.ValidatorException;
 
+import javax.net.ssl.SSLHandshakeException;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AddNewClusterCtrlProvider {
     private static final String URL_PREFIX = "https://";
+    private static final String UserRejectCAErrorMsg =
+            "You have rejected the untrusted servers'certificate."+
+            "Please click'OK',then accept the untrusted certificate if you want to link to this cluster."+
+            "Or you can update the Livy URL to link to a different cluster.";
 
     @NotNull
     private SettableControl<AddNewClusterModel> controllableView;
@@ -293,6 +300,13 @@ public class AddNewClusterCtrlProvider {
                                 .orElse("Wrong username/password") +
                                 " (" + authErr.getErrorCode() + ")");
                     } catch (Exception ex) {
+                        if (ex instanceof SSLHandshakeException ||
+                           (ex instanceof IOException &&
+                            Optional.ofNullable(ex.getMessage()).get().toLowerCase().contains("stream closed"))
+                        ) {
+                            return toUpdate.setErrorMessage(UserRejectCAErrorMsg);
+                        }
+
                         return toUpdate.setErrorMessage("Authentication Error: " + ex.getMessage());
                     }
 
