@@ -103,6 +103,9 @@ public abstract class RefreshableNode extends Node {
         }
     }
 
+    public void refreshWithoutAsync() {
+    }
+
     protected void refreshFromAzure() throws Exception {
     }
 
