@@ -44,7 +44,6 @@ public class SqlBigDataClusterNode extends RefreshableNode {
         super(SQL_BIG_DATA_CLUSTER_ID, clusterDetail.getTitle(), parent, ICON_PATH, true);
         this.clusterDetail = clusterDetail;
         this.loadActions();
-        this.load(false);
     }
 
     @Override
@@ -68,6 +67,5 @@ public class SqlBigDataClusterNode extends RefreshableNode {
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        this.load(false);
     }
 }
