@@ -245,16 +245,16 @@
               </grid>
             </children>
           </grid>
-          <component id="fab29" class="javax.swing.JTextField" binding="errorMessageField">
+          <component id="fab29" class="javax.swing.JTextArea" binding="errorMessageField">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="2" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="2" hsize-policy="0" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
             <properties>
               <editable value="false"/>
               <foreground color="-5625047"/>
-              <horizontalAlignment value="0"/>
+              <lineWrap value="true"/>
             </properties>
           </component>
         </children>

@@ -39,6 +39,8 @@ import com.microsoft.azuretools.ijidea.ui.HintTextField;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import com.microsoft.intellij.secure.IdeaTrustStrategy;
+import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -60,7 +62,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     private JTextField clusterNameOrUrlField;
     private JPanel livyServiceCard;
     protected JTextField livyEndpointField;
-    protected JTextField errorMessageField;
+    protected JTextArea errorMessageField;
     private JPanel authComboBoxPanel;
     protected JComboBox authComboBox;
     protected JPanel authCardsPanel;
@@ -135,7 +137,11 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     // Data -> Components
     @Override
     public void setData(@NotNull AddNewClusterModel data) {
-        errorMessageField.setText(data.getErrorMessage());
+        if (IdeaTrustStrategy.INSTANCE.CheckAndResetRejectOption()) {
+            errorMessageField.setText(IdeaTrustStrategy.getUserRejectCAErrorMsg());
+        } else {
+            errorMessageField.setText(data.getErrorMessage());
+        }
     }
 
     // Components -> Data
@@ -187,6 +193,12 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                     AppInsightsClient.create(HDInsightBundle.message("HDInsightAddNewClusterAction"), null);
 
                     super.doOKAction();
+
+                    //when user accepts ca then popup the dialog
+                    //we can't popup the dialog at the IdeaTrustStrategy.kt otherwise dialog will always show up
+                    if(IdeaTrustStrategy.INSTANCE.CheckAndResetAlreadyExistValue()){
+                        PluginUtil.displayInfoDialog(IdeaTrustStrategy.getAcceptTitle(),IdeaTrustStrategy.getUserAcceptCAMsg());
+                    }
                 });
     }
 

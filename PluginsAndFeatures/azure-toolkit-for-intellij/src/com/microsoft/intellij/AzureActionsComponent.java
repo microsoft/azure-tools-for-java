@@ -46,6 +46,7 @@ import com.microsoft.intellij.helpers.IDEHelperImpl;
 import com.microsoft.intellij.helpers.MvpUIHelperImpl;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.secure.IdeaSecureStore;
+import com.microsoft.intellij.secure.IdeaTrustStrategy;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginUtil;
@@ -54,6 +55,7 @@ import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
+import org.apache.http.ssl.TrustStrategy;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -101,8 +103,12 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
             ServiceManager.setServiceProvider(SecureStore.class, IdeaSecureStore.getInstance());
             // enable spark serverless node subscribe actions
+
             ServiceManager.setServiceProvider(CosmosSparkClusterOpsCtrl.class,
                     new CosmosSparkClusterOpsCtrl(CosmosSparkClusterOps.getInstance()));
+
+            ServiceManager.setServiceProvider(TrustStrategy.class, IdeaTrustStrategy.INSTANCE);
+
             initAuthManage();
             ActionManager am = ActionManager.getInstance();
             DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
