@@ -24,25 +24,38 @@ package com.microsoft.azure.hdinsight.spark.common;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.common.appinsight.AppInsightsHttpRequestInstallIdMapRecord;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 import rx.Observable;
 import rx.schedulers.Schedulers;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class SparkBatchSubmission {
+public class SparkBatchSubmission implements ILogger {
     SparkBatchSubmission() {
     }
 
@@ -74,8 +87,29 @@ public class SparkBatchSubmission {
 
     @NotNull
     public CloseableHttpClient getHttpClient() throws IOException {
+        TrustStrategy ts = ServiceManager.getServiceProvider(TrustStrategy.class);
+        SSLConnectionSocketFactory sslSocketFactory = null;
+
+        if (ts != null) {
+            try {
+                SSLContext sslContext = new SSLContextBuilder()
+                        .loadTrustMaterial(ts)
+                        .build();
+
+                sslSocketFactory = new SSLConnectionSocketFactory(sslContext, new HostnameVerifier() {
+                    @Override
+                    public boolean verify(String s, SSLSession sslSession) {
+                        return true;
+                    }
+                });
+            } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+                log().warn("Prepare SSL Context for HTTPS failure", e);
+            }
+        }
+
         return HttpClients.custom()
                  .useSystemProperties()
+                 .setSSLSocketFactory(sslSocketFactory)
                  .setDefaultCredentialsProvider(credentialsProvider)
                  .build();
     }
@@ -116,9 +150,10 @@ public class SparkBatchSubmission {
         // WORKAROUND: https://github.com/Microsoft/azure-tools-for-java/issues/1358
         // The Ambari local account will cause Kerberos authentication initializing infinitely.
         // Set a timer here to cancel the progress.
-        Observable.timer(3, TimeUnit.SECONDS, Schedulers.io())
-                  .take(1)
-                  .subscribe(i -> httpHead.abort());
+        httpHead.setConfig(RequestConfig
+                .custom()
+                .setSocketTimeout(3*1000)
+                .build());
 
         try(CloseableHttpResponse response = httpclient.execute(httpHead)) {
             return StreamUtil.getResultFromHttpResponse(response);
