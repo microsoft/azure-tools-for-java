@@ -57,7 +57,7 @@ public class SqlBigDataClusterModule extends RefreshableNode implements ILogger 
 
             if (clusterDetailList != null) {
                 for (IClusterDetail clusterDetail : clusterDetailList) {
-                    addChildNode(new SqlBigDataClusterNode(this, clusterDetail));
+                    addChildNode(new SqlBigDataClusterNode(this, (SqlBigDataLivyLinkClusterDetail) clusterDetail));
                 }
             }
         }

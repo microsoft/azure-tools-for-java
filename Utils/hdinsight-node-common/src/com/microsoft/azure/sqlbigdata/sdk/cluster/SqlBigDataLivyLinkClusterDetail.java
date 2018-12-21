@@ -2,6 +2,7 @@ package com.microsoft.azure.sqlbigdata.sdk.cluster;
 
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
+import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.YarnCluster;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -13,32 +14,49 @@ import java.util.Optional;
 
 public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     @NotNull
-    private final URI livyEndpoint;
-    @Nullable
-    private final URI yarnEndpoint;
+    private String host;
+    private int knoxPort;
+    @NotNull
+    private String selectedCluster;
     @NotNull
     private String clusterName;
-    @Nullable
+    @NotNull
     private String userName;
-    @Nullable
+    @NotNull
     private String password;
 
-    public SqlBigDataLivyLinkClusterDetail(@NotNull URI livyEndpoint,
-                                           @Nullable URI yarnEndpoint,
+    public SqlBigDataLivyLinkClusterDetail(@NotNull String host,
+                                           int knoxPort,
+                                           @NotNull String selectedCluster,
                                            @NotNull String clusterName,
                                            @NotNull String userName,
                                            @NotNull String password) {
+        this.host = host;
+        this.knoxPort = knoxPort;
+        this.selectedCluster = selectedCluster;
         this.clusterName = clusterName;
         this.userName = userName;
         this.password = password;
-        this.livyEndpoint = livyEndpoint;
-        this.yarnEndpoint = yarnEndpoint;
+    }
+
+    @NotNull
+    public String getHost() {
+        return host;
+    }
+
+    @NotNull
+    public String getSelectedCluster() {
+        return selectedCluster;
+    }
+
+    public int getKnoxPort() {
+        return knoxPort;
     }
 
     @Override
     @NotNull
     public String getConnectionUrl() {
-        return livyEndpoint.toString().endsWith("/") ? livyEndpoint.toString() : livyEndpoint.toString() + "/";
+        return String.format("https://%s:%d/gateway/%s/livy/v1/", host, knoxPort, selectedCluster);
     }
 
     @Override
@@ -48,13 +66,14 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
     }
 
     @Override
-    @Nullable
+    @NotNull
     public String getYarnNMConnectionUrl() {
-        if (yarnEndpoint == null) {
-            return null;
-        } else {
-            return yarnEndpoint.toString().endsWith("/") ? yarnEndpoint.toString() : yarnEndpoint.toString() + "/";
-        }
+        return String.format("https://%s:%d/gateway/%s/yarn/", host, knoxPort, selectedCluster);
+    }
+
+    @NotNull
+    public String getSparkHistoryUrl() {
+        return String.format("https://%s:%d/gateway/%s/sparkhistory/", host, knoxPort, selectedCluster);
     }
 
     @Override

@@ -139,18 +139,10 @@ public class AddNewClusterCtrlProvider {
                 .anyMatch(clusterDetail -> clusterDetail.getName().equals(clusterName));
     }
 
-    /**
-     * Check if livy endpoint exists in:
-     * 1. Livy Linked SQL Big Data clusters
-     * @param livyEndpoint
-     * @return whether livy endpoint exists or not
-     */
-    public boolean doesClusterLivyEndpointExistInSqlBigDataClusters(@NotNull String livyEndpoint) {
+    public boolean doeshostExistInSqlBigDataClusters(@NotNull String host) {
         return ClusterManagerEx.getInstance().getAdditionalClusterDetails().stream()
                 .filter(clusterDetail -> clusterDetail instanceof SqlBigDataLivyLinkClusterDetail)
-                .anyMatch(clusterDetail ->
-                        URI.create(((LivyCluster) clusterDetail).getLivyConnectionUrl()).getHost()
-                                .equals(URI.create(livyEndpoint).getHost()));
+                .anyMatch(clusterDetail -> ((SqlBigDataLivyLinkClusterDetail) clusterDetail).getHost().equals(host));
     }
 
     public Observable<AddNewClusterModel> refreshContainers() {
@@ -197,14 +189,22 @@ public class AddNewClusterCtrlProvider {
                     String password = Optional.ofNullable(toUpdate.getPassword()).orElse("");
                     URI livyEndpoint = toUpdate.getLivyEndpoint();
                     URI yarnEndpoint = toUpdate.getYarnEndpoint();
+                    String host = toUpdate.getHost();
+                    int knoxPort = toUpdate.getKnoxPort();
+                    String selectedCluster = toUpdate.getSelectedCluster();
                     int selectedContainerIndex = toUpdate.getSelectedContainerIndex();
+
+
+                    // For HDInsight linked cluster, only real cluster name or real cluster endpoint(pattern as https://sparkcluster.azurehdinsight.net/) are allowed to be cluster name
+                    // For HDInsight livy linked or aris linked cluster, cluster name format is not restricted
+                    final String clusterName = sparkClusterType == SparkClusterType.HDINSIGHT_CLUSTER
+                            ? getClusterName(clusterNameOrUrl)
+                            : clusterNameOrUrl;
 
                     // These validation check are redundant for intelliJ sicne intellij does full check at view level
                     // but necessary for Eclipse
-
-                    // Incomplete data check
-                    // link through livy don't need to verify empty username and password
-                    if (livyEndpoint == null) {
+                    HDStorageAccount storageAccount = null;
+                    if (sparkClusterType == SparkClusterType.HDINSIGHT_CLUSTER) {
                         if (StringUtils.containsWhitespace(clusterNameOrUrl) ||
                                 StringUtils.containsWhitespace(userName) ||
                                 StringUtils.containsWhitespace(password)) {
@@ -224,16 +224,7 @@ public class AddNewClusterCtrlProvider {
 
                             return toUpdate.setErrorMessage("All (*) fields are required.");
                         }
-                    }
 
-                    // For HDInsight linked cluster, only real cluster name or real cluster endpoint(pattern as https://sparkcluster.azurehdinsight.net/) are allowed to be cluster name
-                    // For HDInsight livy linked or aris linked cluster, cluster name format is not restricted
-                    final String clusterName = sparkClusterType == SparkClusterType.HDINSIGHT_CLUSTER
-                            ? getClusterName(clusterNameOrUrl)
-                            : clusterNameOrUrl;
-
-                    HDStorageAccount storageAccount = null;
-                    if (sparkClusterType == SparkClusterType.HDINSIGHT_CLUSTER) {
                         // Cluster name check
                         if (clusterName == null) {
                             return toUpdate.setErrorMessage("Wrong cluster name or endpoint");
@@ -285,7 +276,7 @@ public class AddNewClusterCtrlProvider {
                             break;
                         case SQL_BIG_DATA_CLUSTER:
                             additionalClusterDetail =
-                                    new SqlBigDataLivyLinkClusterDetail(livyEndpoint, yarnEndpoint, clusterName, userName, password);
+                                    new SqlBigDataLivyLinkClusterDetail(host, knoxPort, selectedCluster, clusterName, userName, password);
                     }
 
                     // Account certificate check

@@ -33,6 +33,7 @@ import java.net.URI
 import javax.swing.DefaultComboBoxModel
 
 class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterModule): AddNewClusterForm(project, module) {
+    private val IPV4_ADDRESS_PATTERN = "^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$"
     init {
         title = "Link SQL Big Data Cluster"
 
@@ -40,7 +41,7 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
         clusterComboBox.model = DefaultComboBoxModel(arrayOf(livyServiceTitle))
         clusterComboBox.isEnabled = true
         val clusterLayout = clusterCardsPanel.layout as CardLayout
-        clusterLayout.show(clusterCardsPanel, livyServiceTitle)
+        clusterLayout.show(clusterCardsPanel, "Aris Livy Service")
 
         val basicAuthTitle = "Basic Authentication"
         authComboBox.model = DefaultComboBoxModel(arrayOf(basicAuthTitle))
@@ -52,9 +53,10 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
     override fun getData(data: AddNewClusterModel) {
         data.apply {
             sparkClusterType = SparkClusterType.SQL_BIG_DATA_CLUSTER
-            livyEndpoint = URI.create(livyEndpointField.text.trim())
-            yarnEndpoint = if (StringUtils.isBlank(yarnEndpointField.text.trim())) null else URI.create(yarnEndpointField.text.trim())
-            clusterName = livyClusterNameField.text.trim()
+            host = arisHostField.text.trim()
+            knoxPort = arisPortField.text.trim().toInt()
+            selectedCluster = arisSelectedClusterField.text.trim()
+            clusterName = arisClusterNameField.text.trim()
             clusterNameLabelTitle = livyClusterNameLabel.text
             userNameLabelTitle = userNameLabel.text
             passwordLabelTitle = passwordLabel.text
@@ -69,16 +71,12 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
 
     override fun basicValidate() {
         errorMessageField.text =
-                if (StringUtils.isBlank(livyEndpointField.text) || StringUtils.isBlank(livyClusterNameField.text)) {
-                    "Livy Endpoint and cluster name can't be empty"
-                } else if (!ctrlProvider.isURLValid(livyEndpointField.text)) {
-                    "Livy Endpoint is not a valid URL"
-                } else if (ctrlProvider.doesClusterLivyEndpointExistInSqlBigDataClusters(livyEndpointField.text)) {
-                    "The same name Livy Endpoint already exists in clusters"
-                } else if (ctrlProvider.doesClusterNameExistInSqlBigDataClusters(livyClusterNameField.text)) {
-                    "Cluster Name already exists in clusters"
-                } else if (!StringUtils.isEmpty(yarnEndpointField.text) && !ctrlProvider.isURLValid(yarnEndpointField.text)) {
-                    "Yarn Endpoint is not a valid URL"
+                if (StringUtils.isBlank(arisHostField.text) || StringUtils.isBlank(arisClusterNameField.text)) {
+                    "Host and cluster name can't be empty"
+                } else if (!IPV4_ADDRESS_PATTERN.toRegex().matches(arisHostField.text)) {
+                    "Host is not valid"
+                } else if (ctrlProvider.doeshostExistInSqlBigDataClusters(arisHostField.text)) {
+                    "Host already exists in linked clusters"
                 } else if (StringUtils.isBlank(userNameField.text) || StringUtils.isBlank(passwordField.text)) {
                     "Username and password can't be empty in Basic Authentication"
                 } else {

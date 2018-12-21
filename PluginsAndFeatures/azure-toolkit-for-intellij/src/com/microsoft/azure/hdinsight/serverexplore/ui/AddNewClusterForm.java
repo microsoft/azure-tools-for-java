@@ -74,6 +74,11 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     protected JLabel userNameLabel;
     protected JLabel passwordLabel;
     protected JLabel livyClusterNameLabel;
+    protected JTextField arisPortField;
+    protected JTextField arisClusterNameField;
+    protected JTextField arisHostField;
+    protected JTextField arisSelectedClusterField;
+    protected JPanel arisLivyServiceCard;
     @NotNull
     private RefreshableNode hdInsightModule;
     @NotNull
@@ -119,12 +124,13 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         Arrays.asList(clusterComboBox, authComboBox).forEach(comp -> comp.addActionListener(event -> basicValidate()));
 
         Arrays.asList(clusterNameOrUrlField, userNameField, passwordField, livyEndpointField, livyClusterNameField,
-                yarnEndpointField).forEach(comp -> comp.getDocument().addDocumentListener(new DocumentAdapter() {
-            @Override
-            protected void textChanged(DocumentEvent e) {
-                basicValidate();
-            }
-        }));
+                yarnEndpointField, arisHostField, arisPortField, arisSelectedClusterField, arisClusterNameField).forEach(
+                        comp -> comp.getDocument().addDocumentListener(new DocumentAdapter() {
+                    @Override
+                    protected void textChanged(DocumentEvent e) {
+                        basicValidate();
+                    }
+                }));
 
         // load all cluster details to cache for validation check
         loadClusterDetails();
