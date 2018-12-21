@@ -31,7 +31,7 @@ class AzureDatabaseModule(parent: Node) : AzureRefreshableNode(MODULE_ID, BASE_M
     companion object {
         private val MODULE_ID = AzureDatabaseModule::class.java.name
         private const val ICON_PATH = "Database.svg"
-        private const val BASE_MODULE_NAME = "Sql Databases"
+        private const val BASE_MODULE_NAME = "SQL Databases"
         private const val ERROR_DELETE_SQL_SERVER = "An error occurred while attempting to delete the SQL Server: %s"
     }
 
