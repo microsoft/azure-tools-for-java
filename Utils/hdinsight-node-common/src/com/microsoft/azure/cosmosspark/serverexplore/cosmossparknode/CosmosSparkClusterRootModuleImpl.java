@@ -37,9 +37,7 @@ import java.net.URI;
 
 public class CosmosSparkClusterRootModuleImpl extends HDInsightRootModule {
     private static final String SERVICE_MODULE_ID = CosmosSparkClusterRootModuleImpl.class.getName();
-    // TODO: Update icon path
     private static final String ICON_PATH = CommonConst.AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH;
-    // TODO: determine root node name
     private static final String BASE_MODULE_NAME = "Azure Data Lake Spark Pool";
 
     private static final String SPARK_NOTEBOOK_LINK = "https://aka.ms/spkadlnb";
@@ -72,11 +70,6 @@ public class CosmosSparkClusterRootModuleImpl extends HDInsightRootModule {
     }
 
     @Override
-    public void refreshWithoutAsync() {
-
-    }
-
-    @Override
     protected void loadActions() {
         super.loadActions();
 
@@ -90,6 +83,4 @@ public class CosmosSparkClusterRootModuleImpl extends HDInsightRootModule {
             }
         });
     }
-    // TODO: refreshWithoutAsync() is called when unlink an HDInsight cluster. Maybe we also need to implement this method here?
-    // public void refreshWithoutAsync()
 }

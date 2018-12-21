@@ -33,7 +33,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import rx.Observable;
 
 public class CosmosSparkADLAccountNode extends AzureRefreshableNode implements ILogger {
-    // TODO: Update icon path
     private static final String ICON_PATH = CommonConst.AZURE_SERVERLESS_SPARK_ACCOUNT_ICON_PATH;
     @NotNull
     private final AzureSparkServerlessAccount adlAccount;
@@ -93,5 +92,4 @@ public class CosmosSparkADLAccountNode extends AzureRefreshableNode implements I
         return adlAccount;
     }
 
-    // TODO: implement refreshWithoutAsync()
 }
