@@ -66,7 +66,6 @@ import com.microsoft.intellij.runner.webapp.model.DatabasePublishModel
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfiguration
 import java.io.File
-import java.lang.NullPointerException
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.*
@@ -704,16 +703,23 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     override fun fillPublishableProject(publishableProjects: List<PublishableProjectModel>) {
+        val projectsToProcess = publishableProjects.sortedBy { it.projectName }
+
         cbProject.removeAllItems()
-        publishableProjects.sortedBy { it.projectName }
-                .forEach {
-                    cbProject.addItem(it)
-                    if (it == configuration.model.webAppModel.publishableProject) {
-                        cbProject.selectedItem = it
-                        lastSelectedProject = it
-                        setOperatingSystemRadioButtons(it)
-                    }
-                }
+        projectsToProcess.forEach {
+            cbProject.addItem(it)
+            if (it == configuration.model.webAppModel.publishableProject) {
+                cbProject.selectedItem = it
+                lastSelectedProject = it
+                setOperatingSystemRadioButtons(it)
+            }
+        }
+
+        val projectCanBePublished = projectsToProcess.find { canBePublishedToAzure(it) }
+        if (projectCanBePublished != null) {
+            cbProject.selectedItem = projectCanBePublished
+            lastSelectedProject = projectCanBePublished
+        }
     }
 
     /**

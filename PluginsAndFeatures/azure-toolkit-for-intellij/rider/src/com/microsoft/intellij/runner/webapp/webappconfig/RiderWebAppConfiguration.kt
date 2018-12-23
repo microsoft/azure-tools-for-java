@@ -32,8 +32,6 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
-import com.jetbrains.rider.model.publishableProjectsModel
-import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.util.idea.getLogger
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.utils.AzureModel
@@ -53,11 +51,6 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     }
 
     private val myModel = DotNetWebAppSettingModel()
-
-    init {
-        myModel.webAppModel.publishableProject = project.solution.publishableProjectsModel.publishableProjects.values
-                .sortedWith(compareBy({ it.isWeb }, { it.projectName })).firstOrNull()
-    }
 
     override fun getSubscriptionId(): String {
         return myModel.webAppModel.subscription?.subscriptionId() ?: ""
