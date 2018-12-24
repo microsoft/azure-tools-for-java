@@ -49,8 +49,6 @@ public class AddNewClusterModel implements Cloneable {
     @Nullable
     private String host;
     private int knoxPort = 30443;
-    @NotNull
-    private String selectedCluster = "default";
 
     private String storageName;
     private String storageKey;
@@ -188,17 +186,6 @@ public class AddNewClusterModel implements Cloneable {
     @NotNull
     public AddNewClusterModel setKnoxPort(int knoxPort) {
         this.knoxPort = knoxPort;
-        return this;
-    }
-
-    @NotNull
-    public String getSelectedCluster() {
-        return selectedCluster;
-    }
-
-    @NotNull
-    public AddNewClusterModel setSelectedCluster(@NotNull String selectedCluster) {
-        this.selectedCluster = selectedCluster;
         return this;
     }
 

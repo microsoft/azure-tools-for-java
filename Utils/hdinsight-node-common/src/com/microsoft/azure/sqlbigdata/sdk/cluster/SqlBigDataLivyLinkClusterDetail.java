@@ -8,6 +8,7 @@ import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.util.Optional;
@@ -17,8 +18,6 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
     private String host;
     private int knoxPort;
     @NotNull
-    private String selectedCluster;
-    @NotNull
     private String clusterName;
     @NotNull
     private String userName;
@@ -27,14 +26,12 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
 
     public SqlBigDataLivyLinkClusterDetail(@NotNull String host,
                                            int knoxPort,
-                                           @NotNull String selectedCluster,
-                                           @NotNull String clusterName,
+                                           @Nullable String clusterName,
                                            @NotNull String userName,
                                            @NotNull String password) {
         this.host = host;
         this.knoxPort = knoxPort;
-        this.selectedCluster = selectedCluster;
-        this.clusterName = clusterName;
+        this.clusterName = StringUtils.isBlank(clusterName) ? host : clusterName;
         this.userName = userName;
         this.password = password;
     }
@@ -44,11 +41,6 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
         return host;
     }
 
-    @NotNull
-    public String getSelectedCluster() {
-        return selectedCluster;
-    }
-
     public int getKnoxPort() {
         return knoxPort;
     }
@@ -56,7 +48,7 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
     @Override
     @NotNull
     public String getConnectionUrl() {
-        return String.format("https://%s:%d/gateway/%s/livy/v1/", host, knoxPort, selectedCluster);
+        return String.format("https://%s:%d/gateway/default/livy/v1/", host, knoxPort);
     }
 
     @Override
@@ -68,12 +60,12 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
     @Override
     @NotNull
     public String getYarnNMConnectionUrl() {
-        return String.format("https://%s:%d/gateway/%s/yarn/", host, knoxPort, selectedCluster);
+        return String.format("https://%s:%d/gateway/default/yarn/", host, knoxPort);
     }
 
     @NotNull
     public String getSparkHistoryUrl() {
-        return String.format("https://%s:%d/gateway/%s/sparkhistory/", host, knoxPort, selectedCluster);
+        return String.format("https://%s:%d/gateway/default/sparkhistory/", host, knoxPort);
     }
 
     @Override

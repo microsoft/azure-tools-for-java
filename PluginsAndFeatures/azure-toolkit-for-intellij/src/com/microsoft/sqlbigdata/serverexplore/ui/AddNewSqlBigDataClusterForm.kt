@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterModel
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewClusterForm
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule
+import com.microsoft.azuretools.ijidea.ui.HintTextField
 import org.apache.commons.lang3.StringUtils
 import java.awt.CardLayout
 import java.net.URI
@@ -50,12 +51,17 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
         authLayout.show(authCardsPanel, basicAuthTitle)
     }
 
+    override fun createUIComponents() {
+        super.createUIComponents()
+
+        arisClusterNameField = HintTextField("(Optional) Cluster name")
+    }
+
     override fun getData(data: AddNewClusterModel) {
         data.apply {
             sparkClusterType = SparkClusterType.SQL_BIG_DATA_CLUSTER
             host = arisHostField.text.trim()
             knoxPort = arisPortField.text.trim().toInt()
-            selectedCluster = arisSelectedClusterField.text.trim()
             clusterName = arisClusterNameField.text.trim()
             clusterNameLabelTitle = livyClusterNameLabel.text
             userNameLabelTitle = userNameLabel.text
@@ -71,12 +77,15 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
 
     override fun basicValidate() {
         errorMessageField.text =
-                if (StringUtils.isBlank(arisHostField.text) || StringUtils.isBlank(arisClusterNameField.text)) {
-                    "Host and cluster name can't be empty"
+                if (StringUtils.isBlank(arisHostField.text)) {
+                    "Host can't be empty"
                 } else if (!IPV4_ADDRESS_PATTERN.toRegex().matches(arisHostField.text)) {
-                    "Host is not valid"
+                    "Host format is not valid"
                 } else if (ctrlProvider.doeshostExistInSqlBigDataClusters(arisHostField.text)) {
                     "Host already exists in linked clusters"
+                } else if (StringUtils.isNotBlank(arisClusterNameField.text) &&
+                    ctrlProvider.doesClusterNameExistInSqlBigDataClusters(arisClusterNameField.text)) {
+                    "Cluster name already exists in linked clusters"
                 } else if (StringUtils.isBlank(userNameField.text) || StringUtils.isBlank(passwordField.text)) {
                     "Username and password can't be empty in Basic Authentication"
                 } else {

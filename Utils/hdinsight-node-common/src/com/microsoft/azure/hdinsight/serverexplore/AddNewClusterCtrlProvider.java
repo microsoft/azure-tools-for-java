@@ -191,7 +191,6 @@ public class AddNewClusterCtrlProvider {
                     URI yarnEndpoint = toUpdate.getYarnEndpoint();
                     String host = toUpdate.getHost();
                     int knoxPort = toUpdate.getKnoxPort();
-                    String selectedCluster = toUpdate.getSelectedCluster();
                     int selectedContainerIndex = toUpdate.getSelectedContainerIndex();
 
 
@@ -276,7 +275,7 @@ public class AddNewClusterCtrlProvider {
                             break;
                         case SQL_BIG_DATA_CLUSTER:
                             additionalClusterDetail =
-                                    new SqlBigDataLivyLinkClusterDetail(host, knoxPort, selectedCluster, clusterName, userName, password);
+                                    new SqlBigDataLivyLinkClusterDetail(host, knoxPort, clusterName, userName, password);
                     }
 
                     // Account certificate check
