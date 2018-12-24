@@ -65,5 +65,5 @@ public class LivySparkBatchJobRunConfigurationType implements ConfigurationType 
     @NotNull
     public static LivySparkBatchJobRunConfigurationType getInstance() {
         return ConfigurationTypeUtil.findConfigurationType(LivySparkBatchJobRunConfigurationType.class);
-}
+    }
 }

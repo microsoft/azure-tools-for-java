@@ -26,7 +26,7 @@ import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType
 
 class CosmosSparkRunConfigurationProducer : SparkBatchJobLocalRunConfigurationProducer(
-        CosmosSparkConfigurationType.instance,
+        CosmosSparkConfigurationType,
         SparkApplicationType.CosmosSpark
 )
 

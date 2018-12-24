@@ -7,7 +7,7 @@ import com.microsoft.azure.hdinsight.common.CommonConst
 import com.microsoft.intellij.util.PluginUtil
 import javax.swing.Icon
 
-class CosmosServerlessSparkConfigurationType : ConfigurationType {
+object CosmosServerlessSparkConfigurationType : ConfigurationType {
     override fun getIcon(): Icon {
         // TODO: should use Cosmos Serverless icon
         return PluginUtil.getIcon("/icons/${CommonConst.AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH}")
@@ -27,11 +27,5 @@ class CosmosServerlessSparkConfigurationType : ConfigurationType {
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {
         return arrayOf(CosmosServerlessSparkConfigurationFactory(this))
-    }
-
-    companion object {
-        @JvmStatic
-        val instance: CosmosServerlessSparkConfigurationType
-            get() = ConfigurationTypeUtil.findConfigurationType(CosmosServerlessSparkConfigurationType::class.java)
     }
 }

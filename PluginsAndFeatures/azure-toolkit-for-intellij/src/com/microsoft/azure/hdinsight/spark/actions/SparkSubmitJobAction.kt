@@ -53,8 +53,12 @@ open class SparkSubmitJobAction : AzureAnAction() {
         }
     }
     override fun onActionPerformed(anActionEvent: AnActionEvent?) {
-        if (anActionEvent == null) return
-        if (submitWithPopupMenu(anActionEvent)) return
+        if (anActionEvent == null) {
+            return
+        }
+        if (submitWithPopupMenu(anActionEvent)) {
+            return
+        }
         val runConfigurationSetting = anActionEvent.dataContext.getData(RUN_CONFIGURATION_SETTING)
                 ?: getRunConfigurationFromDataContext(anActionEvent.dataContext) ?: return
         val clusterName = anActionEvent.dataContext.getData(CLUSTER)?.name
@@ -107,16 +111,13 @@ open class SparkSubmitJobAction : AzureAnAction() {
     }
 }
 
-open class LivySparkSubmitJobAction(val runConfigurationTypeInstance: ConfigurationType = LivySparkBatchJobRunConfigurationType.getInstance()) : SparkSubmitJobAction() {
-    override fun submitWithPopupMenu(anActionEvent: AnActionEvent): Boolean = false
-    override fun getRunConfigurationFromDataContext(dataContext: DataContext): RunnerAndConfigurationSettings? {
-        val configContext = ConfigurationContext.getFromContext(dataContext)
-        val factory = runConfigurationTypeInstance.configurationFactories[0]
-        val runConfig = factory.createTemplateConfiguration(configContext.project)
-        return configContext.runManager.createConfiguration(runConfig, factory)
+open class LivySparkSubmitJobAction(sparkApplicationType: SparkApplicationType = SparkApplicationType.HDInsight) : DefaultSparkApplicationTypeAction(sparkApplicationType) {
+    override fun onActionPerformed(e: AnActionEvent) {
+        super.onActionPerformed(e)
+        val action = ActionManagerEx.getInstance().getAction("Actions.SubmitSparkApplicationAction")
+        action.actionPerformed(e)
     }
 }
 
-class CosmosSparkSubmitJobAction: LivySparkSubmitJobAction(CosmosSparkConfigurationType.instance)
-
-class CosmosServerlessSparkSubmitJobAction: LivySparkSubmitJobAction(CosmosServerlessSparkConfigurationType.instance)
+class CosmosSparkSubmitJobAction : LivySparkSubmitJobAction(SparkApplicationType.CosmosSpark)
+class CosmosServerlessSparkSubmitJobAction : LivySparkSubmitJobAction(SparkApplicationType.CosmosServerlessSpark)

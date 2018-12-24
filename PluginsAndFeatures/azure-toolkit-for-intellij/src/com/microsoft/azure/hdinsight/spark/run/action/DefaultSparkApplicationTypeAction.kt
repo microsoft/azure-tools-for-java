@@ -40,7 +40,7 @@ open class DefaultSparkApplicationTypeAction(private val sparkApplicationType : 
 
     companion object {
         @JvmStatic
-        fun getSelectedSparkApplicationType() : SparkApplicationType? {
+        fun getSelectedSparkApplicationType() : SparkApplicationType {
             if (!DefaultLoader.getIdeHelper().isApplicationPropertySet(CommonConst.SPARK_APPLICATION_TYPE)) return SparkApplicationType.None
             return SparkApplicationType.valueOf(DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.SPARK_APPLICATION_TYPE))
         }
