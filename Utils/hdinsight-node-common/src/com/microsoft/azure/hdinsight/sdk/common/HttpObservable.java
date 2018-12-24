@@ -271,8 +271,13 @@ public class HttpObservable {
      */
 
     public static boolean isSSLCertificateValidationDisabled() {
-        return DefaultLoader.getIdeHelper().isApplicationPropertySet(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION) &&
-                Boolean.valueOf(DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION));
+        try {
+            return DefaultLoader.getIdeHelper().isApplicationPropertySet(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION) &&
+                    Boolean.valueOf(DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION));
+        } catch (Exception ex) {
+            // To fix exception in unit test
+            return false;
+        }
     }
 
     /**
