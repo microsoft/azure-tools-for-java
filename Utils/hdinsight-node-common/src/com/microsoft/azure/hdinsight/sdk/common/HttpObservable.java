@@ -22,10 +22,12 @@
 
 package com.microsoft.azure.hdinsight.sdk.common;
 
+import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -40,16 +42,21 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.*;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.HeaderGroup;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.ssl.SSLContextBuilder;
 import rx.Observable;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.util.*;
 
@@ -111,11 +118,33 @@ public class HttpObservable {
                 .setProxyPreferredAuthSchemes(Collections.singletonList(AuthSchemes.BASIC))
                 .build();
 
-        this.httpClient = HttpClients.custom()
+        HttpClientBuilder builder = HttpClients.custom()
                 .useSystemProperties()
                 .setDefaultCookieStore(getCookieStore())
-                .setDefaultRequestConfig(getDefaultRequestConfig())
-                .build();
+                .setDefaultRequestConfig(getDefaultRequestConfig());
+
+        if (isSSLCertificateValidationDisabled()) {
+            try {
+                SSLContext sslContext = new SSLContextBuilder()
+                        .loadTrustMaterial(null, (x509CertChain, authType) -> true)
+                        .build();
+                this.httpClient = builder
+                        .setSSLContext(sslContext)
+                        .setConnectionManager(
+                                new PoolingHttpClientConnectionManager(
+                                        RegistryBuilder.<ConnectionSocketFactory>create()
+                                                .register("http", PlainConnectionSocketFactory.INSTANCE)
+                                                .register("https", new SSLConnectionSocketFactory(sslContext,
+                                                        NoopHostnameVerifier.INSTANCE))
+                                                .build()
+                                ))
+                        .build();
+            } catch (Exception ignored) {
+                this.httpClient = builder.build();
+            }
+        } else {
+            this.httpClient = builder.build();
+        }
     }
 
     /**
@@ -131,12 +160,34 @@ public class HttpObservable {
         credentialsProvider.setCredentials(
                 new AuthScope(AuthScope.ANY), new UsernamePasswordCredentials(username, password));
 
-        this.httpClient = HttpClients.custom()
+        HttpClientBuilder builder = HttpClients.custom()
                 .useSystemProperties()
                 .setDefaultCookieStore(getCookieStore())
                 .setDefaultCredentialsProvider(credentialsProvider)
-                .setDefaultRequestConfig(getDefaultRequestConfig())
-                .build();
+                .setDefaultRequestConfig(getDefaultRequestConfig());
+
+        if (isSSLCertificateValidationDisabled()) {
+            try {
+                SSLContext sslContext = new SSLContextBuilder()
+                        .loadTrustMaterial(null, (x509CertChain, authType) -> true)
+                        .build();
+                this.httpClient = builder
+                        .setSSLContext(sslContext)
+                        .setConnectionManager(
+                                new PoolingHttpClientConnectionManager(
+                                        RegistryBuilder.<ConnectionSocketFactory>create()
+                                                .register("http", PlainConnectionSocketFactory.INSTANCE)
+                                                .register("https", new SSLConnectionSocketFactory(sslContext,
+                                                        NoopHostnameVerifier.INSTANCE))
+                                                .build()
+                                ))
+                        .build();
+            } catch (Exception ignored) {
+                this.httpClient = builder.build();
+            }
+        } else {
+            this.httpClient = builder.build();
+        }
     }
 
     /*
@@ -218,6 +269,11 @@ public class HttpObservable {
     /*
      * Helper functions
      */
+
+    public static boolean isSSLCertificateValidationDisabled() {
+        return DefaultLoader.getIdeHelper().isApplicationPropertySet(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION) &&
+                Boolean.valueOf(DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION));
+    }
 
     /**
      * Helper to convert the closeable stream good Http response (2xx) to String result.

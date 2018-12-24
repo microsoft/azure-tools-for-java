@@ -517,6 +517,11 @@
       <reference ref="Spark.RunScalaLocalConsole"/>
       <reference ref="Spark.RunScalaLivyConsole"/>
     </group>
+
+    <action id="DisableSSLCertificateValidation" class="com.microsoft.sqlbigdata.action.DisableSslCertificateValidationAction"
+            text="Disable SSL Certificate Validation">
+            <add-to-group group-id = "ToolsMenu" relative-to-action="SparkConsoleGroup" anchor="after"/>
+    </action>
   </actions>
 
     <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
