@@ -32,26 +32,23 @@ import com.microsoft.tooling.msservices.components.DefaultLoader
 
 open class DefaultSparkApplicationTypeAction(private val sparkApplicationType : SparkApplicationType = SparkApplicationType.HDInsight)
     : AzureAnAction() , Toggleable {
-    override fun onActionPerformed(e: AnActionEvent?) {
+    override fun onActionPerformed(e: AnActionEvent) {
         DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.SPARK_APPLICATION_TYPE, this.sparkApplicationType.toString())
-        val presentation = e!!.presentation
+        val presentation = e.presentation
         presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, true)
     }
 
     companion object {
         @JvmStatic
         fun getSelectedSparkApplicationType() : SparkApplicationType? {
-            var isExist = DefaultLoader.getIdeHelper().isApplicationPropertySet(CommonConst.SPARK_APPLICATION_TYPE)
-            if(!isExist) {
-                return SparkApplicationType.None
-            }
+            if (!DefaultLoader.getIdeHelper().isApplicationPropertySet(CommonConst.SPARK_APPLICATION_TYPE)) return SparkApplicationType.None
             return SparkApplicationType.valueOf(DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.SPARK_APPLICATION_TYPE))
         }
     }
 
     fun isSelected(): Boolean = this.sparkApplicationType == getSelectedSparkApplicationType()
 
-    override fun update(@NotNull e: AnActionEvent) {
+    override fun update(e: AnActionEvent) {
         val selected = isSelected()
         val presentation = e.presentation
         presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, selected)

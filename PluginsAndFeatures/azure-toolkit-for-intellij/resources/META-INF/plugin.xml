@@ -420,15 +420,15 @@
     <action id="Actions.SubmitSparkApplicationAction"
             class="com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction" text="Submit Spark Application"
             description="Submit Spark Application" icon="/icons/Spark.png"/>
-      <action id="Actions.SubmitLivySparkApplicationAction"
-              class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSubmitJobAction" text="HDInsight"
-              description="Submit HDInsight Spark Application" icon="/icons/Spark.png"/>
-      <action id="Actions.SubmitCosmosSparkApplicationAction"
-              class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSubmitJobAction" text="Cosmos Spark"
-              description="Submit Cosmos Spark Application" icon="/icons/Spark.png"/>
-      <action id="Actions.SubmitCosmosServerlessSparkApplicationAction"
-              class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSubmitJobAction" text="Cosmos Serverless Spark"
-              description="Submit Cosmos Serverless Spark Application" icon="/icons/Spark.png"/>
+    <action id="Actions.SubmitLivySparkApplicationAction"
+            class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSubmitJobAction" text="HDInsight"
+            description="Submit HDInsight Spark Application" icon="/icons/Spark.png"/>
+    <action id="Actions.SubmitCosmosSparkApplicationAction"
+            class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSubmitJobAction" text="Cosmos Spark"
+            description="Submit Cosmos Spark Application" icon="/icons/Spark.png"/>
+    <action id="Actions.SubmitCosmosServerlessSparkApplicationAction"
+            class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSubmitJobAction" text="Cosmos Serverless Spark"
+            description="Submit Cosmos Serverless Spark Application" icon="/icons/Spark.png"/>
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
@@ -546,8 +546,7 @@
       </action>
     </group>
 
-      <action id="QuickSwithcSparkApplication" class="com.microsoft.azure.hdinsight.spark.run.action.QuickSetDefaultRunConfig"
-              text="SparkJobDebug"/>
-  </actions>
+    <action id="SparkSubmitJobActionGroups" class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups" text="Submit Spark Application"/>
+    </actions>
     <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
 </idea-plugin>

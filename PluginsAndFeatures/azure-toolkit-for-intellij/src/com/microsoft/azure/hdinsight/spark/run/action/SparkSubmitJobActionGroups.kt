@@ -29,7 +29,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 
 
-class QuickSetDefaultRunConfig : QuickSwitchSchemeAction() {
+class SparkSubmitJobActionGroups : QuickSwitchSchemeAction() {
     override fun fillActions(project: Project?, group: DefaultActionGroup, dataContext: DataContext) {
         group.add(ActionManager.getInstance().getAction("Actions.SubmitLivySparkApplicationAction"))
         group.add(ActionManager.getInstance().getAction("Actions.SubmitCosmosSparkApplicationAction"))

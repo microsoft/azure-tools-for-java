@@ -26,7 +26,7 @@ import com.intellij.execution.ExecutorRegistry
 import com.intellij.execution.ProgramRunnerUtil
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
-import com.intellij.execution.configurations.ConfigurationTypeUtil
+import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.ide.actions.QuickSwitchSchemeAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
@@ -37,15 +37,15 @@ import com.microsoft.azure.hdinsight.spark.run.action.DefaultSparkApplicationTyp
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType
-import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 
 
 open class SparkSubmitJobAction : AzureAnAction() {
     open fun submitWithPopupMenu(anActionEvent: AnActionEvent) : Boolean {
         return if (DefaultSparkApplicationTypeAction.getSelectedSparkApplicationType() == SparkApplicationType.None) {
-            val action = ActionManagerEx.getInstance().getAction("QuickSwithcSparkApplication") as QuickSwitchSchemeAction
+            val action = ActionManagerEx.getInstance().getAction("SparkSubmitJobActionGroups") as QuickSwitchSchemeAction
             action.actionPerformed(anActionEvent)
             true
         } else {
@@ -107,35 +107,16 @@ open class SparkSubmitJobAction : AzureAnAction() {
     }
 }
 
-class LivySparkSubmitJobAction: SparkSubmitJobAction() {
+open class LivySparkSubmitJobAction(val runConfigurationTypeInstance: ConfigurationType = LivySparkBatchJobRunConfigurationType.getInstance()) : SparkSubmitJobAction() {
     override fun submitWithPopupMenu(anActionEvent: AnActionEvent): Boolean = false
     override fun getRunConfigurationFromDataContext(dataContext: DataContext): RunnerAndConfigurationSettings? {
         val configContext = ConfigurationContext.getFromContext(dataContext)
-        val factory = ConfigurationTypeUtil.findConfigurationType(
-                LivySparkBatchJobRunConfigurationType::class.java).configurationFactories[0]
+        val factory = runConfigurationTypeInstance.configurationFactories[0]
         val runConfig = factory.createTemplateConfiguration(configContext.project)
         return configContext.runManager.createConfiguration(runConfig, factory)
     }
 }
 
-class CosmosSparkSubmitJobAction: SparkSubmitJobAction() {
-    override fun submitWithPopupMenu(anActionEvent: AnActionEvent): Boolean = false
-    override fun getRunConfigurationFromDataContext(dataContext: DataContext): RunnerAndConfigurationSettings? {
-        val configContext = ConfigurationContext.getFromContext(dataContext)
-        val factory = ConfigurationTypeUtil.findConfigurationType(
-                CosmosSparkConfigurationType::class.java).configurationFactories[0]
-        val runConfig = factory.createTemplateConfiguration(configContext.project)
-        return configContext.runManager.createConfiguration(runConfig, factory)
-    }
-}
+class CosmosSparkSubmitJobAction: LivySparkSubmitJobAction(CosmosSparkConfigurationType.instance)
 
-class CosmosServerlessSparkSubmitJobAction: SparkSubmitJobAction() {
-    override fun submitWithPopupMenu(anActionEvent: AnActionEvent): Boolean = false
-    override fun getRunConfigurationFromDataContext(dataContext: DataContext): RunnerAndConfigurationSettings? {
-        val configContext = ConfigurationContext.getFromContext(dataContext)
-        val factory = ConfigurationTypeUtil.findConfigurationType(
-                CosmosServerlessSparkConfigurationType::class.java).configurationFactories[0]
-        val runConfig = factory.createTemplateConfiguration(configContext.project)
-        return configContext.runManager.createConfiguration(runConfig, factory)
-    }
-}
+class CosmosServerlessSparkSubmitJobAction: LivySparkSubmitJobAction(CosmosServerlessSparkConfigurationType.instance)
