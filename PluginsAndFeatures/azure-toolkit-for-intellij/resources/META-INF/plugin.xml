@@ -340,11 +340,12 @@
     <configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType"/>
-    <!--<configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType"/>-->
+    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.SparkFailureTaskDebugConfigurationType"/>
     <actionPromoter implementation="com.microsoft.azure.hdinsight.spark.console.SparkExecuteInConsoleActionPromoterDelegate"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.LivySparkRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkRunConfigurationProducer"/>
+    <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessRunConfigurationProducer"/>
     <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkBatchRunner" />
@@ -395,6 +396,15 @@
     <action id="Actions.SubmitSparkApplicationAction"
             class="com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction" text="Submit Spark Application"
             description="Submit Spark Application" icon="/icons/Spark.png"/>
+      <action id="Actions.SubmitLivySparkApplicationAction"
+              class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSubmitJobAction" text="HDInsight"
+              description="Submit HDInsight Spark Application" icon="/icons/Spark.png"/>
+      <action id="Actions.SubmitCosmosSparkApplicationAction"
+              class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSubmitJobAction" text="Cosmos Spark"
+              description="Submit Cosmos Spark Application" icon="/icons/Spark.png"/>
+      <action id="Actions.SubmitCosmosServerlessSparkApplicationAction"
+              class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSubmitJobAction" text="Cosmos Serverless Spark"
+              description="Submit Cosmos Serverless Spark Application" icon="/icons/Spark.png"/>
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
@@ -498,6 +508,9 @@
     <group id="SetDefaultRunConfigGroup" text="Default Spark Application Type" description="Select default spark application type" popup="true">
       <add-to-group group-id="ToolsMenu" anchor="last"/>
       <add-to-group group-id="RunContextPopupGroup" anchor="after" relative-to-action="SparkJobDebug"/>
+        <action id="SetDefaultSparkRunConfigurationTypeNone"
+                class="com.microsoft.azure.hdinsight.spark.run.action.DefaultSparkApplicationTypeAction$None" text="None" >
+        </action>
       <action id="SetDefaultSparkRunConfigurationTypeHDInsight"
               class="com.microsoft.azure.hdinsight.spark.run.action.DefaultSparkApplicationTypeAction$HDInsight" text="HDInsight" >
       </action>
@@ -508,7 +521,9 @@
               class="com.microsoft.azure.hdinsight.spark.run.action.DefaultSparkApplicationTypeAction$CosmosServerlessSpark" text="CosmosServerlessSpark" >
       </action>
     </group>
-  </actions>
 
+      <action id="QuickSwithcSparkApplication" class="com.microsoft.azure.hdinsight.spark.run.action.QuickSetDefaultRunConfig"
+              text="SparkJobDebug"/>
+  </actions>
     <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
 </idea-plugin>
