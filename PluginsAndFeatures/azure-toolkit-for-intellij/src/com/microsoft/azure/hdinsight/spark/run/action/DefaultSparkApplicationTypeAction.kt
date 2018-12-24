@@ -24,7 +24,6 @@ package com.microsoft.azure.hdinsight.spark.run.action
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Toggleable
-import com.microsoft.azuretools.azurecommons.helpers.NotNull
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.intellij.common.CommonConst
 import com.microsoft.tooling.msservices.components.DefaultLoader

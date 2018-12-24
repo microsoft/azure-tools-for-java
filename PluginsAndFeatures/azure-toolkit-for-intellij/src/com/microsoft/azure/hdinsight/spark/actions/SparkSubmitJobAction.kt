@@ -26,7 +26,6 @@ import com.intellij.execution.ExecutorRegistry
 import com.intellij.execution.ProgramRunnerUtil
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
-import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.ide.actions.QuickSwitchSchemeAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
@@ -35,9 +34,6 @@ import com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys.*
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor
 import com.microsoft.azure.hdinsight.spark.run.action.DefaultSparkApplicationTypeAction
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
-import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType
-import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType
-import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 
@@ -59,26 +55,28 @@ open class SparkSubmitJobAction : AzureAnAction() {
         if (submitWithPopupMenu(anActionEvent)) {
             return
         }
-        val runConfigurationSetting = anActionEvent.dataContext.getData(RUN_CONFIGURATION_SETTING)
-                ?: getRunConfigurationFromDataContext(anActionEvent.dataContext) ?: return
+        val runConfigurationSetting = anActionEvent.dataContext.getData(RUN_CONFIGURATION_SETTING) ?:
+                getRunConfigurationFromDataContext(anActionEvent.dataContext) ?: return
         val clusterName = anActionEvent.dataContext.getData(CLUSTER)?.name
         val mainClassName = anActionEvent.dataContext.getData(MAIN_CLASS_NAME)
+
         submit(runConfigurationSetting, clusterName, mainClassName)
     }
 
     override fun update(event: AnActionEvent) {
         super.update(event)
+
         event.presentation.isEnabledAndVisible = getRunConfigurationFromDataContext(event.dataContext) != null
     }
 
-    protected open fun getRunConfigurationFromDataContext(dataContext: DataContext): RunnerAndConfigurationSettings? {
+    private fun getRunConfigurationFromDataContext(dataContext: DataContext): RunnerAndConfigurationSettings? {
         val configContext = ConfigurationContext.getFromContext(dataContext)
 
         val existingConfig = configContext.findExisting()
         return if (existingConfig != null && existingConfig is LivySparkBatchJobRunConfiguration) existingConfig else configContext.configuration
     }
 
-    protected fun submit(runConfigurationSetting: RunnerAndConfigurationSettings, clusterName: String?, mainClassName: String?) {
+    private fun submit(runConfigurationSetting: RunnerAndConfigurationSettings, clusterName: String?, mainClassName: String?) {
         val executor = ExecutorRegistry.getInstance().getExecutorById(SparkBatchJobRunExecutor.EXECUTOR_ID)
 
         runConfigurationSetting.isEditBeforeRun = true
