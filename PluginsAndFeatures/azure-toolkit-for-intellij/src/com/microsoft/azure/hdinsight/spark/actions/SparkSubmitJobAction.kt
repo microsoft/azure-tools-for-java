@@ -26,40 +26,55 @@ import com.intellij.execution.ExecutorRegistry
 import com.intellij.execution.ProgramRunnerUtil
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
+import com.intellij.execution.configurations.ConfigurationTypeUtil
+import com.intellij.ide.actions.QuickSwitchSchemeAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.ex.ActionManagerEx
 import com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys.*
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor
-import com.microsoft.azure.hdinsight.spark.run.configuration.*
+import com.microsoft.azure.hdinsight.spark.run.action.DefaultSparkApplicationTypeAction
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 
-class SparkSubmitJobAction : AzureAnAction() {
-    override fun onActionPerformed(anActionEvent: AnActionEvent?) {
-        if (anActionEvent == null) {
-            return
-        }
 
-        val runConfigurationSetting = anActionEvent.dataContext.getData(RUN_CONFIGURATION_SETTING) ?:
-                getRunConfigurationFromDataContext(anActionEvent.dataContext) ?: return
+open class SparkSubmitJobAction : AzureAnAction() {
+    open fun submitWithPopupMenu(anActionEvent: AnActionEvent) : Boolean {
+        return if (DefaultSparkApplicationTypeAction.getSelectedSparkApplicationType() == SparkApplicationType.None) {
+            val action = ActionManagerEx.getInstance().getAction("QuickSwithcSparkApplication") as QuickSwitchSchemeAction
+            action.actionPerformed(anActionEvent)
+            true
+        } else {
+            false
+        }
+    }
+    override fun onActionPerformed(anActionEvent: AnActionEvent?) {
+        if (anActionEvent == null) return
+        if (submitWithPopupMenu(anActionEvent)) return
+        val runConfigurationSetting = anActionEvent.dataContext.getData(RUN_CONFIGURATION_SETTING)
+                ?: getRunConfigurationFromDataContext(anActionEvent.dataContext) ?: return
         val clusterName = anActionEvent.dataContext.getData(CLUSTER)?.name
         val mainClassName = anActionEvent.dataContext.getData(MAIN_CLASS_NAME)
-
         submit(runConfigurationSetting, clusterName, mainClassName)
     }
 
     override fun update(event: AnActionEvent) {
         super.update(event)
-
         event.presentation.isEnabledAndVisible = getRunConfigurationFromDataContext(event.dataContext) != null
     }
 
-    private fun getRunConfigurationFromDataContext(dataContext: DataContext): RunnerAndConfigurationSettings? {
+    protected open fun getRunConfigurationFromDataContext(dataContext: DataContext): RunnerAndConfigurationSettings? {
         val configContext = ConfigurationContext.getFromContext(dataContext)
 
-        return configContext.findExisting() ?: configContext.configuration
+        val existingConfig = configContext.findExisting()
+        return if (existingConfig != null && existingConfig is LivySparkBatchJobRunConfiguration) existingConfig else configContext.configuration
     }
 
-    private fun submit(runConfigurationSetting: RunnerAndConfigurationSettings, clusterName: String?, mainClassName: String?) {
+    protected fun submit(runConfigurationSetting: RunnerAndConfigurationSettings, clusterName: String?, mainClassName: String?) {
         val executor = ExecutorRegistry.getInstance().getExecutorById(SparkBatchJobRunExecutor.EXECUTOR_ID)
 
         runConfigurationSetting.isEditBeforeRun = true
@@ -89,5 +104,38 @@ class SparkSubmitJobAction : AzureAnAction() {
         if (clusterName != null) {
             model.isClusterSelectionEnabled = true
         }
+    }
+}
+
+class LivySparkSubmitJobAction: SparkSubmitJobAction() {
+    override fun submitWithPopupMenu(anActionEvent: AnActionEvent): Boolean = false
+    override fun getRunConfigurationFromDataContext(dataContext: DataContext): RunnerAndConfigurationSettings? {
+        val configContext = ConfigurationContext.getFromContext(dataContext)
+        val factory = ConfigurationTypeUtil.findConfigurationType(
+                LivySparkBatchJobRunConfigurationType::class.java).configurationFactories[0]
+        val runConfig = factory.createTemplateConfiguration(configContext.project)
+        return configContext.runManager.createConfiguration(runConfig, factory)
+    }
+}
+
+class CosmosSparkSubmitJobAction: SparkSubmitJobAction() {
+    override fun submitWithPopupMenu(anActionEvent: AnActionEvent): Boolean = false
+    override fun getRunConfigurationFromDataContext(dataContext: DataContext): RunnerAndConfigurationSettings? {
+        val configContext = ConfigurationContext.getFromContext(dataContext)
+        val factory = ConfigurationTypeUtil.findConfigurationType(
+                CosmosSparkConfigurationType::class.java).configurationFactories[0]
+        val runConfig = factory.createTemplateConfiguration(configContext.project)
+        return configContext.runManager.createConfiguration(runConfig, factory)
+    }
+}
+
+class CosmosServerlessSparkSubmitJobAction: SparkSubmitJobAction() {
+    override fun submitWithPopupMenu(anActionEvent: AnActionEvent): Boolean = false
+    override fun getRunConfigurationFromDataContext(dataContext: DataContext): RunnerAndConfigurationSettings? {
+        val configContext = ConfigurationContext.getFromContext(dataContext)
+        val factory = ConfigurationTypeUtil.findConfigurationType(
+                CosmosServerlessSparkConfigurationType::class.java).configurationFactories[0]
+        val runConfig = factory.createTemplateConfiguration(configContext.project)
+        return configContext.runManager.createConfiguration(runConfig, factory)
     }
 }
