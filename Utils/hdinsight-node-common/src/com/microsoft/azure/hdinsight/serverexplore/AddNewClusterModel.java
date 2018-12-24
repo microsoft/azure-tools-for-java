@@ -37,7 +37,8 @@ public class AddNewClusterModel implements Cloneable {
     private String passwordLabelTitle;
 
     @NotNull
-    private SparkClusterType sparkClusterType;
+    // set default cluster type as HDINSIGHT_CLUSTER (to be compatible with Eclipse code)
+    private SparkClusterType sparkClusterType = SparkClusterType.HDINSIGHT_CLUSTER;
     private String clusterName;
     private String userName;
     private String password;

@@ -209,7 +209,7 @@ public class AddNewClusterForm extends AzureTitleAreaDialogWrapper implements Se
     protected void okPressed() {
         ctrlProvider.validateAndAdd()
                 .subscribe(toUpdate -> {
-                    hdInsightModule.refreshWithoutAsync();
+                    hdInsightModule.load(false);
                     AppInsightsClient.create(Messages.HDInsightAddNewClusterAction, null);
 
                     super.okPressed();

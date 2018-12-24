@@ -29,34 +29,85 @@ package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.icons.AllIcons.Actions.Help
 import com.intellij.ide.BrowserUtil
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.popup.IconButton
+import com.intellij.openapi.util.Disposer
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.InplaceButton
 import com.intellij.uiDesigner.core.GridConstraints.*
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.Docs
+import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
+import com.microsoft.azure.hdinsight.common.viewmodels.swingPropertyDelegated
+import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.sdk.common.HDIException
+import com.microsoft.azure.hdinsight.spark.common.DebugParameterDefinedException
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchDebugSession
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UseKeyFile
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UsePassword
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel
 import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
 import com.microsoft.intellij.forms.dsl.panel
+import com.microsoft.intellij.rxjava.DisposableObservers
 import org.apache.commons.lang3.StringUtils
 import rx.subjects.PublishSubject
 import java.awt.event.ItemEvent.DESELECTED
 import java.awt.event.ItemEvent.SELECTED
 import java.io.File
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 
 // View and Control combined class
-class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitAdvancedConfigModel> {
+class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitAdvancedConfigModel>, Disposable {
+    data class CheckIndicatorState(val message: String? = null, val isRunning: Boolean = false)
+    data class CheckResult(val model: SparkSubmitAdvancedConfigModel, val message: String)
+
+    companion object {
+        const val passedText = "passed"
+
+        fun isParameterReady(model: SparkSubmitAdvancedConfigModel) =
+                model.sshUserName.isNotBlank() && when (model.sshAuthType) {
+                    UsePassword -> model.sshPassword.isNotBlank()
+                    UseKeyFile -> model.sshKeyFile?.exists() == true
+                    else -> false
+                }
+
+        fun probeAuth(modelToProbe: SparkSubmitAdvancedConfigModel, clusterToProbe: IClusterDetail? = null): CheckResult = try {
+            val clusterDetail = clusterToProbe ?: ClusterManagerEx.getInstance()
+                    .getClusterDetailByName(modelToProbe.clusterName)
+                    .orElseThrow { HDIException( "No cluster name matched selection: ${modelToProbe.clusterName}") }
+
+            // Verify the certificate
+            val debugSession = SparkBatchDebugSession.factoryByAuth(clusterDetail.connectionUrl, modelToProbe)
+                    .open()
+                    .verifyCertificate()
+
+            debugSession.close()
+
+            CheckResult(modelToProbe, passedText)
+        } catch (ex: SparkBatchDebugSession.SshPasswordExpiredException) {
+            CheckResult(modelToProbe, "failed (password expired)")
+        } catch (ex: Exception) {
+            CheckResult(modelToProbe, "failed")
+        }
+
+        @Throws(DebugParameterDefinedException::class)
+        fun checkSettings(model: SparkSubmitAdvancedConfigModel) {
+            if (model.enableRemoteDebug && (!isParameterReady(model) || probeAuth(model).message != passedText)) {
+                throw DebugParameterDefinedException("SSH Authentication is failed")
+            }
+        }
+    }
+
 
     private val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
 
@@ -115,12 +166,6 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         BrowserUtil.browse(helpUrl)
     }
 
-    var isRemoteDebugEnabled: Boolean
-        get() = enableRemoteDebugCheckBox.isSelected
-        set(isEnabled) {
-            enableRemoteDebugCheckBox.isSelected = isEnabled
-        }
-
     private val formBuilder = panel {
         columnTemplate {
             col {   // Column 0
@@ -151,7 +196,51 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         }
     }
 
-    val sshCheckSubject: PublishSubject<String> = PublishSubject.create()
+    inner class ViewModel: DisposableObservers(), ILogger {
+        val sshCheckSubject: PublishSubject<String> = disposableSubjectOf { PublishSubject.create() }
+        val clusterSelectedSubject: PublishSubject<IClusterDetail> = disposableSubjectOf { PublishSubject.create() }
+
+        private var checkStatus: CheckIndicatorState by swingPropertyDelegated(
+                getter = { CheckIndicatorState(checkSshCertIndicator.text, false) },
+                setterInDispatch = { _, v -> checkSshCertIndicator.setTextAndStatus(v.message, v.isRunning) })
+
+        init {
+            rx.Observable
+                    .combineLatest(
+                            sshCheckSubject
+                                    .throttleWithTimeout(500, TimeUnit.MILLISECONDS)
+                                    .doOnNext { log().info("Receive checking message $it") },
+                            clusterSelectedSubject) { _, cluster -> cluster }
+                    .filter { it != null }
+                    .map { it -> Pair(advConfModel.apply { clusterName = it!!.name }, it) }
+                    .filter { (model, _) -> model.enableRemoteDebug && isParameterReady(model) }
+                    .doOnNext { (_, cluster) ->
+                        log().info("Check SSH authentication for cluster ${cluster.name} ...")
+                        checkStatus = CheckIndicatorState("SSH Authentication is checking...", true)
+                    }
+                    .map { (model, cluster) -> probeAuth(model, cluster).apply {
+                        if (this.message == passedText) {
+                            ServiceManager.getServiceProvider(SecureStore::class.java)?.savePassword(
+                                    model.credentialStoreAccount, model.sshUserName, model.sshPassword)
+                        }
+                    }}
+                    .subscribe { (probedModel, message) ->
+                        log().info("...Result: $message")
+
+                        // Double check the the result is met the current user input
+                        val checkingResultMessage = if (probedModel == advConfModel) {
+                            // Checked parameter is matched with current content
+                            "SSH Authentication is $message"
+                        } else {
+                            ""
+                        }
+
+                        checkStatus = CheckIndicatorState(checkingResultMessage, false)
+                    }
+        }
+    }
+
+    val viewModel = ViewModel().apply { Disposer.register(this@SparkSubmissionAdvancedConfigPanel, this@apply) }
 
     init {
         setSshAuthenticationUIEnabled(false)
@@ -165,21 +254,21 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
             setSshAuthenticationUIEnabled(it.stateChange == SELECTED)
 
             if (it.stateChange == SELECTED) {
-                sshCheckSubject.onNext("Enabled remote debug")
+                viewModel.sshCheckSubject.onNext("Enabled remote debug")
             }
         }
 
         // To trigger SSH authentication background check
         val inputListener = object : DocumentAdapter() {
-            override fun textChanged(ev: DocumentEvent) = sshCheckSubject.onNext(ev.document.toString())
+            override fun textChanged(ev: DocumentEvent) = viewModel.sshCheckSubject.onNext(ev.document.toString())
         }
 
         sshUserNameTextField.document.addDocumentListener(inputListener)
         sshPasswordField.document.addDocumentListener(inputListener)
         sshKeyFileTextField.textField.document.addDocumentListener(inputListener)
 
-        sshUsePasswordRadioButton.addActionListener { sshCheckSubject.onNext(it.toString()) }
-        sshUseKeyFileRadioButton.addActionListener { sshCheckSubject.onNext(it.toString()) }
+        sshUsePasswordRadioButton.addActionListener { viewModel.sshCheckSubject.onNext(it.toString()) }
+        sshUseKeyFileRadioButton.addActionListener { viewModel.sshCheckSubject.onNext(it.toString()) }
 
         // To change SSH authentication type
         sshUsePasswordRadioButton.addItemListener { setSshPasswordInputEnabled(it.stateChange == SELECTED) }
@@ -216,7 +305,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         }
     }
 
-    val model: SparkSubmitAdvancedConfigModel
+    val advConfModel: SparkSubmitAdvancedConfigModel
             get() = SparkSubmitAdvancedConfigModel().apply { getData(this) }
 
     private fun showSshKeyFileChooser() {
@@ -226,17 +315,10 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         FileChooser.chooseFile(fileChooserDescriptor, null, null)?.run { sshKeyFileTextField.text = path }
     }
 
-    override fun removeNotify() {
-        super.removeNotify()
-
-        // Stop the SSH authentication check
-        sshCheckSubject.onCompleted()
-    }
-
     override fun setData(data: SparkSubmitAdvancedConfigModel) {
         // Data -> Component
         val applyData: () -> Unit = {
-            val current = model
+            val current = advConfModel
 
             val password = (
                     if (StringUtils.isEmpty(current.sshPassword)) {
@@ -277,10 +359,6 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
                 sshUserNameTextField.text = data.sshUserName
             }
 
-            if (current.checkingMessage != data.checkingMessage || current.isChecking != data.isChecking) {
-                checkSshCertIndicator.setTextAndStatus(data.checkingMessage, data.isChecking)
-            }
-
             // Keep this line at the ending
             if (current.enableRemoteDebug != data.enableRemoteDebug) {
                 enableRemoteDebugCheckBox.isSelected = data.enableRemoteDebug
@@ -315,5 +393,8 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
 
         // Keep this line at the ending
         data.enableRemoteDebug = enableRemoteDebugCheckBox.isSelected
+    }
+
+    override fun dispose() {
     }
 }

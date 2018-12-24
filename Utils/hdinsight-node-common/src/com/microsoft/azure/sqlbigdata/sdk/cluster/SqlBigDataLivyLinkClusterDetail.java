@@ -66,16 +66,13 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
     @Override
     @NotNull
     public String getTitle() {
-        return Optional.ofNullable(getSparkVersion())
-                .filter(ver -> !ver.trim().isEmpty())
-                .map(ver -> getName() + " (Spark: " + ver + " Linked)")
-                .orElse(getName() + " [Linked]");
+        return getName();
     }
 
     @Override
-    @NotNull
+    @Nullable
     public SubscriptionDetail getSubscription() {
-        return new SubscriptionDetail("[LinkedCluster]", "[NoSubscription]", "", false);
+        return null;
     }
 
     @Override

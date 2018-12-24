@@ -34,6 +34,9 @@ import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable
 import javax.swing.JComponent
 
 class LivySparkRunConfigurationSettingsEditor(val jobConfigurable: SparkBatchJobConfigurable) : SettingsEditor<LivySparkBatchJobRunConfiguration>() {
+    init {
+        Disposer.register(this, jobConfigurable)
+    }
 
     override fun resetEditorFrom(livySparkBatchJobRunConfiguration: LivySparkBatchJobRunConfiguration) {
         // Reset the panel from the RunConfiguration
@@ -43,8 +46,9 @@ class LivySparkRunConfigurationSettingsEditor(val jobConfigurable: SparkBatchJob
     @Throws(ConfigurationException::class)
     override fun applyEditorTo(livySparkBatchJobRunConfiguration: LivySparkBatchJobRunConfiguration) {
         // Apply the panel's setting to RunConfiguration
-        jobConfigurable.validate()
+        jobConfigurable.validateInputs()
         jobConfigurable.getData(livySparkBatchJobRunConfiguration.model)
+        livySparkBatchJobRunConfiguration.model.submitModel.submissionParameter.name = livySparkBatchJobRunConfiguration.name
     }
 
     override fun createEditor(): JComponent {

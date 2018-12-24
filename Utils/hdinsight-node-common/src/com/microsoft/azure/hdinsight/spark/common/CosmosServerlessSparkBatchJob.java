@@ -47,17 +47,12 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
-    private static final String REST_SEGMENT_SPARK_BATCH_JOB = "/activityTypes/spark/batchJobs";
     @NotNull
     private final AzureSparkServerlessAccount account;
     @NotNull
     private String jobUuid;
     @NotNull
     private final Deployable jobDeploy;
-    @NotNull
-    private final AzureHttpObservable http;
-    @NotNull
-    private final String apiVersion = ApiVersion.VERSION;
 
     public CosmosServerlessSparkBatchJob(@NotNull AzureSparkServerlessAccount account,
                                          @NotNull Deployable jobDeploy,
@@ -68,12 +63,16 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
         this.account = account;
         this.jobUuid = UUID.randomUUID().toString();
         this.jobDeploy = jobDeploy;
-        this.http = new AzureDataLakeHttpObservable(account.getSubscription().getTenantId(), apiVersion);
+    }
+
+    @NotNull
+    public AzureSparkServerlessAccount getAccount() {
+        return account;
     }
 
     @NotNull
     public AzureHttpObservable getHttp() {
-        return http;
+        return getAccount().getHttp();
     }
 
     @NotNull
@@ -85,7 +84,6 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     public String getJobUuid() {
         return jobUuid;
     }
-
 
     /**
      * Prepare spark event log path for job submission
@@ -108,73 +106,18 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
         });
     }
 
-    /**
-     * Create Serverless Spark batch job
-     */
-    @NotNull
-    public CreateSparkBatchJob prepareCreateSparkBatchJob(CreateSparkBatchJobParameters parameters) {
-        return new CreateSparkBatchJob()
-                // TODO: Replace name with a meaningful name
-                .withName("ServerlessSession_" + getJobUuid())
-                .withProperties(parameters);
-    }
-
-    @NotNull
-    public Observable<com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJob>
-    createSparkBatchJobRequest(@NotNull String jobUuid, @NotNull CreateSparkBatchJobParameters parameters) {
-        String url = getConnectUri().toString() + "/" + jobUuid;
-
-        CreateSparkBatchJob putBody = prepareCreateSparkBatchJob(parameters);
-
-        String json = putBody.convertToJson()
-                .orElseThrow(() -> new IllegalArgumentException("Bad Spark Batch Job arguments to put"));
-
-        StringEntity entity = new StringEntity(json, StandardCharsets.UTF_8);
-
-        return getHttp()
-                .withUuidUserAgent()
-                .put(url, entity, null, null,
-                        com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJob.class);
-    }
-
-    /**
-     * Get Serverless Spark batch job detail
-     */
-    @NotNull
-    public Observable<com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJob>
-    getSparkBatchJobRequest(@NotNull String jobUuid) {
-        String url = getConnectUri().toString() + "/" + jobUuid;
-
-        return getHttp()
-                .withUuidUserAgent()
-                .get(url, null, null,
-                        com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJob.class);
-    }
-
-    /**
-     * Kill Serverless Spark batch job
-     */
-    @NotNull
-    public Observable<HttpResponse> killSparkBatchJobRequest(@NotNull String jobUuid) {
-        String url = getConnectUri().toString() + "/" + jobUuid;
-
-        return getHttp()
-                .withUuidUserAgent()
-                .delete(url, null, null);
-    }
-
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> submit() {
         return prepareSparkEventsLogFolder()
                 .flatMap(isSucceed -> {
                             if (isSucceed) {
-                                return createSparkBatchJobRequest(getJobUuid(), getSubmissionParameter());
+                                return getAccount().createSparkBatchJobRequest(getJobUuid(), getSubmissionParameter());
                             } else {
                                 return Observable.error(new IOException("Spark events log path preparation failed."));
                             }
                         })
-                .flatMap(sparkBatchJob -> getSparkBatchJobRequest(getJobUuid()))
+                .flatMap(sparkBatchJob -> getAccount().getSparkBatchJobRequest(getJobUuid()))
                 .doOnNext(sparkBatchJob -> {
                     if (sparkBatchJob != null && sparkBatchJob.properties() != null && sparkBatchJob.properties().responsePayload() != null) {
                         this.setBatchId(sparkBatchJob.properties().responsePayload().getId());
@@ -182,7 +125,6 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                 })
                 .map(sparkBatchJob -> this);
     }
-
 
     @NotNull
     @Override
@@ -197,7 +139,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
 
     @Override
     public Observable<? extends ISparkBatchJob> killBatchJob() {
-        return killSparkBatchJobRequest(getJobUuid())
+        return getAccount().killSparkBatchJobRequest(getJobUuid())
                 .map(resp -> this)
                 .onErrorReturn(err -> {
                     String errMsg = String.format("Failed to stop spark job. %s", ExceptionUtils.getStackTrace(err));
@@ -208,13 +150,8 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     }
 
     @Override
-    public URI getConnectUri() {
-        return account.getUri().resolve(REST_SEGMENT_SPARK_BATCH_JOB);
-    }
-
-    @Override
     public Observable<SparkBatchJobResponsePayload> getStatus() {
-        return getSparkBatchJobRequest(getJobUuid())
+        return getAccount().getSparkBatchJobRequest(getJobUuid())
                 .map(sparkBatchJob -> sparkBatchJob.properties().responsePayload());
     }
 

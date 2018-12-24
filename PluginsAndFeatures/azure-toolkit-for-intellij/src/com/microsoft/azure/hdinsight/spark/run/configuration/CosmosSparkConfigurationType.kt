@@ -30,6 +30,11 @@ import com.microsoft.intellij.util.PluginUtil
 import javax.swing.Icon
 
 open class CosmosSparkConfigurationType : ConfigurationType {
+    companion object {
+        @JvmStatic
+        val instance by lazy { ConfigurationTypeUtil.findConfigurationType(CosmosSparkConfigurationType::class.java) }
+    }
+
     override fun getIcon(): Icon {
         return PluginUtil.getIcon("/icons/${CommonConst.AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH}")
     }

@@ -111,6 +111,11 @@ public abstract class Session implements AutoCloseable, Closeable {
     }
 
     @NotNull
+    public URI getBaseUrl() {
+        return baseUrl;
+    }
+
+    @NotNull
     public URI getUri() throws SessionNotStartException {
         return baseUrl.resolve(REST_SEGMENT_SESSION + "/" + String.valueOf(getId()));
     }

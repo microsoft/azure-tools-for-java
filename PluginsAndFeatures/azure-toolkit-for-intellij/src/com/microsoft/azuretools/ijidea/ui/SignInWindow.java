@@ -50,7 +50,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URI;
@@ -139,11 +138,6 @@ public class SignInWindow extends AzureDialogWrapper {
             }
         });
 
-        Font labelFont = UIManager.getFont("Label.font");
-
-        deviceLoginRadioButton.setVisible(CommonSettings.getDeviceLoginEnabled());
-        deviceLoginCommentLabel.setVisible(CommonSettings.getDeviceLoginEnabled());
-        interactiveRadioButton.setSelected(true);
         refreshAuthControlElements();
 
         init();

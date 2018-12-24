@@ -228,7 +228,6 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
                 // account basic list -> account basic
                 .flatMap(subAccountsObPair -> subAccountsObPair.getRight()
                                 .flatMap(accountsResp -> Observable.from(accountsResp.items()))
-                                .subscribeOn(Schedulers.io())
                                 .map(accountBasic -> Pair.of(subAccountsObPair.getLeft(), accountBasic)))
                 .flatMap(subAccountBasicPair -> {
                     // accountBasic.id is the account detail absolute URI path

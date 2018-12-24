@@ -26,6 +26,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configuration.AbstractRunConfiguration
 import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.options.SettingsEditor
@@ -54,17 +55,23 @@ open class SparkScalaLivyConsoleRunConfiguration(project: Project,
         get() = submitModel?.submissionParameter?.clusterName
             ?: throw RuntimeConfigurationWarning("A $runConfigurationTypeName should be selected to start a console")
 
-    protected lateinit var cluster: IClusterDetail
+    protected var cluster: IClusterDetail? = null
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> =
             SparkScalaLivyConsoleRunConfigurationEditor()
 
     override fun getValidModules(): MutableCollection<Module> {
-        return ModuleManager.getInstance(project).findModuleByName(project.name)?.let { mutableListOf(it) }
-                ?: mutableListOf()
+        val moduleName = batchRunConfiguration?.model?.localRunConfigurableModel?.classpathModule
+        val moduleManager = ModuleManager.getInstance(project)
+        val module = moduleName?.let { moduleManager.findModuleByName(it) }
+                ?: moduleManager.modules.first { it.name.equals(project.name, ignoreCase = true) }
+
+        return module?.let { mutableListOf(it) } ?: mutableListOf()
     }
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
+        val cluster = cluster ?: return null
+
         val session = SparkSession(
                 name,
                 URI.create((cluster as? LivyCluster)?.livyConnectionUrl ?: return null),
@@ -74,9 +81,7 @@ open class SparkScalaLivyConsoleRunConfiguration(project: Project,
         return SparkScalaLivyConsoleRunProfileState(SparkScalaConsoleBuilder(project), session)
     }
 
-    override fun checkSettingsBeforeRun() {
-        super.checkSettingsBeforeRun()
-
+    override fun checkRunnerSettings(runner: ProgramRunner<*>, runnerSettings: RunnerSettings?, configurationPerRunnerSettings: ConfigurationPerRunnerSettings?) {
         cluster = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
                 .orElseThrow { RuntimeConfigurationError("Can't find the target cluster $clusterName") }
     }

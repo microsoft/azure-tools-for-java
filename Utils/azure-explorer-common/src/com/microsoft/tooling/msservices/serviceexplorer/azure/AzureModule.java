@@ -64,8 +64,6 @@ public class AzureModule extends AzureRefreshableNode {
     @Nullable
     private HDInsightRootModule sparkServerlessClusterRootModule;
     @NotNull
-    private HDInsightRootModule sqlBigDataClusterModule;
-    @NotNull
     private DockerHostModule dockerHostModule;
     @NotNull
     private ContainerRegistryModule containerRegistryModule;
@@ -129,10 +127,6 @@ public class AzureModule extends AzureRefreshableNode {
         this.sparkServerlessClusterRootModule = rootModule;
     }
 
-    public void setSQLBigDataClusterModule(@NotNull HDInsightRootModule rootModule) {
-        this.sqlBigDataClusterModule = rootModule;
-    }
-
     @Override
     protected void refreshItems() throws AzureCmdException {
         // add the module; we check if the node has
@@ -159,10 +153,6 @@ public class AzureModule extends AzureRefreshableNode {
                 sparkServerlessClusterRootModule.isFeatureEnabled() &&
                 !isDirectChild(sparkServerlessClusterRootModule)) {
             addChildNode(sparkServerlessClusterRootModule);
-        }
-
-        if (sqlBigDataClusterModule != null && !isDirectChild(sqlBigDataClusterModule)) {
-            addChildNode(sqlBigDataClusterModule);
         }
 
         if (!isDirectChild(dockerHostModule)) {
@@ -193,10 +183,6 @@ public class AzureModule extends AzureRefreshableNode {
 
                 if (sparkServerlessClusterRootModule != null) {
                     sparkServerlessClusterRootModule.load(true);
-                }
-
-                if (sqlBigDataClusterModule != null) {
-                    sqlBigDataClusterModule.load(true);
                 }
 
                 dockerHostModule.load(true);

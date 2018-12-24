@@ -89,7 +89,8 @@ public class AdAuthManager extends BaseADAuthManager {
      * @param authMethodDetails The authentication method detail for helping
      * @return true for success
      */
-    public synchronized boolean tryRestoreSignIn(@NotNull AuthMethodDetails authMethodDetails) {
+    @Override
+    public synchronized boolean tryRestoreSignIn(@NotNull final AuthMethodDetails authMethodDetails) {
         if (secureStore == null || authMethodDetails.getAzureEnv() == null ||
                 // Restore only for the same saved Azure environment with current
                 !CommonSettings.getEnvironment().getName().equals(authMethodDetails.getAzureEnv())) {
@@ -228,34 +229,6 @@ public class AdAuthManager extends BaseADAuthManager {
 
     public Map<String, List<String>> getAccountTenantsAndSubscriptions() {
         return adAuthDetails.getTidToSidsMap();
-    }
-
-    @Nullable
-    private AuthResult loadFromSecureStore() {
-        if (secureStore == null) {
-            return null;
-        }
-
-        final String authJson = secureStore.loadPassword(SECURE_STORE_SERVICE, SECURE_STORE_KEY);
-        if (authJson != null) {
-            try {
-                final AuthResult savedAuth = JsonHelper.deserialize(AuthResult.class, authJson);
-                if (!savedAuth.getUserId().equals(adAuthDetails.getAccountEmail())) {
-                    return null;
-                }
-
-                final String tenantId = StringUtils.isNullOrWhiteSpace(savedAuth.getUserInfo().getTenantId()) ?
-                        COMMON_TID : savedAuth.getUserInfo().getTenantId();
-                final AuthContext ac = createContext(tenantId, null);
-                final AuthResult updatedAuth = ac.acquireToken(savedAuth);
-                saveToSecureStore(updatedAuth);
-                return updatedAuth;
-            } catch (IOException e) {
-                LOGGER.warning("Can't restore the authentication cache: " + e.getMessage());
-            }
-        }
-
-        return null;
     }
 
     private AdAuthManager() {

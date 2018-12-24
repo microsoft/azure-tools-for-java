@@ -26,29 +26,26 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.ClusterNode;
-import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SqlBigDataClusterModule extends HDInsightRootModule implements ILogger {
+public class SqlBigDataClusterModule extends RefreshableNode implements ILogger {
     private static final String ARIS_SERVICE_MODULE_ID = SqlBigDataClusterModule.class.getName();
     private static final String BASE_MODULE_NAME = "SQL Big Data Cluster";
     private static final String ICON_PATH = CommonConst.SQL_BIG_DATA_CLUSTER_MODULE_ICON_PATH;
+    @Nullable
+    private Object project;
 
-    public SqlBigDataClusterModule(@NotNull Node parent) {
-        super(ARIS_SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
-    }
-
-    @Override
-    public HDInsightRootModule getNewNode(Node parent) {
-        return new SqlBigDataClusterModule(parent);
+    public SqlBigDataClusterModule(@Nullable Object project) {
+        super(ARIS_SERVICE_MODULE_ID, BASE_MODULE_NAME, null, ICON_PATH);
+        this.project = project;
     }
 
     @Override
@@ -60,33 +57,15 @@ public class SqlBigDataClusterModule extends HDInsightRootModule implements ILog
 
             if (clusterDetailList != null) {
                 for (IClusterDetail clusterDetail : clusterDetailList) {
-                    addChildNode(new ClusterNode(this, clusterDetail));
+                    addChildNode(new SqlBigDataClusterNode(this, clusterDetail));
                 }
             }
         }
     }
 
+    @Nullable
     @Override
-    public void refreshWithoutAsync() {
-        synchronized (this) {
-            removeAllChildNodes();
-
-            List<IClusterDetail> clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails().stream()
-                    .filter(clusterDetail -> clusterDetail instanceof SqlBigDataLivyLinkClusterDetail)
-                    .collect(Collectors.toList());
-
-            if (clusterDetailList != null) {
-                for (IClusterDetail clusterDetail : clusterDetailList) {
-                    addChildNode(new ClusterNode(this, clusterDetail));
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void onNodeClick(NodeActionEvent e) {
-        if (!initialized) {
-            this.load(false);
-        }
+    public Object getProject() {
+        return project;
     }
 }

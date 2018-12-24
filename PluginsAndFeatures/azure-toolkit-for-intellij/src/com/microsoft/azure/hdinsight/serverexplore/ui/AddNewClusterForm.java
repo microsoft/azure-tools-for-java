@@ -32,13 +32,13 @@ import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType;
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterCtrlProvider;
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterModel;
-import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.ijidea.ui.HintTextField;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -75,13 +75,13 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     protected JLabel passwordLabel;
     protected JLabel livyClusterNameLabel;
     @NotNull
-    private HDInsightRootModule hdInsightModule;
+    private RefreshableNode hdInsightModule;
     @NotNull
     protected AddNewClusterCtrlProvider ctrlProvider;
 
     private static final String HELP_URL = "https://go.microsoft.com/fwlink/?linkid=866472";
 
-    public AddNewClusterForm(@Nullable final Project project, @NotNull HDInsightRootModule hdInsightModule) {
+    public AddNewClusterForm(@Nullable final Project project, @NotNull RefreshableNode hdInsightModule) {
         super(project, true);
         this.ctrlProvider = new AddNewClusterCtrlProvider(this, new IdeaSchedulers(project));
 
@@ -183,7 +183,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 .validateAndAdd()
                 .doOnEach(notification -> getOKAction().setEnabled(true))
                 .subscribe(toUpdate -> {
-                    hdInsightModule.refreshWithoutAsync();
+                    hdInsightModule.load(false);
                     AppInsightsClient.create(HDInsightBundle.message("HDInsightAddNewClusterAction"), null);
 
                     super.doOKAction();

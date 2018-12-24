@@ -114,32 +114,40 @@ public class AuthMethodManager {
         return getAzureManager(getAuthMethod());
     }
 
-    private AzureManager getAzureManager(AuthMethod authMethod) throws IOException {
+    private AzureManager getAzureManager(final AuthMethod authMethod) throws IOException {
         AzureManager localAzureManagerRef = azureManager;
 
         if (localAzureManagerRef == null) {
             synchronized (this) {
                 localAzureManagerRef = azureManager;
                 if (localAzureManagerRef == null) {
+                    final String accountEmail = authMethodDetails.getAccountEmail();
                     switch (authMethod) {
                         case AD:
-                        case DC:
-                            if (StringUtils.isNullOrEmpty(authMethodDetails.getAccountEmail()) ||
+                            if (StringUtils.isNullOrEmpty(accountEmail) ||
                                     (!AdAuthManager.getInstance().isSignedIn() &&
                                             !AdAuthManager.getInstance().tryRestoreSignIn(authMethodDetails))) {
                                 return null;
                             }
                             localAzureManagerRef = new AccessTokenAzureManager();
                             break;
+                        case DC:
+                            if (StringUtils.isNullOrEmpty(accountEmail) ||
+                                    (!DCAuthManager.getInstance().isSignedIn() &&
+                                            !DCAuthManager.getInstance().tryRestoreSignIn(authMethodDetails))) {
+                                return null;
+                            }
+                            localAzureManagerRef = new AccessTokenAzureManager();
+                            break;
                         case SP:
-                            String credFilePath = authMethodDetails.getCredFilePath();
+                            final String credFilePath = authMethodDetails.getCredFilePath();
                             if (StringUtils.isNullOrEmpty(credFilePath)) {
                                 return null;
                             }
-                            Path filePath = Paths.get(credFilePath);
+                            final Path filePath = Paths.get(credFilePath);
                             if (!Files.exists(filePath)) {
                                 cleanAll();
-                                INotification nw = CommonSettings.getUiFactory().getNotificationWindow();
+                                final INotification nw = CommonSettings.getUiFactory().getNotificationWindow();
                                 nw.deliver("Credential File Error", "File doesn't exist: " + filePath.toString());
                                 return null;
                             }

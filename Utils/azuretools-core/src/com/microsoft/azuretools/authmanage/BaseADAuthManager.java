@@ -31,6 +31,7 @@ import com.microsoft.azuretools.adauth.IWebUi;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.models.AdAuthDetails;
+import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.securestore.SecureStore;
@@ -39,7 +40,7 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-public class BaseADAuthManager {
+public abstract class BaseADAuthManager {
     protected AzureEnvironment env;
     protected AdAuthDetails adAuthDetails;
     protected static final String COMMON_TID = "common";// Common Tenant ID
@@ -61,6 +62,8 @@ public class BaseADAuthManager {
 
         secureStore = ServiceManager.getServiceProvider(SecureStore.class);
     }
+
+    public abstract boolean tryRestoreSignIn(AuthMethodDetails authMethodDetails);
 
     public void setCommonTenantId(@NotNull String commonTenantId) {
         this.commonTenantId = commonTenantId;
@@ -117,6 +120,34 @@ public class BaseADAuthManager {
         } catch (IOException e) {
             LOGGER.warning("Can't persistent the authentication cache: " + e.getMessage());
         }
+    }
+
+    @Nullable
+    protected AuthResult loadFromSecureStore() {
+        if (secureStore == null) {
+            return null;
+        }
+
+        final String authJson = secureStore.loadPassword(SECURE_STORE_SERVICE, SECURE_STORE_KEY);
+        if (authJson != null) {
+            try {
+                final AuthResult savedAuth = JsonHelper.deserialize(AuthResult.class, authJson);
+                if (!savedAuth.getUserId().equals(adAuthDetails.getAccountEmail())) {
+                    return null;
+                }
+
+                final String tenantId = StringUtils.isNullOrWhiteSpace(savedAuth.getUserInfo().getTenantId()) ?
+                        COMMON_TID : savedAuth.getUserInfo().getTenantId();
+                final AuthContext ac = createContext(tenantId, null);
+                final AuthResult updatedAuth = ac.acquireToken(savedAuth);
+                saveToSecureStore(updatedAuth);
+                return updatedAuth;
+            } catch (IOException e) {
+                LOGGER.warning("Can't restore the authentication cache: " + e.getMessage());
+            }
+        }
+
+        return null;
     }
 
     protected AuthContext createContext(@NotNull final String tid, final UUID corrId) throws IOException {

@@ -126,19 +126,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
                             "Unlink HDInsight Cluster", new String[]{"Yes", "No"}, null);
                     if (choice) {
                         ClusterManagerEx.getInstance().removeAdditionalCluster(clusterDetail);
-                        ((HDInsightRootModule) getParent()).refreshWithoutAsync();
-                    }
-                }
-            });
-        } else if (clusterDetail instanceof SqlBigDataLivyLinkClusterDetail) {
-            addAction("Unlink", new NodeActionListener() {
-                @Override
-                protected void actionPerformed(NodeActionEvent e) {
-                    boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the SQL big data cluster?",
-                            "Unlink SQL Big Data Cluster", new String[]{"Yes", "No"}, null);
-                    if (choice) {
-                        ClusterManagerEx.getInstance().removeAdditionalCluster(clusterDetail);
-                        ((SqlBigDataClusterModule) getParent()).refreshWithoutAsync();
+                        ((RefreshableNode) getParent()).load(false);
                     }
                 }
             });
@@ -150,7 +138,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
                             "Unlink Emulator Cluster", new String[]{"Yes", "No"}, null);
                     if (choice) {
                         ClusterManagerEx.getInstance().removeEmulatorCluster((EmulatorClusterDetail) clusterDetail);
-                        ((HDInsightRootModule) getParent()).refreshWithoutAsync();
+                        ((RefreshableNode) getParent()).load(false);
                     }
                 }
             });
