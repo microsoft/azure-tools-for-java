@@ -35,6 +35,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -96,14 +97,11 @@ public class SparkBatchSubmission implements ILogger {
                         .loadTrustMaterial(ts)
                         .build();
 
-                sslSocketFactory = new SSLConnectionSocketFactory(sslContext, new HostnameVerifier() {
-                    @Override
-                    public boolean verify(String s, SSLSession sslSession) {
-                        return true;
-                    }
-                });
+                //TODO: add a bypass option, use NoopHostnameVerifier to bypass the certificate content check,
+                // by default, use DefaultHostnameVerifier
+                sslSocketFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
             } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-                log().warn("Prepare SSL Context for HTTPS failure", e);
+                log().error("Prepare SSL Context for HTTPS failure", e);
             }
         }
 
@@ -150,10 +148,11 @@ public class SparkBatchSubmission implements ILogger {
         // WORKAROUND: https://github.com/Microsoft/azure-tools-for-java/issues/1358
         // The Ambari local account will cause Kerberos authentication initializing infinitely.
         // Set a timer here to cancel the progress.
-        httpHead.setConfig(RequestConfig
-                .custom()
-                .setSocketTimeout(3*1000)
-                .build());
+        httpHead.setConfig(
+                RequestConfig
+                        .custom()
+                        .setSocketTimeout(3 * 1000)
+                        .build());
 
         try(CloseableHttpResponse response = httpclient.execute(httpHead)) {
             return StreamUtil.getResultFromHttpResponse(response);

@@ -36,18 +36,19 @@ object IdeaTrustStrategy : TrustStrategy, ILogger {
     private const val helpLink = "https://www.jetbrains.com/help/idea/settings-tools-server-certificates.html"
 
     @JvmStatic
-    val UserAcceptCAMsg =
-            "<html><body>" +
-                    "<br>You have successfully linked the cluster.The cluster certificate has been added into</br>" +
-                    "<br>IntelliJ's Server Certificates store.Please access IntelliJ's Server Certificates setting</br>" +
-                    "<br><a href='$helpLink'>$helpLink</a></br>" +
-                    "<br>to manage the certificates trusted</br>" +
-                    "</body></html>"
+    val UserAcceptCAMsg = """<html><body>
+            <br>You have successfully linked the cluster.The cluster certificate has been added into</br>
+            <br>IntelliJ's Server Certificates store.Please access IntelliJ's Server Certificates setting</br>
+            <br><a href='$helpLink'>$helpLink</a></br>
+            <br>to manage the certificates trusted</br>
+            </body></html>
+             """.trimIndent()
+
 
     override fun isTrusted(chain: Array<out X509Certificate>?, authType: String?): Boolean {
-        return try {
+        try {
             //there exists three scenarios 1.non aris cluster 2.linked aris cluster 3.adding a aris cluster
-            //first check without askUser ,this works under case1 and case3
+            //first check without askUser ,this works under case1 and case2
             val sysMgr = CertificateManager.getInstance().trustManager
             try {
                 sysMgr.checkServerTrusted(chain, authType, true, false)
@@ -67,13 +68,9 @@ object IdeaTrustStrategy : TrustStrategy, ILogger {
                 return false
             }
 
-            val showAcceptDialog: () -> Unit = {
+            ApplicationManager.getApplication().invokeLater({
                 PluginUtil.displayInfoDialog(AcceptTitle, UserAcceptCAMsg)
-            }
-
-            ApplicationManager.getApplication().invokeLater(
-                    showAcceptDialog
-                    , ModalityState.any())
+            }, ModalityState.any())
 
             return true
         } catch (err: Exception) {
