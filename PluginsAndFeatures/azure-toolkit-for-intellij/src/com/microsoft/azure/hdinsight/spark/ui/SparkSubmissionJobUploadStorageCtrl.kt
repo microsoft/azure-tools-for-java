@@ -110,7 +110,6 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
             if (checkEvent is StorageCheckSelectedClusterEvent) {
 
                 //check cluster type then reset storage combox
-                view.storagePanel.storageTypeComboBox.selectedItem = null
                 view.storagePanel.storageTypeComboBox.apply {
                     val optionTypes =clusterDetail.storageOptionsType.optionTypes
                     model = ImmutableComboBoxModel(optionTypes)

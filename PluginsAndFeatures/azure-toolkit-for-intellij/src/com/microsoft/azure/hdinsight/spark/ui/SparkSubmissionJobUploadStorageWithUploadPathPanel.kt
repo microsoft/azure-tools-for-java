@@ -51,6 +51,7 @@ import rx.Observable.just
 import rx.schedulers.Schedulers
 import rx.subjects.BehaviorSubject
 import rx.subjects.PublishSubject
+import rx.subjects.ReplaySubject
 import java.awt.CardLayout
 import java.util.concurrent.TimeUnit
 import javax.swing.*
@@ -106,8 +107,27 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
     val control: Control = SparkSubmissionJobUploadStorageCtrl(this)
 
     inner class ViewModel : DisposableObservers() {
-        val uploadStorage = storagePanel.viewModel
-        val clusterSelectedSubject: BehaviorSubject<IClusterDetail> = disposableSubjectOf { BehaviorSubject.create() }
+        val uploadStorage = storagePanel.viewModel.apply {
+            // check storage info when cluster selection changes
+            storageCheckSubject
+                    .groupBy { checkEvent -> checkEvent::class.java.typeName}
+                    .subscribe(
+                            { groupedOb ->
+                                groupedOb
+                                        .throttleWithTimeout(200, TimeUnit.MILLISECONDS)
+                                        .doOnNext { log().info("Receive checking message ${it.message}") }
+                                        .flatMap { validateStorageInfo(it) }
+                                        .subscribe()
+                            },
+                            { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
+        }
+
+        val clusterSelectedCapacity = 2
+
+        //in order to get the pre select cluster name, use repalysubject type
+        val clusterSelectedSubject: ReplaySubject<IClusterDetail> = disposableSubjectOf {
+            ReplaySubject.createWithSize(clusterSelectedCapacity)
+        }
 
         private fun validateStorageInfo(checkEvent:StorageCheckEvent): Observable<SparkSubmitJobUploadStorageModel> {
             val cluster = clusterSelectedSubject.value ?: return empty()
@@ -214,21 +234,6 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                         setData(data)
                     }
         }
-
-        init {
-            // check storage info when cluster selection changes
-            uploadStorage.storageCheckSubject
-                    .groupBy { checkEvent -> checkEvent::class.java.typeName}
-                    .subscribe(
-                            { groupedOb ->
-                                groupedOb
-                                        .throttleWithTimeout(200, TimeUnit.MILLISECONDS)
-                                        .doOnNext { log().info("Receive checking message ${it.message}") }
-                                        .flatMap { validateStorageInfo(it) }
-                                        .subscribe()
-                            },
-                            { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
-        }
     }
 
     val viewModel = ViewModel().apply {
@@ -239,7 +244,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         // Component -> Data
         data.errorMsg = storagePanel.errorMessage
         data.uploadPath = uploadPathField.text
-        when ((storagePanel.storageTypeComboBox.selectedItem as SparkSubmitStorageType).description) {
+        when ((storagePanel.storageTypeComboBox.selectedItem as? SparkSubmitStorageType)?.description) {
             storagePanel.azureBlobCard.title -> {
                 data.storageAccountType = SparkSubmitStorageType.BLOB
                 data.storageAccount = storagePanel.azureBlobCard.storageAccountField.text.trim()
@@ -261,6 +266,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                 data.storageAccountType = SparkSubmitStorageType.WEBHDFS
                 data.webHdfsRootPath= storagePanel.webHdfsCard.webHdfsRootPathField.text
             }
+            else -> {}
         }
     }
 
@@ -268,8 +274,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         // data -> Component
         val applyData: () -> Unit = {
             // Only set for changed
-            if (storagePanel.storageTypeComboBox.selectedIndex != findStorageTypeComboBoxSelectedIndex(data.storageAccountType)) {
-                storagePanel. storageTypeComboBox.selectedIndex = findStorageTypeComboBoxSelectedIndex(data.storageAccountType)
+            if (storagePanel.storageTypeComboBox.selectedItem != data.storageAccountType) {
+                storagePanel. storageTypeComboBox.selectedItem = data.storageAccountType
             }
 
             storagePanel.errorMessage = data.errorMsg
@@ -320,20 +326,6 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         ApplicationManager.getApplication().invokeLater(applyData, ModalityState.any())
     }
 
-    private fun findStorageTypeComboBoxSelectedIndex(storageAccountType: SparkSubmitStorageType):Int {
-        listOf(0 until storagePanel.storageTypeComboBox.model.size).flatten().forEach {
-            if ((storagePanel.storageTypeComboBox.model.getElementAt(it) == SparkSubmitStorageType.BLOB && storageAccountType == SparkSubmitStorageType.BLOB) ||
-                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION && storageAccountType == SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION) ||
-                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT && storageAccountType == SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT) ||
-                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == SparkSubmitStorageType.ADLS_GEN1 && storageAccountType == SparkSubmitStorageType.ADLS_GEN1) ||
-                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == SparkSubmitStorageType.WEBHDFS && storageAccountType == SparkSubmitStorageType.WEBHDFS)) {
-                return it
-            }
-        }
-        return -1
-    }
-
     override fun dispose() {
     }
-
 }
