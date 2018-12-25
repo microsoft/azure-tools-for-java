@@ -5,6 +5,8 @@ import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.YarnCluster;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -98,4 +100,13 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
         return password;
     }
 
+    @Override
+    public SparkSubmitStorageType getDefaultStorageType() {
+        return SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION;
+    }
+
+    @Override
+    public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
+       return SparkSubmitStorageTypeOptionsForCluster.BigDataClusterWithWebHdfs;
+    }
 }

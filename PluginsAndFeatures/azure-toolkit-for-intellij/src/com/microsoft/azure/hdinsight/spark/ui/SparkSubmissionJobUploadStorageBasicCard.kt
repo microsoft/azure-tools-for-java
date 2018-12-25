@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import javax.swing.JPanel
 
 abstract class SparkSubmissionJobUploadStorageBasicCard: JPanel() {

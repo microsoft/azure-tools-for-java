@@ -39,6 +39,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
 import com.microsoft.tooling.msservices.model.storage.BlobContainer
@@ -61,7 +62,8 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
 
     //storage check event for storageCheckSubject in panel
     open class StorageCheckEvent(val message: String)
-    class StorageCheckSelectedClusterEvent(val cluster: IClusterDetail) : StorageCheckEvent("Selected cluster ${cluster.name}")
+    class StorageCheckSelectedClusterEvent(val cluster: IClusterDetail,val preClusterName: String?) : StorageCheckEvent(
+            "Selected cluster ${cluster.name} with preClusterName $preClusterName")
     class StorageCheckSignInOutEvent() : StorageCheckEvent("After user clicked sign in/off in ADLS Gen 1 storage type")
     class StorageCheckPathFocusLostEvent(val rootPathType: String) : StorageCheckEvent("$rootPathType root path focus lost")
     class StorageCheckSelectedStorageTypeEvent(val storageType: String) : StorageCheckEvent("Selected storage type: $storageType")
@@ -102,62 +104,30 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
         }
     }
 
-    override fun setDefaultStorageType(checkEvent: StorageCheckEvent, clusterDetail: IClusterDetail) {
+    override fun setDefaultStorageType(checkEvent: StorageCheckEvent, clusterDetail: IClusterDetail,
+                                       preStorageType: SparkSubmitStorageType) {
         synchronized(view.storagePanel) {
             if (checkEvent is StorageCheckSelectedClusterEvent) {
 
                 //check cluster type then reset storage combox
-                val defaultStorageTitle = view.storagePanel.clusterDefaultStorageCard.title
-                val helpSessionTitle = view.storagePanel.sparkInteractiveSessionCard.title
-                val webHdfsTitle = view.storagePanel.webHdfsCard.title
-                val azureBlobTitle = view.storagePanel.azureBlobCard.title
-                val adlsTitle = view.storagePanel.adlsCard.title
-
                 view.storagePanel.storageTypeComboBox.selectedItem = null
-                view.storagePanel.storageTypeComboBox.model = when (clusterDetail) {
-                    is ClusterDetail ->{
-                        //get storageaccount may get HDIExpcetion for null value
-                        var storageAccount = try {
-                            clusterDetail.storageAccount
-                        } catch (igonred: HDIException) {
-                            clusterDetail.getConfigurationInfo()
-                            clusterDetail.storageAccount
-                        }
+                view.storagePanel.storageTypeComboBox.apply {
+                    val optionTypes =clusterDetail.storageOptionsType.optionTypes
+                    model = ImmutableComboBoxModel(optionTypes)
 
-                        ImmutableComboBoxModel(arrayOf(
-                                defaultStorageTitle,
-                                when (storageAccount) {
-                                    is HDStorageAccount -> azureBlobTitle
-                                    is ADLSStorageAccount, is AzureSparkServerlessCluster.StorageAccount -> adlsTitle
-                                    else -> helpSessionTitle
-                                })).apply {
-                            selectedItem = defaultStorageTitle
-                        }
-                    }
+                    //if selectedItem is null ,will trigger storage type combox deselected event and event.item is the model getSelectedItem which is model(0)
+                    selectedItem = null
 
-                    is HDInsightLivyLinkClusterDetail, is HDInsightAdditionalClusterDetail -> ImmutableComboBoxModel(arrayOf(
-                            azureBlobTitle,
-                            adlsTitle,
-                            helpSessionTitle)).apply {
-                        selectedItem = helpSessionTitle
-                    }
-
-                    is SqlBigDataLivyLinkClusterDetail -> {
-                        ImmutableComboBoxModel(arrayOf(
-                                helpSessionTitle,
-                                webHdfsTitle
-                        )).apply {
-                            selectedItem = helpSessionTitle
-                        }
-                    }
-
-                    else -> ImmutableComboBoxModel(arrayOf(
-                            defaultStorageTitle,
-                            azureBlobTitle,
-                            adlsTitle,
-                            helpSessionTitle,
-                            webHdfsTitle)).apply {
-                        selectedItem = defaultStorageTitle
+                    //reset selectedItem will trigger deselected and selected event which will repaint the panel
+                    //preSelectedCluster = null  : this msg is triggered by creating config or reloading saved config
+                    //as for creaing,preStorageType = DEFAULT_STORAGE_ACCOUNT
+                    //isStorageTypeValid = true means this cluster supports DEFAULT_STORAGE_ACCOUNT
+                    //isStorageTypeValid = false means this cluster doesn't support preStorageType so change combox to selectedType otherwise combox will show empty
+                    //as for reloading,isStorageTypeValid should always be true otherwise config can't be saved
+                    if (checkEvent.preClusterName == null && optionTypes.contains(preStorageType)) {
+                        selectedItem = preStorageType
+                    } else {
+                        selectedItem = clusterDetail.defaultStorageType
                     }
                 }
             }

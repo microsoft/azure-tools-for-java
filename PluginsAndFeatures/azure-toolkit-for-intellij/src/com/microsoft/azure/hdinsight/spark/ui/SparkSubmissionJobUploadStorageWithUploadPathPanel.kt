@@ -60,7 +60,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
     interface Control {
         val isCheckPassed: Boolean
         val resultMessage: String?
-        fun setDefaultStorageType(checkEvent: StorageCheckEvent, clusterDetail: IClusterDetail)
+        fun setDefaultStorageType(checkEvent: StorageCheckEvent, clusterDetail: IClusterDetail, preStorageType: SparkSubmitStorageType)
         fun getUploadPath(account: IHDIStorageAccount): String?
         fun getAzureBlobStoragePath(fullStorageBlobName: String?, container: String?): String?
     }
@@ -115,7 +115,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             return just(SparkSubmitJobUploadStorageModel())
                     .doOnNext { model -> run {
                         getData(model)
-                        control.setDefaultStorageType(checkEvent, cluster)
+                        control.setDefaultStorageType(checkEvent,
+                                cluster, model.storageAccountType)
                     }}
                     // set error message to prevent user from applying the changes when validation is not completed
                     .map { model -> model.apply {
@@ -238,7 +239,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         // Component -> Data
         data.errorMsg = storagePanel.errorMessage
         data.uploadPath = uploadPathField.text
-        when (storagePanel.storageTypeComboBox.selectedItem) {
+        when ((storagePanel.storageTypeComboBox.selectedItem as SparkSubmitStorageType).description) {
             storagePanel.azureBlobCard.title -> {
                 data.storageAccountType = SparkSubmitStorageType.BLOB
                 data.storageAccount = storagePanel.azureBlobCard.storageAccountField.text.trim()
@@ -268,7 +269,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         val applyData: () -> Unit = {
             // Only set for changed
             if (storagePanel.storageTypeComboBox.selectedIndex != findStorageTypeComboBoxSelectedIndex(data.storageAccountType)) {
-                storagePanel.storageTypeComboBox.selectedIndex = findStorageTypeComboBoxSelectedIndex(data.storageAccountType)
+                storagePanel. storageTypeComboBox.selectedIndex = findStorageTypeComboBoxSelectedIndex(data.storageAccountType)
             }
 
             storagePanel.errorMessage = data.errorMsg
@@ -321,11 +322,11 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
 
     private fun findStorageTypeComboBoxSelectedIndex(storageAccountType: SparkSubmitStorageType):Int {
         listOf(0 until storagePanel.storageTypeComboBox.model.size).flatten().forEach {
-            if ((storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.azureBlobCard.title && storageAccountType == SparkSubmitStorageType.BLOB) ||
-                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.sparkInteractiveSessionCard.title && storageAccountType == SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION) ||
-                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.clusterDefaultStorageCard.title && storageAccountType == SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT) ||
-                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.adlsCard.title && storageAccountType == SparkSubmitStorageType.ADLS_GEN1) ||
-                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == storagePanel.webHdfsCard.title && storageAccountType == SparkSubmitStorageType.WEBHDFS)) {
+            if ((storagePanel.storageTypeComboBox.model.getElementAt(it) == SparkSubmitStorageType.BLOB && storageAccountType == SparkSubmitStorageType.BLOB) ||
+                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION && storageAccountType == SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION) ||
+                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT && storageAccountType == SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT) ||
+                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == SparkSubmitStorageType.ADLS_GEN1 && storageAccountType == SparkSubmitStorageType.ADLS_GEN1) ||
+                    (storagePanel.storageTypeComboBox.model.getElementAt(it) == SparkSubmitStorageType.WEBHDFS && storageAccountType == SparkSubmitStorageType.WEBHDFS)) {
                 return it
             }
         }

@@ -397,7 +397,8 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
                 if (it != null) {
                     storageWithUploadPathPanel.viewModel.uploadStorage.storageCheckSubject.onNext(
-                            SparkSubmissionJobUploadStorageCtrl.StorageCheckSelectedClusterEvent(it))
+                            SparkSubmissionJobUploadStorageCtrl.StorageCheckSelectedClusterEvent(it,
+                                    preSelectClusterName))
                 }
                 checkInputsWithErrorLabels()
             }

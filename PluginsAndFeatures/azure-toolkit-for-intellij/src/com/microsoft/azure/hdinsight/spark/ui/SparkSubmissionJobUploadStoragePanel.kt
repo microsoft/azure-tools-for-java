@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.Disposer
+import com.intellij.ui.ListCellRendererWrapper
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageCtrl.*
@@ -73,23 +74,28 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
         })
     }
 
-    val storageTypeComboBox = ComboBox(arrayOf(
-            azureBlobCard.title,
-            sparkInteractiveSessionCard.title,
-            clusterDefaultStorageCard.title,
-            adlsCard.title,
-            webHdfsCard.title
+    val storageTypeComboBox = ComboBox<SparkSubmitStorageType>(arrayOf(
+            SparkSubmitStorageType.BLOB,
+            SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
+            SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
+            SparkSubmitStorageType.ADLS_GEN1,
+            SparkSubmitStorageType.WEBHDFS
     )).apply {
         // validate storage info after storage type is selected
         addItemListener { itemEvent ->
             // change panel
             val curLayout = storageCardsPanel.layout as? CardLayout ?: return@addItemListener
-            curLayout.show(storageCardsPanel, itemEvent.item as String)
+            curLayout.show(storageCardsPanel, (itemEvent.item as SparkSubmitStorageType).description)
 
             if (itemEvent?.stateChange == ItemEvent.SELECTED) {
-                viewModel.storageCheckSubject.onNext(StorageCheckSelectedStorageTypeEvent(itemEvent.item as String))
+                viewModel.storageCheckSubject.onNext(StorageCheckSelectedStorageTypeEvent((itemEvent.item as SparkSubmitStorageType).description))
             }
+        }
 
+        renderer = object: ListCellRendererWrapper<SparkSubmitStorageType>() {
+            override fun customize(list: JList<*>?, type: SparkSubmitStorageType?, index: Int, selected: Boolean, hasFocus: Boolean) {
+                setText(type?.description)
+            }
         }
     }
 
@@ -102,7 +108,6 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
     }
 
     var errorMessage: String? = notFinishCheckMessage
-
     init {
         val formBuilder = panel {
             columnTemplate {

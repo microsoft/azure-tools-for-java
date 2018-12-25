@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.intellij.forms.dsl.panel
 import java.awt.CardLayout
 import javax.swing.JLabel
@@ -32,7 +33,7 @@ import javax.swing.JPanel
 import javax.swing.JTextField
 
 class SparkSubmissionJobUploadStorageWebHdfsCard: SparkSubmissionJobUploadStorageBasicCard() {
-    override val title: String = "Use WEBHDFS to upload artifacts"
+    override val title: String =  SparkSubmitStorageType.WEBHDFS.description
     private val webHdfsRootPathTip = "e.g. http://hdfsnamenode:port/webhdfs/v1/"
     private val webHdfsRootPathLabel = JLabel("WEBHDFS Root Path").apply { toolTipText = webHdfsRootPathTip }
     val webHdfsRootPathField = JTextField().apply { toolTipText = webHdfsRootPathTip }
