@@ -42,4 +42,8 @@ class DisableSslCertificateValidationAction : AzureAnAction(), Toggleable {
                     && DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION).toBoolean()
         }
     }
+
+    override fun update(e: AnActionEvent) {
+        e.presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, isActionEnabled())
+    }
 }
