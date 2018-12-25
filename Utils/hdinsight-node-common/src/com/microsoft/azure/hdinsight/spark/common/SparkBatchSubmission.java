@@ -30,6 +30,7 @@ import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -92,14 +93,12 @@ public class SparkBatchSubmission implements ILogger {
                         .loadTrustMaterial(ts)
                         .build();
 
-                //TODO: add a bypass option, use NoopHostnameVerifier to bypass the certificate content check,
-                // by default, use DefaultHostnameVerifier
                 sslSocketFactory = new SSLConnectionSocketFactory(sslContext,
                         HttpObservable.isSSLCertificateValidationDisabled()
                                 ? NoopHostnameVerifier.INSTANCE
                                 : new DefaultHostnameVerifier());
             } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-                log().error("Prepare SSL Context for HTTPS failure", e);
+                log().error("Prepare SSL Context for HTTPS failure. " + ExceptionUtils.getStackTrace(e));
             }
         }
 

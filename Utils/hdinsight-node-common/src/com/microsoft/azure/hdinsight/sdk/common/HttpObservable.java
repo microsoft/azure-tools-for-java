@@ -24,10 +24,13 @@ package com.microsoft.azure.hdinsight.sdk.common;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -42,27 +45,31 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.*;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.HeaderGroup;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 import rx.Observable;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import static rx.exceptions.Exceptions.propagate;
 
-public class HttpObservable {
+public class HttpObservable implements ILogger {
     @NotNull
     private RequestConfig defaultRequestConfig;
 
@@ -118,33 +125,12 @@ public class HttpObservable {
                 .setProxyPreferredAuthSchemes(Collections.singletonList(AuthSchemes.BASIC))
                 .build();
 
-        HttpClientBuilder builder = HttpClients.custom()
+        this.httpClient = HttpClients.custom()
                 .useSystemProperties()
                 .setDefaultCookieStore(getCookieStore())
-                .setDefaultRequestConfig(getDefaultRequestConfig());
-
-        if (isSSLCertificateValidationDisabled()) {
-            try {
-                SSLContext sslContext = new SSLContextBuilder()
-                        .loadTrustMaterial(null, (x509CertChain, authType) -> true)
-                        .build();
-                this.httpClient = builder
-                        .setSSLContext(sslContext)
-                        .setConnectionManager(
-                                new PoolingHttpClientConnectionManager(
-                                        RegistryBuilder.<ConnectionSocketFactory>create()
-                                                .register("http", PlainConnectionSocketFactory.INSTANCE)
-                                                .register("https", new SSLConnectionSocketFactory(sslContext,
-                                                        NoopHostnameVerifier.INSTANCE))
-                                                .build()
-                                ))
-                        .build();
-            } catch (Exception ignored) {
-                this.httpClient = builder.build();
-            }
-        } else {
-            this.httpClient = builder.build();
-        }
+                .setDefaultRequestConfig(getDefaultRequestConfig())
+                .setSSLSocketFactory(createSSLSocketFactory())
+                .build();
     }
 
     /**
@@ -160,34 +146,13 @@ public class HttpObservable {
         credentialsProvider.setCredentials(
                 new AuthScope(AuthScope.ANY), new UsernamePasswordCredentials(username, password));
 
-        HttpClientBuilder builder = HttpClients.custom()
+        this.httpClient = HttpClients.custom()
                 .useSystemProperties()
                 .setDefaultCookieStore(getCookieStore())
                 .setDefaultCredentialsProvider(credentialsProvider)
-                .setDefaultRequestConfig(getDefaultRequestConfig());
-
-        if (isSSLCertificateValidationDisabled()) {
-            try {
-                SSLContext sslContext = new SSLContextBuilder()
-                        .loadTrustMaterial(null, (x509CertChain, authType) -> true)
-                        .build();
-                this.httpClient = builder
-                        .setSSLContext(sslContext)
-                        .setConnectionManager(
-                                new PoolingHttpClientConnectionManager(
-                                        RegistryBuilder.<ConnectionSocketFactory>create()
-                                                .register("http", PlainConnectionSocketFactory.INSTANCE)
-                                                .register("https", new SSLConnectionSocketFactory(sslContext,
-                                                        NoopHostnameVerifier.INSTANCE))
-                                                .build()
-                                ))
-                        .build();
-            } catch (Exception ignored) {
-                this.httpClient = builder.build();
-            }
-        } else {
-            this.httpClient = builder.build();
-        }
+                .setDefaultRequestConfig(getDefaultRequestConfig())
+                .setSSLSocketFactory(createSSLSocketFactory())
+                .build();
     }
 
     /*
@@ -278,6 +243,27 @@ public class HttpObservable {
             // To fix exception in unit test
             return false;
         }
+    }
+
+    private SSLConnectionSocketFactory createSSLSocketFactory() {
+        TrustStrategy ts = ServiceManager.getServiceProvider(TrustStrategy.class);
+        SSLConnectionSocketFactory sslSocketFactory = null;
+
+        if (ts != null) {
+            try {
+                SSLContext sslContext = new SSLContextBuilder()
+                        .loadTrustMaterial(ts)
+                        .build();
+
+                sslSocketFactory = new SSLConnectionSocketFactory(sslContext,
+                        HttpObservable.isSSLCertificateValidationDisabled()
+                                ? NoopHostnameVerifier.INSTANCE
+                                : new DefaultHostnameVerifier());
+            } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+                log().error("Prepare SSL Context for HTTPS failure. " + ExceptionUtils.getStackTrace(e));
+            }
+        }
+        return sslSocketFactory;
     }
 
     /**
