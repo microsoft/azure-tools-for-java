@@ -29,12 +29,15 @@ import com.microsoft.intellij.common.CommonConst
 import com.microsoft.tooling.msservices.components.DefaultLoader
 
 
-open class DefaultSparkApplicationTypeAction(private val sparkApplicationType : SparkApplicationType = SparkApplicationType.HDInsight)
+abstract class SparkApplicationTypeOptionAction
     : AzureAnAction() , Toggleable {
+    open fun runPostAction(e: AnActionEvent) {
+        return
+    }
+
     override fun onActionPerformed(e: AnActionEvent) {
-        DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.SPARK_APPLICATION_TYPE, this.sparkApplicationType.toString())
-        val presentation = e.presentation
-        presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, true)
+        DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.SPARK_APPLICATION_TYPE, this.getSparkApplicationType().toString())
+        this.runPostAction(e)
     }
 
     companion object {
@@ -45,22 +48,43 @@ open class DefaultSparkApplicationTypeAction(private val sparkApplicationType : 
         }
     }
 
-    fun isSelected(): Boolean = this.sparkApplicationType == getSelectedSparkApplicationType()
+    abstract fun getSparkApplicationType() : SparkApplicationType
+
+    fun isSelected(): Boolean = getSparkApplicationType() == getSelectedSparkApplicationType()
 
     override fun update(e: AnActionEvent) {
         val selected = isSelected()
         val presentation = e.presentation
         presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, selected)
         if (e.isFromContextMenu) {
-            //force to show check marks instead of toggled icons in context menu
+
             presentation.icon = null
         }
     }
+}
 
-    class None : DefaultSparkApplicationTypeAction(SparkApplicationType.None)
-    class HDInsight : DefaultSparkApplicationTypeAction(SparkApplicationType.HDInsight)
-    class CosmosSpark : DefaultSparkApplicationTypeAction(SparkApplicationType.CosmosSpark)
-    class CosmosServerlessSpark : DefaultSparkApplicationTypeAction(SparkApplicationType.CosmosServerlessSpark)
+class SparkApplicationTypeOptionNone : SparkApplicationTypeOptionAction() {
+    override fun getSparkApplicationType() : SparkApplicationType {
+        return SparkApplicationType.None
+    }
+}
+
+class SparkApplicationTypeOptionHDInsight : SparkApplicationTypeOptionAction() {
+    override fun getSparkApplicationType() : SparkApplicationType {
+        return SparkApplicationType.HDInsight
+    }
+}
+
+class SparkApplicationTypeOptionCosmosSpark : SparkApplicationTypeOptionAction() {
+    override fun getSparkApplicationType() : SparkApplicationType {
+        return SparkApplicationType.CosmosSpark
+    }
+}
+
+class SparkApplicationTypeOptionCosmosServerlessSpark : SparkApplicationTypeOptionAction() {
+    override fun getSparkApplicationType() : SparkApplicationType {
+        return SparkApplicationType.CosmosServerlessSpark
+    }
 }
 
 enum class SparkApplicationType {

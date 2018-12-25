@@ -31,7 +31,7 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx
 import com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys.*
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor
-import com.microsoft.azure.hdinsight.spark.run.action.DefaultSparkApplicationTypeAction
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationTypeOptionAction
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
@@ -39,7 +39,7 @@ import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 
 open class SparkSubmitJobAction : AzureAnAction() {
     open fun submitWithPopupMenu(anActionEvent: AnActionEvent) : Boolean {
-        return if (DefaultSparkApplicationTypeAction.getSelectedSparkApplicationType() == SparkApplicationType.None) {
+        return if (SparkApplicationTypeOptionAction.getSelectedSparkApplicationType() == SparkApplicationType.None) {
             val action = ActionManagerEx.getInstance().getAction("SparkSubmitJobActionGroups")
             action?.actionPerformed(anActionEvent)
             true
@@ -108,13 +108,16 @@ open class SparkSubmitJobAction : AzureAnAction() {
     }
 }
 
-open class LivySparkSubmitJobAction(sparkApplicationType: SparkApplicationType = SparkApplicationType.HDInsight) : DefaultSparkApplicationTypeAction(sparkApplicationType) {
-    override fun onActionPerformed(e: AnActionEvent) {
-        super.onActionPerformed(e)
+open class SparkSelectTypeAndSubmitJobActionDelegate(private val sparkType: SparkApplicationType) : SparkApplicationTypeOptionAction() {
+    override fun getSparkApplicationType(): SparkApplicationType {
+        return this.sparkType
+    }
+    override fun runPostAction(e: AnActionEvent) {
         val action = ActionManagerEx.getInstance().getAction("Actions.SubmitSparkApplicationAction")
         action?.actionPerformed(e)
     }
 }
 
-class CosmosSparkSubmitJobAction : LivySparkSubmitJobAction(SparkApplicationType.CosmosSpark)
-class CosmosServerlessSparkSubmitJobAction : LivySparkSubmitJobAction(SparkApplicationType.CosmosServerlessSpark)
+class LivySparkSubmitJobAction : SparkSelectTypeAndSubmitJobActionDelegate(SparkApplicationType.HDInsight)
+class CosmosSparkSubmitJobAction : SparkSelectTypeAndSubmitJobActionDelegate(SparkApplicationType.CosmosSpark)
+class CosmosServerlessSparkSubmitJobAction : SparkSelectTypeAndSubmitJobActionDelegate(SparkApplicationType.CosmosServerlessSpark)

@@ -46,7 +46,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiMethodUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
-import com.microsoft.azure.hdinsight.spark.run.action.DefaultSparkApplicationTypeAction;
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationTypeOptionAction;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType;
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -71,7 +71,7 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
 
     @Override
     public boolean setupConfigurationFromContext(LivySparkBatchJobRunConfiguration configuration, ConfigurationContext context, Ref<PsiElement> sourceElement) {
-        if (DefaultSparkApplicationTypeAction.getSelectedSparkApplicationType() != this.applicationType) {
+        if (SparkApplicationTypeOptionAction.getSelectedSparkApplicationType() != this.applicationType) {
             return false;
         } else {
             return Optional.ofNullable(context.getModule())
