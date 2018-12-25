@@ -26,7 +26,6 @@ import com.intellij.execution.ExecutorRegistry
 import com.intellij.execution.ProgramRunnerUtil
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
-import com.intellij.ide.actions.QuickSwitchSchemeAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx
@@ -41,8 +40,8 @@ import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 open class SparkSubmitJobAction : AzureAnAction() {
     open fun submitWithPopupMenu(anActionEvent: AnActionEvent) : Boolean {
         return if (DefaultSparkApplicationTypeAction.getSelectedSparkApplicationType() == SparkApplicationType.None) {
-            val action = ActionManagerEx.getInstance().getAction("SparkSubmitJobActionGroups") as QuickSwitchSchemeAction
-            action.actionPerformed(anActionEvent)
+            val action = ActionManagerEx.getInstance().getAction("SparkSubmitJobActionGroups")
+            action?.actionPerformed(anActionEvent)
             true
         } else {
             false
@@ -113,7 +112,7 @@ open class LivySparkSubmitJobAction(sparkApplicationType: SparkApplicationType =
     override fun onActionPerformed(e: AnActionEvent) {
         super.onActionPerformed(e)
         val action = ActionManagerEx.getInstance().getAction("Actions.SubmitSparkApplicationAction")
-        action.actionPerformed(e)
+        action?.actionPerformed(e)
     }
 }
 
