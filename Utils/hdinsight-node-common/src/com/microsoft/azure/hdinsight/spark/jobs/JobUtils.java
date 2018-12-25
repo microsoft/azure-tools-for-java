@@ -41,6 +41,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
+import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession;
 import com.microsoft.azure.hdinsight.sdk.io.spark.ClusterFileBase64BufferedOutputStream;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.App;
@@ -257,6 +258,7 @@ public class JobUtils {
                                                       long start,
                                                       int size) {
         final WebClient HTTP_WEB_CLIENT = new WebClient(BrowserVersion.CHROME);
+        HTTP_WEB_CLIENT.getOptions().setUseInsecureSSL(HttpObservable.isSSLCertificateValidationDisabled());
         HTTP_WEB_CLIENT.setCache(globalCache);
 
         if (credentialsProvider != null) {
