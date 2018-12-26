@@ -35,12 +35,12 @@ public enum SparkSubmitStorageType {
     ADLS_GEN1("Use ADLS Gen 1 to upload"),
     WEBHDFS("Use WebHDFS to upload");
 
-    @NotNull
     private String description;
-    SparkSubmitStorageType(String title) {
+    SparkSubmitStorageType(@NotNull String title) {
         description = title;
     }
 
+    @NotNull
     public String getDescription() {
         return description;
     }

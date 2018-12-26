@@ -135,8 +135,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             return just(SparkSubmitJobUploadStorageModel())
                     .doOnNext { model -> run {
                         getData(model)
-                        control.setDefaultStorageType(checkEvent,
-                                cluster, model.storageAccountType)
+                        control.setDefaultStorageType(checkEvent, cluster, model.storageAccountType)
                     }}
                     // set error message to prevent user from applying the changes when validation is not completed
                     .map { model -> model.apply {
@@ -275,7 +274,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         val applyData: () -> Unit = {
             // Only set for changed
             if (storagePanel.storageTypeComboBox.selectedItem != data.storageAccountType) {
-                storagePanel. storageTypeComboBox.selectedItem = data.storageAccountType
+                storagePanel.storageTypeComboBox.selectedItem = data.storageAccountType
             }
 
             storagePanel.errorMessage = data.errorMsg
