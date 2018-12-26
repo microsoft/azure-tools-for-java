@@ -29,15 +29,10 @@ import com.microsoft.intellij.common.CommonConst
 import com.microsoft.tooling.msservices.components.DefaultLoader
 
 
-abstract class SparkApplicationTypeOptionAction
+abstract class SelectSparkApplicationTypeAction
     : AzureAnAction() , Toggleable {
-    open fun runPostAction(e: AnActionEvent) {
-        return
-    }
-
     override fun onActionPerformed(e: AnActionEvent) {
         DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.SPARK_APPLICATION_TYPE, this.getSparkApplicationType().toString())
-        this.runPostAction(e)
     }
 
     companion object {
@@ -63,25 +58,25 @@ abstract class SparkApplicationTypeOptionAction
     }
 }
 
-class SparkApplicationTypeOptionNone : SparkApplicationTypeOptionAction() {
+class SelectNoneSparkTypeAction : SelectSparkApplicationTypeAction() {
     override fun getSparkApplicationType() : SparkApplicationType {
         return SparkApplicationType.None
     }
 }
 
-class SparkApplicationTypeOptionHDInsight : SparkApplicationTypeOptionAction() {
+class SelectHDInsightSparkTypeAction : SelectSparkApplicationTypeAction() {
     override fun getSparkApplicationType() : SparkApplicationType {
         return SparkApplicationType.HDInsight
     }
 }
 
-class SparkApplicationTypeOptionCosmosSpark : SparkApplicationTypeOptionAction() {
+class SelectCosmosSparkTypeAction : SelectSparkApplicationTypeAction() {
     override fun getSparkApplicationType() : SparkApplicationType {
         return SparkApplicationType.CosmosSpark
     }
 }
 
-class SparkApplicationTypeOptionCosmosServerlessSpark : SparkApplicationTypeOptionAction() {
+class SelectCosmosServerlessSparkTypeAction : SelectSparkApplicationTypeAction() {
     override fun getSparkApplicationType() : SparkApplicationType {
         return SparkApplicationType.CosmosServerlessSpark
     }

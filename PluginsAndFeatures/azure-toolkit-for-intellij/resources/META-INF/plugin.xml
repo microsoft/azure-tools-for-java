@@ -421,13 +421,13 @@
             class="com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction" text="Submit Spark Application"
             description="Submit Spark Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitLivySparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSubmitJobAction" text="HDInsight"
+            class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSelectAndSubmitAction" text="HDInsight"
             description="Submit HDInsight Spark Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitCosmosSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSubmitJobAction" text="Cosmos Spark"
+            class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSelectAndSubmitAction" text="Cosmos Spark"
             description="Submit Cosmos Spark Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitCosmosServerlessSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSubmitJobAction" text="Cosmos Serverless Spark"
+            class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSelectAndSubmitAction" text="Cosmos Serverless Spark"
             description="Submit Cosmos Serverless Spark Application" icon="/icons/Spark.png"/>
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
@@ -529,20 +529,20 @@
       <reference ref="Spark.RunScalaLivyConsole"/>
     </group>
 
-    <group id="SetDefaultRunConfigGroup" text="Default Spark Application Type" description="Select default spark application type" popup="true">
+    <group id="SelectDefaultSparkApplicationTypeActionGroup" text="Default Spark Application Type" description="Select default spark application type" popup="true">
       <add-to-group group-id="ToolsMenu" anchor="last"/>
       <add-to-group group-id="RunContextPopupGroup" anchor="after" relative-to-action="SparkJobDebug"/>
-        <action id="SetDefaultSparkRunConfigurationTypeNone"
-                class="com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationTypeOptionNone" text="None" >
+        <action id="SelectNoneSparkType"
+                class="com.microsoft.azure.hdinsight.spark.run.action.SelectNoneSparkTypeAction" text="None" >
         </action>
-      <action id="SetDefaultSparkRunConfigurationTypeHDInsight"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationTypeOptionHDInsight" text="HDInsight" >
+      <action id="SelectHDInsightSparkType"
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectHDInsightSparkTypeAction" text="HDInsight" >
       </action>
-      <action id="SetDefaultSparkRunConfigurationTypeCosmosSpark"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationTypeOptionCosmosSpark" text="CosmosSpark" >
+      <action id="SelectCosmosSparkType"
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosSparkTypeAction" text="CosmosSpark" >
       </action>
-      <action id="SetDefaultSparkRunConfigurationTypeCosmosServerlessSpark"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationTypeOptionCosmosServerlessSpark" text="CosmosServerlessSpark" >
+      <action id="SelectCosmosServerlessSparkType"
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosServerlessSparkTypeAction" text="CosmosServerlessSpark" >
       </action>
     </group>
 
