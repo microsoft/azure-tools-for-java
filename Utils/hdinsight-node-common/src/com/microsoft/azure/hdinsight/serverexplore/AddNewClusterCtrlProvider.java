@@ -50,7 +50,7 @@ public class AddNewClusterCtrlProvider {
             "You have rejected the untrusted servers'certificate.\r\n" +
             "Please click'OK',then accept the untrusted certificate \r\n"+
             "if you want to link to this cluster.Or you can update the \r\n" +
-            "Livy URL to link to a different cluster.";
+            "host to link to a different cluster.";
 
     @NotNull
     private SettableControl<AddNewClusterModel> controllableView;
