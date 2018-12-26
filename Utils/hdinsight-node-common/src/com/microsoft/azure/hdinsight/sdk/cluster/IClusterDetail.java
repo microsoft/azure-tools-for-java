@@ -25,6 +25,8 @@ package com.microsoft.azure.hdinsight.sdk.cluster;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -104,5 +106,13 @@ public interface IClusterDetail {
 
     default String getSparkVersion() {
         return null;
+    }
+
+    default SparkSubmitStorageType getDefaultStorageType(){
+        return SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT;
+    }
+
+    default SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType(){
+        return SparkSubmitStorageTypeOptionsForCluster.ClusterWithFullType;
     }
 }

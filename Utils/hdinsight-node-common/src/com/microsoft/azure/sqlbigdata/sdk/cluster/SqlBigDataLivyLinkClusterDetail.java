@@ -2,43 +2,55 @@ package com.microsoft.azure.sqlbigdata.sdk.cluster;
 
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
+import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.YarnCluster;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.util.Optional;
 
 public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     @NotNull
-    private final URI livyEndpoint;
-    @Nullable
-    private final URI yarnEndpoint;
+    private String host;
+    private int knoxPort;
     @NotNull
     private String clusterName;
-    @Nullable
+    @NotNull
     private String userName;
-    @Nullable
+    @NotNull
     private String password;
 
-    public SqlBigDataLivyLinkClusterDetail(@NotNull URI livyEndpoint,
-                                           @Nullable URI yarnEndpoint,
-                                           @NotNull String clusterName,
+    public SqlBigDataLivyLinkClusterDetail(@NotNull String host,
+                                           int knoxPort,
+                                           @Nullable String clusterName,
                                            @NotNull String userName,
                                            @NotNull String password) {
-        this.clusterName = clusterName;
+        this.host = host;
+        this.knoxPort = knoxPort;
+        this.clusterName = StringUtils.isBlank(clusterName) ? host : clusterName;
         this.userName = userName;
         this.password = password;
-        this.livyEndpoint = livyEndpoint;
-        this.yarnEndpoint = yarnEndpoint;
+    }
+
+    @NotNull
+    public String getHost() {
+        return host;
+    }
+
+    public int getKnoxPort() {
+        return knoxPort;
     }
 
     @Override
     @NotNull
     public String getConnectionUrl() {
-        return livyEndpoint.toString().endsWith("/") ? livyEndpoint.toString() : livyEndpoint.toString() + "/";
+        return String.format("https://%s:%d/gateway/default/livy/v1/", host, knoxPort);
     }
 
     @Override
@@ -48,13 +60,14 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
     }
 
     @Override
-    @Nullable
+    @NotNull
     public String getYarnNMConnectionUrl() {
-        if (yarnEndpoint == null) {
-            return null;
-        } else {
-            return yarnEndpoint.toString().endsWith("/") ? yarnEndpoint.toString() : yarnEndpoint.toString() + "/";
-        }
+        return String.format("https://%s:%d/gateway/default/yarn/", host, knoxPort);
+    }
+
+    @NotNull
+    public String getSparkHistoryUrl() {
+        return String.format("https://%s:%d/gateway/default/sparkhistory/", host, knoxPort);
     }
 
     @Override
@@ -87,4 +100,13 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
         return password;
     }
 
+    @Override
+    public SparkSubmitStorageType getDefaultStorageType() {
+        return SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION;
+    }
+
+    @Override
+    public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
+       return SparkSubmitStorageTypeOptionsForCluster.BigDataClusterWithWebHdfs;
+    }
 }

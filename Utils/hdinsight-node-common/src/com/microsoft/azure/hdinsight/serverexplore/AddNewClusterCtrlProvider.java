@@ -38,13 +38,19 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIUtils;
 import rx.Observable;
-
+import sun.security.validator.ValidatorException;
+import javax.net.ssl.SSLHandshakeException;
 import java.net.URI;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AddNewClusterCtrlProvider {
     private static final String URL_PREFIX = "https://";
+    private static final String UserRejectCAErrorMsg =
+            "You have rejected the untrusted servers'certificate.\r\n" +
+            "Please click'OK',then accept the untrusted certificate \r\n"+
+            "if you want to link to this cluster.Or you can update the \r\n" +
+            "Livy URL to link to a different cluster.";
 
     @NotNull
     private SettableControl<AddNewClusterModel> controllableView;
@@ -139,18 +145,10 @@ public class AddNewClusterCtrlProvider {
                 .anyMatch(clusterDetail -> clusterDetail.getName().equals(clusterName));
     }
 
-    /**
-     * Check if livy endpoint exists in:
-     * 1. Livy Linked SQL Big Data clusters
-     * @param livyEndpoint
-     * @return whether livy endpoint exists or not
-     */
-    public boolean doesClusterLivyEndpointExistInSqlBigDataClusters(@NotNull String livyEndpoint) {
+    public boolean doeshostExistInSqlBigDataClusters(@NotNull String host) {
         return ClusterManagerEx.getInstance().getAdditionalClusterDetails().stream()
                 .filter(clusterDetail -> clusterDetail instanceof SqlBigDataLivyLinkClusterDetail)
-                .anyMatch(clusterDetail ->
-                        URI.create(((LivyCluster) clusterDetail).getLivyConnectionUrl()).getHost()
-                                .equals(URI.create(livyEndpoint).getHost()));
+                .anyMatch(clusterDetail -> ((SqlBigDataLivyLinkClusterDetail) clusterDetail).getHost().equals(host));
     }
 
     public Observable<AddNewClusterModel> refreshContainers() {
@@ -197,14 +195,21 @@ public class AddNewClusterCtrlProvider {
                     String password = Optional.ofNullable(toUpdate.getPassword()).orElse("");
                     URI livyEndpoint = toUpdate.getLivyEndpoint();
                     URI yarnEndpoint = toUpdate.getYarnEndpoint();
+                    String host = toUpdate.getHost();
+                    int knoxPort = toUpdate.getKnoxPort();
                     int selectedContainerIndex = toUpdate.getSelectedContainerIndex();
+
+
+                    // For HDInsight linked cluster, only real cluster name or real cluster endpoint(pattern as https://sparkcluster.azurehdinsight.net/) are allowed to be cluster name
+                    // For HDInsight livy linked or aris linked cluster, cluster name format is not restricted
+                    final String clusterName = sparkClusterType == SparkClusterType.HDINSIGHT_CLUSTER
+                            ? getClusterName(clusterNameOrUrl)
+                            : clusterNameOrUrl;
 
                     // These validation check are redundant for intelliJ sicne intellij does full check at view level
                     // but necessary for Eclipse
-
-                    // Incomplete data check
-                    // link through livy don't need to verify empty username and password
-                    if (livyEndpoint == null) {
+                    HDStorageAccount storageAccount = null;
+                    if (sparkClusterType == SparkClusterType.HDINSIGHT_CLUSTER) {
                         if (StringUtils.containsWhitespace(clusterNameOrUrl) ||
                                 StringUtils.containsWhitespace(userName) ||
                                 StringUtils.containsWhitespace(password)) {
@@ -224,16 +229,7 @@ public class AddNewClusterCtrlProvider {
 
                             return toUpdate.setErrorMessage("All (*) fields are required.");
                         }
-                    }
 
-                    // For HDInsight linked cluster, only real cluster name or real cluster endpoint(pattern as https://sparkcluster.azurehdinsight.net/) are allowed to be cluster name
-                    // For HDInsight livy linked or aris linked cluster, cluster name format is not restricted
-                    final String clusterName = sparkClusterType == SparkClusterType.HDINSIGHT_CLUSTER
-                            ? getClusterName(clusterNameOrUrl)
-                            : clusterNameOrUrl;
-
-                    HDStorageAccount storageAccount = null;
-                    if (sparkClusterType == SparkClusterType.HDINSIGHT_CLUSTER) {
                         // Cluster name check
                         if (clusterName == null) {
                             return toUpdate.setErrorMessage("Wrong cluster name or endpoint");
@@ -285,7 +281,7 @@ public class AddNewClusterCtrlProvider {
                             break;
                         case SQL_BIG_DATA_CLUSTER:
                             additionalClusterDetail =
-                                    new SqlBigDataLivyLinkClusterDetail(livyEndpoint, yarnEndpoint, clusterName, userName, password);
+                                    new SqlBigDataLivyLinkClusterDetail(host, knoxPort, clusterName, userName, password);
                     }
 
                     // Account certificate check
@@ -296,6 +292,13 @@ public class AddNewClusterCtrlProvider {
                                 .filter(msg -> !msg.isEmpty())
                                 .orElse("Wrong username/password") +
                                 " (" + authErr.getErrorCode() + ")");
+                    } catch (SSLHandshakeException ex) {
+                        //user rejects the ac when linking aris cluster
+                        if (sparkClusterType == SparkClusterType.SQL_BIG_DATA_CLUSTER && ex.getCause() instanceof ValidatorException) {
+                            return toUpdate.setErrorMessage(UserRejectCAErrorMsg);
+                        }
+
+                        return toUpdate.setErrorMessage("Authentication Error: " + ex.getMessage());
                     } catch (Exception ex) {
                         return toUpdate.setErrorMessage("Authentication Error: " + ex.getMessage());
                     }

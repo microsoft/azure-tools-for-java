@@ -396,8 +396,21 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                 storageWithUploadPathPanel.viewModel.clusterSelectedSubject.onNext(it)
 
                 if (it != null) {
+                    //check precluster value,this can prevent loading saved config with refreshing storage type.
+                    //clusterdetails.size == clusterSelectCapacity means this msg comes from selecting cluster in list
+                    //clusterdetails.size == 1 means this msg comes from loading saved config
+                    val clusterDetails = storageWithUploadPathPanel.viewModel.clusterSelectedSubject.values
+                    val preClusterIndex = clusterDetails.size - storageWithUploadPathPanel.viewModel.clusterSelectedCapacity
+                    val preSelectCluster : IClusterDetail? =
+                            if (preClusterIndex >= 0) {
+                                storageWithUploadPathPanel.viewModel.clusterSelectedSubject.values[preClusterIndex] as? IClusterDetail
+                            } else {
+                                null
+                            }
+
                     storageWithUploadPathPanel.viewModel.uploadStorage.storageCheckSubject.onNext(
-                            SparkSubmissionJobUploadStorageCtrl.StorageCheckSelectedClusterEvent(it))
+                            SparkSubmissionJobUploadStorageCtrl.StorageCheckSelectedClusterEvent(it,
+                                    preSelectCluster?.name))
                 }
                 checkInputsWithErrorLabels()
             }

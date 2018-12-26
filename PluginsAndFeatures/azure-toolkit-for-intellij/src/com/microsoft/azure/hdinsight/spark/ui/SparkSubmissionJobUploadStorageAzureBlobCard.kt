@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.intellij.ui.ComboboxWithBrowseButton
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.StreamUtil
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.intellij.forms.dsl.panel
 import javax.swing.JLabel
 import javax.swing.JTextArea
@@ -71,5 +72,5 @@ class SparkSubmissionJobUploadStorageAzureBlobCard: SparkSubmissionJobUploadStor
         formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }
 
-    override val title = "Azure Blob"
+    override val title = SparkSubmitStorageType.BLOB.description
 }

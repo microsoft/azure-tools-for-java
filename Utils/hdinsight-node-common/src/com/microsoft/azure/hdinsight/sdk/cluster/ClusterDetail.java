@@ -26,6 +26,9 @@ import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 
@@ -329,4 +332,30 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
         return URI.create(getConnectionUrl()).resolve("yarnui/ws/v1/cluster/apps/").toString();
     }
 
+    @Override
+    public SparkSubmitStorageType getDefaultStorageType() {
+        return SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT;
+    }
+
+    @Override
+    public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
+        StorageAccountTypeEnum type = StorageAccountTypeEnum.UNKNOWN;
+        try {
+            type = getStorageAccount().getAccountType();
+        } catch (HDIException e) {
+            try {
+                getConfigurationInfo();
+                type = getStorageAccount().getAccountType();
+            } catch (IOException | HDIException | AzureCmdException igonred) {
+            }
+        }
+
+        if (type == StorageAccountTypeEnum.ADLS) {
+            return SparkSubmitStorageTypeOptionsForCluster.ClusterWithAdls;
+        } else if (type == StorageAccountTypeEnum.BLOB) {
+            return SparkSubmitStorageTypeOptionsForCluster.ClusterWithBlob;
+        } else {
+            return SparkSubmitStorageTypeOptionsForCluster.ClusterWithUnknown;
+        }
+    }
 }
