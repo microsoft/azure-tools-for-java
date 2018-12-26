@@ -26,6 +26,7 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.ConfigurationTypeUtil
 import com.microsoft.azure.hdinsight.common.CommonConst
+import com.microsoft.azure.hdinsight.common.IconPathHelper
 import com.microsoft.intellij.util.PluginUtil
 import javax.swing.Icon
 
@@ -36,7 +37,7 @@ class ArisSparkConfigurationType : ConfigurationType {
     }
     override fun getIcon(): Icon {
         // TODO: should use Aris config icon
-        return PluginUtil.getIcon(CommonConst.OpenSparkUIIconPath)
+        return PluginUtil.getIcon(IconPathHelper.FormatIconPath(CommonConst.OpenSparkUIIconPath))
     }
 
     override fun getDisplayName(): String {

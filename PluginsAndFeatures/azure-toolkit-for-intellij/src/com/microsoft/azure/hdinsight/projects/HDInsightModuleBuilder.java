@@ -39,6 +39,7 @@ import com.intellij.packaging.elements.PackagingElementFactory;
 import com.intellij.packaging.impl.artifacts.JarArtifactType;
 import com.intellij.platform.ProjectTemplate;
 import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azure.hdinsight.common.IconPathHelper;
 import com.microsoft.azure.hdinsight.projects.ui.HDInsightProjectTypeStep;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
@@ -77,7 +78,7 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
 
     @Override
     public Icon getNodeIcon() {
-        return IconLoader.getIcon(CommonConst.ProductIConPath);
+        return IconLoader.getIcon(IconPathHelper.FormatIconPath(CommonConst.ProductIConPath));
     }
 
     @Override
