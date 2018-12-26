@@ -41,6 +41,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
+import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession;
 import com.microsoft.azure.hdinsight.sdk.io.spark.ClusterFileBase64BufferedOutputStream;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.App;
@@ -91,6 +92,7 @@ import rx.Observable;
 import rx.Observer;
 import rx.*;
 import rx.schedulers.Schedulers;
+import sun.security.validator.ValidatorException;
 
 import java.awt.*;
 import java.io.*;
@@ -256,6 +258,7 @@ public class JobUtils {
                                                       long start,
                                                       int size) {
         final WebClient HTTP_WEB_CLIENT = new WebClient(BrowserVersion.CHROME);
+        HTTP_WEB_CLIENT.getOptions().setUseInsecureSSL(HttpObservable.isSSLCertificateValidationDisabled());
         HTTP_WEB_CLIENT.setCache(globalCache);
 
         if (credentialsProvider != null) {
@@ -753,7 +756,7 @@ public class JobUtils {
     }
 
     public static AbstractMap.SimpleImmutableEntry<Integer, Map<String, List<String>>>
-    authenticate(IClusterDetail clusterDetail) throws HDIException, IOException {
+    authenticate(IClusterDetail clusterDetail) throws HDIException, IOException, ValidatorException {
         SparkBatchSubmission submission = SparkBatchSubmission.getInstance();
         if (!StringUtils.isEmpty(clusterDetail.getHttpUserName()) && !StringUtils.isEmpty(clusterDetail.getHttpPassword())) {
             submission.setUsernamePasswordCredential(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
