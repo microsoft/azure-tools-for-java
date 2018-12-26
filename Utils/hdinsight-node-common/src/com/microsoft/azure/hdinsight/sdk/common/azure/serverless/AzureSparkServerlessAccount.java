@@ -36,6 +36,8 @@ import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.JobInfoListResult;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.JobState;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.*;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -344,6 +346,16 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
     @Override
     public String getConnectionUrl() {
         return null;
+    }
+
+    @Override
+    public SparkSubmitStorageType getDefaultStorageType() {
+        return SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE;
+    }
+
+    @Override
+    public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
+        return SparkSubmitStorageTypeOptionsForCluster.ServerlessClusterWithAccountDefault;
     }
 
     public int getSystemMaxDegreeOfParallelism() {

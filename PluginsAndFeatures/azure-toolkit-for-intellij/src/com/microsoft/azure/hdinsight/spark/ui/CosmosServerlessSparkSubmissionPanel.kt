@@ -9,6 +9,8 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServe
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkSubmitModel
 import com.microsoft.intellij.forms.dsl.panel
+import org.apache.commons.lang3.exception.ExceptionUtils
+import rx.Observable
 import java.awt.FlowLayout
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -45,7 +47,7 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
         toolTipText = "Spark events root path"
     }
 
-    private val sparkEventsDirectoryPrefixField = JLabel("adl://*.azuredatalakestore.net/").apply {
+    private val sparkEventsDirectoryPrefixField = JLabel("<Root Path>/").apply {
         toolTipText = "Spark events root path"
     }
 
@@ -83,22 +85,22 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
     inner class ViewModel: SparkSubmissionContentPanel.ViewModel() {
         init {
             clusterSelection.clusterIsSelected
-                    .subscribe { cluster ->
-                        if (cluster == null) {
-                            return@subscribe
-                        }
-
-                        val model = CosmosServerlessSparkSubmitModel().apply {
-                            getData(this)
-                        }
-
-                        val account = cluster as? AzureSparkServerlessAccount
-                        if (account != null) {
-                            setData(model.apply {
-                                sparkEventsDirectoryPrefix = account.storageRootPath
-                            })
-                        }
+                .flatMap { cluster ->
+                    if (cluster == null) {
+                        Observable.empty<CosmosServerlessSparkSubmitModel>()
+                    } else {
+                        Observable.just(CosmosServerlessSparkSubmitModel())
+                            .doOnNext { getData(it) }
+                            .map { model ->
+                                model.apply {
+                                    sparkEventsDirectoryPrefix = (cluster as? AzureSparkServerlessAccount)?.storageRootPath
+                                            ?: "<Root Path>/"
+                                }
+                            }
+                            .doOnNext { setData(it) }
                     }
+                }
+                .subscribe({}, {err -> ExceptionUtils.getStackTrace(err)})
         }
     }
 
