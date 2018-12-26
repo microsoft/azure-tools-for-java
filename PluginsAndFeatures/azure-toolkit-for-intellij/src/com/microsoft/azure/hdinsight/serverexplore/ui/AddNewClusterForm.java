@@ -39,8 +39,6 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
-import com.microsoft.intellij.secure.IdeaTrustStrategy;
-import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -201,6 +199,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         clusterNameOrUrlField = new HintTextField("Example: spk22 or https://spk22.azurehdinsight.net");
         livyEndpointField = new HintTextField("Example: http://headnodehost:8998");
         yarnEndpointField = new HintTextField("(Optional)Example: http://hn0-spark2:8088");
+        arisClusterNameField = new HintTextField("(Optional) Cluster name");
     }
 
     public SparkClusterType getSparkClusterType() {
