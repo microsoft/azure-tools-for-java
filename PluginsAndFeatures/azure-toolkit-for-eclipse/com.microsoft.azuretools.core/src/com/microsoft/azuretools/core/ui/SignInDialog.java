@@ -273,7 +273,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
             }
             signInAsync();
             accountEmail = adAuthManager.getAccountEmail();
-        } catch (IOException | InvocationTargetException | InterruptedException ex) {
+        } catch (InvocationTargetException | InterruptedException ex) {
             System.out.println("doSignIn@SingInDialog: " + ex.getMessage());
             ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "doSignIn@SingInDialog", ex));
@@ -306,13 +306,8 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void doSignOut() {
-        try {
-            accountEmail = null;
-            AdAuthManager.getInstance().signOut();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "doSignOut@SingInDialog", ex));
-        }
+        accountEmail = null;
+        AdAuthManager.getInstance().signOut();
     }
     
     private void doCreateServicePrincipal() {

@@ -21,24 +21,24 @@
 
 package com.microsoft.azure.hdinsight.spark.ui;
 
-import com.intellij.execution.configurations.RuntimeConfigurationError;
-import com.intellij.execution.configurations.RuntimeConfigurationException;
-import com.intellij.execution.configurations.RuntimeConfigurationWarning;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.components.JBScrollPane;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
-import org.jetbrains.annotations.NotNull;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import javax.swing.*;
 
-public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobConfigurableModel> {
+public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobConfigurableModel>, Disposable {
     private JTabbedPane executionTypeTabPane;
     private JPanel myWholePanel;
-    private SparkLocalRunConfigurable myLocalRunConfigurable;
+    private SparkLocalRunParamsPanel localRunParamsPanel;
     private JScrollPane remoteConfigScrollPane;
-    private SparkSubmissionContentPanelConfigurable submissionContentPanelConfigurable;
+    private SparkSubmissionContentPanel submissionContentPanel;
 
     @NotNull
     private final Project myProject;
@@ -53,41 +53,36 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
     }
 
     protected void createUIComponents() {
-        myLocalRunConfigurable = new SparkLocalRunConfigurable(getProject());
+        localRunParamsPanel = new SparkLocalRunParamsPanel(getProject()).withInitialize();
         remoteConfigScrollPane = new JBScrollPane();
-        setClusterSubmissionConfigurable(createSubmissionPanel());
+        setClusterSubmissionPanel(createSubmissionPanel());
     }
 
-    protected SparkSubmissionContentPanelConfigurable createSubmissionPanel() {
-        return new SparkSubmissionDebuggablePanelConfigurable(getProject());
+    protected SparkSubmissionContentPanel createSubmissionPanel() {
+        return new SparkSubmissionDebuggablePanel(getProject());
     }
 
     @Override
     public void setData(@NotNull SparkBatchJobConfigurableModel data) {
         // Data -> Component
-        myLocalRunConfigurable.setData(data.getLocalRunConfigurableModel());
-        submissionContentPanelConfigurable.setData(data.getSubmitModel());
+        localRunParamsPanel.setData(data.getLocalRunConfigurableModel());
+
+        SparkSubmitModel submitModel = data.getSubmitModel();
+        submitModel.setClusterSelectable(data.isClusterSelectionEnabled());
+        submissionContentPanel.setData(data.getSubmitModel());
+
         executionTypeTabPane.setSelectedIndex(data.getFocusedTabIndex());
 
         // Presentation only
         setLocalRunConfigEnabled(data.isLocalRunConfigEnabled());
-        submissionContentPanelConfigurable.setClusterSelectionEnabled(data.isClusterSelectionEnabled());
     }
 
     @Override
     public void getData(@NotNull SparkBatchJobConfigurableModel data) {
         // Component -> Data
-        myLocalRunConfigurable.getData(data.getLocalRunConfigurableModel());
-        submissionContentPanelConfigurable.getData(data.getSubmitModel());
+        localRunParamsPanel.getData(data.getLocalRunConfigurableModel());
+        submissionContentPanel.getData(data.getSubmitModel());
         data.setFocusedTabIndex(executionTypeTabPane.getSelectedIndex());
-    }
-
-    public SparkLocalRunConfigurable getLocalRunConfigurable() {
-        return myLocalRunConfigurable;
-    }
-
-    public SparkSubmissionContentPanelConfigurable getClusterSubmissionConfigurable() {
-        return submissionContentPanelConfigurable;
     }
 
     @NotNull
@@ -95,33 +90,21 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
         return myProject;
     }
 
-    protected void setLocalRunConfigurable(SparkLocalRunConfigurable myLocalRunConfigurable) {
-        this.myLocalRunConfigurable = myLocalRunConfigurable;
-    }
-
-    protected void setClusterSubmissionConfigurable(SparkSubmissionContentPanelConfigurable myClusterSubmissionConfigurable) {
-        this.submissionContentPanelConfigurable = myClusterSubmissionConfigurable;
-        remoteConfigScrollPane.setViewportView(myClusterSubmissionConfigurable.getComponent());
+    protected synchronized void setClusterSubmissionPanel(SparkSubmissionContentPanel clusterSubmissionPanel) {
+        this.submissionContentPanel = clusterSubmissionPanel;
+        Disposer.register(this, this.submissionContentPanel);
+        remoteConfigScrollPane.setViewportView(clusterSubmissionPanel.getComponent());
     }
 
     private void setLocalRunConfigEnabled(boolean enabled) {
         executionTypeTabPane.setEnabledAt(0, enabled);
     }
 
-    public void validate() throws ConfigurationException {
-        try {
-            submissionContentPanelConfigurable.validate();
-        } catch (ConfigurationException e) {
-            String remoteRunPrefix = "[Remotely Run in Cluster] ";
-            if (e instanceof RuntimeConfigurationError) {
-                throw new RuntimeConfigurationError(remoteRunPrefix + e.getMessage(), e.getQuickFix());
-            } else if (e instanceof RuntimeConfigurationWarning) {
-                throw new RuntimeConfigurationWarning(remoteRunPrefix + e.getMessage(), e.getQuickFix());
-            } else if (e instanceof RuntimeConfigurationException) {
-                throw new RuntimeConfigurationException(remoteRunPrefix + e.getMessage(), remoteRunPrefix + e.getTitle());
-            } else {
-                throw new ConfigurationException(remoteRunPrefix + e.getMessage(), remoteRunPrefix + e.getTitle());
-            }
-        }
+    public void validateInputs() throws ConfigurationException {
+        submissionContentPanel.validateInputs();
+    }
+
+    @Override
+    public void dispose() {
     }
 }

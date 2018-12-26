@@ -45,8 +45,8 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiMethodUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType;
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.scala.lang.psi.api.statements.ScFunctionDefinition;
 import scala.Option;
@@ -58,13 +58,13 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Optional;
 import java.util.Set;
 
-public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigurationProducerBase<RemoteDebugRunConfiguration> {
+public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigurationProducerBase<LivySparkBatchJobRunConfiguration> {
     public SparkBatchJobLocalRunConfigurationProducer() {
-        super(RemoteDebugRunConfigurationType.getInstance());
+        super(LivySparkBatchJobRunConfigurationType.getInstance());
     }
 
     @Override
-    protected boolean setupConfigurationFromContext(RemoteDebugRunConfiguration configuration, ConfigurationContext context, Ref<PsiElement> sourceElement) {
+    protected boolean setupConfigurationFromContext(LivySparkBatchJobRunConfiguration configuration, ConfigurationContext context, Ref<PsiElement> sourceElement) {
         return Optional.ofNullable(context.getModule())
                 .map(Module::getProject)
                 .flatMap(project -> getMainClassFromContext(context)
@@ -96,7 +96,7 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
                 .orElse(false);
     }
 
-    private void setupConfiguration(RemoteDebugRunConfiguration configuration, final PsiClass clazz, final ConfigurationContext context) {
+    private void setupConfiguration(LivySparkBatchJobRunConfiguration configuration, final PsiClass clazz, final ConfigurationContext context) {
         SparkBatchJobConfigurableModel jobModel = configuration.getModel();
 
         getNormalizedClassName(clazz)
@@ -106,7 +106,7 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
                 });
 
         configuration.setGeneratedName();
-        configuration.setActionProperty(RemoteDebugRunConfiguration.ACTION_TRIGGER_PROP, "Context");
+        configuration.setActionProperty(LivySparkBatchJobRunConfiguration.ACTION_TRIGGER_PROP, "Context");
         setupConfigurationModule(context, configuration);
     }
 
@@ -212,7 +212,7 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
      * @return true for reusable
      */
     @Override
-    public boolean isConfigurationFromContext(RemoteDebugRunConfiguration jobConfiguration, ConfigurationContext context) {
+    public boolean isConfigurationFromContext(LivySparkBatchJobRunConfiguration jobConfiguration, ConfigurationContext context) {
         return getMainClassFromContext(context)
                 .filter(mcPair -> getNormalizedClassName(mcPair.getValue())
                             .map(name -> name.equals(jobConfiguration.getModel().getSubmitModel().getMainClassName()))
@@ -227,7 +227,7 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
 
                     if (!Comparing.equal(context.getModule(), configurationModule)) {
 
-                        RemoteDebugRunConfiguration template = (RemoteDebugRunConfiguration)context
+                        LivySparkBatchJobRunConfiguration template = (LivySparkBatchJobRunConfiguration)context
                                 .getRunManager()
                                 .getConfigurationTemplate(getConfigurationFactory())
                                 .getConfiguration();
@@ -238,7 +238,7 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
                         }
                     }
 
-                    jobConfiguration.setActionProperty(RemoteDebugRunConfiguration.ACTION_TRIGGER_PROP, "ContextReuse");
+                    jobConfiguration.setActionProperty(LivySparkBatchJobRunConfiguration.ACTION_TRIGGER_PROP, "ContextReuse");
                     return true;
                 })
                 .orElse(false);

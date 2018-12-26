@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.authmanage;
 
-import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.Constants;
@@ -32,45 +31,27 @@ import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
-import com.microsoft.azuretools.securestore.SecureStore;
-import com.microsoft.azuretools.service.ServiceManager;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.logging.Logger;
 
-public class AdAuthManager {
-    private static final Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
+public class AdAuthManager extends BaseADAuthManager {
     private IWebUi webUi;
-    private AzureEnvironment env;
-    private AdAuthDetails adAuthDetails;
-
-    @Nullable
-    final private SecureStore secureStore;
-
-    private static AdAuthManager instance = null;
-    private static final String COMMON_TID = "common";  // Common Tenant ID
-    private static final String SECURE_STORE_SERVICE = "ADAuthManager";
-    private static final String SECURE_STORE_KEY = "cachedAuthResult";
-
     private static final String AUTHORIZATIONREQUIRED = "Authorization is required, please sign out and sign in again";
-    @NotNull
-    private String commonTenantId = COMMON_TID;
+
+    private static class LazyLoader {
+        static final AdAuthManager INSTANCE = new AdAuthManager();;
+    }
 
     /**
      * Get the AdAuthManager singleton instance.
      * @return AdAuthManager singleton instance.
-     * @throws IOException thrown when there is exception.
      */
-    public static AdAuthManager getInstance() throws IOException {
-        if (instance == null) {
-            instance = new AdAuthManager();
-        }
-        return instance;
+    public static AdAuthManager getInstance() {
+        return LazyLoader.INSTANCE;
     }
 
     public String getAccessToken(String tid) throws IOException {
@@ -89,7 +70,8 @@ public class AdAuthManager {
         AuthContext ac = createContext(tid, null);
         AuthResult result = null;
         try {
-            result = ac.acquireToken(resource, false, adAuthDetails.getAccountEmail(), false);
+            result = ac.acquireToken(resource, false, adAuthDetails.getAccountEmail(), false,
+                this.webUi, Constants.redirectUri);
         } catch (AuthException e) {
             if (AuthError.InvalidGrant.equalsIgnoreCase(e.getError())
                     || AuthError.InteractionRequired.equalsIgnoreCase(e.getError())) {
@@ -107,7 +89,8 @@ public class AdAuthManager {
      * @param authMethodDetails The authentication method detail for helping
      * @return true for success
      */
-    public synchronized boolean tryRestoreSignIn(@NotNull AuthMethodDetails authMethodDetails) {
+    @Override
+    public synchronized boolean tryRestoreSignIn(@NotNull final AuthMethodDetails authMethodDetails) {
         if (secureStore == null || authMethodDetails.getAzureEnv() == null ||
                 // Restore only for the same saved Azure environment with current
                 !CommonSettings.getEnvironment().getName().equals(authMethodDetails.getAzureEnv())) {
@@ -163,7 +146,10 @@ public class AdAuthManager {
         if (savedAuth == null) {
             cleanCache();
             AuthContext ac = createContext(getCommonTenantId(), null);
-            result = ac.acquireToken(env.managementEndpoint(), true, null, false);
+            // todo: to determine which acquireToken to call, device login or interactive login
+            // todo: https://github.com/Microsoft/azure-tools-for-java/pull/1623
+            result = ac.acquireToken(env.managementEndpoint(), true, null,
+                false, this.webUi, Constants.redirectUri);
         } else {
             result = savedAuth;
         }
@@ -179,41 +165,42 @@ public class AdAuthManager {
             AuthContext ac1 = createContext(tid, null);
             // put tokens into the cache
             try {
-                ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable);
+                ac1.acquireToken(env.managementEndpoint(), false, userId, isDisplayable,
+                    this.webUi, Constants.redirectUri);
             } catch (AuthException e) {
                 //TODO: should narrow to AuthError.InteractionRequired
-                ac1.acquireToken(env.managementEndpoint(), true, userId, isDisplayable);
+                ac1.acquireToken(env.managementEndpoint(), true, userId, isDisplayable,
+                    this.webUi, Constants.redirectUri);
             }
 
             // FIXME!!! Some environments and subscriptions can't get the resource manager token
             // Let the log in process passed, and throwing the errors when to access those resources
             try {
-                ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable);
+                ac1.acquireToken(env.resourceManagerEndpoint(), false, userId, isDisplayable,
+                    this.webUi, Constants.redirectUri);
             } catch (AuthException e) {
                 if (CommonSettings.getEnvironment() instanceof ProvidedEnvironment) {
                     // Swallow the exception since some provided environments are not full featured
                     LOGGER.warning("Can't get " + env.resourceManagerEndpoint() + " access token from environment " +
                             CommonSettings.getEnvironment().getName());
-                } else {
-                    throw e;
                 }
             }
 
             try {
-                ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable);
+                ac1.acquireToken(env.graphEndpoint(), false, userId, isDisplayable,
+                    this.webUi, Constants.redirectUri);
             } catch (AuthException e) {
                 if (CommonSettings.getEnvironment() instanceof ProvidedEnvironment) {
                     // Swallow the exception since some provided environments are not full featured
                     LOGGER.warning("Can't get " + env.graphEndpoint() + " access token from environment " +
                             CommonSettings.getEnvironment().getName());
-                } else {
-                    throw e;
                 }
             }
 
             // ADL account access token
             try {
-                ac1.acquireToken(env.dataLakeEndpointResourceId(), false, userId, isDisplayable);
+                ac1.acquireToken(env.dataLakeEndpointResourceId(), false, userId, isDisplayable,
+                    this.webUi, Constants.redirectUri);
             } catch (AuthException e) {
                 LOGGER.warning("Can't get " + env.dataLakeEndpointResourceId() + " access token from environment " +
                         CommonSettings.getEnvironment().getName() + "for user " + userId);
@@ -244,118 +231,8 @@ public class AdAuthManager {
         return adAuthDetails.getTidToSidsMap();
     }
 
-    /**
-     * Sign out azure account.
-     */
-    public void signOut() {
-        cleanCache();
-        adAuthDetails.setAccountEmail(null);
-        adAuthDetails.setTidToSidsMap(null);
-    }
-
-    public boolean isSignedIn() {
-        return adAuthDetails.getAccountEmail() != null;
-    }
-
-    public String getAccountEmail() {
-        return adAuthDetails.getAccountEmail();
-    }
-
-    @Nullable
-    private AuthResult loadFromSecureStore() {
-        if (secureStore == null) {
-            return null;
-        }
-
-        String authJson = secureStore.loadPassword(SECURE_STORE_SERVICE, SECURE_STORE_KEY);
-
-        if (authJson != null) {
-            try {
-                AuthResult savedAuth = JsonHelper.deserialize(AuthResult.class, authJson);
-
-                if (!savedAuth.getUserId().equals(adAuthDetails.getAccountEmail())) {
-                    return null;
-                }
-
-                String tenantId = StringUtils.isNullOrWhiteSpace(savedAuth.getUserInfo().getTenantId()) ? COMMON_TID :
-                        savedAuth.getUserInfo().getTenantId();
-
-                AuthContext ac = createContext(tenantId, null);
-                AuthResult updatedAuth = ac.acquireToken(savedAuth);
-
-                saveToSecureStore(updatedAuth);
-
-                return updatedAuth;
-            } catch (IOException e) {
-                LOGGER.warning("Can't restore the authentication cache: " + e.getMessage());
-            }
-        }
-
-        return null;
-    }
-
-    private void saveToSecureStore(@Nullable AuthResult authResult) {
-        if (secureStore == null) {
-            return;
-        }
-
-        try {
-            @Nullable
-            String authJson = JsonHelper.serialize(authResult);
-
-            String tenantId = (authResult == null || StringUtils.isNullOrWhiteSpace(authResult.getUserInfo().getTenantId())) ?
-                    COMMON_TID :
-                    authResult.getUserInfo().getTenantId();
-            // Update common tenantId after token acquired successfully
-            setCommonTenantId(tenantId);
-
-            secureStore.savePassword(SECURE_STORE_SERVICE, SECURE_STORE_KEY, authJson);
-        } catch (IOException e) {
-            LOGGER.warning("Can't persistent the authentication cache: " + e.getMessage());
-        }
-    }
-
-    private AuthContext createContext(@NotNull final String tid, final UUID corrId) throws IOException {
-        String authority = null;
-        String endpoint = env.activeDirectoryEndpoint();
-        if (StringUtils.isNullOrEmpty(endpoint)) {
-            throw new IOException("Azure authority endpoint is empty");
-        }
-        if (endpoint.endsWith("/")) {
-            authority = endpoint + tid;
-        } else {
-            authority = endpoint + "/" + tid;
-        }
-        return new AuthContext(authority, Constants.clientId, Constants.redirectUri, this.webUi, true, corrId);
-    }
-
-    // logout
-    private void cleanCache() {
-        AuthContext.cleanTokenCache();
-        adAuthDetails = new AdAuthDetails();
-
-        // clear saved auth result
-        setCommonTenantId(COMMON_TID);
-        saveToSecureStore(null);
-    }
-
-    private AdAuthManager() throws IOException {
-        adAuthDetails = new AdAuthDetails();
+    private AdAuthManager() {
+        super();
         webUi = CommonSettings.getUiFactory().getWebUi();
-        env = CommonSettings.getAdEnvironment();
-        if (env == null) {
-            throw new IOException("Azure environment is not setup");
-        }
-
-        secureStore = ServiceManager.getServiceProvider(SecureStore.class);
-    }
-
-    public void setCommonTenantId(@NotNull String commonTenantId) {
-        this.commonTenantId = commonTenantId;
-    }
-
-    @NotNull
-    public String getCommonTenantId() {
-        return commonTenantId;
     }
 }

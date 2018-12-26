@@ -28,8 +28,11 @@ import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ProgramRunner
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
 import org.jetbrains.plugins.scala.console.ScalaLanguageConsole
+import rx.Observable
+import rx.schedulers.Schedulers
 
 class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScalaConsoleBuilder, val session: Session): RunProfileState {
     private val postStartCodes = """
@@ -44,25 +47,24 @@ class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScal
     """.trimIndent()
 
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult? {
-        try {
-            session.create()
-                    .flatMap { it.awaitReady() }
-                    .toBlocking()
-                    .single()
-        } catch (ex: Exception) {
-            throw ExecutionException("Can't start Livy interactive session: ${ex.message}")
-        }
-
         val console = consoleBuilder.console
-        (console as? ScalaLanguageConsole)?.apply {
-            // Customize the Spark Livy interactive console
-            prompt = "\nSpark>"
-        }
 
         val livySessionProcessHandler = SparkLivySessionProcessHandler(SparkLivySessionProcess(session))
 
         console.attachToProcess(livySessionProcessHandler)
-        livySessionProcessHandler.execute(postStartCodes)
+
+        session.create()
+                .subscribeOn(Schedulers.io())
+                .flatMap { it.awaitReady() }
+                .subscribe({
+                    livySessionProcessHandler.execute(postStartCodes)
+                    (console as? ScalaLanguageConsole)?.apply {
+                        // Customize the Spark Livy interactive console
+                        prompt = "\nSpark>"
+                    }
+                }, { ex ->
+                    console.print("Can't start Livy interactive session: ${ex.message}\n", ConsoleViewContentType.LOG_ERROR_OUTPUT)
+                })
 
         return DefaultExecutionResult(console, livySessionProcessHandler)
     }

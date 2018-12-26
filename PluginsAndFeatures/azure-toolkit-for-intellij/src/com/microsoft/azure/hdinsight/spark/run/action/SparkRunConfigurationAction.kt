@@ -23,16 +23,10 @@
 package com.microsoft.azure.hdinsight.spark.run.action
 
 import com.intellij.execution.*
-import com.intellij.execution.configurations.RunProfile
-import com.intellij.execution.configurations.RunnerSettings
-import com.intellij.execution.configurations.RuntimeConfigurationException
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
-import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.Messages
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.intellij.util.runInReadAction
 import javax.swing.Icon
@@ -46,7 +40,7 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
     abstract val runExecutor: Executor
 
     open fun canRun(setting: RunnerAndConfigurationSettings): Boolean =
-            setting.configuration is RemoteDebugRunConfiguration &&
+            setting.configuration is LivySparkBatchJobRunConfiguration &&
                     RunnerRegistry.getInstance().getRunner(runExecutor.id, setting.configuration) != null
 
     override fun update(actionEvent: AnActionEvent) {
@@ -69,39 +63,18 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
             return
         }
 
-        runExisting(selectedConfigSettings, project)
+        runExisting(selectedConfigSettings)
     }
 
-    private fun runExisting(setting: RunnerAndConfigurationSettings, project: Project) {
+    private fun runExisting(setting: RunnerAndConfigurationSettings) {
         runInReadAction {
-            runFromSetting(project, setting)
+            runFromSetting(setting)
         }
     }
 
-    private fun runFromSetting(project: Project, setting: RunnerAndConfigurationSettings) {
-        val configuration = setting.configuration
-        val runner = RunnerRegistry.getInstance().getRunner(runExecutor.id, configuration) ?: return
+    private fun runFromSetting(setting: RunnerAndConfigurationSettings) {
+        val environment = ExecutionEnvironmentBuilder.create(runExecutor, setting).build()
 
-        try {
-            val environment = ExecutionEnvironmentBuilder.create(runExecutor, configuration).build()
-
-            try {
-                checkRunnerSettings(environment.runProfile, runner)
-                setting.isEditBeforeRun = false
-            } catch (configError: RuntimeConfigurationException) {
-                log().warn("Found configuration error $configError, pop up run configuration dialog")
-                setting.isEditBeforeRun = true
-            }
-
-            ProgramRunnerUtil.executeConfiguration(setting, runExecutor)
-            setting.isEditBeforeRun = false
-        } catch (e: Exception) {
-            Messages.showErrorDialog(project, e.message, ExecutionBundle.message("error.common.title"))
-        }
+        RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment)
     }
-
-    open fun checkRunnerSettings(runProfile: RunProfile?, runner: ProgramRunner<RunnerSettings>) {
-        (runProfile as? RemoteDebugRunConfiguration)?.checkRunnerSettings(runner, null, null)
-    }
-
 }

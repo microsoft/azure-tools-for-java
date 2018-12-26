@@ -26,11 +26,14 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 import java.util.Date;
 import java.util.UUID;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * The common Data Lake Analytics activity information.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AnalyticsActivity {
     /**
      * the activity's unique identifier (a GUID).
@@ -51,6 +54,12 @@ public class AnalyticsActivity {
     private String activityType;
 
     /**
+     * Category of the job. Possible values include: 'ResourcePools', 'BatchJobs', 'StreamingJobs'.
+     */
+    @JsonProperty(value = "entityType", access = JsonProperty.Access.WRITE_ONLY)
+    private EntityType entityType;
+
+    /**
      * the number of Analytics Units (AUs) used for this activity.
      */
     @JsonProperty(value = "analyticsUnits", access = JsonProperty.Access.WRITE_ONLY)
@@ -63,11 +72,33 @@ public class AnalyticsActivity {
     private String submitter;
 
     /**
-     * State of the Activity. Possible values include: 'Any', 'Submitted', 'Preparing', 'Queued', 'Scheduled',
-     * 'Finalizing', 'Ended'.
+     * State in which the activity is in from the perspective of the scheduler. These states are common across
+     * different activity types. Kept here for backward compatibility. Soon to be deprecated. Possible values include:
+     * 'Any', 'Submitted', 'Preparing', 'Queued', 'Scheduled', 'Finalizing', 'Ended'.
      */
     @JsonProperty(value = "state")
-    private ActivityState state;
+    private SchedulerState state;
+
+    /**
+     * State in which the activity is in from the perspective of the scheduler. These states are common across
+     * different activity types. Possible values include: 'Any', 'Submitted', 'Preparing', 'Queued', 'Scheduled',
+     * 'Finalizing', 'Ended'.
+     */
+    @JsonProperty(value = "schedulerState")
+    private SchedulerState schedulerState;
+
+    /**
+     * State in which the activity is in from the perspective of the activity plugin. The value set for this state
+     * differs for each activity type.
+     */
+    @JsonProperty(value = "activityState", access = JsonProperty.Access.WRITE_ONLY)
+    private String activityState;
+
+    /**
+     * Result of the activity. Possible values include: 'None', 'Succeeded', 'Cancelled', 'Failed'.
+     */
+    @JsonProperty(value = "result", access = JsonProperty.Access.WRITE_ONLY)
+    private ActivityResult result;
 
     /**
      * the time the activity was submitted to the service.
@@ -88,19 +119,13 @@ public class AnalyticsActivity {
     private Date endTime;
 
     /**
-     * the specific identifier for the type of error encountered in the activity.
-     */
-    @JsonProperty(value = "errorId", access = JsonProperty.Access.WRITE_ONLY)
-    private String errorId;
-
-    /**
      * the key-value pairs used to add additional metadata to the activity.
      */
     @JsonProperty(value = "tags", access = JsonProperty.Access.WRITE_ONLY)
     private Map<String, String> tags;
 
     /**
-     * Get the id value.
+     * Get the activity's unique identifier (a GUID).
      *
      * @return the id value
      */
@@ -109,7 +134,7 @@ public class AnalyticsActivity {
     }
 
     /**
-     * Get the name value.
+     * Get the friendly name of the activity.
      *
      * @return the name value
      */
@@ -118,7 +143,7 @@ public class AnalyticsActivity {
     }
 
     /**
-     * Get the activityType value.
+     * Get the activity type.
      *
      * @return the activityType value
      */
@@ -127,7 +152,16 @@ public class AnalyticsActivity {
     }
 
     /**
-     * Get the analyticsUnits value.
+     * Get category of the job. Possible values include: 'ResourcePools', 'BatchJobs', 'StreamingJobs'.
+     *
+     * @return the entityType value
+     */
+    public EntityType entityType() {
+        return this.entityType;
+    }
+
+    /**
+     * Get the number of Analytics Units (AUs) used for this activity.
      *
      * @return the analyticsUnits value
      */
@@ -136,7 +170,7 @@ public class AnalyticsActivity {
     }
 
     /**
-     * Get the submitter value.
+     * Get the user or account that submitted the activity.
      *
      * @return the submitter value
      */
@@ -145,27 +179,65 @@ public class AnalyticsActivity {
     }
 
     /**
-     * Get the state value.
+     * Get state in which the activity is in from the perspective of the scheduler. These states are common across different activity types. Kept here for backward compatibility. Soon to be deprecated. Possible values include: 'Any', 'Submitted', 'Preparing', 'Queued', 'Scheduled', 'Finalizing', 'Ended'.
      *
      * @return the state value
      */
-    public ActivityState state() {
+    public SchedulerState state() {
         return this.state;
     }
 
     /**
-     * Set the state value.
+     * Set state in which the activity is in from the perspective of the scheduler. These states are common across different activity types. Kept here for backward compatibility. Soon to be deprecated. Possible values include: 'Any', 'Submitted', 'Preparing', 'Queued', 'Scheduled', 'Finalizing', 'Ended'.
      *
      * @param state the state value to set
      * @return the AnalyticsActivity object itself.
      */
-    public AnalyticsActivity withState(ActivityState state) {
+    public AnalyticsActivity withState(SchedulerState state) {
         this.state = state;
         return this;
     }
 
     /**
-     * Get the submitTime value.
+     * Get state in which the activity is in from the perspective of the scheduler. These states are common across different activity types. Possible values include: 'Any', 'Submitted', 'Preparing', 'Queued', 'Scheduled', 'Finalizing', 'Ended'.
+     *
+     * @return the schedulerState value
+     */
+    public SchedulerState schedulerState() {
+        return this.schedulerState;
+    }
+
+    /**
+     * Set state in which the activity is in from the perspective of the scheduler. These states are common across different activity types. Possible values include: 'Any', 'Submitted', 'Preparing', 'Queued', 'Scheduled', 'Finalizing', 'Ended'.
+     *
+     * @param schedulerState the schedulerState value to set
+     * @return the AnalyticsActivity object itself.
+     */
+    public AnalyticsActivity withSchedulerState(SchedulerState schedulerState) {
+        this.schedulerState = schedulerState;
+        return this;
+    }
+
+    /**
+     * Get state in which the activity is in from the perspective of the activity plugin. The value set for this state differs for each activity type.
+     *
+     * @return the activityState value
+     */
+    public String activityState() {
+        return this.activityState;
+    }
+
+    /**
+     * Get result of the activity. Possible values include: 'None', 'Succeeded', 'Cancelled', 'Failed'.
+     *
+     * @return the result value
+     */
+    public ActivityResult result() {
+        return this.result;
+    }
+
+    /**
+     * Get the time the activity was submitted to the service.
      *
      * @return the submitTime value
      */
@@ -174,7 +246,7 @@ public class AnalyticsActivity {
     }
 
     /**
-     * Get the startTime value.
+     * Get the start time of the activity.
      *
      * @return the startTime value
      */
@@ -183,7 +255,7 @@ public class AnalyticsActivity {
     }
 
     /**
-     * Get the endTime value.
+     * Get the completion time of the activity.
      *
      * @return the endTime value
      */
@@ -192,16 +264,7 @@ public class AnalyticsActivity {
     }
 
     /**
-     * Get the errorId value.
-     *
-     * @return the errorId value
-     */
-    public String errorId() {
-        return this.errorId;
-    }
-
-    /**
-     * Get the tags value.
+     * Get the key-value pairs used to add additional metadata to the activity.
      *
      * @return the tags value
      */

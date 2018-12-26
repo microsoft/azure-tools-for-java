@@ -23,23 +23,20 @@
 package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.*
-import com.intellij.execution.configuration.AbstractRunConfiguration
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.ConfigurationTypeUtil.findConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.configurations.RunProfile
-import com.intellij.execution.configurations.RuntimeConfigurationException
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiFile
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtils
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.intellij.util.runInReadAction
 import org.jetbrains.plugins.scala.console.RunConsoleAction
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
@@ -48,33 +45,28 @@ import scala.Function1
 import scala.runtime.BoxedUnit
 
 abstract class RunSparkScalaConsoleAction
-    : AnAction(), RunConsoleAction.RunActionBase<RemoteDebugRunConfigurationType>, ILogger {
+    : AnAction(), RunConsoleAction.RunActionBase<LivySparkBatchJobRunConfigurationType>, ILogger {
     abstract val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
 
     override fun actionPerformed(event: AnActionEvent) {
         val dataContext = event.dataContext
-        val file = CommonDataKeys.PSI_FILE.getData(dataContext)
-        val project = CommonDataKeys.PROJECT.getData(dataContext)
-
-        if (file == null || project == null || !checkFile(file)) {
-            return
-        }
+        val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return
 
         val runManagerEx = RunManagerEx.getInstanceEx(project)
         val selectedConfigSettings = runManagerEx.selectedConfiguration
 
         // Try current selected Configuration
-        (selectedConfigSettings?.configuration as? RemoteDebugRunConfiguration)?.run {
-            runExisting(selectedConfigSettings, runManagerEx, project)
+        (selectedConfigSettings?.configuration as? LivySparkBatchJobRunConfiguration)?.run {
+            runExisting(selectedConfigSettings, runManagerEx)
             return
         }
 
-        val batchConfigurationType = findConfigurationType(RemoteDebugRunConfigurationType::class.java)
+        val batchConfigurationType = LivySparkBatchJobRunConfigurationType.getInstance()
         val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
 
         // Try to find one from the same type list
         batchConfigSettings.forEach {
-            runExisting(it, runManagerEx, project)
+            runExisting(it, runManagerEx)
             return
         }
 
@@ -92,53 +84,34 @@ abstract class RunSparkScalaConsoleAction
             val factory = configurationType.configurationFactories[0]
             val setting = RunManager.getInstance(project).createConfiguration(name, factory)
             handler.apply(setting.configuration)
-            runFromSetting(project, setting, runManagerEx)
+            runFromSetting(setting, runManagerEx)
         }
     }
 
-    private fun runExisting(setting: RunnerAndConfigurationSettings, runManagerEx: RunManagerEx, project: Project) {
+    private fun runExisting(setting: RunnerAndConfigurationSettings, runManagerEx: RunManagerEx) {
         runInReadAction {
-            runFromSetting(project, setting, runManagerEx)
+            runFromSetting(setting, runManagerEx)
         }
     }
 
-    private fun runFromSetting(project: Project, setting: RunnerAndConfigurationSettings, runManagerEx: RunManagerEx) {
+    private fun runFromSetting(setting: RunnerAndConfigurationSettings, runManagerEx: RunManagerEx) {
         val configuration = setting.configuration
         runManagerEx.setTemporaryConfiguration(setting)
-        val runExecutor = DefaultRunExecutor.getRunExecutorInstance()
-        val runner = RunnerRegistry.getInstance().getRunner(runExecutor.id, configuration)
-        if (runner != null) {
-            try {
-                val batchRunConfiguration = setting.configuration as? RemoteDebugRunConfiguration
 
-                if (batchRunConfiguration == null) {
-                    log().warn("Can't find Spark Run Configuration to start console")
-
-                    return
-                }
-
-                val environment = ExecutionEnvironmentBuilder.create(
-                        runExecutor,
-                        consoleRunConfigurationFactory.createConfiguration(
-                                batchRunConfiguration.name, batchRunConfiguration)).build()
-
-                checkSettingsBeforeRun(environment.runProfile)
-
-                runner.execute(environment)
-            } catch (e: RuntimeConfigurationException) {
-                Messages.showErrorDialog(project, "Can't start Spark Console since the Run Configuration file has errors: ${e.message}", ExecutionBundle.message("error.common.title"))
-            } catch (e: ExecutionException) {
-                Messages.showErrorDialog(project, e.message, ExecutionBundle.message("error.common.title"))
-            }
+        if (configuration is LivySparkBatchJobRunConfiguration) {
+            configuration.model.focusedTabIndex = 1
         }
+
+        val runExecutor = DefaultRunExecutor.getRunExecutorInstance()
+        val environment = ExecutionEnvironmentBuilder.create(runExecutor, setting)
+                .runProfile(consoleRunConfigurationFactory.createConfiguration(configuration.name, configuration))
+                .build()
+
+        RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment)
     }
 
-    open fun checkSettingsBeforeRun(runProfile: RunProfile?) {
-        (runProfile as? AbstractRunConfiguration)?.checkSettingsBeforeRun()
-    }
-
-    override fun getMyConfigurationType(): RemoteDebugRunConfigurationType? =
-        findConfigurationType(RemoteDebugRunConfigurationType::class.java)
+    override fun getMyConfigurationType(): LivySparkBatchJobRunConfigurationType? =
+        LivySparkBatchJobRunConfigurationType.getInstance()
 
     override fun checkFile(psiFile: PsiFile): Boolean = psiFile is ScalaFile
 }

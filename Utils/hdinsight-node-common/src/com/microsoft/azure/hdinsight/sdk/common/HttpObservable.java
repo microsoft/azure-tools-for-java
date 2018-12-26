@@ -22,10 +22,15 @@
 
 package com.microsoft.azure.hdinsight.sdk.common;
 
+import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.service.ServiceManager;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -40,6 +45,9 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -48,14 +56,20 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.HeaderGroup;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 import rx.Observable;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import static rx.exceptions.Exceptions.propagate;
 
-public class HttpObservable {
+public class HttpObservable implements ILogger {
     @NotNull
     private RequestConfig defaultRequestConfig;
 
@@ -115,6 +129,7 @@ public class HttpObservable {
                 .useSystemProperties()
                 .setDefaultCookieStore(getCookieStore())
                 .setDefaultRequestConfig(getDefaultRequestConfig())
+                .setSSLSocketFactory(createSSLSocketFactory())
                 .build();
     }
 
@@ -136,6 +151,7 @@ public class HttpObservable {
                 .setDefaultCookieStore(getCookieStore())
                 .setDefaultCredentialsProvider(credentialsProvider)
                 .setDefaultRequestConfig(getDefaultRequestConfig())
+                .setSSLSocketFactory(createSSLSocketFactory())
                 .build();
     }
 
@@ -218,6 +234,37 @@ public class HttpObservable {
     /*
      * Helper functions
      */
+
+    public static boolean isSSLCertificateValidationDisabled() {
+        try {
+            return DefaultLoader.getIdeHelper().isApplicationPropertySet(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION) &&
+                    Boolean.valueOf(DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION));
+        } catch (Exception ex) {
+            // To fix exception in unit test
+            return false;
+        }
+    }
+
+    private SSLConnectionSocketFactory createSSLSocketFactory() {
+        TrustStrategy ts = ServiceManager.getServiceProvider(TrustStrategy.class);
+        SSLConnectionSocketFactory sslSocketFactory = null;
+
+        if (ts != null) {
+            try {
+                SSLContext sslContext = new SSLContextBuilder()
+                        .loadTrustMaterial(ts)
+                        .build();
+
+                sslSocketFactory = new SSLConnectionSocketFactory(sslContext,
+                        HttpObservable.isSSLCertificateValidationDisabled()
+                                ? NoopHostnameVerifier.INSTANCE
+                                : new DefaultHostnameVerifier());
+            } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+                log().error("Prepare SSL Context for HTTPS failure. " + ExceptionUtils.getStackTrace(e));
+            }
+        }
+        return sslSocketFactory;
+    }
 
     /**
      * Helper to convert the closeable stream good Http response (2xx) to String result.
@@ -316,19 +363,25 @@ public class HttpObservable {
     /*
      * RESTful API operations with response conversion for specified type
      */
+    public Observable<HttpResponse> requestWithHttpResponse(@NotNull final HttpRequestBase httpRequest,
+                                                            @Nullable final HttpEntity entity,
+                                                            @Nullable final List<NameValuePair> parameters,
+                                                            @Nullable final List<Header> addOrReplaceHeaders) {
+        return request(httpRequest, entity, parameters, addOrReplaceHeaders)
+                .flatMap(HttpObservable::toStringOnlyOkResponse);
+    }
+
     public Observable<HttpResponse> head(@NotNull final String uri,
                                          @NotNull final List<NameValuePair> parameters,
                                          @NotNull final List<Header> addOrReplaceHeaders) {
-        return request(new HttpHead(uri), null, parameters, addOrReplaceHeaders)
-                .flatMap(HttpObservable::toStringOnlyOkResponse);
+        return requestWithHttpResponse(new HttpHead(uri), null, parameters, addOrReplaceHeaders);
     }
 
     public <T> Observable<T> get(@NotNull final String uri,
                                  @Nullable final List<NameValuePair> parameters,
                                  @Nullable final List<Header> addOrReplaceHeaders,
                                  @NotNull final Class<T> clazz) {
-        return request(new HttpGet(uri), null, parameters, addOrReplaceHeaders)
-                .flatMap(HttpObservable::toStringOnlyOkResponse)
+        return requestWithHttpResponse(new HttpGet(uri), null, parameters, addOrReplaceHeaders)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 
@@ -337,8 +390,7 @@ public class HttpObservable {
                                  @Nullable final List<NameValuePair> parameters,
                                  @Nullable final List<Header> addOrReplaceHeaders,
                                  @NotNull final Class<T> clazz) {
-        return request(new HttpPut(uri), entity, parameters, addOrReplaceHeaders)
-                .flatMap(HttpObservable::toStringOnlyOkResponse)
+        return requestWithHttpResponse(new HttpPut(uri), entity, parameters, addOrReplaceHeaders)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 
@@ -347,16 +399,14 @@ public class HttpObservable {
                                   @Nullable final List<NameValuePair> parameters,
                                   @Nullable final List<Header> addOrReplaceHeaders,
                                   @NotNull final Class<T> clazz) {
-        return request(new HttpPost(uri), entity, parameters, addOrReplaceHeaders)
-                .flatMap(HttpObservable::toStringOnlyOkResponse)
+        return requestWithHttpResponse(new HttpPost(uri), entity, parameters, addOrReplaceHeaders)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 
     public Observable<HttpResponse> delete(@NotNull final String uri,
                                            @Nullable final List<NameValuePair> parameters,
                                            @Nullable final List<Header> addOrReplaceHeaders) {
-        return request(new HttpDelete(uri), null, parameters, addOrReplaceHeaders)
-                .flatMap(HttpObservable::toStringOnlyOkResponse);
+        return requestWithHttpResponse(new HttpDelete(uri), null, parameters, addOrReplaceHeaders);
     }
 
     public <T> Observable<T> patch(@NotNull final String uri,
@@ -364,8 +414,7 @@ public class HttpObservable {
                                    @Nullable final List<NameValuePair> parameters,
                                    @Nullable final List<Header> addOrReplaceHeaders,
                                    @NotNull final Class<T> clazz) {
-        return request(new HttpPatch(uri), entity, parameters, addOrReplaceHeaders)
-                .flatMap(HttpObservable::toStringOnlyOkResponse)
+        return requestWithHttpResponse(new HttpPatch(uri), entity, parameters, addOrReplaceHeaders)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 }

@@ -64,7 +64,7 @@ class SparkSubmitJobAction : AzureAnAction() {
 
         runConfigurationSetting.isEditBeforeRun = true
 
-        val runConfiguration = runConfigurationSetting.configuration as RemoteDebugRunConfiguration
+        val runConfiguration = runConfigurationSetting.configuration as LivySparkBatchJobRunConfiguration
         val model = runConfiguration.model
         model.focusedTabIndex = 1   // Select remote job submission tab
 

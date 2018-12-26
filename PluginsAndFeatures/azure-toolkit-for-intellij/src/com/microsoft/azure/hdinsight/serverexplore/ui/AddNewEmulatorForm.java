@@ -231,7 +231,7 @@ public class AddNewEmulatorForm extends DialogWrapper {
         if (isCarryOnNextStep) {
             EmulatorClusterDetail emulatorClusterDetail = new EmulatorClusterDetail(clusterName, userName, password,livyEndpoint, sshEndpoint, sparkHistoryEndpoint, ambariEndpoint);
             ClusterManagerEx.getInstance().addEmulatorCluster(emulatorClusterDetail);
-            hdInsightModule.refreshWithoutAsync();
+            hdInsightModule.load(false);
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {

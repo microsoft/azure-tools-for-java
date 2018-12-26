@@ -587,11 +587,7 @@ public class AzureWebAppMvpModel {
      * linux runtimes, do we really need to get the values from Mvp model every time?
      */
     public List<RuntimeStack> getLinuxRuntimes() {
-        final List<RuntimeStack> runtimes = new ArrayList<>();
-        runtimes.add(RuntimeStack.TOMCAT_8_5_JRE8);
-        runtimes.add(RuntimeStack.TOMCAT_9_0_JRE8);
-        runtimes.add(RuntimeStack.JAVA_8_JRE8);
-        return runtimes;
+        return WebAppUtils.getAllJavaLinuxRuntimeStacks();
     }
 
     /**

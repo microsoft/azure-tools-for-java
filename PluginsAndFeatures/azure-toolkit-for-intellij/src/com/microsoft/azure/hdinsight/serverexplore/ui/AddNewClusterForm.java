@@ -27,16 +27,18 @@ import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.DocumentAdapter;
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
+import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType;
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterCtrlProvider;
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterModel;
-import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.ijidea.ui.HintTextField;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -52,34 +54,38 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     private JPanel clusterPanel;
     private JPanel authenticationPanel;
     private JPanel comboBoxPanel;
-    private JComboBox clusterComboBox;
-    private JPanel clusterCardsPanel;
+    protected JComboBox clusterComboBox;
+    protected JPanel clusterCardsPanel;
     private JPanel hdInsightClusterCard;
     private JTextField clusterNameOrUrlField;
     private JPanel livyServiceCard;
-    private JTextField livyEndpointField;
-    private JTextField errorMessageField;
+    protected JTextField livyEndpointField;
+    protected JTextArea errorMessageField;
     private JPanel authComboBoxPanel;
-    private JComboBox authComboBox;
-    private JPanel authCardsPanel;
+    protected JComboBox authComboBox;
+    protected JPanel authCardsPanel;
     private JPanel basicAuthCard;
-    private JTextField userNameField;
-    private JTextField passwordField;
+    protected JTextField userNameField;
+    protected JTextField passwordField;
     private JPanel noAuthCard;
-    private JTextField livyClusterNameField;
-    private HintTextField yarnEndpointField;
+    protected JTextField livyClusterNameField;
+    protected HintTextField yarnEndpointField;
     private JLabel clusterNameLabel;
-    private JLabel userNameLabel;
-    private JLabel passwordLabel;
-    private JLabel livyClusterNameLabel;
+    protected JLabel userNameLabel;
+    protected JLabel passwordLabel;
+    protected JLabel livyClusterNameLabel;
+    protected JTextField arisPortField;
+    protected JTextField arisHostField;
+    protected HintTextField arisClusterNameField;
+    protected JPanel arisLivyServiceCard;
     @NotNull
-    private HDInsightRootModule hdInsightModule;
+    private RefreshableNode hdInsightModule;
     @NotNull
-    private AddNewClusterCtrlProvider ctrlProvider;
+    protected AddNewClusterCtrlProvider ctrlProvider;
 
     private static final String HELP_URL = "https://go.microsoft.com/fwlink/?linkid=866472";
 
-    public AddNewClusterForm(@Nullable final Project project, @NotNull HDInsightRootModule hdInsightModule) {
+    public AddNewClusterForm(@Nullable final Project project, @NotNull RefreshableNode hdInsightModule) {
         super(project, true);
         this.ctrlProvider = new AddNewClusterCtrlProvider(this, new IdeaSchedulers(project));
 
@@ -88,7 +94,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         init();
         this.hdInsightModule = hdInsightModule;
 
-        this.setTitle("Link A New HDInsight Cluster");
+        this.setTitle("Link A Cluster");
 
         errorMessageField.setBackground(this.wholePanel.getBackground());
         errorMessageField.setBorder(BorderFactory.createEmptyBorder());
@@ -117,12 +123,17 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         Arrays.asList(clusterComboBox, authComboBox).forEach(comp -> comp.addActionListener(event -> basicValidate()));
 
         Arrays.asList(clusterNameOrUrlField, userNameField, passwordField, livyEndpointField, livyClusterNameField,
-                yarnEndpointField).forEach(comp -> comp.getDocument().addDocumentListener(new DocumentAdapter() {
-            @Override
-            protected void textChanged(DocumentEvent e) {
-                basicValidate();
-            }
-        }));
+                yarnEndpointField, arisHostField, arisPortField, arisClusterNameField).forEach(
+                        comp -> comp.getDocument().addDocumentListener(new DocumentAdapter() {
+                    @Override
+                    protected void textChanged(DocumentEvent e) {
+                        basicValidate();
+                    }
+                }));
+
+        // load all cluster details to cache for validation check
+        loadClusterDetails();
+
         getOKAction().setEnabled(false);
     }
 
@@ -135,28 +146,33 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     // Components -> Data
     @Override
     public void getData(@NotNull AddNewClusterModel data) {
-        if (isHDInsightClusterSelected()) {
-            data.setHDInsightClusterSelected(true)
-                    .setClusterName(clusterNameOrUrlField.getText().trim())
-                    .setUserName(userNameField.getText().trim())
-                    .setPassword(passwordField.getText().trim())
-                    // TODO: these label title setting is no use other than to be compatible with legacy ctrlprovider code
-                    .setClusterNameLabelTitle(clusterNameLabel.getText())
-                    .setUserNameLabelTitle(userNameLabel.getText())
-                    .setPasswordLabelTitle(passwordLabel.getText());
-        } else {
-            data.setHDInsightClusterSelected(false)
-                    .setLivyEndpoint(URI.create(livyEndpointField.getText().trim()))
-                    .setYarnEndpoint(StringUtils.isBlank(yarnEndpointField.getText()) ? null : URI.create(yarnEndpointField.getText().trim()))
-                    .setClusterName(livyClusterNameField.getText().trim())
-                    // TODO: these label title setting is no use other than to be compatible with legacy ctrlprovider code
-                    .setClusterNameLabelTitle(livyClusterNameLabel.getText())
-                    .setUserNameLabelTitle(userNameLabel.getText())
-                    .setPasswordLabelTitle(passwordLabel.getText());
-            if (isBasicAuthSelected()) {
-                data.setUserName(userNameField.getText().trim())
-                        .setPassword(passwordField.getText().trim());
-            }
+        data.setSparkClusterType(getSparkClusterType());
+
+        switch (getSparkClusterType()) {
+            case HDINSIGHT_CLUSTER:
+                data.setClusterName(clusterNameOrUrlField.getText().trim())
+                        .setUserName(userNameField.getText().trim())
+                        .setPassword(passwordField.getText().trim())
+                        // TODO: these label title setting is no use other than to be compatible with legacy ctrlprovider code
+                        .setClusterNameLabelTitle(clusterNameLabel.getText())
+                        .setUserNameLabelTitle(userNameLabel.getText())
+                        .setPasswordLabelTitle(passwordLabel.getText());
+                break;
+            case LIVY_LINK_CLUSTER:
+                data.setLivyEndpoint(URI.create(livyEndpointField.getText().trim()))
+                        .setYarnEndpoint(StringUtils.isBlank(yarnEndpointField.getText()) ? null : URI.create(yarnEndpointField.getText().trim()))
+                        .setClusterName(livyClusterNameField.getText().trim())
+                        // TODO: these label title setting is no use other than to be compatible with legacy ctrlprovider code
+                        .setClusterNameLabelTitle(livyClusterNameLabel.getText())
+                        .setUserNameLabelTitle(userNameLabel.getText())
+                        .setPasswordLabelTitle(passwordLabel.getText());
+                if (isBasicAuthSelected()) {
+                    data.setUserName(userNameField.getText().trim())
+                            .setPassword(passwordField.getText().trim());
+                }
+                break;
+            default:
+                break;
         }
     }
 
@@ -172,54 +188,65 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 .validateAndAdd()
                 .doOnEach(notification -> getOKAction().setEnabled(true))
                 .subscribe(toUpdate -> {
-                    hdInsightModule.refreshWithoutAsync();
+                    hdInsightModule.load(false);
                     AppInsightsClient.create(HDInsightBundle.message("HDInsightAddNewClusterAction"), null);
 
                     super.doOKAction();
                 });
     }
 
-    private void createUIComponents() {
+    protected void createUIComponents() {
         clusterNameOrUrlField = new HintTextField("Example: spk22 or https://spk22.azurehdinsight.net");
         livyEndpointField = new HintTextField("Example: http://headnodehost:8998");
         yarnEndpointField = new HintTextField("(Optional)Example: http://hn0-spark2:8088");
+        arisClusterNameField = new HintTextField("(Optional) Cluster name");
+    }
+
+    public SparkClusterType getSparkClusterType() {
+        return isHDInsightClusterSelected() ? SparkClusterType.HDINSIGHT_CLUSTER : SparkClusterType.LIVY_LINK_CLUSTER;
     }
 
     private boolean isHDInsightClusterSelected() {
         return ((String)clusterComboBox.getSelectedItem()).equalsIgnoreCase("HDInsight Cluster");
     }
 
-    private boolean isBasicAuthSelected() {
+    protected boolean isBasicAuthSelected() {
         return ((String) authComboBox.getSelectedItem()).equalsIgnoreCase("Basic Authentication");
     }
 
-    private void basicValidate() {
+    protected void basicValidate() {
         String errorMessage = null;
-        if (isHDInsightClusterSelected()) {
-            if (StringUtils.isBlank(clusterNameOrUrlField.getText())) {
-                errorMessage = "Cluster name can't be empty";
-            } else {
-                String clusterName = ctrlProvider.getClusterName(clusterNameOrUrlField.getText());
-                if (clusterName == null) {
-                    errorMessage = "Cluster URL is not a valid URL";
-                } else if (ctrlProvider.doesClusterNameExistInLinkedClusters(clusterName)) {
-                    errorMessage = "Cluster already exists in linked clusters";
+
+        switch (getSparkClusterType()) {
+            case HDINSIGHT_CLUSTER:
+                if (StringUtils.isBlank(clusterNameOrUrlField.getText())) {
+                    errorMessage = "Cluster name can't be empty";
+                } else {
+                    String clusterName = ctrlProvider.getClusterName(clusterNameOrUrlField.getText());
+                    if (clusterName == null) {
+                        errorMessage = "Cluster URL is not a valid URL";
+                    } else if (ctrlProvider.doesClusterNameExistInLinkedHDInsightClusters(clusterName)) {
+                        errorMessage = "Cluster already exists in linked clusters";
+                    }
                 }
-            }
-        } else {
-            if (StringUtils.isBlank(livyEndpointField.getText()) ||
-                    StringUtils.isBlank(livyClusterNameField.getText())) {
-                errorMessage = "Livy Endpoint and cluster name can't be empty";
-            } else if (!ctrlProvider.isURLValid(livyEndpointField.getText())) {
-                errorMessage = "Livy Endpoint is not a valid URL";
-            } else if (ctrlProvider.doesClusterLivyEndpointExistInAllClusters(livyEndpointField.getText())) {
-                errorMessage = "The same name Livy Endpoint already exists in clusters";
-            } else if (ctrlProvider.doesClusterNameExistInAllClusters(livyClusterNameField.getText())) {
-                errorMessage = "Cluster Name already exists in clusters";
-            } else if (!StringUtils.isEmpty(yarnEndpointField.getText()) &&
-                    !ctrlProvider.isURLValid(yarnEndpointField.getText())) {
-                errorMessage = "Yarn Endpoint is not a valid URL";
-            }
+                break;
+            case LIVY_LINK_CLUSTER:
+                if (StringUtils.isBlank(livyEndpointField.getText()) ||
+                        StringUtils.isBlank(livyClusterNameField.getText())) {
+                    errorMessage = "Livy Endpoint and cluster name can't be empty";
+                } else if (!ctrlProvider.isURLValid(livyEndpointField.getText())) {
+                    errorMessage = "Livy Endpoint is not a valid URL";
+                } else if (ctrlProvider.doesClusterLivyEndpointExistInAllHDInsightClusters(livyEndpointField.getText())) {
+                    errorMessage = "The same name Livy Endpoint already exists in clusters";
+                } else if (ctrlProvider.doesClusterNameExistInAllHDInsightClusters(livyClusterNameField.getText())) {
+                    errorMessage = "Cluster Name already exists in clusters";
+                } else if (!StringUtils.isEmpty(yarnEndpointField.getText()) &&
+                        !ctrlProvider.isURLValid(yarnEndpointField.getText())) {
+                    errorMessage = "Yarn Endpoint is not a valid URL";
+                }
+                break;
+            default:
+                break;
         }
 
         if (errorMessage == null && isBasicAuthSelected()) {
@@ -230,6 +257,12 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
 
         errorMessageField.setText(errorMessage);
         getOKAction().setEnabled(StringUtils.isEmpty(errorMessageField.getText()));
+    }
+
+    private void loadClusterDetails() {
+        if (ClusterManagerEx.getInstance().getCachedClusters() == null) {
+            ClusterManagerEx.getInstance().getClusterDetails();
+        }
     }
 
     private class HelpAction extends AbstractAction {

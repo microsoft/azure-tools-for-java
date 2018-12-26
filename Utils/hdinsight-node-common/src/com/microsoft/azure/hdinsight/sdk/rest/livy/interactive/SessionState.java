@@ -32,6 +32,7 @@ public enum SessionState {
     IDLE,               // Session is waiting for input
     BUSY,               // Session is executing a statement
     SHUTTING_DOWN,      // Session is shutting down
+    KILLED,             // Session is killed
     ERROR,              // Session errored out
     DEAD,               // Session has exited
     SUCCESS             // Session is successfully stopped

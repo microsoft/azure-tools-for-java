@@ -38,7 +38,6 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.StringEntity;
 import rx.Observable;
 
@@ -366,11 +365,29 @@ public class AzureSparkServerlessCluster extends SparkCluster
         return name;
     }
 
+    public String getClusterStateForShow() {
+        return getMasterState() != null ? getMasterState().toUpperCase(): getState().toUpperCase();
+    }
+
+    public String getClusterNameWithAccountName() {
+        return String.format("%s@%s", getName(), account.getName());
+    }
+
+    /**
+     * This title is shown for drop-down cluster list in run configuration dialog
+     */
     @NotNull
     @Override
     public String getTitle() {
-        return String.format(
-                "%s [%s]", name, getMasterState() != null ? getMasterState().toUpperCase(): getState().toUpperCase());
+        return String.format("%s [%s]", getClusterNameWithAccountName(), getClusterStateForShow());
+    }
+
+    /**
+     * This title is shown for cluster node in Azure explorer tree view
+     */
+    @NotNull
+    public String getTitleForClusterNode() {
+        return String.format("%s [%s]", getName(), getClusterStateForShow());
     }
 
     @NotNull
@@ -544,7 +561,6 @@ public class AzureSparkServerlessCluster extends SparkCluster
         UpdateSparkResourcePool patchBody = new UpdateSparkResourcePool();
 
         return patchBody
-                .withName(getName())
                 .withProperties(new UpdateSparkResourcePoolParameters()
                         .withSparkResourceCollection(Arrays.asList(
                                 new UpdateSparkResourcePoolItemParameters()
@@ -618,18 +634,6 @@ public class AzureSparkServerlessCluster extends SparkCluster
 
         SparkResourcePoolProperties respProp = resourcePoolResp.properties();
         if (respProp != null) {
-            if (respProp.resourcePoolVersion() != null) {
-                this.resourcePoolVersion = respProp.resourcePoolVersion();
-            }
-
-            if (respProp.sparkVersion() != null) {
-                this.sparkVersion = respProp.sparkVersion();
-            }
-
-            if (StringUtils.isNotBlank(respProp.sparkEventsDirectoryPath())) {
-                this.sparkEventsPath = respProp.sparkEventsDirectoryPath();
-            }
-
             if (respProp.sparkResourceCollection() != null) {
                 this.master = mapToSparkResource(respProp, SparkNodeType.SPARK_MASTER);
                 this.worker = mapToSparkResource(respProp, SparkNodeType.SPARK_WORKER);
@@ -638,10 +642,10 @@ public class AzureSparkServerlessCluster extends SparkCluster
             }
 
             if (respProp.sparkUriCollection() != null) {
-                this.livyUri = URI.create(respProp.sparkUriCollection().livyServerUrl());
-                this.livyUiUri = URI.create(respProp.sparkUriCollection().livyUiUrl());
-                this.sparkMasterUiUri = URI.create(respProp.sparkUriCollection().sparkMasterWebUiUrl());
-                this.sparkHistoryUiUri = URI.create(respProp.sparkUriCollection().sparkHistoryWebUiUrl());
+                this.livyUri = URI.create(respProp.sparkUriCollection().livyAPI());
+                this.livyUiUri = URI.create(respProp.sparkUriCollection().livyUI());
+                this.sparkMasterUiUri = URI.create(respProp.sparkUriCollection().sparkMasterUI());
+                this.sparkHistoryUiUri = URI.create(respProp.sparkUriCollection().sparkHistoryUI());
             }
 
 

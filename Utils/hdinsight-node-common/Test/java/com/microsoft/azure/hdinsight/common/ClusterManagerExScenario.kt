@@ -22,9 +22,11 @@
 
 package com.microsoft.azure.hdinsight.common
 
+import com.google.common.collect.ImmutableList
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azuretools.authmanage.SubscriptionManager
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.sdkmanage.AzureManager
@@ -70,7 +72,7 @@ class ClusterManagerExScenario {
                     clusterMock
                 }
 
-        doReturn(additionalClusters).`when`(clusterMagr!!).additionalClusters
+        doReturn(additionalClusters).`when`(clusterMagr!!).loadAdditionalClusters()
     }
 
     @Given("^emulated HDInsight clusters are:$")

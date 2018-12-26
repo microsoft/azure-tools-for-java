@@ -40,7 +40,7 @@ import com.intellij.openapi.roots.ui.configuration.libraryEditor.NewLibraryEdito
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.search.ProjectScope
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchLocalRunState
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azuretools.ijidea.ui.ErrorWindow
 import com.microsoft.intellij.util.runInWriteAction
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfiguration
@@ -55,7 +55,7 @@ class SparkScalaLocalConsoleRunConfiguration(
     private val sparkCoreCoodRegex = """.*\b(org.apache.spark:spark-)(core)(_.+:.+)""".toRegex()
     private val replMain = "org.apache.spark.repl.Main"
 
-    lateinit var batchRunConfiguration: RemoteDebugRunConfiguration
+    lateinit var batchRunConfiguration: LivySparkBatchJobRunConfiguration
 
     override fun mainClass(): String = "org.apache.spark.deploy.SparkSubmit"
 
@@ -79,7 +79,9 @@ class SparkScalaLocalConsoleRunConfiguration(
         // - https://github.com/Microsoft/azure-tools-for-java/issues/2285
         // - https://issues.apache.org/jira/browse/SPARK-13710
         val jlineLibraryCoord = "jline:jline:2.12.1"
-        promptAndFix(jlineLibraryCoord)
+        if (getLibraryByCoord(jlineLibraryCoord) == null) {
+            promptAndFix(jlineLibraryCoord)
+        }
         params.classPath.addAll(getDependencyClassPaths(jlineLibraryCoord))
 
         params.classPath.addAll(localRunParams.classPath.pathList)

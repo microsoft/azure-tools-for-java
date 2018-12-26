@@ -23,12 +23,14 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
 /**
  * Parameters used to submit a new Data Lake Analytics resource pool creation request.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CreateSparkResourcePool implements IConvertible {
     /**
      * Friendly name of the resource pool to submit.
@@ -43,7 +45,7 @@ public class CreateSparkResourcePool implements IConvertible {
     private CreateSparkResourcePoolParameters properties;
 
     /**
-     * Get the name value.
+     * Get friendly name of the resource pool to submit.
      *
      * @return the name value
      */
@@ -52,7 +54,7 @@ public class CreateSparkResourcePool implements IConvertible {
     }
 
     /**
-     * Set the name value.
+     * Set friendly name of the resource pool to submit.
      *
      * @param name the name value to set
      * @return the CreateSparkResourcePool object itself.
@@ -63,7 +65,7 @@ public class CreateSparkResourcePool implements IConvertible {
     }
 
     /**
-     * Get the properties value.
+     * Get the spark resource pool specific properties.
      *
      * @return the properties value
      */
@@ -72,7 +74,7 @@ public class CreateSparkResourcePool implements IConvertible {
     }
 
     /**
-     * Set the properties value.
+     * Set the spark resource pool specific properties.
      *
      * @param properties the properties value to set
      * @return the CreateSparkResourcePool object itself.

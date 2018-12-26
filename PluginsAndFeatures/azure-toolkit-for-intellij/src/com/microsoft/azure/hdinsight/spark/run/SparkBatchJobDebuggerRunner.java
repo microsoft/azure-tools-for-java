@@ -41,14 +41,16 @@ import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.spark.common.*;
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration;
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
+import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionAdvancedConfigPanel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.concurrency.AsyncPromise;
 import org.jetbrains.concurrency.Promise;
 import rx.Observable;
+import rx.Observer;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
@@ -66,12 +68,12 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
 
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-        if (!(profile instanceof RemoteDebugRunConfiguration)) {
+        if (!(profile instanceof LivySparkBatchJobRunConfiguration)) {
             return false;
         }
 
-        boolean isDebugEnabled = Optional.of((RemoteDebugRunConfiguration) profile)
-                .map(RemoteDebugRunConfiguration::getSubmitModel)
+        boolean isDebugEnabled = Optional.of((LivySparkBatchJobRunConfiguration) profile)
+                .map(LivySparkBatchJobRunConfiguration::getSubmitModel)
                 .map(SparkSubmitModel::getAdvancedConfigModel)
                 .map(advModel -> advModel.enableRemoteDebug && advModel.isValid())
                 .orElse(false);
@@ -132,22 +134,15 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         final IdeaSchedulers schedulers = new IdeaSchedulers(project);
         final PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject = PublishSubject.create();
         final PublishSubject<SparkBatchJobSubmissionEvent> debugEventSubject = PublishSubject.create();
-        final SparkBatchJobRemoteDebugProcess driverDebugProcess;
-        try {
-            driverDebugProcess = new SparkBatchJobRemoteDebugProcess(
-                    schedulers,
-                    session,
-                    SparkBatchRemoteDebugJob.factory(
-                            submitModel.getSubmissionParameter(),
-                            SparkBatchSubmission.getInstance(),
-                            ctrlSubject),
-                    submitModel.getArtifactPath().orElseThrow(() -> new ExecutionException("No artifact selected")),
-                    submitModel.getSubmissionParameter().getMainClassName(),
-                    submitModel.getAdvancedConfigModel(),
-                    ctrlSubject);
-        } catch (DebugParameterDefinedException e) {
-            throw new ExecutionException(e);
-        }
+        final SparkBatchJobRemoteDebugProcess driverDebugProcess = new SparkBatchJobRemoteDebugProcess(
+                schedulers,
+                session,
+                (ISparkBatchDebugJob) buildSparkBatchJob(submitModel, ctrlSubject),
+                submitModel.getArtifactPath().orElseThrow(() -> new ExecutionException("No artifact selected")),
+                submitModel.getSubmissionParameter().getMainClassName(),
+                submitModel.getAdvancedConfigModel(),
+                ctrlSubject);
+
         final SparkBatchJobDebugProcessHandler driverDebugHandler =
                 new SparkBatchJobDebugProcessHandler(project, driverDebugProcess, debugEventSubject);
 
@@ -331,5 +326,28 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         childEnv.putUserData(ProfileNameKey, originProfileName);
 
         return childEnv;
+    }
+
+    @NotNull
+    @Override
+    public ISparkBatchJob buildSparkBatchJob(@NotNull SparkSubmitModel submitModel, @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) throws ExecutionException {
+        try {
+            SparkSubmissionAdvancedConfigPanel.Companion.checkSettings(submitModel.getAdvancedConfigModel());
+
+            return SparkBatchRemoteDebugJob.factory(submitModel.getSubmissionParameter(),
+                                                    SparkBatchSubmission.getInstance(),
+                                                    ctrlSubject);
+        } catch (DebugParameterDefinedException e) {
+            throw new ExecutionException(e);
+        }
+    }
+
+    @Override
+    public void setFocus(@NotNull RunConfiguration runConfiguration) {
+        if (runConfiguration instanceof LivySparkBatchJobRunConfiguration) {
+            LivySparkBatchJobRunConfiguration livyRunConfig = (LivySparkBatchJobRunConfiguration) runConfiguration;
+            livyRunConfig.getModel().setFocusedTabIndex(1);
+            livyRunConfig.getModel().getSubmitModel().getAdvancedConfigModel().setUIExpanded(true);
+        }
     }
 }

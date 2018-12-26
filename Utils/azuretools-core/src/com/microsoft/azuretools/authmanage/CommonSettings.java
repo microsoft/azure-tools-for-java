@@ -35,9 +35,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
 
-/**
- * Created by shch on 10/10/2016.
- */
 public class CommonSettings {
     private static final Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
     public static final String authMethodDetailsFileName = "AuthMethodDetails.json";
@@ -102,6 +99,7 @@ public class CommonSettings {
             e.printStackTrace();
         }
     }
+
     public static IUIFactory getUiFactory() {
         return uiFactory;
     }

@@ -35,9 +35,9 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.Pair;
 import org.jdom.Element;
+import rx.subjects.BehaviorSubject;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,7 +49,7 @@ public class SparkSubmitModel {
 
     @Transient
     @NotNull
-    final private Project project;
+    private Project project;
 
     @Transient
     @NotNull
@@ -64,11 +64,13 @@ public class SparkSubmitModel {
     final private SparkSubmitJobUploadStorageModel jobUploadStorageModel;
 
     @Transient
-    @Nullable
-    private ImmutableComboBoxModel<IClusterDetail> clusterComboBoxModel = null;
+    private List<String> errors = new ArrayList<>();
 
     @Transient
-    private DefaultComboBoxModel<Artifact> artifactComboBoxModel;
+    private boolean isClusterSelectable = true;
+
+    @Transient
+    private boolean isClustersRefreshable = true;
 
     @Transient
     @NotNull
@@ -84,7 +86,6 @@ public class SparkSubmitModel {
 
     public SparkSubmitModel(@NotNull Project project, @NotNull SparkSubmissionParameter submissionParameter) {
         this.project = project;
-        this.artifactComboBoxModel = new DefaultComboBoxModel<>();
         this.advancedConfigModel = new SparkSubmitAdvancedConfigModel();
         this.jobUploadStorageModel = new SparkSubmitJobUploadStorageModel();
         this.submissionParameter = submissionParameter;
@@ -107,20 +108,23 @@ public class SparkSubmitModel {
     }
 
     @Transient
-    @Nullable
-    public ImmutableComboBoxModel<IClusterDetail> getClusterComboBoxModel() {
-        return clusterComboBoxModel;
+    public boolean isClusterSelectable() {
+        return isClusterSelectable;
     }
 
     @Transient
-    public void setClusterComboBoxModel(@Nullable ImmutableComboBoxModel<IClusterDetail> clusterComboBoxModel) {
-        this.clusterComboBoxModel = clusterComboBoxModel;
+    public void setClusterSelectable(boolean clusterSelectable) {
+        isClusterSelectable = clusterSelectable;
     }
 
     @Transient
-    @NotNull
-    public DefaultComboBoxModel<Artifact> getArtifactComboBoxModel() {
-        return artifactComboBoxModel;
+    public boolean isClustersRefreshable() {
+        return isClustersRefreshable;
+    }
+
+    @Transient
+    public void setClustersRefreshable(boolean clustersRefreshable) {
+        isClustersRefreshable = clustersRefreshable;
     }
 
     @Attribute("cluster_name")
@@ -256,6 +260,11 @@ public class SparkSubmitModel {
         return project;
     }
 
+    @Transient
+    public void setProject(@NotNull Project project) {
+        this.project = project;
+    }
+
     @NotNull
     @Transient
     public SubmissionTableModel getTableModel() {
@@ -264,8 +273,6 @@ public class SparkSubmitModel {
 
     @Transient
     public synchronized void setTableModel(@NotNull SubmissionTableModel tableModel) {
-        initializeTableModel(tableModel);
-
         // Apply from table model
         submissionParameter.applyFlattedJobConf(tableModel.getJobConfigMap());
 
@@ -283,24 +290,8 @@ public class SparkSubmitModel {
 
     @NotNull
     @Transient
-    protected Stream<Pair<String, ? extends Object>> getDefaultParameters() {
+    public Stream<Pair<String, ? extends Object>> getDefaultParameters() {
         return Arrays.stream(SparkSubmissionParameter.defaultParameters);
-    }
-
-    private void initializeTableModel(final SubmissionTableModel tableModel) {
-        if (tableModel.getJobConfigMap().isEmpty()) {
-            tableModel.loadJobConfigMap(getDefaultParameters()
-                                            .map(kv -> new Pair<>(kv.first(), kv.second() == null ? "" : kv.second().toString()))
-                                            .collect(Collectors.toList()));
-        }
-
-        tableModel.addTableModelListener(e -> {
-            if (e.getType() == TableModelEvent.UPDATE &&
-                    (e.getLastRow() + 1) == getTableModel().getRowCount() &&
-                    (!getTableModel().hasEmptyRow())) {
-                tableModel.addEmptyRow();
-            }
-        });
     }
 
     public Element exportToElement() throws WriteExternalException {
@@ -319,5 +310,11 @@ public class SparkSubmitModel {
         }
 
         return this;
+    }
+
+    @NotNull
+    @Transient
+    public List<String> getErrors() {
+        return errors;
     }
 }

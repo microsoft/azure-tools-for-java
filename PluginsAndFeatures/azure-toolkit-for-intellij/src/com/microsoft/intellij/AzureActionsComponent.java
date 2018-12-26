@@ -28,10 +28,10 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
+import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
-import com.microsoft.azure.sparkserverless.SparkServerlessClusterOpsCtrl;
-import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterOps;
+import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -46,6 +46,7 @@ import com.microsoft.intellij.helpers.IDEHelperImpl;
 import com.microsoft.intellij.helpers.MvpUIHelperImpl;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.secure.IdeaSecureStore;
+import com.microsoft.intellij.secure.IdeaTrustStrategy;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginUtil;
@@ -54,6 +55,7 @@ import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
+import org.apache.http.ssl.TrustStrategy;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -101,8 +103,10 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
             ServiceManager.setServiceProvider(SecureStore.class, IdeaSecureStore.getInstance());
             // enable spark serverless node subscribe actions
-            ServiceManager.setServiceProvider(SparkServerlessClusterOpsCtrl.class,
-                    new SparkServerlessClusterOpsCtrl(SparkServerlessClusterOps.getInstance()));
+            ServiceManager.setServiceProvider(CosmosSparkClusterOpsCtrl.class,
+                    new CosmosSparkClusterOpsCtrl(CosmosSparkClusterOps.getInstance()));
+
+            ServiceManager.setServiceProvider(TrustStrategy.class, IdeaTrustStrategy.INSTANCE);
             initAuthManage();
             ActionManager am = ActionManager.getInstance();
             DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);

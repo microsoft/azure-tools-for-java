@@ -25,7 +25,7 @@ package com.microsoft.azure.hdinsight.spark.console
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 
 class SparkScalaLocalConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaLocalConsoleConfigurationType)
@@ -36,10 +36,16 @@ class SparkScalaLocalConsoleRunConfigurationFactory(sparkConsoleType: SparkScala
 
     override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
         // Create a Spark Scala Console run configuration based on Spark Batch run configuration
+        val localClassModule =
+                (template as? LivySparkBatchJobRunConfiguration)?.model?.localRunConfigurableModel?.classpathModule
+
         val configuration = createTemplateConfiguration(template.project) as SparkScalaLocalConsoleRunConfiguration
         configuration.name = "${template.name} >> Spark Local Console(Scala)"
-        configuration.module = ModuleManager.getInstance(template.project).findModuleByName(template.project.name)
-        configuration.batchRunConfiguration = template as RemoteDebugRunConfiguration
+        val moduleManager = ModuleManager.getInstance(template.project)
+        configuration.module = localClassModule?.let { moduleManager.findModuleByName(it) }
+                ?: moduleManager.modules.first { it.name.equals(template.project.name, ignoreCase = true) }
+
+        configuration.batchRunConfiguration = template as LivySparkBatchJobRunConfiguration
 
         return configuration
     }
