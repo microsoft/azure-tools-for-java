@@ -27,10 +27,8 @@ import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterModel
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewClusterForm
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule
-import com.microsoft.azuretools.ijidea.ui.HintTextField
 import org.apache.commons.lang3.StringUtils
 import java.awt.CardLayout
-import java.net.URI
 import javax.swing.DefaultComboBoxModel
 
 class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterModule): AddNewClusterForm(project, module) {
@@ -49,12 +47,6 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
         authComboBox.isEnabled = true
         val authLayout = authCardsPanel.layout as CardLayout
         authLayout.show(authCardsPanel, basicAuthTitle)
-    }
-
-    override fun createUIComponents() {
-        super.createUIComponents()
-
-        arisClusterNameField = HintTextField("(Optional) Cluster name")
     }
 
     override fun getData(data: AddNewClusterModel) {
