@@ -5,6 +5,7 @@ import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.uiDesigner.core.GridConstraints
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkSubmitModel
 import com.microsoft.intellij.forms.dsl.panel
@@ -40,15 +41,15 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
         }, ModalityState.any())
     }
 
-    private val sparkEventsPrompt = JLabel("Spark Events directory:").apply {
-        toolTipText = "Directory Path for spark events"
+    private val sparkEventsPrompt = JLabel("Spark Events:").apply {
+        toolTipText = "Spark events root path"
     }
 
     private val sparkEventsDirectoryPrefixField = JLabel("adl://*.azuredatalakestore.net/").apply {
-        toolTipText = "DirectoryPath for spark events"
+        toolTipText = "Spark events root path"
     }
 
-    private val sparkEventsDirectoryField = JTextField("spark-events").apply {
+    private val sparkEventsDirectoryField = JTextField("spark-events/").apply {
         toolTipText = sparkEventsPrompt.toolTipText
     }
 
@@ -91,9 +92,12 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
                             getData(this)
                         }
 
-                        setData(model.apply {
-                            sparkEventsDirectoryPrefix = "adl://${cluster.name}.azuredatalakestore.net/"
-                        })
+                        val account = cluster as? AzureSparkServerlessAccount
+                        if (account != null) {
+                            setData(model.apply {
+                                sparkEventsDirectoryPrefix = account.storageRootPath
+                            })
+                        }
                     }
         }
     }
