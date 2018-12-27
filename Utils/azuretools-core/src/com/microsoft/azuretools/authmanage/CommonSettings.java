@@ -42,8 +42,10 @@ public class CommonSettings {
     private static String settingsBaseDir = null;
     private static final String AAD_PROVIDER_FILENAME = "AadProvider.json";
     private static final String ENV_NAME_KEY = "EnvironmentName";
+    private static final String COSMOS_SERVERLESS_KEY = "EnableCosmosSeverlessSpark";
     private static IUIFactory uiFactory;
     private static Environment ENV = Environment.GLOBAL;
+    public static boolean ENABLE_COSMOS_SERVERLESS = false;
 
     public static String getSettingsBaseDir() {
         return settingsBaseDir;
@@ -93,6 +95,11 @@ public class CommonSettings {
                     } else {
                         ENV = providedEnv;
                     }
+                }
+
+                JsonElement serverlessElement = jsonObject.get(COSMOS_SERVERLESS_KEY);
+                if(serverlessElement != null) {
+                    ENABLE_COSMOS_SERVERLESS = serverlessElement.getAsBoolean();
                 }
             }
         } catch (Exception e) {

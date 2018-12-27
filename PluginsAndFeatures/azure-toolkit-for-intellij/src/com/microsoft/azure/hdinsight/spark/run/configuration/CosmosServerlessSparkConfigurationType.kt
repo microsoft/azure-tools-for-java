@@ -4,6 +4,7 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.ConfigurationTypeUtil
 import com.microsoft.azure.hdinsight.common.CommonConst
+import com.microsoft.azuretools.authmanage.CommonSettings
 import com.microsoft.intellij.util.PluginUtil
 import javax.swing.Icon
 
@@ -26,6 +27,9 @@ object CosmosServerlessSparkConfigurationType : ConfigurationType {
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {
-        return arrayOf(CosmosServerlessSparkConfigurationFactory(this))
+        return when {
+            CommonSettings.ENABLE_COSMOS_SERVERLESS -> arrayOf(CosmosServerlessSparkConfigurationFactory(this))
+            else -> arrayOf()
+        }
     }
 }
