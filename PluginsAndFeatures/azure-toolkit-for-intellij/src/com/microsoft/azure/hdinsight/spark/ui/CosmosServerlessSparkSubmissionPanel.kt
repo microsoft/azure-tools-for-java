@@ -84,20 +84,20 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
     inner class ViewModel: SparkSubmissionContentPanel.ViewModel() {
         init {
             clusterSelection.clusterIsSelected
-                .subscribe ({ cluster ->
-                    if (cluster == null) {
-                        return@subscribe
-                    }
+                    .subscribe({ cluster ->
+                        if (cluster == null) {
+                            return@subscribe
+                        }
 
-                    val model = CosmosServerlessSparkSubmitModel().apply {
-                        getData(this)
-                    }
+                        val model = CosmosServerlessSparkSubmitModel().apply {
+                            getData(this)
+                        }
 
-                    setData(model.apply {
-                        sparkEventsDirectoryPrefix = (cluster as? AzureSparkServerlessAccount)?.storageRootPath
-                                ?: "<Root Path>/"
-                    })
-                }, {err -> ExceptionUtils.getStackTrace(err)})
+                        setData(model.apply {
+                            sparkEventsDirectoryPrefix = (cluster as? AzureSparkServerlessAccount)?.storageRootPath
+                                    ?: "<Root Path>/"
+                        })
+                    }, { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
         }
     }
 
