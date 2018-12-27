@@ -23,7 +23,7 @@ package com.microsoft.azure.hdinsight.serverexplore;
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.CommonConst;
-import com.microsoft.azure.hdinsight.common.IconPathHelper;
+import com.microsoft.azure.hdinsight.common.IconPathBuilder;
 import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.ClusterNode;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
@@ -37,7 +37,11 @@ import java.util.stream.Collectors;
 public class HDInsightRootModuleImpl extends HDInsightRootModule {
 
     private static final String HDInsight_SERVICE_MODULE_ID = HDInsightRootModuleImpl.class.getName();
-    private static final String ICON_PATH = IconPathHelper.FormatIconPath(CommonConst.HDExplorerIcon_16x_Path);
+    private static final String ICON_PATH = IconPathBuilder
+            .custom(CommonConst.HDExplorerIconName)
+            .setBigSize()
+            .setPathPrefix("")
+            .build();
     private static final String BASE_MODULE_NAME = "HDInsight";
 
     public HDInsightRootModuleImpl(@NotNull Node parent) {
