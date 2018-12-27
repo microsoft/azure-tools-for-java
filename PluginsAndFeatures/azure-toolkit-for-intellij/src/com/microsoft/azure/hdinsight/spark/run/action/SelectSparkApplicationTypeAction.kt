@@ -84,7 +84,7 @@ class SelectCosmosServerlessSparkTypeAction : SelectSparkApplicationTypeAction()
 
     override fun update(e: AnActionEvent) {
         super.update(e)
-        if (!CommonSettings.ENABLE_COSMOS_SERVERLESS) {
+        if (!CommonSettings.isCosmosServerlessEnabled) {
             e.presentation.isEnabled = false
         }
     }

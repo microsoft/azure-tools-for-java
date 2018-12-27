@@ -28,7 +28,7 @@ object CosmosServerlessSparkConfigurationType : ConfigurationType {
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {
         return when {
-            CommonSettings.ENABLE_COSMOS_SERVERLESS -> arrayOf(CosmosServerlessSparkConfigurationFactory(this))
+            CommonSettings.isCosmosServerlessEnabled -> arrayOf(CosmosServerlessSparkConfigurationFactory(this))
             else -> arrayOf()
         }
     }

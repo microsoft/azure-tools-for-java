@@ -45,7 +45,7 @@ public class CommonSettings {
     private static final String COSMOS_SERVERLESS_KEY = "EnableCosmosSeverlessSpark";
     private static IUIFactory uiFactory;
     private static Environment ENV = Environment.GLOBAL;
-    public static boolean ENABLE_COSMOS_SERVERLESS = false;
+    public static boolean isCosmosServerlessEnabled = false;
 
     public static String getSettingsBaseDir() {
         return settingsBaseDir;
@@ -99,7 +99,7 @@ public class CommonSettings {
 
                 JsonElement serverlessElement = jsonObject.get(COSMOS_SERVERLESS_KEY);
                 if(serverlessElement != null) {
-                    ENABLE_COSMOS_SERVERLESS = serverlessElement.getAsBoolean();
+                    isCosmosServerlessEnabled = serverlessElement.getAsBoolean();
                 }
             }
         } catch (Exception e) {
