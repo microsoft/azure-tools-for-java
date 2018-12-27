@@ -193,7 +193,7 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
                     getSubmitModel().getTableModel().getFirstCheckResults().getMessaqge());
         }
 
-        String modelError = getSubmitModel().getErrors().stream().filter(StringUtils::isNotBlank).collect(Collectors.joining("\\n"));
+        String modelError = getSubmitModel().getErrors().stream().filter(StringUtils::isNotBlank).findFirst().orElse(null);
         if (StringUtils.isNotBlank(modelError)) {
             throw new RuntimeConfigurationError("There are errors in submit model: " + modelError);
         }

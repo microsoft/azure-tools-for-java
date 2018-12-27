@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
+import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationPerRunnerSettings
 import com.intellij.execution.configurations.RunProfileState
@@ -48,7 +49,8 @@ class CosmosSparkScalaLivyConsoleRunConfiguration(project: Project,
     override val runConfigurationTypeName = "Azure Data Lake Spark Run Configuration"
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
-        val sparkCluster = cluster as? AzureSparkServerlessCluster ?: return null
+        val sparkCluster = cluster as? AzureSparkServerlessCluster ?: throw ExecutionException(RuntimeConfigurationError(
+                "Can't prepare Spark Cosmos interactive session since the target cluster isn't set or found"))
 
         val livyUrl = (sparkCluster.livyUri?.toString() ?: return null).trimEnd('/') + "/"
 
