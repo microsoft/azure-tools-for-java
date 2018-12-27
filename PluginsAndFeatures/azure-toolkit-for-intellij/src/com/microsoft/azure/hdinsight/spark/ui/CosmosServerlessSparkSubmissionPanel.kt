@@ -5,9 +5,11 @@ import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.uiDesigner.core.GridConstraints
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkSubmitModel
 import com.microsoft.intellij.forms.dsl.panel
+import org.apache.commons.lang3.exception.ExceptionUtils
 import java.awt.FlowLayout
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -40,15 +42,15 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
         }, ModalityState.any())
     }
 
-    private val sparkEventsPrompt = JLabel("Spark Events directory:").apply {
-        toolTipText = "Directory Path for spark events"
+    private val sparkEventsPrompt = JLabel("Spark Events:").apply {
+        toolTipText = "Spark events root path"
     }
 
-    private val sparkEventsDirectoryPrefixField = JLabel("adl://*.azuredatalakestore.net/").apply {
-        toolTipText = "DirectoryPath for spark events"
+    private val sparkEventsDirectoryPrefixField = JLabel("<Root Path>/").apply {
+        toolTipText = "Spark events root path"
     }
 
-    private val sparkEventsDirectoryField = JTextField("spark-events").apply {
+    private val sparkEventsDirectoryField = JTextField("spark-events/").apply {
         toolTipText = sparkEventsPrompt.toolTipText
     }
 
@@ -82,7 +84,7 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
     inner class ViewModel: SparkSubmissionContentPanel.ViewModel() {
         init {
             clusterSelection.clusterIsSelected
-                    .subscribe { cluster ->
+                    .subscribe({ cluster ->
                         if (cluster == null) {
                             return@subscribe
                         }
@@ -92,9 +94,10 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
                         }
 
                         setData(model.apply {
-                            sparkEventsDirectoryPrefix = "adl://${cluster.name}.azuredatalakestore.net/"
+                            sparkEventsDirectoryPrefix = (cluster as? AzureSparkServerlessAccount)?.storageRootPath
+                                    ?: "<Root Path>/"
                         })
-                    }
+                    }, { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
         }
     }
 

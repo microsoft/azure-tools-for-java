@@ -33,6 +33,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
@@ -49,8 +50,6 @@ import rx.Observable
 import rx.Observable.empty
 import rx.Observable.just
 import rx.schedulers.Schedulers
-import rx.subjects.BehaviorSubject
-import rx.subjects.PublishSubject
 import rx.subjects.ReplaySubject
 import java.awt.CardLayout
 import java.util.concurrent.TimeUnit
@@ -224,6 +223,16 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                     errorMsg = null
                                 }
                             }
+                            SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE -> model.apply {
+                                val account = cluster as? AzureSparkServerlessAccount
+                                if (account != null) {
+                                    uploadPath = "${account.storageRootPath}SparkSubmission/"
+                                    errorMsg = null
+                                } else {
+                                    uploadPath = "-"
+                                    errorMsg = "Selected ADLA account does not exist"
+                                }
+                            }
                         }
                     }
                     .doOnNext { data ->
@@ -264,6 +273,9 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             storagePanel.webHdfsCard.title -> {
                 data.storageAccountType = SparkSubmitStorageType.WEBHDFS
                 data.webHdfsRootPath= storagePanel.webHdfsCard.webHdfsRootPathField.text
+            }
+            storagePanel.accountDefaultStorageCard.title -> {
+                data.storageAccountType = SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE
             }
             else -> {}
         }

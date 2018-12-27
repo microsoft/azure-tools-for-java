@@ -29,7 +29,6 @@ import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
-import com.intellij.execution.configurations.RunnerSettings;
 import com.intellij.execution.runners.DefaultProgramRunner;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;

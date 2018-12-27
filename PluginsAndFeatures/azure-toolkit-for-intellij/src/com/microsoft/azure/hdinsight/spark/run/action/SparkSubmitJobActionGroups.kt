@@ -27,12 +27,15 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
+import com.microsoft.azuretools.authmanage.CommonSettings
 
 
 class SparkSubmitJobActionGroups : QuickSwitchSchemeAction() {
     override fun fillActions(project: Project?, group: DefaultActionGroup, dataContext: DataContext) {
         group.add(ActionManager.getInstance().getAction("Actions.SubmitLivySparkApplicationAction"))
         group.add(ActionManager.getInstance().getAction("Actions.SubmitCosmosSparkApplicationAction"))
-        group.add(ActionManager.getInstance().getAction("Actions.SubmitCosmosServerlessSparkApplicationAction"))
+        if (CommonSettings.isCosmosServerlessEnabled) {
+            group.add(ActionManager.getInstance().getAction("Actions.SubmitCosmosServerlessSparkApplicationAction"))
+        }
     }
 }
