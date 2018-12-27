@@ -89,7 +89,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         switch (storageAcccountType) {
             case BLOB:
                 String storageAccountName = submitModel.getJobUploadStorageModel().getStorageAccount();
-                if (storageAccountName == null) {
+                if (StringUtils.isBlank(storageAccountName)) {
                     throw new ExecutionException("Can't get the default storage account.");
                 }
 
