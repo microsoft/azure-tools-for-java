@@ -24,24 +24,18 @@ package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.datalake.store.ADLStoreClient;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
-import com.microsoft.azure.hdinsight.sdk.common.AzureDataLakeHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.CreateSparkBatchJob;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.CreateSparkBatchJobParameters;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJobResponsePayload;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.http.entity.StringEntity;
 import rx.Observable;
 import rx.Observer;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -94,7 +88,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
             try {
                 String path = getSubmissionParameter().sparkEventsDirectoryPath();
                 String accessToken = getHttp().getAccessToken();
-                ADLStoreClient storeClient = ADLStoreClient.createClient(URI.create(path).getHost(), accessToken);
+                ADLStoreClient storeClient = ADLStoreClient.createClient(URI.create(account.getStorageRootPath()).getHost(), accessToken);
                 if (storeClient.checkExists(path)) {
                     return true;
                 } else {
@@ -152,7 +146,13 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @Override
     public Observable<SparkBatchJobResponsePayload> getStatus() {
         return getAccount().getSparkBatchJobRequest(getJobUuid())
-                .map(sparkBatchJob -> sparkBatchJob.properties().responsePayload());
+                .flatMap(sparkBatchJob -> {
+                    if (sparkBatchJob.properties() == null) {
+                        return Observable.error(new IOException("Can't get job status from empty property body."));
+                    } else {
+                        return Observable.just(sparkBatchJob.properties().responsePayload());
+                    }
+                });
     }
 
     @Nullable
@@ -163,7 +163,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                 .repeatWhen(ob -> ob.delay(getDelaySeconds(), TimeUnit.SECONDS))
                 .map(sparkSubmitResponse -> sparkSubmitResponse.getState())
                 .toBlocking()
-                .singleOrDefault("error");
+                .singleOrDefault("unknown");
     }
 
     @Override
@@ -176,7 +176,8 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                 .singleOrDefault(false);
     }
 
-    private Observable<AbstractMap.SimpleImmutableEntry<String, String>> getJobDoneObservable() {
+    @Override
+    protected Observable<AbstractMap.SimpleImmutableEntry<String, String>> getJobDoneObservable() {
         return getStatus()
                 .repeatWhen(ob -> ob.delay(getDelaySeconds(), TimeUnit.SECONDS))
                 .takeUntil(resp -> isDone(resp.getState()))
@@ -191,10 +192,12 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @Override
     public Observable<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> getSubmissionLog() {
         // TODO: Replace it with HttpObservable
-        return super.getSubmissionLog();
+        return Observable.create(ob -> {
+            ob.onNext(new AbstractMap.SimpleImmutableEntry<>(MessageInfoType.Info, "Submission log not supported yet"));
+        });
     }
 
-        private void ctrlInfo(@NotNull String message) {
+    private void ctrlInfo(@NotNull String message) {
         getCtrlSubject().onNext(new AbstractMap.SimpleImmutableEntry<>(MessageInfoType.Info, message));
     }
 }

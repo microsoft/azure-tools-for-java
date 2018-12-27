@@ -59,6 +59,11 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
             SparkSubmitStorageType.WEBHDFS
     }),
 
+    //Cosmos Serverless Spark cluster
+    ServerlessClusterWithAccountDefault(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE
+    }),
+
     //for unknown type cluster
     ClusterWithFullType(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
