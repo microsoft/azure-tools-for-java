@@ -120,7 +120,7 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
     private fun getClusterDisplayType() : String {
         return when (sparkSubmitModel) {
             is CosmosServerlessSparkSubmitModel -> "ADL account"
-            is ArisSparkSubmitModel -> "Aris Spark ccount"
+            is ArisSparkSubmitModel -> "Aris Spark account"
             is CosmosSparkSubmitModel -> "ADL Spark cluster"
             else -> "HDInsight cluster"
         }
