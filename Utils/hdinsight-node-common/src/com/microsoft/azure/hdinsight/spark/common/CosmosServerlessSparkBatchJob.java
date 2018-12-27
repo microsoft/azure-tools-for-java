@@ -148,7 +148,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
         return getAccount().getSparkBatchJobRequest(getJobUuid())
                 .flatMap(sparkBatchJob -> {
                     if (sparkBatchJob.properties() == null) {
-                        return Observable.empty();
+                        return Observable.error(new IOException("Can't get job status after retry " + getRetriesMax() + " times."));
                     } else {
                         return Observable.just(sparkBatchJob.properties().responsePayload());
                     }

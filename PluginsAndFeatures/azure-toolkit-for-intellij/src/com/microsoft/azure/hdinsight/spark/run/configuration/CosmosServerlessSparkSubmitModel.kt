@@ -10,14 +10,11 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azuretools.utils.Pair
 import java.util.stream.Stream
 
-class CosmosServerlessSparkSubmitModel(project: Project) : SparkSubmitModel(project, CreateSparkBatchJobParameters()) {
+class CosmosServerlessSparkSubmitModel(project: Project) : SparkSubmitModel(project,
+    CreateSparkBatchJobParameters().withSparkEventsDirectoryPath("spark-events")) {
     constructor(): this(DummyProject.getInstance())
 
     @get:Transient @set:Transient var sparkEventsDirectoryPrefix: String = "adl://*.azuredatalakestore.net/"
-
-    init {
-        setSparkEventsDirectoryPath("spark-events")
-    }
 
     @Attribute("sparkevents_directory")
     fun getSparkEventsDirectoryPath(): String {

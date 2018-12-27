@@ -10,7 +10,6 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkSubmitModel
 import com.microsoft.intellij.forms.dsl.panel
 import org.apache.commons.lang3.exception.ExceptionUtils
-import rx.Observable
 import java.awt.FlowLayout
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -85,22 +84,20 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
     inner class ViewModel: SparkSubmissionContentPanel.ViewModel() {
         init {
             clusterSelection.clusterIsSelected
-                .flatMap { cluster ->
+                .subscribe ({ cluster ->
                     if (cluster == null) {
-                        Observable.empty<CosmosServerlessSparkSubmitModel>()
-                    } else {
-                        Observable.just(CosmosServerlessSparkSubmitModel())
-                            .doOnNext { getData(it) }
-                            .map { model ->
-                                model.apply {
-                                    sparkEventsDirectoryPrefix = (cluster as? AzureSparkServerlessAccount)?.storageRootPath
-                                            ?: "<Root Path>/"
-                                }
-                            }
-                            .doOnNext { setData(it) }
+                        return@subscribe
                     }
-                }
-                .subscribe({}, {err -> ExceptionUtils.getStackTrace(err)})
+
+                    val model = CosmosServerlessSparkSubmitModel().apply {
+                        getData(this)
+                    }
+
+                    setData(model.apply {
+                        sparkEventsDirectoryPrefix = (cluster as? AzureSparkServerlessAccount)?.storageRootPath
+                                ?: "<Root Path>/"
+                    })
+                }, {err -> ExceptionUtils.getStackTrace(err)})
         }
     }
 
