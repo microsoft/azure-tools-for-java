@@ -101,7 +101,7 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
         val parameter = getSubmitModel().submissionParameter
 
         if (parameter.clusterName.isNullOrBlank()) {
-            throw ExecutionException("The ${getClusterDisplayType()} to submit job is not selected, please config it at 'Run/Debug configuration -> Remotely Run in Cluster'.")
+            throw ExecutionException("The ${getSubmitModel().sparkClusterTypeDisplayName} to submit job is not selected, please config it at 'Run/Debug configuration -> Remotely Run in Cluster'.")
         }
 
         if (parameter.artifactName.isNullOrBlank() && parameter.localArtifactPath.isNullOrBlank()) {
@@ -115,15 +115,6 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
 
     override fun getSubmitModel(): SparkSubmitModel {
         return sparkSubmitModel
-    }
-
-    private fun getClusterDisplayType() : String {
-        return when (sparkSubmitModel) {
-            is CosmosServerlessSparkSubmitModel -> "ADL account"
-            is ArisSparkSubmitModel -> "Aris Spark account"
-            is CosmosSparkSubmitModel -> "ADL Spark cluster"
-            else -> "HDInsight cluster"
-        }
     }
 
     open fun onSuccess(executor: Executor) {

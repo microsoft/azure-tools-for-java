@@ -317,4 +317,10 @@ public class SparkSubmitModel {
     public List<String> getErrors() {
         return errors;
     }
+
+    @NotNull
+    @Transient
+    public String getSparkClusterTypeDisplayName() {
+        return "HDInsight cluster";
+    }
 }

@@ -47,4 +47,6 @@ open class CosmosSparkSubmitModel : SparkSubmitModel {
                 Pair(SparkSubmissionParameter.ExecutorMemory, SparkSubmissionParameter.ExecutorMemoryDefaultValue),
                 Pair(SparkSubmissionParameter.ExecutorCores, SparkSubmissionParameter.ExecutorCoresDefaultValue)).stream()
     }
+
+    override fun getSparkClusterTypeDisplayName(): String = "Azure Data Lake Spark cluster"
 }

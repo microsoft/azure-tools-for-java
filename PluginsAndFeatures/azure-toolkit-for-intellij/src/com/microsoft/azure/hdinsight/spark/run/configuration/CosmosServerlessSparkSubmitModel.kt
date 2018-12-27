@@ -40,4 +40,6 @@ class CosmosServerlessSparkSubmitModel : CosmosSparkSubmitModel {
     override fun getSubmissionParameter(): SparkSubmissionParameter {
         return submissionParameter
     }
+
+    override fun getSparkClusterTypeDisplayName(): String = "Cosmos Serverless Spark account"
 }

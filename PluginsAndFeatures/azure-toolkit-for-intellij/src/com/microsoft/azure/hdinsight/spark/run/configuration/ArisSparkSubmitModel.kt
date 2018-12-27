@@ -31,4 +31,6 @@ const val SUBMISSION_CONTENT_NAME: String = "aris_spark_submission"
 @Tag(SUBMISSION_CONTENT_NAME)
 class ArisSparkSubmitModel : SparkSubmitModel {
     constructor(project: Project) : super(project)
+
+    override fun getSparkClusterTypeDisplayName(): String = "Aris Spark cluster"
 }
