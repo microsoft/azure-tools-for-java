@@ -34,4 +34,6 @@ open class CosmosSparkRunConfiguration (name: String,
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
         return LivySparkRunConfigurationSettingsEditor(ServerlessSparkConfigurable(module.project))
     }
+
+    override fun getSuggestedNamePrefix(): String = "[Cosmos Spark]"
 }

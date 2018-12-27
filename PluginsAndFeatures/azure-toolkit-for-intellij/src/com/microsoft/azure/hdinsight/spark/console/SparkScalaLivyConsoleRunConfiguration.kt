@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
+import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configuration.AbstractRunConfiguration
 import com.intellij.execution.configurations.*
@@ -70,7 +71,8 @@ open class SparkScalaLivyConsoleRunConfiguration(project: Project,
     }
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
-        val cluster = cluster ?: return null
+        val cluster = cluster ?: throw ExecutionException(RuntimeConfigurationError(
+                "Can't prepare Spark Livy interactive session since the target cluster isn't set or found"))
 
         val session = SparkSession(
                 name,

@@ -12,9 +12,7 @@ class CosmosServerlessSparkConfiguration(name: String, override val module: Cosm
         return LivySparkRunConfigurationSettingsEditor(CosmosServerlessSparkConfigurable(module.project))
     }
 
-    override fun getSuggestedNamePrefix() : String {
-        return "[Cosmos Serverless Spark]"
-    }
+    override fun getSuggestedNamePrefix() : String = "[Cosmos Serverless Spark]"
 
     @Throws(RuntimeConfigurationException::class)
     override fun checkSubmissionConfigurationBeforeRun(runner: SparkSubmissionRunner) {

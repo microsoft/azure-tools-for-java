@@ -29,6 +29,7 @@ import com.intellij.execution.Location;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.application.ApplicationConfigurationType;
+import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.ConfigurationUtil;
 import com.intellij.execution.junit.JavaRunConfigurationProducerBase;
 import com.intellij.openapi.module.Module;
@@ -45,8 +46,9 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiMethodUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
+import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction;
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType;
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
-import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.scala.lang.psi.api.statements.ScFunctionDefinition;
 import scala.Option;
@@ -59,22 +61,30 @@ import java.util.Optional;
 import java.util.Set;
 
 public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigurationProducerBase<LivySparkBatchJobRunConfiguration> {
-    public SparkBatchJobLocalRunConfigurationProducer() {
-        super(LivySparkBatchJobRunConfigurationType.getInstance());
+    private SparkApplicationType applicationType;
+
+
+    public SparkBatchJobLocalRunConfigurationProducer(ConfigurationType configType, SparkApplicationType applicationType) {
+        super(configType);
+        this.applicationType = applicationType;
     }
 
     @Override
-    protected boolean setupConfigurationFromContext(LivySparkBatchJobRunConfiguration configuration, ConfigurationContext context, Ref<PsiElement> sourceElement) {
-        return Optional.ofNullable(context.getModule())
-                .map(Module::getProject)
-                .flatMap(project -> getMainClassFromContext(context)
-                                        .filter(mcPair -> isSparkContext(project, mcPair.getKey().getContainingFile())))
-                .map(mcPair -> {
-                    setupConfiguration(configuration, mcPair.getValue(), context);
+    public boolean setupConfigurationFromContext(LivySparkBatchJobRunConfiguration configuration, ConfigurationContext context, Ref<PsiElement> sourceElement) {
+        if (SelectSparkApplicationTypeAction.getSelectedSparkApplicationType() != this.applicationType) {
+            return false;
+        } else {
+            return Optional.ofNullable(context.getModule())
+                    .map(Module::getProject)
+                    .flatMap(project -> getMainClassFromContext(context)
+                            .filter(mcPair -> isSparkContext(project, mcPair.getKey().getContainingFile())))
+                    .map(mcPair -> {
+                        setupConfiguration(configuration, mcPair.getValue(), context);
 
-                    return true;
-                })
-                .orElse(false);
+                        return true;
+                    })
+                    .orElse(false);
+        }
     }
 
     private boolean isSparkContext(Project project, PsiFile sourceFile) {
