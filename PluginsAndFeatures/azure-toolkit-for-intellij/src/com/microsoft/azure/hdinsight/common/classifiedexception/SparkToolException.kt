@@ -40,10 +40,13 @@ class SparkToolException(exp: Throwable?) : ClassifiedException(exp) {
     }
 }
 
+// if upload aritifact with wrong blob config,IllegalArgumentException can be thrown which is user error.
 object SparkToolExceptionFactory : ClassifiedExceptionFactory() {
     override fun createClassifiedException(exp: Throwable?): ClassifiedException? {
         val stackTrace = if (exp != null) ExceptionUtils.getStackTrace(exp) else EmptyLog
-        return if (exp !is YarnDiagnosticsException && stackTrace.contains(ToolPackageSuffix)) {
+        return if (exp !is YarnDiagnosticsException
+                && exp !is IllegalArgumentException
+                && stackTrace.contains(ToolPackageSuffix)) {
             SparkToolException(exp)
         } else null
     }
