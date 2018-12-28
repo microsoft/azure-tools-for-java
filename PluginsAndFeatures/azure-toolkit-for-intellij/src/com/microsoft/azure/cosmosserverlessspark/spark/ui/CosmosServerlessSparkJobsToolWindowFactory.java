@@ -33,7 +33,7 @@ public class CosmosServerlessSparkJobsToolWindowFactory implements ToolWindowFac
     }
 
     @Override
-    public boolean shouldBeAvailable(@org.jetbrains.annotations.NotNull Project project) {
+    public boolean shouldBeAvailable(@NotNull Project project) {
         return CommonSettings.isCosmosServerlessEnabled;
     }
 }
