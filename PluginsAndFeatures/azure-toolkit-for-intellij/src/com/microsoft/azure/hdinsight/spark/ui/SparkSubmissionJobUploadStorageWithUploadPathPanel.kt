@@ -60,7 +60,6 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
     interface Control {
         val isCheckPassed: Boolean
         val resultMessage: String?
-        fun setDefaultStorageType(checkEvent: StorageCheckEvent, clusterDetail: IClusterDetail, preStorageType: SparkSubmitStorageType)
         fun getUploadPath(account: IHDIStorageAccount): String?
         fun getAzureBlobStoragePath(fullStorageBlobName: String?, container: String?): String?
     }
@@ -78,7 +77,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         Disposer.register(this@SparkSubmissionJobUploadStorageWithUploadPathPanel, this@apply)
     }
 
-    val hideableJobUploadStoragePanel = HideableTitledPanel(jobUploadStorageTitle, true, storagePanel, false)
+    private val hideableJobUploadStoragePanel = HideableTitledPanel(jobUploadStorageTitle, true, storagePanel, false)
 
     init {
         val formBuilder = panel {
@@ -129,13 +128,38 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             ReplaySubject.createWithSize(clusterSelectedCapacity)
         }
 
+        private fun setDefaultStorageType(checkEvent: StorageCheckEvent,
+                                          clusterDetail: IClusterDetail,
+                                          model : SparkSubmitJobUploadStorageModel) {
+            if (checkEvent is SparkSubmissionJobUploadStorageCtrl.StorageCheckSelectedClusterEvent) {
+                val optionTypes = clusterDetail.storageOptionsType.optionTypes
+
+                // if selectedItem is null ,will trigger storage type combo box deselected event and
+                // event.item is the model getSelectedItem which is model(0)
+                // reset selectedItem will trigger deselected and selected event which will repaint the panel
+                uploadStorage.deployStorageTypeSelection = null
+
+                // check cluster type then reset storage combo box
+                uploadStorage.deployStorageTypesModel = ImmutableComboBoxModel(optionTypes).apply {
+                    if (checkEvent.preClusterName != null || !optionTypes.contains(model.storageAccountType)) {
+                        // If preClusterName is not set, the event is triggered by creating config or reloading a saved config
+                        // or the last selected storage type is not in the supported types list, then set it
+                        // to the cluster default storage type
+                        model.storageAccountType = clusterDetail.defaultStorageType
+                    }
+
+                    selectedItem = model.storageAccountType
+                }
+            }
+        }
+
         private fun validateStorageInfo(checkEvent:StorageCheckEvent): Observable<SparkSubmitJobUploadStorageModel> {
             val cluster = clusterSelectedSubject.value ?: return empty()
 
             return just(SparkSubmitJobUploadStorageModel())
                     .doOnNext { model -> run {
                         getData(model)
-                        control.setDefaultStorageType(checkEvent, cluster, model.storageAccountType)
+                        setDefaultStorageType(checkEvent, cluster, model)
                     }}
                     // set error message to prevent user from applying the changes when validation is not completed
                     .map { model -> model.apply {
@@ -144,7 +168,6 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                     }
                     .doOnNext { model -> setData(model) }
                     .observeOn(Schedulers.io())
-                    .doOnNext { model -> getData(model) }
                     .map { model ->
                         when (model.storageAccountType) {
                             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION -> model.apply {
@@ -253,30 +276,19 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         // Component -> Data
         data.errorMsg = storagePanel.errorMessage
         data.uploadPath = uploadPathField.text
-        when ((storagePanel.storageTypeComboBox.selectedItem as? SparkSubmitStorageType)?.description) {
-            storagePanel.azureBlobCard.title -> {
-                data.storageAccountType = SparkSubmitStorageType.BLOB
+        data.storageAccountType = viewModel.uploadStorage.deployStorageTypeSelection ?: SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
+        when (viewModel.uploadStorage.deployStorageTypeSelection) {
+            SparkSubmitStorageType.BLOB -> {
                 data.storageAccount = storagePanel.azureBlobCard.storageAccountField.text.trim()
                 data.storageKey = storagePanel.azureBlobCard.storageKeyField.text.trim()
                 data.containersModel = storagePanel.azureBlobCard.storageContainerUI.comboBox.model as DefaultComboBoxModel<String>
                 data.selectedContainer = storagePanel.azureBlobCard.storageContainerUI.comboBox.selectedItem as? String
             }
-            storagePanel.clusterDefaultStorageCard.title -> {
-                data.storageAccountType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
-            }
-            storagePanel.sparkInteractiveSessionCard.title -> {
-                data.storageAccountType = SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
-            }
-            storagePanel.adlsCard.title -> {
-                data.storageAccountType = SparkSubmitStorageType.ADLS_GEN1
+            SparkSubmitStorageType.ADLS_GEN1 -> {
                 data.adlsRootPath = storagePanel.adlsCard.adlsRootPathField.text
             }
-            storagePanel.webHdfsCard.title -> {
-                data.storageAccountType = SparkSubmitStorageType.WEBHDFS
+            SparkSubmitStorageType.WEBHDFS -> {
                 data.webHdfsRootPath= storagePanel.webHdfsCard.webHdfsRootPathField.text
-            }
-            storagePanel.accountDefaultStorageCard.title -> {
-                data.storageAccountType = SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE
             }
             else -> {}
         }
@@ -285,9 +297,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
     override fun setData(data: SparkSubmitJobUploadStorageModel) {
         // data -> Component
         val applyData: () -> Unit = {
-            // Only set for changed
-            if (storagePanel.storageTypeComboBox.selectedItem != data.storageAccountType) {
-                storagePanel.storageTypeComboBox.selectedItem = data.storageAccountType
+            if (viewModel.uploadStorage.deployStorageTypeSelection != data.storageAccountType) {
+                viewModel.uploadStorage.deployStorageTypeSelection = data.storageAccountType
             }
 
             storagePanel.errorMessage = data.errorMsg
