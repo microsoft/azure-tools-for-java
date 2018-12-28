@@ -56,6 +56,10 @@ object RunConfigurationActionUtils: ILogger {
         }
 
         try {
+            if (setting.isEditBeforeRun && !RunDialog.editConfiguration(environment, "Edit configuration")) {
+                return
+            }
+
             environment.assignNewExecutionId()
             runner.execute(environment)
         } catch (e: ExecutionException) {
