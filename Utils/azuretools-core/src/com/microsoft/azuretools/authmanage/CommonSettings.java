@@ -42,7 +42,7 @@ public class CommonSettings {
     private static String settingsBaseDir = null;
     private static final String AAD_PROVIDER_FILENAME = "AadProvider.json";
     private static final String ENV_NAME_KEY = "EnvironmentName";
-    private static final String COSMOS_SERVERLESS_KEY = "EnableCosmosSeverlessSpark";
+    private static final String COSMOS_SERVERLESS_KEY = "EnableCosmosServerlessSpark";
     private static IUIFactory uiFactory;
     private static Environment ENV = Environment.GLOBAL;
     public static boolean isCosmosServerlessEnabled = false;
