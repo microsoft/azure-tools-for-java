@@ -24,10 +24,16 @@ package com.microsoft.azure.cosmosserverlessspark.spark.ui;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 public class CosmosServerlessSparkJobsToolWindowFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+    }
+
+    @Override
+    public boolean shouldBeAvailable(@org.jetbrains.annotations.NotNull Project project) {
+        return CommonSettings.isCosmosServerlessEnabled;
     }
 }
