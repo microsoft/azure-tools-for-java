@@ -37,8 +37,8 @@ object IdeaTrustStrategy : TrustStrategy, ILogger {
 
     @JvmStatic
     val UserAcceptCAMsg = """<html><body>
-            <br>You have successfully linked the cluster.The cluster certificate has been added into</br>
-            <br>IntelliJ's Server Certificates store.Please access IntelliJ's Server Certificates setting</br>
+            <br>The cluster certificate has been added into IntelliJ's Server Certificates store.</br>
+            <br>Please access IntelliJ's Server Certificates setting</br>
             <br><a href='$helpLink'>$helpLink</a></br>
             <br>to manage the certificates trusted</br>
             </body></html>
