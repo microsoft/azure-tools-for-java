@@ -29,18 +29,12 @@ package com.microsoft.azure.hdinsight.spark.ui
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
-import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
-import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
-import com.microsoft.azure.hdinsight.sdk.common.HDIException
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
-import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
 import com.microsoft.tooling.msservices.model.storage.BlobContainer
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount
@@ -100,35 +94,6 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                 updateStorageAfterContainerSelected().subscribe(
                         { },
                         { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
-            }
-        }
-    }
-
-    override fun setDefaultStorageType(checkEvent: StorageCheckEvent, clusterDetail: IClusterDetail,
-                                       preStorageType: SparkSubmitStorageType) {
-        synchronized(view.storagePanel) {
-            if (checkEvent is StorageCheckSelectedClusterEvent) {
-
-                //check cluster type then reset storage combox
-                view.storagePanel.storageTypeComboBox.apply {
-                    val optionTypes =clusterDetail.storageOptionsType.optionTypes
-                    model = ImmutableComboBoxModel(optionTypes)
-
-                    //if selectedItem is null ,will trigger storage type combox deselected event and event.item is the model getSelectedItem which is model(0)
-                    selectedItem = null
-
-                    //reset selectedItem will trigger deselected and selected event which will repaint the panel
-                    //preSelectedCluster = null  : this msg is triggered by creating config or reloading saved config
-                    //as for creaing,preStorageType = DEFAULT_STORAGE_ACCOUNT
-                    //isStorageTypeValid = true means this cluster supports DEFAULT_STORAGE_ACCOUNT
-                    //isStorageTypeValid = false means this cluster doesn't support preStorageType so change combox to selectedType otherwise combox will show empty
-                    //as for reloading,isStorageTypeValid should always be true otherwise config can't be saved
-                    if (checkEvent.preClusterName == null && optionTypes.contains(preStorageType)) {
-                        selectedItem = preStorageType
-                    } else {
-                        selectedItem = clusterDetail.defaultStorageType
-                    }
-                }
             }
         }
     }
