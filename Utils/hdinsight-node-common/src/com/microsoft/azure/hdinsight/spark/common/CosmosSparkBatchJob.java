@@ -106,11 +106,7 @@ public class CosmosSparkBatchJob extends SparkBatchJob {
                                 state,
                                 cluster.getSparkHistoryUiUri() == null ?
                                         null :
-                                        cluster.getSparkHistoryUiUri()
-                                               .resolve(appId == null ?
-                                                        "/" :
-                                                        String.format("/history/%s/", appId))
-                                               .toString() + "?adlaAccountName=" + cluster.getAccount().getName())))
+                                        cluster.getSparkMasterUiUri().toString() + "?adlaAccountName=" + cluster.getAccount().getName())))
                 .map(stateJobUriPair -> {
                     if (stateJobUriPair.getRight() != null) {
                         getCtrlSubject().onNext(new SimpleImmutableEntry<>(MessageInfoType.Hyperlink,
