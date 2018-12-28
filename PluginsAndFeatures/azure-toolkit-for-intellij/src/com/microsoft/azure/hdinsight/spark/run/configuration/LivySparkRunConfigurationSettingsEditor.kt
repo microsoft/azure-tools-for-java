@@ -48,7 +48,6 @@ class LivySparkRunConfigurationSettingsEditor(val jobConfigurable: SparkBatchJob
         // Apply the panel's setting to RunConfiguration
         jobConfigurable.validateInputs()
         jobConfigurable.getData(livySparkBatchJobRunConfiguration.model)
-        livySparkBatchJobRunConfiguration.model.submitModel.submissionParameter.name = livySparkBatchJobRunConfiguration.name
     }
 
     override fun createEditor(): JComponent {

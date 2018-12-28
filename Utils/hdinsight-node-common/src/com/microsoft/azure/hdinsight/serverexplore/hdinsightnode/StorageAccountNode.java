@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.serverexplore.hdinsightnode;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
@@ -32,21 +33,24 @@ import com.microsoft.azure.storage.blob.BlobContainerProperties;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
-import java.util.*;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class StorageAccountNode extends RefreshableNode implements TelemetryProperties {
+public class StorageAccountNode extends RefreshableNode implements TelemetryProperties, ILogger {
     private static final String STORAGE_ACCOUNT_MODULE_ID = StorageAccountNode.class.getName();
     private static final String ICON_PATH = CommonConst.StorageAccountIConPath;
     private static final String ADLS_ICON_PATH = CommonConst.ADLS_STORAGE_ACCOUNT_ICON_PATH;
@@ -103,9 +107,14 @@ public class StorageAccountNode extends RefreshableNode implements TelemetryProp
             HDStorageAccount blobStorageAccount = (HDStorageAccount)storageAccount;
             String defaultContainer = blobStorageAccount.getDefaultContainer();
             final String connectionString = ((HDStorageAccount) storageAccount).getConnectionString();
-            getBlobContainers(connectionString).forEach(blobContainer -> {
-                addChildNode(new BlobContainerNode(this, blobStorageAccount, blobContainer, !StringHelper.isNullOrWhiteSpace(defaultContainer) && defaultContainer.equals(blobContainer.getName())));
-            });
+            try {
+                getBlobContainers(connectionString).forEach(blobContainer -> {
+                    addChildNode(new BlobContainerNode(this, blobStorageAccount, blobContainer, !StringHelper.isNullOrWhiteSpace(defaultContainer) && defaultContainer.equals(blobContainer.getName())));
+                });
+            } catch (Exception ex) {
+                log().warn("refresh HDInsight storage account node failed. " + ExceptionUtils.getStackTrace(ex));
+                throw new AzureCmdException(ex.getCause().getMessage(), ex.getCause());
+            }
         } else if(storageAccount.getAccountType() == StorageAccountTypeEnum.ADLS) {
             // TODO adls support
         }
