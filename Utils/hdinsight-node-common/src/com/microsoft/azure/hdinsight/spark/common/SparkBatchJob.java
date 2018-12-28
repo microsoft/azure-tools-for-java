@@ -158,6 +158,8 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Nullable
     private IHDIStorageAccount storageAccount;
 
+    @Nullable
+    private IClusterDetail cluster;
     /**
      * Access token used for uploading files to ADLS storage account
      */
@@ -171,17 +173,19 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        this(submissionParameter, sparkBatchSubmission, ctrlSubject, null, null, null);
+        this(null, submissionParameter, sparkBatchSubmission, ctrlSubject, null, null, null);
     }
 
 
     public SparkBatchJob(
+            @Nullable IClusterDetail cluster,
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
             @Nullable IHDIStorageAccount storageAccount,
             @Nullable String accessToken,
             @Nullable String destinationRootPath) {
+        this.cluster = cluster;
         this.submissionParameter = submissionParameter;
         this.storageAccount = storageAccount;
         this.submission = sparkBatchSubmission;
@@ -194,9 +198,9 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
     private void tryInitAuthInfo(String clusterName, SparkBatchSubmission submission) {
         try {
-              IClusterDetail clusterDetail = ClusterManagerEx
-                    .getInstance()
-                    .getClusterDetailByName(clusterName)
+            IClusterDetail clusterDetail = getCluster() != null
+                    ? getCluster()
+                    : ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
                     .orElseThrow(() -> new HDIException("No cluster name matched selection: " + clusterName));
 
              if (!StringUtils.isEmpty(clusterDetail.getHttpUserName()) && !StringUtils.isEmpty(clusterDetail.getHttpPassword())) {
@@ -234,8 +238,9 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Override
     public URI getConnectUri() {
         if (connectUri == null) {
-            Optional<IClusterDetail> cluster = ClusterManagerEx.getInstance()
-                    .getClusterDetailByName(getSubmissionParameter().getClusterName());
+            Optional<IClusterDetail> cluster = getCluster() != null
+                    ? Optional.of(getCluster())
+                    : ClusterManagerEx.getInstance().getClusterDetailByName(getSubmissionParameter().getClusterName());
 
             if (cluster.isPresent()) {
                 try {
@@ -260,8 +265,9 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Nullable
     public URI getYarnNMConnectUri() {
         if (yarnConnectUri == null) {
-            Optional<IClusterDetail> cluster = ClusterManagerEx.getInstance()
-                    .getClusterDetailByName(getSubmissionParameter().getClusterName());
+            Optional<IClusterDetail> cluster = getCluster() != null
+                    ? Optional.of(getCluster())
+                    : ClusterManagerEx.getInstance().getClusterDetailByName(getSubmissionParameter().getClusterName());
 
             if (cluster.isPresent()) {
                 try {
@@ -281,6 +287,11 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         }
 
         return yarnConnectUri;
+    }
+
+    @Nullable
+    public IClusterDetail getCluster() {
+        return cluster;
     }
 
     @Nullable
