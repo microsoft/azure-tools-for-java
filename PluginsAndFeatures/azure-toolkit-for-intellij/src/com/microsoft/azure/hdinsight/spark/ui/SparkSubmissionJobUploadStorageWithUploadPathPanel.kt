@@ -67,6 +67,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
 
     val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
     private val jobUploadStorageTitle = "Job Upload Storage"
+    private val invalidUploadPath = "<Invalid Upload Path>"
     private val uploadPathLabel = JLabel("Upload Path")
     private val uploadPathField = JTextField().apply {
         isEditable = false
@@ -156,12 +157,12 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                     val defaultStorageAccount = cluster.storageAccount
                                     if (defaultStorageAccount == null) {
                                         errorMsg = "Cluster have no storage account"
-                                        uploadPath = "-"
+                                        uploadPath = invalidUploadPath
                                     } else {
                                         val path = control.getUploadPath(defaultStorageAccount)
                                         if (path == null) {
                                             errorMsg = "Error getting upload path from storage account"
-                                            uploadPath = "-"
+                                            uploadPath = invalidUploadPath
                                         } else {
                                             errorMsg = null
                                             uploadPath = path
@@ -169,13 +170,13 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                     }
                                 } catch (ex: Exception) {
                                     errorMsg = "Error getting cluster storage configuration"
-                                    uploadPath = "-"
+                                    uploadPath = invalidUploadPath
                                     log().warn(errorMsg + ". " + ExceptionUtils.getStackTrace(ex))
                                 }
                             }
                             SparkSubmitStorageType.BLOB -> model.apply {
                                 if (containersModel.size == 0 || containersModel.selectedItem == null) {
-                                    uploadPath = "-"
+                                    uploadPath = invalidUploadPath
                                     errorMsg = "Azure Blob storage form is not completed"
                                 } else {
                                     uploadPath = control.getAzureBlobStoragePath(
@@ -187,13 +188,13 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                             }
                             SparkSubmitStorageType.ADLS_GEN1 -> model.apply {
                                 if (!AzureSparkClusterManager.getInstance().isSignedIn) {
-                                    uploadPath = "-"
+                                    uploadPath = invalidUploadPath
                                     errorMsg = "ADLS Gen 1 storage type requires user to sign in first"
                                 } else {
                                     // basic validation for ADLS root path
                                     // pattern for adl root path. e.g. adl://john.azuredatalakestore.net/root/path/
                                     if (adlsRootPath != null && !SparkBatchJob.AdlsPathPattern.toRegex().matches(adlsRootPath!!)) {
-                                        uploadPath = "-"
+                                        uploadPath = invalidUploadPath
                                         errorMsg = "ADLS Root Path is invalid"
                                     } else {
                                         val formatAdlsRootPath = if (adlsRootPath?.endsWith("/") == true) adlsRootPath else "$adlsRootPath/"
@@ -206,7 +207,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                 //pattern for webhdfs root path.e.g http://host/webhdfs/v1/
                                 val rootPath = webHdfsRootPath?.trim() ?: return@apply
                                 if (!SparkBatchJob.WebHDFSPathPattern.toRegex().matches(rootPath)) {
-                                    uploadPath = "-"
+                                    uploadPath = invalidUploadPath
                                     errorMsg = "Webhdfs root path is not valid"
                                 } else {
                                     val formatWebHdfsRootPath = if (rootPath.endsWith("/"))
@@ -229,7 +230,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                     uploadPath = "${account.storageRootPath}SparkSubmission/"
                                     errorMsg = null
                                 } else {
-                                    uploadPath = "-"
+                                    uploadPath = invalidUploadPath
                                     errorMsg = "Selected ADLA account does not exist"
                                 }
                             }
