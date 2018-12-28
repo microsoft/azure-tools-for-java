@@ -31,8 +31,14 @@ import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
 
 object ProjectValidator : ConfigurationValidator() {
 
-    private const val PROJECT_TARGETS_NOT_DEFINED = "Selected project '%s' cannot be published. Please choose a Web App"
-    private const val PROJECT_PUBLISHING_NOT_SUPPORTED = "Publishing .Net applications on %s is not yet supported"
+    private const val PROJECT_PUBLISHING_NOT_SUPPORTED =
+            "Selected project '%s' cannot be published. Please select a Web App"
+
+    private const val PROJECT_PUBLISHING_OS_NOT_SUPPORTED =
+            "Selected project '%s' cannot be published. Publishing .Net Web Apps is not yet supported on '%s'"
+
+    private const val PROJECT_TARGETS_NOT_DEFINED =
+            "Selected project '%s' cannot be published. Required target '%s' was not found."
 
     private val timeouts = RpcTimeouts(500L, 2000L)
 
@@ -49,13 +55,17 @@ object ProjectValidator : ConfigurationValidator() {
 
         publishableProject ?: throw RuntimeConfigurationError(UiConstants.PROJECT_NOT_DEFINED)
 
+        if (!publishableProject.isWeb)
+            throw RuntimeConfigurationError(
+                    String.format(PROJECT_PUBLISHING_NOT_SUPPORTED, publishableProject.projectName))
+
         if (!isPublishSupported(publishableProject))
             throw RuntimeConfigurationError(
-                    String.format(PROJECT_PUBLISHING_NOT_SUPPORTED, SystemInfo.OS_NAME))
+                    String.format(PROJECT_PUBLISHING_OS_NOT_SUPPORTED, publishableProject.projectName, SystemInfo.OS_NAME))
 
         if (!publishableProject.isDotNetCore && !isWebTargetsPresent(publishableProject))
             throw RuntimeConfigurationError(
-                    String.format(PROJECT_TARGETS_NOT_DEFINED, UiConstants.WEB_APP_TARGET_NAME))
+                    String.format(PROJECT_TARGETS_NOT_DEFINED, publishableProject.projectName, UiConstants.WEB_APP_TARGET_NAME))
     }
 
     private fun isPublishSupported(publishableProject: PublishableProjectModel) =

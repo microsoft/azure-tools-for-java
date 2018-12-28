@@ -65,6 +65,7 @@ import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.model.DatabasePublishModel
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 import com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfiguration
+import java.awt.Dimension
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -828,8 +829,10 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         initWebAppTableModel()
         initRefreshButton()
 
-        val tableToolbarDecorator = ToolbarDecorator.createDecorator(table)
-                .addExtraActions(btnRefresh).setToolbarPosition(ActionToolbarPosition.BOTTOM)
+        val tableToolbarDecorator =
+                ToolbarDecorator.createDecorator(table)
+                        .addExtraActions(btnRefresh)
+                        .setToolbarPosition(ActionToolbarPosition.BOTTOM)
 
         pnlWebAppTable = tableToolbarDecorator.createPanel()
     }
@@ -846,7 +849,14 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         tableModel.addColumn(WEB_APP_TABLE_COLUMN_DOTNET_VERSION)
         tableModel.addColumn(WEB_APP_TABLE_COLUMN_SUBSCRIPTION)
 
-        table = JBTable(tableModel)
+        table = object : JBTable(tableModel) {
+            override fun getPreferredScrollableViewportSize(): Dimension? {
+                val minHeight = 200
+                val subtractHeight = 400 // Height of all components, but web apps table (experimental value)
+                return Dimension(-1, Math.max(topLevelAncestor?.height?.minus(subtractHeight) ?: minHeight, minHeight))
+            }
+        }
+
         table.emptyText.text = TABLE_LOADING_MESSAGE
         table.rowSelectionAllowed = true
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
@@ -854,9 +864,8 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         table.rowSorter = TableRowSorter<TableModel>(table.model)
 
         table.selectionModel.addListSelectionListener { event ->
-            if (event.valueIsAdjusting) {
+            if (event.valueIsAdjusting)
                 return@addListSelectionListener
-            }
 
             val selectedRow = table.selectedRow
             if (cachedWebAppList.isEmpty() || selectedRow < 0 || selectedRow >= cachedWebAppList.size) {
