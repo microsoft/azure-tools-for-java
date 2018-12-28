@@ -26,6 +26,7 @@ import com.intellij.execution.ExecutorRegistry
 import com.intellij.execution.ProgramRunnerUtil
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
+import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
@@ -33,6 +34,7 @@ import com.intellij.openapi.actionSystem.ex.ActionManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys.*
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor
+import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtils
 import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
@@ -99,7 +101,8 @@ open class SparkSubmitJobAction : AzureAnAction() {
 
         model.isLocalRunConfigEnabled = false   // Disable local run configuration tab
 
-        ProgramRunnerUtil.executeConfiguration(runConfigurationSetting, executor)
+        val environment = ExecutionEnvironmentBuilder.create(executor, runConfigurationSetting).build()
+        RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment)
 
         // Restore for common run configuration editor
         runConfigurationSetting.isEditBeforeRun = false
