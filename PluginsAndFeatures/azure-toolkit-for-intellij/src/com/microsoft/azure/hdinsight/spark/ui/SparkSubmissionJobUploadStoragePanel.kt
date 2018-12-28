@@ -46,6 +46,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
     val azureBlobCard = SparkSubmissionJobUploadStorageAzureBlobCard()
     val sparkInteractiveSessionCard = SparkSubmissionJobUploadStorageSparkInteractiveSessionCard()
     val clusterDefaultStorageCard = SparkSubmissionJobUploadStorageClusterDefaultStorageCard()
+    val accountDefaultStorageCard = SparkSubmissionJobUploadStorageAccountDefaultStorageCard()
 
     val adlsCard = SparkSubmissionJobUploadStorageAdlsCard().apply {
         // handle sign in/out action when sign in/out link is clicked
@@ -79,7 +80,8 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
             SparkSubmitStorageType.ADLS_GEN1,
-            SparkSubmitStorageType.WEBHDFS
+            SparkSubmitStorageType.WEBHDFS,
+            SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE
     )).apply {
         // validate storage info after storage type is selected
         addItemListener { itemEvent ->
@@ -105,6 +107,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
         add(clusterDefaultStorageCard, clusterDefaultStorageCard.title)
         add(adlsCard, adlsCard.title)
         add(webHdfsCard, webHdfsCard.title)
+        add(accountDefaultStorageCard, accountDefaultStorageCard.title)
     }
 
     var errorMessage: String? = notFinishCheckMessage

@@ -29,16 +29,14 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.artifacts.ArtifactManager;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.intellij.util.xmlb.annotations.*;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.spark.ui.ImmutableComboBoxModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.Pair;
 import org.jdom.Element;
-import rx.subjects.BehaviorSubject;
 
-import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -274,7 +272,7 @@ public class SparkSubmitModel {
     @Transient
     public synchronized void setTableModel(@NotNull SubmissionTableModel tableModel) {
         // Apply from table model
-        submissionParameter.applyFlattedJobConf(tableModel.getJobConfigMap());
+        getSubmissionParameter().applyFlattedJobConf(tableModel.getJobConfigMap());
 
         this.tableModel = tableModel;
     }
