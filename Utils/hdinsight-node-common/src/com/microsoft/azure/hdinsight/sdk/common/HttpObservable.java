@@ -58,6 +58,7 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
+import org.apache.http.util.EntityUtils;
 import rx.Observable;
 
 import javax.net.ssl.SSLContext;
@@ -285,7 +286,7 @@ public class HttpObservable implements ILogger {
                         if (status.getStatusCode() >= 300) {
                             Header requestIdHeader = streamResp.getFirstHeader("x-ms-request-id");
                             return Observable.error(new SparkAzureDataLakePoolServiceException(status.getStatusCode(),
-                                    status.getReasonPhrase(),
+                                    EntityUtils.toString(streamResp.getEntity()),
                                     requestIdHeader != null ? requestIdHeader.getValue() : ""));
                         }
 

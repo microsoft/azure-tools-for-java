@@ -29,7 +29,6 @@ import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
-import com.intellij.execution.configurations.RunnerSettings;
 import com.intellij.execution.runners.DefaultProgramRunner;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
@@ -49,6 +48,7 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRu
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -88,7 +88,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         switch (storageAcccountType) {
             case BLOB:
                 String storageAccountName = submitModel.getJobUploadStorageModel().getStorageAccount();
-                if (storageAccountName == null) {
+                if (StringUtils.isBlank(storageAccountName)) {
                     throw new ExecutionException("Can't get the default storage account.");
                 }
 
@@ -110,7 +110,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 break;
             case ADLS_GEN1:
                 String rawRootPath = submitModel.getJobUploadStorageModel().getAdlsRootPath();
-                if (rawRootPath == null) {
+                if (StringUtils.isBlank(rawRootPath)) {
                     throw new ExecutionException("Can't get the raw root path since it's null.");
                 }
 

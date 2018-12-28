@@ -34,7 +34,7 @@ import java.util.AbstractMap.SimpleImmutableEntry
 
 class CosmosSparkBatchRunner : SparkBatchJobRunner() {
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
-        return SparkBatchJobRunExecutor.EXECUTOR_ID == executorId && profile is CosmosSparkRunConfiguration
+        return SparkBatchJobRunExecutor.EXECUTOR_ID == executorId && profile.javaClass == CosmosSparkRunConfiguration::class.java
     }
 
     override fun getRunnerId(): String {
