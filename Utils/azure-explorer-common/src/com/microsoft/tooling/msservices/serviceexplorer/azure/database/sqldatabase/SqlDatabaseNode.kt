@@ -22,7 +22,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase
 
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
 import com.microsoft.tooling.msservices.serviceexplorer.Node
@@ -61,7 +60,6 @@ class SqlDatabaseNode(parent: SqlServerNode,
             String.format(DELETE_SQL_DATABASE_PROMPT_MESSAGE, sqlDatabaseName),
             String.format(DELETE_SQL_DATABASE_PROGRESS_MESSAGE, sqlDatabaseName)) {
 
-        @Throws(AzureCmdException::class)
         override fun azureNodeAction(event: NodeActionEvent?) {
             try {
                 AzureSqlDatabaseMvpModel.deleteDatabase(subscriptionId, sqlDatabaseId)
@@ -76,7 +74,6 @@ class SqlDatabaseNode(parent: SqlServerNode,
             }
         }
 
-        @Throws(AzureCmdException::class)
         override fun onSubscriptionsChanged(e: NodeActionEvent) {
         }
     }

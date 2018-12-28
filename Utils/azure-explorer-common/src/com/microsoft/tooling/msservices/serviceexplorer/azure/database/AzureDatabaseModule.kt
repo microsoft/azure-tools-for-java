@@ -48,7 +48,6 @@ class AzureDatabaseModule(parent: Node) : AzureRefreshableNode(MODULE_ID, BASE_M
 
     override fun removeNode(subscriptionId: String, sqlServerId: String, node: Node) {
         try {
-            presenter.onDeleteSqlServer(subscriptionId, sqlServerId)
             removeDirectChildNode(node)
         } catch (e: Throwable) {
             throw RuntimeException(String.format(ERROR_DELETE_SQL_SERVER, e))

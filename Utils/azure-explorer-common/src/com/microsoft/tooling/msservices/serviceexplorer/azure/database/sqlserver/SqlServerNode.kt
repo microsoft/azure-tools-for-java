@@ -86,7 +86,6 @@ class SqlServerNode(parent: AzureDatabaseModule,
             String.format(PROMPT_MESSAGE_DELETE_SQL_SERVER, sqlServerName),
             String.format(PROGRESS_MESSAGE_DELETE_SQL_SERVER, sqlServerName)) {
 
-        @Throws(AzureCmdException::class)
         override fun azureNodeAction(event: NodeActionEvent?) {
             try {
                 AzureSqlServerMvpModel.deleteSqlServer(subscriptionId, sqlServerId)
@@ -98,7 +97,6 @@ class SqlServerNode(parent: AzureDatabaseModule,
             }
         }
 
-        @Throws(AzureCmdException::class)
         override fun onSubscriptionsChanged(e: NodeActionEvent?) {
         }
     }
