@@ -35,5 +35,5 @@ open class CosmosSparkRunConfiguration (name: String,
         return LivySparkRunConfigurationSettingsEditor(ServerlessSparkConfigurable(module.project))
     }
 
-    override fun getSuggestedNamePrefix(): String = "[Cosmos Spark]"
+    override fun getSuggestedNamePrefix(): String = "[Azure Data Lake Spark]"
 }

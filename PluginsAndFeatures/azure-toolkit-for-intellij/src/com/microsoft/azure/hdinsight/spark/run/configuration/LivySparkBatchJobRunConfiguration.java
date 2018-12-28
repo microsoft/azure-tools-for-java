@@ -306,7 +306,7 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
     }
 
     public String getSuggestedNamePrefix() {
-        return "[Spark Job]";
+        return "[HDInsight Spark]";
     }
 }
 
