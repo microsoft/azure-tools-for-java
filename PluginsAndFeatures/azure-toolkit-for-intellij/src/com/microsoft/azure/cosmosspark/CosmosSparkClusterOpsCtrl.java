@@ -44,6 +44,8 @@ import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJobList;
+import com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSelectAndSubmitAction;
+import com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSelectAndSubmitAction;
 import com.microsoft.azure.hdinsight.spark.actions.SparkAppSubmitContext;
 import com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction;
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationFactory;
@@ -150,7 +152,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                                 actionPresentation,
                                 context);
 
-                        new SparkSubmitJobAction().actionPerformed(event);
+                        new CosmosSparkSelectAndSubmitAction().actionPerformed(event);
                     } catch (Exception ex) {
                         log().warn(ex.getMessage());
                     }
@@ -191,7 +193,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                                 actionPresentation,
                                 context);
 
-                        new SparkSubmitJobAction().actionPerformed(event);
+                        new CosmosServerlessSparkSelectAndSubmitAction().actionPerformed(event);
                     } catch (Exception ex) {
                         log().warn(ex.getMessage());
                     }
