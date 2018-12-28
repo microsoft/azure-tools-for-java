@@ -29,6 +29,8 @@ import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.filters.BrowserHyperlinkInfo;
+import com.intellij.execution.filters.Filter;
 import com.intellij.execution.runners.DefaultProgramRunner;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
@@ -38,6 +40,7 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.InternalUrlMapping;
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
@@ -57,6 +60,10 @@ import rx.subjects.PublishSubject;
 
 import java.io.IOException;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSubmissionRunner, ILogger {
     @NotNull
@@ -136,7 +143,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 break;
         }
 
-        return new SparkBatchJob(submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount, accessToken, destinationRootPath);
+        return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount, accessToken, destinationRootPath);
     }
 
     @Nullable
@@ -170,6 +177,28 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         ExecutionResult result = new DefaultExecutionResult(jobOutputView, processHandler, Separator.getInstance(), disconnectAction);
         submissionState.setExecutionResult(result);
         submissionState.setConsoleView(jobOutputView.getSecondaryConsoleView());
+
+        SparkBatchJob sparkBatchJob = remoteProcess.getSparkJob() instanceof SparkBatchJob
+                ? (SparkBatchJob) remoteProcess.getSparkJob()
+                : null;
+        if (sparkBatchJob != null) {
+            InternalUrlMapping mapping = sparkBatchJob.getCluster() instanceof InternalUrlMapping
+                    ? (InternalUrlMapping) sparkBatchJob.getCluster()
+                    : null;
+            if (mapping != null) {
+                submissionState.getConsoleView().addMessageFilter((line, entireLength) -> {
+                    String mappedUrl = mapping.mapInternalUrlToPublic();
+                    Matcher matcher = Pattern.compile("http://[^\\s]+").matcher(line);
+                    List<Filter.ResultItem> items = new ArrayList<>();
+                    int textStartOffset = entireLength - line.length();
+                    while (matcher.find()) {
+                        // TODO: we can extract application ID from internal URL and put it to hyper link
+                        items.add(new Filter.ResultItem(textStartOffset + matcher.start(), textStartOffset + matcher.end(), new BrowserHyperlinkInfo(mappedUrl)));
+                    }
+                    return items.size() != 0 ? new Filter.Result(items) : null;
+                });
+            }
+        }
         submissionState.setRemoteProcessCtrlLogHandler(processHandler);
 
         ctrlSubject.subscribe(

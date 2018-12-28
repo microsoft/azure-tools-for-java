@@ -1,8 +1,8 @@
 package com.microsoft.azure.sqlbigdata.sdk.cluster;
 
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.InternalUrlMapping;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
-import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.YarnCluster;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
@@ -12,10 +12,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 
-import java.net.URI;
-import java.util.Optional;
-
-public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
+public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, InternalUrlMapping {
     @NotNull
     private String host;
     private int knoxPort;
@@ -108,5 +105,11 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
     @Override
     public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
        return SparkSubmitStorageTypeOptionsForCluster.BigDataClusterWithWebHdfs;
+    }
+
+    @Override
+    @NotNull
+    public String mapInternalUrlToPublic() {
+        return getYarnNMConnectionUrl();
     }
 }
