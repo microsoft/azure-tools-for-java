@@ -26,5 +26,5 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 public interface InternalUrlMapping {
     @NotNull
-    String mapInternalUrlToPublic();
+    String mapInternalUrlToPublic(@NotNull String url);
 }

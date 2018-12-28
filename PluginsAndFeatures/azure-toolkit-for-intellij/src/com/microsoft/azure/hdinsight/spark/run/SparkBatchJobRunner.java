@@ -187,12 +187,11 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                     : null;
             if (mapping != null) {
                 submissionState.getConsoleView().addMessageFilter((line, entireLength) -> {
-                    String mappedUrl = mapping.mapInternalUrlToPublic();
-                    Matcher matcher = Pattern.compile("http://[^\\s]+").matcher(line);
+                    Matcher matcher = Pattern.compile("http://[^\\s]+", Pattern.CASE_INSENSITIVE).matcher(line);
                     List<Filter.ResultItem> items = new ArrayList<>();
                     int textStartOffset = entireLength - line.length();
                     while (matcher.find()) {
-                        // TODO: we can extract application ID from internal URL and put it to hyper link
+                        String mappedUrl = mapping.mapInternalUrlToPublic(matcher.group(0));
                         items.add(new Filter.ResultItem(textStartOffset + matcher.start(), textStartOffset + matcher.end(), new BrowserHyperlinkInfo(mappedUrl)));
                     }
                     return items.size() != 0 ? new Filter.Result(items) : null;

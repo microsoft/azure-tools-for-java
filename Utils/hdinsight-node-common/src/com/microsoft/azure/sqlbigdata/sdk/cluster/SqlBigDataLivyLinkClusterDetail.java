@@ -109,7 +109,8 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
 
     @Override
     @NotNull
-    public String mapInternalUrlToPublic() {
+    public String mapInternalUrlToPublic(@NotNull String url) {
+        // TODO: we can extract application ID from internal URL and map it to output
         return getYarnNMConnectionUrl();
     }
 }
