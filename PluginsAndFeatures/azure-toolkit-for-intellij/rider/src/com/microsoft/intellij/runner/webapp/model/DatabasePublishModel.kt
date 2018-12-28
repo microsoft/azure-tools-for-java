@@ -25,7 +25,6 @@ package com.microsoft.intellij.runner.webapp.model
 import com.intellij.util.xmlb.annotations.Transient
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
-import com.microsoft.azure.management.sql.DatabaseEditions
 import com.microsoft.azure.management.sql.SqlDatabase
 
 class DatabasePublishModel {
@@ -33,7 +32,6 @@ class DatabasePublishModel {
     companion object {
         val defaultLocation: String = Region.US_EAST.name()
         const val defaultCollation = "SQL_Latin1_General_CP1_CI_AS"
-        val defaultDatabaseEditions: DatabaseEditions = DatabaseEditions.STANDARD
     }
 
     var subscription: Subscription? = null
@@ -62,7 +60,6 @@ class DatabasePublishModel {
     var sqlServerAdminPasswordConfirm = charArrayOf()
 
     var sqlServerLocation = defaultLocation
-    var databaseEdition = defaultDatabaseEditions
 
     var collation = defaultCollation
 

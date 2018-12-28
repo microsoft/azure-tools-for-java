@@ -35,7 +35,6 @@ import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
-import com.microsoft.azure.management.sql.DatabaseEditions
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
@@ -58,7 +57,6 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : AzureMvpP
         private const val TASK_LOCATION = "Collect Azure locations"
         private const val TASK_SQL_DATABASE = "Collect Azure SQL databases"
         private const val TASK_SQL_SERVER = "Collect Azure SQL servers"
-        private const val TASK_DATABASE_EDITION = "Collect Azure Database Edition"
 
         private const val CANNOT_LIST_SUBSCRIPTION = "Failed to list subscriptions."
         private const val CANNOT_LIST_WEB_APP = "Failed to list web apps."
@@ -68,7 +66,6 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : AzureMvpP
         private const val CANNOT_LIST_PRICING_TIER = "Failed to list pricing tier."
         private const val CANNOT_LIST_SQL_DATABASE = "Failed to list SQL Database."
         private const val CANNOT_LIST_SQL_SERVER = "Failed to list SQL Server."
-        private const val CANNOT_LIST_DATABASE_EDITION = "Failed to list SQL Database edition."
         private const val CANNOT_LIST_PUBLISHABLE_PROJECTS = "Failed to list publishable projects."
     }
 
@@ -80,7 +77,6 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : AzureMvpP
     private val locationSignal = Signal<List<Location>>()
     private val sqlDatabaseSignal = Signal<List<SqlDatabase>>()
     private val sqlServerSignal = Signal<List<SqlServer>>()
-    private val databaseEditionSignal = Signal<List<DatabaseEditions>>()
 
     fun onRefresh(lifetime: Lifetime) {
         loadWebApps(lifetime, true)
@@ -130,12 +126,6 @@ class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : AzureMvpP
         subscribe(lifetime, sqlServerSignal, TASK_SQL_SERVER, CANNOT_LIST_SQL_SERVER,
                 { AzureDatabaseMvpModel.listSqlServersBySubscriptionId(subscriptionId, true).map { it.resource } },
                 { mvpView.fillSqlServer(it) })
-    }
-
-    fun onLoadDatabaseEdition(lifetime: Lifetime) {
-        subscribe(lifetime, databaseEditionSignal, TASK_DATABASE_EDITION, CANNOT_LIST_DATABASE_EDITION,
-                { AzureDatabaseMvpModel.listDatabaseEditions() },
-                { mvpView.fillDatabaseEdition(it) })
     }
 
     fun onLoadPublishableProjects(lifetime: Lifetime, project: Project) {

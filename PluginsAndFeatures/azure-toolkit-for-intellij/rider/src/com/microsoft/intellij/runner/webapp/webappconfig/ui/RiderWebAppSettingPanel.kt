@@ -52,7 +52,6 @@ import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
-import com.microsoft.azure.management.sql.DatabaseEditions
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.authmanage.AuthMethodManager
@@ -130,7 +129,6 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         private const val DEFAULT_SQL_SERVER_NAME = "sql-server-"
 
         private const val WEB_APP_PRICING_URI = "https://azure.microsoft.com/en-us/pricing/details/app-service/"
-        private const val SQL_DATABASE_PRICING_URI = "https://azure.microsoft.com/en-us/pricing/details/sql-database/"
 
         private val netCoreAppVersionRegex = Regex("\\.NETCoreApp,Version=v([0-9](?:\\.[0-9])*)", RegexOption.IGNORE_CASE)
         private val netAppVersionRegex = Regex("\\.NETFramework,Version=v([0-9](?:\\.[0-9])*)", RegexOption.IGNORE_CASE)
@@ -160,7 +158,6 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     private var lastSelectedDbResourceGroupName = ""
     private var lastSelectedSqlServer: SqlServer? = null
     private var lastSelectedDbLocation = ""
-    private var lastSelectedDatabaseEdition = DatabasePublishModel.defaultDatabaseEditions
 
     // Panels
     override var mainPanel: JPanel = pnlRoot
@@ -286,12 +283,6 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     private lateinit var passNewSqlServerAdminPass: JBPasswordField
     private lateinit var passNewSqlServerAdminPassConfirm: JBPasswordField
 
-    // Database Edition
-    @Suppress("unused")
-    private lateinit var pnlDbEdition: JPanel
-    private lateinit var cbDatabaseEdition: JComboBox<DatabaseEditions>
-    private lateinit var lblSqlDbPricingLink: LinkLabel<String>
-
     // Database Collation
     @Suppress("unused")
     private lateinit var pnlCollation: JPanel
@@ -342,7 +333,6 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         myView.onLoadSubscription(lifetime)
         myView.onLoadWebApps(lifetime)
         myView.onLoadPricingTier(lifetime)
-        myView.onLoadDatabaseEdition(lifetime)
     }
 
     override fun hideNotify() { }
@@ -539,7 +529,6 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
                     model.sqlServerAdminPassword = passExistingSqlServerAdminPassword.password
                 }
 
-                model.databaseEdition = getSelectedItem(cbDatabaseEdition) ?: model.databaseEdition
                 model.collation = txtCollationValue.text
             } else {
                 model.database = getSelectedItem(cbDatabase) ?: model.database
@@ -697,22 +686,6 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         }
 
         setComponentsEnabled(true, cbDatabase, passExistingDbAdminPassword)
-    }
-
-    override fun fillDatabaseEdition(prices: List<DatabaseEditions>) {
-        try {
-            cbDatabaseEdition.removeAllItems()
-        }
-        catch(e: NullPointerException){
-            // ExpandableStringEnum<T> equals throw NPE when comparing with null
-            // TODO: make a PR https://github.com/Azure/azure-sdk-for-java/
-        }
-        prices.forEach {
-            cbDatabaseEdition.addItem(it)
-            if (it == configuration.model.databaseModel.databaseEdition) {
-                cbDatabaseEdition.selectedItem = it
-            }
-        }
     }
 
     override fun fillSqlServer(sqlServers: List<SqlServer>) {
@@ -1124,10 +1097,9 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
 
     private fun setCreateNewDbPanel(isEnabled: Boolean) {
         setComponentsEnabled(isEnabled,
-                txtDbName, rdoDbExistingResourceGroup, cbDbResourceGroup, rdoDbCreateResourceGroup,
-                txtDbNewResourceGroup, rdoUseExistSqlServer, cbExistSqlServer, rdoCreateSqlServer, txtNewSqlServerName,
-                cbSqlServerLocation, txtNewSqlServerAdminLogin, passNewSqlServerAdminPass, passNewSqlServerAdminPassConfirm,
-                cbDatabaseEdition, txtCollationValue)
+                txtDbName, rdoDbExistingResourceGroup, cbDbResourceGroup, rdoDbCreateResourceGroup, txtDbNewResourceGroup,
+                rdoUseExistSqlServer, cbExistSqlServer, rdoCreateSqlServer, txtNewSqlServerName, cbSqlServerLocation,
+                txtNewSqlServerAdminLogin, passNewSqlServerAdminPass, passNewSqlServerAdminPassConfirm, txtCollationValue)
 
         if (isEnabled) {
             toggleDbResourceGroupPanel(rdoDbCreateResourceGroup.isSelected)
@@ -1203,15 +1175,13 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
         initDbConnectionEnableCheckbox()
         initSqlDatabaseComboBox()
         initSqlServerComboBox()
-        initDatabaseEditionComboBox()
-        initSqlDatabasePricingLink()
 
         setHeaderDecorators()
     }
 
     private fun initSubscriptionComboBox() {
 
-        cbSubscription.renderer = createDefaultComboBoxRenderer(EMPTY_SUBSCRIPTION_MESSAGE) { it.displayName() }
+        cbSubscription.renderer = createDefaultComboBoxRenderer(EMPTY_SUBSCRIPTION_MESSAGE) { subscription -> subscription.displayName() }
 
         cbSubscription.addActionListener {
             val subscription = getSelectedItem(cbSubscription) ?: return@addActionListener
@@ -1231,7 +1201,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initResourceGroupComboBox() {
-        val renderer = createDefaultComboBoxRenderer<ResourceGroup>(EMPTY_RESOURCE_GROUP_MESSAGE) { it.name() }
+        val renderer = createDefaultComboBoxRenderer<ResourceGroup>(EMPTY_RESOURCE_GROUP_MESSAGE) { resourceGroup -> resourceGroup.name() }
         cbResourceGroup.renderer = renderer
         cbDbResourceGroup.renderer = renderer
 
@@ -1245,7 +1215,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initAppServicePlanComboBox() {
-        cbAppServicePlan.renderer = createDefaultComboBoxRenderer(EMPTY_APP_SERVICE_PLAN_MESSAGE) { it.name() }
+        cbAppServicePlan.renderer = createDefaultComboBoxRenderer(EMPTY_APP_SERVICE_PLAN_MESSAGE) { appPlan -> appPlan.name() }
 
         cbAppServicePlan.addActionListener {
             val plan = getSelectedItem(cbAppServicePlan) ?: return@addActionListener
@@ -1257,7 +1227,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initLocationComboBox() {
-        val renderer = createDefaultComboBoxRenderer<Location>(EMPTY_LOCATION_MESSAGE) { it.displayName() }
+        val renderer = createDefaultComboBoxRenderer<Location>(EMPTY_LOCATION_MESSAGE) { location -> location.displayName() }
         cbLocation.renderer = renderer
         cbSqlServerLocation.renderer = renderer
 
@@ -1271,8 +1241,8 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     }
 
     private fun initPricingTierComboBox() {
-        cbPricingTier.renderer = createDefaultComboBoxRenderer(EMPTY_PRICING_TIER_MESSAGE) {
-            val skuDescription = it.toSkuDescription()
+        cbPricingTier.renderer = createDefaultComboBoxRenderer(EMPTY_PRICING_TIER_MESSAGE) { pricing ->
+            val skuDescription = pricing.toSkuDescription()
             "${skuDescription.name()} (${skuDescription.tier()})"
         }
 
@@ -1347,20 +1317,23 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
     private fun initSqlDatabaseComboBox() {
         cbDatabase.renderer = createDefaultComboBoxRenderer(
                 EMPTY_SQL_DATABASES_MESSAGE,
-                IconLoader.getIcon("icons/Database.svg")) { "${it.name()} (${it.resourceGroupName()})" }
+                IconLoader.getIcon("icons/Database.svg")) { database -> "${database.name()} (${database.resourceGroupName()})" }
 
         cbDatabase.addActionListener {
             val database = getSelectedItem(cbDatabase) ?: return@addActionListener
-            if (lastSelectedDatabase != database) {
-                AzureDatabaseMvpModel.getSqlServerAdminLoginAsync(lastSelectedSubscriptionId, database).subscribe { lblSqlDbAdminLogin.text = it }
-                lastSelectedDatabase = database
-            }
+            if (lastSelectedDatabase == database) return@addActionListener
+
+            AzureDatabaseMvpModel
+                    .getSqlServerAdminLoginAsync(lastSelectedSubscriptionId, database)
+                    .subscribe { lblSqlDbAdminLogin.text = it }
+
+            lastSelectedDatabase = database
         }
     }
 
     private fun initSqlServerComboBox() {
         cbExistSqlServer.renderer =
-                createDefaultComboBoxRenderer(EMPTY_SQL_SERVER_MESSAGE) { "${it.name()} (${it.resourceGroupName()})" }
+                createDefaultComboBoxRenderer(EMPTY_SQL_SERVER_MESSAGE) { sqlServer -> "${sqlServer.name()} (${sqlServer.resourceGroupName()})" }
 
         cbExistSqlServer.addActionListener {
             val sqlServer = cbExistSqlServer.getItemAt(cbExistSqlServer.selectedIndex) ?: return@addActionListener
@@ -1374,14 +1347,6 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
             }
         }
     }
-
-    private fun initDatabaseEditionComboBox() {
-        cbDatabaseEdition.addActionListener {
-            lastSelectedDatabaseEdition = cbDatabaseEdition.getItemAt(cbDatabaseEdition.selectedIndex) ?: return@addActionListener
-        }
-    }
-
-    private fun initSqlDatabasePricingLink() = initLinkLabel(lblSqlDbPricingLink, SQL_DATABASE_PRICING_URI)
 
     private fun initRuntimeMismatchWarningLabel() {
         lblRuntimeMismatchWarning.icon = warningIcon
