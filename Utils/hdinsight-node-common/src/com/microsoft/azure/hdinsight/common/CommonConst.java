@@ -40,6 +40,7 @@ public class CommonConst {
     public static final String StopIconPath = "/icons/Stop.png";
     public static final String StopDisableIconPath = "/icons/Stop-Disable.png";
     public static final String OpenSparkUIIconName = "OpenSparkUI";
+    public static final String OpenSparkUIIconPath = "/icons/OpenSparkUI.png";
     public static final String OpenSparkUIDisableIconPath = "/icons/OpenSparkUI-Disable.png";
     public static final String SPARK_JOBVIEW_ICONPATH = "/icons/JobViewTitle.png";
     public static final String EmualtorPath = "/emulator/";
