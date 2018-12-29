@@ -22,11 +22,11 @@
 package com.microsoft.azure.hdinsight.common;
 
 public class CommonConst {
-    public static final String ProductIConPath = "/icons/Product.png";
+    public static final String ProductIconName = "Product";
     public static final String RefreshIConPath = "/icons/Refresh.png";
     public static final String REFRESH_DARK_ICON_PATH = "icons/RefreshDark_16.png";
     public static final String BlobFileIConPath = "/icons/BlobFile.png";
-    public static final String HDExplorerIcon_16x_Path = "HdExplorer_16x.png";
+    public static final String HDExplorerIconName = "HdExplorer";
     public static final String HDExplorerIcon_13x_Path = "HdExplorer.png";
     public static final String HDInsightIConPath = "HdInsight.png";
     public static final String HDInsightGrayIconPath = "HdInsight_gray.png";
@@ -39,7 +39,7 @@ public class CommonConst {
     public static final String ScalaProjectIconPath = "/icons/Spark-Scala.png";
     public static final String StopIconPath = "/icons/Stop.png";
     public static final String StopDisableIconPath = "/icons/Stop-Disable.png";
-    public static final String OpenSparkUIIconPath = "/icons/OpenSparkUI.png";
+    public static final String OpenSparkUIIconName = "OpenSparkUI";
     public static final String OpenSparkUIDisableIconPath = "/icons/OpenSparkUI-Disable.png";
     public static final String SPARK_JOBVIEW_ICONPATH = "/icons/JobViewTitle.png";
     public static final String EmualtorPath = "/emulator/";
@@ -64,4 +64,6 @@ public class CommonConst {
 
     public static final String SQL_BIG_DATA_CLUSTER_MODULE_ICON_PATH = "SqlBigDataClusterRoot_16x.png";
     public static final String DISABLE_SSL_CERTIFICATE_VALIDATION = "false";
+
+    public static final String CosmosServerlessToolWindowIconName= "SparkSubmissionToolWindow";
 }
