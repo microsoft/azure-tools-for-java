@@ -36,6 +36,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
+import com.microsoft.azure.storage.blob.BlobRequestOptions
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
 import com.microsoft.tooling.msservices.model.storage.BlobContainer
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount
@@ -121,9 +122,12 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                             try {
                                 val clientStorageAccount = ClientStorageAccount(toUpdate.storageAccount)
                                         .apply { primaryKey = toUpdate.storageKey }
+                                // Add Timeout for list containers operation to avoid getting stuck
+                                // when storage account or key is invalid
+                                val requestOptions = BlobRequestOptions().apply { maximumExecutionTimeInMs = 5000 }
                                 val containers = StorageClientSDKManager
                                         .getManager()
-                                        .getBlobContainers(clientStorageAccount.connectionString)
+                                        .getBlobContainers(clientStorageAccount.connectionString, requestOptions)
                                         .map(BlobContainer::getName)
                                         .toTypedArray()
                                 if (containers.isNotEmpty()) {
@@ -140,7 +144,7 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                             }
                         } catch (ex: Exception) {
                             log().info("Refresh Azure Blob contains error. " + ExceptionUtils.getStackTrace(ex))
-                            errorMsg = "Can't get storage containers, check if the key matches"
+                            errorMsg = "Can't get storage containers, check if account and key matches"
                         }
                     }
                 }
