@@ -147,8 +147,6 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
 
     @Override
     protected void refreshItems() {
-        this.load(false);
-
         if(!clusterDetail.isEmulator()) {
             JobViewManager.registerJovViewNode(clusterDetail.getName(), clusterDetail);
             JobViewNode jobViewNode = new JobViewNode(this, clusterDetail.getName());
