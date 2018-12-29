@@ -27,6 +27,7 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
+import com.intellij.ui.DocumentAdapter
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
@@ -46,6 +47,7 @@ import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
 import javax.swing.DefaultComboBoxModel
+import javax.swing.event.DocumentEvent
 
 class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStorageWithUploadPathPanel) :
         SparkSubmissionJobUploadStorageWithUploadPathPanel.Control, ILogger {
@@ -65,6 +67,12 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
     init {
         // refresh containers after account and key focus lost
         arrayOf(view.storagePanel.azureBlobCard.storageAccountField, view.storagePanel.azureBlobCard.storageKeyField).forEach {
+            // Each time user changed storage account or key, we set the containers to empty
+            it.document.addDocumentListener(object : DocumentAdapter() {
+                override fun textChanged(e: DocumentEvent) {
+                    view.storagePanel.azureBlobCard.storageContainerUI.comboBox.model = DefaultComboBoxModel()
+                }
+            })
             it.addFocusListener(object : FocusAdapter() {
                 override fun focusLost(e: FocusEvent?) {
                     if (view.storagePanel.azureBlobCard.storageContainerUI.button.isEnabled) {
