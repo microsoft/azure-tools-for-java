@@ -27,6 +27,7 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
+import com.intellij.ui.DocumentAdapter
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
@@ -35,6 +36,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
+import com.microsoft.azure.storage.blob.BlobRequestOptions
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
 import com.microsoft.tooling.msservices.model.storage.BlobContainer
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount
@@ -46,6 +48,7 @@ import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
 import javax.swing.DefaultComboBoxModel
+import javax.swing.event.DocumentEvent
 
 class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStorageWithUploadPathPanel) :
         SparkSubmissionJobUploadStorageWithUploadPathPanel.Control, ILogger {
@@ -65,6 +68,12 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
     init {
         // refresh containers after account and key focus lost
         arrayOf(view.storagePanel.azureBlobCard.storageAccountField, view.storagePanel.azureBlobCard.storageKeyField).forEach {
+            // Each time user changed storage account or key, we set the containers to empty
+            it.document.addDocumentListener(object : DocumentAdapter() {
+                override fun textChanged(e: DocumentEvent) {
+                    view.storagePanel.azureBlobCard.storageContainerUI.comboBox.model = DefaultComboBoxModel()
+                }
+            })
             it.addFocusListener(object : FocusAdapter() {
                 override fun focusLost(e: FocusEvent?) {
                     if (view.storagePanel.azureBlobCard.storageContainerUI.button.isEnabled) {
@@ -113,9 +122,12 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                             try {
                                 val clientStorageAccount = ClientStorageAccount(toUpdate.storageAccount)
                                         .apply { primaryKey = toUpdate.storageKey }
+                                // Add Timeout for list containers operation to avoid getting stuck
+                                // when storage account or key is invalid
+                                val requestOptions = BlobRequestOptions().apply { maximumExecutionTimeInMs = 5000 }
                                 val containers = StorageClientSDKManager
                                         .getManager()
-                                        .getBlobContainers(clientStorageAccount.connectionString)
+                                        .getBlobContainers(clientStorageAccount.connectionString, requestOptions)
                                         .map(BlobContainer::getName)
                                         .toTypedArray()
                                 if (containers.isNotEmpty()) {
@@ -132,7 +144,7 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                             }
                         } catch (ex: Exception) {
                             log().info("Refresh Azure Blob contains error. " + ExceptionUtils.getStackTrace(ex))
-                            errorMsg = "Can't get storage containers, check if the key matches"
+                            errorMsg = "Can't get storage containers, check if account and key matches"
                         }
                     }
                 }
