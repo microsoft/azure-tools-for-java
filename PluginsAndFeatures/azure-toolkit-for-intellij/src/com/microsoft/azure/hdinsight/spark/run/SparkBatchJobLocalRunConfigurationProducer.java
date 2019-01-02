@@ -134,4 +134,6 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
     public boolean shouldReplace(@NotNull ConfigurationFromContext self, @NotNull ConfigurationFromContext anyOther) {
         return true;
     }
+
+    public boolean
 }
