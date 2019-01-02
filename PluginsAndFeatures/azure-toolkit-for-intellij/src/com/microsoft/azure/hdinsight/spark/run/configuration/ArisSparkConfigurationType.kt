@@ -43,7 +43,7 @@ class ArisSparkConfigurationType : ConfigurationType {
     }
 
     override fun getDisplayName(): String {
-        return "Spark on Aris"
+        return "Aris On Spark"
     }
 
     override fun getId(): String {
@@ -51,7 +51,7 @@ class ArisSparkConfigurationType : ConfigurationType {
     }
 
     override fun getConfigurationTypeDescription(): String {
-        return "Spark On Aris Run Configuration"
+        return "Aris On Spark Configuration"
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {

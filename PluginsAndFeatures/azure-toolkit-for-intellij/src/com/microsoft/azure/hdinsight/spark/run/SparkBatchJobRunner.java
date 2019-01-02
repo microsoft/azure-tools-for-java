@@ -117,8 +117,8 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 break;
             case ADLS_GEN1:
                 String rawRootPath = submitModel.getJobUploadStorageModel().getAdlsRootPath();
-                if (StringUtils.isBlank(rawRootPath)) {
-                    throw new ExecutionException("Can't get the raw root path since it's null.");
+                if (StringUtils.isBlank(rawRootPath) || !rawRootPath.matches(SparkBatchJob.AdlsPathPattern)) {
+                    throw new ExecutionException("Invalid adls root path input.");
                 }
 
                 destinationRootPath = rawRootPath.endsWith("/") ? rawRootPath : rawRootPath + "/";
