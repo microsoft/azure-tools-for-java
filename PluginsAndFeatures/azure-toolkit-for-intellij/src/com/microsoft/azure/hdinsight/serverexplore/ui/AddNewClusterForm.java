@@ -75,7 +75,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     protected JLabel passwordLabel;
     protected JLabel livyClusterNameLabel;
     protected JTextField arisPortField;
-    protected JTextField arisHostField;
+    protected HintTextField arisHostField;
     protected HintTextField arisClusterNameField;
     protected JPanel arisLivyServiceCard;
     @NotNull
@@ -200,6 +200,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         livyEndpointField = new HintTextField("Example: http://headnodehost:8998");
         yarnEndpointField = new HintTextField("(Optional)Example: http://hn0-spark2:8088");
         arisClusterNameField = new HintTextField("(Optional) Cluster name");
+        arisHostField = new HintTextField("Example: 10.123.123.123");
     }
 
     public SparkClusterType getSparkClusterType() {
