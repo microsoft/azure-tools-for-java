@@ -354,8 +354,7 @@
         anchor="bottom"
         factoryClass="com.microsoft.azure.cosmosserverlessspark.spark.ui.CosmosServerlessSparkJobsToolWindowFactory"
         id="Cosmos Serverless Spark Jobs"
-        canCloseContents="true"
-        icon="/icons/SparkSubmissionToolWindow.png"/>
+        canCloseContents="true"/>
 
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />

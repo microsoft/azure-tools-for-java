@@ -27,20 +27,16 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
+import com.intellij.ui.DocumentAdapter
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
-import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
-import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightLivyLinkClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
-import com.microsoft.azure.hdinsight.sdk.common.HDIException
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
-import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail
+import com.microsoft.azure.storage.blob.BlobRequestOptions
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
 import com.microsoft.tooling.msservices.model.storage.BlobContainer
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount
@@ -52,6 +48,7 @@ import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
 import javax.swing.DefaultComboBoxModel
+import javax.swing.event.DocumentEvent
 
 class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStorageWithUploadPathPanel) :
         SparkSubmissionJobUploadStorageWithUploadPathPanel.Control, ILogger {
@@ -71,6 +68,12 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
     init {
         // refresh containers after account and key focus lost
         arrayOf(view.storagePanel.azureBlobCard.storageAccountField, view.storagePanel.azureBlobCard.storageKeyField).forEach {
+            // Each time user changed storage account or key, we set the containers to empty
+            it.document.addDocumentListener(object : DocumentAdapter() {
+                override fun textChanged(e: DocumentEvent) {
+                    view.storagePanel.azureBlobCard.storageContainerUI.comboBox.model = DefaultComboBoxModel()
+                }
+            })
             it.addFocusListener(object : FocusAdapter() {
                 override fun focusLost(e: FocusEvent?) {
                     if (view.storagePanel.azureBlobCard.storageContainerUI.button.isEnabled) {
@@ -104,35 +107,6 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
         }
     }
 
-    override fun setDefaultStorageType(checkEvent: StorageCheckEvent, clusterDetail: IClusterDetail,
-                                       preStorageType: SparkSubmitStorageType) {
-        synchronized(view.storagePanel) {
-            if (checkEvent is StorageCheckSelectedClusterEvent) {
-
-                //check cluster type then reset storage combox
-                view.storagePanel.storageTypeComboBox.apply {
-                    val optionTypes =clusterDetail.storageOptionsType.optionTypes
-                    model = ImmutableComboBoxModel(optionTypes)
-
-                    //if selectedItem is null ,will trigger storage type combox deselected event and event.item is the model getSelectedItem which is model(0)
-                    selectedItem = null
-
-                    //reset selectedItem will trigger deselected and selected event which will repaint the panel
-                    //preSelectedCluster = null  : this msg is triggered by creating config or reloading saved config
-                    //as for creaing,preStorageType = DEFAULT_STORAGE_ACCOUNT
-                    //isStorageTypeValid = true means this cluster supports DEFAULT_STORAGE_ACCOUNT
-                    //isStorageTypeValid = false means this cluster doesn't support preStorageType so change combox to selectedType otherwise combox will show empty
-                    //as for reloading,isStorageTypeValid should always be true otherwise config can't be saved
-                    if (checkEvent.preClusterName == null && optionTypes.contains(preStorageType)) {
-                        selectedItem = preStorageType
-                    } else {
-                        selectedItem = clusterDetail.defaultStorageType
-                    }
-                }
-            }
-        }
-    }
-
     private fun refreshContainers(): Observable<SparkSubmitJobUploadStorageModel> {
         return Observable.just(SparkSubmitJobUploadStorageModel())
             .doOnNext(view::getData)
@@ -148,9 +122,12 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                             try {
                                 val clientStorageAccount = ClientStorageAccount(toUpdate.storageAccount)
                                         .apply { primaryKey = toUpdate.storageKey }
+                                // Add Timeout for list containers operation to avoid getting stuck
+                                // when storage account or key is invalid
+                                val requestOptions = BlobRequestOptions().apply { maximumExecutionTimeInMs = 5000 }
                                 val containers = StorageClientSDKManager
                                         .getManager()
-                                        .getBlobContainers(clientStorageAccount.connectionString)
+                                        .getBlobContainers(clientStorageAccount.connectionString, requestOptions)
                                         .map(BlobContainer::getName)
                                         .toTypedArray()
                                 if (containers.isNotEmpty()) {
@@ -167,7 +144,7 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                             }
                         } catch (ex: Exception) {
                             log().info("Refresh Azure Blob contains error. " + ExceptionUtils.getStackTrace(ex))
-                            errorMsg = "Can't get storage containers, check if the key matches"
+                            errorMsg = "Can't get storage containers, check if account and key matches"
                         }
                     }
                 }

@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.common.classifiedexception
 
 import com.intellij.openapi.application.ApplicationManager
+import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.SessionNotStartException
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
 import com.microsoft.intellij.forms.ErrorMessageForm
 import org.apache.commons.lang.exception.ExceptionUtils
@@ -43,7 +44,12 @@ class SparkToolException(exp: Throwable?) : ClassifiedException(exp) {
 object SparkToolExceptionFactory : ClassifiedExceptionFactory() {
     override fun createClassifiedException(exp: Throwable?): ClassifiedException? {
         val stackTrace = if (exp != null) ExceptionUtils.getStackTrace(exp) else EmptyLog
-        return if (exp !is YarnDiagnosticsException && stackTrace.contains(ToolPackageSuffix)) {
+        return if (exp !is YarnDiagnosticsException
+                // Thrown from Azure blob storage SDK, refer to Issue #2580
+                && !(exp is IllegalArgumentException && stackTrace.contains("com.microsoft.azure.storage.CloudStorageAccount"))
+                // Thrown from creating Livy helper session to upload artifacts,refer to Issue #2552
+                && exp !is SessionNotStartException
+                && stackTrace.contains(ToolPackageSuffix)) {
             SparkToolException(exp)
         } else null
     }

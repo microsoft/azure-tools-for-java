@@ -110,12 +110,16 @@ public class StorageClientSDKManager {
     @NotNull
     public List<BlobContainer> getBlobContainers(@NotNull String connectionString)
             throws AzureCmdException {
+        return getBlobContainers(connectionString, null);
+    }
+
+    public List<BlobContainer> getBlobContainers(@NotNull String connectionString, @Nullable BlobRequestOptions options)
+            throws AzureCmdException {
         List<BlobContainer> bcList = new ArrayList<BlobContainer>();
 
         try {
             CloudBlobClient client = getCloudBlobClient(connectionString);
-
-            for (CloudBlobContainer container : client.listContainers(null, ContainerListingDetails.ALL, null, null)) {
+            for (CloudBlobContainer container : client.listContainers(null, ContainerListingDetails.ALL, options, null)) {
                 String uri = container.getUri() != null ? container.getUri().toString() : "";
                 String eTag = "";
                 Calendar lastModified = new GregorianCalendar();
@@ -147,6 +151,7 @@ public class StorageClientSDKManager {
         } catch (Throwable t) {
             throw new AzureCmdException("Error retrieving the Blob Container list", t);
         }
+
     }
 
     @NotNull

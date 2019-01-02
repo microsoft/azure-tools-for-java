@@ -33,6 +33,10 @@ data class SparkContextValueInfo(val name: String, val master: String, val appId
 data class SparkSessionValueInfo(val name: String)
 
 class SparkScalaConsoleBuilder(project: Project) : TextConsoleBuilderImpl(project) {
+    public override fun getProject(): Project {
+        return super.getProject()
+    }
+
     private val sparkContextRegex = """^Spark context available as '(.+)' \(master = (.+), app id = (.+)\)\.\s*$""".toRegex()
     private val sparkSessionRegex = """^Spark session available as '(.+)'\.\s*$""".toRegex()
 

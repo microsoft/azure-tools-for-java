@@ -32,13 +32,16 @@ import com.intellij.ide.BrowserUtil
 import com.microsoft.azure.hdinsight.common.HDInsightUtil
 import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.common.classifiedexception.*
+import com.microsoft.azure.hdinsight.spark.common.CosmosSparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
+import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkSubmitModel
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkSubmitModel
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle
 import java.net.URI
 import java.util.*
 
-open class SparkBatchRemoteRunState(val serverlessSparkSubmitModel: SparkSubmitModel)
+open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitModel)
     : RunProfileStateWithAppInsightsEvent, SparkBatchRemoteRunProfileState  {
     override var remoteProcessCtrlLogHandler: SparkBatchJobProcessCtrlLogOut? = null
     override var executionResult: ExecutionResult? = null
@@ -98,7 +101,7 @@ open class SparkBatchRemoteRunState(val serverlessSparkSubmitModel: SparkSubmitM
         val parameter = getSubmitModel().submissionParameter
 
         if (parameter.clusterName.isNullOrBlank()) {
-            throw ExecutionException("The HDInsight cluster to submit is not selected, please config it at 'Run/Debug configuration -> Remotely Run in Cluster'.")
+            throw ExecutionException("The ${getSubmitModel().sparkClusterTypeDisplayName} to submit job is not selected, please config it at 'Run/Debug configuration -> Remotely Run in Cluster'.")
         }
 
         if (parameter.artifactName.isNullOrBlank() && parameter.localArtifactPath.isNullOrBlank()) {
@@ -111,7 +114,7 @@ open class SparkBatchRemoteRunState(val serverlessSparkSubmitModel: SparkSubmitM
     }
 
     override fun getSubmitModel(): SparkSubmitModel {
-        return serverlessSparkSubmitModel
+        return sparkSubmitModel
     }
 
     open fun onSuccess(executor: Executor) {

@@ -58,7 +58,7 @@ class CosmosSparkBatchRunner : SparkBatchJobRunner() {
                     .toBlocking()
                     .firstOrDefault(null)
 
-            return ServerlessSparkBatchJob(
+            return CosmosSparkBatchJob(
                     submitModel.submissionParameter,
                     SparkBatchAzureSubmission(tenantId, accountName, clusterId, livyUri),
                     ctrlSubject)

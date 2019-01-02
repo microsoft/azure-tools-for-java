@@ -38,15 +38,15 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-public class ServerlessSparkBatchJob extends SparkBatchJob {
-    public ServerlessSparkBatchJob(@NotNull SparkSubmissionParameter submissionParameter,
-                                   @NotNull SparkBatchAzureSubmission azureSubmission,
-                                   @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+public class CosmosSparkBatchJob extends SparkBatchJob {
+    public CosmosSparkBatchJob(@NotNull SparkSubmissionParameter submissionParameter,
+                               @NotNull SparkBatchAzureSubmission azureSubmission,
+                               @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
         super(submissionParameter, azureSubmission, ctrlSubject);
     }
 
     @NotNull
-    private Observable<? extends AzureSparkServerlessCluster> getCluster() {
+    private Observable<? extends AzureSparkServerlessCluster> getCosmosSparkCluster() {
         return AzureSparkServerlessClusterManager.getInstance()
                 .findCluster(getAzureSubmission().getAccountName(), getAzureSubmission().getClusterId())
                 .onErrorResumeNext(err -> Observable.error(err instanceof NoSuchElementException ?
@@ -62,7 +62,7 @@ public class ServerlessSparkBatchJob extends SparkBatchJob {
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        return getCluster()
+        return getCosmosSparkCluster()
                 .flatMap(cluster -> {
                     try {
                         if (cluster.getStorageAccount() == null) {
@@ -101,16 +101,12 @@ public class ServerlessSparkBatchJob extends SparkBatchJob {
     public Observable<String> awaitStarted() {
         return super.awaitStarted()
                 .flatMap(state -> Observable.zip(
-                        getCluster(), getSparkJobApplicationIdObservable().defaultIfEmpty(null),
+                        getCosmosSparkCluster(), getSparkJobApplicationIdObservable().defaultIfEmpty(null),
                         (cluster, appId) -> Pair.of(
                                 state,
                                 cluster.getSparkHistoryUiUri() == null ?
                                         null :
-                                        cluster.getSparkHistoryUiUri()
-                                               .resolve(appId == null ?
-                                                        "/" :
-                                                        String.format("/history/%s/", appId))
-                                               .toString() + "?adlaAccountName=" + cluster.getAccount().getName())))
+                                        cluster.getSparkMasterUiUri().toString() + "?adlaAccountName=" + cluster.getAccount().getName())))
                 .map(stateJobUriPair -> {
                     if (stateJobUriPair.getRight() != null) {
                         getCtrlSubject().onNext(new SimpleImmutableEntry<>(MessageInfoType.Hyperlink,

@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.spark.run;
 
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
+import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.junit.JavaRunConfigurationProducerBase;
 import com.intellij.openapi.module.Module;
@@ -35,7 +36,6 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel
 import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType;
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
-import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,6 +46,10 @@ import static com.intellij.openapi.roots.TestSourcesFilter.isTestSources;
 public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigurationProducerBase<LivySparkBatchJobRunConfiguration> {
     private SparkApplicationType applicationType;
 
+    public SparkBatchJobLocalRunConfigurationProducer(ConfigurationFactory configFactory, SparkApplicationType applicationType) {
+        super(configFactory);
+        this.applicationType = applicationType;
+    }
 
     public SparkBatchJobLocalRunConfigurationProducer(ConfigurationType configType, SparkApplicationType applicationType) {
         super(configType);

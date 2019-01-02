@@ -30,6 +30,8 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.jarRepository.JarRepositoryManager
 import com.intellij.jarRepository.RemoteRepositoriesConfiguration
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.util.DispatchThreadProgressWindow
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.impl.libraries.LibraryEx
@@ -160,9 +162,19 @@ class SparkScalaLocalConsoleRunConfiguration(
         val toFix = toFixDialog.showAndGet()
 
         if (toFix) {
-            fixDependence(libraryCoord)
-        }
+            val progress = DispatchThreadProgressWindow(false, project).apply {
+                setRunnable {
+                    ProgressManager.getInstance().runProcess({
+                        text = "Download $libraryCoord ..."
+                        fixDependence(libraryCoord)
+                    }, this@apply)
+                }
 
+                title = "Auto fix dependency $libraryCoord"
+            }
+
+            progress.start()
+        }
     }
 
     private fun fixDependence(libraryCoord: String) {

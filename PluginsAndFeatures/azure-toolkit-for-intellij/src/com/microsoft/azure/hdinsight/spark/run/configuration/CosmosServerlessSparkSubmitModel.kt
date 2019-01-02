@@ -35,4 +35,6 @@ class CosmosServerlessSparkSubmitModel(project: Project) : SparkSubmitModel(proj
                 Pair(CreateSparkBatchJobParameters.NumExecutors, CreateSparkBatchJobParameters.NumExecutorsDefaultValue)
         ).stream()
     }
+
+    override fun getSparkClusterTypeDisplayName(): String = "Cosmos Serverless Spark account"
 }

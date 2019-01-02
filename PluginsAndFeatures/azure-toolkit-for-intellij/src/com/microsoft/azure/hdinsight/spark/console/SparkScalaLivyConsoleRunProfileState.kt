@@ -30,6 +30,7 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
+import com.microsoft.intellij.rxjava.IdeaSchedulers
 import org.jetbrains.plugins.scala.console.ScalaLanguageConsole
 import rx.Observable
 import rx.schedulers.Schedulers
@@ -53,9 +54,12 @@ class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScal
 
         console.attachToProcess(livySessionProcessHandler)
 
+        val progressBarScheduler = IdeaSchedulers(consoleBuilder.project)
+                .processBarVisibleAsync("Start Spark Livy interactive console session...")
+
         session.create()
-                .subscribeOn(Schedulers.io())
-                .flatMap { it.awaitReady() }
+                .subscribeOn(progressBarScheduler)
+                .flatMap { it.awaitReady(progressBarScheduler) }
                 .subscribe({
                     livySessionProcessHandler.execute(postStartCodes)
                     (console as? ScalaLanguageConsole)?.apply {

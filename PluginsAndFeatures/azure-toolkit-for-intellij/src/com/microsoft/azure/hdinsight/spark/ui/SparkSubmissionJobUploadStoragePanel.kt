@@ -27,6 +27,8 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.ListCellRendererWrapper
 import com.intellij.uiDesigner.core.GridConstraints.*
+import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxModelDelegated
+import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegated
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageCtrl.*
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
@@ -75,7 +77,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
         })
     }
 
-    val storageTypeComboBox = ComboBox<SparkSubmitStorageType>(arrayOf(
+    private val storageTypeComboBox = ComboBox<SparkSubmitStorageType>(arrayOf(
             SparkSubmitStorageType.BLOB,
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
@@ -136,6 +138,9 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
     }
 
     inner class ViewModel : DisposableObservers() {
+        var deployStorageTypeSelection: SparkSubmitStorageType? by ComboBoxSelectionDelegated(storageTypeComboBox)
+        var deployStorageTypesModel: ComboBoxModel<SparkSubmitStorageType> by ComboBoxModelDelegated(storageTypeComboBox)
+
         val storageCheckSubject: PublishSubject<StorageCheckEvent> = disposableSubjectOf { PublishSubject.create() }
     }
 
