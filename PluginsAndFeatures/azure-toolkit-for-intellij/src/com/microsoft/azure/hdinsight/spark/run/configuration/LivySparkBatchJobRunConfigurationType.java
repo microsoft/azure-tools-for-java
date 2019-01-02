@@ -32,14 +32,19 @@ import com.microsoft.intellij.util.PluginUtil;
 import javax.swing.*;
 
 public class LivySparkBatchJobRunConfigurationType implements ConfigurationType {
+
+    private static final String DISPLAY_NAME = "Azure HDInsight Spark";
+    private static final String ID = "SubmitSparkJob_Configuration";
+    private static final String DESCRIPTION = "Azure HDInsight Spark Job Configuration Type";
+
     @Override
     public String getDisplayName() {
-        return "Spark on HDInsight";
+        return DISPLAY_NAME;
     }
 
     @Override
     public String getConfigurationTypeDescription() {
-        return "Spark on HDInsight Run Configuration Type";
+        return DESCRIPTION;
     }
 
     @Override
@@ -52,7 +57,7 @@ public class LivySparkBatchJobRunConfigurationType implements ConfigurationType 
     @NotNull
     @Override
     public String getId() {
-        return "SubmitSparkJob_Configuration";
+        return ID;
     }
 
     @Override

@@ -61,7 +61,7 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
     }
 
     override val component: JComponent by lazy {
-        clustersSelectionPrompt.text = "Account name"
+        clustersSelectionPrompt.text = "ADL account"
         val formBuilder = panel {
             columnTemplate {
                 col {

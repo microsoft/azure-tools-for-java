@@ -29,7 +29,7 @@ import com.microsoft.azure.hdinsight.spark.common.CosmosSparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 
 class CosmosSparkSubmissionPanel(project: Project)
-    : SparkSubmissionContentPanel(project, "Spark on Cosmos") {
+    : SparkSubmissionContentPanel(project, "Azure Data Lake Spark Pool") {
 
     override val clustersSelection: SparkClusterListRefreshableCombo by lazy { CosmosSparkClustersCombo().apply {
         Disposer.register(this@CosmosSparkSubmissionPanel, this@apply)
