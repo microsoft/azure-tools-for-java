@@ -23,8 +23,8 @@
 package com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode;
 
 import com.microsoft.azure.hdinsight.sdk.cluster.DestroyableCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -39,11 +39,11 @@ public class CosmosSparkClusterOps {
     @NotNull
     private final PublishSubject<Pair<AzureSparkServerlessAccount, CosmosSparkADLAccountNode>> provisionAction;
     @NotNull
-    private final PublishSubject<Pair<AzureSparkServerlessCluster, CosmosSparkClusterNode>> monitorAction;
+    private final PublishSubject<Pair<AzureSparkCosmosCluster, CosmosSparkClusterNode>> monitorAction;
     @NotNull
-    private final PublishSubject<Pair<AzureSparkServerlessCluster, CosmosSparkClusterNode>> updateAction;
+    private final PublishSubject<Pair<AzureSparkCosmosCluster, CosmosSparkClusterNode>> updateAction;
     @NotNull
-    private final PublishSubject<Pair<AzureSparkServerlessCluster, CosmosSparkClusterNode>> submitAction;
+    private final PublishSubject<Pair<AzureSparkCosmosCluster, CosmosSparkClusterNode>> submitAction;
     @NotNull
     private final PublishSubject<Pair<AzureSparkServerlessAccount, CosmosSparkADLAccountNode>> serverlessSubmitAction;
     @NotNull
@@ -76,17 +76,17 @@ public class CosmosSparkClusterOps {
     }
 
     @NotNull
-    public PublishSubject<Pair<AzureSparkServerlessCluster, CosmosSparkClusterNode>> getMonitorAction() {
+    public PublishSubject<Pair<AzureSparkCosmosCluster, CosmosSparkClusterNode>> getMonitorAction() {
         return monitorAction;
     }
 
     @NotNull
-    public PublishSubject<Pair<AzureSparkServerlessCluster, CosmosSparkClusterNode>> getUpdateAction() {
+    public PublishSubject<Pair<AzureSparkCosmosCluster, CosmosSparkClusterNode>> getUpdateAction() {
         return updateAction;
     }
 
     @NotNull
-    public PublishSubject<Pair<AzureSparkServerlessCluster, CosmosSparkClusterNode>> getSubmitAction() {
+    public PublishSubject<Pair<AzureSparkCosmosCluster, CosmosSparkClusterNode>> getSubmitAction() {
         return submitAction;
     }
 

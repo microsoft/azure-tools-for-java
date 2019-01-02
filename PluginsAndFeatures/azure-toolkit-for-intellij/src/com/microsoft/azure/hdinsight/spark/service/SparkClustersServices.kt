@@ -24,7 +24,7 @@ package com.microsoft.azure.hdinsight.spark.service
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail
 import rx.Observable
 import rx.Observable.fromCallable
@@ -38,12 +38,12 @@ object SparkClustersServices {
     }.share()
 
     val cosmosSparkClustersRefreshed: Observable<List<IClusterDetail>> =
-            AzureSparkServerlessClusterManager.getInstance().fetchClusters()
+            AzureSparkCosmosClusterManager.getInstance().fetchClusters()
                     .map { it.clusters.asIterable().toList() }
                     .share()
 
     val cosmosServerlessSparkAccountsRefreshed: Observable<out List<IClusterDetail>> =
-            AzureSparkServerlessClusterManager.getInstance().fetchClusters()
+            AzureSparkCosmosClusterManager.getInstance().fetchClusters()
                     .map { it.accounts.asIterable().toList() }
                     .share()
 

@@ -30,7 +30,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterStatesCtr
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterStatesModel;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterNode;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -68,7 +68,7 @@ public class CosmosSparkClusterMonitorDialog extends DialogWrapper
     private static final int REFRESH_INTERVAL = 2;
 
     public CosmosSparkClusterMonitorDialog(@NotNull CosmosSparkClusterNode clusterNode,
-                                           @NotNull AzureSparkServerlessCluster cluster) {
+                                           @NotNull AzureSparkCosmosCluster cluster) {
         super((Project) clusterNode.getProject(), true);
         this.ctrlProvider = new CosmosSparkClusterStatesCtrlProvider(
                 this, new IdeaSchedulers((Project) clusterNode.getProject()), cluster);

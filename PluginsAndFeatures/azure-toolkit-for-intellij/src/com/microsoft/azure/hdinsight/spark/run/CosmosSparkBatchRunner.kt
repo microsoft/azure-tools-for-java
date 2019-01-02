@@ -25,7 +25,7 @@ package com.microsoft.azure.hdinsight.spark.run
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.RunProfile
 import com.microsoft.azure.hdinsight.common.MessageInfoType
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
 import com.microsoft.azure.hdinsight.spark.common.*
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration
 import rx.Observer
@@ -52,7 +52,7 @@ class CosmosSparkBatchRunner : SparkBatchJobRunner() {
 
         val clusterId = submitModel.clusterId
         try {
-            val livyUri = submitModel.livyUri?.let { URI.create(it) } ?: AzureSparkServerlessClusterManager.getInstance()
+            val livyUri = submitModel.livyUri?.let { URI.create(it) } ?: AzureSparkCosmosClusterManager.getInstance()
                     .findCluster(accountName, clusterId)
                     .map { it.get().toBlocking().singleOrDefault(it).livyUri }
                     .toBlocking()

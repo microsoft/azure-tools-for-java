@@ -277,7 +277,7 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
 
     private AzureSparkServerlessAccount updateWithResponse(SparkResourcePoolList sparkResourcePoolList) {
         clusters = ImmutableSortedSet.copyOf(sparkResourcePoolList.value().stream()
-                .map(analyticsActivity -> new AzureSparkServerlessCluster(this, analyticsActivity.id().toString())
+                .map(analyticsActivity -> new AzureSparkCosmosCluster(this, analyticsActivity.id().toString())
                         .updateWithAnalyticsActivity(analyticsActivity))
                 .iterator());
 

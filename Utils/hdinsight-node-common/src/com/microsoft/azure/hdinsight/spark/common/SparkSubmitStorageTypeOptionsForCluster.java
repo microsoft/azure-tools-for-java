@@ -27,44 +27,49 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
 public enum SparkSubmitStorageTypeOptionsForCluster {
-    //cluster detail using blob as default storage type
+    // cluster detail using blob as default storage type
     ClusterWithBlob(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
             SparkSubmitStorageType.BLOB
     }),
 
-    //cluster detail using adls as default storage type
-    //or AzureSparkServerlessCluster using adls
+    // cluster detail using adls as default storage type
+    // or AzureSparkCosmosCluster using adls
     ClusterWithAdls(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
             SparkSubmitStorageType.ADLS_GEN1
     }),
 
-    //cluster detail with unknown storage type
+    // cluster detail with unknown storage type
     ClusterWithUnknown(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
     }),
 
-    //for hdi additional cluster whose storage type can be blob or adls
+    // for hdi additional cluster whose storage type can be blob or adls
     HdiAdditionalClusterWithUndetermineStorage(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
             SparkSubmitStorageType.BLOB,
             SparkSubmitStorageType.ADLS_GEN1
     }),
 
-    //sql big data cluster
+    // cosmos cluster on adl whose storage type is only default_storaget_account
+    AzureSparkCosmosClusterWithDefaultStorage(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
+    }),
+
+    // sql big data cluster
     BigDataClusterWithWebHdfs(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
             SparkSubmitStorageType.WEBHDFS
     }),
 
-    //Cosmos Serverless Spark cluster
+    // Cosmos Serverless Spark cluster
     ServerlessClusterWithAccountDefault(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE
     }),
 
-    //for unknown type cluster
+    // for unknown type cluster
     ClusterWithFullType(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,

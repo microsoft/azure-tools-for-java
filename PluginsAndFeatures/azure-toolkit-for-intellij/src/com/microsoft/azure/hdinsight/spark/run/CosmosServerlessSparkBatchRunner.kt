@@ -25,7 +25,7 @@ package com.microsoft.azure.hdinsight.spark.run
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.RunProfile
 import com.microsoft.azure.hdinsight.common.MessageInfoType
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.CreateSparkBatchJobParameters
 import com.microsoft.azure.hdinsight.spark.common.*
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfiguration
@@ -49,7 +49,7 @@ class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
         // FIXME: Set job name to main class name?
         submissionParameter.name = submissionParameter.mainClassName
         val adlAccountName = submissionParameter.clusterName
-        val account = AzureSparkServerlessClusterManager.getInstance().getAccountByName(adlAccountName)
+        val account = AzureSparkCosmosClusterManager.getInstance().getAccountByName(adlAccountName)
                 ?: throw ExecutionException("Can't find ADLA account '$adlAccountName'")
 
         val accessToken = try {

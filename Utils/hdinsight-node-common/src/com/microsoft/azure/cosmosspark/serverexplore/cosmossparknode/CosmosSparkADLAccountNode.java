@@ -24,8 +24,8 @@ package com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -63,7 +63,7 @@ public class CosmosSparkADLAccountNode extends AzureRefreshableNode implements I
                 })
                 .subscribe(account -> account.getClusters().forEach(cluster -> {
                     try {
-                        AzureSparkServerlessCluster serverlessCluster = (AzureSparkServerlessCluster) cluster;
+                        AzureSparkCosmosCluster serverlessCluster = (AzureSparkCosmosCluster) cluster;
                         // refresh the cluster
                         serverlessCluster.getConfigurationInfo();
                         addChildNode(new CosmosSparkClusterNode(this, serverlessCluster, adlAccount));

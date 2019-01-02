@@ -53,14 +53,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-public class AzureSparkServerlessCluster extends SparkCluster
+public class AzureSparkCosmosCluster extends SparkCluster
                                          implements ProvisionableCluster,
                                                     ServerlessCluster,
                                                     DestroyableCluster,
                                                     LivyCluster,
                                                     YarnCluster,
-                                                    IClusterDetail,
-                                                    Comparable<AzureSparkServerlessCluster> {
+                                                    Comparable<AzureSparkCosmosCluster> {
     public static class SparkResource {
         int instances;
         int coresPerInstance;
@@ -245,8 +244,8 @@ public class AzureSparkServerlessCluster extends SparkCluster
             return this;
         }
 
-        public AzureSparkServerlessCluster build() {
-            AzureSparkServerlessCluster cluster = new AzureSparkServerlessCluster(this.acount, UUID.randomUUID().toString());
+        public AzureSparkCosmosCluster build() {
+            AzureSparkCosmosCluster cluster = new AzureSparkCosmosCluster(this.acount, UUID.randomUUID().toString());
 
             cluster.name = this.name;
             cluster.resourcePoolVersion = this.resourcePoolVersion;
@@ -316,7 +315,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
 
     private boolean isConfigInfoAvailable = false;
 
-    public AzureSparkServerlessCluster(@NotNull AzureSparkServerlessAccount azureSparkServerlessAccount, @NotNull String guid) {
+    public AzureSparkCosmosCluster(@NotNull AzureSparkServerlessAccount azureSparkServerlessAccount, @NotNull String guid) {
         this.account = azureSparkServerlessAccount;
         this.guid = guid;
         String storageRootPath = azureSparkServerlessAccount.getStorageRootPath();
@@ -553,7 +552,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
         return http;
     }
 
-    public Observable<AzureSparkServerlessCluster> get() {
+    public Observable<AzureSparkCosmosCluster> get() {
         return getResourcePoolRequest()
                 .map(this::updateWithResponse)
                 .defaultIfEmpty(this);
@@ -593,7 +592,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
                 .patch(uri.toString(), entity, null, null, SparkResourcePool.class);
     }
 
-    public Observable<AzureSparkServerlessCluster> update(int workerTargetInstanceCount) {
+    public Observable<AzureSparkCosmosCluster> update(int workerTargetInstanceCount) {
         return patchResourcePoolRequest(workerTargetInstanceCount)
                 .flatMap(resourcePoolResp -> this.get());
     }
@@ -616,7 +615,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
         return getAccountUri().resolve(REST_SEGMENT + guid);
     }
 
-    AzureSparkServerlessCluster updateWithAnalyticsActivity(@NotNull AnalyticsActivity analyticsActivity) {
+    AzureSparkCosmosCluster updateWithAnalyticsActivity(@NotNull AnalyticsActivity analyticsActivity) {
         if (analyticsActivity.state() != null) {
             this.state = analyticsActivity.state().toString();
         }
@@ -632,7 +631,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
         return this;
     }
 
-    AzureSparkServerlessCluster updateWithResponse(@NotNull SparkResourcePool resourcePoolResp) {
+    AzureSparkCosmosCluster updateWithResponse(@NotNull SparkResourcePool resourcePoolResp) {
         this.updateWithAnalyticsActivity(resourcePoolResp);
 
         SparkResourcePoolProperties respProp = resourcePoolResp.properties();
@@ -765,7 +764,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
     private final AzureSparkServerlessAccount account;
 
     @Override
-    public int compareTo(@NotNull AzureSparkServerlessCluster other) {
+    public int compareTo(@NotNull AzureSparkCosmosCluster other) {
         return this.getTitle().compareTo(other.getTitle());
     }
 
@@ -818,11 +817,11 @@ public class AzureSparkServerlessCluster extends SparkCluster
 
     @Override
     public SparkSubmitStorageType getDefaultStorageType() {
-        return SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE;
+        return SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT;
     }
 
     @Override
     public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
-        return SparkSubmitStorageTypeOptionsForCluster.ServerlessClusterWithAccountDefault;
+        return SparkSubmitStorageTypeOptionsForCluster.AzureSparkCosmosClusterWithDefaultStorage;
     }
 }

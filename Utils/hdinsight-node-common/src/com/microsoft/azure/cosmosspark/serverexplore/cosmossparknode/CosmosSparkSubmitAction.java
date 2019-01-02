@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode;
 
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -33,14 +33,14 @@ import rx.subjects.PublishSubject;
 
 public class CosmosSparkSubmitAction extends NodeActionListener {
     @NotNull
-    private final AzureSparkServerlessCluster cluster;
+    private final AzureSparkCosmosCluster cluster;
     @NotNull
-    private final PublishSubject<Pair<AzureSparkServerlessCluster, CosmosSparkClusterNode>> submitAction;
+    private final PublishSubject<Pair<AzureSparkCosmosCluster, CosmosSparkClusterNode>> submitAction;
     private final CosmosSparkClusterNode clusterNode;
 
     public CosmosSparkSubmitAction(@NotNull CosmosSparkClusterNode clusterNode,
-                                   @NotNull AzureSparkServerlessCluster cluster,
-                                   @NotNull PublishSubject<Pair<AzureSparkServerlessCluster, CosmosSparkClusterNode>> submitAction) {
+                                   @NotNull AzureSparkCosmosCluster cluster,
+                                   @NotNull PublishSubject<Pair<AzureSparkCosmosCluster, CosmosSparkClusterNode>> submitAction) {
         super(clusterNode);
         this.cluster = cluster;
         this.clusterNode = clusterNode;
