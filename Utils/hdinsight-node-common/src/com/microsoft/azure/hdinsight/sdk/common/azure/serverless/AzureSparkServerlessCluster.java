@@ -33,6 +33,8 @@ import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.*;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -57,6 +59,7 @@ public class AzureSparkServerlessCluster extends SparkCluster
                                                     DestroyableCluster,
                                                     LivyCluster,
                                                     YarnCluster,
+                                                    IClusterDetail,
                                                     Comparable<AzureSparkServerlessCluster> {
     public static class SparkResource {
         int instances;
@@ -813,4 +816,13 @@ public class AzureSparkServerlessCluster extends SparkCluster
         return URI.create(getConnectionUrl()).resolve("yarnui/ws/v1/cluster/apps/").toString();
     }
 
+    @Override
+    public SparkSubmitStorageType getDefaultStorageType() {
+        return SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE;
+    }
+
+    @Override
+    public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
+        return SparkSubmitStorageTypeOptionsForCluster.ServerlessClusterWithAccountDefault;
+    }
 }
