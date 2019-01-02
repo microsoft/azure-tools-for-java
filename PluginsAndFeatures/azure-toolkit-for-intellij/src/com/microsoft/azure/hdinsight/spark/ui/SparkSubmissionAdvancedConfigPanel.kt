@@ -52,8 +52,6 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchDebugSession
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UseKeyFile
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UsePassword
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel
-import com.microsoft.azuretools.securestore.SecureStore
-import com.microsoft.azuretools.service.ServiceManager
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
 import org.apache.commons.lang3.StringUtils
@@ -107,9 +105,6 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
             }
         }
     }
-
-
-    private val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
 
     // FIXME!!! Since the Intellij has no locale setting, just set en-us here.
     private val helpUrl: String = Docs(Locale.US).getDocUrlByTopic(Docs.TOPIC_CONNECT_HADOOP_LINUX_USING_SSH)
@@ -218,12 +213,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
                         log().info("Check SSH authentication for cluster ${cluster.name} ...")
                         checkStatus = CheckIndicatorState("SSH Authentication is checking...", true)
                     }
-                    .map { (model, cluster) -> probeAuth(model, cluster).apply {
-                        if (this.message == passedText) {
-                            ServiceManager.getServiceProvider(SecureStore::class.java)?.savePassword(
-                                    model.credentialStoreAccount, model.sshUserName, model.sshPassword)
-                        }
-                    }}
+                    .map { (model, cluster) -> probeAuth(model, cluster) }
                     .subscribe { (probedModel, message) ->
                         log().info("...Result: $message")
 
@@ -320,18 +310,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         val applyData: () -> Unit = {
             val current = advConfModel
 
-            val password = (
-                    if (StringUtils.isEmpty(current.sshPassword)) {
-                        // Load password for no password input
-                        try {
-                            secureStore?.loadPassword(data.credentialStoreAccount, data.sshUserName)
-                        } catch (ignored: Exception) {
-                            null
-                        }
-                    } else {
-                        null
-                    }) ?: data.sshPassword
-
+            val password = data.sshPassword
             if (current.sshPassword != password) {
                 sshPasswordField.text = password ?: ""
             }
