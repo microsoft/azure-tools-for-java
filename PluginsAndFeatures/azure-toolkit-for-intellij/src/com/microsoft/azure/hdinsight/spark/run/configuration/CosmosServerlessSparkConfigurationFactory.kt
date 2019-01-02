@@ -9,7 +9,7 @@ open class CosmosServerlessSparkConfigurationFactory (type: ConfigurationType) :
         ConfigurationFactory(type) {
     companion object {
         @JvmStatic
-        val NAME = "Cosmos Serverless Spark"
+        val NAME = "Spark on CosmosServerless"
     }
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration = CosmosServerlessSparkConfiguration(

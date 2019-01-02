@@ -29,7 +29,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 public class LivySparkBatchJobConfigurationFactory extends ConfigurationFactoryEx {
-    private static final String NAME = "HDInsight Spark";
+    private static final String NAME = "Spark on HDInsight";
 
     public LivySparkBatchJobConfigurationFactory(@NotNull ConfigurationType type) {
         super(type);

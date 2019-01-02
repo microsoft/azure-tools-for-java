@@ -30,7 +30,7 @@ import com.intellij.openapi.project.Project
 open class CosmosSparkConfigurationFactory (type: ConfigurationType) :
         ConfigurationFactoryEx<CosmosSparkRunConfiguration>(type) {
     companion object {
-        @JvmStatic val NAME = "Azure Data Lake Spark"
+        @JvmStatic val NAME = "Spark on Cosmos"
     }
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
