@@ -68,7 +68,7 @@ import static rx.exceptions.Exceptions.propagate;
 
 public class SparkBatchJob implements ISparkBatchJob, ILogger {
     public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
-    public static final String AdlsPathPattern = "adl://([^/.]+\\.)+[^/.]+(/[^/.]+)*/?$";
+    public static final String AdlsPathPattern = "^adl://([^/.\\s]+\\.)+[^/.\\s]+(/[^/.\\s]+)*/?$";
 
     @Nullable
     private String currentLogUrl;
