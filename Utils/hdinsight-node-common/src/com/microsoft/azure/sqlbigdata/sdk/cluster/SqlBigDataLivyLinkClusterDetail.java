@@ -12,6 +12,8 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.stream.Stream;
+
 public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, InternalUrlMapping {
     @NotNull
     private String host;
@@ -110,8 +112,11 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
     @Override
     @NotNull
     public String mapInternalUrlToPublic(@NotNull String url) {
-        // FIXME: Hardcode for only output Yarn NM connection URL
-        // We should extract application ID from internal URL and map it to output
-        return getYarnNMConnectionUrl();
+        // Extract application ID from internal URL
+        // url example: http://mssql-master-pool-0.service-master-pool:8088/proxy/application_1544743878531_0035/
+        String appId = Stream.of(url.split("/")).filter(str -> str.startsWith("application_")).findFirst().orElse(null);
+        return appId == null
+                ? String.format("https://%s:%d/gateway/default/yarn/", host, knoxPort)
+                : String.format("https://%s:%d/gateway/default/yarn/cluster/app/%s", host, knoxPort, appId);
     }
 }
