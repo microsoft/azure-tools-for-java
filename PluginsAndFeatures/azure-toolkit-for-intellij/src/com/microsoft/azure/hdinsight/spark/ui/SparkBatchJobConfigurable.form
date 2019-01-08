@@ -10,7 +10,7 @@
     <children>
       <tabbedpane id="a37c7" binding="executionTypeTabPane">
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
             <minimum-size width="800" height="600"/>
           </grid>
         </constraints>
@@ -43,9 +43,7 @@
               <tabbedpane title="Remotely Run in Cluster"/>
             </constraints>
             <properties/>
-            <border type="none">
-              <title-color color="-4473925"/>
-            </border>
+            <border type="none"/>
             <children>
               <scrollpane id="e42d5" binding="remoteConfigScrollPane" custom-create="true">
                 <constraints>
