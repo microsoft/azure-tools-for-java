@@ -25,6 +25,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
@@ -32,13 +33,16 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobConfigurableModel>, Disposable {
     private JTabbedPane executionTypeTabPane;
     private JPanel myWholePanel;
     private SparkLocalRunParamsPanel localRunParamsPanel;
     private JScrollPane remoteConfigScrollPane;
-    private SparkSubmissionContentPanel submissionContentPanel;
+    private JPanel commonPanel;
+    public SparkSubmissionContentPanel submissionContentPanel;
+    private SparkCommonRunParametersPanel commonRunParametersPanel;
 
     @NotNull
     private final Project myProject;
@@ -56,6 +60,11 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
         localRunParamsPanel = new SparkLocalRunParamsPanel(getProject()).withInitialize();
         remoteConfigScrollPane = new JBScrollPane();
         setClusterSubmissionPanel(createSubmissionPanel());
+
+        this.commonPanel = new JBPanel();
+        this.commonRunParametersPanel = new SparkCommonRunParametersPanel(this.myProject, this);
+        this.commonPanel.setLayout(new BorderLayout());
+        this.commonPanel.add(commonRunParametersPanel.getComponent());
     }
 
     protected SparkSubmissionContentPanel createSubmissionPanel() {
@@ -73,6 +82,8 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
 
         executionTypeTabPane.setSelectedIndex(data.getFocusedTabIndex());
 
+        commonRunParametersPanel.setMainClassName(data.getSubmitModel().getMainClassName());
+
         // Presentation only
         setLocalRunConfigEnabled(data.isLocalRunConfigEnabled());
     }
@@ -83,6 +94,9 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
         localRunParamsPanel.getData(data.getLocalRunConfigurableModel());
         submissionContentPanel.getData(data.getSubmitModel());
         data.setFocusedTabIndex(executionTypeTabPane.getSelectedIndex());
+
+        data.getLocalRunConfigurableModel().setRunClass(commonRunParametersPanel.getMainClassName());
+        data.getSubmitModel().setMainClassName(commonRunParametersPanel.getMainClassName());
     }
 
     @NotNull
@@ -102,6 +116,7 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
 
     public void validateInputs() throws ConfigurationException {
         submissionContentPanel.validateInputs();
+        commonRunParametersPanel.validateInputs();
     }
 
     @Override

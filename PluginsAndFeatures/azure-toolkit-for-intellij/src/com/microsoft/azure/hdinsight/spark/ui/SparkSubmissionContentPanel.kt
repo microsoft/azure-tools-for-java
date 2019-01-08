@@ -31,10 +31,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.vfs.impl.jar.JarFileSystemImpl
 import com.intellij.packaging.artifacts.Artifact
 import com.intellij.packaging.impl.artifacts.ArtifactUtil
-import com.intellij.packaging.impl.elements.ManifestFileUtil
 import com.intellij.ui.ListCellRendererWrapper
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
@@ -52,13 +50,11 @@ import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper
 import com.microsoft.intellij.forms.dsl.panel
-import com.microsoft.intellij.helpers.ManifestFileUtilsEx
 import com.microsoft.intellij.lang.containsInvisibleChars
 import com.microsoft.intellij.lang.tagInvisibleChars
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.ui.util.findFirst
 import org.apache.commons.lang3.StringUtils
-import rx.Subscription
 import java.awt.Dimension
 import java.awt.event.ItemEvent
 import java.io.IOException
@@ -76,7 +72,6 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         ClusterName,
         SystemArtifact,
         LocalArtifact,
-        MainClass,
         JobConfiguration
         // Don't add more Error Message please, throw Configuration Exception in checkInputs()
     }
@@ -103,11 +98,6 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                     .apply { foreground = currentErrorColor },
             JLabel("Could not find the local jar package for Artifact")
                     .apply { foreground = currentErrorColor },
-            JLabel("Main Class Name should not be null")
-                    .apply {
-                        foreground = currentErrorColor
-                        isVisible = true
-                    },
             JLabel().apply { foreground = currentErrorColor }
             // Don't add more we won't like to add more message labels
     )
@@ -144,7 +134,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         }
     }
 
-    private val localArtifactTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
+    internal val localArtifactTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
         toolTipText = "Artifact from local jar package."
         isEnabled = false
         textField.document.addDocumentListener(documentValidationListener)
@@ -171,7 +161,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         isSelected = true
     }
 
-    private val localArtifactPrompt: JRadioButton = JRadioButton("Artifact from local disk:", false).apply {
+    internal val localArtifactPrompt: JRadioButton = JRadioButton("Artifact from local disk:", false).apply {
         addItemListener {
             localArtifactTextField.isEnabled = it.stateChange == ItemEvent.SELECTED
             checkInputsWithErrorLabels()
@@ -183,28 +173,6 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     val artifactTypeGroup: ButtonGroup = ButtonGroup().apply {
         add(ideaArtifactPrompt)
         add(localArtifactPrompt)
-    }
-
-    private val mainClassPrompt: JLabel = JLabel("Main class name").apply {
-        toolTipText = "Application's java/spark main class"
-    }
-
-    private val mainClassTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
-        toolTipText = mainClassPrompt.toolTipText
-        textField.document.addDocumentListener(documentValidationListener)
-
-        // Button actions
-        addActionListener {
-            val selected = if (localArtifactPrompt.isSelected)
-                ManifestFileUtilsEx(myProject).selectMainClass(
-                        JarFileSystemImpl().findFileByPath("${localArtifactTextField.text}!/"))
-            else
-                ManifestFileUtil.selectMainClass(myProject, text)
-
-            if (selected != null) {
-                setText(selected.qualifiedName)
-            }
-        }
     }
 
     private val jobConfigPrompt: JLabel = JLabel("Job configurations")
@@ -310,11 +278,6 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                 }
             }
 
-            // Check main class input
-            if (StringUtils.isBlank(mainClassTextField.text)) {
-                setVisibleForFixedErrorMessage(ErrorMessage.MainClass, true)
-            }
-
             // Check job config table
             val confTableModel = jobConfigurationTable.model as SubmissionTableModel
             val result = confTableModel.firstCheckResults
@@ -370,8 +333,6 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             row {   c();                                  c(errorMessageLabels[ErrorMessage.SystemArtifact.ordinal]) { fill = FILL_NONE } }
             row {   c(localArtifactPrompt){ indent = 1 }; c(localArtifactTextField) }
             row {   c();                                  c(errorMessageLabels[ErrorMessage.LocalArtifact.ordinal]) { fill = FILL_NONE }}
-            row { c(mainClassPrompt);                     c(mainClassTextField) }
-            row { c();                                    c(errorMessageLabels[ErrorMessage.MainClass.ordinal]) }
             row { c(jobConfigPrompt);                     c(jobConfTableScrollPane) }
             row { c();                                    c(errorMessageLabels[ErrorMessage.JobConfiguration.ordinal]) }
             row { c(commandLineArgsPrompt);               c(commandLineTextField) }
@@ -430,7 +391,6 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             localArtifactPrompt.isSelected = data.isLocalArtifact
 
             localArtifactTextField.text = data.localArtifactPath
-            mainClassTextField.text = data.mainClassName
             commandLineTextField.text = data.commandLineArgs.joinToString(" ")
             referencedJarsTextField.text = data.referenceJars.joinToString(";")
             referencedFilesTextField.text = data.referenceFiles.joinToString(";")
@@ -459,7 +419,6 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         // Component -> Data
 
         val selectedArtifactName = (selectedArtifactComboBox.selectedItem as? Artifact)?.name ?: ""
-        val className = mainClassTextField.text.trim()
         val selectedClusterName = viewModel.clusterSelection.toSelectClusterByIdBehavior.value as? String
 
         val referencedFileList = referencedFilesTextField.text.split(";").dropLastWhile { it.isEmpty() }
@@ -487,7 +446,6 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             artifactName = selectedArtifactName
             localArtifactPath = localArtifactTextField.text
             filePath = null
-            mainClassName = className
             referenceFiles = referencedFileList
             referenceJars = uploadedFilePathList
             commandLineArgs = argsList
