@@ -12,7 +12,8 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.stream.Stream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, InternalUrlMapping {
     @NotNull
@@ -114,9 +115,9 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
     public String mapInternalUrlToPublic(@NotNull String url) {
         // Extract application ID from internal URL
         // url example: http://mssql-master-pool-0.service-master-pool:8088/proxy/application_1544743878531_0035/
-        String appId = Stream.of(url.split("/")).filter(str -> str.startsWith("application_")).findFirst().orElse(null);
-        return appId == null
+        Matcher matcher = Pattern.compile("(application_[0-9_]+)").matcher(url);
+        return !matcher.find()
                 ? String.format("https://%s:%d/gateway/default/yarn/", host, knoxPort)
-                : String.format("https://%s:%d/gateway/default/yarn/cluster/app/%s", host, knoxPort, appId);
+                : String.format("https://%s:%d/gateway/default/yarn/cluster/app/%s", host, knoxPort, matcher.group(1));
     }
 }
