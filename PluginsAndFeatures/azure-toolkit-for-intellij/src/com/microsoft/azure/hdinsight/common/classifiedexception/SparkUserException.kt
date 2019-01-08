@@ -21,6 +21,7 @@
  */
 package com.microsoft.azure.hdinsight.common.classifiedexception
 
+import com.microsoft.azure.hdinsight.spark.common.SparkJobException
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
 
 class SparkUserException(exp: Throwable?) : ClassifiedException(exp) {
@@ -32,6 +33,10 @@ class SparkUserException(exp: Throwable?) : ClassifiedException(exp) {
 
 object SparkUserExceptionFactory : ClassifiedExceptionFactory() {
     override fun createClassifiedException(exp: Throwable?): ClassifiedException? {
-        return if (exp is YarnDiagnosticsException) SparkUserException(exp) else null
+        return if (exp is YarnDiagnosticsException
+                // Throw from wrong class name ,refer to issue 1827 and 2466
+                || exp is SparkJobException) {
+            SparkUserException(exp)
+        } else null
     }
 }
