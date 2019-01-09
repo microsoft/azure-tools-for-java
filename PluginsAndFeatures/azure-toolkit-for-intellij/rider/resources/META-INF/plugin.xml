@@ -19,6 +19,19 @@
   <change-notes>
     <![CDATA[
       <html>
+        <p>[3.14.0-2018.3.1]</p>
+        <ul>
+          <li>Various bugfixes:</li>
+            <ul>
+              <li><a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/130">#130</a></li>
+              <li><a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/131">#131</a></li>
+              <li><a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/132">#132</a></li>
+              <li><a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/133">#133</a></li>
+              <li><a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/139">#139</a></li>
+              <li><a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/140">#140</a></li>
+            </ul>
+        </ul>
+
         <p>[3.14.0-2018.3]</p>
         <ul>
           <li>Support for Rider 2018.3 (only) <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/74">#74</a></li>
@@ -50,21 +63,21 @@
         </ul>
 
         <p>Changes from <a href="https://github.com/Microsoft/azure-tools-for-java">https://github.com/Microsoft/azure-tools-for-java</a>:</p>
-          <ul>
-            <li>Web apps support
-              <ul>
-                <li>Show application settings of Deployment Slot</li>
-                <li>Delete a Deployment Slot in Azure Explorer</li>
-                <li>Swap deployment slots</li>
-              </ul>
-            </li>
-            <li>Various bugfixes
-              <ul>
-                <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2215">Microsoft#2215</a> The prompt warning message on deleting web app is not correct issue.</li>
-                <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2310">Microsoft#2310</a> Discarding of changes on Web App application settings is too slow issue.</li>
-              </ul>
-            </li>
-          </ul>
+        <ul>
+          <li>Web apps support
+            <ul>
+              <li>Show application settings of Deployment Slot</li>
+              <li>Delete a Deployment Slot in Azure Explorer</li>
+              <li>Swap deployment slots</li>
+            </ul>
+          </li>
+          <li>Various bugfixes
+            <ul>
+              <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2215">Microsoft#2215</a> The prompt warning message on deleting web app is not correct issue.</li>
+              <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2310">Microsoft#2310</a> Discarding of changes on Web App application settings is too slow issue.</li>
+            </ul>
+          </li>
+        </ul>
       </html>]]>
   </change-notes>
 
