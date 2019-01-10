@@ -104,19 +104,19 @@ public class AnalyticsActivity {
      * the time the activity was submitted to the service.
      */
     @JsonProperty(value = "submitTime", access = JsonProperty.Access.WRITE_ONLY)
-    private Date submitTime;
+    private String submitTime;
 
     /**
      * the start time of the activity.
      */
     @JsonProperty(value = "startTime", access = JsonProperty.Access.WRITE_ONLY)
-    private Date startTime;
+    private String startTime;
 
     /**
      * the completion time of the activity.
      */
     @JsonProperty(value = "endTime", access = JsonProperty.Access.WRITE_ONLY)
-    private Date endTime;
+    private String endTime;
 
     /**
      * the key-value pairs used to add additional metadata to the activity.
@@ -241,7 +241,7 @@ public class AnalyticsActivity {
      *
      * @return the submitTime value
      */
-    public Date submitTime() {
+    public String submitTime() {
         return this.submitTime;
     }
 
@@ -250,7 +250,7 @@ public class AnalyticsActivity {
      *
      * @return the startTime value
      */
-    public Date startTime() {
+    public String startTime() {
         return this.startTime;
     }
 
@@ -259,7 +259,7 @@ public class AnalyticsActivity {
      *
      * @return the endTime value
      */
-    public Date endTime() {
+    public String endTime() {
         return this.endTime;
     }
 
