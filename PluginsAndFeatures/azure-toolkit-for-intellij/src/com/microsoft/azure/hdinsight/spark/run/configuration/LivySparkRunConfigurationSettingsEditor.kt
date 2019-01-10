@@ -80,6 +80,9 @@ class LivySparkRunConfigurationSettingsEditor(val jobConfigurable: SparkBatchJob
         if (advModel.enableRemoteDebug && advModel.sshAuthType == UsePassword && !advModel.sshPassword.isNullOrBlank()) {
             secureStore?.savePassword(advModel.credentialStoreAccount, advModel.sshUserName, advModel.sshPassword)
         }
+
+        // save configuration name as job name
+        livySparkBatchJobRunConfiguration.model.submitModel.jobName = livySparkBatchJobRunConfiguration.name
     }
 
     override fun createEditor(): JComponent {

@@ -46,8 +46,6 @@ class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
     @Throws(ExecutionException::class)
     override fun buildSparkBatchJob(submitModel: SparkSubmitModel, ctrlSubject: Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>): ISparkBatchJob {
         val submissionParameter = submitModel.submissionParameter as CreateSparkBatchJobParameters
-        // FIXME: Set job name to main class name?
-        submissionParameter.name = submissionParameter.mainClassName
         val adlAccountName = submissionParameter.clusterName
         val account = AzureSparkCosmosClusterManager.getInstance().getAccountByName(adlAccountName)
                 ?: throw ExecutionException("Can't find ADLA account '$adlAccountName'")
