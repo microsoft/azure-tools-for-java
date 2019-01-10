@@ -31,6 +31,7 @@ open class ArisSparkConfigurationFactory(type: ConfigurationType) :
         ConfigurationFactory(type) {
     companion object {
         @JvmStatic
+        // Legacy name. Change this name will lead to configuration not recognized issue
         val NAME = "Aris On Spark"
     }
 
