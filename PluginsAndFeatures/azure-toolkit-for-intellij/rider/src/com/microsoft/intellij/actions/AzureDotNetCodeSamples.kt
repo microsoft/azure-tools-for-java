@@ -1,5 +1,4 @@
 /**
- * Copyright (c) Microsoft Corporation
  * Copyright (c) 2018 JetBrains s.r.o.
  *
  * All rights reserved.
@@ -28,9 +27,6 @@ import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import org.jdesktop.swingx.JXHyperlink
 import java.net.URI
 
-/**
- * Created by vlashch on 6/10/16.
- */
 class AzureDotNetCodeSamples : AzureAnAction() {
     override fun onActionPerformed(anActionEvent: AnActionEvent) {
         val portalLing = JXHyperlink()
