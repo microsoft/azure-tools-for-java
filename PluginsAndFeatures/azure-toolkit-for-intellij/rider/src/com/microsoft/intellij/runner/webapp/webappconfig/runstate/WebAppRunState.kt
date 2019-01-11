@@ -34,7 +34,7 @@ import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
 import com.jetbrains.rider.util.idea.application
 import com.jetbrains.rider.util.idea.getLogger
-import com.jetbrains.rider.util.threading.SpinWait
+import com.jetbrains.rd.util.threading.SpinWait
 import com.microsoft.azure.management.appservice.ConnectionStringType
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.RuntimeStack

@@ -25,7 +25,7 @@ package com.microsoft.intellij.runner.webapp.webappconfig.validator
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.util.SystemInfo
-import com.jetbrains.rider.framework.impl.RpcTimeouts
+import com.jetbrains.rd.framework.impl.RpcTimeouts
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
 

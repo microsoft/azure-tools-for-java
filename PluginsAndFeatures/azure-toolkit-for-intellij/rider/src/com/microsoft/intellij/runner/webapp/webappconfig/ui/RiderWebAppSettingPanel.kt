@@ -47,7 +47,7 @@ import com.jetbrains.rider.projectView.ProjectModelViewHost
 import com.jetbrains.rider.projectView.nodes.isProject
 import com.jetbrains.rider.projectView.nodes.isUnloadedProject
 import com.jetbrains.rider.projectView.solution
-import com.jetbrains.rider.util.lifetime.Lifetime
+import com.jetbrains.rd.util.lifetime.Lifetime
 import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
@@ -1557,7 +1557,7 @@ class RiderWebAppSettingPanel(private val lifetime: Lifetime,
 
     private fun getCurrentFrameworkId(publishableProject: PublishableProjectModel): String? {
         val targetFramework = project.solution.projectModelTasks.targetFrameworks[publishableProject.projectModelId]
-        return targetFramework?.currentTargetFrameworkId?.valueOrNull
+        return targetFramework?.currentTargetFrameworkId?.valueOrNull?.id
     }
 
     private fun getSelectedOperatingSystem() =

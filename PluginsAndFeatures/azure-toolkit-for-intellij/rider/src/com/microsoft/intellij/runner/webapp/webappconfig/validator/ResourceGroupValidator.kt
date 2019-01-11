@@ -23,7 +23,7 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.validator
 
 import com.intellij.execution.configurations.RuntimeConfigurationError
-import com.jetbrains.rider.util.firstOrNull
+import com.jetbrains.rd.util.firstOrNull
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.webapp.webappconfig.UiConstants
 

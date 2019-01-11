@@ -26,9 +26,9 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.util.idea.application
-import com.jetbrains.rider.util.lifetime.Lifetime
-import com.jetbrains.rider.util.lifetime.isAlive
-import com.jetbrains.rider.util.reactive.Signal
+import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rd.util.lifetime.isAlive
+import com.jetbrains.rd.util.reactive.Signal
 import com.microsoft.azure.management.appservice.AppServicePlan
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.appservice.WebApp
