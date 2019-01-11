@@ -295,12 +295,6 @@
     </action>
     <action class="com.microsoft.intellij.actions.AzureExplorerOpenAction" id="Actions.AzureExplorerOpenAction"
             text="Show Azure Explorer" description="Show Azure Explorer" icon="/icons/AzureExplorer.svg"/>
-    <action id="Actions.AzureCodeSamples"
-            class="com.microsoft.intellij.actions.AzureCodeSamples"
-            text="Azure Code Samples"
-            description="Opens an Azure Code Samples page in your default browser"
-            icon="/icons/CodeSamples.svg">
-    </action>
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
@@ -308,7 +302,6 @@
 
     <group id="AzureToolbarGroup" text="Azure" description="Azure">
       <reference ref="Actions.AzureExplorerOpenAction"/>
-      <reference ref="Actions.AzureCodeSamples"/>
     </group>
 
     <group id="AzureToolkit.AzureActionGroup"
