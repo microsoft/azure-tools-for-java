@@ -34,7 +34,7 @@ import javax.swing.*;
 public class LivySparkBatchJobRunConfigurationType implements ConfigurationType {
     @Override
     public String getDisplayName() {
-        return "Spark on HDInsight";
+        return "Apache Spark on HDInsight";
     }
 
     @Override

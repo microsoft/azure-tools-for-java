@@ -51,7 +51,7 @@ class ArisSparkConfigurationType : ConfigurationType {
     }
 
     override fun getConfigurationTypeDescription(): String {
-        return "Spark On Aris Run Configuration"
+        return "Spark On SQL Server Run Configuration"
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {

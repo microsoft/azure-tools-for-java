@@ -19,7 +19,7 @@ object CosmosServerlessSparkConfigurationType : ConfigurationType {
     }
 
     override fun getDisplayName(): String {
-        return "Spark on CosmosServerless"
+        return "Apache Spark on CosmosServerless"
     }
 
     override fun getId(): String {

@@ -43,7 +43,7 @@ object CosmosSparkConfigurationType : ConfigurationType {
     }
 
     override fun getDisplayName(): String {
-        return "Spark on Cosmos"
+        return "Apache Spark on Cosmos"
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {
