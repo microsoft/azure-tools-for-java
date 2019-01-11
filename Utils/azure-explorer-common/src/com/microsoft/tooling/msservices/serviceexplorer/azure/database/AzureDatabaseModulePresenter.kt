@@ -49,8 +49,4 @@ class AzureDatabaseModulePresenter : MvpPresenter<AzureDatabaseModule>() {
             mvpView.addChildNode(SqlServerNode(mvpView, subscriptionId, sqlServer.id(), sqlServer.name(), sqlServer.state()))
         }
     }
-
-    fun onDeleteSqlServer(subscriptionId: String, sqlServerId: String) {
-        AzureSqlServerMvpModel.deleteSqlServer(subscriptionId, sqlServerId)
-    }
 }

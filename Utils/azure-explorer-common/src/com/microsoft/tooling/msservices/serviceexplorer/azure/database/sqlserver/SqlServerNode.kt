@@ -24,6 +24,8 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserve
 
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
+import com.microsoft.tooling.msservices.components.DefaultLoader
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener
@@ -42,9 +44,9 @@ class SqlServerNode(parent: AzureDatabaseModule,
         private const val SQL_DATABASE_MASTER = "master"
 
         private const val ACTION_DELETE = "Delete"
-
-        private const val DELETE_SQL_SERVER_PROMPT_MESSAGE = "This operation will delete SQL Server %s.\n" + "Are you sure you want to continue?"
-        private const val DELETE_SQL_SERVER_PROGRESS_MESSAGE = "Deleting SQL Server"
+        private const val PROGRESS_MESSAGE_DELETE_SQL_SERVER = "Deleting SQL Server '%s'"
+        private const val PROMPT_MESSAGE_DELETE_SQL_SERVER =
+                "This operation will delete SQL Server '%s'.\nAre you sure you want to continue?"
     }
 
     init {
@@ -81,16 +83,21 @@ class SqlServerNode(parent: AzureDatabaseModule,
     private inner class DeleteSqlServerAction internal constructor()
         : AzureNodeActionPromptListener(
             this@SqlServerNode,
-            String.format(DELETE_SQL_SERVER_PROMPT_MESSAGE, sqlServerName),
-            DELETE_SQL_SERVER_PROGRESS_MESSAGE) {
+            String.format(PROMPT_MESSAGE_DELETE_SQL_SERVER, sqlServerName),
+            String.format(PROGRESS_MESSAGE_DELETE_SQL_SERVER, sqlServerName)) {
 
-        @Throws(AzureCmdException::class)
-        override fun azureNodeAction(e: NodeActionEvent) {
-            getParent().removeNode(subscriptionId, sqlServerId, this@SqlServerNode)
+        override fun azureNodeAction(event: NodeActionEvent?) {
+            try {
+                AzureSqlServerMvpModel.deleteSqlServer(subscriptionId, sqlServerId)
+                DefaultLoader.getIdeHelper().invokeLater {
+                    getParent().removeNode(subscriptionId, sqlServerId, this@SqlServerNode)
+                }
+            } catch (e: Throwable) {
+                DefaultLoader.getUIHelper().logError(e.message, e)
+            }
         }
 
-        @Throws(AzureCmdException::class)
-        override fun onSubscriptionsChanged(e: NodeActionEvent) {
+        override fun onSubscriptionsChanged(e: NodeActionEvent?) {
         }
     }
 }
