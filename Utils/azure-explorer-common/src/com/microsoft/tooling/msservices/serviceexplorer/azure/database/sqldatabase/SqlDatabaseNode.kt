@@ -22,8 +22,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase
 
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
+import com.microsoft.tooling.msservices.components.DefaultLoader
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode
@@ -42,7 +42,7 @@ class SqlDatabaseNode(parent: SqlServerNode,
         private const val ACTION_DELETE = "Delete"
         private const val SQL_DATABASE_ICON = "Database.svg"
         private const val DELETE_SQL_DATABASE_PROMPT_MESSAGE = "This operation will delete SQL Database %s.\n" + "Are you sure you want to continue?"
-        private const val DELETE_SQL_DATABASE_PROGRESS_MESSAGE = "Deleting SQL Database"
+        private const val DELETE_SQL_DATABASE_PROGRESS_MESSAGE = "Deleting SQL Database '%s'"
     }
 
     init {
@@ -58,18 +58,22 @@ class SqlDatabaseNode(parent: SqlServerNode,
         : AzureNodeActionPromptListener(
             this@SqlDatabaseNode,
             String.format(DELETE_SQL_DATABASE_PROMPT_MESSAGE, sqlDatabaseName),
-            DELETE_SQL_DATABASE_PROGRESS_MESSAGE) {
+            String.format(DELETE_SQL_DATABASE_PROGRESS_MESSAGE, sqlDatabaseName)) {
 
-        @Throws(AzureCmdException::class)
-        override fun azureNodeAction(e: NodeActionEvent) {
-            AzureSqlDatabaseMvpModel.deleteDatabase(subscriptionId, sqlDatabaseId)
+        override fun azureNodeAction(event: NodeActionEvent?) {
+            try {
+                AzureSqlDatabaseMvpModel.deleteDatabase(subscriptionId, sqlDatabaseId)
 
-            val parent = getParent() as RefreshableNode
-            parent.removeAllChildNodes()
-            parent.load(false)
+                DefaultLoader.getIdeHelper().invokeLater {
+                    val parent = getParent() as RefreshableNode
+                    parent.removeAllChildNodes()
+                    parent.load(false)
+                }
+            } catch (e: Throwable) {
+                DefaultLoader.getUIHelper().logError(e.message, e)
+            }
         }
 
-        @Throws(AzureCmdException::class)
         override fun onSubscriptionsChanged(e: NodeActionEvent) {
         }
     }
