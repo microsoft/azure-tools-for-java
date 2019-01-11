@@ -22,9 +22,9 @@
 
 package com.microsoft.intellij.runner.db
 
-import com.jetbrains.rider.util.concurrentMapOf
-import com.jetbrains.rider.util.error
-import com.jetbrains.rider.util.getLogger
+import com.jetbrains.rd.util.concurrentMapOf
+import com.jetbrains.rd.util.error
+import com.jetbrains.rd.util.getLogger
 import com.microsoft.azure.management.sql.DatabaseEditions
 import com.microsoft.azure.management.sql.ServiceObjectiveName
 import com.microsoft.azure.management.sql.SqlDatabase

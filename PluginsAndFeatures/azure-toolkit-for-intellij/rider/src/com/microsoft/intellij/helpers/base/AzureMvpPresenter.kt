@@ -27,10 +27,10 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.jetbrains.rider.util.idea.application
 import com.jetbrains.rider.util.idea.getLogger
-import com.jetbrains.rider.util.lifetime.Lifetime
-import com.jetbrains.rider.util.lifetime.isAlive
-import com.jetbrains.rider.util.reactive.Signal
-import com.jetbrains.rider.util.reactive.adviseOnce
+import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rd.util.lifetime.isAlive
+import com.jetbrains.rd.util.reactive.Signal
+import com.jetbrains.rd.util.reactive.adviseOnce
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView
 import com.microsoft.tooling.msservices.components.DefaultLoader
