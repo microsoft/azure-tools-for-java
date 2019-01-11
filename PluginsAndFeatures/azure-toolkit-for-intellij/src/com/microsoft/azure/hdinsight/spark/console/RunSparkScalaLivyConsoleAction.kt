@@ -22,12 +22,32 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
-import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.intellij.execution.RunManagerEx
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 
-class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction(), ILogger {
+class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
     override val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
         get() = SparkScalaLivyConsoleConfigurationType().confFactory()
 
     override fun getNewSettingName(): String = "Spark Livy Interactive Session Console(Scala)"
+
+    override fun update(event: AnActionEvent) {
+        super.update(event)
+        val project = CommonDataKeys.PROJECT.getData(event.dataContext) ?: return
+        val selectedConfigSettings = RunManagerEx.getInstanceEx(project).selectedConfiguration
+        var runConfig = selectedConfigSettings?.configuration
+
+        event.presentation.isEnabled = when {
+            runConfig == null -> false
+            runConfig.javaClass == CosmosSparkRunConfiguration::class.java -> true
+            runConfig.javaClass == LivySparkBatchJobRunConfiguration::class.java -> true
+            runConfig.javaClass == ArisSparkConfiguration::class.java -> true
+            else -> false
+        }
+    }
 }
