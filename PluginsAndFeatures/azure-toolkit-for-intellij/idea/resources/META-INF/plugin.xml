@@ -84,6 +84,14 @@
             class="com.microsoft.intellij.actions.ApplicatioInsightsAction" text="Configure Application Insights..."
             description="Configure Application Insights..." icon="/icons/ApplicationInsights_16.png"/>
 
+    <action id="Actions.AzureCodeSamples"
+            class="com.microsoft.intellij.actions.AzureJavaCodeSamples"
+            text="Azure Code Samples"
+            description="Opens an Azure Code Samples page in your default browser"
+            icon="/icons/CodeSamples.svg">
+      <add-to-group group-id="AzureToolbarGroup" anchor="after" relative-to-action="Actions.AzureExplorerOpenAction" />
+    </action>
+
     <action id="Actions.SubmitSparkApplicationAction"
             class="com.microsoft.azure.hdinsight.spark.actions.SubmitAction" text="Submit Spark Application to HDInsight"
             description="Submit Spark Application to HDInsight" icon="/icons/Spark.png"/>

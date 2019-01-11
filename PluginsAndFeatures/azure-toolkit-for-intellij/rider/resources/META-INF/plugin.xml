@@ -109,6 +109,14 @@
   </project-components>
 
   <actions>
+    <action id="Actions.AzureCodeSamples"
+            class="com.microsoft.intellij.actions.AzureDotNetCodeSamples"
+            text="Azure Code Samples"
+            description="Opens an Azure Code Samples page in your default browser"
+            icon="/icons/CodeSamples.svg">
+      <add-to-group group-id="AzureToolbarGroup" anchor="after" relative-to-action="Actions.AzureExplorerOpenAction" />
+    </action>
+
     <group id="RiderPublishToAzureGroup"
            text="Publish Group"
            description="Publish Group"

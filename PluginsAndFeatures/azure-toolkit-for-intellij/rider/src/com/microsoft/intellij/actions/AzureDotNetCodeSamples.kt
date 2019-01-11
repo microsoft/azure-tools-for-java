@@ -24,33 +24,17 @@
 package com.microsoft.intellij.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.ApplicationNamesInfo
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import org.jdesktop.swingx.JXHyperlink
-
 import java.net.URI
 
 /**
  * Created by vlashch on 6/10/16.
  */
-class AzureCodeSamples : AzureAnAction() {
-    companion object {
-        private val productNameToUrlMap = mapOf(
-                "rider" to "https://azure.microsoft.com/en-us/resources/samples/?platform=dotnet"
-        )
-
-        private const val defaultUrl = "https://azure.microsoft.com/en-us/documentation/samples/?platform=java"
-    }
-
+class AzureDotNetCodeSamples : AzureAnAction() {
     override fun onActionPerformed(anActionEvent: AnActionEvent) {
-        val productName = ApplicationNamesInfo.getInstance()
-                .lowercaseProductName // note: this is not always returning a lowercase product name
-                .toLowerCase()
-
-        val url = productNameToUrlMap[productName] ?: defaultUrl
-
         val portalLing = JXHyperlink()
-        portalLing.setURI(URI.create(url))
+        portalLing.setURI(URI.create("https://azure.microsoft.com/en-us/resources/samples/?platform=dotnet"))
         portalLing.doClick()
     }
 }
