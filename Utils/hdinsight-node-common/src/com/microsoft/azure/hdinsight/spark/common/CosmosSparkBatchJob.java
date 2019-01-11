@@ -23,8 +23,8 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -46,8 +46,8 @@ public class CosmosSparkBatchJob extends SparkBatchJob {
     }
 
     @NotNull
-    private Observable<? extends AzureSparkServerlessCluster> getCosmosSparkCluster() {
-        return AzureSparkServerlessClusterManager.getInstance()
+    private Observable<? extends AzureSparkCosmosCluster> getCosmosSparkCluster() {
+        return AzureSparkCosmosClusterManager.getInstance()
                 .findCluster(getAzureSubmission().getAccountName(), getAzureSubmission().getClusterId())
                 .onErrorResumeNext(err -> Observable.error(err instanceof NoSuchElementException ?
                         new SparkJobNotConfiguredException(String.format(

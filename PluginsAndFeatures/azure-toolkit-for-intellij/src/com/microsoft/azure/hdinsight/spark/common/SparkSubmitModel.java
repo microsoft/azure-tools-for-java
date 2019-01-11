@@ -125,6 +125,16 @@ public class SparkSubmitModel {
         isClustersRefreshable = clustersRefreshable;
     }
 
+    @Attribute("job_name")
+    public String getJobName() {
+        return getSubmissionParameter().getName();
+    }
+
+    @Attribute("job_name")
+    public void setJobName(String jobName) {
+        getSubmissionParameter().setName(jobName);
+    }
+
     @Attribute("cluster_name")
     public String getClusterName() {
         return getSubmissionParameter().getClusterName();

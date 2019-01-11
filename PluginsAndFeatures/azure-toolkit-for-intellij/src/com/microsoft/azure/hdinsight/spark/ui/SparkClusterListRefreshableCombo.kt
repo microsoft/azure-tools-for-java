@@ -32,7 +32,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegated
 import com.microsoft.azure.hdinsight.common.viewmodels.ComponentWithBrowseButtonEnabledDelegated
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.arisSparkClustersRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.cosmosServerlessSparkAccountsRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.cosmosSparkClustersRefreshed
@@ -187,7 +187,7 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
 
 class CosmosSparkClustersCombo: SparkClusterListRefreshableCombo() {
     inner class ViewModel
-        :  SparkClusterListRefreshableCombo.ViewModel(AzureSparkServerlessClusterManager.getInstance().clusters
+        :  SparkClusterListRefreshableCombo.ViewModel(AzureSparkCosmosClusterManager.getInstance().clusters
             .sortedBy { it.title }
             .toTypedArray()) {
 
@@ -211,7 +211,7 @@ class ArisSparkClusterListRefreshableCombo: SparkClusterListRefreshableCombo() {
 
 class CosmosServerlessSparkAccountsCombo: SparkClusterListRefreshableCombo() {
     inner class ViewModel
-        :  SparkClusterListRefreshableCombo.ViewModel(AzureSparkServerlessClusterManager.getInstance().accounts
+        :  SparkClusterListRefreshableCombo.ViewModel(AzureSparkCosmosClusterManager.getInstance().accounts
             .sortedBy { it.title }
             .toTypedArray()) {
 

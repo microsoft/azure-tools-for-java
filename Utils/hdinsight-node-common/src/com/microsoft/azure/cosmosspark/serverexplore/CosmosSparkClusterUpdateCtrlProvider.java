@@ -4,7 +4,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.SparkAzureDataLakePoolServiceException;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -16,12 +16,12 @@ public class CosmosSparkClusterUpdateCtrlProvider implements ILogger {
     @NotNull
     private IdeSchedulers ideSchedulers;
     @NotNull
-    private AzureSparkServerlessCluster cluster;
+    private AzureSparkCosmosCluster cluster;
 
     public CosmosSparkClusterUpdateCtrlProvider(
             @NotNull SettableControl<CosmosSparkClusterProvisionSettingsModel> controllableView,
             @NotNull IdeSchedulers ideSchedulers,
-            @NotNull AzureSparkServerlessCluster cluster) {
+            @NotNull AzureSparkCosmosCluster cluster) {
         this.controllableView = controllableView;
         this.ideSchedulers = ideSchedulers;
         this.cluster = cluster;

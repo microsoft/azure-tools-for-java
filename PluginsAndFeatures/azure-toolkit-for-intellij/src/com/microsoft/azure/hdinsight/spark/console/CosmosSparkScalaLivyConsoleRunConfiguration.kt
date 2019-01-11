@@ -31,8 +31,8 @@ import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.ServerlessSparkSession
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkItemGroupState
 import com.microsoft.azure.hdinsight.spark.common.CosmosSparkSubmitModel
@@ -49,7 +49,7 @@ class CosmosSparkScalaLivyConsoleRunConfiguration(project: Project,
     override val runConfigurationTypeName = "Azure Data Lake Spark Run Configuration"
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
-        val sparkCluster = cluster as? AzureSparkServerlessCluster ?: throw ExecutionException(RuntimeConfigurationError(
+        val sparkCluster = cluster as? AzureSparkCosmosCluster ?: throw ExecutionException(RuntimeConfigurationError(
                 "Can't prepare Spark Cosmos interactive session since the target cluster isn't set or found"))
 
         val livyUrl = (sparkCluster.livyUri?.toString() ?: return null).trimEnd('/') + "/"
@@ -67,12 +67,12 @@ class CosmosSparkScalaLivyConsoleRunConfiguration(project: Project,
         val adlAccount = (submitModel as? CosmosSparkSubmitModel)?.accountName
                 ?: throw RuntimeConfigurationError("Can't cast submitModel to CosmosSparkSubmitModel")
 
-        cluster = AzureSparkServerlessClusterManager
+        cluster = AzureSparkCosmosClusterManager
                 .getInstance()
                 .getAccountByName(adlAccount)
                 .clusters
                 .find { it.name == this.clusterName &&
-                        (it as AzureSparkServerlessCluster).clusterStateForShow.equals(SparkItemGroupState.STABLE.toString(), ignoreCase = true )}
+                        (it as AzureSparkCosmosCluster).clusterStateForShow.equals(SparkItemGroupState.STABLE.toString(), ignoreCase = true )}
                 ?:throw RuntimeConfigurationError("Can't find the workable(STABLE) target cluster $clusterName@$adlAccount")
     }
 }

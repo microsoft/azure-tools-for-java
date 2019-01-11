@@ -25,8 +25,8 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.SparkAzureDataLakePoolServiceException;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -147,8 +147,8 @@ public class CosmosSparkClusterProvisionCtrlProvider implements ILogger {
     }
 
     @NotNull
-    private Observable<AzureSparkServerlessCluster> buildCluster(@NotNull CosmosSparkClusterProvisionSettingsModel toUpdate) {
-        return Observable.just(new AzureSparkServerlessCluster.Builder(account)
+    private Observable<AzureSparkCosmosCluster> buildCluster(@NotNull CosmosSparkClusterProvisionSettingsModel toUpdate) {
+        return Observable.just(new AzureSparkCosmosCluster.Builder(account)
                 .name(toUpdate.getClusterName())
                 .masterPerInstanceCores(toUpdate.getMasterCores())
                 .masterPerInstanceMemory(toUpdate.getMasterMemory())

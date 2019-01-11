@@ -34,7 +34,7 @@ import javax.swing.DefaultComboBoxModel
 class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterModule): AddNewClusterForm(project, module) {
     private val IPV4_ADDRESS_PATTERN = "^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$"
     init {
-        title = "Link SQL Big Data Cluster"
+        title = "Link SQL Server Big Data Cluster"
 
         val livyServiceTitle = "Livy Service"
         clusterComboBox.model = DefaultComboBoxModel(arrayOf(livyServiceTitle))

@@ -42,7 +42,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.ui.CosmosSparkProvisionDial
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJobList;
 import com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSelectAndSubmitAction;
 import com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSelectAndSubmitAction;
@@ -80,7 +80,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                     log().info(String.format("Destroy message received. AdlAccount: %s, cluster: %s, currentNode: %s",
                             triplet.getLeft().getName(),
                             // Type cast is necessary for DestroyableCluster
-                            ((AzureSparkServerlessCluster) triplet.getMiddle()).getName(),
+                            ((AzureSparkCosmosCluster) triplet.getMiddle()).getName(),
                             triplet.getRight().getName()));
                     CosmosSparkClusterDestoryDialog destroyDialog = new CosmosSparkClusterDestoryDialog(
                             triplet.getRight(), triplet.getMiddle());
@@ -124,7 +124,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                             clusterNodePair.getLeft(), clusterNodePair.getRight()));
 
                     try {
-                        AzureSparkServerlessCluster cluster = clusterNodePair.getLeft();
+                        AzureSparkCosmosCluster cluster = clusterNodePair.getLeft();
                         SparkAppSubmitContext context = new SparkAppSubmitContext();
                         Project project = (Project) clusterNodePair.getRight().getProject();
 

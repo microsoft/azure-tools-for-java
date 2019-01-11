@@ -3,7 +3,7 @@ package com.microsoft.azure.cosmosspark.serverexplore;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -17,18 +17,18 @@ public class CosmosSparkClusterStatesCtrlProvider implements ILogger {
     @NotNull
     private IdeSchedulers ideSchedulers;
     @NotNull
-    private AzureSparkServerlessCluster cluster;
+    private AzureSparkCosmosCluster cluster;
 
     public CosmosSparkClusterStatesCtrlProvider(
             @NotNull SettableControl<CosmosSparkClusterStatesModel> controllableView,
             @NotNull IdeSchedulers ideSchedulers,
-            @NotNull AzureSparkServerlessCluster cluster) {
+            @NotNull AzureSparkCosmosCluster cluster) {
         this.controllableView = controllableView;
         this.ideSchedulers = ideSchedulers;
         this.cluster = cluster;
     }
 
-    public Observable<AzureSparkServerlessCluster> updateAll() {
+    public Observable<AzureSparkCosmosCluster> updateAll() {
 
         return Observable.just(new CosmosSparkClusterStatesModel())
                 .map(toUpdate -> {

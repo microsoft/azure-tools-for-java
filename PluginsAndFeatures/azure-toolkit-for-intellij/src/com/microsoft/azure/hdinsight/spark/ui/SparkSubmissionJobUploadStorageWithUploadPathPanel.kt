@@ -285,10 +285,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                 data.selectedContainer = storagePanel.azureBlobCard.storageContainerUI.comboBox.selectedItem as? String
             }
             SparkSubmitStorageType.ADLS_GEN1 -> {
-                data.adlsRootPath = storagePanel.adlsCard.adlsRootPathField.text
+                data.adlsRootPath = storagePanel.adlsCard.adlsRootPathField.text.trim()
             }
             SparkSubmitStorageType.WEBHDFS -> {
-                data.webHdfsRootPath= storagePanel.webHdfsCard.webHdfsRootPathField.text
+                data.webHdfsRootPath= storagePanel.webHdfsCard.webHdfsRootPathField.text.trim()
             }
             else -> {}
         }

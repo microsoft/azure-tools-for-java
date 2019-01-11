@@ -23,6 +23,7 @@ package com.microsoft.azure.hdinsight.common.classifiedexception
 
 import com.intellij.openapi.application.ApplicationManager
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.SessionNotStartException
+import com.microsoft.azure.hdinsight.spark.common.SparkJobException
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
 import com.microsoft.intellij.forms.ErrorMessageForm
 import org.apache.commons.lang.exception.ExceptionUtils
@@ -49,6 +50,7 @@ object SparkToolExceptionFactory : ClassifiedExceptionFactory() {
                 && !(exp is IllegalArgumentException && stackTrace.contains("com.microsoft.azure.storage.CloudStorageAccount"))
                 // Thrown from creating Livy helper session to upload artifacts,refer to Issue #2552
                 && exp !is SessionNotStartException
+                && exp !is SparkJobException
                 && stackTrace.contains(ToolPackageSuffix)) {
             SparkToolException(exp)
         } else null

@@ -77,8 +77,8 @@ public class SqlBigDataClusterNode extends RefreshableNode {
         addAction("Unlink", new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the SQL big data cluster?",
-                        "Unlink SQL Big Data Cluster", new String[]{"Yes", "No"}, null);
+                boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the SQL Server big data cluster?",
+                        "Unlink SQL Server Big Data Cluster", new String[]{"Yes", "No"}, null);
                 if (choice) {
                     ClusterManagerEx.getInstance().removeAdditionalCluster(cluster);
                     ((RefreshableNode) getParent()).load(false);

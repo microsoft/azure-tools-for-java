@@ -19,6 +19,31 @@
   <change-notes>
     <![CDATA[
     <html>
+    <h3>[3.17.0]</h3>
+      <h4>Added</h4>
+      <ul>
+        <li>The menu option for default Spark type to create Run Configuration.</li>
+        <li>The menu option for bypassing SSL certificate validation for Spark Cluster.</li>
+        <li>The progress bar for Spark cluster refreshing.</li>
+        <li>The progress bar for Spark interactive consoles.</li>
+      </ul>
+      <h4>Changed</h4>
+      <ul>
+        <li>SQL Big Data Cluster node of Azure Explorer is changed into a first level root node.</li>
+        <li>Link a SQL Big Data Cluster UI is aligned with Azure Data Studio UX.</li>
+        <li>Spark for ADL job submission pops up Spark master UI page at the end.</li>
+      </ul>
+      <h4>Fixed</h4>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2307" rel="nofollow">#2307</a> Spark Run Configuration storage info for artifacts deployment issues</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2267" rel="nofollow">#2267</a> Spark Run Configuration remote run/debug actions overwrite non-spark codes Line Mark actions issue</li>
+
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2500" rel="nofollow">#2500</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2492" rel="nofollow">#2492</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2451" rel="nofollow">#2451</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2254" rel="nofollow">#2254</a> SQL Big Data Cluster link issues</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2485" rel="nofollow">#2485</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2484" rel="nofollow">#2484</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2483" rel="nofollow">#2483</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2481" rel="nofollow">#2481</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2427" rel="nofollow">#2427</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2423" rel="nofollow">#2423</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2417" rel="nofollow">#2417</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2462" rel="nofollow">#2462</a> Spark Run Configuration validation issues</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2418" rel="nofollow">#2418</a> Spark for ADL provision UX issues</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2392" rel="nofollow">#2392</a> Azure Explorer HDInsight Spark cluster refreshing errors</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2488" rel="nofollow">#2488</a> Spark remote debugging SSH password saving regression</li>
+      <ul>
+      </ul>
     <h3>[3.16.0]</h3>
       <h4>Added</h4>
       <ul>
@@ -372,6 +397,7 @@
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
+    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessSparkBatchRunner" />
     <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
   </extensions>

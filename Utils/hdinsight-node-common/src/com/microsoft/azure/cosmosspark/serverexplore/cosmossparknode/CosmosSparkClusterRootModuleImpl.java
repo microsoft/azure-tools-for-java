@@ -23,7 +23,7 @@
 package com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -53,15 +53,15 @@ public class CosmosSparkClusterRootModuleImpl extends HDInsightRootModule {
             return;
         }
 
-        AzureSparkServerlessClusterManager.getInstance().refresh();
-        AzureSparkServerlessClusterManager.getInstance().getAccounts().forEach(account -> {
+        AzureSparkCosmosClusterManager.getInstance().refresh();
+        AzureSparkCosmosClusterManager.getInstance().getAccounts().forEach(account -> {
             addChildNode(new CosmosSparkADLAccountNode(this, account));
         });
     }
 
     @Override
     public boolean isFeatureEnabled() {
-        return AzureSparkServerlessClusterManager.getInstance().isFeatureEnabled().toBlocking().singleOrDefault(false);
+        return AzureSparkCosmosClusterManager.getInstance().isFeatureEnabled().toBlocking().singleOrDefault(false);
     }
 
     @Override
