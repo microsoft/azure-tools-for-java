@@ -40,6 +40,7 @@ import org.apache.http.client.utils.URIUtils;
 import rx.Observable;
 import sun.security.validator.ValidatorException;
 import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLPeerUnverifiedException;
 import java.net.URI;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,6 +52,10 @@ public class AddNewClusterCtrlProvider {
             "Please click'OK',then accept the untrusted certificate \r\n"+
             "if you want to link to this cluster.Or you can update the \r\n" +
             "host to link to a different cluster.";
+    private static final String BrokenCertificateErrorMsg =
+            "The cluster certificate is broken.\r\n" +
+            "If you want to bypass certificate verification,\r\n" +
+            "please check the option in Tools | Azure | Experimental | Disable SSL Certificate Verification.";
 
     @NotNull
     private SettableControl<AddNewClusterModel> controllableView;
@@ -299,6 +304,8 @@ public class AddNewClusterCtrlProvider {
                         }
 
                         return toUpdate.setErrorMessage("Authentication Error: " + ex.getMessage());
+                    } catch (SSLPeerUnverifiedException ex) {
+                        return toUpdate.setErrorMessage("Authentication Error: " + ex.getMessage() + "\r\n" + BrokenCertificateErrorMsg);
                     } catch (Exception ex) {
                         return toUpdate.setErrorMessage("Authentication Error: " + ex.getMessage());
                     }
