@@ -141,10 +141,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
 
                 // check cluster type then reset storage combo box
                 uploadStorage.deployStorageTypesModel = ImmutableComboBoxModel(optionTypes).apply {
-                    if (checkEvent.preClusterName != null || !optionTypes.contains(model.storageAccountType)) {
+                    if (checkEvent.preClusterName != null) {
                         // If preClusterName is not set, the event is triggered by creating config or reloading a saved config
-                        // or the last selected storage type is not in the supported types list, then set it
-                        // to the cluster default storage type
                         model.storageAccountType = clusterDetail.defaultStorageType
                     }
 

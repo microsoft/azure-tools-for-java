@@ -50,7 +50,7 @@ class CosmosSparkScalaLivyConsoleRunConfiguration(project: Project,
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
         val sparkCluster = cluster as? AzureSparkCosmosCluster ?: throw ExecutionException(RuntimeConfigurationError(
-                "Can't prepare Spark Cosmos interactive session since the target cluster isn't set or found"))
+                "Can't prepare Spark Cosmos interactive session since the target account isn't set or found"))
 
         val livyUrl = (sparkCluster.livyUri?.toString() ?: return null).trimEnd('/') + "/"
 
