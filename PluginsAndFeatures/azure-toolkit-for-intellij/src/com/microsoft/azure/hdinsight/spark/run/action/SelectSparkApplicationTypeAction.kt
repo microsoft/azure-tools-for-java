@@ -22,8 +22,13 @@
 
 package com.microsoft.azure.hdinsight.spark.run.action
 
+import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Toggleable
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.azuretools.authmanage.CommonSettings
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.intellij.common.CommonConst
@@ -41,6 +46,16 @@ abstract class SelectSparkApplicationTypeAction
         fun getSelectedSparkApplicationType() : SparkApplicationType {
             if (!DefaultLoader.getIdeHelper().isApplicationPropertySet(CommonConst.SPARK_APPLICATION_TYPE)) return SparkApplicationType.None
             return SparkApplicationType.valueOf(DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.SPARK_APPLICATION_TYPE))
+        }
+
+        @JvmStatic
+        fun getRunConfigurationType() : ConfigurationType? {
+            return when(getSelectedSparkApplicationType()) {
+                SparkApplicationType.None -> null
+                SparkApplicationType.HDInsight -> LivySparkBatchJobRunConfigurationType.getInstance()
+                SparkApplicationType.CosmosSpark -> CosmosSparkConfigurationType
+                SparkApplicationType.CosmosServerlessSpark -> CosmosServerlessSparkConfigurationType
+            }
         }
     }
 
