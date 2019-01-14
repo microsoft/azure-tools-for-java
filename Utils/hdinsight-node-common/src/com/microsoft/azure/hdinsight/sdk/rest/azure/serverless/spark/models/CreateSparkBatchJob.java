@@ -45,6 +45,12 @@ public class CreateSparkBatchJob implements IConvertible {
     private Integer priority;
 
     /**
+     * Pipeline and recurrence parameters.
+     */
+    @JsonProperty(value = "related")
+    private JobRelationshipParameters related;
+
+    /**
      * The spark batch job specific properties.
      */
     @JsonProperty(value = "properties", required = true)
@@ -87,6 +93,26 @@ public class CreateSparkBatchJob implements IConvertible {
      */
     public CreateSparkBatchJob withPriority(Integer priority) {
         this.priority = priority;
+        return this;
+    }
+
+    /**
+     * Get pipeline and recurrence parameters.
+     *
+     * @return the related value
+     */
+    public JobRelationshipParameters related() {
+        return this.related;
+    }
+
+    /**
+     * Set pipeline and recurrence parameters.
+     *
+     * @param related the related value to set
+     * @return the CreateSparkBatchJob object itself.
+     */
+    public CreateSparkBatchJob withRelated(JobRelationshipParameters related) {
+        this.related = related;
         return this;
     }
 
