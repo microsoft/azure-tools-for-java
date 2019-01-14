@@ -24,11 +24,14 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Job relationship information properties including pipeline information, correlation information, etc.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class JobRelationshipParameters {
     /**
      * The job relationship pipeline identifier (a GUID).

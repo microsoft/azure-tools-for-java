@@ -23,11 +23,13 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * The Data Lake Analytics job error details.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ErrorDetails {
     /**
      * The specific identifier for the type of error encountered in the activity.

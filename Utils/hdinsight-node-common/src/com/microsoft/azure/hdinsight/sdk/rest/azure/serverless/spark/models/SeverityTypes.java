@@ -25,11 +25,13 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.rest.ExpandableStringEnum;
 
 /**
  * Defines values for SeverityTypes.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class SeverityTypes extends ExpandableStringEnum<SeverityTypes> {
     /** Static value Warning for SeverityTypes. */
     public static final SeverityTypes WARNING = fromString("Warning");
