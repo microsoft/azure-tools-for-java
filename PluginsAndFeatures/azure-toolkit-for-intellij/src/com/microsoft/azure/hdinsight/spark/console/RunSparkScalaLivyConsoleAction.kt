@@ -37,6 +37,7 @@ class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
     override fun getNewSettingName(): String = "Spark Livy Interactive Session Console(Scala)"
 
     override fun update(event: AnActionEvent) {
+        event.presentation.isEnabled = false
         super.update(event)
         val project = CommonDataKeys.PROJECT.getData(event.dataContext) ?: return
         val selectedConfigSettings = RunManagerEx.getInstanceEx(project).selectedConfiguration
