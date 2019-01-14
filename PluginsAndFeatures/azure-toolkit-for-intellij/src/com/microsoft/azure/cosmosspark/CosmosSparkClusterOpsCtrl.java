@@ -132,7 +132,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                         final List<RunnerAndConfigurationSettings> batchConfigSettings = runManager
                                 .getConfigurationSettingsList(CosmosSparkConfigurationType.INSTANCE);
 
-                        final String runConfigName = "[Azure Data Lake Spark] " + cluster.getClusterNameWithAccountName();
+                        final String runConfigName = "[Spark on Cosmos] " + cluster.getClusterNameWithAccountName();
                         final RunnerAndConfigurationSettings runConfigurationSetting = batchConfigSettings.stream()
                                 .filter(settings -> settings.getConfiguration().getName().startsWith(runConfigName))
                                 .findFirst()
@@ -173,7 +173,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                         final List<RunnerAndConfigurationSettings> batchConfigSettings = runManager
                                 .getConfigurationSettingsList(CosmosServerlessSparkConfigurationType.INSTANCE);
 
-                        final String runConfigName = "[Cosmos Serverless Spark] " + adlAccount.getName();
+                        final String runConfigName = "[Spark on Cosmos Serverless] " + adlAccount.getName();
                         final RunnerAndConfigurationSettings runConfigurationSetting = batchConfigSettings.stream()
                                 .filter(settings -> settings.getConfiguration().getName().startsWith(runConfigName))
                                 .findFirst()

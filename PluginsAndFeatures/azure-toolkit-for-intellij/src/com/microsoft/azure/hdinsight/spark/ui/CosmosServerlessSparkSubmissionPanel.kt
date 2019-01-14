@@ -60,6 +60,13 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
         add(sparkEventsDirectoryField)
     }
 
+    override fun getErrorMessageClusterNameNull(isSignedIn : Boolean) : String {
+        return when {
+            isSignedIn -> "Account name should not be null, please choose one for submission"
+            else -> "Can't list account, please login within Azure Explorer (View -> Tool Windows -> Azure Explorer) and refresh"
+        }
+    }
+
     override val component: JComponent by lazy {
         clustersSelectionPrompt.text = "Account name"
         val formBuilder = panel {
