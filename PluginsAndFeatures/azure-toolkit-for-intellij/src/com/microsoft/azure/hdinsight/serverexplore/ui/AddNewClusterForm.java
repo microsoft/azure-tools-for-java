@@ -23,10 +23,17 @@
 package com.microsoft.azure.hdinsight.serverexplore.ui;
 
 import com.intellij.CommonBundle;
+import com.intellij.execution.impl.ConsoleViewImpl;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.ide.BrowserUtil;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionToolbar;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.HideableDecorator;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType;
@@ -40,6 +47,7 @@ import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.LocalDateTime;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -60,7 +68,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     private JTextField clusterNameOrUrlField;
     private JPanel livyServiceCard;
     protected JTextField livyEndpointField;
-    protected JTextArea errorMessageField;
+    protected JTextArea validationErrorMessageField;
     private JPanel authComboBoxPanel;
     protected JComboBox authComboBox;
     protected JPanel authCardsPanel;
@@ -78,6 +86,10 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     protected HintTextField arisHostField;
     protected HintTextField arisClusterNameField;
     protected JPanel arisLivyServiceCard;
+    private JPanel authErrorDetailsPanelHolder;
+    private JPanel authErrorDetailsPanel;
+    protected HideableDecorator authErrorDetailsDecorator;
+    protected ConsoleViewImpl consoleViewPanel;
     @NotNull
     private RefreshableNode hdInsightModule;
     @NotNull
@@ -94,10 +106,22 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         init();
         this.hdInsightModule = hdInsightModule;
 
+        validationErrorMessageField.setBackground(this.clusterInfoPanel.getBackground());
+
         this.setTitle("Link A Cluster");
 
-        errorMessageField.setBackground(this.wholePanel.getBackground());
-        errorMessageField.setBorder(BorderFactory.createEmptyBorder());
+        // Make error message widget hideable
+        authErrorDetailsPanel.setBorder(BorderFactory.createEmptyBorder());
+        authErrorDetailsDecorator = new HideableDecorator(authErrorDetailsPanelHolder, "Authenticaton Error Details:", true);
+        authErrorDetailsDecorator.setContentComponent(authErrorDetailsPanel);
+        authErrorDetailsDecorator.setOn(false);
+
+        // Initialize console view panel
+        consoleViewPanel = new ConsoleViewImpl(project, false);
+        authErrorDetailsPanel.add(consoleViewPanel.getComponent(), BorderLayout.CENTER);
+        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("linkClusterLog",
+                new DefaultActionGroup(consoleViewPanel.createConsoleActions()), false);
+        authErrorDetailsPanel.add(toolbar.getComponent(), BorderLayout.WEST);
 
         this.setModal(true);
 
@@ -120,14 +144,14 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         });
 
         // field validation check
-        Arrays.asList(clusterComboBox, authComboBox).forEach(comp -> comp.addActionListener(event -> basicValidate()));
+        Arrays.asList(clusterComboBox, authComboBox).forEach(comp -> comp.addActionListener(event -> validateBasicInputs()));
 
         Arrays.asList(clusterNameOrUrlField, userNameField, passwordField, livyEndpointField, livyClusterNameField,
                 yarnEndpointField, arisHostField, arisPortField, arisClusterNameField).forEach(
                         comp -> comp.getDocument().addDocumentListener(new DocumentAdapter() {
                     @Override
                     protected void textChanged(DocumentEvent e) {
-                        basicValidate();
+                        validateBasicInputs();
                     }
                 }));
 
@@ -137,10 +161,34 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         getOKAction().setEnabled(false);
     }
 
+    protected void printLogLine(@NotNull ConsoleViewContentType logLevel, @NotNull String log) {
+        consoleViewPanel.print(LocalDateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n", logLevel);
+    }
+
+
     // Data -> Components
     @Override
     public void setData(@NotNull AddNewClusterModel data) {
-        errorMessageField.setText(data.getErrorMessage());
+        // clear console view panel before set new error message
+        consoleViewPanel.clear();
+
+        if (data.getErrorMessageList() != null && data.getErrorMessageList().size() > 0) {
+            if (!authErrorDetailsDecorator.isExpanded()) {
+                authErrorDetailsDecorator.setOn(true);
+            }
+
+            data.getErrorMessageList().forEach(typeAndLogPair -> {
+                if (typeAndLogPair.getLeft().equals(data.ERROR_OUTPUT)) {
+                    printLogLine(ConsoleViewContentType.ERROR_OUTPUT, typeAndLogPair.getRight());
+                } else if (typeAndLogPair.getLeft().equals(data.NORMAL_OUTPUT)) {
+                    printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, typeAndLogPair.getRight());
+                }
+            });
+        } else {
+            if (authErrorDetailsDecorator.isExpanded()) {
+                authErrorDetailsDecorator.setOn(false);
+            }
+        }
     }
 
     // Components -> Data
@@ -215,7 +263,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         return ((String) authComboBox.getSelectedItem()).equalsIgnoreCase("Basic Authentication");
     }
 
-    protected void basicValidate() {
+    protected void validateBasicInputs() {
         String errorMessage = null;
 
         switch (getSparkClusterType()) {
@@ -256,14 +304,21 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
             }
         }
 
-        errorMessageField.setText(errorMessage);
-        getOKAction().setEnabled(StringUtils.isEmpty(errorMessageField.getText()));
+        validationErrorMessageField.setText(errorMessage);
+        getOKAction().setEnabled(StringUtils.isEmpty(errorMessage));
     }
 
     private void loadClusterDetails() {
         if (ClusterManagerEx.getInstance().getCachedClusters() == null) {
             ClusterManagerEx.getInstance().getClusterDetails();
         }
+    }
+
+    @Override
+    protected void dispose() {
+        Disposer.dispose(consoleViewPanel);
+
+        super.dispose();
     }
 
     private class HelpAction extends AbstractAction {
