@@ -26,7 +26,6 @@ import com.intellij.execution.*
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.ConfigurationTypeUtil.findConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.AnAction
@@ -36,7 +35,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtils
-import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.intellij.util.runInReadAction
@@ -50,7 +48,6 @@ abstract class RunSparkScalaConsoleAction
     : AnAction(), RunConsoleAction.RunActionBase<LivySparkBatchJobRunConfigurationType>, ILogger {
     abstract val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
 
-    @Throws(ExecutionException::class)
     override fun actionPerformed(event: AnActionEvent) {
         val dataContext = event.dataContext
         val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return
@@ -64,9 +61,7 @@ abstract class RunSparkScalaConsoleAction
             return
         }
 
-        val batchConfigurationType = SelectSparkApplicationTypeAction.getRunConfigurationType()?:
-            throw ExecutionException("No Spark application type is selected. Please select it from context menu.")
-
+        val batchConfigurationType = LivySparkBatchJobRunConfigurationType.getInstance()
         val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
 
         // Try to find one from the same type list
