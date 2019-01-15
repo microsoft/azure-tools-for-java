@@ -227,7 +227,8 @@ public abstract class Session implements AutoCloseable, Closeable {
         return getLastState() == SessionState.SHUTTING_DOWN ||
                 getLastState() == SessionState.NOT_STARTED ||
                 getLastState() == SessionState.DEAD ||
-                getLastState() == SessionState.KILLED;
+                getLastState() == SessionState.KILLED ||
+                getLastState() == SessionState.ERROR;
     }
 
     public boolean isStatementRunnable() {
