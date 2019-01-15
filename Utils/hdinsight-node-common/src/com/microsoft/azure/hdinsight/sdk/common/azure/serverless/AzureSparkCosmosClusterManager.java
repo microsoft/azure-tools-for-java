@@ -45,7 +45,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.http.NameValuePair;
 import rx.Observable;
-import rx.schedulers.Schedulers;
 
 import java.io.IOException;
 import java.net.URI;
@@ -56,14 +55,14 @@ import java.util.List;
 import static rx.Observable.concat;
 import static rx.Observable.from;
 
-public class AzureSparkServerlessClusterManager implements ClusterContainer,
+public class AzureSparkCosmosClusterManager implements ClusterContainer,
                                                            ILogger {
     // Lazy singleton initialization
     private static class LazyHolder {
-        static final AzureSparkServerlessClusterManager INSTANCE =
-                new AzureSparkServerlessClusterManager();
+        static final AzureSparkCosmosClusterManager INSTANCE =
+                new AzureSparkCosmosClusterManager();
     }
-    public static AzureSparkServerlessClusterManager getInstance() {
+    public static AzureSparkCosmosClusterManager getInstance() {
         return LazyHolder.INSTANCE;
     }
 
@@ -87,7 +86,7 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
     @NotNull
     private ImmutableSortedSet<? extends AzureSparkServerlessAccount> accounts= ImmutableSortedSet.of();
 
-    public AzureSparkServerlessClusterManager() {
+    public AzureSparkCosmosClusterManager() {
         this.httpMap.put("common", new AzureHttpObservable(ApiVersion.VERSION));
 
         // Invalid cached accounts when signing out or changing subscription selection
@@ -168,7 +167,7 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
         }
     }
 
-    public Observable<AzureSparkServerlessClusterManager> get() {
+    public Observable<AzureSparkCosmosClusterManager> get() {
         return getAzureDataLakeAccountsRequest()
                 .map(this::updateWithResponse)
                 .defaultIfEmpty(this);
@@ -179,9 +178,9 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
      *
      * @return Chained call result of this
      */
-    public Observable<AzureSparkServerlessClusterManager> fetchClusters() {
+    public Observable<AzureSparkCosmosClusterManager> fetchClusters() {
         return get()
-                .map(AzureSparkServerlessClusterManager::getAccounts)
+                .map(AzureSparkCosmosClusterManager::getAccounts)
                 .flatMap(Observable::from)
                 .flatMap(account -> account.get().onErrorReturn(err -> {
                     log().warn(String.format("Can't get the account %s details: %s", account.getName(), err));
@@ -190,10 +189,10 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
                 }))
                 .map(account -> account.getClusters())
                 .flatMap(Observable::from)
-                .flatMap(cluster -> ((AzureSparkServerlessCluster)cluster).get().onErrorReturn(err -> {
+                .flatMap(cluster -> ((AzureSparkCosmosCluster)cluster).get().onErrorReturn(err -> {
                     log().warn(String.format("Can't get the cluster %s details: %s", cluster.getName(), err));
 
-                    return (AzureSparkServerlessCluster) cluster;
+                    return (AzureSparkCosmosCluster) cluster;
                 }))
                 .toSortedList()
                 .map(clusters -> this)
@@ -269,7 +268,7 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
     }
 
     @NotNull
-    private AzureSparkServerlessClusterManager updateWithResponse(
+    private AzureSparkCosmosClusterManager updateWithResponse(
             List<Triple<SubscriptionDetail, DataLakeAnalyticsAccountBasic, DataLakeAnalyticsAccount>> accountsResponse) {
         accounts = ImmutableSortedSet.copyOf(accountsResponse
                 .stream()
@@ -286,12 +285,12 @@ public class AzureSparkServerlessClusterManager implements ClusterContainer,
         return this;
     }
 
-    public Observable<? extends AzureSparkServerlessCluster> findCluster(@NotNull String accountName, @NotNull String clusterGuid) {
+    public Observable<? extends AzureSparkCosmosCluster> findCluster(@NotNull String accountName, @NotNull String clusterGuid) {
         return concat(from(getAccounts()), get().flatMap(manager -> from(manager.getAccounts())))
                 .filter(account -> account.getName().equals(accountName))
                 .first()
                 .flatMap(account -> concat(from(account.getClusters()), account.get().flatMap(acct -> from(acct.getClusters()))))
-                .map(AzureSparkServerlessCluster.class::cast)
+                .map(AzureSparkCosmosCluster.class::cast)
                 .filter(cluster -> cluster.getGuid().equals(clusterGuid))
                 .first();
     }

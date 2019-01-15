@@ -24,8 +24,8 @@ package com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkItemGroupState;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -44,12 +44,12 @@ public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILog
     // TODO: Update icon path
     private static final String ICON_PATH = CommonConst.ClusterIConPath;
     @NotNull
-    private final AzureSparkServerlessCluster cluster;
+    private final AzureSparkCosmosCluster cluster;
     @NotNull
     private final AzureSparkServerlessAccount adlAccount;
 
     public CosmosSparkClusterNode(@NotNull Node parent,
-                                  @NotNull AzureSparkServerlessCluster cluster,
+                                  @NotNull AzureSparkCosmosCluster cluster,
                                   @NotNull AzureSparkServerlessAccount adlAccount) {
         super(String.format("%s_%s", adlAccount.getName(), cluster.getName()),
                 cluster.getTitleForClusterNode(),

@@ -29,7 +29,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSpark
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.ApplicationManager;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 
@@ -42,7 +42,7 @@ public class CosmosSparkClusterUpdateDialog extends CosmosSparkProvisionDialog i
     private static final String AU_WARNING_TIP = "Currently, there are not enough available AU for your serverless cluster Updating. Please adjust your cluster configuration or the updating request will be submitted into the queue with PENDING status.";
 
     public CosmosSparkClusterUpdateDialog(@NotNull CosmosSparkClusterNode clusterNode,
-                                          @NotNull AzureSparkServerlessCluster cluster) {
+                                          @NotNull AzureSparkCosmosCluster cluster) {
         super((CosmosSparkADLAccountNode) clusterNode.getParent(), cluster.getAccount());
         this.setTitle("Update Cluster");
         this.auWarningLabel.setToolTipText(AU_WARNING_TIP);

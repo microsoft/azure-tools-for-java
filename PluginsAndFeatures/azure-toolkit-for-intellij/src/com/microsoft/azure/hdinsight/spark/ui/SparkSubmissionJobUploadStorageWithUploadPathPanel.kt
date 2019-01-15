@@ -141,10 +141,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
 
                 // check cluster type then reset storage combo box
                 uploadStorage.deployStorageTypesModel = ImmutableComboBoxModel(optionTypes).apply {
-                    if (checkEvent.preClusterName != null || !optionTypes.contains(model.storageAccountType)) {
+                    if (checkEvent.preClusterName != null) {
                         // If preClusterName is not set, the event is triggered by creating config or reloading a saved config
-                        // or the last selected storage type is not in the supported types list, then set it
-                        // to the cluster default storage type
                         model.storageAccountType = clusterDetail.defaultStorageType
                     }
 
@@ -285,10 +283,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                 data.selectedContainer = storagePanel.azureBlobCard.storageContainerUI.comboBox.selectedItem as? String
             }
             SparkSubmitStorageType.ADLS_GEN1 -> {
-                data.adlsRootPath = storagePanel.adlsCard.adlsRootPathField.text
+                data.adlsRootPath = storagePanel.adlsCard.adlsRootPathField.text.trim()
             }
             SparkSubmitStorageType.WEBHDFS -> {
-                data.webHdfsRootPath= storagePanel.webHdfsCard.webHdfsRootPathField.text
+                data.webHdfsRootPath= storagePanel.webHdfsCard.webHdfsRootPathField.text.trim()
             }
             else -> {}
         }
