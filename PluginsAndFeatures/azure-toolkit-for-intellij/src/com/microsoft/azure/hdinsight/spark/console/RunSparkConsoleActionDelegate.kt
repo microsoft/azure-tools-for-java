@@ -52,7 +52,6 @@ open class RunSparkConsoleActionDelegate(sparkScalaActionClassName: String) : Az
         }
     }
 
-
     override fun onActionPerformed(actionEvent: AnActionEvent) {
         actionPerformedMethod?.invoke(delegate.sparkScalaObj, actionEvent)
     }
