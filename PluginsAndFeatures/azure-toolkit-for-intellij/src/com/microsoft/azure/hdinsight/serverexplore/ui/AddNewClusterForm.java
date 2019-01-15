@@ -47,7 +47,7 @@ import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.LocalDateTime;
+import org.joda.time.DateTime;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -162,7 +162,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     }
 
     protected void printLogLine(@NotNull ConsoleViewContentType logLevel, @NotNull String log) {
-        consoleViewPanel.print(LocalDateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n", logLevel);
+        consoleViewPanel.print(DateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n", logLevel);
     }
 
 
