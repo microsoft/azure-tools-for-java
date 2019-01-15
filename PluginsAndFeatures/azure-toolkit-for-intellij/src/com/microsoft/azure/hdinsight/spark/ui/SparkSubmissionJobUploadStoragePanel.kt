@@ -39,7 +39,10 @@ import java.awt.CardLayout
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
-import javax.swing.*
+import javax.swing.ComboBoxModel
+import javax.swing.JLabel
+import javax.swing.JList
+import javax.swing.JPanel
 
 open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
 
@@ -48,6 +51,11 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
     val azureBlobCard = SparkSubmissionJobUploadStorageAzureBlobCard()
     val sparkInteractiveSessionCard = SparkSubmissionJobUploadStorageSparkInteractiveSessionCard()
     val clusterDefaultStorageCard = SparkSubmissionJobUploadStorageClusterDefaultStorageCard()
+    val userHintStorageCard = object:SparkSubmissionJobUploadStorageBasicCard(){
+        override val title: String
+            get() = SparkSubmitStorageType.USERHINT.description
+    }
+
     val accountDefaultStorageCard = SparkSubmissionJobUploadStorageAccountDefaultStorageCard()
 
     val adlsCard = SparkSubmissionJobUploadStorageAdlsCard().apply {
@@ -78,6 +86,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
     }
 
     private val storageTypeComboBox = ComboBox<SparkSubmitStorageType>(arrayOf(
+            SparkSubmitStorageType.USERHINT,
             SparkSubmitStorageType.BLOB,
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
@@ -110,6 +119,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
         add(adlsCard, adlsCard.title)
         add(webHdfsCard, webHdfsCard.title)
         add(accountDefaultStorageCard, accountDefaultStorageCard.title)
+        add(userHintStorageCard,userHintStorageCard.title)
     }
 
     var errorMessage: String? = notFinishCheckMessage

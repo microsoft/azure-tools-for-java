@@ -29,6 +29,7 @@ package com.microsoft.azure.hdinsight.spark.common;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 public enum SparkSubmitStorageType {
+    USERHINT("Please Choose a storagetype or User the default"),
     BLOB("Use Azure Blob to upload"),
     DEFAULT_STORAGE_ACCOUNT("Use cluster default storage account to upload"),
     SPARK_INTERACTIVE_SESSION("Use Spark interactive session to upload"),

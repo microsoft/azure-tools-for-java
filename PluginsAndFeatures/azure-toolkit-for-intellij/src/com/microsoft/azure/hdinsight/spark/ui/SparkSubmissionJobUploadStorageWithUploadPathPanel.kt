@@ -134,20 +134,17 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             if (checkEvent is SparkSubmissionJobUploadStorageCtrl.StorageCheckSelectedClusterEvent) {
                 val optionTypes = clusterDetail.storageOptionsType.optionTypes
 
-                // if selectedItem is null ,will trigger storage type combo box deselected event and
-                // event.item is the model getSelectedItem which is model(0)
-                // reset selectedItem will trigger deselected and selected event which will repaint the panel
-                uploadStorage.deployStorageTypeSelection = null
-
                 // check cluster type then reset storage combo box
-                uploadStorage.deployStorageTypesModel = ImmutableComboBoxModel(optionTypes).apply {
-                    if (checkEvent.preClusterName != null) {
-                        // If preClusterName is not set, the event is triggered by creating config or reloading a saved config
-                        model.storageAccountType = clusterDetail.defaultStorageType
-                    }
-
-                    selectedItem = model.storageAccountType
+                uploadStorage.deployStorageTypesModel = ImmutableComboBoxModel(optionTypes)
+                uploadStorage.deployStorageTypeSelection = SparkSubmitStorageType.USERHINT
+                if (checkEvent.preClusterName != null ||
+                        (model.storageAccountType != SparkSubmitStorageType.USERHINT && !optionTypes.contains(model.storageAccountType))) {
+                    // case1: preClusterName is nnull, the event is triggered by creating config or reloading a saved config
+                    // case2: since model default type is DEFAULT_STORAGE_ACCOUNT, for sqlserver config without this type, need change to valid default type
+                    model.storageAccountType = clusterDetail.defaultStorageType
                 }
+
+                uploadStorage.deployStorageTypeSelection = model.storageAccountType
             }
         }
 
@@ -255,6 +252,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                     errorMsg = "Selected ADLA account does not exist"
                                 }
                             }
+
+                            else -> model.apply{}
                         }
                     }
                     .doOnNext { data ->
@@ -274,7 +273,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         // Component -> Data
         data.errorMsg = storagePanel.errorMessage
         data.uploadPath = uploadPathField.text
-        data.storageAccountType = viewModel.uploadStorage.deployStorageTypeSelection ?: SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
+        data.storageAccountType = viewModel.uploadStorage.deployStorageTypeSelection ?: SparkSubmitStorageType.USERHINT
         when (viewModel.uploadStorage.deployStorageTypeSelection) {
             SparkSubmitStorageType.BLOB -> {
                 data.storageAccount = storagePanel.azureBlobCard.storageAccountField.text.trim()

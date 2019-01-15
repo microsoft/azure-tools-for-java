@@ -29,6 +29,7 @@ package com.microsoft.azure.hdinsight.spark.common;
 public enum SparkSubmitStorageTypeOptionsForCluster {
     // cluster detail using blob as default storage type
     ClusterWithBlob(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.USERHINT,
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
             SparkSubmitStorageType.BLOB
     }),
@@ -36,18 +37,21 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
     // cluster detail using adls as default storage type
     // or AzureSparkCosmosCluster using adls
     ClusterWithAdls(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.USERHINT,
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
             SparkSubmitStorageType.ADLS_GEN1
     }),
 
     // cluster detail with unknown storage type
     ClusterWithUnknown(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.USERHINT,
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
     }),
 
     // for hdi additional cluster whose storage type can be blob or adls
     HdiAdditionalClusterWithUndetermineStorage(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.USERHINT,
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
             SparkSubmitStorageType.BLOB,
             SparkSubmitStorageType.ADLS_GEN1
@@ -60,6 +64,7 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
 
     // sql big data cluster
     BigDataClusterWithWebHdfs(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.USERHINT,
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
             SparkSubmitStorageType.WEBHDFS
     }),
