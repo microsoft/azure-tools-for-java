@@ -300,7 +300,7 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                 .isEmpty()
                 .map(isEmpty -> !isEmpty)
                 .onErrorReturn(err -> {
-                    log().warn("Checking Azure Data Lake Spark pool got error: " + err);
+                    log().warn("Checking Spark on Cosmos got error: " + err);
 
                     return false;
                 });

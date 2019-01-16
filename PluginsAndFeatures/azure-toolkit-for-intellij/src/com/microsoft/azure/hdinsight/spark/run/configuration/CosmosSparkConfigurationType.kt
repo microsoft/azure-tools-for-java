@@ -35,7 +35,7 @@ object CosmosSparkConfigurationType : ConfigurationType {
     }
 
     override fun getConfigurationTypeDescription(): String {
-        return "Cosmos ADL Spark Job Configuration"
+        return "Spark on Cosmos Run Configuration"
     }
 
     override fun getId(): String {
@@ -43,7 +43,7 @@ object CosmosSparkConfigurationType : ConfigurationType {
     }
 
     override fun getDisplayName(): String {
-        return "Azure Data Lake Spark Pool"
+        return "Apache Spark on Cosmos"
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {

@@ -15,11 +15,11 @@ object CosmosServerlessSparkConfigurationType : ConfigurationType {
     }
 
     override fun getConfigurationTypeDescription(): String {
-        return "Cosmos Serverless Spark Job Configuration"
+        return "Spark on Cosmos Serverless Configuration"
     }
 
     override fun getDisplayName(): String {
-        return "Cosmos Serverless Spark"
+        return "Apache Spark on Cosmos Serverless"
     }
 
     override fun getId(): String {
