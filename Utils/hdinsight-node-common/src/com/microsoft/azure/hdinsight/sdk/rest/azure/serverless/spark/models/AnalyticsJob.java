@@ -32,26 +32,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AnalyticsJob extends AnalyticsActivity {
     /**
-     * The priority value to use for the current job. Lower numbers have a higher priority. By default, a job has a
-     * priority of 1000. This must be greater than 0.
-     */
-    @JsonProperty(value = "priority", access = JsonProperty.Access.WRITE_ONLY)
-    private Integer priority;
-
-    /**
      * the recurring batch job relationship information properties.
      */
     @JsonProperty(value = "related", access = JsonProperty.Access.WRITE_ONLY)
     private JobRelationshipProperties related;
-
-    /**
-     * Get the priority value to use for the current job. Lower numbers have a higher priority. By default, a job has a priority of 1000. This must be greater than 0.
-     *
-     * @return the priority value
-     */
-    public Integer priority() {
-        return this.priority;
-    }
 
     /**
      * Get the recurring batch job relationship information properties.

@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.serverexplore;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -32,6 +33,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class AddNewClusterModel implements Cloneable {
+    public static final String NORMAL_OUTPUT = "NORMAL_OUTPUT";
+    public static final String ERROR_OUTPUT = "ERROR_OUTPUT";
     private String clusterNameLabelTitle;
     private String userNameLabelTitle;
     private String passwordLabelTitle;
@@ -53,6 +56,10 @@ public class AddNewClusterModel implements Cloneable {
     private String storageName;
     private String storageKey;
 
+    // Pair of <OutputType, Log>
+    // OutputType can be: NORMAL_OUTPUT or ERROR_OUTPUT
+    @Nullable
+    private List<Pair<String, String>> errorMessageList;
     @Nullable
     private String errorMessage;
 
@@ -186,6 +193,17 @@ public class AddNewClusterModel implements Cloneable {
     @NotNull
     public AddNewClusterModel setKnoxPort(int knoxPort) {
         this.knoxPort = knoxPort;
+        return this;
+    }
+
+    @Nullable
+    public List<Pair<String, String>> getErrorMessageList() {
+        return errorMessageList;
+    }
+
+    @NotNull
+    public AddNewClusterModel setErrorMessageList(@Nullable List<Pair<String, String>> errorMessageList) {
+        this.errorMessageList = errorMessageList;
         return this;
     }
 
