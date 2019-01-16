@@ -39,7 +39,10 @@ import java.awt.CardLayout
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
-import javax.swing.*
+import javax.swing.ComboBoxModel
+import javax.swing.JLabel
+import javax.swing.JList
+import javax.swing.JPanel
 
 open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
 
@@ -77,14 +80,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
         })
     }
 
-    private val storageTypeComboBox = ComboBox<SparkSubmitStorageType>(arrayOf(
-            SparkSubmitStorageType.BLOB,
-            SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
-            SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
-            SparkSubmitStorageType.ADLS_GEN1,
-            SparkSubmitStorageType.WEBHDFS,
-            SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE
-    )).apply {
+    private val storageTypeComboBox = ComboBox<SparkSubmitStorageType>(arrayOf()).apply {
         // validate storage info after storage type is selected
         addItemListener { itemEvent ->
             // change panel
