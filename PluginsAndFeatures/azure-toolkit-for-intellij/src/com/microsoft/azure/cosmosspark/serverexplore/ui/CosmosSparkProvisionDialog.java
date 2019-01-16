@@ -34,21 +34,22 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HideableDecorator;
+import com.microsoft.azure.cosmosspark.common.IntegerWithErrorHintedField;
+import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri;
+import com.microsoft.azure.cosmosspark.common.TextWithErrorHintedField;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionCtrlProvider;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionSettingsModel;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkADLAccountNode;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-import com.microsoft.azure.cosmosspark.common.IntegerWithErrorHintedField;
-import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri;
-import com.microsoft.azure.cosmosspark.common.TextWithErrorHintedField;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jetbrains.annotations.Nullable;
+import org.joda.time.DateTime;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -57,9 +58,8 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.time.LocalDateTime;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class CosmosSparkProvisionDialog extends DialogWrapper
@@ -206,7 +206,7 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
     }
 
     protected void printLogLine(@NotNull ConsoleViewContentType logLevel, @NotNull String log) {
-        consoleViewPanel.print(LocalDateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n", logLevel);
+        consoleViewPanel.print(DateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n", logLevel);
     }
 
     // Data -> Components

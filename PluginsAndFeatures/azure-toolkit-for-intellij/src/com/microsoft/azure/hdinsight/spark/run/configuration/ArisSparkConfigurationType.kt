@@ -43,7 +43,7 @@ class ArisSparkConfigurationType : ConfigurationType {
     }
 
     override fun getDisplayName(): String {
-        return "Apache Spark On SQL Server"
+        return "Apache Spark on SQL Server"
     }
 
     override fun getId(): String {
@@ -51,7 +51,7 @@ class ArisSparkConfigurationType : ConfigurationType {
     }
 
     override fun getConfigurationTypeDescription(): String {
-        return "Aris On Spark Configuration"
+        return "Spark on SQL Server Run Configuration"
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {

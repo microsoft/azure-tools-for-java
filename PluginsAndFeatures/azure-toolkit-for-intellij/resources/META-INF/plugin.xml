@@ -445,14 +445,14 @@
             class="com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction" text="Submit Spark Application"
             description="Submit Spark Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitLivySparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSelectAndSubmitAction" text="HDInsight"
-            description="Submit HDInsight Spark Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSelectAndSubmitAction" text="Spark on HDInsight"
+            description="Submit Spark on HDInsight Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitCosmosSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSelectAndSubmitAction" text="Cosmos Spark"
-            description="Submit Cosmos Spark Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSelectAndSubmitAction" text="Spark on Cosmos"
+            description="Submit Spark on Cosmos Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitCosmosServerlessSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSelectAndSubmitAction" text="Cosmos Serverless Spark"
-            description="Submit Cosmos Serverless Spark Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSelectAndSubmitAction" text="Spark on Cosmos Serverless"
+            description="Submit Spark on Cosmos Serverless Application" icon="/icons/Spark.png"/>
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
@@ -566,13 +566,13 @@
                 class="com.microsoft.azure.hdinsight.spark.run.action.SelectNoneSparkTypeAction" text="None" >
         </action>
       <action id="SelectHDInsightSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectHDInsightSparkTypeAction" text="HDInsight" >
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectHDInsightSparkTypeAction" text="Spark on HDInsight" >
       </action>
       <action id="SelectCosmosSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosSparkTypeAction" text="CosmosSpark" >
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosSparkTypeAction" text="Spark on Cosmos" >
       </action>
       <action id="SelectCosmosServerlessSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosServerlessSparkTypeAction" text="CosmosServerlessSpark" >
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosServerlessSparkTypeAction" text="Spark on Cosmos Serverless" >
       </action>
     </group>
 
