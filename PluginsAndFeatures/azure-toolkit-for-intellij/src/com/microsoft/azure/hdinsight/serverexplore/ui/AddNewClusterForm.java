@@ -166,6 +166,12 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     }
 
 
+    @Nullable
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        return clusterNameOrUrlField;
+    }
+
     // Data -> Components
     @Override
     public void setData(@NotNull AddNewClusterModel data) {
