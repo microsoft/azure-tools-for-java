@@ -67,8 +67,8 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
         return SparkClusterType.SQL_BIG_DATA_CLUSTER
     }
 
-    override fun basicValidate() {
-        errorMessageField.text =
+    override fun validateBasicInputs() {
+        validationErrorMessageField.text =
                 if (StringUtils.isBlank(arisHostField.text)) {
                     "Host can't be empty"
                 } else if (!IPV4_ADDRESS_PATTERN.toRegex().matches(arisHostField.text)) {
@@ -84,6 +84,6 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
                     null
                 }
 
-        okAction.isEnabled = StringUtils.isEmpty(errorMessageField.text)
+        okAction.isEnabled = StringUtils.isEmpty(validationErrorMessageField.text)
     }
 }
