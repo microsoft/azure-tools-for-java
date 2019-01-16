@@ -96,6 +96,12 @@ public class CosmosSparkClusterMonitorDialog extends DialogWrapper
         });
     }
 
+    @Nullable
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        return clusterIDField;
+    }
+
     // Data -> Components
     @Override
     public void setData(@NotNull CosmosSparkClusterStatesModel data) {
