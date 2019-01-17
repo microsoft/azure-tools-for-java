@@ -684,7 +684,9 @@ public class JobUtils {
 
                 ob.onSuccess(new SimpleImmutableEntry<>(clusterDetail, jobArtifactUri));
             } catch (Exception e) {
-                ob.onError(e);
+                // filenotfound exp is wrapped in RuntimeException(HDIExpception) , refer to #2653
+                Throwable cause = e instanceof RuntimeException ? e.getCause() : e;
+                ob.onError(cause);
             }
         });
     }

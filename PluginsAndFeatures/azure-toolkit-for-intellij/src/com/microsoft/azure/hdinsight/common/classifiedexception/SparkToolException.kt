@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkJobException
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
 import com.microsoft.intellij.forms.ErrorMessageForm
 import org.apache.commons.lang.exception.ExceptionUtils
+import java.io.FileNotFoundException
 
 const val ToolPackageSuffix: String = "com.microsoft.azure"
 
@@ -51,6 +52,7 @@ object SparkToolExceptionFactory : ClassifiedExceptionFactory() {
                 // Thrown from creating Livy helper session to upload artifacts,refer to Issue #2552
                 && exp !is SessionNotStartException
                 && exp !is SparkJobException
+                && exp !is FileNotFoundException
                 && stackTrace.contains(ToolPackageSuffix)) {
             SparkToolException(exp)
         } else null

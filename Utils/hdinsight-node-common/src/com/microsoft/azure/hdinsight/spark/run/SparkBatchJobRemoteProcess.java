@@ -223,8 +223,10 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     protected Observable<? extends ISparkBatchJob> prepareArtifact() {
         return getSparkJob()
                 .deploy(artifactPath)
-                .doOnError(err ->
-                   Observable.error(new SparkJobUploadArtifactException("Failed to upload Spark application artifacts: " + err.getMessage(), err)))
+                .onErrorResumeNext(err -> {
+                    Throwable rootCause = err.getCause() != null ? err.getCause() : err;
+                    return Observable.error(new SparkJobUploadArtifactException("Failed to upload Spark application artifacts: " + rootCause.getMessage(), rootCause));
+                })
                 .subscribeOn(schedulers.processBarVisibleAsync("Deploy the jar file into cluster"));
     }
 
