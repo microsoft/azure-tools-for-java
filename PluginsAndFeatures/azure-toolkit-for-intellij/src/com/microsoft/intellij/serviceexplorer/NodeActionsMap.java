@@ -41,7 +41,7 @@ import com.microsoft.intellij.serviceexplorer.azure.storage.CreateTableAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ModifyExternalStorageAccountAction;
 import com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAccountAction;
 import com.microsoft.intellij.serviceexplorer.azure.vmarm.CreateVMAction;
-import com.microsoft.sqlbigdata.serverexplore.action.AddNewSparkClusterAction;
+import com.microsoft.sqlbigdata.serverexplore.action.LinkSqlServerBigDataClusterAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
@@ -91,7 +91,7 @@ public class NodeActionsMap {
                         .add(AddNewClusterAction.class, AddNewEmulatorAction.class).build());
         node2Actions.put(SqlBigDataClusterModule.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(AddNewSparkClusterAction.class).build());
+                        .add(LinkSqlServerBigDataClusterAction.class).build());
         //noinspection unchecked
         node2Actions.put(DockerHostNode.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
