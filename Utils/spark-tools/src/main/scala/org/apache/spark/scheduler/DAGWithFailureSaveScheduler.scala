@@ -139,7 +139,7 @@ class DAGWithFailureSaveScheduler(
 
   def saveFailureTask(task: Task[_], stageId: Int, taskId: String, attemptId: Int, timestamp: String): Unit = {
     def getFailureSavingPath(fileName: String = null): Path = {
-      val appFolderName = sc.appName + sc.applicationAttemptId.map(attemptId => s"[${attemptId}]@").getOrElse("@") + timestamp
+      val appFolderName = sc.applicationId + sc.applicationAttemptId.map(attemptId => s"[${attemptId}]@").getOrElse("@") + timestamp
 
       val savingBase: Path = new Path(".spark-failures", appFolderName)
 
