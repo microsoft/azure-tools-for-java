@@ -22,13 +22,22 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
+import com.intellij.execution.configurations.RuntimeConfigurationError
+import com.intellij.notification.NotificationGroup
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.intellij.activitylog.ActivityLogToolWindowFactory
+import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
+
 
 // The Action is a bridge to connect Scala related actions with dependent Scala Plugin actions by reflection
 open class RunSparkConsoleActionDelegate(sparkScalaActionClassName: String) : AzureAnAction(), ILogger {
+    private val notificationGroup = NotificationGroup.toolWindowGroup("Spark Console", ActivityLogToolWindowFactory.ACTIVITY_LOG_WINDOW)
+
     private val delegate = SparkScalaPluginDelegate(sparkScalaActionClassName)
 
     val isEnabled
@@ -52,8 +61,18 @@ open class RunSparkConsoleActionDelegate(sparkScalaActionClassName: String) : Az
         }
     }
 
+    @Throws(RuntimeConfigurationError::class)
     override fun onActionPerformed(actionEvent: AnActionEvent) {
-        actionPerformedMethod?.invoke(delegate.sparkScalaObj, actionEvent)
+        try {
+            actionPerformedMethod?.invoke(delegate.sparkScalaObj, actionEvent)
+        } catch (ex: InvocationTargetException) {
+            var notification = notificationGroup.createNotification(
+                    "Error running Spark Console. \n" + ex.targetException.message,
+                    NotificationType.ERROR
+            )
+            val project = CommonDataKeys.PROJECT.getData(actionEvent.dataContext) ?: return
+            notification.notify(project)
+        }
     }
 }
 

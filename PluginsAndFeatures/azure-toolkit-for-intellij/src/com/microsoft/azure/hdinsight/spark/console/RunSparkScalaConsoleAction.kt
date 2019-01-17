@@ -29,6 +29,8 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
+import com.intellij.notification.Notification
+import com.intellij.notification.Notifications
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -50,7 +52,9 @@ abstract class RunSparkScalaConsoleAction
     : AnAction(), RunConsoleAction.RunActionBase<LivySparkBatchJobRunConfigurationType>, ILogger {
     abstract val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
 
-    @Throws(ExecutionException::class)
+    private val NOTIFICATION_GROUP_ID = "Azure Plugin"
+
+    @Throws(RuntimeConfigurationError::class)
     override fun actionPerformed(event: AnActionEvent) {
         val dataContext = event.dataContext
         val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return
@@ -65,7 +69,7 @@ abstract class RunSparkScalaConsoleAction
         }
 
         val batchConfigurationType = SelectSparkApplicationTypeAction.getRunConfigurationType()?:
-            throw ExecutionException("No Spark application type is selected. Please select it from context menu.")
+            throw RuntimeConfigurationError("Could not determine the Spark run configuration. Please config a default Spark application type from context menu or create a run configuration.")
 
         val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
 
