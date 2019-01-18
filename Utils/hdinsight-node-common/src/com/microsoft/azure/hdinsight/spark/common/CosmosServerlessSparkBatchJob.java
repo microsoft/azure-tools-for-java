@@ -22,23 +22,33 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.azure.datalake.store.ADLStoreClient;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
+import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.CreateSparkBatchJobParameters;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SchedulerState;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJobResponsePayload;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import rx.Observable;
 import rx.Observer;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
+import static rx.exceptions.Exceptions.propagate;
 
 public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @NotNull
@@ -48,15 +58,26 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @NotNull
     private final Deployable jobDeploy;
 
+    // Parameters for getting Livy submission log
+    private int logStartIndex = 0;
+
     public CosmosServerlessSparkBatchJob(@NotNull AzureSparkServerlessAccount account,
                                          @NotNull Deployable jobDeploy,
                                          @NotNull CreateSparkBatchJobParameters submissionParameter,
                                          @NotNull SparkBatchSubmission sparkBatchSubmission,
                                          @NotNull Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        super(submissionParameter, sparkBatchSubmission, ctrlSubject);
+        super(account, submissionParameter, sparkBatchSubmission, ctrlSubject, null, null, null);
         this.account = account;
         this.jobUuid = UUID.randomUUID().toString();
         this.jobDeploy = jobDeploy;
+    }
+
+    public int getLogStartIndex() {
+        return logStartIndex;
+    }
+
+    public void setLogStartIndex(int logStartIndex) {
+        this.logStartIndex = logStartIndex;
     }
 
     @NotNull
@@ -88,7 +109,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
             try {
                 String path = getSubmissionParameter().sparkEventsDirectoryPath();
                 String accessToken = getHttp().getAccessToken();
-                ADLStoreClient storeClient = ADLStoreClient.createClient(URI.create(account.getStorageRootPath()).getHost(), accessToken);
+                ADLStoreClient storeClient = ADLStoreClient.createClient(URI.create(getAccount().getStorageRootPath()).getHost(), accessToken);
                 if (storeClient.checkExists(path)) {
                     return true;
                 } else {
@@ -108,15 +129,11 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                             if (isSucceed) {
                                 return getAccount().createSparkBatchJobRequest(getJobUuid(), getSubmissionParameter());
                             } else {
-                                return Observable.error(new IOException("Spark events log path preparation failed."));
+                                String errorMsg = "Spark events log path preparation failed.";
+                                log().warn(errorMsg);
+                                return Observable.error(new IOException(errorMsg));
                             }
                         })
-                .flatMap(sparkBatchJob -> getAccount().getSparkBatchJobRequest(getJobUuid()))
-                .doOnNext(sparkBatchJob -> {
-                    if (sparkBatchJob != null && sparkBatchJob.properties() != null && sparkBatchJob.properties().responsePayload() != null) {
-                        this.setBatchId(sparkBatchJob.properties().responsePayload().getId());
-                    }
-                })
                 .map(sparkBatchJob -> this);
     }
 
@@ -143,58 +160,191 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                 });
     }
 
-    @Override
-    public Observable<SparkBatchJobResponsePayload> getStatus() {
+    private Observable<com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJob> getSparkBatchJob() {
         return getAccount().getSparkBatchJobRequest(getJobUuid())
                 .flatMap(sparkBatchJob -> {
-                    if (sparkBatchJob.properties() == null) {
-                        return Observable.error(new IOException("Can't get job status from empty property body."));
+                    if (sparkBatchJob.schedulerState() != null &&
+                            (sparkBatchJob.schedulerState().equals(SchedulerState.FINALIZING) ||
+                                    sparkBatchJob.schedulerState().equals(SchedulerState.ENDED))) {
+                        String errorMsg = "Job is in " + sparkBatchJob.schedulerState().toString() + " state.";
+                        log().warn(errorMsg);
+                        return Observable.error(new SparkJobFinishedException(errorMsg));
                     } else {
-                        return Observable.just(sparkBatchJob.properties().responsePayload());
+                        return Observable.just(sparkBatchJob);
                     }
                 });
     }
 
-    @Nullable
-    @Override
-    public String getState() throws IOException {
-        return getStatus()
-                .retry(getRetriesMax())
-                .repeatWhen(ob -> ob.delay(getDelaySeconds(), TimeUnit.SECONDS))
-                .map(sparkSubmitResponse -> sparkSubmitResponse.getState())
-                .toBlocking()
-                .singleOrDefault("unknown");
-    }
 
-    @Override
-    public boolean isActive() throws IOException {
-        return getStatus()
-                .retry(getRetriesMax())
-                .repeatWhen(ob -> ob.delay(getDelaySeconds(), TimeUnit.SECONDS))
-                .map(sparkSubmitResponse -> sparkSubmitResponse.isAlive())
-                .toBlocking()
-                .singleOrDefault(false);
+    @NotNull
+    private Observable<SparkBatchJobResponsePayload> getResponsePayloadWithState() {
+        return getSparkBatchJob()
+                .filter(sparkBatchJob -> sparkBatchJob.properties() != null
+                        && sparkBatchJob.properties().responsePayload() != null
+                        && StringUtils.isNotEmpty(sparkBatchJob.properties().responsePayload().getState()))
+                .map(sparkBatchJob -> sparkBatchJob.properties().responsePayload());
     }
 
     @Override
     protected Observable<AbstractMap.SimpleImmutableEntry<String, String>> getJobDoneObservable() {
-        return getStatus()
-                .repeatWhen(ob -> ob.delay(getDelaySeconds(), TimeUnit.SECONDS))
-                .takeUntil(resp -> isDone(resp.getState()))
-                .map(resp -> new AbstractMap.SimpleImmutableEntry<>(resp.getState(), String.join("\n", resp.getLog())));
+        // Refer parent class "SparkBatchJob" for delay interval
+        final int GET_JOB_DONE_REPEAT_DELAY_SECONDS = 1;
+        return getResponsePayloadWithState()
+                .repeatWhen(ob -> ob.delay(GET_JOB_DONE_REPEAT_DELAY_SECONDS, TimeUnit.SECONDS))
+                .takeUntil(responsePayload -> isDone(responsePayload.getState()))
+                .filter(responsePayload -> isDone(responsePayload.getState()))
+                .map(responsePayload ->
+                        new AbstractMap.SimpleImmutableEntry<>(
+                                responsePayload.getState(),
+                                String.join("\n", responsePayload.getLog())))
+                .onErrorResumeNext(err -> {
+                    if (err instanceof SparkJobFinishedException) {
+                        return Observable.error(err);
+                    } else {
+                        String errHint = "Error getting job status.";
+                        log().warn(errHint + " " + ExceptionUtils.getStackTrace(err));
+                        return Observable.just(new AbstractMap.SimpleImmutableEntry<>("unknown", errHint + err.getMessage()));
+                    }
+                });
     }
 
-    private Observable<String> getJobLogAggregationDoneObservable() {
+    @Override
+    public Observable<String> awaitStarted() {
+        return getResponsePayloadWithState()
+                .retryWhen(error -> error.flatMap(exception -> {
+                    if (exception instanceof SparkJobFinishedException) {
+                        throw propagate(exception);
+                    } else {
+                        // Retry with limited times
+                        return Observable.just(1)
+                                .zipWith(Observable.range(1, getRetriesMax()), (n, i) -> i)
+                                .delay(getDelaySeconds(), TimeUnit.SECONDS);
+                    }
+                }))
+                .repeatWhen(ob ->
+                        ob.doOnNext(ignored ->
+                                getCtrlSubject().onNext(
+                                        new AbstractMap.SimpleImmutableEntry<>(Info, "The Spark job is starting...")))
+                                .delay(getDelaySeconds(), TimeUnit.SECONDS))
+                .takeUntil(responsePayload -> isDone(responsePayload.getState()) || isRunning(responsePayload.getState()))
+                .filter(responsePayload -> isDone(responsePayload.getState()) || isRunning(responsePayload.getState()))
+                .flatMap(responsePayload -> {
+                    if (isDone(responsePayload.getState()) && !isSuccess(responsePayload.getState())) {
+                        String errorMsg = "The Spark job failed to start due to "
+                                + String.join("\n", responsePayload.getLog());
+                        log().warn(errorMsg);
+                        return Observable.error(
+                                new SparkJobException(errorMsg));
+                    } else {
+                        return Observable.just(responsePayload.getState());
+                    }
+                });
+    }
+
+    @NotNull
+    @Override
+    protected Observable<String> getJobLogAggregationDoneObservable() {
         // TODO: enable yarn log aggregation
         return Observable.just("SUCCEEDED");
     }
 
+    @NotNull
+    public Observable<SparkJobLog> getSubmissionLogRequest(@NotNull String livyUrl,
+                                                           int batchId,
+                                                           int startIndex,
+                                                           int maxLinePerGet) {
+        String requestUrl = String.format("%s/%d/log?from=%d&size=%d", livyUrl, batchId, startIndex, maxLinePerGet);
+        return getHttp()
+                .withUuidUserAgent()
+                .get(requestUrl, null, null, SparkJobLog.class);
+    }
+
+    @NotNull
     @Override
     public Observable<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> getSubmissionLog() {
-        // TODO: Replace it with HttpObservable
-        return Observable.create(ob -> {
-            ob.onNext(new AbstractMap.SimpleImmutableEntry<>(MessageInfoType.Info, "Submission log not supported yet"));
-        });
+        ImmutableSet<String> ignoredEmptyLines = ImmutableSet.of("stdout:", "stderr:", "yarn diagnostics:");
+        final int MAX_LOG_LINES_PER_REQUEST = 128;
+        final int GET_LOG_REPEAT_DELAY_MILLISECONDS = 200;
+        // We need to repeatly call getSparkBatchJob() since "livyServerApi" field does not always exist in response but
+        // only appeared for a while and after that we can't get the "livyServerApi" field.
+        final int GET_LIVY_URL_REPEAT_DELAY_MILLISECONDS = 500;
+        ctrlInfo("Trying to get livy URL...");
+        return getSparkBatchJob()
+                .repeatWhen(ob -> ob.delay(GET_LIVY_URL_REPEAT_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS))
+                .takeUntil(sparkBatchJob -> sparkBatchJob.properties() != null
+                        && StringUtils.isNotEmpty(sparkBatchJob.properties().livyServerAPI()))
+                .filter(sparkBatchJob -> sparkBatchJob.properties() != null
+                        && StringUtils.isNotEmpty(sparkBatchJob.properties().livyServerAPI()))
+                .map(sparkBatchJob -> sparkBatchJob.properties().livyServerAPI())
+                .map(url -> url + "?adlaAccountName=" + getAccount().getName())
+                .doOnNext(url -> {
+                    ctrlInfo("Successfully get livy URL: " + url);
+                    ctrlInfo("Trying to retrieve livy submission logs...");
+                })
+                // Get submission log
+                .flatMap(livyUrl ->
+                        getResponsePayloadWithState()
+                                // get batch id before get submission log
+                                .doOnNext(responsePayload -> setBatchId(responsePayload.getId()))
+                                .flatMap(responsePayload ->
+                                        // TODO: I wonder whether it's possible to replace logStartIndex with Rxjava scan operator
+                                        getSubmissionLogRequest(livyUrl, getBatchId(), getLogStartIndex(), MAX_LOG_LINES_PER_REQUEST))
+                                .map(sparkJobLog ->
+                                        sparkJobLog.getLog() == null
+                                                ? Collections.<String>emptyList()
+                                                : sparkJobLog.getLog())
+                                .doOnNext(logs -> setLogStartIndex(getLogStartIndex() + logs.size()))
+                                .map(logs -> logs.stream()
+                                        .filter(logLine -> !ignoredEmptyLines.contains(logLine.trim().toLowerCase()))
+                                        .collect(Collectors.toList()))
+                                .flatMap(logLines -> {
+                                    if (logLines.size() > 0) {
+                                        // If logs we get is not empty, we send onNext() message
+                                        // so that these logs can be printed on console view later
+                                        return Observable.from(logLines)
+                                                .map(line -> new AbstractMap.SimpleImmutableEntry<>(Log, line));
+                                    } else {
+                                        // If logs we get is empty, we send an onError() message,
+                                        // which will get into RetryWhen and then retry with limited times
+                                        String errorMsg = "Livy submission log is empty.";
+                                        log().warn(errorMsg);
+                                        ctrlInfo(errorMsg);
+                                        return Observable.error(new SparkJobException(errorMsg));
+                                    }
+                                })
+                                // repeat getting submission log until job started
+                                .repeatWhen(ob -> ob.delay(GET_LOG_REPEAT_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS))
+                                .retryWhen(error -> error.flatMap(exception -> {
+                                    if (exception instanceof SparkJobFinishedException) {
+                                        throw propagate(exception);
+                                    } else {
+                                        // delay sometime and retry with limited times
+                                        return Observable.just(1)
+                                                .zipWith(Observable.range(1, getRetriesMax()), (n, i) -> i)
+                                                .doOnNext(i -> ctrlInfo("Retry retrieving livy submission log..."))
+                                                .delay(getDelaySeconds(), TimeUnit.SECONDS);
+                                    }
+                                }))
+                                .flatMap(logEntry ->
+                                        getResponsePayloadWithState()
+                                                .map(responsePayload -> Pair.of(logEntry, responsePayload.getState())))
+                                // FIXME:
+                                // For HDI spark job, the ending condition is `jobState != starting || appIdIsAllocated`
+                                // However, currently the response has no appId all the time so we ignored the app id check
+                                .takeUntil(logEntryAndStatePair ->
+                                        !logEntryAndStatePair.getRight().equalsIgnoreCase(SparkBatchJobState.STARTING.toString()))
+                                .doOnNext(ob -> ctrlInfo("Successfully retrieved livy submission log."))
+                                .map(logEntryAndStatePair -> logEntryAndStatePair.getLeft()))
+                .onErrorResumeNext(err -> {
+                    if (err instanceof SparkJobFinishedException || err.getCause() instanceof SparkJobFinishedException) {
+                        return Observable.error(err);
+                    } else {
+                        String errHint = "Error retrieving livy submission log. ";
+                        log().warn(errHint + " " + ExceptionUtils.getStackTrace(err));
+                        return Observable.just(new AbstractMap.SimpleImmutableEntry<>(Error, errHint + " " + err.getMessage()));
+                    }
+                });
+
     }
 
     private void ctrlInfo(@NotNull String message) {

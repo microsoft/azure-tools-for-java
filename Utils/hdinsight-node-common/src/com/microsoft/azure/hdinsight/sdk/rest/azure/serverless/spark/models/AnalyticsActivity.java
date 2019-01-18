@@ -142,8 +142,8 @@ public class AnalyticsActivity {
     /**
      * The error message details for the activity, if the activity failed.
      */
-    @JsonProperty(value = "errorMessage", access = JsonProperty.Access.WRITE_ONLY)
-    private List<ErrorDetails> errorMessage;
+//    @JsonProperty(value = "errorMessage", access = JsonProperty.Access.WRITE_ONLY)
+//    private List<ErrorDetails> errorMessage;
 
     /**
      * Get the activity's unique identifier (a GUID).
@@ -316,8 +316,8 @@ public class AnalyticsActivity {
      *
      * @return the errorMessage value
      */
-    public List<ErrorDetails> errorMessage() {
-        return this.errorMessage;
-    }
+//    public List<ErrorDetails> errorMessage() {
+//        return this.errorMessage;
+//    }
 
 }

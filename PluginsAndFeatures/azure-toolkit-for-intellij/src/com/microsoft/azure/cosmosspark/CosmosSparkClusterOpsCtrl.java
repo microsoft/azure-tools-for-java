@@ -56,6 +56,7 @@ import com.microsoft.azure.hdinsight.spark.ui.livy.batch.*;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
@@ -255,6 +256,14 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                                 });
                     }
                 })
+                .doOnError(err -> {
+                    String errorHint = "Error loading Serverless jobs. ";
+                    log().warn(errorHint + ExceptionUtils.getStackTrace(err));
+                    // show warning message when view serverless jobs failed
+                    PluginUtil.displayWarningDialog("View Spark on Cosmos Serverless Jobs ", errorHint + err.getMessage());
+                })
+                // retry should be allowed when error happened
+                .retry()
                 .subscribe(jobList -> {},  ex -> log().warn(ExceptionUtils.getStackTrace(ex)));
     }
 
