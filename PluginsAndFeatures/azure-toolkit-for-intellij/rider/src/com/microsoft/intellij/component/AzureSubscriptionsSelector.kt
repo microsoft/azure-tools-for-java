@@ -23,10 +23,12 @@
 package com.microsoft.intellij.component
 
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.components.Label
 import com.intellij.util.ui.UIUtil
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.intellij.component.extension.createDefaultRenderer
+import com.microsoft.intellij.component.extension.fillComboBox
 import com.microsoft.intellij.component.extension.getSelectedValue
 import com.microsoft.intellij.helpers.validator.SubscriptionValidator
 import net.miginfocom.swing.MigLayout
@@ -44,7 +46,7 @@ class AzureSubscriptionsSelector :
     val cbSubscription = ComboBox<Subscription>()
 
     var lastSelectedSubscriptionId = ""
-    var listenerAction: () -> Unit = {}
+    var listenerAction: (Subscription) -> Unit = {}
 
     init {
         initSubscriptionComboBox()
@@ -55,9 +57,19 @@ class AzureSubscriptionsSelector :
         initComponentValidation()
     }
 
-    override fun validateComponent() =
-            listOfNotNull(SubscriptionValidator.validateSubscription(cbSubscription.getSelectedValue())
-                    .toValidationInfo(cbSubscription))
+    override fun validateComponent(): List<ValidationInfo> {
+        if (!isEnabled) return emptyList()
+        return listOfNotNull(
+                SubscriptionValidator.validateSubscription(cbSubscription.getSelectedValue()).toValidationInfo(cbSubscription))
+    }
+
+    fun fillSubscriptionComboBox(subscriptions: List<Subscription>, defaultSubscription: Subscription? = null) {
+        cbSubscription.fillComboBox(subscriptions, defaultSubscription)
+
+        if (subscriptions.isEmpty()) {
+            lastSelectedSubscriptionId = ""
+        }
+    }
 
     private fun initSubscriptionComboBox() {
         cbSubscription.renderer = cbSubscription.createDefaultRenderer(EMPTY_SUBSCRIPTION_MESSAGE) { it.displayName() }
@@ -68,7 +80,7 @@ class AzureSubscriptionsSelector :
             if (lastSelectedSubscriptionId == selectedSid) return@addActionListener
             lastSelectedSubscriptionId = selectedSid
 
-            listenerAction()
+            listenerAction(subscription)
         }
     }
 }

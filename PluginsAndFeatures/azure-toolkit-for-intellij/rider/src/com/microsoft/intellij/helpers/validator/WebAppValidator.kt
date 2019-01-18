@@ -27,7 +27,7 @@ import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 
 object WebAppValidator : AzureResourceValidator() {
 
-    private const val WEB_APP_NOT_DEFINED = "Please select an Azure Web App."
+    private const val WEB_APP_NOT_DEFINED = "Please select an existing Web App."
     private const val WEB_APP_NAME_NOT_DEFINED = "Web App name not provided."
     private const val WEB_APP_NAME_CANNOT_START_END_WITH_DASH = "Web App name cannot begin or end with '-' symbol."
     private const val WEB_APP_NAME_INVALID = "Web App name cannot contain characters: %s."
@@ -86,8 +86,11 @@ object WebAppValidator : AzureResourceValidator() {
         return status
     }
 
+    fun checkConnectionStringNameIsSet(name: String) =
+            checkValueIsSet(name, CONNECTION_STRING_NAME_NOT_DEFINED)
+
     fun checkConnectionStringNameExistence(name: String, webAppId: String): ValidationResult {
-        val status = checkValueIsSet(name, CONNECTION_STRING_NAME_NOT_DEFINED)
+        val status = checkConnectionStringNameIsSet(name)
         if (!status.isValid) return status
 
         val resourceGroupToWebAppMap = AzureModel.getInstance().resourceGroupToWebAppMap ?: return status

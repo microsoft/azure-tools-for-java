@@ -20,24 +20,43 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.component
+package com.microsoft.intellij.runner.webapp.webappconfig.ui.component.webapp
 
-import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.util.ui.JBUI
+import com.microsoft.azure.management.appservice.OperatingSystem
+import com.microsoft.intellij.component.AzureComponent
+import net.miginfocom.swing.MigLayout
 import java.awt.event.ActionListener
-import javax.swing.ButtonGroup
+import javax.swing.JPanel
 import javax.swing.JRadioButton
 
-interface AzureComponent {
+class OperatingSystemSelector :
+        JPanel(MigLayout("novisualpadding, ins 0")),
+        AzureComponent {
 
-    fun validateComponent(): List<ValidationInfo> = emptyList()
+    companion object {
+        private val indentionSize = JBUI.scale(17)
+    }
 
-    fun initComponentValidation() {}
+    val isWindows: Boolean
+        get() = rdoOperatingSystemWindows.isSelected
 
-    fun initButtonsGroup(buttonActionMap: Map<JRadioButton, ActionListener>) {
-        val buttonGroup = ButtonGroup()
-        buttonActionMap.forEach { button, action ->
-            buttonGroup.add(button)
-            button.addActionListener(action)
-        }
+    val deployOperatingSystem: OperatingSystem
+        get() = if (rdoOperatingSystemWindows.isSelected) OperatingSystem.WINDOWS else OperatingSystem.LINUX
+
+    val rdoOperatingSystemWindows = JRadioButton("Windows")
+    val rdoOperatingSystemLinux = JRadioButton("Linux")
+
+    init {
+        initOperatingSystemButtonGroup()
+
+        add(rdoOperatingSystemWindows)
+        add(rdoOperatingSystemLinux, "gapbefore $indentionSize")
+    }
+
+    private fun initOperatingSystemButtonGroup() {
+        initButtonsGroup(hashMapOf(
+                rdoOperatingSystemWindows to ActionListener { },
+                rdoOperatingSystemLinux to ActionListener { }))
     }
 }

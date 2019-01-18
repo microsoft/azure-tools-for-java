@@ -35,6 +35,10 @@ fun <T>JComboBox<T>.getSelectedValue(): T? {
 }
 
 fun <T>JComboBox<T>.fillComboBox(elements: List<T>, defaultElement: T? = null) {
+    fillComboBox<T>(elements) { element -> element == defaultElement }
+}
+
+fun <T>JComboBox<T>.fillComboBox(elements: List<T>, defaultComparator: (T) -> Boolean) {
     try {
         removeAllItems()
     } catch(e: Throwable) {
@@ -44,8 +48,7 @@ fun <T>JComboBox<T>.fillComboBox(elements: List<T>, defaultElement: T? = null) {
 
     elements.forEach {
         addItem(it)
-        defaultElement ?: return@forEach
-        if (it == defaultElement)
+        if (defaultComparator(it))
             selectedItem = it
     }
 }

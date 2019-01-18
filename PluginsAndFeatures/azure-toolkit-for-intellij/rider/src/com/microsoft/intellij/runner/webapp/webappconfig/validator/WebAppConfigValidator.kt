@@ -44,7 +44,6 @@ object WebAppConfigValidator : ConfigurationValidator() {
                 checkStatus(ResourceGroupValidator.checkResourceGroupNameIsSet(model.resourceGroupName))
             }
 
-
             if (model.isCreatingAppServicePlan) {
                 checkStatus(AppServicePlanValidator.validateAppServicePlanName(model.appServicePlanName))
                 checkStatus(LocationValidator.checkLocationIsSet(model.location))

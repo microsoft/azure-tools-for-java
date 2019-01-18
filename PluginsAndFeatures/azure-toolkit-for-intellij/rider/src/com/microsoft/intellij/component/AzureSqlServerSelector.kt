@@ -25,80 +25,89 @@ package com.microsoft.intellij.component
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.components.JBPasswordField
+import com.intellij.util.ui.JBUI
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.microsoft.azure.management.resources.Location
+import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.intellij.component.extension.*
+import com.microsoft.intellij.helpers.defaults.AzureDefaults
 import com.microsoft.intellij.helpers.validator.SqlServerValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
 import net.miginfocom.swing.MigLayout
 import javax.swing.*
 
 class AzureSqlServerSelector(private val lifetimeDef: LifetimeDefinition) :
-        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
+        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]", "[sg a]")),
         AzureComponent {
 
     companion object {
         private const val EMPTY_SQL_SERVER_MESSAGE = "No existing SQL Servers"
+        private const val EMPTY_LOCATION_MESSAGE = "No existing Azure Locations"
+        private val indentionSize = JBUI.scale(17)
     }
 
-    private val rdoExistingSqlServer = JRadioButton("Use Existing", true)
-    private val cbSqlServer = ComboBox<SqlServer>()
+    val rdoExistingSqlServer = JRadioButton("Use Existing", true)
+    val cbSqlServer = ComboBox<SqlServer>()
     private val lblExistingLocationName = JLabel("Location")
     private val lblLocationValue = JLabel("N/A")
     private val lblExistingAdminLoginName = JLabel("Admin Login")
-    private val lblAdminLoginValue = JLabel("N/A")
+    val lblAdminLoginValue = JLabel("N/A")
     private val lblExistingAdminPasswordName = JLabel("Admin Password")
-    private val passExistingAdminPasswordValue = JBPasswordField()
+    val passExistingAdminPasswordValue = JBPasswordField()
 
-    private val rdoCreateSqlServer = JRadioButton("Create New")
+    val rdoCreateSqlServer = JRadioButton("Create New")
     private val pnlSqlServerName = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[][min!]"))
-    private val txtSqlServerName = JTextField("")
+    val txtSqlServerName = JTextField("")
     private val lblSqlServerNameSuffix = JLabel(".database.windows.net")
     private val lblCreateLocationName = JLabel("Location")
     private val cbLocation = ComboBox<Location>()
     private val lblCreateAdminLoginName = JLabel("Admin Login")
-    private val txtAdminLogin = JTextField("")
+    val txtAdminLogin = JTextField("")
     private val lblCreateAdminPasswordName = JLabel("Admin Password")
-    private val passNewAdminPasswordValue = JBPasswordField()
+    val passNewAdminPasswordValue = JBPasswordField()
     private val lblCreateAdminPasswordConfirmName = JLabel("Confirm Password")
-    private val passNewAdminPasswordConfirmValue = JBPasswordField()
+    val passNewAdminPasswordConfirmValue = JBPasswordField()
 
     var lastSelectedSqlServer: SqlServer? = null
+    var lastSelectedLocation: Location? = null
     var listenerAction: () -> Unit = {}
 
     var subscriptionId: String = ""
 
     init {
         initSqlServerComboBox()
+        initLocationComboBox()
         initSqlServerButtonsGroup()
 
         add(rdoExistingSqlServer)
         add(cbSqlServer, "growx")
-        add(lblExistingLocationName)
+        add(lblExistingLocationName, "gapbefore $indentionSize")
         add(lblLocationValue, "growx")
-        add(lblExistingAdminLoginName)
+        add(lblExistingAdminLoginName, "gapbefore $indentionSize")
         add(lblAdminLoginValue, "growx")
-        add(lblExistingAdminPasswordName)
+        add(lblExistingAdminPasswordName, "gapbefore $indentionSize")
         add(passExistingAdminPasswordValue, "growx")
 
         add(rdoCreateSqlServer)
         pnlSqlServerName.add(txtSqlServerName, "growx")
         pnlSqlServerName.add(lblSqlServerNameSuffix)
         add(pnlSqlServerName, "growx")
-        add(lblCreateLocationName)
+        add(lblCreateLocationName, "gapbefore $indentionSize")
         add(cbLocation, "growx")
-        add(lblCreateAdminLoginName)
+        add(lblCreateAdminLoginName, "gapbefore $indentionSize")
         add(txtAdminLogin, "growx")
-        add(lblCreateAdminPasswordName)
+        add(lblCreateAdminPasswordName, "gapbefore $indentionSize")
         add(passNewAdminPasswordValue, "growx")
-        add(lblCreateAdminPasswordConfirmName)
+        add(lblCreateAdminPasswordConfirmName, "gapbefore $indentionSize")
         add(passNewAdminPasswordConfirmValue, "growx")
 
         initComponentValidation()
     }
 
     override fun validateComponent(): List<ValidationInfo> {
+        if (!isEnabled) return emptyList()
+
         if (rdoExistingSqlServer.isSelected) {
             return listOfNotNull(
                     SqlServerValidator.checkSqlServerIsSet(cbSqlServer.getSelectedValue()).toValidationInfo(cbSqlServer),
@@ -118,24 +127,24 @@ class AzureSqlServerSelector(private val lifetimeDef: LifetimeDefinition) :
     override fun initComponentValidation() {
         txtSqlServerName.initValidationWithResult(
                 lifetimeDef,
-                textChangeValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                textChangeValidationAction = { if (!isEnabled || rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
                     SqlServerValidator.checkNameMaxLength(txtSqlServerName.text)
                             .merge(SqlServerValidator.checkInvalidCharacters(txtSqlServerName.text)) },
-                focusLostValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                focusLostValidationAction = { if (!isEnabled || rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
                     SqlServerValidator.checkStartsEndsWithDash(txtSqlServerName.text) })
 
         txtAdminLogin.initValidationWithResult(
                 lifetimeDef,
-                textChangeValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                textChangeValidationAction = { if (!isEnabled || rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
                     SqlServerValidator.checkLoginInvalidCharacters(txtAdminLogin.text) },
-                focusLostValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                focusLostValidationAction = { if (!isEnabled || rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
                     SqlServerValidator.checkRestrictedLogins(txtAdminLogin.text) })
 
         passNewAdminPasswordValue.initValidationWithResult(
                 lifetimeDef,
-                textChangeValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                textChangeValidationAction = { if (!isEnabled || rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
                     SqlServerValidator.checkPasswordContainsUsername(passNewAdminPasswordValue.password, txtAdminLogin.text) },
-                focusLostValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                focusLostValidationAction = { if (!isEnabled || rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
                     SqlServerValidator.checkPasswordRequirements(passNewAdminPasswordValue.password).merge(
                             if (passNewAdminPasswordValue.password.isEmpty()) ValidationResult()
                             else SqlServerValidator.checkPasswordMinLength(passNewAdminPasswordValue.password)) })
@@ -143,12 +152,41 @@ class AzureSqlServerSelector(private val lifetimeDef: LifetimeDefinition) :
         passNewAdminPasswordConfirmValue.initValidationWithResult(
                 lifetimeDef,
                 textChangeValidationAction = { ValidationResult() },
-                focusLostValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                focusLostValidationAction = { if (!isEnabled || rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
                     SqlServerValidator.checkPasswordsMatch(passNewAdminPasswordValue.password, passNewAdminPasswordConfirmValue.password) })
     }
 
+    fun fillSqlServerComboBox(sqlServers: List<SqlServer>, defaultComparator: (SqlServer) -> Boolean = { false }) {
+        cbSqlServer.fillComboBox(sqlServers.sortedWith(compareBy { it.name() }), defaultComparator)
+
+        if (sqlServers.isEmpty()) {
+            lastSelectedSqlServer = null
+        }
+    }
+
+    fun fillLocationComboBox(locations: List<Location>, defaultLocation: Region = AzureDefaults.location) {
+        cbLocation.fillComboBox<Location>(locations) { location -> location.region() == defaultLocation }
+
+        if (locations.isEmpty()) {
+            lastSelectedLocation = null
+        }
+    }
+
+    /**
+     * Set SQL Server elements visibility when using existing or creating new SQL Server
+     *
+     * @param isCreatingNew - flag indicating whether we create new SQL Server or use and existing one
+     */
+    fun toggleSqlServerPanel(isCreatingNew: Boolean) {
+        setComponentsEnabled(isCreatingNew,
+                txtSqlServerName, txtAdminLogin, passNewAdminPasswordValue, passNewAdminPasswordConfirmValue, cbLocation)
+
+        setComponentsEnabled(!isCreatingNew,
+                cbSqlServer, lblLocationValue, lblAdminLoginValue, passExistingAdminPasswordValue)
+    }
+
     private fun initSqlServerComboBox() {
-        cbSqlServer.renderer = cbSqlServer.createDefaultRenderer(EMPTY_SQL_SERVER_MESSAGE) { "${it.name()} (${it.resourceGroupName()})" }
+        cbSqlServer.renderer = cbSqlServer.createDefaultRenderer(EMPTY_SQL_SERVER_MESSAGE) { it.name() }
 
         cbSqlServer.addActionListener {
             val sqlServer = cbSqlServer.getSelectedValue() ?: return@addActionListener
@@ -159,6 +197,14 @@ class AzureSqlServerSelector(private val lifetimeDef: LifetimeDefinition) :
 
             listenerAction()
             lastSelectedSqlServer = sqlServer
+        }
+    }
+
+    private fun initLocationComboBox() {
+        cbLocation.renderer = cbLocation.createDefaultRenderer(EMPTY_LOCATION_MESSAGE) { it.displayName() }
+
+        cbLocation.addActionListener {
+            lastSelectedLocation = cbLocation.getSelectedValue() ?: return@addActionListener
         }
     }
 
@@ -177,18 +223,5 @@ class AzureSqlServerSelector(private val lifetimeDef: LifetimeDefinition) :
         rdoExistingSqlServer.addActionListener { toggleSqlServerPanel(false) }
 
         toggleSqlServerPanel(false)
-    }
-
-    /**
-     * Set SQL Server elements visibility when using existing or creating new SQL Server
-     *
-     * @param isCreatingNew - flag indicating whether we create new SQL Server or use and existing one
-     */
-    private fun toggleSqlServerPanel(isCreatingNew: Boolean) {
-        setComponentsEnabled(isCreatingNew,
-                txtSqlServerName, txtAdminLogin, passNewAdminPasswordValue, passNewAdminPasswordConfirmValue, cbLocation)
-
-        setComponentsEnabled(!isCreatingNew,
-                cbSqlServer, lblLocationValue, lblAdminLoginValue, passExistingAdminPasswordValue)
     }
 }

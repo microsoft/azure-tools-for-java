@@ -276,11 +276,6 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
             add(txtDatabaseCollation, "growx")
         }
 
-        pnlSubscription.listenerAction = {
-            val subscriptionId = pnlSubscription.lastSelectedSubscriptionId
-            presenter.onLoadResourceGroups(lifetimeDef, subscriptionId)
-        }
-
         mainPanel.apply {
             add(pnlName, "growx, wmin $DIALOG_MIN_WIDTH")
             add(pnlSubscription, "growx")
@@ -298,6 +293,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     }
 
     private fun initSubscriptionsComboBox() {
+        pnlSubscription.listenerAction = { subscription -> presenter.onLoadResourceGroups(lifetimeDef, subscription.subscriptionId()) }
         setComponentsEnabled(false, pnlSubscription.cbSubscription)
     }
 

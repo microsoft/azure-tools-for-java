@@ -79,6 +79,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
      */
     @Throws(RuntimeConfigurationError::class)
     override fun checkConfiguration() {
+
         ConfigurationValidator().validateAzureAccountIsSignedIn()
 
         ProjectConfigValidator.validateProject(myModel.webAppModel.publishableProject)

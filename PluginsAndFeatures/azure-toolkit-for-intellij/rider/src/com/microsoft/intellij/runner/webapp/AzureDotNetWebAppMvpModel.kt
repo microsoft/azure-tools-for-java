@@ -27,6 +27,7 @@ import com.jetbrains.rd.util.error
 import com.jetbrains.rd.util.getLogger
 import com.microsoft.azure.management.Azure
 import com.microsoft.azure.management.appservice.*
+import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
@@ -41,7 +42,7 @@ object AzureDotNetWebAppMvpModel {
 
     class AppServicePlanDefinition(val name: String,
                                    val pricingTier: PricingTier,
-                                   val region: String)
+                                   val region: Region)
 
     //region Web App
 
@@ -203,7 +204,7 @@ object AzureDotNetWebAppMvpModel {
 
     private fun withCreateAppServicePlan(azure: Azure,
                                          appServicePlanName: String,
-                                         region: String,
+                                         region: Region,
                                          pricingTier: PricingTier,
                                          isCreatingResourceGroup: Boolean,
                                          resourceGroupName: String,

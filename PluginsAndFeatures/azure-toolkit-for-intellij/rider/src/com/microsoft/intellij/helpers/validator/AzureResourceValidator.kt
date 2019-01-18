@@ -28,17 +28,14 @@ package com.microsoft.intellij.helpers.validator
  */
 open class AzureResourceValidator {
 
-    fun checkValueIsSet(value: String?, message: String): ValidationResult {
-        val status = ValidationResult()
-        if (value.isNullOrEmpty()) status.setInvalid(message)
-        return status
-    }
+    fun checkValueIsSet(value: String?, message: String) =
+            checkValueIsSet(failCondition = { value.isNullOrEmpty() }, message = message)
 
-    fun checkValueIsSet(value: Any?, message: String): ValidationResult {
-        val status = ValidationResult()
-        if (value == null) status.setInvalid(message)
-        return status
-    }
+    fun checkValueIsSet(value: CharArray?, message: String) =
+            checkValueIsSet(failCondition = { value == null || value.isEmpty() }, message = message)
+
+    fun checkValueIsSet(value: Any?, message: String) =
+            checkValueIsSet(failCondition = { value == null }, message = message)
 
     fun validateResourceNameRegex(name: String,
                                   nameRegex: Regex,
@@ -64,6 +61,12 @@ open class AzureResourceValidator {
     fun checkNameMinLength(name: String, minLength: Int, errorMessage: String): ValidationResult {
         val status = ValidationResult()
         if (name.length < minLength) return status.setInvalid(errorMessage)
+        return status
+    }
+
+    private fun checkValueIsSet(failCondition: () -> Boolean, message: String): ValidationResult {
+        val status = ValidationResult()
+        if (failCondition()) status.setInvalid(message)
         return status
     }
 }

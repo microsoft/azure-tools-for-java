@@ -22,11 +22,52 @@
 
 package com.microsoft.intellij.component.extension
 
-import javax.swing.JComponent
+import com.intellij.util.ui.UIUtil
+import com.intellij.openapi.util.Condition
+import com.intellij.openapi.util.Conditions
+import com.intellij.util.containers.JBIterable
+import java.awt.Component
+import javax.swing.*
+
+private const val COMPONENT_ENABLED_STATE_PROPERTY_NAME = "ComponentEnabledState"
 
 fun setComponentsEnabled(isEnabled: Boolean, vararg components: JComponent) {
     components.forEach { it.isEnabled = isEnabled }
 }
 fun setComponentsVisible(isVisible: Boolean, vararg components: JComponent) {
     components.forEach { it.isVisible = isVisible }
+}
+
+fun setComponentsSelected(isSelected: Boolean, vararg components: JToggleButton) {
+    components.forEach { it.isSelected = isSelected }
+}
+
+fun JComponent.setComponentEnabled(isEnabled: Boolean, recursively: Boolean = true, visibleOnly: Boolean = true) {
+    val all =
+            if (recursively)
+                UIUtil.uiTraverser(this).expandAndFilter(
+                        if (visibleOnly) Condition<Component> { it.isVisible }
+                        else Conditions.alwaysTrue()
+                ).traverse()
+            else
+                JBIterable.of(this)
+
+    val fg = if (isEnabled) UIUtil.getLabelForeground() else UIUtil.getLabelDisabledForeground()
+
+    for (c in all) {
+        val comp = c as? JComponent ?: continue
+
+        if (isEnabled) {
+            if (comp.getClientProperty(COMPONENT_ENABLED_STATE_PROPERTY_NAME) != null &&
+                    comp.getClientProperty(COMPONENT_ENABLED_STATE_PROPERTY_NAME) as? Boolean == false)
+                continue
+        } else {
+            comp.putClientProperty(COMPONENT_ENABLED_STATE_PROPERTY_NAME, c.isEnabled)
+        }
+
+        c.isEnabled = isEnabled
+        if (c is JLabel) {
+            c.setForeground(fg)
+        }
+    }
 }

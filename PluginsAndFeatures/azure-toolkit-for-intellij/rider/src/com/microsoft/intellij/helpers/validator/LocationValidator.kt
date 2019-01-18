@@ -23,6 +23,7 @@
 package com.microsoft.intellij.helpers.validator
 
 import com.microsoft.azure.management.resources.Location
+import com.microsoft.azure.management.resources.fluentcore.arm.Region
 
 object LocationValidator : AzureResourceValidator() {
 
@@ -32,5 +33,8 @@ object LocationValidator : AzureResourceValidator() {
             checkValueIsSet(location, LOCATION_NOT_DEFINED)
 
     fun checkLocationIsSet(location: Location?) =
+            checkValueIsSet(location, LOCATION_NOT_DEFINED)
+
+    fun checkLocationIsSet(location: Region?) =
             checkValueIsSet(location, LOCATION_NOT_DEFINED)
 }

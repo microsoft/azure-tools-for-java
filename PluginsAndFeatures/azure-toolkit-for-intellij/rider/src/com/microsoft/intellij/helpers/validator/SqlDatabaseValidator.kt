@@ -33,14 +33,14 @@ object SqlDatabaseValidator : AzureResourceValidator() {
 
     private val sqlDatabaseNameRegex = "[\\s]".toRegex()
 
-    private const val SQL_DATABASE_NOT_DEFINED = "Database not set"
+    private const val SQL_DATABASE_NOT_DEFINED = "SQL Database is not set"
 
     private const val SQL_DATABASE_NAME_INVALID = "SQL Database name cannot contain characters: %s."
     private const val SQL_DATABASE_NAME_NOT_DEFINED = "SQL Database name is not defined."
     private const val SQL_DATABASE_NAME_ALREADY_EXISTS = "SQL Database name '%s' already exists."
-    private const val SQL_DATABASE_EDITION_NOT_DEFINED = "SQL Database Edition not provided."
-    private const val SQL_DATABASE_COLLATION_NOT_DEFINED = "SQL Database Collation not provided."
-    private const val SQL_DATABASE_COMPUTE_SIZE_NOT_DEFINED = "SQL Database Compute Size not provided."
+    private const val SQL_DATABASE_EDITION_NOT_DEFINED = "SQL Database Edition is not provided."
+    private const val SQL_DATABASE_COLLATION_NOT_DEFINED = "SQL Database Collation is not provided."
+    private const val SQL_DATABASE_COMPUTE_SIZE_NOT_DEFINED = "SQL Database Compute Size is not provided."
 
     /**
      * Validate SQL Database name

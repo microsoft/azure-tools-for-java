@@ -20,39 +20,28 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig
+package com.microsoft.intellij.runner.webapp.webappconfig.ui.component.database
 
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.openapi.util.IconLoader
-import org.jetbrains.annotations.Nls
-import javax.swing.Icon
+import com.jetbrains.rd.util.lifetime.Lifetime
+import com.microsoft.intellij.component.AzureComponent
+import com.microsoft.intellij.component.AzureResourceNameComponent
+import com.microsoft.intellij.component.extension.initValidationWithResult
+import com.microsoft.intellij.helpers.validator.SqlDatabaseValidator
+import com.microsoft.intellij.helpers.validator.ValidationResult
 
-class RiderWebAppConfigurationType : ConfigurationType {
+class DatabaseNameComponent(private val lifetime: Lifetime) :
+        AzureResourceNameComponent("Database Name"),
+        AzureComponent {
 
-    companion object {
-        private const val RUN_CONFIG_TYPE_ID = "AzureDotNetWebAppPublish"
-        private const val RUN_CONFIG_TYPE_NAME = "Azure Publish to Web App"
-        private const val RUN_CONFIG_TYPE_DESCRIPTION = "Azure Publish to Web App configuration"
+    init {
+        initComponentValidation()
     }
 
-    override fun getId(): String {
-        return RUN_CONFIG_TYPE_ID
-    }
-
-    @Nls
-    override fun getDisplayName(): String {
-        return RUN_CONFIG_TYPE_NAME
-    }
-
-    @Nls
-    override fun getConfigurationTypeDescription(): String {
-        return RUN_CONFIG_TYPE_DESCRIPTION
-    }
-
-    override fun getIcon(): Icon = IconLoader.getIcon("icons/publishAzure.svg")
-
-    override fun getConfigurationFactories(): Array<ConfigurationFactory> {
-        return arrayOf(RiderWebAppConfigurationFactory(this))
+    override fun initComponentValidation() {
+        txtNameValue.initValidationWithResult(
+                lifetime = lifetime.createNested(),
+                textChangeValidationAction = { SqlDatabaseValidator.checkInvalidCharacters(txtNameValue.text) },
+                focusLostValidationAction = { ValidationResult() }
+        )
     }
 }

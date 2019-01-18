@@ -22,14 +22,17 @@
 
 package com.microsoft.intellij.helpers.defaults
 
+import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.sql.DatabaseEditions
 
 object AzureDefaults {
 
-    val databaseEdition: DatabaseEditions = DatabaseEditions.BASIC
-
     const val SQL_DATABASE_COLLATION = "SQL_Latin1_General_CP1_CI_AS"
 
+    val databaseEdition: DatabaseEditions = DatabaseEditions.BASIC
+
     val location: Region = Region.US_EAST
+
+    val pricingTier: PricingTier = PricingTier.STANDARD_S1
 }

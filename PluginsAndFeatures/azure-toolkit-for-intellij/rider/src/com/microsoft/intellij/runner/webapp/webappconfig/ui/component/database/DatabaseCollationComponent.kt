@@ -20,39 +20,24 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig
+package com.microsoft.intellij.runner.webapp.webappconfig.ui.component.database
 
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.openapi.util.IconLoader
-import org.jetbrains.annotations.Nls
-import javax.swing.Icon
+import com.microsoft.intellij.component.AzureComponent
+import com.microsoft.intellij.helpers.defaults.AzureDefaults
+import net.miginfocom.swing.MigLayout
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JTextField
 
-class RiderWebAppConfigurationType : ConfigurationType {
+class DatabaseCollationComponent(collationValue: String = AzureDefaults.SQL_DATABASE_COLLATION) :
+        JPanel(MigLayout("novisualpadding, ins 0, fillx", "[min!][]")),
+        AzureComponent {
 
-    companion object {
-        private const val RUN_CONFIG_TYPE_ID = "AzureDotNetWebAppPublish"
-        private const val RUN_CONFIG_TYPE_NAME = "Azure Publish to Web App"
-        private const val RUN_CONFIG_TYPE_DESCRIPTION = "Azure Publish to Web App configuration"
-    }
+    private val lblCollation = JLabel("Collation")
+    val txtCollation = JTextField(collationValue)
 
-    override fun getId(): String {
-        return RUN_CONFIG_TYPE_ID
-    }
-
-    @Nls
-    override fun getDisplayName(): String {
-        return RUN_CONFIG_TYPE_NAME
-    }
-
-    @Nls
-    override fun getConfigurationTypeDescription(): String {
-        return RUN_CONFIG_TYPE_DESCRIPTION
-    }
-
-    override fun getIcon(): Icon = IconLoader.getIcon("icons/publishAzure.svg")
-
-    override fun getConfigurationFactories(): Array<ConfigurationFactory> {
-        return arrayOf(RiderWebAppConfigurationFactory(this))
+    init {
+        add(lblCollation)
+        add(txtCollation, "growx")
     }
 }

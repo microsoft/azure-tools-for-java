@@ -26,13 +26,9 @@ import com.intellij.util.xmlb.annotations.Transient
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.sql.SqlDatabase
+import com.microsoft.intellij.helpers.defaults.AzureDefaults
 
 class DatabasePublishModel {
-
-    companion object {
-        val defaultLocation: String = Region.US_EAST.name()
-        const val defaultCollation = "SQL_Latin1_General_CP1_CI_AS"
-    }
 
     var subscription: Subscription? = null
 
@@ -45,10 +41,10 @@ class DatabasePublishModel {
 
     var databaseName = ""
 
-    var isCreatingDbResourceGroup = true
-    var dbResourceGroupName = ""
+    var isCreatingResourceGroup = false
+    var resourceGroupName = ""
 
-    var isCreatingSqlServer = true
+    var isCreatingSqlServer = false
     var sqlServerId = ""
     var sqlServerName = ""
     var sqlServerAdminLogin = ""
@@ -59,9 +55,9 @@ class DatabasePublishModel {
     @get:Transient
     var sqlServerAdminPasswordConfirm = charArrayOf()
 
-    var sqlServerLocation = defaultLocation
+    var location = AzureDefaults.location
 
-    var collation = defaultCollation
+    var collation = AzureDefaults.SQL_DATABASE_COLLATION
 
     /**
      * Reset the model with values after creating a new instance
@@ -72,7 +68,7 @@ class DatabasePublishModel {
         isCreatingSqlDatabase = false
         database = sqlDatabase
 
-        isCreatingDbResourceGroup = false
+        isCreatingResourceGroup = false
         isCreatingSqlServer = false
     }
 }

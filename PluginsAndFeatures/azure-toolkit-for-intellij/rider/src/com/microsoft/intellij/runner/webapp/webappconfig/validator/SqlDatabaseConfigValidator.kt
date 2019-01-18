@@ -43,11 +43,11 @@ object SqlDatabaseConfigValidator : ConfigurationValidator() {
             checkStatus(SqlDatabaseValidator.validateDatabaseName(model.databaseName))
             checkStatus(SqlDatabaseValidator.checkSqlDatabaseExistence(subscriptionId, model.databaseName, model.sqlServerName))
 
-            if (model.isCreatingDbResourceGroup) {
-                checkStatus(ResourceGroupValidator.validateResourceGroupName(model.dbResourceGroupName))
-                checkStatus(ResourceGroupValidator.checkResourceGroupExistence(subscriptionId, model.dbResourceGroupName))
+            if (model.isCreatingResourceGroup) {
+                checkStatus(ResourceGroupValidator.validateResourceGroupName(model.resourceGroupName))
+                checkStatus(ResourceGroupValidator.checkResourceGroupExistence(subscriptionId, model.resourceGroupName))
             } else {
-                checkStatus(ResourceGroupValidator.checkResourceGroupNameIsSet(model.dbResourceGroupName))
+                checkStatus(ResourceGroupValidator.checkResourceGroupNameIsSet(model.resourceGroupName))
             }
 
             if (model.isCreatingSqlServer) {

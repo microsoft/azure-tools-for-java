@@ -111,6 +111,7 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
         setOKButtonText(DIALOG_OK_BUTTON_TEXT)
 
         updateAzureModelInBackground(project)
+        initSubscriptionComboBox()
         initLocationComboBox()
         initMainPanel()
         initComponentValidation()
@@ -179,7 +180,7 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
                 AzureSqlServerMvpModel.createSqlServer(
                         subscriptionId,
                         sqlServerName,
-                        cbLocation.getSelectedValue()!!.displayName(),
+                        cbLocation.getSelectedValue()!!.region(),
                         pnlResourceGroup.rdoCreateResourceGroup.isSelected,
                         pnlResourceGroup.cbResourceGroup.getSelectedValue()!!.name(),
                         txtAdminLoginValue.text,
@@ -253,14 +254,6 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
 
     private fun initMainPanel() {
 
-        pnlSubscription.listenerAction = {
-            val subscriptionId = pnlSubscription.lastSelectedSubscriptionId
-            presenter.onLoadResourceGroups(lifetimeDef, subscriptionId)
-            presenter.onLoadLocation(lifetimeDef, subscriptionId)
-
-            pnlResourceGroup.subscriptionId = subscriptionId
-        }
-
         pnlResourceGroup.apply {
             border = IdeaTitledBorder(TITLE_RESOURCE_GROUP, 0, JBUI.emptyInsets())
         }
@@ -293,6 +286,16 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
                 presenter.onLoadSubscription(lifetimeDef)
             }
         })
+    }
+
+    private fun initSubscriptionComboBox() {
+        pnlSubscription.listenerAction = { subscription ->
+            val subscriptionId = subscription.subscriptionId()
+            presenter.onLoadResourceGroups(lifetimeDef, subscriptionId)
+            presenter.onLoadLocation(lifetimeDef, subscriptionId)
+
+            pnlResourceGroup.subscriptionId = subscriptionId
+        }
     }
 
     private fun initLocationComboBox() {

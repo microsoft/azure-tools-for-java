@@ -112,7 +112,6 @@ object WebAppRunState {
             val webApp =
                     if (model.isCreatingAppServicePlan) {
                         if (model.appServicePlanName.isEmpty()) throw RuntimeException(UiConstants.APP_SERVICE_PLAN_NAME_NOT_DEFINED)
-                        if (model.location.isEmpty()) throw RuntimeException(UiConstants.APP_SERVICE_PLAN_LOCATION_NOT_DEFINED)
                         val pricingTier = model.pricingTier
                         val appServicePlanDefinition = AzureDotNetWebAppMvpModel.AppServicePlanDefinition(model.appServicePlanName, pricingTier, model.location)
 
@@ -306,7 +305,7 @@ object WebAppRunState {
             }
 
             if (publishableProject.isDotNetCore) {
-                publishService.invokeMsBuild(publishableProject.projectFilePath, listOf(targetProperties), false, true, onFinish)
+                publishService.invokeMsBuild(publishableProject, listOf(targetProperties), false, true, onFinish)
             } else {
                 publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, true, onFinish)
             }

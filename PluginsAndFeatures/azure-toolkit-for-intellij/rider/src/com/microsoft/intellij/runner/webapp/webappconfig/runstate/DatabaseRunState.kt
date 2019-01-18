@@ -77,17 +77,16 @@ object DatabaseRunState {
             processHandler.setText(String.format(UiConstants.SQL_SERVER_CREATE, model.sqlServerName))
 
             if (model.sqlServerName.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_NAME_NOT_DEFINED)
-            if (model.sqlServerLocation.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_REGION_NOT_DEFINED)
-            if (model.dbResourceGroupName.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_RESOURCE_GROUP_NAME_NOT_DEFINED)
+            if (model.resourceGroupName.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_RESOURCE_GROUP_NAME_NOT_DEFINED)
             if (model.sqlServerAdminLogin.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
             if (model.sqlServerAdminPassword.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
 
             val sqlServer = AzureSqlServerMvpModel.createSqlServer(
                     subscriptionId,
                     model.sqlServerName,
-                    model.sqlServerLocation,
-                    model.isCreatingDbResourceGroup,
-                    model.dbResourceGroupName,
+                    model.location,
+                    model.isCreatingResourceGroup,
+                    model.resourceGroupName,
                     model.sqlServerAdminLogin,
                     model.sqlServerAdminPassword)
 

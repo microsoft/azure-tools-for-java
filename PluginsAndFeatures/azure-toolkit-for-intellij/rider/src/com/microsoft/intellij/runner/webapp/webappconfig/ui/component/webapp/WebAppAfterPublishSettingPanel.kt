@@ -20,25 +20,43 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.component
+package com.microsoft.intellij.runner.webapp.webappconfig.ui.component.webapp
 
-import com.intellij.ui.components.Label
+import com.intellij.ide.util.PropertiesComponent
+import com.microsoft.intellij.component.AzureComponent
+import com.microsoft.intellij.configuration.AzureRiderSettings
 import net.miginfocom.swing.MigLayout
+import javax.swing.JCheckBox
 import javax.swing.JPanel
-import javax.swing.JTextField
 
-open class AzureResourceNameComponent(text: String = "Name") :
-        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
+class WebAppAfterPublishSettingPanel :
+        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1")),
         AzureComponent {
 
-    private val lblName = Label(text)
+    val isOpenInBrowser: Boolean
+        get() = checkBoxOpenInBrowserAfterPublish.isSelected
 
-    val txtNameValue = JTextField()
+    val checkBoxOpenInBrowserAfterPublish = JCheckBox("Open in browser after publish")
 
     init {
-        apply {
-            add(lblName)
-            add(txtNameValue, "growx")
+        initWebAppPublishCheckBox()
+
+        add(checkBoxOpenInBrowserAfterPublish)
+    }
+
+    private fun initWebAppPublishCheckBox() {
+        val properties = PropertiesComponent.getInstance()
+
+        checkBoxOpenInBrowserAfterPublish.addActionListener {
+            properties.setValue(
+                    AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
+                    isOpenInBrowser,
+                    AzureRiderSettings.openInBrowserDefaultValue)
         }
+
+        checkBoxOpenInBrowserAfterPublish.isSelected =
+                properties.getBoolean(
+                        AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
+                        AzureRiderSettings.openInBrowserDefaultValue)
     }
 }

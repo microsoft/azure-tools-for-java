@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.core.mvp.model.database
 
+import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
@@ -100,7 +101,7 @@ object AzureSqlServerMvpModel {
 
     fun createSqlServer(subscriptionId: String,
                         sqlServerName: String,
-                        region: String,
+                        region: Region,
                         isCreatingResourceGroup: Boolean,
                         resourceGroupName: String,
                         sqlServerAdminLogin: String,

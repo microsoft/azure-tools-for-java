@@ -54,6 +54,8 @@ class AzureResourceGroupSelector(private val lifetimeDef: LifetimeDefinition) :
 
     var subscriptionId: String = ""
 
+    var cachedResourceGroup: List<ResourceGroup> = emptyList()
+
     init {
         initResourceGroupComboBox()
         initResourceGroupButtonGroup()
@@ -68,6 +70,7 @@ class AzureResourceGroupSelector(private val lifetimeDef: LifetimeDefinition) :
     }
 
     override fun validateComponent(): List<ValidationInfo> {
+        if (!isEnabled) return emptyList()
         if (rdoExistingResourceGroup.isSelected)
             return listOfNotNull(ResourceGroupValidator.checkResourceGroupIsSet(cbResourceGroup.getSelectedValue())
                     .toValidationInfo(cbResourceGroup))
@@ -80,11 +83,28 @@ class AzureResourceGroupSelector(private val lifetimeDef: LifetimeDefinition) :
     override fun initComponentValidation() {
         txtResourceGroupName.initValidationWithResult(
                 lifetimeDef,
-                textChangeValidationAction = { if (rdoExistingResourceGroup.isSelected) return@initValidationWithResult ValidationResult()
+                textChangeValidationAction = {
+                    if (!isEnabled || rdoExistingResourceGroup.isSelected) return@initValidationWithResult ValidationResult()
                     ResourceGroupValidator.checkNameMaxLength(txtResourceGroupName.text)
                             .merge(ResourceGroupValidator.checkInvalidCharacters(txtResourceGroupName.text)) },
-                focusLostValidationAction = { if (rdoExistingResourceGroup.isSelected) return@initValidationWithResult ValidationResult()
+                focusLostValidationAction = {
+                    if (!isEnabled || rdoExistingResourceGroup.isSelected) return@initValidationWithResult ValidationResult()
                     ResourceGroupValidator.checkEndsWithPeriod(txtResourceGroupName.text) })
+    }
+
+    fun fillResourceGroupComboBox(resourceGroups: List<ResourceGroup>, defaultComparator: (ResourceGroup) -> Boolean = { false }) {
+        cachedResourceGroup = resourceGroups
+        cbResourceGroup.fillComboBox(resourceGroups.sortedBy { it.name() }, defaultComparator)
+
+        if (resourceGroups.isEmpty()) {
+            rdoCreateResourceGroup.doClick()
+            lastSelectedResourceGroup = null
+        }
+    }
+
+    fun toggleResourceGroupPanel(isCreatingNew: Boolean) {
+        setComponentsEnabled(isCreatingNew, txtResourceGroupName)
+        setComponentsEnabled(!isCreatingNew, cbResourceGroup)
     }
 
     private fun initResourceGroupComboBox() {
@@ -109,10 +129,5 @@ class AzureResourceGroupSelector(private val lifetimeDef: LifetimeDefinition) :
         rdoCreateResourceGroup.addActionListener { toggleResourceGroupPanel(true) }
 
         toggleResourceGroupPanel(false)
-    }
-
-    private fun toggleResourceGroupPanel(isCreatingNew: Boolean) {
-        setComponentsEnabled(isCreatingNew, txtResourceGroupName)
-        setComponentsEnabled(!isCreatingNew, cbResourceGroup)
     }
 }

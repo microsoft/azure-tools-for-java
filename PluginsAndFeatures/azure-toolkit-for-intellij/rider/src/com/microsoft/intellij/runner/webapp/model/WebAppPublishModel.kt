@@ -52,7 +52,7 @@ class WebAppPublishModel {
     var appServicePlanId = ""
     var appServicePlanName = ""
     var operatingSystem = defaultOperatingSystem
-    var location = AzureDefaults.location.name()
+    var location = AzureDefaults.location
     var pricingTier = defaultPricingTier
 
     var netFrameworkVersion = defaultNetFrameworkVersion

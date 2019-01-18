@@ -26,14 +26,14 @@ import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.components.labels.LinkLabel
+import com.intellij.util.ui.JBUI
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.microsoft.azure.management.appservice.AppServicePlan
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.resources.Location
-import com.microsoft.intellij.component.extension.createDefaultRenderer
-import com.microsoft.intellij.component.extension.getSelectedValue
-import com.microsoft.intellij.component.extension.initValidationWithResult
-import com.microsoft.intellij.component.extension.setComponentsEnabled
+import com.microsoft.azure.management.resources.fluentcore.arm.Region
+import com.microsoft.intellij.component.extension.*
+import com.microsoft.intellij.helpers.defaults.AzureDefaults
 import com.microsoft.intellij.helpers.validator.AppServicePlanValidator
 import com.microsoft.intellij.helpers.validator.LocationValidator
 import com.microsoft.intellij.helpers.validator.PricingTierValidator
@@ -42,35 +42,44 @@ import net.miginfocom.swing.MigLayout
 import javax.swing.*
 
 class AzureAppServicePlanSelector(private val lifetimeDef: LifetimeDefinition) :
-        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
+        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]", "[sg a]")),
         AzureComponent {
 
     companion object {
+        private val indentionSize = JBUI.scale(17)
+
         private const val EMPTY_APP_SERVICE_PLAN_MESSAGE = "No existing Azure App Service Plans"
+        private const val EMPTY_LOCATION_MESSAGE = "No existing Azure Locations"
+        private const val EMPTY_PRICING_TIER_MESSAGE = "No existing Azure Pricing Tiers"
+
         private const val WEB_APP_PRICING_URI = "https://azure.microsoft.com/en-us/pricing/details/app-service/"
     }
 
-    private val rdoExistingAppServicePlan = JRadioButton("Use Existing", true)
-    private val cbAppServicePlan = ComboBox<AppServicePlan>()
+    val rdoExistingAppServicePlan = JRadioButton("Use Existing", true)
+    val cbAppServicePlan = ComboBox<AppServicePlan>()
     private val lblExistingLocationName = JLabel("Location")
     private val lblLocationValue = JLabel("N/A")
     private val lblExistingPricingTierName = JLabel("Pricing Tier")
     private val lblExistingPricingTierValue = JLabel("N/A")
 
-    private val rdoCreateAppServicePlan = JRadioButton("Create New")
-    private val txtAppServicePlanName = JTextField("")
+    val rdoCreateAppServicePlan = JRadioButton("Create New")
+    val txtAppServicePlanName = JTextField("")
     private val lblCreateLocationName = JLabel("Location")
-    private val cbLocation = ComboBox<Location>()
+    val cbLocation = ComboBox<Location>()
     private val pnlCreatePricingTier = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[][min!]"))
     private val lblCreatePricingTierName = JLabel("Pricing Tier")
-    private val cbPricingTier = ComboBox<PricingTier>()
+    val cbPricingTier = ComboBox<PricingTier>()
     private val lblPricingLink = LinkLabel("Pricing", null, { _, link -> BrowserUtil.browse(link) }, WEB_APP_PRICING_URI)
 
+    var cachedAppServicePlan: List<AppServicePlan> = emptyList()
+    var cachedPricingTier: List<PricingTier> = emptyList()
+
     var lastSelectedAppServicePlan: AppServicePlan? = null
-    var listenerAction: () -> Unit = {}
 
     init {
         initAppServicePlanComboBox()
+        initLocationComboBox()
+        initPricingTierComboBox()
         initAppServicePlanButtonsGroup()
 
         pnlCreatePricingTier.apply {
@@ -80,22 +89,24 @@ class AzureAppServicePlanSelector(private val lifetimeDef: LifetimeDefinition) :
 
         add(rdoExistingAppServicePlan)
         add(cbAppServicePlan, "growx")
-        add(lblExistingLocationName)
+        add(lblExistingLocationName, "gapbefore $indentionSize")
         add(lblLocationValue, "growx")
-        add(lblExistingPricingTierName)
+        add(lblExistingPricingTierName, "gapbefore $indentionSize")
         add(lblExistingPricingTierValue, "growx")
 
         add(rdoCreateAppServicePlan)
         add(txtAppServicePlanName, "growx")
-        add(lblCreateLocationName)
+        add(lblCreateLocationName, "gapbefore $indentionSize")
         add(cbLocation, "growx")
-        add(lblCreatePricingTierName)
+        add(lblCreatePricingTierName, "gapbefore $indentionSize")
         add(pnlCreatePricingTier, "growx")
 
         initComponentValidation()
     }
 
     override fun validateComponent(): List<ValidationInfo> {
+        if (!isEnabled) return emptyList()
+
         if (rdoExistingAppServicePlan.isSelected) {
             return listOfNotNull(
                     AppServicePlanValidator.checkAppServicePlanIsSet(cbAppServicePlan.getSelectedValue())
@@ -115,12 +126,38 @@ class AzureAppServicePlanSelector(private val lifetimeDef: LifetimeDefinition) :
     override fun initComponentValidation() {
         txtAppServicePlanName.initValidationWithResult(
                 lifetimeDef,
-                textChangeValidationAction = { if (rdoExistingAppServicePlan.isSelected) return@initValidationWithResult ValidationResult()
+                textChangeValidationAction = { if (!isEnabled || rdoExistingAppServicePlan.isSelected) return@initValidationWithResult ValidationResult()
                     AppServicePlanValidator.checkAppServicePlanNameMaxLength(txtAppServicePlanName.text)
                         .merge(AppServicePlanValidator.checkInvalidCharacters(txtAppServicePlanName.text)) },
-                focusLostValidationAction = { if (rdoExistingAppServicePlan.isSelected) return@initValidationWithResult ValidationResult()
+                focusLostValidationAction = { if (!isEnabled || rdoExistingAppServicePlan.isSelected) return@initValidationWithResult ValidationResult()
                     if (txtAppServicePlanName.text.isEmpty()) return@initValidationWithResult ValidationResult()
                     AppServicePlanValidator.checkAppServicePlanNameMinLength(txtAppServicePlanName.text) })
+    }
+
+    fun fillAppServicePlanComboBox(appServicePlans: List<AppServicePlan>, defaultComparator: (AppServicePlan) -> Boolean = { false }) {
+        cachedAppServicePlan = appServicePlans
+
+        cbAppServicePlan.fillComboBox(
+                appServicePlans.sortedWith(compareBy({ it.operatingSystem() }, { it.name() })),
+                defaultComparator)
+
+        if (appServicePlans.isEmpty()) {
+            rdoCreateAppServicePlan.doClick()
+        }
+    }
+
+    fun fillLocationComboBox(locations: List<Location>, defaultLocation: Region = AzureDefaults.location) {
+        cbLocation.fillComboBox<Location>(locations) { location -> location.region() == defaultLocation }
+    }
+
+    fun fillPricingTiler(pricingTiers: List<PricingTier>, defaultPricingTier: PricingTier = AzureDefaults.pricingTier) {
+        cachedPricingTier = pricingTiers
+        cbPricingTier.fillComboBox(pricingTiers, defaultPricingTier)
+    }
+
+    fun toggleAppServicePlanPanel(isCreatingNew: Boolean) {
+        setComponentsEnabled(isCreatingNew, txtAppServicePlanName, cbLocation, cbPricingTier)
+        setComponentsEnabled(!isCreatingNew, cbAppServicePlan, lblLocationValue, lblExistingPricingTierValue)
     }
 
     private fun initAppServicePlanComboBox() {
@@ -135,8 +172,18 @@ class AzureAppServicePlanSelector(private val lifetimeDef: LifetimeDefinition) :
             val skuDescription = pricingTier.toSkuDescription()
             lblExistingPricingTierValue.text = "${skuDescription.name()} (${skuDescription.tier()})"
 
-            listenerAction()
             lastSelectedAppServicePlan = plan
+        }
+    }
+
+    private fun initLocationComboBox() {
+        cbLocation.renderer = cbLocation.createDefaultRenderer(EMPTY_LOCATION_MESSAGE) { it.displayName() }
+    }
+
+    private fun initPricingTierComboBox() {
+        cbPricingTier.renderer = cbPricingTier.createDefaultRenderer(EMPTY_PRICING_TIER_MESSAGE) {
+            val skuDescription = it.toSkuDescription()
+            "${skuDescription.name()} (${skuDescription.tier()})"
         }
     }
 
@@ -149,10 +196,5 @@ class AzureAppServicePlanSelector(private val lifetimeDef: LifetimeDefinition) :
         rdoExistingAppServicePlan.addActionListener { toggleAppServicePlanPanel(false) }
 
         toggleAppServicePlanPanel(false)
-    }
-
-    private fun toggleAppServicePlanPanel(isCreatingNew: Boolean) {
-        setComponentsEnabled(isCreatingNew, txtAppServicePlanName, cbLocation, cbPricingTier)
-        setComponentsEnabled(!isCreatingNew, cbAppServicePlan, lblLocationValue, lblExistingPricingTierValue)
     }
 }

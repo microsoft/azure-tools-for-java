@@ -27,16 +27,15 @@ import com.jetbrains.rdclient.protocol.IPermittedModalities
 import com.jetbrains.rider.util.idea.lifetime
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
 import com.microsoft.intellij.runner.AzureRiderSettingsEditor
-import com.microsoft.intellij.runner.webapp.webappconfig.ui.RiderWebAppSettingPanel
+import com.microsoft.intellij.runner.webapp.webappconfig.ui.PublishDotNetWebAppPanel
 import javax.swing.JComponent
 
-class RiderWebAppSettingEditor(project: Project,
-                               webAppConfiguration: RiderWebAppConfiguration)
-    : AzureRiderSettingsEditor<RiderWebAppConfiguration>() {
+class RiderWebAppSettingEditor(project: Project, configuration: RiderWebAppConfiguration) :
+        AzureRiderSettingsEditor<RiderWebAppConfiguration>() {
 
     private val lifetimeDef = project.lifetime.createNested()
 
-    private val myPanel: RiderWebAppSettingPanel = RiderWebAppSettingPanel(lifetimeDef.lifetime, project, webAppConfiguration)
+    private val myPanel = PublishDotNetWebAppPanel(lifetimeDef, project, configuration)
 
     override val panel: AzureRiderSettingPanel<RiderWebAppConfiguration>
         get() = myPanel
