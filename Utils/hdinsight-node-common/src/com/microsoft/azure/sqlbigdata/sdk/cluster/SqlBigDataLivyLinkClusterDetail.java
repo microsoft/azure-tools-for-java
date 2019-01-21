@@ -113,11 +113,13 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
     @Override
     @NotNull
     public String mapInternalUrlToPublic(@NotNull String url) {
-        // Extract application ID from internal URL
         // url example: http://mssql-master-pool-0.service-master-pool:8088/proxy/application_1544743878531_0035/
-        Matcher matcher = Pattern.compile("(application_[0-9_]+)").matcher(url);
-        return !matcher.find()
-                ? String.format("https://%s:%d/gateway/default/yarn/", host, knoxPort)
-                : String.format("https://%s:%d/gateway/default/yarn/cluster/app/%s", host, knoxPort, matcher.group(1));
+        Matcher yarnUiMatcher = Pattern.compile("proxy/(application_[0-9_]+)").matcher(url);
+        if (yarnUiMatcher.find()) {
+            String appId = yarnUiMatcher.group(1);
+            return String.format("https://%s:%d/gateway/default/yarn/cluster/app/%s", host, knoxPort, appId);
+        } else {
+            return url;
+        }
     }
 }
