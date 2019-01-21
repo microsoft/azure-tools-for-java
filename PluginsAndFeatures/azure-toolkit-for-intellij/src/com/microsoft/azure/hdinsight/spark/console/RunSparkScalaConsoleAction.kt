@@ -34,6 +34,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiFile
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtils
@@ -67,8 +68,15 @@ abstract class RunSparkScalaConsoleAction
             return
         }
 
-        val batchConfigurationType = SelectSparkApplicationTypeAction.getRunConfigurationType()?:
-            throw RuntimeConfigurationError("Could not determine the Spark run configuration. Please config a default Spark application type from context menu or create a run configuration.")
+        val batchConfigurationType = SelectSparkApplicationTypeAction.getRunConfigurationType()
+        if(batchConfigurationType == null){
+            Messages.showErrorDialog(
+                    project,
+                    "Unable to start the interactive console. Please select a run configuration. \nOr specify a default Spark application type in the context menu.",
+                    "Configuration missing")
+            return
+        }
+//            throw RuntimeConfigurationError("Could not determine the Spark run configuration.")
 
         val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
 
