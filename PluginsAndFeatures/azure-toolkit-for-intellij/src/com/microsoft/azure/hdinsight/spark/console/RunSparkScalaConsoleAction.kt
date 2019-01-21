@@ -33,6 +33,7 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.ex.ActionManagerEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiFile
@@ -52,9 +53,6 @@ abstract class RunSparkScalaConsoleAction
     : AnAction(), RunConsoleAction.RunActionBase<LivySparkBatchJobRunConfigurationType>, ILogger {
     abstract val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
 
-    private val NOTIFICATION_GROUP_ID = "Azure Plugin"
-
-    @Throws(RuntimeConfigurationError::class)
     override fun actionPerformed(event: AnActionEvent) {
         val dataContext = event.dataContext
         val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return
@@ -70,13 +68,10 @@ abstract class RunSparkScalaConsoleAction
 
         val batchConfigurationType = SelectSparkApplicationTypeAction.getRunConfigurationType()
         if(batchConfigurationType == null){
-            Messages.showErrorDialog(
-                    project,
-                    "Unable to start the interactive console. Please select a run configuration. \nOr specify a default Spark application type in the context menu.",
-                    "Configuration missing")
+            val action = ActionManagerEx.getInstance().getAction("Actions.SparkRunConsoleActionGroups")
+            action?.actionPerformed(event)
             return
         }
-//            throw RuntimeConfigurationError("Could not determine the Spark run configuration.")
 
         val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
 
@@ -99,6 +94,7 @@ abstract class RunSparkScalaConsoleAction
         runInReadAction {
             val factory = configurationType.configurationFactories[0]
             val setting = RunManager.getInstance(project).createConfiguration(name, factory)
+            setting.isEditBeforeRun = true
             handler.apply(setting.configuration)
             runFromSetting(setting, runManagerEx)
         }
@@ -110,12 +106,17 @@ abstract class RunSparkScalaConsoleAction
         }
     }
 
+    abstract val focusedTabIndex: Int
+
+    abstract val isLocalRunConfigEnabled: Boolean
+
     private fun runFromSetting(setting: RunnerAndConfigurationSettings, runManagerEx: RunManagerEx) {
         val configuration = setting.configuration
         runManagerEx.setTemporaryConfiguration(setting)
 
         if (configuration is LivySparkBatchJobRunConfiguration) {
-            configuration.model.focusedTabIndex = 1
+            configuration.model.focusedTabIndex = focusedTabIndex
+            configuration.model.isLocalRunConfigEnabled = isLocalRunConfigEnabled
         }
 
         val runExecutor = DefaultRunExecutor.getRunExecutorInstance()
