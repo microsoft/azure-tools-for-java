@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkJobException
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
 import com.microsoft.intellij.forms.ErrorMessageForm
 import org.apache.commons.lang.exception.ExceptionUtils
+import java.io.FileNotFoundException
 
 const val ToolPackageSuffix: String = "com.microsoft.azure"
 
@@ -47,10 +48,11 @@ object SparkToolExceptionFactory : ClassifiedExceptionFactory() {
         val stackTrace = if (exp != null) ExceptionUtils.getStackTrace(exp) else EmptyLog
         return if (exp !is YarnDiagnosticsException
                 // Thrown from Azure blob storage SDK, refer to Issue #2580
-                && !(exp is IllegalArgumentException && stackTrace.contains("com.microsoft.azure.storage.CloudStorageAccount"))
+                && exp !is IllegalArgumentException
                 // Thrown from creating Livy helper session to upload artifacts,refer to Issue #2552
                 && exp !is SessionNotStartException
                 && exp !is SparkJobException
+                && exp !is FileNotFoundException
                 && stackTrace.contains(ToolPackageSuffix)) {
             SparkToolException(exp)
         } else null

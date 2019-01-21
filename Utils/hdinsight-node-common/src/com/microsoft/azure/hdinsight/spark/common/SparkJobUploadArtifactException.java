@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  * <p/>
  * All rights reserved.
@@ -18,28 +18,13 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
-package com.microsoft.azure.hdinsight.common.classifiedexception
 
-import com.microsoft.azure.hdinsight.spark.common.SparkJobException
-import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
-import java.io.FileNotFoundException
+package com.microsoft.azure.hdinsight.spark.common;
 
-class SparkUserException(exp: Throwable?) : ClassifiedException(exp) {
-    override val title: String = "Spark User Error"
-
-    override fun handleByUser() {
-    }
-}
-
-object SparkUserExceptionFactory : ClassifiedExceptionFactory() {
-    override fun createClassifiedException(exp: Throwable?): ClassifiedException? {
-        return if (exp is YarnDiagnosticsException
-                // Throw from wrong class name ,refer to issue 1827 and 2466
-                || exp is SparkJobException
-                || exp is IllegalArgumentException
-                || exp is FileNotFoundException) {
-            SparkUserException(exp)
-        } else null
+public class SparkJobUploadArtifactException extends SparkJobException {
+    public SparkJobUploadArtifactException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

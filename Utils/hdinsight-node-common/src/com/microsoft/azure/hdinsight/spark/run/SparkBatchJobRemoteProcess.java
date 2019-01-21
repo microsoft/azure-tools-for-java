@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob;
+import com.microsoft.azure.hdinsight.spark.common.SparkJobUploadArtifactException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.io.output.NullOutputStream;
@@ -222,6 +223,10 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     protected Observable<? extends ISparkBatchJob> prepareArtifact() {
         return getSparkJob()
                 .deploy(artifactPath)
+                .onErrorResumeNext(err -> {
+                    Throwable rootCause = err.getCause() != null ? err.getCause() : err;
+                    return Observable.error(new SparkJobUploadArtifactException("Failed to upload Spark application artifacts: " + rootCause.getMessage(), rootCause));
+                })
                 .subscribeOn(schedulers.processBarVisibleAsync("Deploy the jar file into cluster"));
     }
 

@@ -34,6 +34,7 @@ import javax.swing.JComponent
 
 class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterModule): AddNewClusterForm(project, module) {
     private val IPV4_ADDRESS_PATTERN = "^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$"
+
     init {
         title = "Link SQL Server Big Data Cluster"
 
@@ -75,11 +76,11 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
     override fun validateBasicInputs() {
         validationErrorMessageField.text =
                 if (StringUtils.isBlank(arisHostField.text)) {
-                    "Host can't be empty"
+                    "Server can't be empty"
                 } else if (!IPV4_ADDRESS_PATTERN.toRegex().matches(arisHostField.text)) {
-                    "Host format is not valid"
+                    "Server format is not valid"
                 } else if (ctrlProvider.doeshostExistInSqlBigDataClusters(arisHostField.text)) {
-                    "Host already exists in linked clusters"
+                    "Server already exists in linked clusters"
                 } else if (StringUtils.isNotBlank(arisClusterNameField.text) &&
                     ctrlProvider.doesClusterNameExistInSqlBigDataClusters(arisClusterNameField.text)) {
                     "Cluster name already exists in linked clusters"
