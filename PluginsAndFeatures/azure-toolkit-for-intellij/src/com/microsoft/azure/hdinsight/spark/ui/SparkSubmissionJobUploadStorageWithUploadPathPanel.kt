@@ -133,18 +133,29 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                           model : SparkSubmitJobUploadStorageModel) {
             if (checkEvent is SparkSubmissionJobUploadStorageCtrl.StorageCheckSelectedClusterEvent) {
                 val optionTypes = clusterDetail.storageOptionsType.optionTypes
-                // if selectedItem is null ,will trigger storage type combo box deselected event and
+
+                // if selection.selectedItem is null ,will trigger storage type combo box deselected event and
                 // event.item is the model getSelectedItem which is model(0)
-                // reset selectedItem will trigger deselected and selected event which will repaint the panel
+                // reset selectedItem will trigger deselected and selected event which will repaint the panel in setData
                 uploadStorage.deployStorageTypeSelection = null
 
-                // check cluster type then reset storage combo box
+                // there exist 4 cases to set the storage type
+                // 1.select cluster -> set to default
+                // 2.reload config with not null type -> set to saved type
+                // 3.reload config with null storage type -> set to default
+                // 3.create config  -> set to default
                 uploadStorage.deployStorageTypesModel = ImmutableComboBoxModel(optionTypes).apply {
                     if (checkEvent.preClusterName != null) {
-                        // If preClusterName is not set, the event is triggered by creating config or reloading a saved config
+                        // for case1, preClusterName is not null
                         model.storageAccountType = clusterDetail.defaultStorageType
                     } else {
+                        // for case2, model.selectedItem has value since loading config can trigger setData
                         model.storageAccountType = viewModel.uploadStorage.deployStorageTypesModel.selectedItem as? SparkSubmitStorageType?
+                    }
+
+                    // for case3 && 4 ,both preClusterName and model.selectItem are null
+                    if(model.storageAccountType == null){
+                        model.storageAccountType = clusterDetail.defaultStorageType
                     }
 
                     selectedItem = model.storageAccountType
@@ -300,69 +311,62 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
     }
 
     override fun setData(data: SparkSubmitJobUploadStorageModel) {
-        //data -> model.selectedItem when reloading saved config
-        var isReload =data.storageAccountType!=null && viewModel.uploadStorage.deployStorageTypesModel.selectedItem==null && viewModel.uploadStorage.deployStorageTypeSelection == null
-
-        if (data.storageAccountType!=null && viewModel.uploadStorage.deployStorageTypesModel.selectedItem != data.storageAccountType) {
+        if (data.storageAccountType != null && viewModel.uploadStorage.deployStorageTypesModel.selectedItem != data.storageAccountType) {
             viewModel.uploadStorage.deployStorageTypesModel.selectedItem = data.storageAccountType
-          }
+        }
 
-            // data -> Component
-            val applyData: () -> Unit = {
-                if (viewModel.uploadStorage.deployStorageTypeSelection != data.storageAccountType) {
-                    viewModel.uploadStorage.deployStorageTypeSelection = data.storageAccountType
+        // data -> Component
+        val applyData: () -> Unit = {
+            if (viewModel.uploadStorage.deployStorageTypeSelection != data.storageAccountType) {
+                viewModel.uploadStorage.deployStorageTypeSelection = data.storageAccountType
+            }
+
+            storagePanel.errorMessage = data.errorMsg
+            uploadPathField.text = data.uploadPath
+            when (data.storageAccountType) {
+                SparkSubmitStorageType.BLOB -> {
+                    storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
+                    val credentialAccount = data.getCredentialAzureBlobAccount()
+                    storagePanel.azureBlobCard.storageKeyField.text =
+                            if (StringUtils.isEmpty(data.errorMsg) && StringUtils.isEmpty(data.storageKey)) {
+                                credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.storageAccount) }
+                            } else {
+                                data.storageKey
+                            }
+                    if (data.containersModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedContainer)) {
+                        storagePanel.azureBlobCard.storageContainerUI.comboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
+                    } else {
+                        storagePanel.azureBlobCard.storageContainerUI.comboBox.model = data.containersModel as DefaultComboBoxModel<Any>
+                    }
                 }
-
-                storagePanel.errorMessage = data.errorMsg
-                uploadPathField.text = data.uploadPath
-                when (data.storageAccountType) {
-                    SparkSubmitStorageType.BLOB -> {
-                        storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
-                        val credentialAccount = data.getCredentialAzureBlobAccount()
-                        storagePanel.azureBlobCard.storageKeyField.text =
-                                if (StringUtils.isEmpty(data.errorMsg) && StringUtils.isEmpty(data.storageKey)) {
-                                    credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.storageAccount) }
-                                } else {
-                                    data.storageKey
-                                }
-                        if (data.containersModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedContainer)) {
-                            storagePanel.azureBlobCard.storageContainerUI.comboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
-                        } else {
-                            storagePanel.azureBlobCard.storageContainerUI.comboBox.model = data.containersModel as DefaultComboBoxModel<Any>
-                        }
+                SparkSubmitStorageType.ADLS_GEN1 -> {
+                    // Only set for changed
+                    if (storagePanel.adlsCard.adlsRootPathField.text != data.adlsRootPath) {
+                        storagePanel.adlsCard.adlsRootPathField.text = data.adlsRootPath
                     }
-                    SparkSubmitStorageType.ADLS_GEN1 -> {
-                        // Only set for changed
-                        if (storagePanel.adlsCard.adlsRootPathField.text != data.adlsRootPath) {
-                            storagePanel.adlsCard.adlsRootPathField.text = data.adlsRootPath
-                        }
 
-                        // show sign in/out panel based on whether user has signed in or not
-                        val curLayout = storagePanel.adlsCard.azureAccountCards.layout as CardLayout
-                        if (AzureSparkClusterManager.getInstance().isSignedIn()) {
-                            curLayout.show(storagePanel.adlsCard.azureAccountCards, storagePanel.adlsCard.signOutCard.title)
-                            storagePanel.adlsCard.signOutCard.azureAccountLabel.text = AzureSparkClusterManager.getInstance().getAzureAccountEmail()
-                        } else {
-                            curLayout.show(storagePanel.adlsCard.azureAccountCards, storagePanel.adlsCard.signInCard.title)
-                        }
+                    // show sign in/out panel based on whether user has signed in or not
+                    val curLayout = storagePanel.adlsCard.azureAccountCards.layout as CardLayout
+                    if (AzureSparkClusterManager.getInstance().isSignedIn()) {
+                        curLayout.show(storagePanel.adlsCard.azureAccountCards, storagePanel.adlsCard.signOutCard.title)
+                        storagePanel.adlsCard.signOutCard.azureAccountLabel.text = AzureSparkClusterManager.getInstance().getAzureAccountEmail()
+                    } else {
+                        curLayout.show(storagePanel.adlsCard.azureAccountCards, storagePanel.adlsCard.signInCard.title)
                     }
-                    SparkSubmitStorageType.WEBHDFS -> {
-                        if (storagePanel.webHdfsCard.webHdfsRootPathField.text != data.webHdfsRootPath) {
-                            storagePanel.webHdfsCard.webHdfsRootPathField.text = data.webHdfsRootPath
-                        }
+                }
+                SparkSubmitStorageType.WEBHDFS -> {
+                    if (storagePanel.webHdfsCard.webHdfsRootPathField.text != data.webHdfsRootPath) {
+                        storagePanel.webHdfsCard.webHdfsRootPathField.text = data.webHdfsRootPath
+                    }
 
-                        // show sign in/out panel based on whether user has signed in or not
-                        val curLayout = storagePanel.webHdfsCard.authAccountForWebHdfsCards.layout as CardLayout
-                        curLayout.show(storagePanel.webHdfsCard.authAccountForWebHdfsCards, storagePanel.webHdfsCard.signOutCard.title)
-                        storagePanel.webHdfsCard.signOutCard.authUserNameLabel.text = data.webHdfsAuthUser
-                    }
+                    // show sign in/out panel based on whether user has signed in or not
+                    val curLayout = storagePanel.webHdfsCard.authAccountForWebHdfsCards.layout as CardLayout
+                    curLayout.show(storagePanel.webHdfsCard.authAccountForWebHdfsCards, storagePanel.webHdfsCard.signOutCard.title)
+                    storagePanel.webHdfsCard.signOutCard.authUserNameLabel.text = data.webHdfsAuthUser
                 }
             }
-           if(!isReload) {
-               ApplicationManager.getApplication().invokeLater(applyData, ModalityState.any())
-           } else {
-               ApplicationManager.getApplication().invokeAndWait(applyData, ModalityState.any())
-           }
+        }
+        ApplicationManager.getApplication().invokeAndWait(applyData, ModalityState.any())
     }
 
     override fun dispose() {
