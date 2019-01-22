@@ -29,6 +29,8 @@ import com.intellij.openapi.command.undo.UndoUtil
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.EditorKind
 import com.microsoft.azure.hdinsight.common.mvc.IdeaSettableControlView
+import org.json.JSONException
+import org.json.JSONObject
 import javax.swing.JComponent
 import javax.swing.JSplitPane
 import javax.swing.JSplitPane.HORIZONTAL_SPLIT
@@ -78,7 +80,16 @@ abstract class LivyBatchJobViewer : Disposable, IdeaSettableControlView<LivyBatc
         jobTableViewport.setDataInDispatch(from.tableViewportModel)
 
         runWriteAction {
-            jobDetailDocument.setText(from.jobDetail ?: jobDetailNotSetMessage)
+            // TODO: Leverage IntelliJ's `Reformat Code` action to format JSON text with syntax highlighted
+            val formattedText = from.jobDetail?.let {
+                try {
+                    JSONObject(from.jobDetail).toString(4)
+                } catch (err: JSONException) {
+                    "<broken response>\n${from.jobDetail}"
+                }
+            } ?: jobDetailNotSetMessage
+
+            jobDetailDocument.setText(formattedText)
         }
     }
 }

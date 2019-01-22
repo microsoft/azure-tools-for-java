@@ -14,6 +14,8 @@ class CosmosServerlessSparkConfiguration(name: String, override val module: Cosm
 
     override fun getSuggestedNamePrefix() : String = "[Spark on Cosmos Serverless]"
 
+    override fun getErrorMessageClusterNull(): String = "The account should be selected as the target for Spark application submission"
+
     @Throws(RuntimeConfigurationException::class)
     override fun checkSubmissionConfigurationBeforeRun(runner: SparkSubmissionRunner) {
         super.checkSubmissionConfigurationBeforeRun(runner)
