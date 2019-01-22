@@ -134,21 +134,34 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             if (checkEvent is SparkSubmissionJobUploadStorageCtrl.StorageCheckSelectedClusterEvent) {
                 val optionTypes = clusterDetail.storageOptionsType.optionTypes
 
-                // if selectedItem is null ,will trigger storage type combo box deselected event and
+                // if selection.selectedItem is null ,will trigger storage type combo box deselected event and
                 // event.item is the model getSelectedItem which is model(0)
-                // reset selectedItem will trigger deselected and selected event which will repaint the panel
+                // reset selectedItem will trigger deselected and selected event which will repaint the panel in setData
                 uploadStorage.deployStorageTypeSelection = null
 
-                // check cluster type then reset storage combo box
+                // there exist 4 cases to set the storage type
+                // 1.select cluster -> set to default
+                // 2.reload config with not null type -> set to saved type
+                // 3.reload config with null storage type -> set to default
+                // 3.create config  -> set to default
                 uploadStorage.deployStorageTypesModel = ImmutableComboBoxModel(optionTypes).apply {
                     if (checkEvent.preClusterName != null) {
-                        // If preClusterName is not set, the event is triggered by creating config or reloading a saved config
+                        // for case1, preClusterName is not null
+                        model.storageAccountType = clusterDetail.defaultStorageType
+                    } else {
+                        // for case2, model.selectedItem has value since loading config can trigger setData
+                        model.storageAccountType = viewModel.uploadStorage.deployStorageTypesModel.selectedItem as? SparkSubmitStorageType?
+                    }
+
+                    // for case3 && 4 ,both preClusterName and model.selectItem are null
+                    if(model.storageAccountType == null){
                         model.storageAccountType = clusterDetail.defaultStorageType
                     }
 
                     selectedItem = model.storageAccountType
                 }
             }
+
         }
 
         private fun validateStorageInfo(checkEvent:StorageCheckEvent): Observable<SparkSubmitJobUploadStorageModel> {
@@ -255,6 +268,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                     errorMsg = "Selected ADLA account does not exist"
                                 }
                             }
+                            else -> model.apply {
+                                uploadPath = invalidUploadPath
+                                errorMsg = "Storage type is undefined"
+                            }
                         }
                     }
                     .doOnNext { data ->
@@ -274,7 +291,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         // Component -> Data
         data.errorMsg = storagePanel.errorMessage
         data.uploadPath = uploadPathField.text
-        data.storageAccountType = viewModel.uploadStorage.deployStorageTypeSelection ?: SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
+        data.storageAccountType = viewModel.uploadStorage.deployStorageTypesModel.selectedItem as? SparkSubmitStorageType
+
         when (viewModel.uploadStorage.deployStorageTypeSelection) {
             SparkSubmitStorageType.BLOB -> {
                 data.storageAccount = storagePanel.azureBlobCard.storageAccountField.text.trim()
@@ -293,6 +311,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
     }
 
     override fun setData(data: SparkSubmitJobUploadStorageModel) {
+        if (data.storageAccountType != null && viewModel.uploadStorage.deployStorageTypesModel.selectedItem != data.storageAccountType) {
+            viewModel.uploadStorage.deployStorageTypesModel.selectedItem = data.storageAccountType
+        }
+
         // data -> Component
         val applyData: () -> Unit = {
             if (viewModel.uploadStorage.deployStorageTypeSelection != data.storageAccountType) {
@@ -333,18 +355,18 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                     }
                 }
                 SparkSubmitStorageType.WEBHDFS -> {
-                    if(storagePanel.webHdfsCard.webHdfsRootPathField.text != data.webHdfsRootPath){
+                    if (storagePanel.webHdfsCard.webHdfsRootPathField.text != data.webHdfsRootPath) {
                         storagePanel.webHdfsCard.webHdfsRootPathField.text = data.webHdfsRootPath
                     }
 
                     // show sign in/out panel based on whether user has signed in or not
                     val curLayout = storagePanel.webHdfsCard.authAccountForWebHdfsCards.layout as CardLayout
-                    curLayout.show(storagePanel.webHdfsCard.authAccountForWebHdfsCards,storagePanel.webHdfsCard.signOutCard.title)
+                    curLayout.show(storagePanel.webHdfsCard.authAccountForWebHdfsCards, storagePanel.webHdfsCard.signOutCard.title)
                     storagePanel.webHdfsCard.signOutCard.authUserNameLabel.text = data.webHdfsAuthUser
                 }
             }
         }
-        ApplicationManager.getApplication().invokeLater(applyData, ModalityState.any())
+        ApplicationManager.getApplication().invokeAndWait(applyData, ModalityState.any())
     }
 
     override fun dispose() {

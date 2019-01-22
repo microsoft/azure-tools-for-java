@@ -122,6 +122,10 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                             try {
                                 val clientStorageAccount = ClientStorageAccount(toUpdate.storageAccount)
                                         .apply { primaryKey = toUpdate.storageKey }
+                                val credentialAccount = getCredentialAzureBlobAccount()
+                                credentialAccount?.let {
+                                    view.secureStore?.savePassword(credentialAccount, storageAccount, storageKey) }
+
                                 // Add Timeout for list containers operation to avoid getting stuck
                                 // when storage account or key is invalid
                                 val requestOptions = BlobRequestOptions().apply { maximumExecutionTimeInMs = 5000 }
@@ -135,9 +139,7 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                                     containersModel.selectedItem = containersModel.getElementAt(0)
                                     selectedContainer = containersModel.getElementAt(0)
                                     uploadPath = getAzureBlobStoragePath(ClusterManagerEx.getInstance().getBlobFullName(storageAccount), selectedContainer)
-                                    val credentialAccount = getCredentialAzureBlobAccount()
-                                    credentialAccount?.let {
-                                        view.secureStore?.savePassword(credentialAccount, storageAccount, storageKey) }
+
                                 errorMsg = null
                             } else {
                                 errorMsg = "No container found in this storage account"
