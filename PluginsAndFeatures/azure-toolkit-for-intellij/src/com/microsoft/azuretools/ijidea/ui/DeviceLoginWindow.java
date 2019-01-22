@@ -31,6 +31,9 @@ import com.microsoft.aad.adal4j.AuthenticationException;
 import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.aad.adal4j.DeviceCode;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import java.awt.Desktop;
 import java.awt.Toolkit;
@@ -87,6 +90,8 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
                                           final AuthenticationCallback<AuthenticationResult> callback) {
         final long interval = deviceCode.getInterval();
         long remaining = deviceCode.getExpiresIn();
+        // Close logger for adal sdk will write useless error log
+        Logger.getRootLogger().setLevel(Level.OFF);
         while (remaining > 0 && authenticationResult == null) {
             try {
                 remaining -= interval;
@@ -102,6 +107,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
                 }
             }
         }
+        LogManager.resetConfiguration();
         closeDialog();
     }
 
