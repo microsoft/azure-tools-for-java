@@ -27,7 +27,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.spark.run.action.RunTwoSequentialActions
+import com.microsoft.azure.hdinsight.spark.run.action.SeqActions
 
 
 class SparkRunConsoleActionGroups : QuickSwitchSchemeAction() {
@@ -37,5 +37,5 @@ class SparkRunConsoleActionGroups : QuickSwitchSchemeAction() {
     }
 }
 
-class LivySparkSelectTypeAndRunConsoleAction : RunTwoSequentialActions("Actions.SelectHDInsightSparkType", "Actions.SubmitSparkApplicationAction")
-class CosmosSparkSelectTypeAndRunConsoleAction : RunTwoSequentialActions("Actions.SelectCosmosSparkType", "Actions.SubmitSparkApplicationAction")
+class LivySparkSelectTypeAndRunConsoleAction : SeqActions("Actions.SelectHDInsightSparkType", "Actions.SubmitSparkApplicationAction")
+class CosmosSparkSelectTypeAndRunConsoleAction : SeqActions("Actions.SelectCosmosSparkType", "Actions.SubmitSparkApplicationAction")

@@ -27,15 +27,14 @@ import com.intellij.openapi.actionSystem.ex.ActionManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 
-open class RunTwoSequentialActions(private val firstActionId: String, private val secondActionId: String): AzureAnAction(), ILogger {
+open class SeqActions(private vararg val actionIds: String): AzureAnAction(), ILogger {
     override fun onActionPerformed(anActionEvent: AnActionEvent?) {
-        if(anActionEvent != null) {
-            val firstAction = ActionManagerEx.getInstance().getAction(firstActionId)
-            firstAction?.actionPerformed(anActionEvent)
-                    ?: log().error("Can't perform the first action with id $firstActionId")
-            val secondAction = ActionManagerEx.getInstance().getAction(secondActionId)
-            secondAction?.actionPerformed(anActionEvent)
-                    ?: log().error("Can't perform the second action with id $secondActionId")
+        if (anActionEvent != null) {
+            for (actiondId: String in actionIds) {
+                val action = ActionManagerEx.getInstance().getAction(actiondId)
+                action?.actionPerformed(anActionEvent)
+                        ?: log().error("Can't perform the action with id $actiondId")
+            }
         }
     }
 }

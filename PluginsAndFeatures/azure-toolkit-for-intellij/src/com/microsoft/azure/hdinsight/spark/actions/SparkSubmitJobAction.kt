@@ -32,7 +32,7 @@ import com.intellij.openapi.actionSystem.ex.ActionManagerEx
 import com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys.*
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor
 import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtils
-import com.microsoft.azure.hdinsight.spark.run.action.RunTwoSequentialActions
+import com.microsoft.azure.hdinsight.spark.run.action.SeqActions
 import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
@@ -111,6 +111,6 @@ open class SparkSubmitJobAction : AzureAnAction() {
     }
 }
 
-class LivySparkSelectAndSubmitAction : RunTwoSequentialActions("Actions.SelectHDInsightSparkType", "Actions.SubmitSparkApplicationAction")
-class CosmosSparkSelectAndSubmitAction : RunTwoSequentialActions("Actions.SelectCosmosSparkType", "Actions.SubmitSparkApplicationAction")
-class CosmosServerlessSparkSelectAndSubmitAction : RunTwoSequentialActions("Actions.SelectCosmosServerlessSparkType", "Actions.SubmitSparkApplicationAction")
+class LivySparkSelectAndSubmitAction : SeqActions("Actions.SelectHDInsightSparkType", "Actions.SubmitSparkApplicationAction")
+class CosmosSparkSelectAndSubmitAction : SeqActions("Actions.SelectCosmosSparkType", "Actions.SubmitSparkApplicationAction")
+class CosmosServerlessSparkSelectAndSubmitAction : SeqActions("Actions.SelectCosmosServerlessSparkType", "Actions.SubmitSparkApplicationAction")
