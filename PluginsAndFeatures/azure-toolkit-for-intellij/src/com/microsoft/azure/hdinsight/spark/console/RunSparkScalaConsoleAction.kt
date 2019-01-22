@@ -67,7 +67,7 @@ abstract class RunSparkScalaConsoleAction
         }
 
         val batchConfigurationType = SelectSparkApplicationTypeAction.getRunConfigurationType()
-        if(batchConfigurationType == null){
+        if (batchConfigurationType == null) {
             val action = ActionManagerEx.getInstance().getAction("Actions.SparkRunConsoleActionGroups")
             action?.actionPerformed(event)
             return
