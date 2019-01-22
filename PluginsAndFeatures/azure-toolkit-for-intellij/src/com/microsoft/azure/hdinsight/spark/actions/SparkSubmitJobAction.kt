@@ -113,4 +113,4 @@ open class SparkSubmitJobAction : AzureAnAction() {
 
 class LivySparkSelectAndSubmitAction : RunTwoSequentialActions("Actions.SelectHDInsightSparkType", "Actions.SubmitSparkApplicationAction")
 class CosmosSparkSelectAndSubmitAction : RunTwoSequentialActions("Actions.SelectCosmosSparkType", "Actions.SubmitSparkApplicationAction")
-class CosmosServerlessSparkSelectAndSubmitAction : RunTwoSequentialActions("SelectCosmosServerlessSparkType", "Actions.SubmitSparkApplicationAction")
+class CosmosServerlessSparkSelectAndSubmitAction : RunTwoSequentialActions("Actions.SelectCosmosServerlessSparkType", "Actions.SubmitSparkApplicationAction")
