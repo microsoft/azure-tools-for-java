@@ -36,7 +36,11 @@ object RunConfigurationActionUtils: ILogger {
         val runner = RunnerRegistry.getInstance().getRunner(environment.executor.id, environment.runProfile) ?: return
         val setting = environment.runnerAndConfigurationSettings ?: return
 
-        if (!setting.isEditBeforeRun) {
+        try {
+            if (setting.isEditBeforeRun && !RunDialog.editConfiguration(environment, "Edit configuration")) {
+                return
+            }
+
             var configError = getRunConfigurationError(environment.runProfile, runner)
             while (configError != null) {
                 if (Messages.YES == Messages.showYesNoDialog(
@@ -54,12 +58,6 @@ object RunConfigurationActionUtils: ILogger {
                 }
 
                 configError = getRunConfigurationError(environment.runProfile, runner)
-            }
-        }
-
-        try {
-            if (setting.isEditBeforeRun && !RunDialog.editConfiguration(environment, "Edit configuration")) {
-                return
             }
 
             environment.assignNewExecutionId()
