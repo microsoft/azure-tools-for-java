@@ -90,8 +90,11 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
                                           final AuthenticationCallback<AuthenticationResult> callback) {
         final long interval = deviceCode.getInterval();
         long remaining = deviceCode.getExpiresIn();
-        // Close logger for adal sdk will write useless error log
-        Logger.getRootLogger().setLevel(Level.OFF);
+        // Close adal logger for it will write useless error log
+        // for issue #2368 https://github.com/Microsoft/azure-tools-for-java/issues/2368
+        Logger authLogger = Logger.getLogger(AuthenticationContext.class);
+        Level authLoggerLevel = authLogger.getLevel();
+        authLogger.setLevel(Level.OFF);
         while (remaining > 0 && authenticationResult == null) {
             try {
                 remaining -= interval;
@@ -107,7 +110,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
                 }
             }
         }
-        LogManager.resetConfiguration();
+        authLogger.setLevel(authLoggerLevel);
         closeDialog();
     }
 
