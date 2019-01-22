@@ -35,6 +35,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+
 import java.awt.Desktop;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -95,22 +96,25 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         Logger authLogger = Logger.getLogger(AuthenticationContext.class);
         Level authLoggerLevel = authLogger.getLevel();
         authLogger.setLevel(Level.OFF);
-        while (remaining > 0 && authenticationResult == null) {
-            try {
-                remaining -= interval;
-                Thread.sleep(interval * 1000);
-                authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
-            } catch (ExecutionException | InterruptedException e) {
-                if (e.getCause() instanceof AuthenticationException &&
-                    ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
-                    // swallow the pending exception
-                } else {
-                    e.printStackTrace();
-                    break;
+        try {
+            while (remaining > 0 && authenticationResult == null) {
+                try {
+                    remaining -= interval;
+                    Thread.sleep(interval * 1000);
+                    authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
+                } catch (ExecutionException | InterruptedException e) {
+                    if (e.getCause() instanceof AuthenticationException &&
+                        ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
+                        // swallow the pending exception
+                    } else {
+                        e.printStackTrace();
+                        break;
+                    }
                 }
             }
+        } finally {
+            authLogger.setLevel(authLoggerLevel);
         }
-        authLogger.setLevel(authLoggerLevel);
         closeDialog();
     }
 
