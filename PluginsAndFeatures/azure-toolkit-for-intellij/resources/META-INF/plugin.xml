@@ -559,24 +559,34 @@
       <reference ref="Spark.RunScalaLocalConsole"/>
       <reference ref="Spark.RunScalaLivyConsole"/>
     </group>
-    <group id="SelectDefaultSparkApplicationTypeActionGroup" text="Default Spark Application Type" description="Select default spark application type" popup="true">
+
+    <group id="Actions.SelectDefaultSparkApplicationTypeActionGroup" text="Default Spark Application Type" description="Select default spark application type" popup="true">
       <add-to-group group-id="ToolsMenu" anchor="last"/>
       <add-to-group group-id="RunContextPopupGroup" anchor="after" relative-to-action="SparkJobDebug"/>
-        <action id="SelectNoneSparkType"
+        <action id="Actions.SelectNoneSparkType"
                 class="com.microsoft.azure.hdinsight.spark.run.action.SelectNoneSparkTypeAction" text="None" >
         </action>
-      <action id="SelectHDInsightSparkType"
+      <action id="Actions.SelectHDInsightSparkType"
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectHDInsightSparkTypeAction" text="Spark on HDInsight" >
       </action>
-      <action id="SelectCosmosSparkType"
+      <action id="Actions.SelectCosmosSparkType"
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosSparkTypeAction" text="Spark on Cosmos" >
       </action>
-      <action id="SelectCosmosServerlessSparkType"
+      <action id="Actions.SelectCosmosServerlessSparkType"
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosServerlessSparkTypeAction" text="Spark on Cosmos Serverless" >
       </action>
     </group>
 
-    <action id="SparkSubmitJobActionGroups" class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups" text="Submit Spark Application"/>
+    <action id="Actions.SparkSubmitJobActionGroups" class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups" text="Submit Spark Application"/>
+
+    <action id="Actions.SparkRunConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunConsoleActionGroups" text="Run Spark Console"/>
+
+    <action id="Actions.RunLivySparkConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.LivySparkSelectTypeAndRunConsoleAction" text="Spark on HDInsight"
+            description="Start interactive console for Spark on HDInsight Application" icon="/icons/Spark.png"/>
+    <action id="Actions.RunCosmosSparkConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.CosmosSparkSelectTypeAndRunConsoleAction" text="Spark on Cosmos"
+            description="Start interactive console for Spark on Cosmos Application" icon="/icons/Spark.png"/>
     </actions>
     <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
 </idea-plugin>
