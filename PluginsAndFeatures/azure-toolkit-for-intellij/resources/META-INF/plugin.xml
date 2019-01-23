@@ -19,6 +19,21 @@
   <change-notes>
     <![CDATA[
     <html>
+    <h3>[3.18.0]</h3>
+      <h4>Added</h4>
+      <ul>
+        <li>Supports Cosmos Serverless Spark submission and jobs list.</li>
+        <li>Accepts SSL certificates automatically if the bypass option is enabled.</li>
+      </ul>
+      <h4>Changed</h4>
+      <ul>
+        <li>Wording of HDInsight and Spark UX.</li>
+        <li>Enhanced Spark Run Configuration validation.</li>
+      </ul>
+      <h4>Fixed</h4>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2368" rel="nofollow">#2368</a> Device login will write useless error log.</li>
+      <ul>
+      </ul>
     <h3>[3.17.0]</h3>
       <h4>Added</h4>
       <ul>
