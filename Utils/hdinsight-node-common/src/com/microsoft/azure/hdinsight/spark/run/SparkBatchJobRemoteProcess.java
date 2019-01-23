@@ -28,6 +28,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob;
 import com.microsoft.azure.hdinsight.spark.common.SparkJobUploadArtifactException;
+import com.microsoft.azure.hdinsight.spark.common.SparkJobFinishedException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.io.output.NullOutputStream;
@@ -35,7 +36,6 @@ import rx.Observable;
 import rx.Subscription;
 import rx.subjects.PublishSubject;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.AbstractMap.SimpleImmutableEntry;
@@ -170,8 +170,15 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
                         ctrlError("Diagnostics: " + sdPair.getValue());
                     }
                 }, err -> {
-                    ctrlSubject.onError(err);
-                    destroy();
+                    if (err instanceof SparkJobFinishedException || err.getCause() instanceof SparkJobFinishedException) {
+                        // If we call destroy() when job is dead, we will get exception with `job is finished` error message
+                        ctrlError("Job is already finished.");
+                        isDestroyed = true;
+                        disconnect();
+                    } else {
+                        ctrlError(err.getMessage());
+                        destroy();
+                    }
                 }, () -> {
                     disconnect();
                 });
@@ -214,7 +221,9 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     protected Observable<ISparkBatchJob> startJobSubmissionLogReceiver(ISparkBatchJob job) {
         return job.getSubmissionLog()
                 .doOnNext(ctrlSubject::onNext)
-                .doOnError(ctrlSubject::onError)
+                // "ctrlSubject::onNext" lead to uncaught exception
+                // while "ctrlError" only print error message in console view
+                .doOnError(err -> ctrlError(err.getMessage()))
                 .lastOrDefault(null)
                 .map((@Nullable SimpleImmutableEntry<MessageInfoType, String> messageTypeText) -> job);
     }

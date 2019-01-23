@@ -1016,7 +1016,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         });
     }
 
-    private Observable<String> getJobLogAggregationDoneObservable() {
+    protected Observable<String> getJobLogAggregationDoneObservable() {
         return getSparkJobApplicationIdObservable()
                 .flatMap(applicationId ->
                         Observable.fromCallable(() ->

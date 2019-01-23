@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AdAuthManager;
@@ -30,12 +31,23 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.service.ServiceManager;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class SparkBatchAzureSubmission extends SparkBatchSubmission {
@@ -79,6 +91,27 @@ public class SparkBatchAzureSubmission extends SparkBatchSubmission {
         return AdAuthManager.getInstance().getAccessToken(getTenantId(), getResourceEndpoint(), PromptBehavior.Auto);
     }
 
+    private SSLConnectionSocketFactory createSSLSocketFactory() {
+        TrustStrategy ts = ServiceManager.getServiceProvider(TrustStrategy.class);
+        SSLConnectionSocketFactory sslSocketFactory = null;
+
+        if (ts != null) {
+            try {
+                SSLContext sslContext = new SSLContextBuilder()
+                        .loadTrustMaterial(ts)
+                        .build();
+
+                sslSocketFactory = new SSLConnectionSocketFactory(sslContext,
+                        HttpObservable.isSSLCertificateValidationDisabled()
+                                ? NoopHostnameVerifier.INSTANCE
+                                : new DefaultHostnameVerifier());
+            } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+                log().error("Prepare SSL Context for HTTPS failure. " + ExceptionUtils.getStackTrace(e));
+            }
+        }
+        return sslSocketFactory;
+    }
+
     @NotNull
     @Override
     public CloseableHttpClient getHttpClient() throws IOException {
@@ -87,6 +120,7 @@ public class SparkBatchAzureSubmission extends SparkBatchSubmission {
                 .setDefaultHeaders(Arrays.asList(
                         new BasicHeader("Authorization", "Bearer " + getAccessToken()),
                         new BasicHeader("x-ms-kobo-account-name", getAccountName())))
+                .setSSLSocketFactory(createSSLSocketFactory())
                 .build();
     }
 
