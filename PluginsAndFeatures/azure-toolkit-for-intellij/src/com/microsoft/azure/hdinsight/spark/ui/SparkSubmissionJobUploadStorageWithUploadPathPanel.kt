@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.HideableTitledPanel
 import com.intellij.uiDesigner.core.GridConstraints.*
@@ -366,7 +367,12 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                 }
             }
         }
-        ApplicationManager.getApplication().invokeAndWait(applyData, ModalityState.any())
+
+        try {
+            ApplicationManager.getApplication().invokeAndWait(applyData, ModalityState.any())
+        } catch (ignore: ProcessCanceledException) {
+        }
+
     }
 
     override fun dispose() {
