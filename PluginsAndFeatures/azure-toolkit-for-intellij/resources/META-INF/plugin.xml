@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.17.0</version>
+  <version>3.18.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
