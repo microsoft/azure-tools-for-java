@@ -20,19 +20,39 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.console
+package com.microsoft.azuretools.ijidea.ui;
 
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
+import org.jetbrains.annotations.Nullable;
 
-class RunSparkScalaLocalConsoleAction : RunSparkScalaConsoleAction() {
-    override val isLocalRunConfigEnabled: Boolean
-        get() = true
+import javax.swing.*;
 
-    override val focusedTabIndex: Int
-        get() = 0
+public class BypassCertificateVerificationWarningForm extends DialogWrapper {
+    private JPanel contentPanel;
+    private JPanel iconPanel;
+    private JLabel warningIconLabel;
+    private JLabel warningMessageLabel;
 
-    override val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
-        get() = SparkScalaLocalConsoleConfigurationType().confFactory()
+    protected BypassCertificateVerificationWarningForm(@Nullable Project project) {
+        super(project);
+        init();
 
-    override fun getNewSettingName(): String = "Spark Local Console(Scala)"
+        setModal(true);
+        setTitle("Disable SSL Certificate Verification");
+        setOKButtonText("Proceed");
+    }
+
+
+    @Nullable
+    @Override
+    protected JComponent createCenterPanel() {
+        return contentPanel;
+    }
+
+    @Nullable
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        return warningMessageLabel;
+    }
 }

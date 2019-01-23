@@ -25,12 +25,18 @@ package com.microsoft.azure.hdinsight.spark.console
 import com.intellij.execution.RunManagerEx
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfiguration
-import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration
-import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.*
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 
 class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
+    override val focusedTabIndex: Int
+        get() = 1
+
+    override val isLocalRunConfigEnabled: Boolean
+        get() = false
+
     override val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
         get() = SparkScalaLivyConsoleConfigurationType().confFactory()
 
@@ -44,11 +50,9 @@ class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
         var runConfig = selectedConfigSettings?.configuration
 
         event.presentation.isEnabled = when {
-            runConfig == null -> false
-            runConfig.javaClass == CosmosSparkRunConfiguration::class.java -> true
-            runConfig.javaClass == LivySparkBatchJobRunConfiguration::class.java -> true
-            runConfig.javaClass == ArisSparkConfiguration::class.java -> true
-            else -> false
+            runConfig == null -> SelectSparkApplicationTypeAction.getSelectedSparkApplicationType() != SparkApplicationType.CosmosServerlessSpark
+            runConfig.javaClass == CosmosServerlessSparkConfiguration::class.java -> false
+            else -> true
         }
     }
 }

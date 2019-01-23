@@ -23,18 +23,16 @@
 package com.microsoft.azure.hdinsight.spark.actions
 
 import com.intellij.execution.ExecutorRegistry
-import com.intellij.execution.ProgramRunnerUtil
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx
-import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys.*
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor
 import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtils
+import com.microsoft.azure.hdinsight.spark.run.action.SeqActions
 import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
@@ -44,7 +42,7 @@ import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 open class SparkSubmitJobAction : AzureAnAction() {
     open fun submitWithPopupMenu(anActionEvent: AnActionEvent) : Boolean {
         return if (SelectSparkApplicationTypeAction.getSelectedSparkApplicationType() == SparkApplicationType.None) {
-            val action = ActionManagerEx.getInstance().getAction("SparkSubmitJobActionGroups")
+            val action = ActionManagerEx.getInstance().getAction("Actions.SparkSubmitJobActionGroups")
             action?.actionPerformed(anActionEvent)
             true
         } else {
@@ -113,17 +111,6 @@ open class SparkSubmitJobAction : AzureAnAction() {
     }
 }
 
-open class SparkSelectTypeAndSubmitAction(private val selectAction: SelectSparkApplicationTypeAction): AzureAnAction(), ILogger {
-    override fun onActionPerformed(anActionEvent: AnActionEvent?) {
-        if(anActionEvent != null) {
-            selectAction.actionPerformed(anActionEvent)
-            val submitAction = ActionManagerEx.getInstance().getAction("Actions.SubmitSparkApplicationAction")
-            submitAction?.actionPerformed(anActionEvent)
-                    ?: log().error("Can't find the action Actions.SubmitSparkApplicationAction to submit Spark application")
-        }
-    }
-}
-
-class LivySparkSelectAndSubmitAction : SparkSelectTypeAndSubmitAction(ActionManagerEx.getInstance().getAction("SelectHDInsightSparkType") as SelectSparkApplicationTypeAction)
-class CosmosSparkSelectAndSubmitAction : SparkSelectTypeAndSubmitAction(ActionManagerEx.getInstance().getAction("SelectCosmosSparkType") as SelectSparkApplicationTypeAction)
-class CosmosServerlessSparkSelectAndSubmitAction : SparkSelectTypeAndSubmitAction(ActionManagerEx.getInstance().getAction("SelectCosmosServerlessSparkType") as SelectSparkApplicationTypeAction)
+class LivySparkSelectAndSubmitAction : SeqActions("Actions.SelectHDInsightSparkType", "Actions.SubmitSparkApplicationAction")
+class CosmosSparkSelectAndSubmitAction : SeqActions("Actions.SelectCosmosSparkType", "Actions.SubmitSparkApplicationAction")
+class CosmosServerlessSparkSelectAndSubmitAction : SeqActions("Actions.SelectCosmosServerlessSparkType", "Actions.SubmitSparkApplicationAction")
