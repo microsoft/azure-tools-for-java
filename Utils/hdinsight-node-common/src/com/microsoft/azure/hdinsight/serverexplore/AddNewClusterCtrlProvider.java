@@ -40,11 +40,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.client.utils.URIUtils;
 import rx.Observable;
-import sun.security.validator.ValidatorException;
 
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import java.net.URI;
+import java.security.cert.CertificateException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -306,7 +306,7 @@ public class AddNewClusterCtrlProvider {
                                 .setErrorMessageList(ImmutableList.of(Pair.of(toUpdate.ERROR_OUTPUT, errorMsg)));
                     } catch (SSLHandshakeException ex) {
                         //user rejects the ac when linking aris cluster
-                        if (sparkClusterType == SparkClusterType.SQL_BIG_DATA_CLUSTER && ex.getCause() instanceof ValidatorException) {
+                        if (sparkClusterType == SparkClusterType.SQL_BIG_DATA_CLUSTER && ex.getCause() instanceof CertificateException) {
                             return toUpdate
                                     .setErrorMessage(UserRejectCAErrorMsg)
                                     .setErrorMessageList(ImmutableList.of(Pair.of(toUpdate.ERROR_OUTPUT, UserRejectCAErrorMsg)));

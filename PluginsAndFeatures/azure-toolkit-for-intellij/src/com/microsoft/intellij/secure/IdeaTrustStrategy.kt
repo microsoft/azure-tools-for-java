@@ -29,7 +29,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable
 import com.microsoft.intellij.util.PluginUtil
 import org.apache.http.ssl.TrustStrategy
-import sun.security.validator.ValidatorException
+import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
 
 object IdeaTrustStrategy : TrustStrategy, ILogger {
@@ -77,7 +77,7 @@ object IdeaTrustStrategy : TrustStrategy, ILogger {
             // Check the certificate with prompt dialog for untrusted 
             try {
                 CertificateManager.getInstance().trustManager.checkServerTrusted(chain, authType)
-            } catch (exCauseByReject: ValidatorException) {
+            } catch (exCauseByReject: CertificateException) {
                 log().warn("User rejects the untrusted X509 certificates chain $chain for authentication type $authType", exCauseByReject)
                 return false
             }

@@ -40,7 +40,6 @@ import org.apache.http.entity.StringEntity;
 import rx.Observable;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -411,6 +410,6 @@ public abstract class Session implements AutoCloseable, Closeable {
     }
 
     public Observable<String> getLog() {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 }
