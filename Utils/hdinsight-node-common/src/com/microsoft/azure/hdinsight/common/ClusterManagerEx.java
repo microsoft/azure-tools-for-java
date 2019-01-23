@@ -27,6 +27,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.microsoft.azure.hdinsight.metadata.ClusterMetaDataService;
 import com.microsoft.azure.hdinsight.sdk.cluster.*;
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -323,7 +324,11 @@ public class ClusterManagerEx {
         for (IClusterDetail clusterDetail : cachedClusterDetails) {
             if (clusterDetail.getName().equals(clusterName) && clusterDetail instanceof HDInsightAdditionalClusterDetail) {
                 try {
-                    if (clusterDetail.getStorageAccount().getName().equals(storageName)) {
+                    IHDIStorageAccount storageAccount = clusterDetail.getStorageAccount();
+
+                    if (storageAccount == null) {
+                        return 0;
+                    } else if (storageAccount.getName().equals(storageName)) {
                         return 1;
                     }
                 } catch (HDIException e) {
