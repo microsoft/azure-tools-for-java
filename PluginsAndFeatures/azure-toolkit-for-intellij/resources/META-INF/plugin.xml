@@ -32,6 +32,7 @@
       </ul>
       <h4>Fixed</h4>
         <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2368" rel="nofollow">#2368</a> Device login will write useless error log.</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2675" rel="nofollow">#2675</a> Error message pops up when refresh HDInsight. </li>
       <ul>
       </ul>
     <h3>[3.17.0]</h3>
