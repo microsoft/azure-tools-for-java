@@ -607,7 +607,7 @@
             description="Start an interactive console for Spark on Cosmos Application" icon="/icons/Spark.png"/>
 
     <action id="Actions.RunLivySparkLocalConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkSelectTypeThenRunLocalConsoleAction" text="Spark on HDInsight"
+            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLocalConsoleAction" text="Spark on HDInsight"
             description="Start a Spark local console for Spark on HDInsight Application" icon="/icons/Spark.png"/>
     <action id="Actions.RunCosmosSparkLocalConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLocalConsoleAction" text="Spark on Cosmos"

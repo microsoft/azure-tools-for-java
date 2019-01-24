@@ -27,7 +27,6 @@ import com.intellij.execution.RunManagerEx
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.AnAction
@@ -35,7 +34,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiFile
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtils
@@ -53,7 +51,7 @@ abstract class RunSparkScalaConsoleAction
     : AnAction(), RunConsoleAction.RunActionBase<LivySparkBatchJobRunConfigurationType>, ILogger {
     abstract val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
 
-    abstract val selectMenuActionId: String
+    abstract val selectedMenuActionId: String
 
     override fun actionPerformed(event: AnActionEvent) {
         val dataContext = event.dataContext
@@ -70,7 +68,7 @@ abstract class RunSparkScalaConsoleAction
 
         val batchConfigurationType = SelectSparkApplicationTypeAction.getRunConfigurationType()
         if (batchConfigurationType == null) {
-            val action = ActionManagerEx.getInstance().getAction(selectMenuActionId)
+            val action = ActionManagerEx.getInstance().getAction(selectedMenuActionId)
             action?.actionPerformed(event)
             return
         }

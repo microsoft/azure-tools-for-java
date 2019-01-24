@@ -25,7 +25,7 @@ package com.microsoft.azure.hdinsight.spark.console
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 
 class RunSparkScalaLocalConsoleAction : RunSparkScalaConsoleAction() {
-    override val selectMenuActionId: String
+    override val selectedMenuActionId: String
         get() = "Actions.SparkRunLocalConsoleActionGroups"
 
     override val isLocalRunConfigEnabled: Boolean
