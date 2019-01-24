@@ -38,4 +38,4 @@ class SparkRunLivyConsoleActionGroups : QuickSwitchSchemeAction() {
 }
 
 class SelectLivySparkTypeThenRunLivyConsoleAction : SeqActions("Actions.SelectHDInsightSparkType", "Spark.RunScalaLivyConsole")
-class SelectCosmosSparkSelectTypeThenRunLivyConsoleAction : SeqActions("Actions.SelectCosmosSparkType", "Spark.RunScalaLivyConsole")
+class SelectCosmosSparkTypeThenRunLivyConsoleAction : SeqActions("Actions.SelectCosmosSparkType", "Spark.RunScalaLivyConsole")
