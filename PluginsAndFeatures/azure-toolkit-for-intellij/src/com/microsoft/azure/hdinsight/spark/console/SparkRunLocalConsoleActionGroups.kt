@@ -14,5 +14,5 @@ class SparkRunLocalConsoleActionGroups : QuickSwitchSchemeAction() {
     }
 }
 
-class SelectLivySparkSelectTypeThenRunLocalConsoleAction : SeqActions("Actions.SelectHDInsightSparkType", "Spark.RunScalaLocalConsole")
+class SelectLivySparkTypeThenRunLocalConsoleAction : SeqActions("Actions.SelectHDInsightSparkType", "Spark.RunScalaLocalConsole")
 class SelectCosmosSparkTypeThenRunLocalConsoleAction : SeqActions("Actions.SelectCosmosSparkType", "Spark.RunScalaLocalConsole")
