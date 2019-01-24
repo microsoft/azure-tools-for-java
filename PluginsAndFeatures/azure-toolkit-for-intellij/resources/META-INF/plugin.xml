@@ -608,10 +608,10 @@
 
     <action id="Actions.RunLivySparkLocalConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkSelectTypeThenRunLocalConsoleAction" text="Spark on HDInsight"
-            description="Start interactive console for Spark on HDInsight Application" icon="/icons/Spark.png"/>
+            description="Start a Spark local console for Spark on HDInsight Application" icon="/icons/Spark.png"/>
     <action id="Actions.RunCosmosSparkLocalConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLocalConsoleAction" text="Spark on Cosmos"
-            description="Start interactive console for Spark on Cosmos Application" icon="/icons/Spark.png"/>
+            description="Start a Spark local console for Spark on Cosmos Application" icon="/icons/Spark.png"/>
     </actions>
     <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
 </idea-plugin>
