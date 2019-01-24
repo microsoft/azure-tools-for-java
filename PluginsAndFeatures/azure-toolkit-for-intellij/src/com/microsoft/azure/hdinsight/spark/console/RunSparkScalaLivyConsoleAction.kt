@@ -31,6 +31,9 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.*
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 
 class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
+    override val selectMenuActionId: String
+        get() = "Actions.SparkRunLivyConsoleActionGroups"
+
     override val focusedTabIndex: Int
         get() = 1
 

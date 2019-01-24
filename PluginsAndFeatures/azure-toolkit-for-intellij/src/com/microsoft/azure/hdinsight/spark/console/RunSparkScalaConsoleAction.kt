@@ -53,6 +53,8 @@ abstract class RunSparkScalaConsoleAction
     : AnAction(), RunConsoleAction.RunActionBase<LivySparkBatchJobRunConfigurationType>, ILogger {
     abstract val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
 
+    abstract val selectMenuActionId: String
+
     override fun actionPerformed(event: AnActionEvent) {
         val dataContext = event.dataContext
         val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return
@@ -68,7 +70,7 @@ abstract class RunSparkScalaConsoleAction
 
         val batchConfigurationType = SelectSparkApplicationTypeAction.getRunConfigurationType()
         if (batchConfigurationType == null) {
-            val action = ActionManagerEx.getInstance().getAction("Actions.SparkRunConsoleActionGroups")
+            val action = ActionManagerEx.getInstance().getAction(selectMenuActionId)
             action?.actionPerformed(event)
             return
         }
@@ -94,9 +96,14 @@ abstract class RunSparkScalaConsoleAction
         runInReadAction {
             val factory = configurationType.configurationFactories[0]
             val setting = RunManager.getInstance(project).createConfiguration(name, factory)
+
+            // Newly created config should let the user to edit
             setting.isEditBeforeRun = true
             handler.apply(setting.configuration)
             runFromSetting(setting, runManagerEx)
+
+            // Skip edit the next time
+            setting.isEditBeforeRun = false
         }
     }
 
