@@ -88,6 +88,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     protected JPanel arisLivyServiceCard;
     private JPanel authErrorDetailsPanelHolder;
     private JPanel authErrorDetailsPanel;
+    protected JLabel linkResourceTypeLabel;
     protected HideableDecorator authErrorDetailsDecorator;
     protected ConsoleViewImpl consoleViewPanel;
     @NotNull

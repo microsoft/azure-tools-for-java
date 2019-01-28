@@ -38,6 +38,9 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
     init {
         title = "Link SQL Server Big Data Cluster"
 
+        linkResourceTypeLabel.isVisible = false
+        clusterComboBox.isVisible = false
+
         val livyServiceTitle = "Livy Service"
         clusterComboBox.model = DefaultComboBoxModel(arrayOf(livyServiceTitle))
         clusterComboBox.isEnabled = true
