@@ -390,13 +390,13 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     }
 
     @Override
-    public void listRepo(@NotNull List<String> repos) {
+    public void listRepo(List<String> repos) {
         fillTable(repos, tblRepo);
         enableWidgets();
     }
 
     @Override
-    public void listTag(@NotNull List<String> tags) {
+    public void listTag(List<String> tags) {
         fillTable(tags, tblTag);
         enableWidgets();
     }
@@ -430,8 +430,8 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
         txtUserName.setBackground(null);
     }
 
-    private void fillTable(@NotNull List<String> list, @NotNull JBTable table) {
-        if (list.size() > 0) {
+    private void fillTable(List<String> list, @NotNull JBTable table) {
+        if (list != null && list.size() > 0) {
             DefaultTableModel model = (DefaultTableModel) table.getModel();
             model.getDataVector().clear();
             list.stream().sorted().forEach(item -> model.addRow(new String[]{item}));
