@@ -431,7 +431,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     }
 
     private void fillTable(List<String> list, @NotNull JBTable table) {
-        if (list != null && list.size() > 0) {
+        if (list != null && !list.isEmpty()) {
             DefaultTableModel model = (DefaultTableModel) table.getModel();
             model.getDataVector().clear();
             list.stream().sorted().forEach(item -> model.addRow(new String[]{item}));
