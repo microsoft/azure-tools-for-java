@@ -27,6 +27,7 @@ import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.DocumentAdapter
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rdclient.util.idea.createNestedDisposable
+import java.util.function.Supplier
 import javax.swing.JComponent
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
@@ -37,7 +38,7 @@ interface AzureComponent {
 
     fun initImmediateValidation(lifetime: Lifetime, textField: JTextField, validator: () -> ValidationInfo?) {
         ComponentValidator(lifetime.createNestedDisposable())
-                .withValidator { it.updateInfo(validator()) }
+                .withValidator(validator)
                 .installOn(textField)
 
         textField.document.addDocumentListener(object : DocumentAdapter() {
@@ -49,7 +50,7 @@ interface AzureComponent {
 
     fun initFocusLeaveValidation(lifetime: Lifetime, component: JComponent, validator: () -> ValidationInfo?) {
         ComponentValidator(lifetime.createNestedDisposable())
-                .withValidator { it.updateInfo(validator()) }
+                .withFocusValidator(validator)
                 .andStartOnFocusLost()
                 .installOn(component)
     }
