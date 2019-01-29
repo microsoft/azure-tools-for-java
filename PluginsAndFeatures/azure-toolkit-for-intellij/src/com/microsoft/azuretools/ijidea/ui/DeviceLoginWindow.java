@@ -86,9 +86,12 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         });
         // Apply JLabel's font to JEditorPane
         final Font font = UIManager.getFont("Label.font");
-        final String cssRule = String.format("body { font-family: %s ; font-size: %s pt ;}", font.getFamily(),
-            font.getSize());
-        ((HTMLDocument) editorPanel.getDocument()).getStyleSheet().addRule(cssRule);
+        if (font != null) {
+            final String cssRule = String.format("body { font-family: %s ; font-size: %s pt ;}", font.getFamily(),
+                font.getSize());
+            ((HTMLDocument) editorPanel.getDocument()).getStyleSheet().addRule(cssRule);
+        }
+
 
         authExecutor = ApplicationManager.getApplication()
             .executeOnPooledThread(() -> pullAuthenticationResult(ctx, deviceCode, callBack));
