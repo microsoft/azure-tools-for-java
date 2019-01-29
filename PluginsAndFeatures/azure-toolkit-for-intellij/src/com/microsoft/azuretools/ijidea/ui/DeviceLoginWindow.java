@@ -41,6 +41,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.html.HTMLDocument;
+import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.Toolkit;
@@ -84,12 +85,13 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
                 }
             }
         });
-        // Apply JLabel's font to JEditorPane
+        // Apply JLabel's font and color to JEditorPane
         final Font font = UIManager.getFont("Label.font");
-        if (font != null) {
-            final String cssRule = String.format("body { font-family: %s ; font-size: %s pt ;}", font.getFamily(),
-                font.getSize());
-            ((HTMLDocument) editorPanel.getDocument()).getStyleSheet().addRule(cssRule);
+        final Color foregroundColor = UIManager.getColor("Label.foreground");
+        editorPanel.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        if (font != null && foregroundColor != null) {
+            editorPanel.setFont(font);
+            editorPanel.setForeground(foregroundColor);
         }
 
         authExecutor = ApplicationManager.getApplication()
