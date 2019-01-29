@@ -130,6 +130,10 @@ abstract class RunSparkScalaConsoleAction
                 .build()
 
         RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment)
+
+        if (configuration is LivySparkBatchJobRunConfiguration) {
+            configuration.model.isLocalRunConfigEnabled = true
+        }
     }
 
     override fun getMyConfigurationType(): LivySparkBatchJobRunConfigurationType? =
