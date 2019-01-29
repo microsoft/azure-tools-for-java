@@ -92,7 +92,6 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
             ((HTMLDocument) editorPanel.getDocument()).getStyleSheet().addRule(cssRule);
         }
 
-
         authExecutor = ApplicationManager.getApplication()
             .executeOnPooledThread(() -> pullAuthenticationResult(ctx, deviceCode, callBack));
         init();
