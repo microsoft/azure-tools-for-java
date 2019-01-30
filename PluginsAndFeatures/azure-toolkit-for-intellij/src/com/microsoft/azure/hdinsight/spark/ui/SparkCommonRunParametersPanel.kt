@@ -35,7 +35,7 @@ import javax.swing.JPanel
 
 class SparkCommonRunParametersPanel(private val myProject: Project, private val wholePanel : SparkBatchJobConfigurable) {
     private val mainClassPrompt: JLabel = JLabel("Main class name").apply {
-        toolTipText = "Application's java/spark main class"
+        toolTipText = "Application's Java/Spark main class"
     }
 
     private val mainClassTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
