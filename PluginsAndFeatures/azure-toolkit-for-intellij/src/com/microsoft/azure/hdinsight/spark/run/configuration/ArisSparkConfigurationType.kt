@@ -30,11 +30,7 @@ import com.microsoft.azure.hdinsight.common.IconPathBuilder
 import com.microsoft.intellij.util.PluginUtil
 import javax.swing.Icon
 
-class ArisSparkConfigurationType : ConfigurationType {
-    companion object {
-        @JvmStatic
-        val instance by lazy { ConfigurationTypeUtil.findConfigurationType(ArisSparkConfigurationType::class.java) }
-    }
+object ArisSparkConfigurationType : ConfigurationType {
     override fun getIcon(): Icon {
         // TODO: should use Aris config icon
         return PluginUtil.getIcon(IconPathBuilder
@@ -43,7 +39,7 @@ class ArisSparkConfigurationType : ConfigurationType {
     }
 
     override fun getDisplayName(): String {
-        return "Apache Spark on SQL Server"
+        return "Apache Spark on SQL Server Big Data Cluster"
     }
 
     override fun getId(): String {
@@ -51,7 +47,7 @@ class ArisSparkConfigurationType : ConfigurationType {
     }
 
     override fun getConfigurationTypeDescription(): String {
-        return "Spark on SQL Server Run Configuration"
+        return "Spark on SQL Server Big Data Cluster Run Configuration"
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {

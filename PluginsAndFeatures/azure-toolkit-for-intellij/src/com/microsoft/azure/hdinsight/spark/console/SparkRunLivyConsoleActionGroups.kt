@@ -34,8 +34,10 @@ class SparkRunLivyConsoleActionGroups : QuickSwitchSchemeAction() {
     override fun fillActions(project: Project?, group: DefaultActionGroup, dataContext: DataContext) {
         group.add(ActionManager.getInstance().getAction("Actions.RunLivySparkConsoleAction"))
         group.add(ActionManager.getInstance().getAction("Actions.RunCosmosSparkConsoleAction"))
+        group.add(ActionManager.getInstance().getAction("Actions.RunArisSparkConsoleAction"))
     }
 }
 
 class SelectLivySparkTypeThenRunLivyConsoleAction : SeqActions("Actions.SelectHDInsightSparkType", "Spark.RunScalaLivyConsole")
 class SelectCosmosSparkTypeThenRunLivyConsoleAction : SeqActions("Actions.SelectCosmosSparkType", "Spark.RunScalaLivyConsole")
+class SelectArisSparkTypeThenRunLivyConsoleAction : SeqActions("Actions.SelectArisSparkType", "Spark.RunScalaLivyConsole")

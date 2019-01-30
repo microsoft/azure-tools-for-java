@@ -25,10 +25,7 @@ package com.microsoft.azure.hdinsight.spark.run.action
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Toggleable
-import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType
-import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType
-import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration
-import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.*
 import com.microsoft.azuretools.authmanage.CommonSettings
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.intellij.common.CommonConst
@@ -55,6 +52,7 @@ abstract class SelectSparkApplicationTypeAction
                 SparkApplicationType.HDInsight -> LivySparkBatchJobRunConfigurationType.getInstance()
                 SparkApplicationType.CosmosSpark -> CosmosSparkConfigurationType
                 SparkApplicationType.CosmosServerlessSpark -> CosmosServerlessSparkConfigurationType
+                SparkApplicationType.ArisSpark -> ArisSparkConfigurationType
             }
         }
     }
@@ -68,7 +66,6 @@ abstract class SelectSparkApplicationTypeAction
         val presentation = e.presentation
         presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, selected)
         if (e.isFromContextMenu) {
-
             presentation.icon = null
         }
     }
@@ -105,9 +102,16 @@ class SelectCosmosServerlessSparkTypeAction : SelectSparkApplicationTypeAction()
     }
 }
 
+class SelectArisSparkTypeAction : SelectSparkApplicationTypeAction() {
+    override fun getSparkApplicationType() : SparkApplicationType {
+        return SparkApplicationType.ArisSpark
+    }
+}
+
 enum class SparkApplicationType {
     None,
     HDInsight,
     CosmosSpark,
-    CosmosServerlessSpark
+    CosmosServerlessSpark,
+    ArisSpark,
 }
