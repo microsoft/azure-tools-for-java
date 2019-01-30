@@ -31,7 +31,11 @@ import com.microsoft.aad.adal4j.AuthenticationException;
 import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.aad.adal4j.DeviceCode;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+
 import java.awt.Desktop;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -87,20 +91,29 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
                                           final AuthenticationCallback<AuthenticationResult> callback) {
         final long interval = deviceCode.getInterval();
         long remaining = deviceCode.getExpiresIn();
-        while (remaining > 0 && authenticationResult == null) {
-            try {
-                remaining -= interval;
-                Thread.sleep(interval * 1000);
-                authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
-            } catch (ExecutionException | InterruptedException e) {
-                if (e.getCause() instanceof AuthenticationException &&
-                    ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
-                    // swallow the pending exception
-                } else {
-                    e.printStackTrace();
-                    break;
+        // Close adal logger for it will write useless error log
+        // for issue #2368 https://github.com/Microsoft/azure-tools-for-java/issues/2368
+        Logger authLogger = Logger.getLogger(AuthenticationContext.class);
+        Level authLoggerLevel = authLogger.getLevel();
+        authLogger.setLevel(Level.OFF);
+        try {
+            while (remaining > 0 && authenticationResult == null) {
+                try {
+                    remaining -= interval;
+                    Thread.sleep(interval * 1000);
+                    authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
+                } catch (ExecutionException | InterruptedException e) {
+                    if (e.getCause() instanceof AuthenticationException &&
+                        ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
+                        // swallow the pending exception
+                    } else {
+                        e.printStackTrace();
+                        break;
+                    }
                 }
             }
+        } finally {
+            authLogger.setLevel(authLoggerLevel);
         }
         closeDialog();
     }

@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.serverexplore;
 
+import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
@@ -36,11 +37,14 @@ import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManage
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.client.utils.URIUtils;
 import rx.Observable;
-import sun.security.validator.ValidatorException;
+
 import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLPeerUnverifiedException;
 import java.net.URI;
+import java.security.cert.CertificateException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -51,6 +55,11 @@ public class AddNewClusterCtrlProvider {
             "Please click'OK',then accept the untrusted certificate \r\n"+
             "if you want to link to this cluster.Or you can update the \r\n" +
             "host to link to a different cluster.";
+    private static final String InvalidCertificateErrorMsg =
+            "The cluster certificate is invalid.";
+    private static final String InvalidCertificateInfoMsg =
+            "If you want to bypass certificate verification for SQL Server Big Data clusters, " +
+            "check the option in menu option: \"Tools | Azure | Validate Spark Cluster SSL Certificate | Disable\"";
 
     @NotNull
     private SettableControl<AddNewClusterModel> controllableView;
@@ -288,25 +297,44 @@ public class AddNewClusterCtrlProvider {
                     try {
                         JobUtils.authenticate(additionalClusterDetail);
                     } catch (AuthenticationException authErr) {
-                        return toUpdate.setErrorMessage("Authentication Error: " + Optional.ofNullable(authErr.getMessage())
+                        String errorMsg = "Authentication Error: " + Optional.ofNullable(authErr.getMessage())
                                 .filter(msg -> !msg.isEmpty())
                                 .orElse("Wrong username/password") +
-                                " (" + authErr.getErrorCode() + ")");
+                                " (" + authErr.getErrorCode() + ")";
+                        return toUpdate
+                                .setErrorMessage(errorMsg)
+                                .setErrorMessageList(ImmutableList.of(Pair.of(toUpdate.ERROR_OUTPUT, errorMsg)));
                     } catch (SSLHandshakeException ex) {
                         //user rejects the ac when linking aris cluster
-                        if (sparkClusterType == SparkClusterType.SQL_BIG_DATA_CLUSTER && ex.getCause() instanceof ValidatorException) {
-                            return toUpdate.setErrorMessage(UserRejectCAErrorMsg);
+                        if (sparkClusterType == SparkClusterType.SQL_BIG_DATA_CLUSTER && ex.getCause() instanceof CertificateException) {
+                            return toUpdate
+                                    .setErrorMessage(UserRejectCAErrorMsg)
+                                    .setErrorMessageList(ImmutableList.of(Pair.of(toUpdate.ERROR_OUTPUT, UserRejectCAErrorMsg)));
                         }
 
-                        return toUpdate.setErrorMessage("Authentication Error: " + ex.getMessage());
+                        String errorMsg = "Authentication Error: " + ex.getMessage();
+                        return toUpdate
+                                .setErrorMessage(errorMsg)
+                                .setErrorMessageList(ImmutableList.of(Pair.of(toUpdate.ERROR_OUTPUT, errorMsg)));
+                    } catch (SSLPeerUnverifiedException ex) {
+                        String errorMsg = "Authentication Error: " + ex.getMessage();
+                        return toUpdate
+                                .setErrorMessage(errorMsg)
+                                .setErrorMessageList(ImmutableList.of(
+                                        Pair.of(toUpdate.ERROR_OUTPUT, errorMsg),
+                                        Pair.of(toUpdate.ERROR_OUTPUT, InvalidCertificateErrorMsg),
+                                        Pair.of(toUpdate.NORMAL_OUTPUT, InvalidCertificateInfoMsg)));
                     } catch (Exception ex) {
-                        return toUpdate.setErrorMessage("Authentication Error: " + ex.getMessage());
+                        String errorMsg = "Authentication Error: " + ex.getMessage();
+                        return toUpdate
+                                .setErrorMessage(errorMsg)
+                                .setErrorMessageList(ImmutableList.of(Pair.of(toUpdate.ERROR_OUTPUT, errorMsg)));
                     }
 
                     // No issue
                     ClusterManagerEx.getInstance().addAdditionalCluster(additionalClusterDetail);
 
-                    return toUpdate.setErrorMessage(null);
+                    return toUpdate.setErrorMessage(null).setErrorMessageList(null);
                 })
                 .observeOn(ideSchedulers.dispatchUIThread())     // UI operation needs to be in dispatch thread
                 .doOnNext(controllableView::setData)

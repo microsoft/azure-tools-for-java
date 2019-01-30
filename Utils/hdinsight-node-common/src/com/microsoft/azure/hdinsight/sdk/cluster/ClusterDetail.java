@@ -31,6 +31,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.io.IOException;
 import java.net.URI;
@@ -190,11 +191,8 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
         return clusterProperties == null ? null : clusterProperties.getOsType();
     }
 
-    public IHDIStorageAccount getStorageAccount() throws HDIException{
-        if(defaultStorageAccount == null){
-            throw new HDIException("default storage account is null, please call getConfigurationInfo first");
-        }
-
+    @Nullable
+    public IHDIStorageAccount getStorageAccount() {
         return this.defaultStorageAccount;
     }
 
@@ -258,7 +256,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
                 defaultRootPath = coresiteMap.get(ADLS_HOME_MOUNTPOINT);
             }
             return new ADLSStorageAccount(this, accountName, true, defaultRootPath, clusterIdentity);
-        } else {
+        } else if (Pattern.compile(StorageAccountNamePattern).matcher(containerAddress).matches()) {
             String storageAccountName = getStorageAccountName(containerAddress);
             if(storageAccountName == null){
                 throw new HDIException("Failed to get default storage account name");
@@ -277,6 +275,8 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
             }
 
             return new HDStorageAccount(this, storageAccountName, storageAccountKey,true, defaultContainerName);
+        } else {
+            return null;
         }
     }
 
@@ -340,14 +340,16 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     @Override
     public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
         StorageAccountTypeEnum type = StorageAccountTypeEnum.UNKNOWN;
-        try {
-            type = getStorageAccount().getAccountType();
-        } catch (HDIException e) {
+
+        if (getStorageAccount() == null) {
             try {
                 getConfigurationInfo();
-                type = getStorageAccount().getAccountType();
-            } catch (IOException | HDIException | AzureCmdException igonred) {
+            } catch (IOException | HDIException | AzureCmdException ignored) {
             }
+        }
+
+        if (getStorageAccount() != null) {
+            type = getStorageAccount().getAccountType();
         }
 
         if (type == StorageAccountTypeEnum.ADLS) {

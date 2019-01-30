@@ -91,16 +91,27 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
     // All view components
     private val errorMessageLabels = arrayOf(
-            JLabel(if (isSignedIn) "Cluster Name Should not be null, please choose one for submission"
-            else "Can't list cluster, please login within Azure Explorer (View -> Tool Windows -> Azure Explorer) and refresh")
+            JLabel(getErrorMessageClusterNameNull(isSignedIn))
                     .apply { foreground = currentErrorColor },
             JLabel("Artifact should not be null!")
                     .apply { foreground = currentErrorColor },
             JLabel("Could not find the local jar package for Artifact")
                     .apply { foreground = currentErrorColor },
+            JLabel("Main class name should not be null")
+                    .apply {
+                        foreground = currentErrorColor
+                        isVisible = true
+                    },
             JLabel().apply { foreground = currentErrorColor }
             // Don't add more we won't like to add more message labels
     )
+
+    open fun getErrorMessageClusterNameNull(isSignedIn : Boolean) : String {
+        return when {
+            isSignedIn -> "Cluster name should not be null, please choose one for submission"
+            else -> "Can't list cluster, please login within Azure Explorer (View -> Tool Windows -> Azure Explorer) and refresh"
+        }
+    }
 
     val clustersSelectionPrompt: JLabel = JLabel("Spark clusters(Linux only)").apply {
         toolTipText = "The $type cluster you want to submit your application to. Only Linux cluster is supported."
@@ -341,7 +352,10 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             row { c(storageWithUploadPathPanel) { colSpan = 2; fill = FILL_HORIZONTAL }; }
         }
 
-        formBuilder.buildPanel()
+        formBuilder.buildPanel().apply {
+            // Add a margin for the panel
+            border = BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        }
     }
 
     open val component: JComponent

@@ -26,9 +26,10 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.util.net.ssl.CertificateManager
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azure.hdinsight.sdk.common.HttpObservable
 import com.microsoft.intellij.util.PluginUtil
 import org.apache.http.ssl.TrustStrategy
-import sun.security.validator.ValidatorException
+import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
 
 object IdeaTrustStrategy : TrustStrategy, ILogger {
@@ -47,8 +48,13 @@ object IdeaTrustStrategy : TrustStrategy, ILogger {
 
     override fun isTrusted(chain: Array<out X509Certificate>?, authType: String?): Boolean {
         try {
-            //there exists three scenarios 1.non aris cluster 2.linked aris cluster 3.adding a aris cluster
-            //first check without askUser ,this works under case1 and case2
+            // There are four scenarios
+            // 1. The cluster with proper certificate.
+            // 2. The cluster with accepted certificate.
+            // 3. The user forces bypassing all SSL certificate verification
+            // 4. The user rejects a certificate when linking a cluster(Aris), not bypass SSL certificate verification
+
+            // Check the certificate without asking users for case 1 & 2
             val sysMgr = CertificateManager.getInstance().trustManager
             try {
                 sysMgr.checkServerTrusted(chain, authType, true, false)
@@ -57,13 +63,21 @@ object IdeaTrustStrategy : TrustStrategy, ILogger {
                 log().warn("First check untrusted X509 certificates chain $chain for authentication type $authType", err)
             }
 
-            //as for case3, sysmgr always throws ValidatorException exception then customMgr popups ca accept or not dialog
-            //if user accepts,return true
-            //if user rejects,ValidatorException will rethrow then return false
-            //otherwise return false when exp happens during mgr checking cert
+            // Check the global bypass SSL certificate validation option for case 3
+            if (HttpObservable.isSSLCertificateValidationDisabled()) {
+                val isAdded = CertificateManager.getInstance().customTrustManager.addCertificate(chain!![0])
+                if (!isAdded) {
+                    log().warn("Fail to add untrusted X509 certificates chain $chain for authentication type $authType")
+                    return false
+                }
+
+                return true
+            }
+
+            // Check the certificate with prompt dialog for untrusted 
             try {
                 CertificateManager.getInstance().trustManager.checkServerTrusted(chain, authType)
-            } catch (exCauseByReject: ValidatorException) {
+            } catch (exCauseByReject: CertificateException) {
                 log().warn("User rejects the untrusted X509 certificates chain $chain for authentication type $authType", exCauseByReject)
                 return false
             }

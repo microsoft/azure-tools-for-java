@@ -52,7 +52,7 @@ class SparkSubmitJobUploadStorageModel: ILogger {
     var selectedContainer: String? = null
 
     @Attribute("storage_account_type")
-    var storageAccountType: SparkSubmitStorageType = SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
+    var storageAccountType: SparkSubmitStorageType? = null
 
     @get:Transient @set:Transient var errorMsg: String? = null
 

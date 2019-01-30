@@ -192,22 +192,21 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         this.ctrlSubject = ctrlSubject;
         this.accessToken = accessToken;
         this.destinationRootPath = destinationRootPath;
-
-        tryInitAuthInfo(submissionParameter.getClusterName(),submission);
     }
 
-    private void tryInitAuthInfo(String clusterName, SparkBatchSubmission submission) {
+    private void tryInitAuthInfo() {
         try {
+            String clusterName = getSubmissionParameter().getClusterName();
             IClusterDetail clusterDetail = getCluster() != null
                     ? getCluster()
                     : ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
                     .orElseThrow(() -> new HDIException("No cluster name matched selection: " + clusterName));
 
-             if (!StringUtils.isEmpty(clusterDetail.getHttpUserName()) && !StringUtils.isEmpty(clusterDetail.getHttpPassword())) {
+            if (!StringUtils.isEmpty(clusterDetail.getHttpUserName()) && !StringUtils.isEmpty(clusterDetail.getHttpPassword())) {
                 submission.setUsernamePasswordCredential(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
-             }
+            }
         } catch (Exception ex) {
-             log().warn("try to set authorization info fail: " + ex.toString());
+            log().warn("try to set authorization info fail: " + ex.toString());
         }
     }
 
@@ -244,8 +243,10 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
             if (cluster.isPresent()) {
                 try {
-                    SparkBatchSubmission.getInstance()
-                            .setUsernamePasswordCredential(cluster.get().getHttpUserName(), cluster.get().getHttpPassword());
+                    getSubmission().setUsernamePasswordCredential(
+                            cluster.get().getHttpUserName(),
+                            cluster.get().getHttpPassword()
+                    );
                 } catch (HDIException e) {
                     log().warn("No credential provided for Spark batch job.");
                 }
@@ -271,8 +272,10 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
             if (cluster.isPresent()) {
                 try {
-                    SparkBatchSubmission.getInstance()
-                            .setUsernamePasswordCredential(cluster.get().getHttpUserName(), cluster.get().getHttpPassword());
+                    getSubmission().setUsernamePasswordCredential(
+                            cluster.get().getHttpUserName(),
+                            cluster.get().getHttpPassword()
+                    );
                 } catch (HDIException e) {
                     log().warn("No credential provided for Spark batch job.");
                 }
@@ -1013,7 +1016,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         });
     }
 
-    private Observable<String> getJobLogAggregationDoneObservable() {
+    protected Observable<String> getJobLogAggregationDoneObservable() {
         return getSparkJobApplicationIdObservable()
                 .flatMap(applicationId ->
                         Observable.fromCallable(() ->
@@ -1142,6 +1145,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                     });
         } else if (destinationRootPath != null && destinationRootPath.matches(WebHDFSPathPattern)) {
             //use webhdfs
+            tryInitAuthInfo();
             return JobUtils.deployArtifact(this.getSubmission(), destinationRootPath, artifactPath)
                     .map(redirectPath -> {
                         getSubmissionParameter().setFilePath(redirectPath);

@@ -83,7 +83,13 @@ class MockSparkBatchJobViewerControl(private val view: MockSparkBatchJobViewer) 
         Observable.from(sparkJobDesc)
                 .delay(500, TimeUnit.MILLISECONDS)
                 .subscribe { view.getModel(LivyBatchJobViewer.Model::class.java).apply {
-                    jobDetail = """{"message":"hello ${it.jobStatus.appId}!","error no": 0, "id": ${it.jobStatus.id}}"""
+                    jobDetail = if (it.jobStatus.id == 1) {
+                        // Unclosed JSON string
+                        """{"message":"A broken response for ${it.jobStatus.appId}!","error no": 0, "id": ${it.jobStatus.id}"""
+
+                    } else {
+                        """{"message":"hello ${it.jobStatus.appId}!","error no": 0, "id": ${it.jobStatus.id}}"""
+                    }
 
                     view.setData(this)
                 }}

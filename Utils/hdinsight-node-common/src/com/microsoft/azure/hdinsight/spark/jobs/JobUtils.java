@@ -90,9 +90,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Observer;
-import rx.*;
+import rx.Single;
+import rx.Subscription;
 import rx.schedulers.Schedulers;
-import sun.security.validator.ValidatorException;
 
 import java.awt.*;
 import java.io.*;
@@ -102,8 +102,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownServiceException;
 import java.util.*;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -429,7 +429,7 @@ public class JobUtils {
     }
 
     @Nullable
-    private static BlobContainer getSparkClusterDefaultContainer(ClientStorageAccount storageAccount, String dealtContainerName) throws AzureCmdException {
+    private static BlobContainer getSparkClusterContainer(ClientStorageAccount storageAccount, String dealtContainerName) throws AzureCmdException {
         List<BlobContainer> containerList = StorageClientSDKManager.getManager().getBlobContainers(storageAccount.getConnectionString());
         for (BlobContainer container : containerList) {
             if (container.getName().toLowerCase().equals(dealtContainerName.toLowerCase())) {
@@ -443,7 +443,7 @@ public class JobUtils {
     @Deprecated
     public static String uploadFileToAzure(@NotNull File file,
                                            @NotNull IHDIStorageAccount storageAccount,
-                                           @NotNull String defaultContainerName,
+                                           @NotNull String containerName,
                                            @NotNull String uploadFolderPath,
                                            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject,
                                            @Nullable CallableSingleArg<Void, Long> uploadInProcessCallback) throws Exception {
@@ -451,14 +451,13 @@ public class JobUtils {
             try (FileInputStream fileInputStream = new FileInputStream(file)) {
                 try (BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
                     HDStorageAccount blobStorageAccount = (HDStorageAccount) storageAccount;
-                    BlobContainer defaultContainer = getSparkClusterDefaultContainer(blobStorageAccount, defaultContainerName);
-
-                    if (defaultContainer == null) {
-                        throw new UnsupportedOperationException("Can't get the default container.");
+                    BlobContainer container = getSparkClusterContainer(blobStorageAccount, containerName);
+                    if (container == null) {
+                        throw new IllegalArgumentException("Can't get the valid container.");
                     }
 
                     String path = String.format("SparkSubmission/%s/%s", uploadFolderPath, file.getName());
-                    String uploadedPath = String.format("wasbs://%s@%s/%s", defaultContainerName, blobStorageAccount.getFullStorageBlobName(), path);
+                    String uploadedPath = String.format("wasbs://%s@%s/%s", containerName, blobStorageAccount.getFullStorageBlobName(), path);
 
                     logSubject.onNext(new SimpleImmutableEntry<>(Info,
                             String.format("Begin uploading file %s to Azure Blob Storage Account %s ...",
@@ -466,7 +465,7 @@ public class JobUtils {
 
                     StorageClientSDKManager.getManager().uploadBlobFileContent(
                             blobStorageAccount.getConnectionString(),
-                            defaultContainer,
+                            container,
                             path,
                             bufferedInputStream,
                             uploadInProcessCallback,
@@ -684,7 +683,9 @@ public class JobUtils {
 
                 ob.onSuccess(new SimpleImmutableEntry<>(clusterDetail, jobArtifactUri));
             } catch (Exception e) {
-                ob.onError(e);
+                // filenotfound exp is wrapped in RuntimeException(HDIExpception) , refer to #2653
+                Throwable cause = e instanceof RuntimeException ? e.getCause() : e;
+                ob.onError(cause);
             }
         });
     }
@@ -756,7 +757,7 @@ public class JobUtils {
     }
 
     public static AbstractMap.SimpleImmutableEntry<Integer, Map<String, List<String>>>
-    authenticate(IClusterDetail clusterDetail) throws HDIException, IOException, ValidatorException {
+    authenticate(IClusterDetail clusterDetail) throws HDIException, IOException {
         SparkBatchSubmission submission = SparkBatchSubmission.getInstance();
         if (!StringUtils.isEmpty(clusterDetail.getHttpUserName()) && !StringUtils.isEmpty(clusterDetail.getHttpPassword())) {
             submission.setUsernamePasswordCredential(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());

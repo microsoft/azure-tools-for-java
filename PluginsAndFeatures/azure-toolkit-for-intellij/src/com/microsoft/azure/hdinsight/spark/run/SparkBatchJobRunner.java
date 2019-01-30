@@ -96,12 +96,16 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
             case BLOB:
                 String storageAccountName = submitModel.getJobUploadStorageModel().getStorageAccount();
                 if (StringUtils.isBlank(storageAccountName)) {
-                    throw new ExecutionException("Can't get the default storage account.");
+                    throw new ExecutionException("Can't get the valid storage account.");
                 }
 
                 String fullStorageBlobName = ClusterManagerEx.getInstance().getBlobFullName(storageAccountName);
                 String key = submitModel.getJobUploadStorageModel().getStorageKey();
                 String container = submitModel.getJobUploadStorageModel().getSelectedContainer();
+                if(StringUtils.isBlank(key) || StringUtils.isBlank(container)) {
+                    throw new ExecutionException("Can't get the valid key or container name.");
+                }
+
                 storageAccount = new HDStorageAccount(clusterDetail, fullStorageBlobName, key, false, container);
                 break;
             case DEFAULT_STORAGE_ACCOUNT:

@@ -158,10 +158,14 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
         }
     }
 
+    protected String getErrorMessageClusterNull() {
+        return "The cluster should be selected as the target for Spark application submission";
+    }
+
     protected void checkSubmissionConfigurationBeforeRun(@NotNull SparkSubmissionRunner runner) throws RuntimeConfigurationException {
         SparkSubmissionParameter parameter = getSubmitModel().getSubmissionParameter();
         if (StringUtils.isBlank(parameter.getClusterName())) {
-            throw new RuntimeConfigurationError("The cluster should be selected as the target for Spark application submission");
+            throw new RuntimeConfigurationError(this.getErrorMessageClusterNull());
         }
 
         if (!parameter.isLocalArtifact()) {
@@ -306,7 +310,7 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
     }
 
     public String getSuggestedNamePrefix() {
-        return "[HDInsight Spark]";
+        return "[Spark on HDInsight]";
     }
 }
 

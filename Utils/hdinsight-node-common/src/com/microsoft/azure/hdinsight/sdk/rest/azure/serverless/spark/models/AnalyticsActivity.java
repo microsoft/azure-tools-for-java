@@ -26,6 +26,7 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 import java.util.Date;
 import java.util.UUID;
 import java.util.Map;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -123,6 +124,26 @@ public class AnalyticsActivity {
      */
     @JsonProperty(value = "tags", access = JsonProperty.Access.WRITE_ONLY)
     private Map<String, String> tags;
+
+    /**
+     * The priority value to use for the current job. Lower numbers have a higher priority. By default, a job has a
+     * priority of 1000. This must be greater than 0.
+     */
+    @JsonProperty(value = "priority", access = JsonProperty.Access.WRITE_ONLY)
+    private Integer priority;
+
+    /**
+     * the name of hierarchy queue node this job is assigned to, Null if job has not been assigned yet or the account
+     * doesn't have hierarchy queue.
+     */
+    @JsonProperty(value = "hierarchyQueueNode", access = JsonProperty.Access.WRITE_ONLY)
+    private String hierarchyQueueNode;
+
+    /**
+     * The error message details for the activity, if the activity failed.
+     */
+//    @JsonProperty(value = "errorMessage", access = JsonProperty.Access.WRITE_ONLY)
+//    private List<ErrorDetails> errorMessage;
 
     /**
      * Get the activity's unique identifier (a GUID).
@@ -271,5 +292,32 @@ public class AnalyticsActivity {
     public Map<String, String> tags() {
         return this.tags;
     }
+
+    /**
+     * Get the priority value to use for the current job. Lower numbers have a higher priority. By default, a job has a priority of 1000. This must be greater than 0.
+     *
+     * @return the priority value
+     */
+    public Integer priority() {
+        return this.priority;
+    }
+
+    /**
+     * Get the name of hierarchy queue node this job is assigned to, Null if job has not been assigned yet or the account doesn't have hierarchy queue.
+     *
+     * @return the hierarchyQueueNode value
+     */
+    public String hierarchyQueueNode() {
+        return this.hierarchyQueueNode;
+    }
+
+    /**
+     * Get the error message details for the activity, if the activity failed.
+     *
+     * @return the errorMessage value
+     */
+//    public List<ErrorDetails> errorMessage() {
+//        return this.errorMessage;
+//    }
 
 }

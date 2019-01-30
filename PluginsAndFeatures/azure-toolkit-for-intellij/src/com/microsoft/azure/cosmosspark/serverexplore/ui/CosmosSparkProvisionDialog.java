@@ -34,21 +34,22 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HideableDecorator;
+import com.microsoft.azure.cosmosspark.common.IntegerWithErrorHintedField;
+import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri;
+import com.microsoft.azure.cosmosspark.common.TextWithErrorHintedField;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionCtrlProvider;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionSettingsModel;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkADLAccountNode;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-import com.microsoft.azure.cosmosspark.common.IntegerWithErrorHintedField;
-import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri;
-import com.microsoft.azure.cosmosspark.common.TextWithErrorHintedField;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.jetbrains.annotations.Nullable;
+import org.joda.time.DateTime;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -57,9 +58,8 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.time.LocalDateTime;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class CosmosSparkProvisionDialog extends DialogWrapper
@@ -77,9 +77,9 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
     protected IntegerWithErrorHintedField workerCoresField;
     protected IntegerWithErrorHintedField workerMemoryField;
     protected IntegerWithErrorHintedField workerNumberOfContainersField;
-    protected JTextField availableAUField;
-    protected JTextField totalAUField;
-    protected JTextField calculatedAUField;
+    protected JLabel availableAUNumberLabel;
+    protected JLabel totalAUNumberLabel;
+    protected JLabel calculatedAUNumberLabel;
     protected JLabel masterMemoryLabel;
     protected JLabel masterCoresLabel;
     protected JLabel clusterNameLabel;
@@ -121,9 +121,6 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
 
         init();
         this.setTitle("Provision Spark Cluster");
-        availableAUField.setBorder(BorderFactory.createEmptyBorder());
-        totalAUField.setBorder(BorderFactory.createEmptyBorder());
-        calculatedAUField.setBorder(BorderFactory.createEmptyBorder());
         this.setModal(true);
 
         // make error message widget hideable
@@ -191,6 +188,13 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
         super.dispose();
     }
 
+    @Nullable
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        // Focus on cluster name field so that `Esc` can be applied to dismiss the dialog
+        return clusterNameField;
+    }
+
     protected void enableClusterNameUniquenessCheck() {
         try {
             clusterNameField.setNotAllowedValues(
@@ -206,7 +210,7 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
     }
 
     protected void printLogLine(@NotNull ConsoleViewContentType logLevel, @NotNull String log) {
-        consoleViewPanel.print(LocalDateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n", logLevel);
+        consoleViewPanel.print(DateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n", logLevel);
     }
 
     // Data -> Components
@@ -217,9 +221,9 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
             adlAccountField.setText(data.getAdlAccount());
             // set sparkEventsField to "-" rather than empty string to avoid "string expected" tooltip
             sparkEventsField.setText(StringUtils.isEmpty(data.getSparkEvents()) ? "-" : data.getSparkEvents());
-            availableAUField.setText(String.valueOf(data.getAvailableAU()));
-            totalAUField.setText(String.valueOf(data.getTotalAU()));
-            calculatedAUField.setText(String.valueOf(data.getCalculatedAU()));
+            availableAUNumberLabel.setText(String.valueOf(data.getAvailableAU()));
+            totalAUNumberLabel.setText(String.valueOf(data.getTotalAU()));
+            calculatedAUNumberLabel.setText(String.valueOf(data.getCalculatedAU()));
             auWarningLabel.setVisible(data.getCalculatedAU() > data.getAvailableAU());
             refreshButton.setEnabled(data.getRefreshEnabled());
             masterCoresField.setText(String.valueOf(data.getMasterCores()));
@@ -246,9 +250,9 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
         data.setClusterName(clusterNameField.getText())
                 .setAdlAccount(adlAccountField.getText())
                 .setSparkEvents(sparkEventsField.getText())
-                .setAvailableAU(NumberUtils.toInt(availableAUField.getText()))
-                .setTotalAU(NumberUtils.toInt(totalAUField.getText()))
-                .setCalculatedAU(NumberUtils.toInt(calculatedAUField.getText()))
+                .setAvailableAU(NumberUtils.toInt(availableAUNumberLabel.getText()))
+                .setTotalAU(NumberUtils.toInt(totalAUNumberLabel.getText()))
+                .setCalculatedAU(NumberUtils.toInt(calculatedAUNumberLabel.getText()))
                 .setRefreshEnabled(refreshButton.isEnabled())
                 .setMasterCores(masterCoresField.getValue())
                 .setMasterMemory(masterMemoryField.getValue())

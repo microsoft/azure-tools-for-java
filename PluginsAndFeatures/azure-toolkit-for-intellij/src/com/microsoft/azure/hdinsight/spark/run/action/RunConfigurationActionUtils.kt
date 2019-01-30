@@ -36,28 +36,28 @@ object RunConfigurationActionUtils: ILogger {
         val runner = RunnerRegistry.getInstance().getRunner(environment.executor.id, environment.runProfile) ?: return
         val setting = environment.runnerAndConfigurationSettings ?: return
 
-        var configError = getRunConfigurationError(environment.runProfile, runner)
-        while (configError != null) {
-            if (Messages.YES == Messages.showYesNoDialog(
-                            environment.project,
-                            "Configuration is incorrect: $configError. Do you want to edit it?",
-                            "Change Configuration Settings",
-                            "Edit",
-                            "Continue Anyway",
-                            Messages.getErrorIcon())) {
-                if (!RunDialog.editConfiguration(environment, "Edit configuration")) {
-                    return
-                }
-            } else {
-                break
-            }
-
-            configError = getRunConfigurationError(environment.runProfile, runner)
-        }
-
         try {
             if (setting.isEditBeforeRun && !RunDialog.editConfiguration(environment, "Edit configuration")) {
                 return
+            }
+
+            var configError = getRunConfigurationError(environment.runProfile, runner)
+            while (configError != null) {
+                if (Messages.YES == Messages.showYesNoDialog(
+                                environment.project,
+                                "Configuration is incorrect: $configError. Do you want to edit it?",
+                                "Change Configuration Settings",
+                                "Edit",
+                                "Continue Anyway",
+                                Messages.getErrorIcon())) {
+                    if (!RunDialog.editConfiguration(environment, "Edit configuration")) {
+                        return
+                    }
+                } else {
+                    break
+                }
+
+                configError = getRunConfigurationError(environment.runProfile, runner)
             }
 
             environment.assignNewExecutionId()

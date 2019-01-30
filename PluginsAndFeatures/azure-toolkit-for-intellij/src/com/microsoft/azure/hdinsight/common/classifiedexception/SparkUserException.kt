@@ -23,6 +23,7 @@ package com.microsoft.azure.hdinsight.common.classifiedexception
 
 import com.microsoft.azure.hdinsight.spark.common.SparkJobException
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
+import java.io.FileNotFoundException
 
 class SparkUserException(exp: Throwable?) : ClassifiedException(exp) {
     override val title: String = "Spark User Error"
@@ -35,7 +36,9 @@ object SparkUserExceptionFactory : ClassifiedExceptionFactory() {
     override fun createClassifiedException(exp: Throwable?): ClassifiedException? {
         return if (exp is YarnDiagnosticsException
                 // Throw from wrong class name ,refer to issue 1827 and 2466
-                || exp is SparkJobException) {
+                || exp is SparkJobException
+                || exp is IllegalArgumentException
+                || exp is FileNotFoundException) {
             SparkUserException(exp)
         } else null
     }

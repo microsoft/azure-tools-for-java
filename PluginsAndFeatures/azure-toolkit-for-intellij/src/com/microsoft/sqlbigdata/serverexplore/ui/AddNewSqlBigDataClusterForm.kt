@@ -30,11 +30,16 @@ import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule
 import org.apache.commons.lang3.StringUtils
 import java.awt.CardLayout
 import javax.swing.DefaultComboBoxModel
+import javax.swing.JComponent
 
 class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterModule): AddNewClusterForm(project, module) {
     private val IPV4_ADDRESS_PATTERN = "^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$"
+
     init {
         title = "Link SQL Server Big Data Cluster"
+
+        linkResourceTypeLabel.isVisible = false
+        clusterComboBox.isVisible = false
 
         val livyServiceTitle = "Livy Service"
         clusterComboBox.model = DefaultComboBoxModel(arrayOf(livyServiceTitle))
@@ -63,18 +68,22 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
         }
     }
 
+    override fun getPreferredFocusedComponent(): JComponent? {
+        return arisHostField;
+    }
+
     override fun getSparkClusterType(): SparkClusterType {
         return SparkClusterType.SQL_BIG_DATA_CLUSTER
     }
 
-    override fun basicValidate() {
-        errorMessageField.text =
+    override fun validateBasicInputs() {
+        validationErrorMessageField.text =
                 if (StringUtils.isBlank(arisHostField.text)) {
-                    "Host can't be empty"
+                    "Server can't be empty"
                 } else if (!IPV4_ADDRESS_PATTERN.toRegex().matches(arisHostField.text)) {
-                    "Host format is not valid"
+                    "Server format is not valid"
                 } else if (ctrlProvider.doeshostExistInSqlBigDataClusters(arisHostField.text)) {
-                    "Host already exists in linked clusters"
+                    "Server already exists in linked clusters"
                 } else if (StringUtils.isNotBlank(arisClusterNameField.text) &&
                     ctrlProvider.doesClusterNameExistInSqlBigDataClusters(arisClusterNameField.text)) {
                     "Cluster name already exists in linked clusters"
@@ -84,6 +93,6 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
                     null
                 }
 
-        okAction.isEnabled = StringUtils.isEmpty(errorMessageField.text)
+        okAction.isEnabled = StringUtils.isEmpty(validationErrorMessageField.text)
     }
 }

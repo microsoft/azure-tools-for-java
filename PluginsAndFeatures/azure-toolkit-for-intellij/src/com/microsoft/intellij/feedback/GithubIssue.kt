@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets
 
 class GithubIssue<T : Reportable>(private val reportable: T) {
     private val plugin = reportable.plugin
+    private val loginPrefix = "https://github.com/login"
     private val labels = mutableSetOf("IntelliJ")
 
     private val pluginRepo: URI
@@ -48,12 +49,18 @@ class GithubIssue<T : Reportable>(private val reportable: T) {
         // To support a bigger issue body, please implement a RESTful API
         // version request.
 
-        return StringUtils.left(pluginRepo.resolve("issues/new?" + URLEncodedUtils.format(listOf(
+        // Limit the URL length with double encoding by Github login redirection prefix
+        val newIssueUrlEncoded = pluginRepo.resolve("issues/new?" + URLEncodedUtils.format(listOf(
                 BasicNameValuePair("title", reportable.getTitle()),
                 BasicNameValuePair("labels", labels.joinToString(",")),
                 BasicNameValuePair("body", reportable.getBody())
-        ), StandardCharsets.UTF_8)).toString(), 2083)  // 2083 URL max length
-        .replace("""%[\d\w]?$""", "")                  // remove ending uncompleted escaped chars
+        ), StandardCharsets.UTF_8))
+
+        val loginRedirectParam = URLEncodedUtils.format(
+                listOf(BasicNameValuePair("return_to", "$newIssueUrlEncoded")), StandardCharsets.UTF_8)
+
+        return StringUtils.left("$loginPrefix?$loginRedirectParam", 2083)   // 2083 URL max length
+                .replace("""%25[\d\w]?$""", "")                   // remove ending uncompleted escaped chars, %25 is % encoded
     }
 
     fun report() {

@@ -22,19 +22,22 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
-import com.intellij.execution.*
+import com.intellij.execution.RunManager
+import com.intellij.execution.RunManagerEx
+import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.execution.configurations.ConfigurationTypeUtil.findConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.ex.ActionManagerEx
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtils
+import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.intellij.util.runInReadAction
@@ -47,6 +50,8 @@ import scala.runtime.BoxedUnit
 abstract class RunSparkScalaConsoleAction
     : AnAction(), RunConsoleAction.RunActionBase<LivySparkBatchJobRunConfigurationType>, ILogger {
     abstract val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
+
+    abstract val selectedMenuActionId: String
 
     override fun actionPerformed(event: AnActionEvent) {
         val dataContext = event.dataContext
@@ -61,7 +66,13 @@ abstract class RunSparkScalaConsoleAction
             return
         }
 
-        val batchConfigurationType = LivySparkBatchJobRunConfigurationType.getInstance()
+        val batchConfigurationType = SelectSparkApplicationTypeAction.getRunConfigurationType()
+        if (batchConfigurationType == null) {
+            val action = ActionManagerEx.getInstance().getAction(selectedMenuActionId)
+            action?.actionPerformed(event)
+            return
+        }
+
         val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
 
         // Try to find one from the same type list
@@ -83,8 +94,14 @@ abstract class RunSparkScalaConsoleAction
         runInReadAction {
             val factory = configurationType.configurationFactories[0]
             val setting = RunManager.getInstance(project).createConfiguration(name, factory)
+
+            // Newly created config should let the user to edit
+            setting.isEditBeforeRun = true
             handler.apply(setting.configuration)
             runFromSetting(setting, runManagerEx)
+
+            // Skip edit the next time
+            setting.isEditBeforeRun = false
         }
     }
 
@@ -94,12 +111,17 @@ abstract class RunSparkScalaConsoleAction
         }
     }
 
+    abstract val focusedTabIndex: Int
+
+    abstract val isLocalRunConfigEnabled: Boolean
+
     private fun runFromSetting(setting: RunnerAndConfigurationSettings, runManagerEx: RunManagerEx) {
         val configuration = setting.configuration
         runManagerEx.setTemporaryConfiguration(setting)
 
         if (configuration is LivySparkBatchJobRunConfiguration) {
-            configuration.model.focusedTabIndex = 1
+            configuration.model.focusedTabIndex = focusedTabIndex
+            configuration.model.isLocalRunConfigEnabled = isLocalRunConfigEnabled
         }
 
         val runExecutor = DefaultRunExecutor.getRunExecutorInstance()
@@ -108,6 +130,10 @@ abstract class RunSparkScalaConsoleAction
                 .build()
 
         RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment)
+
+        if (configuration is LivySparkBatchJobRunConfiguration) {
+            configuration.model.isLocalRunConfigEnabled = true
+        }
     }
 
     override fun getMyConfigurationType(): LivySparkBatchJobRunConfigurationType? =

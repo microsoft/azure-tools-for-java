@@ -44,6 +44,12 @@ public class SparkBatchJobProperties {
     private String sparkMasterUI;
 
     /**
+     * Livy api endpoint. Only available when the job is running.
+     */
+    @JsonProperty(value = "livyServerAPI", access = JsonProperty.Access.WRITE_ONLY)
+    private String livyServerAPI;
+
+    /**
      * Get livy like response payload for the spark serverless job.
      *
      * @return the responsePayload value
@@ -70,6 +76,15 @@ public class SparkBatchJobProperties {
      */
     public String sparkMasterUI() {
         return this.sparkMasterUI;
+    }
+
+    /**
+     * Get livy api endpoint. Only available when the job is running.
+     *
+     * @return the livyServerAPI value
+     */
+    public String livyServerAPI() {
+        return this.livyServerAPI;
     }
 
 }

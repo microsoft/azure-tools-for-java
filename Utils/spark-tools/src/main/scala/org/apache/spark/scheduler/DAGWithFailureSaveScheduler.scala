@@ -139,7 +139,7 @@ class DAGWithFailureSaveScheduler(
 
   def saveFailureTask(task: Task[_], stageId: Int, taskId: String, attemptId: Int, timestamp: String): Unit = {
     def getFailureSavingPath(fileName: String = null): Path = {
-      val appFolderName = sc.appName + sc.applicationAttemptId.map(attemptId => s"[${attemptId}]@").getOrElse("@") + timestamp
+      val appFolderName = sc.applicationId + sc.applicationAttemptId.map(attemptId => s"[${attemptId}]@").getOrElse("@") + timestamp
 
       val savingBase: Path = new Path(".spark-failures", appFolderName)
 
@@ -188,6 +188,8 @@ class DAGWithFailureSaveScheduler(
                     // Copy the shuffle partition data into a file
                     val shuffleFile = getFailureSavingPath(blockId.toString())
                     val shuffleIn = buffer.createInputStream()
+
+                    logInfo(s"Generate shuffle files: $shuffleFile")
                     val shuffleOut = fs.create(shuffleFile, true)
 
                     IOUtils.copy(shuffleIn, shuffleOut)
@@ -208,7 +210,7 @@ class DAGWithFailureSaveScheduler(
                         idxFileOutput.close()
                     }
 
-                    ShuffleData(blockId.toString, shuffleFile.toString, blockMgrId.toString())
+                    ShuffleData(blockId.toString, blockId.toString, blockMgrId.toString())
                 }
               } toArray,
             getEncodedByteArray(mapStatus))

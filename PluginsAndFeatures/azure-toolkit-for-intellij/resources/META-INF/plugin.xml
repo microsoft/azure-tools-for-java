@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.17.0</version>
+  <version>3.18.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -19,6 +19,22 @@
   <change-notes>
     <![CDATA[
     <html>
+    <h3>[3.18.0]</h3>
+      <h4>Added</h4>
+      <ul>
+        <li>Supports Cosmos Serverless Spark submission and jobs list.</li>
+        <li>Accepts SSL certificates automatically if the bypass option is enabled.</li>
+      </ul>
+      <h4>Changed</h4>
+      <ul>
+        <li>Wording of HDInsight and Spark UX.</li>
+        <li>Enhanced Spark Run Configuration validation.</li>
+      </ul>
+      <h4>Fixed</h4>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2368" rel="nofollow">#2368</a> Device login will write useless error log.</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2675" rel="nofollow">#2675</a> Error message pops up when refresh HDInsight. </li>
+      <ul>
+      </ul>
     <h3>[3.17.0]</h3>
       <h4>Added</h4>
       <ul>
@@ -445,22 +461,22 @@
             class="com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction" text="Submit Spark Application"
             description="Submit Spark Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitLivySparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSelectAndSubmitAction" text="HDInsight"
-            description="Submit HDInsight Spark Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSelectAndSubmitAction" text="Spark on HDInsight"
+            description="Submit Spark on HDInsight Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitCosmosSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSelectAndSubmitAction" text="Cosmos Spark"
-            description="Submit Cosmos Spark Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSelectAndSubmitAction" text="Spark on Cosmos"
+            description="Submit Spark on Cosmos Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitCosmosServerlessSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSelectAndSubmitAction" text="Cosmos Serverless Spark"
-            description="Submit Cosmos Serverless Spark Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSelectAndSubmitAction" text="Spark on Cosmos Serverless"
+            description="Submit Spark on Cosmos Serverless Application" icon="/icons/Spark.png"/>
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
             description="ShowSubscriptionsAction" />
-    <group id="AzureToolkit.Experimental" text="Experimental" popup="true">
+    <group id="AzureToolkit.ValidateCertificate" text="Validate Spark Cluster SSL Certificate" popup="true">
       <action id="AzureToolkit.DisableSSLCertificateValidation"
-              class="com.microsoft.sqlbigdata.action.DisableSslCertificateValidationAction"
-              text="Disable SSL Certificate Validation"/>
+              class="com.microsoft.azuretools.ijidea.actions.DisableSslCertificateValidationAction"
+              text="Disable"/>
     </group>
     <action class="com.microsoft.azuretools.ijidea.actions.GithubSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback..." />
     <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
@@ -548,7 +564,7 @@
       <separator/>
       <reference ref="AzureToolkit.AzureSignIn"/>
       <separator/>
-      <reference ref="AzureToolkit.Experimental"/>
+      <reference ref="AzureToolkit.ValidateCertificate"/>
       <separator/>
       <reference ref="AzureToolkit.Survey"/>
     </group>
@@ -559,24 +575,43 @@
       <reference ref="Spark.RunScalaLocalConsole"/>
       <reference ref="Spark.RunScalaLivyConsole"/>
     </group>
-    <group id="SelectDefaultSparkApplicationTypeActionGroup" text="Default Spark Application Type" description="Select default spark application type" popup="true">
+
+    <group id="Actions.SelectDefaultSparkApplicationTypeActionGroup" text="Default Spark Application Type" description="Select default spark application type" popup="true">
       <add-to-group group-id="ToolsMenu" anchor="last"/>
       <add-to-group group-id="RunContextPopupGroup" anchor="after" relative-to-action="SparkJobDebug"/>
-        <action id="SelectNoneSparkType"
+        <action id="Actions.SelectNoneSparkType"
                 class="com.microsoft.azure.hdinsight.spark.run.action.SelectNoneSparkTypeAction" text="None" >
         </action>
-      <action id="SelectHDInsightSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectHDInsightSparkTypeAction" text="HDInsight" >
+      <action id="Actions.SelectHDInsightSparkType"
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectHDInsightSparkTypeAction" text="Spark on HDInsight" >
       </action>
-      <action id="SelectCosmosSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosSparkTypeAction" text="CosmosSpark" >
+      <action id="Actions.SelectCosmosSparkType"
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosSparkTypeAction" text="Spark on Cosmos" >
       </action>
-      <action id="SelectCosmosServerlessSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosServerlessSparkTypeAction" text="CosmosServerlessSpark" >
+      <action id="Actions.SelectCosmosServerlessSparkType"
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosServerlessSparkTypeAction" text="Spark on Cosmos Serverless" >
       </action>
     </group>
 
-    <action id="SparkSubmitJobActionGroups" class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups" text="Submit Spark Application"/>
+    <action id="Actions.SparkSubmitJobActionGroups" class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups" text="Submit Spark Application"/>
+
+    <action id="Actions.SparkRunLivyConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLivyConsoleActionGroups" text="Run Spark Console"/>
+
+    <action id="Actions.SparkRunLocalConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLocalConsoleActionGroups" text="Run Spark Local Console"/>
+
+    <action id="Actions.RunLivySparkConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLivyConsoleAction" text="Spark on HDInsight"
+            description="Start an interactive console for Spark on HDInsight Application" icon="/icons/Spark.png"/>
+    <action id="Actions.RunCosmosSparkConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLivyConsoleAction" text="Spark on Cosmos"
+            description="Start an interactive console for Spark on Cosmos Application" icon="/icons/Spark.png"/>
+
+    <action id="Actions.RunLivySparkLocalConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLocalConsoleAction" text="Spark on HDInsight"
+            description="Start a Spark local console for Spark on HDInsight Application" icon="/icons/Spark.png"/>
+    <action id="Actions.RunCosmosSparkLocalConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLocalConsoleAction" text="Spark on Cosmos"
+            description="Start a Spark local console for Spark on Cosmos Application" icon="/icons/Spark.png"/>
     </actions>
     <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
 </idea-plugin>

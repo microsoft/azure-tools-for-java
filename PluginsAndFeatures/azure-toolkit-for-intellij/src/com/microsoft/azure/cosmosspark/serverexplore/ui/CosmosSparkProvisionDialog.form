@@ -5,8 +5,8 @@
       <xy x="20" y="20" width="756" height="645"/>
     </constraints>
     <properties>
-      <minimumSize width="527" height="450"/>
-      <preferredSize width="527" height="450"/>
+      <minimumSize width="580" height="450"/>
+      <preferredSize width="580" height="450"/>
       <requestFocusEnabled value="true"/>
       <verifyInputWhenFocusTarget value="true"/>
     </properties>
@@ -18,7 +18,7 @@
         <properties>
           <maximumSize width="-1" height="420"/>
           <minimumSize width="-1" height="420"/>
-          <preferredSize width="-1" height="420"/>
+          <preferredSize width="580" height="420"/>
         </properties>
         <border type="none"/>
         <children>
@@ -34,7 +34,9 @@
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <requestFocusEnabled value="true"/>
+            </properties>
           </component>
           <component id="3207f" class="javax.swing.JLabel" binding="adlAccountLabel">
             <constraints>
@@ -117,16 +119,6 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="29cd6" class="javax.swing.JTextField" binding="availableAUField">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <editable value="false"/>
-                  <horizontalAlignment value="2"/>
-                  <text value="0"/>
-                </properties>
-              </component>
               <component id="c7274" class="javax.swing.JLabel">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
@@ -134,16 +126,6 @@
                 <properties>
                   <horizontalAlignment value="0"/>
                   <text value="/"/>
-                </properties>
-              </component>
-              <component id="e6272" class="javax.swing.JTextField" binding="totalAUField">
-                <constraints>
-                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <editable value="false"/>
-                  <horizontalAlignment value="2"/>
-                  <text value="0"/>
                 </properties>
               </component>
               <component id="a9fcd" class="javax.swing.JButton" binding="refreshButton">
@@ -160,9 +142,29 @@
                   <contentAreaFilled value="false"/>
                   <horizontalAlignment value="0"/>
                   <horizontalTextPosition value="0"/>
-                  <icon value="icons/RefreshLight_16.png"/>
+                  <icon value="actions/refresh.png"/>
                   <text value=""/>
                   <verticalAlignment value="0"/>
+                </properties>
+              </component>
+              <component id="4a4bc" class="javax.swing.JLabel" binding="availableAUNumberLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="8" height="27"/>
+                  </grid>
+                </constraints>
+                <properties>
+                  <text value="0"/>
+                </properties>
+              </component>
+              <component id="ea3fe" class="javax.swing.JLabel" binding="totalAUNumberLabel">
+                <constraints>
+                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="8" height="27"/>
+                  </grid>
+                </constraints>
+                <properties>
+                  <text value="0"/>
                 </properties>
               </component>
             </children>
@@ -293,17 +295,6 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="60622" class="javax.swing.JTextField" binding="calculatedAUField">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
-                  </grid>
-                </constraints>
-                <properties>
-                  <editable value="false"/>
-                  <text value="6"/>
-                </properties>
-              </component>
               <component id="ca47a" class="com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri" binding="jobQueueHyperLink">
                 <constraints>
                   <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
@@ -325,6 +316,14 @@
                   <text value=""/>
                   <toolTipText value="Currently, there are not enough available AU for your serverless cluster provisioning. Please adjust your cluster configuration or the provisioning request will be submitted into the queue with PENDING status."/>
                   <visible value="false"/>
+                </properties>
+              </component>
+              <component id="31f78" class="javax.swing.JLabel" binding="calculatedAUNumberLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="6"/>
                 </properties>
               </component>
             </children>

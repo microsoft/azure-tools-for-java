@@ -20,19 +20,31 @@
  * SOFTWARE.
  */
 
-package com.microsoft.sqlbigdata.action
+package com.microsoft.azuretools.ijidea.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Toggleable
 import com.microsoft.azure.hdinsight.common.CommonConst
+import com.microsoft.azuretools.ijidea.ui.BypassCertificateVerificationWarningForm
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.tooling.msservices.components.DefaultLoader
 
 class DisableSslCertificateValidationAction : AzureAnAction(), Toggleable {
     override fun onActionPerformed(anActionEvent: AnActionEvent?) {
-        anActionEvent!!.presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, !isActionEnabled())
+        if (!isActionEnabled()) {
+            val form = object : BypassCertificateVerificationWarningForm(anActionEvent?.project) {
+                override fun doOKAction() {
+                    anActionEvent!!.presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, !isActionEnabled())
+                    DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION, (!isActionEnabled()).toString())
+                    super.doOKAction()
+                }
+            }
+            form.show()
+        } else {
+            anActionEvent!!.presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, !isActionEnabled())
+            DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION, (!isActionEnabled()).toString())
+        }
 
-        DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION, (!isActionEnabled()).toString())
     }
 
     companion object {
