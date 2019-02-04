@@ -24,17 +24,26 @@ package com.microsoft.intellij.component
 
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.components.labels.LinkLabel
+import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.microsoft.azure.management.appservice.AppServicePlan
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.intellij.component.extension.createDefaultRenderer
 import com.microsoft.intellij.component.extension.getSelectedValue
+import com.microsoft.intellij.component.extension.initValidationWithResult
 import com.microsoft.intellij.component.extension.setComponentsEnabled
+import com.microsoft.intellij.helpers.validator.AppServicePlanValidator
+import com.microsoft.intellij.helpers.validator.LocationValidator
+import com.microsoft.intellij.helpers.validator.PricingTierValidator
+import com.microsoft.intellij.helpers.validator.ValidationResult
 import net.miginfocom.swing.MigLayout
 import javax.swing.*
 
-class AzureAppServicePlanSelector : JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")) {
+class AzureAppServicePlanSelector(private val lifetimeDef: LifetimeDefinition) :
+        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
+        AzureComponent {
 
     companion object {
         private const val EMPTY_APP_SERVICE_PLAN_MESSAGE = "No existing Azure App Service Plans"
@@ -82,6 +91,36 @@ class AzureAppServicePlanSelector : JPanel(MigLayout("novisualpadding, ins 0, fi
         add(cbLocation, "growx")
         add(lblCreatePricingTierName)
         add(pnlCreatePricingTier, "growx")
+
+        initComponentValidation()
+    }
+
+    override fun validateComponent(): List<ValidationInfo> {
+        if (rdoExistingAppServicePlan.isSelected) {
+            return listOfNotNull(
+                    AppServicePlanValidator.checkAppServicePlanIsSet(cbAppServicePlan.getSelectedValue())
+                            .toValidationInfo(cbAppServicePlan)
+            )
+        }
+
+        return listOfNotNull(
+                AppServicePlanValidator.validateAppServicePlanName(txtAppServicePlanName.text)
+                        .merge(AppServicePlanValidator.checkAppServicePlanNameExists(txtAppServicePlanName.text))
+                        .toValidationInfo(txtAppServicePlanName),
+                LocationValidator.checkLocationIsSet(cbLocation.getSelectedValue()).toValidationInfo(cbLocation),
+                PricingTierValidator.checkPricingTierIsSet(cbPricingTier.getSelectedValue()).toValidationInfo(cbPricingTier)
+        )
+    }
+
+    override fun initComponentValidation() {
+        txtAppServicePlanName.initValidationWithResult(
+                lifetimeDef,
+                textChangeValidationAction = { if (rdoExistingAppServicePlan.isSelected) return@initValidationWithResult ValidationResult()
+                    AppServicePlanValidator.checkAppServicePlanNameMaxLength(txtAppServicePlanName.text)
+                        .merge(AppServicePlanValidator.checkInvalidCharacters(txtAppServicePlanName.text)) },
+                focusLostValidationAction = { if (rdoExistingAppServicePlan.isSelected) return@initValidationWithResult ValidationResult()
+                    if (txtAppServicePlanName.text.isEmpty()) return@initValidationWithResult ValidationResult()
+                    AppServicePlanValidator.checkAppServicePlanNameMinLength(txtAppServicePlanName.text) })
     }
 
     private fun initAppServicePlanComboBox() {

@@ -48,23 +48,25 @@ object SqlDatabaseValidator : AzureResourceValidator() {
      * Note: There are no any specific rules to validate SQL Database name
      *       Azure allows to create SQL Database with any name I've tested
      */
-    fun validateDatabaseName(databaseName: String): ValidationResult {
-        val status = checkValueIsSet(databaseName, SQL_DATABASE_NAME_NOT_DEFINED)
+    fun validateDatabaseName(name: String): ValidationResult {
+        val status = checkDatabaseNameIsSet(name)
         if (!status.isValid) return status
 
-        val matches = sqlDatabaseNameRegex.findAll(databaseName)
-        if (matches.count() > 0) {
-            val invalidChars = matches.map { it.value }.distinct().joinToString("', '", "'", "'")
-            return status.setInvalid(String.format(SQL_DATABASE_NAME_INVALID, invalidChars))
-        }
-
-        return status
+        return checkInvalidCharacters(name)
     }
+
+    fun checkDatabaseNameIsSet(name: String) =
+            checkValueIsSet(name, SQL_DATABASE_NAME_NOT_DEFINED)
 
     fun checkDatabaseIsSet(sqlDatabase: SqlDatabase?) =
             checkValueIsSet(sqlDatabase, SQL_DATABASE_NOT_DEFINED)
 
-    fun checkSqlDatabaseExistence(subscriptionId: String, databaseName: String, sqlServerName: String): ValidationResult {
+    fun checkInvalidCharacters(name: String) =
+            validateResourceNameRegex(name, sqlDatabaseNameRegex, SQL_DATABASE_NAME_INVALID)
+
+    fun checkSqlDatabaseExistence(subscriptionId: String,
+                                  databaseName: String,
+                                  sqlServerName: String): ValidationResult {
         val status = ValidationResult()
 
         val sqlServer = AzureSqlServerMvpModel.getSqlServerByName(subscriptionId, sqlServerName) ?: return status
@@ -84,5 +86,5 @@ object SqlDatabaseValidator : AzureResourceValidator() {
             checkValueIsSet(collation, SQL_DATABASE_COLLATION_NOT_DEFINED)
 
     private fun isSqlDatabaseNameExist(name: String, sqlServer: SqlServer) =
-            (AzureSqlDatabaseMvpModel.listSqlDatabasesBySqlServer(sqlServer).any { it.name() == name })
+            AzureSqlDatabaseMvpModel.listSqlDatabasesBySqlServer(sqlServer).any { it.name() == name }
 }

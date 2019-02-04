@@ -23,9 +23,7 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.validator
 
 import com.intellij.execution.configurations.RuntimeConfigurationError
-import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
-import com.microsoft.intellij.helpers.validator.SubscriptionValidator
-import com.microsoft.intellij.helpers.validator.WebAppValidator
+import com.microsoft.intellij.helpers.validator.*
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 
 object WebAppConfigValidator : ConfigurationValidator() {
@@ -48,10 +46,10 @@ object WebAppConfigValidator : ConfigurationValidator() {
 
 
             if (model.isCreatingAppServicePlan) {
-                checkStatus(WebAppValidator.validateAppServicePlanName(model.appServicePlanName))
-                checkStatus(WebAppValidator.checkLocationIsSet(model.location))
+                checkStatus(AppServicePlanValidator.validateAppServicePlanName(model.appServicePlanName))
+                checkStatus(LocationValidator.checkLocationIsSet(model.location))
             } else {
-                checkStatus(WebAppValidator.checkAppServicePlanIdIsSet(model.appServicePlanId))
+                checkStatus(AppServicePlanValidator.checkAppServicePlanIdIsSet(model.appServicePlanId))
             }
         } else {
             checkStatus(WebAppValidator.checkWebAppIdIsSet(model.webAppId))

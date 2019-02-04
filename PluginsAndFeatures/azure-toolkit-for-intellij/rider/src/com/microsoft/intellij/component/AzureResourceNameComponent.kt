@@ -22,21 +22,21 @@
 
 package com.microsoft.intellij.component
 
-import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.components.Label
 import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 import javax.swing.JTextField
 
-class AzureResourceNameComponent(text: String = "Name") : JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")), AzureComponent {
+class AzureResourceNameComponent(text: String = "Name") :
+        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
+        AzureComponent {
 
     private val lblName = Label(text)
+
     val txtNameValue = JTextField()
 
     init {
         add(lblName)
         add(txtNameValue, "growx")
     }
-
-    override fun validateComponent(): ValidationInfo? = null
 }

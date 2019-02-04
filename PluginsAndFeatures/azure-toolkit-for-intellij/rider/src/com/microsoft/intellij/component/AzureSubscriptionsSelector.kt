@@ -23,7 +23,6 @@
 package com.microsoft.intellij.component
 
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.components.Label
 import com.intellij.util.ui.UIUtil
 import com.microsoft.azure.management.resources.Subscription
@@ -33,7 +32,9 @@ import com.microsoft.intellij.helpers.validator.SubscriptionValidator
 import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 
-class AzureSubscriptionsSelector : JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")), AzureComponent {
+class AzureSubscriptionsSelector :
+        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
+        AzureComponent {
 
     companion object {
         private const val EMPTY_SUBSCRIPTION_MESSAGE = "No existing Azure Subscriptions"
@@ -50,13 +51,13 @@ class AzureSubscriptionsSelector : JPanel(MigLayout("novisualpadding, ins 0, fil
 
         add(lblSubscription)
         add(cbSubscription, "growx")
+
+        initComponentValidation()
     }
 
-    override fun validateComponent(): ValidationInfo? {
-        val status = SubscriptionValidator.validateSubscription(cbSubscription.getSelectedValue())
-        if (status.isValid) return null
-        return ValidationInfo(status.errors.first(), cbSubscription)
-    }
+    override fun validateComponent() =
+            listOfNotNull(SubscriptionValidator.validateSubscription(cbSubscription.getSelectedValue())
+                    .toValidationInfo(cbSubscription))
 
     private fun initSubscriptionComboBox() {
         cbSubscription.renderer = cbSubscription.createDefaultRenderer(EMPTY_SUBSCRIPTION_MESSAGE) { it.displayName() }

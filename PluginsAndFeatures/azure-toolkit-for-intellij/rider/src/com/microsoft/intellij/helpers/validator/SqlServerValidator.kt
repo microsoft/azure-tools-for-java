@@ -31,6 +31,7 @@ object SqlServerValidator : AzureResourceValidator() {
 
     private const val SQL_SERVER_ID_NOT_DEFINED = "SQL Server ID is not defined."
 
+    private const val SQL_SERVER_NOT_DEFINED = "SQL Server is not defined."
     private const val SQL_SERVER_NAME_NOT_DEFINED = "SQL Server Name is not defined."
     private const val SQL_SERVER_NAME_CANNOT_START_END_WITH_DASH = "SQL Server name cannot begin or end with '-' symbol."
     private const val SQL_SERVER_NAME_INVALID = "SQL Server name cannot contain characters: %s."
@@ -75,26 +76,39 @@ object SqlServerValidator : AzureResourceValidator() {
 
     fun validateSqlServerName(name: String): ValidationResult {
 
-        val status = checkValueIsSet(name, SQL_SERVER_NAME_NOT_DEFINED)
+        val status = checkSqlServerNameIsSet(name)
         if (!status.isValid) return status
 
-        if (name.startsWith('-') || name.endsWith('-'))
-            status.setInvalid(SQL_SERVER_NAME_CANNOT_START_END_WITH_DASH)
-
-        return status.merge(
-                validateResourceName(name,
-                        SQL_SERVER_NAME_MIN_LENGTH,
-                        SQL_SERVER_NAME_MAX_LENGTH,
-                        SQL_SERVER_NAME_LENGTH_ERROR,
-                        sqlServerNameRegex,
-                        SQL_SERVER_NAME_INVALID))
+        return status
+                .merge(checkStartsEndsWithDash(name))
+                .merge(checkNameMinLength(name))
+                .merge(checkNameMaxLength(name))
+                .merge(checkInvalidCharacters(name))
     }
 
     fun checkSqlServerIsSet(sqlServer: SqlServer?) =
-            checkValueIsSet(sqlServer, SQL_SERVER_NAME_NOT_DEFINED)
+            checkValueIsSet(sqlServer, SQL_SERVER_NOT_DEFINED)
+
+    fun checkSqlServerNameIsSet(name: String) =
+            checkValueIsSet(name, SQL_SERVER_NAME_NOT_DEFINED)
 
     fun checkSqlServerIdIsSet(sqlServerId: String?) =
             checkValueIsSet(sqlServerId, SQL_SERVER_ID_NOT_DEFINED)
+
+    fun checkInvalidCharacters(name: String) =
+            validateResourceNameRegex(name, sqlServerNameRegex, SQL_SERVER_NAME_INVALID)
+
+    fun checkStartsEndsWithDash(name: String): ValidationResult {
+        val status = ValidationResult()
+        if (name.startsWith('-') || name.endsWith('-')) status.setInvalid(SQL_SERVER_NAME_CANNOT_START_END_WITH_DASH)
+        return status
+    }
+
+    fun checkNameMinLength(name: String) =
+            checkNameMinLength(name, SQL_SERVER_NAME_MIN_LENGTH, SQL_SERVER_NAME_LENGTH_ERROR)
+
+    fun checkNameMaxLength(name: String) =
+            checkNameMaxLength(name, SQL_SERVER_NAME_MAX_LENGTH, SQL_SERVER_NAME_LENGTH_ERROR)
 
     fun checkSqlServerExistence(subscriptionId: String, name: String): ValidationResult {
         val status = ValidationResult()
@@ -107,11 +121,28 @@ object SqlServerValidator : AzureResourceValidator() {
         val status = checkAdminLoginIsSet(username)
         if (!status.isValid) return status
 
+        status.merge(checkRestrictedLogins(username))
+        if (!status.isValid) return status
+
+        return status.merge(checkLoginInvalidCharacters(username))
+    }
+
+    fun checkAdminLoginIsSet(username: String?) =
+            checkValueIsSet(username, SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
+
+    fun checkRestrictedLogins(username: String): ValidationResult {
+        val status = ValidationResult()
         if (sqlServerRestrictedAdminLoginNames.contains(username))
             return status.setInvalid(String.format(
                     SQL_SERVER_ADMIN_LOGIN_FROM_RESTRICTED_LIST,
                     username,
                     sqlServerRestrictedAdminLoginNames.joinToString("', '", "'", "'")))
+
+        return status
+    }
+
+    fun checkLoginInvalidCharacters(username: String): ValidationResult {
+        val status = ValidationResult()
 
         if (username.contains(adminLoginWhitespaceRegex))
             status.setInvalid(SQL_SERVER_ADMIN_LOGIN_CANNOT_CONTAIN_WHITESPACES)
@@ -123,9 +154,6 @@ object SqlServerValidator : AzureResourceValidator() {
                 validateResourceNameRegex(username, adminLoginRegex, SQL_SERVER_ADMIN_LOGIN_INVALID))
     }
 
-    fun checkAdminLoginIsSet(username: String?) =
-            checkValueIsSet(username, SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
-
     /**
      * Validate a SQL Server Admin Password according to Azure rules
      *
@@ -136,13 +164,36 @@ object SqlServerValidator : AzureResourceValidator() {
         val status = checkPasswordIsSet(password)
         if (!status.isValid) return status
 
-        val passwordString = password.joinToString("")
-        if (passwordString.contains(username))
+        status.merge(checkPasswordContainsUsername(password, username))
+        if (!status.isValid) return status
+
+        return status
+                .merge(checkPasswordMinLength(password))
+                .merge(checkPasswordMaxLength(password))
+                .merge(checkPasswordRequirements(password))
+    }
+
+    fun checkPasswordIsSet(password: CharArray) =
+            checkValueIsSet(password, SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
+
+    fun checkPasswordContainsUsername(password: CharArray, username: String): ValidationResult {
+        val status = ValidationResult()
+        if (String(password).contains(username))
             return status.setInvalid(SQL_SERVER_ADMIN_PASSWORD_CANNOT_CONTAIN_PART_OF_LOGIN)
 
-        if (password.size < ADMIN_PASSWORD_MIN_LENGTH || password.size > ADMIN_PASSWORD_MAX_LENGTH)
-            status.setInvalid(ADMIN_PASSWORD_LENGTH_ERROR)
+        return status
+    }
 
+    fun checkPasswordMinLength(password: CharArray) =
+            checkNameMinLength(String(password), ADMIN_PASSWORD_MIN_LENGTH, ADMIN_PASSWORD_LENGTH_ERROR)
+
+    fun checkPasswordMaxLength(password: CharArray) =
+            checkNameMaxLength(String(password), ADMIN_PASSWORD_MAX_LENGTH, ADMIN_PASSWORD_LENGTH_ERROR)
+
+    fun checkPasswordRequirements(password: CharArray): ValidationResult {
+        val status = ValidationResult()
+
+        val passwordString = String(password)
         var passCategoriesCount = 0
         if (adminPasswordLowerCaseRegex.containsMatchIn(passwordString)) passCategoriesCount++
         if (adminPasswordUpperCaseRegex.containsMatchIn(passwordString)) passCategoriesCount++
@@ -161,9 +212,6 @@ object SqlServerValidator : AzureResourceValidator() {
             status.setInvalid(SQL_SERVER_ADMIN_PASSWORD_DOES_NOT_MATCH)
         return status
     }
-
-    fun checkPasswordIsSet(password: CharArray) =
-            checkValueIsSet(password, SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
 
     private fun isSqlServerExist(subscriptionId: String, name: String) =
             AzureSqlServerMvpModel.getSqlServerByName(subscriptionId, name) != null

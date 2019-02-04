@@ -33,13 +33,6 @@ object WebAppValidator : AzureResourceValidator() {
     private const val WEB_APP_NAME_INVALID = "Web App name cannot contain characters: %s."
     private const val WEB_APP_ALREADY_EXISTS = "Web App with name '%s' already exists."
 
-    private const val APP_SERVICE_PLAN_NAME_NOT_DEFINED = "App Service Plan name not provided."
-    private const val APP_SERVICE_PLAN_ID_NOT_DEFINED = "App Service Plan ID is not defined."
-    private const val APP_SERVICE_PLAN_NAME_INVALID = "App Service Plan name cannot contain characters: %s."
-    private const val APP_SERVICE_PLAN_ALREADY_EXISTS = "App Service Plan with name '%s' already exists."
-
-    private const val LOCATION_NOT_DEFINED = "Location not provided."
-
     private const val CONNECTION_STRING_NAME_ALREADY_EXISTS = "Connection String with name '%s' already exists."
     private const val CONNECTION_STRING_NAME_NOT_DEFINED = "Connection string not set."
 
@@ -49,64 +42,50 @@ object WebAppValidator : AzureResourceValidator() {
     private const val WEB_APP_NAME_LENGTH_ERROR =
             "Web App name should be from $WEB_APP_NAME_MIN_LENGTH to $WEB_APP_NAME_MAX_LENGTH characters."
 
-    private val appServicePlanNameRegex = "[^\\p{L}0-9-]".toRegex()
-    private const val APP_SERVICE_PLAN_NAME_MIN_LENGTH = 1
-    private const val APP_SERVICE_PLAN_NAME_MAX_LENGTH = 40
-    private const val APP_SERVICE_PLAN_NAME_LENGTH_ERROR =
-            "Web App name should be from $WEB_APP_NAME_MIN_LENGTH to $WEB_APP_NAME_MAX_LENGTH characters."
-
     // Please see for details -
     // https://docs.microsoft.com/en-us/azure/app-service/app-service-web-get-started-dotnet?toc=%2Fen-us%2Fdotnet%2Fapi%2Fazure_ref_toc%2Ftoc.json&bc=%2Fen-us%2Fdotnet%2Fazure_breadcrumb%2Ftoc.json&view=azure-dotnet#create-an-app-service-plan
     fun validateWebAppName(name: String): ValidationResult {
 
-        val status = checkValueIsSet(name, WEB_APP_NAME_NOT_DEFINED)
+        val status = checkWebAppNameIsSet(name)
         if (!status.isValid) return status
 
-        if (isWebAppExist(name))
-            return status.setInvalid(String.format(WEB_APP_ALREADY_EXISTS, name))
+        status.merge(checkWebAppExists(name))
+        if (!status.isValid) return status
 
-        if (name.startsWith('-') || name.endsWith('-'))
-            status.setInvalid(WEB_APP_NAME_CANNOT_START_END_WITH_DASH)
-
-        return status.merge(validateResourceName(name,
-                WEB_APP_NAME_MIN_LENGTH,
-                WEB_APP_NAME_MAX_LENGTH,
-                WEB_APP_NAME_LENGTH_ERROR,
-                webAppNameRegex,
-                WEB_APP_NAME_INVALID))
+        return status
+                .merge(checkStartsEndsWithDash(name))
+                .merge(checkNameMinLength(name))
+                .merge(checkNameMaxLength(name))
+                .merge(checkInvalidCharacters(name))
     }
 
     fun checkWebAppIdIsSet(webAppId: String?) =
             checkValueIsSet(webAppId, WEB_APP_NOT_DEFINED)
 
-    fun validateAppServicePlanName(name: String): ValidationResult {
+    fun checkWebAppNameIsSet(name: String) =
+            checkValueIsSet(name, WEB_APP_NAME_NOT_DEFINED)
 
+    fun checkStartsEndsWithDash(name: String): ValidationResult {
         val status = ValidationResult()
-
-        checkValueIsSet(name, APP_SERVICE_PLAN_NAME_NOT_DEFINED)
-        if (isAppServicePlanExist(name))
-            return status.setInvalid(String.format(APP_SERVICE_PLAN_ALREADY_EXISTS, name))
-
-        return validateResourceName(name,
-                APP_SERVICE_PLAN_NAME_MIN_LENGTH,
-                APP_SERVICE_PLAN_NAME_MAX_LENGTH,
-                APP_SERVICE_PLAN_NAME_LENGTH_ERROR,
-                appServicePlanNameRegex,
-                APP_SERVICE_PLAN_NAME_INVALID)
+        if (name.startsWith('-') || name.endsWith('-')) status.setInvalid(WEB_APP_NAME_CANNOT_START_END_WITH_DASH)
+        return status
     }
 
-    fun checkAppServicePlanIdIsSet(planId: String?) =
-            checkValueIsSet(planId, APP_SERVICE_PLAN_ID_NOT_DEFINED)
+    fun checkNameMaxLength(name: String) =
+            checkNameMaxLength(name, WEB_APP_NAME_MAX_LENGTH, WEB_APP_NAME_LENGTH_ERROR)
 
-    fun checkLocationIsSet(location: String?) =
-            checkValueIsSet(location, LOCATION_NOT_DEFINED)
+    fun checkNameMinLength(name: String) =
+            checkNameMinLength(name, WEB_APP_NAME_MIN_LENGTH, WEB_APP_NAME_LENGTH_ERROR)
 
-    /**
-     * Check Connection String name existence for a web app
-     *
-     * @param name connection string name
-     * @param webAppId a web app to check
-     */
+    fun checkInvalidCharacters(name: String) =
+            validateResourceNameRegex(name, webAppNameRegex, WEB_APP_NAME_INVALID)
+
+    fun checkWebAppExists(name: String): ValidationResult {
+        val status = ValidationResult()
+        if (isWebAppExist(name)) return status.setInvalid(String.format(WEB_APP_ALREADY_EXISTS, name))
+        return status
+    }
+
     fun checkConnectionStringNameExistence(name: String, webAppId: String): ValidationResult {
         val status = checkValueIsSet(name, CONNECTION_STRING_NAME_NOT_DEFINED)
         if (!status.isValid) return status
@@ -128,12 +107,5 @@ object WebAppValidator : AzureResourceValidator() {
 
         val webApps = resourceGroupToWebAppMap.flatMap { it.value }
         return webApps.any { it.name().equals(webAppName, true) }
-    }
-
-    private fun isAppServicePlanExist(appServicePlanName: String): Boolean {
-        val resourceGroupToAppServicePlanMap = AzureModel.getInstance().resourceGroupToAppServicePlanMap ?: return false
-
-        val appServicePlans = resourceGroupToAppServicePlanMap.flatMap { it.value }
-        return appServicePlans.any { it.name().equals(appServicePlanName, true) }
     }
 }

@@ -25,16 +25,18 @@ package com.microsoft.intellij.component
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.components.JBPasswordField
+import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.sql.SqlServer
-import com.microsoft.intellij.component.extension.createDefaultRenderer
-import com.microsoft.intellij.component.extension.getSelectedValue
-import com.microsoft.intellij.component.extension.setComponentsEnabled
+import com.microsoft.intellij.component.extension.*
 import com.microsoft.intellij.helpers.validator.SqlServerValidator
+import com.microsoft.intellij.helpers.validator.ValidationResult
 import net.miginfocom.swing.MigLayout
 import javax.swing.*
 
-class AzureSqlServerSelector : JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")), AzureComponent {
+class AzureSqlServerSelector(private val lifetimeDef: LifetimeDefinition) :
+        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
+        AzureComponent {
 
     companion object {
         private const val EMPTY_SQL_SERVER_MESSAGE = "No existing SQL Servers"
@@ -65,6 +67,8 @@ class AzureSqlServerSelector : JPanel(MigLayout("novisualpadding, ins 0, fillx, 
     var lastSelectedSqlServer: SqlServer? = null
     var listenerAction: () -> Unit = {}
 
+    var subscriptionId: String = ""
+
     init {
         initSqlServerComboBox()
         initSqlServerButtonsGroup()
@@ -90,27 +94,57 @@ class AzureSqlServerSelector : JPanel(MigLayout("novisualpadding, ins 0, fillx, 
         add(passNewAdminPasswordValue, "growx")
         add(lblCreateAdminPasswordConfirmName)
         add(passNewAdminPasswordConfirmValue, "growx")
+
+        initComponentValidation()
     }
 
-    override fun validateComponent(): ValidationInfo? {
-        var component: JComponent = txtSqlServerName
+    override fun validateComponent(): List<ValidationInfo> {
+        if (rdoExistingSqlServer.isSelected) {
+            return listOfNotNull(
+                    SqlServerValidator.checkSqlServerIsSet(cbSqlServer.getSelectedValue()).toValidationInfo(cbSqlServer),
+                    SqlServerValidator.checkPasswordIsSet(passExistingAdminPasswordValue.password).toValidationInfo(passExistingAdminPasswordValue))
+        }
 
-        val status =
-                if (rdoCreateSqlServer.isSelected) {
-                    SqlServerValidator.validateSqlServerName(txtSqlServerName.text)
-                    SqlServerValidator.validateAdminLogin(txtAdminLogin.text)
-                    SqlServerValidator.validateAdminPassword(txtAdminLogin.text, passNewAdminPasswordValue.password)
-                    SqlServerValidator.checkPasswordsMatch(passNewAdminPasswordValue.password, passNewAdminPasswordConfirmValue.password)
-                } else {
-                    component = cbSqlServer
-                    SqlServerValidator.checkSqlServerIsSet(cbSqlServer.getSelectedValue())
-                    SqlServerValidator.checkPasswordIsSet(passExistingAdminPasswordValue.password)
-                }
+        return listOfNotNull(
+                SqlServerValidator.validateSqlServerName(txtSqlServerName.text)
+                        .merge(SqlServerValidator.checkSqlServerExistence(subscriptionId, txtSqlServerName.text))
+                        .toValidationInfo(txtSqlServerName),
+                SqlServerValidator.validateAdminLogin(txtAdminLogin.text).toValidationInfo(txtAdminLogin),
+                SqlServerValidator.validateAdminPassword(txtAdminLogin.text, passNewAdminPasswordValue.password).toValidationInfo(passNewAdminPasswordValue),
+                SqlServerValidator.checkPasswordsMatch(passNewAdminPasswordValue.password, passNewAdminPasswordConfirmValue.password)
+                        .toValidationInfo(passNewAdminPasswordConfirmValue))
+    }
 
-        if (!status.isValid)
-            return ValidationInfo(status.errors.first(), component)
+    override fun initComponentValidation() {
+        txtSqlServerName.initValidationWithResult(
+                lifetimeDef,
+                textChangeValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                    SqlServerValidator.checkNameMaxLength(txtSqlServerName.text)
+                            .merge(SqlServerValidator.checkInvalidCharacters(txtSqlServerName.text)) },
+                focusLostValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                    SqlServerValidator.checkStartsEndsWithDash(txtSqlServerName.text) })
 
-        return null
+        txtAdminLogin.initValidationWithResult(
+                lifetimeDef,
+                textChangeValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                    SqlServerValidator.checkLoginInvalidCharacters(txtAdminLogin.text) },
+                focusLostValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                    SqlServerValidator.checkRestrictedLogins(txtAdminLogin.text) })
+
+        passNewAdminPasswordValue.initValidationWithResult(
+                lifetimeDef,
+                textChangeValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                    SqlServerValidator.checkPasswordContainsUsername(passNewAdminPasswordValue.password, txtAdminLogin.text) },
+                focusLostValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                    SqlServerValidator.checkPasswordRequirements(passNewAdminPasswordValue.password).merge(
+                            if (passNewAdminPasswordValue.password.isEmpty()) ValidationResult()
+                            else SqlServerValidator.checkPasswordMinLength(passNewAdminPasswordValue.password)) })
+
+        passNewAdminPasswordConfirmValue.initValidationWithResult(
+                lifetimeDef,
+                textChangeValidationAction = { ValidationResult() },
+                focusLostValidationAction = { if (rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
+                    SqlServerValidator.checkPasswordsMatch(passNewAdminPasswordValue.password, passNewAdminPasswordConfirmValue.password) })
     }
 
     private fun initSqlServerComboBox() {

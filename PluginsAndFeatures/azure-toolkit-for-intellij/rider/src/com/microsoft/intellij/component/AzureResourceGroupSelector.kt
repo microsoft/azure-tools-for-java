@@ -24,15 +24,20 @@ package com.microsoft.intellij.component
 
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ValidationInfo
+import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.microsoft.azure.management.resources.ResourceGroup
-import com.microsoft.intellij.component.extension.createDefaultRenderer
-import com.microsoft.intellij.component.extension.getSelectedValue
-import com.microsoft.intellij.component.extension.setComponentsEnabled
+import com.microsoft.intellij.component.extension.*
 import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
+import com.microsoft.intellij.helpers.validator.ValidationResult
 import net.miginfocom.swing.MigLayout
-import javax.swing.*
+import javax.swing.ButtonGroup
+import javax.swing.JPanel
+import javax.swing.JRadioButton
+import javax.swing.JTextField
 
-class AzureResourceGroupSelector : JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")), AzureComponent {
+class AzureResourceGroupSelector(private val lifetimeDef: LifetimeDefinition) :
+        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
+        AzureComponent {
 
     companion object {
         private const val EMPTY_RESOURCE_GROUP_MESSAGE = "No existing Azure Resource Groups"
@@ -47,6 +52,8 @@ class AzureResourceGroupSelector : JPanel(MigLayout("novisualpadding, ins 0, fil
     var lastSelectedResourceGroup: ResourceGroup? = null
     var listenerAction: () -> Unit = {}
 
+    var subscriptionId: String = ""
+
     init {
         initResourceGroupComboBox()
         initResourceGroupButtonGroup()
@@ -56,22 +63,28 @@ class AzureResourceGroupSelector : JPanel(MigLayout("novisualpadding, ins 0, fil
 
         add(rdoCreateResourceGroup)
         add(txtResourceGroupName, "growx")
+
+        initComponentValidation()
     }
 
-    override fun validateComponent(): ValidationInfo? {
-        var component: JComponent = txtResourceGroupName
-        val status =
-                if (rdoCreateResourceGroup.isSelected) {
-                    ResourceGroupValidator.validateResourceGroupName(txtResourceGroupName.text)
-                } else {
-                    component = cbResourceGroup
-                    ResourceGroupValidator.checkResourceGroupIsSet(cbResourceGroup.getSelectedValue())
-                }
+    override fun validateComponent(): List<ValidationInfo> {
+        if (rdoExistingResourceGroup.isSelected)
+            return listOfNotNull(ResourceGroupValidator.checkResourceGroupIsSet(cbResourceGroup.getSelectedValue())
+                    .toValidationInfo(cbResourceGroup))
 
-        if (!status.isValid)
-            return ValidationInfo(status.errors.first(), component)
+        return listOfNotNull(ResourceGroupValidator.validateResourceGroupName(txtResourceGroupName.text)
+                .merge(ResourceGroupValidator.checkResourceGroupExistence(subscriptionId, txtResourceGroupName.text))
+                .toValidationInfo(txtResourceGroupName))
+    }
 
-        return null
+    override fun initComponentValidation() {
+        txtResourceGroupName.initValidationWithResult(
+                lifetimeDef,
+                textChangeValidationAction = { if (rdoExistingResourceGroup.isSelected) return@initValidationWithResult ValidationResult()
+                    ResourceGroupValidator.checkNameMaxLength(txtResourceGroupName.text)
+                            .merge(ResourceGroupValidator.checkInvalidCharacters(txtResourceGroupName.text)) },
+                focusLostValidationAction = { if (rdoExistingResourceGroup.isSelected) return@initValidationWithResult ValidationResult()
+                    ResourceGroupValidator.checkEndsWithPeriod(txtResourceGroupName.text) })
     }
 
     private fun initResourceGroupComboBox() {

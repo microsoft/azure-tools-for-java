@@ -28,7 +28,6 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.border.IdeaTitledBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.update.Activatable
@@ -43,17 +42,20 @@ import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
+import com.microsoft.intellij.component.AzureComponent
 import com.microsoft.intellij.component.AzureResourceGroupSelector
 import com.microsoft.intellij.component.AzureResourceNameComponent
 import com.microsoft.intellij.component.AzureSubscriptionsSelector
 import com.microsoft.intellij.component.extension.createDefaultRenderer
 import com.microsoft.intellij.component.extension.getSelectedValue
+import com.microsoft.intellij.component.extension.initValidationWithResult
 import com.microsoft.intellij.component.extension.setComponentsEnabled
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.intellij.deploy.NotificationConstant
 import com.microsoft.intellij.helpers.defaults.AzureDefaults
-import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
+import com.microsoft.intellij.helpers.validator.LocationValidator
 import com.microsoft.intellij.helpers.validator.SqlServerValidator
+import com.microsoft.intellij.helpers.validator.ValidationResult
 import com.microsoft.intellij.ui.components.AzureDialogWrapper
 import net.miginfocom.swing.MigLayout
 import java.awt.Dimension
@@ -62,8 +64,10 @@ import javax.swing.*
 
 class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
                             private val project: Project,
-                            private val onCreate: Runnable = Runnable { })
-    : AzureDialogWrapper(project), CreateSqlServerMvpView {
+                            private val onCreate: Runnable = Runnable { }) :
+        AzureDialogWrapper(project),
+        CreateSqlServerMvpView,
+        AzureComponent {
 
     companion object {
         private const val EMPTY_LOCATION_MESSAGE = "No existing Azure Locations"
@@ -85,7 +89,7 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
 
     private val pnlName = AzureResourceNameComponent()
     private val pnlSubscription = AzureSubscriptionsSelector()
-    private val pnlResourceGroup = AzureResourceGroupSelector()
+    private val pnlResourceGroup = AzureResourceGroupSelector(lifetimeDef.createNested())
 
     private val pnlSqlServerSettings = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]"))
     private val lblLocation = JLabel("Location")
@@ -100,7 +104,6 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
     private var cachedResourceGroups = emptyList<ResourceGroup>()
 
     private val presenter = CreateSqlServerViewPresenter<CreateSqlServerDialog>()
-
     private val activityNotifier = AzureDeploymentProgressNotification(project)
 
     init {
@@ -110,7 +113,7 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
         updateAzureModelInBackground(project)
         initLocationComboBox()
         initMainPanel()
-        initDialogValidation()
+        initComponentValidation()
 
         myPreferredFocusedComponent = pnlName.txtNameValue
 
@@ -123,33 +126,47 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
 
     override fun createCenterPanel(): JComponent = mainPanel
 
-    override fun doValidateAll(): List<ValidationInfo> {
+    override fun validateComponent() =
+            pnlSubscription.validateComponent() +
+            pnlResourceGroup.validateComponent() +
+            listOfNotNull(
+                    SqlServerValidator
+                            .validateSqlServerName(pnlName.txtNameValue.text)
+                            .merge(SqlServerValidator.checkSqlServerExistence(pnlSubscription.lastSelectedSubscriptionId, pnlName.txtNameValue.text))
+                            .toValidationInfo(pnlName.txtNameValue),
+                    LocationValidator.checkLocationIsSet(cbLocation.getSelectedValue()).toValidationInfo(cbLocation),
+                    SqlServerValidator.validateAdminLogin(txtAdminLoginValue.text).toValidationInfo(txtAdminLoginValue),
+                    SqlServerValidator.validateAdminPassword(txtAdminLoginValue.text, passAdminPassword.password).toValidationInfo(passAdminPassword),
+                    SqlServerValidator.checkPasswordsMatch(passAdminPassword.password, passAdminPasswordConfirm.password).toValidationInfo(passAdminPasswordConfirm)
+            )
 
-        val subscription = pnlSubscription.cbSubscription.getSelectedValue()
-        val subscriptionId = subscription?.subscriptionId() ?: ""
-        val sqlServerName = pnlName.txtNameValue.text
+    override fun initComponentValidation() {
 
-        val username = txtAdminLoginValue.text
-        val password = passAdminPassword.password
-        val passwordConfirm = passAdminPasswordConfirm.password
+        pnlName.txtNameValue.initValidationWithResult(
+                lifetimeDef,
+                textChangeValidationAction = { SqlServerValidator.checkNameMaxLength(pnlName.txtNameValue.text)
+                        .merge(SqlServerValidator.checkInvalidCharacters(pnlName.txtNameValue.text)) },
+                focusLostValidationAction = { SqlServerValidator.checkStartsEndsWithDash(pnlName.txtNameValue.text) })
 
-        return listOfNotNull(
-                validateSqlServerName(),
+        txtAdminLoginValue.initValidationWithResult(
+                lifetimeDef,
+                textChangeValidationAction = { SqlServerValidator.checkLoginInvalidCharacters(txtAdminLoginValue.text) },
+                focusLostValidationAction = { SqlServerValidator.checkRestrictedLogins(txtAdminLoginValue.text) })
 
-                SqlServerValidator.checkSqlServerExistence(subscriptionId, sqlServerName).toValidationInfo(pnlName.txtNameValue),
+        passAdminPassword.initValidationWithResult(
+                lifetimeDef,
+                textChangeValidationAction = { SqlServerValidator.checkPasswordContainsUsername(passAdminPassword.password, txtAdminLoginValue.text) },
+                focusLostValidationAction = { SqlServerValidator.checkPasswordRequirements(passAdminPassword.password).merge(
+                        if (passAdminPassword.password.isEmpty()) ValidationResult()
+                        else SqlServerValidator.checkPasswordMinLength(passAdminPassword.password)) })
 
-                pnlSubscription.validateComponent(),
-
-                pnlResourceGroup.validateComponent()
-                        ?: ResourceGroupValidator.checkResourceGroupExistence(subscriptionId, pnlResourceGroup.txtResourceGroupName.text)
-                                .toValidationInfo(pnlResourceGroup.txtResourceGroupName),
-
-                SqlServerValidator.validateAdminLogin(username).toValidationInfo(txtAdminLoginValue),
-
-                SqlServerValidator.validateAdminPassword(username, password).toValidationInfo(passAdminPassword),
-
-                SqlServerValidator.checkPasswordsMatch(password, passwordConfirm).toValidationInfo(passAdminPasswordConfirm))
+        passAdminPasswordConfirm.initValidationWithResult(
+                lifetimeDef,
+                textChangeValidationAction = { ValidationResult() },
+                focusLostValidationAction = { SqlServerValidator.checkPasswordsMatch(passAdminPassword.password, passAdminPasswordConfirm.password) })
     }
+
+    override fun doValidateAll() = validateComponent()
 
     override fun doOKAction() {
         val sqlServerName = pnlName.txtNameValue.text
@@ -240,6 +257,8 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
             val subscriptionId = pnlSubscription.lastSelectedSubscriptionId
             presenter.onLoadResourceGroups(lifetimeDef, subscriptionId)
             presenter.onLoadLocation(lifetimeDef, subscriptionId)
+
+            pnlResourceGroup.subscriptionId = subscriptionId
         }
 
         pnlResourceGroup.apply {
@@ -280,14 +299,6 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
         cbLocation.renderer =
                 cbLocation.createDefaultRenderer(EMPTY_LOCATION_MESSAGE) { it.displayName() }
     }
-
-    private fun initDialogValidation() {
-        pnlName.initImmediateValidation(lifetimeDef, pnlName.txtNameValue) { validateSqlServerName() }
-        pnlResourceGroup.initImmediateValidation(lifetimeDef, pnlResourceGroup.txtResourceGroupName, pnlResourceGroup::validateComponent)
-    }
-
-    private fun validateSqlServerName() =
-            SqlServerValidator.validateSqlServerName(pnlName.txtNameValue.text).toValidationInfo(pnlName.txtNameValue)
 
     private fun updateAzureModelInBackground(project: Project) {
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Updating Azure model", false) {

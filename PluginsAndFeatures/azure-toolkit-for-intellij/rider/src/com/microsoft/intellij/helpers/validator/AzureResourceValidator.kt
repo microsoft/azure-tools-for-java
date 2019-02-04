@@ -22,26 +22,11 @@
 
 package com.microsoft.intellij.helpers.validator
 
+/**
+ * Please see for validation details -
+ * https://docs.microsoft.com/en-us/azure/architecture/best-practices/naming-conventions
+ */
 open class AzureResourceValidator {
-
-    /**
-     * Validate Azure resource name against Azure requirements
-     * Please see for details - https://docs.microsoft.com/en-us/azure/architecture/best-practices/naming-conventions
-     */
-    fun validateResourceName(name: String,
-                             nameLengthMin: Int,
-                             nameLengthMax: Int,
-                             nameLengthErrorMessage: String,
-                             nameRegex: Regex,
-                             nameInvalidCharsMessage: String): ValidationResult {
-
-        val status = validateResourceNameRegex(name, nameRegex, nameInvalidCharsMessage)
-
-        if (name.length !in nameLengthMin..nameLengthMax)
-            status.setInvalid(nameLengthErrorMessage)
-
-        return status
-    }
 
     fun checkValueIsSet(value: String?, message: String): ValidationResult {
         val status = ValidationResult()
@@ -67,6 +52,18 @@ open class AzureResourceValidator {
             status.setInvalid(String.format(nameInvalidCharsMessage, invalidChars))
         }
 
+        return status
+    }
+
+    fun checkNameMaxLength(name: String, maxLength: Int, errorMessage: String): ValidationResult {
+        val status = ValidationResult()
+        if (name.length > maxLength) return status.setInvalid(errorMessage)
+        return status
+    }
+
+    fun checkNameMinLength(name: String, minLength: Int, errorMessage: String): ValidationResult {
+        val status = ValidationResult()
+        if (name.length < minLength) return status.setInvalid(errorMessage)
         return status
     }
 }

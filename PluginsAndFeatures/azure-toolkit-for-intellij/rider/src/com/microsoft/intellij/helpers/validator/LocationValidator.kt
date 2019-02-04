@@ -20,13 +20,17 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.component
+package com.microsoft.intellij.helpers.validator
 
-import com.intellij.openapi.ui.ValidationInfo
+import com.microsoft.azure.management.resources.Location
 
-interface AzureComponent {
+object LocationValidator : AzureResourceValidator() {
 
-    fun validateComponent(): List<ValidationInfo> = emptyList()
+    private const val LOCATION_NOT_DEFINED = "Location not provided."
 
-    fun initComponentValidation() {}
+    fun checkLocationIsSet(location: String?) =
+            checkValueIsSet(location, LOCATION_NOT_DEFINED)
+
+    fun checkLocationIsSet(location: Location?) =
+            checkValueIsSet(location, LOCATION_NOT_DEFINED)
 }

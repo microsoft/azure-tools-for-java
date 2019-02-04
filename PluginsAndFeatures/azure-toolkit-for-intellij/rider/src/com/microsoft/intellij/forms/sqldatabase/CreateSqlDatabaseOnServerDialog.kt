@@ -41,18 +41,17 @@ import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.sql.*
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
+import com.microsoft.intellij.component.AzureComponent
 import com.microsoft.intellij.component.AzureResourceNameComponent
 import com.microsoft.intellij.component.AzureSubscriptionsSelector
-import com.microsoft.intellij.component.extension.createDefaultRenderer
-import com.microsoft.intellij.component.extension.fillComboBox
-import com.microsoft.intellij.component.extension.getSelectedValue
-import com.microsoft.intellij.component.extension.setComponentsEnabled
+import com.microsoft.intellij.component.extension.*
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.intellij.deploy.NotificationConstant
 import com.microsoft.intellij.helpers.defaults.AzureDefaults
 import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
 import com.microsoft.intellij.helpers.validator.SqlDatabaseValidator
 import com.microsoft.intellij.helpers.validator.SubscriptionValidator
+import com.microsoft.intellij.helpers.validator.ValidationResult
 import com.microsoft.intellij.ui.components.AzureDialogWrapper
 import net.miginfocom.swing.MigLayout
 import java.util.*
@@ -66,7 +65,8 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
                                       private val sqlServer: SqlServer,
                                       private val onCreate: Runnable = Runnable {  }) :
         AzureDialogWrapper(project),
-        CreateSqlDatabaseOnServerMvpView {
+        CreateSqlDatabaseOnServerMvpView,
+        AzureComponent {
 
     companion object {
         private const val DIALOG_TITLE = "Create SQL Database"
@@ -127,7 +127,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
         initDatabaseEditionsComboBox()
         initDatabaseComputeSizeComboBox()
         initMainPanel()
-        initDialogValidation()
+        initComponentValidation()
 
         presenter.onAttachView(this)
 
@@ -135,11 +135,6 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     }
 
     override fun createCenterPanel(): JComponent? = mainPanel
-
-    override fun fillSubscriptions(subscriptions: List<Subscription>) {
-        val subscription = subscriptions.find { it.subscriptionId() == sqlServer.manager().subscriptionId() }
-        pnlSubscription.cbSubscription.fillComboBox(listOf(subscription))
-    }
 
     override fun fillResourceGroups(resourceGroups: List<ResourceGroup>) {
         val resourceGroup = resourceGroups.find { it.name() == sqlServer.resourceGroupName() }
@@ -166,6 +161,32 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
         cachedComputeSize = objectives
         cbDatabaseComputeSize.fillComboBox(
                 filterComputeSizeValues(cachedComputeSize, cbDatabaseEdition.getSelectedValue() ?: AzureDefaults.databaseEdition))
+    }
+
+    override fun validateComponent(): List<ValidationInfo> {
+        return listOfNotNull(
+                SqlDatabaseValidator.validateDatabaseName(pnlName.txtNameValue.text)
+                        .merge(SqlDatabaseValidator.checkSqlDatabaseExistence(
+                                pnlSubscription.lastSelectedSubscriptionId,
+                                pnlName.txtNameValue.text,
+                                cbSqlServer.getSelectedValue()?.name() ?: ""))
+                        .toValidationInfo(pnlName.txtNameValue),
+                SqlDatabaseValidator.checkEditionIsSet(cbDatabaseEdition.getSelectedValue()).toValidationInfo(cbDatabaseEdition),
+                SqlDatabaseValidator.checkComputeSizeIsSet(cbDatabaseComputeSize.getSelectedValue()).toValidationInfo(cbDatabaseComputeSize),
+                SqlDatabaseValidator.checkCollationIsSet(txtDatabaseCollation.text).toValidationInfo(txtDatabaseCollation)
+        )
+    }
+
+    override fun initComponentValidation() {
+        pnlName.txtNameValue.initValidationWithResult(
+                lifetimeDef,
+                textChangeValidationAction = { SqlDatabaseValidator.checkInvalidCharacters(pnlName.txtNameValue.text) },
+                focusLostValidationAction = { ValidationResult() })
+    }
+
+    override fun fillSubscriptions(subscriptions: List<Subscription>) {
+        val subscription = subscriptions.find { it.subscriptionId() == sqlServer.manager().subscriptionId() }
+        pnlSubscription.cbSubscription.fillComboBox(listOf(subscription))
     }
 
     override fun doValidateAll(): List<ValidationInfo> {
@@ -316,10 +337,6 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     private fun initDatabaseComputeSizeComboBox() {
         cbDatabaseComputeSize.renderer =
                 cbDatabaseComputeSize.createDefaultRenderer(EMPTY_COMPUTE_SIZE_MESSAGE) { it.toString() }
-    }
-
-    private fun initDialogValidation() {
-        pnlName.initImmediateValidation(lifetimeDef, pnlName.txtNameValue) { validationSqlDatabaseName() }
     }
 
     private fun validationSqlDatabaseName() =

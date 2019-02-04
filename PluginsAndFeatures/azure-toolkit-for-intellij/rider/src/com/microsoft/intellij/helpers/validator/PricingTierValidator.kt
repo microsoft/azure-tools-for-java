@@ -20,13 +20,15 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.component
+package com.microsoft.intellij.helpers.validator
 
-import com.intellij.openapi.ui.ValidationInfo
+import com.microsoft.azure.management.appservice.PricingTier
 
-interface AzureComponent {
+object PricingTierValidator: AzureResourceValidator() {
 
-    fun validateComponent(): List<ValidationInfo> = emptyList()
+    private const val PRICING_TIER_NOT_DEFINED = "Pricing Tier not provided."
 
-    fun initComponentValidation() {}
+    fun checkPricingTierIsSet(pricingTier: PricingTier?) =
+            checkValueIsSet(pricingTier, PRICING_TIER_NOT_DEFINED)
+
 }

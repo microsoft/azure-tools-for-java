@@ -43,29 +43,36 @@ object ResourceGroupValidator : AzureResourceValidator() {
 
     fun validateResourceGroupName(name: String): ValidationResult {
 
-        val status = checkValueIsSet(name, RESOURCE_GROUP_NAME_NOT_DEFINED)
+        val status = checkResourceGroupNameIsSet(name)
         if (!status.isValid) return status
 
-        if (name.endsWith('.'))
-            status.setInvalid(RESOURCE_GROUP_NAME_CANNOT_ENDS_WITH_PERIOD)
-
-        status.merge(
-                validateResourceName(
-                        name,
-                        RESOURCE_GROUP_NAME_MIN_LENGTH,
-                        RESOURCE_GROUP_NAME_MAX_LENGTH,
-                        RESOURCE_GROUP_NAME_LENGTH_ERROR,
-                        resourceGroupRegex,
-                        RESOURCE_GROUP_NAME_INVALID))
-
         return status
+                .merge(checkEndsWithPeriod(name))
+                .merge(checkNameMinLength(name))
+                .merge(checkNameMaxLength(name))
+                .merge(checkInvalidCharacters(name))
     }
 
     fun checkResourceGroupNameIsSet(name: String) =
             checkValueIsSet(name, RESOURCE_GROUP_NAME_NOT_DEFINED)
 
     fun checkResourceGroupIsSet(resourceGroup: ResourceGroup?) =
-            checkValueIsSet(resourceGroup, RESOURCE_GROUP_NAME_NOT_DEFINED)
+            checkValueIsSet(resourceGroup, RESOURCE_GROUP_NOT_DEFINED)
+
+    fun checkInvalidCharacters(name: String) =
+            validateResourceNameRegex(name, resourceGroupRegex, RESOURCE_GROUP_NAME_INVALID)
+
+    fun checkEndsWithPeriod(name: String): ValidationResult {
+        val status = ValidationResult()
+        if (name.endsWith('.')) status.setInvalid(RESOURCE_GROUP_NAME_CANNOT_ENDS_WITH_PERIOD)
+        return status
+    }
+
+    fun checkNameMaxLength(name: String) =
+            checkNameMaxLength(name, RESOURCE_GROUP_NAME_MAX_LENGTH, RESOURCE_GROUP_NAME_LENGTH_ERROR)
+
+    fun checkNameMinLength(name: String) =
+            checkNameMinLength(name, RESOURCE_GROUP_NAME_MIN_LENGTH, RESOURCE_GROUP_NAME_LENGTH_ERROR)
 
     fun checkResourceGroupExistence(subscriptionId: String, name: String): ValidationResult {
         val status = ValidationResult()
