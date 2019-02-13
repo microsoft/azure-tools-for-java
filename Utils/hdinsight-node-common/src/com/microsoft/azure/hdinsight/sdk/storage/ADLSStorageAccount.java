@@ -25,7 +25,6 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterIdentity;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.model.ServiceTreeItem;
 
 public class ADLSStorageAccount implements IHDIStorageAccount, ServiceTreeItem {
@@ -35,13 +34,15 @@ public class ADLSStorageAccount implements IHDIStorageAccount, ServiceTreeItem {
     private final IClusterDetail clusterDetail;
     private final ClusterIdentity clusterIdentity;
     private ADLSCertificateInfo certificateInfo;
+    private final String storageSchema;
 
-    public ADLSStorageAccount(IClusterDetail clusterDetail, String name, boolean isDefault, String defaultRootPath, ClusterIdentity clusterIdentity) {
+    public ADLSStorageAccount(IClusterDetail clusterDetail, String name, boolean isDefault, String defaultRootPath, ClusterIdentity clusterIdentity, String storageSchema) {
         this.name = name;
         this.isDefaultStorageAccount = isDefault;
         this.defaultRootFolderPath = defaultRootPath;
         this.clusterDetail = clusterDetail;
         this.clusterIdentity = clusterIdentity;
+        this.storageSchema = storageSchema;
     }
 
     @Override
@@ -72,6 +73,11 @@ public class ADLSStorageAccount implements IHDIStorageAccount, ServiceTreeItem {
     @Override
     public String getDefaultContainerOrRootPath() {
         return defaultRootFolderPath;
+    }
+
+    @Override
+    public String getStorageSchema(){
+        return storageSchema;
     }
 
     @NotNull

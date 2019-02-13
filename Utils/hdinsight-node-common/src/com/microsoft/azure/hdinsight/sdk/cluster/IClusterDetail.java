@@ -29,10 +29,10 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public interface IClusterDetail {
@@ -115,4 +115,7 @@ public interface IClusterDetail {
     default SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType(){
         return SparkSubmitStorageTypeOptionsForCluster.ClusterWithFullType;
     }
+
+    @Nullable
+    default String getArtifactUploadPath(String rootPath) throws URISyntaxException {return null;}
 }

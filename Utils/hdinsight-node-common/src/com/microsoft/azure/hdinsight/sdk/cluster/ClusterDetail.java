@@ -31,10 +31,13 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.http.client.utils.URIBuilder;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +67,9 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     private String passWord;
     private IHDIStorageAccount defaultStorageAccount;
     private List<HDStorageAccount> additionalStorageAccounts;
+
+    @Nullable
+    private String storageAccountSchema;
 
     private boolean isConfigInfoAvailable = false;
 
@@ -245,17 +251,20 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
             throw new HDIException("Failed to get default storage account");
         }
 
+        String schema = URI.create(containerAddress).getScheme();
+
         //for adls
         if(ADL_HOME_PREFIX.equalsIgnoreCase(containerAddress)) {
             String accountName = "";
             String defaultRootPath = "";
+
             if(coresiteMap.containsKey(ADLS_HOME_HOST_NAME)) {
                 accountName = coresiteMap.get(ADLS_HOME_HOST_NAME).split("\\.")[0];
             }
             if(coresiteMap.containsKey(ADLS_HOME_MOUNTPOINT)) {
                 defaultRootPath = coresiteMap.get(ADLS_HOME_MOUNTPOINT);
             }
-            return new ADLSStorageAccount(this, accountName, true, defaultRootPath, clusterIdentity);
+            return new ADLSStorageAccount(this, accountName, true, defaultRootPath, clusterIdentity, schema);
         } else if (Pattern.compile(StorageAccountNamePattern).matcher(containerAddress).matches()) {
             String storageAccountName = getStorageAccountName(containerAddress);
             if(storageAccountName == null){
@@ -359,5 +368,14 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
         } else {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithUnknown;
         }
+    }
+
+    @Override
+    @NotNull
+    public String getArtifactUploadPath(String rootPath) throws URISyntaxException {
+        // convert https://xx/webhdfs/v1/hdi-root/SparkSubmission/artifact.jar to adl://xx/hdi-root/SparkSubmission/artifact.jar
+        URIBuilder builder = new URIBuilder(rootPath.replace("/webhdfs/v1", ""));
+        builder.setScheme(getStorageAccount().getStorageSchema());
+        return builder.toString();
     }
 }

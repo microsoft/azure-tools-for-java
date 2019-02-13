@@ -26,6 +26,9 @@ public interface IHDIStorageAccount {
     StorageAccountTypeEnum getAccountType();
     String getDefaultContainerOrRootPath();
     String getSubscriptionId();
+    default String getStorageSchema(){
+        return null;
+    }
 }
 
 
