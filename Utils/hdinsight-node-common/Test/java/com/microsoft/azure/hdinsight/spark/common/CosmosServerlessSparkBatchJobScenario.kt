@@ -25,10 +25,12 @@ package com.microsoft.azure.hdinsight.spark.common
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.CreateSparkBatchJobParameters
+import cucumber.api.java.After
 import cucumber.api.java.Before
 import cucumber.api.java.en.Given
 import cucumber.api.java.en.Then
@@ -37,12 +39,16 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.*
 import org.slf4j.Logger
 import rx.Observable
+import rx.subjects.PublishSubject
 import java.net.URI
 import java.nio.charset.StandardCharsets
+import java.util.*
 import kotlin.test.assertEquals
 
 class CosmosServerlessSparkBatchJobScenario {
     private val httpServerMock = MockHttpService()
+    private val ctrlSubject = PublishSubject.create<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>()
+    private val ctrlSubscription = ctrlSubject.subscribe()
     private val jobUuid = "46c07889-3590-48f8-b2bc-7f52622b5a0b"
     private var serverlessJobMock = mock(CosmosServerlessSparkBatchJob::class.java, CALLS_REAL_METHODS)
     private val adlAccount = mock(AzureSparkServerlessAccount::class.java, CALLS_REAL_METHODS)
@@ -50,7 +56,6 @@ class CosmosServerlessSparkBatchJobScenario {
     private var caught: Throwable? = null
     private var submissionParameter = CreateSparkBatchJobParameters()
     private val connectUri: URI = URI.create(httpServerMock.completeUrl("/activityTypes/spark/batchJobs"))
-    private var requestUrl: String = connectUri.toString() + "/" + jobUuid
     private var http: AzureHttpObservable = object: AzureHttpObservable(ApiVersion.VERSION) {
         // we need to override getAccessToken() in AzureHttpObservable since it throws exception when user doesn't signed in
         override fun getAccessToken(): String {
@@ -71,6 +76,17 @@ class CosmosServerlessSparkBatchJobScenario {
         doReturn(submissionParameter).`when`(serverlessJobMock).getSubmissionParameter()
         doReturn(connectUri).`when`(serverlessJobMock).connectUri
         doReturn(Observable.just(true)).`when`(serverlessJobMock).prepareSparkEventsLogFolder()
+        doReturn(ctrlSubject).`when`(serverlessJobMock).ctrlSubject
+
+        doReturn(URI.create(httpServerMock.completeUrl("/"))).`when`(adlAccount).uri
+        doReturn(http).`when`(adlAccount).http
+        doReturn("test").`when`(adlAccount).name
+    }
+
+    @After
+    @Throws(Throwable::class)
+    fun cleanUp() {
+        ctrlSubscription.unsubscribe()
     }
 
     @Given("^setup a mock cosmos serverless service for '(.+)' detail request '(.+)' with body '(.+)' to return '(.+)' with status code (\\d+)$")
@@ -83,7 +99,7 @@ class CosmosServerlessSparkBatchJobScenario {
     @Given("^setup a mock cosmos serverless service for '(.+)' request '(.+)' to return '(.+)' with status code (\\d+)$")
     @Throws(Throwable::class)
     fun mockCosmosServerlessService(action: String, serviceUrl: String, response: String, statusCode: Int) {
-        httpServerMock.stub(action,serviceUrl, statusCode, response)
+        httpServerMock.stub(action, serviceUrl, statusCode, response)
     }
 
     @Given("^submit a cosmos serverless spark batch job$")
@@ -91,6 +107,7 @@ class CosmosServerlessSparkBatchJobScenario {
         // generate request json with submission parameter might lead to out-of-order in the json
         // therefore, we need to use json from .feature file to make the real request body exactly same as the mocked one
         val entity = StringEntity(requestJsonBody, StandardCharsets.UTF_8)
+        val requestUrl: String = connectUri.toString() + "/" + jobUuid
         val request = http.withUuidUserAgent().put(requestUrl, entity, null, null, com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJob::class.java)
         doReturn(request).`when`(adlAccount).createSparkBatchJobRequest(ArgumentMatchers.anyString(), ArgumentMatchers.eq(submissionParameter))
 
@@ -107,11 +124,28 @@ class CosmosServerlessSparkBatchJobScenario {
     fun verifyRequest(action: String, serviceUrl: String) {
         // this method is just used for debugging
         val allServerEvents = getAllServeEvents()
-        WireMock.verify(putRequestedFor(urlEqualTo(serviceUrl)))
+        when (action) {
+            "PUT" -> WireMock.verify(putRequestedFor(urlEqualTo(serviceUrl)))
+            "GET" -> WireMock.verify(getRequestedFor(urlEqualTo(serviceUrl)))
+            else -> println("$action action for verifyRequest function is not found.")
+        }
     }
 
     @Then("^batch ID should be (\\d+)\$")
     fun checkBatchId(batchId: Int) {
         assertEquals(batchId, serverlessJobMock.batchId)
+    }
+
+    @Then("^the return log line should be '(.+)'$")
+    fun verifyReturnLog(logLine: String) {
+        caught = null
+        var logEntry: AbstractMap.SimpleImmutableEntry<MessageInfoType, String>? = null
+        try {
+            logEntry = serverlessJobMock.submissionLog.toBlocking().last()
+        } catch (ex: Exception) {
+            caught = ex
+        } finally {
+            assertEquals(logEntry?.value, logLine)
+        }
     }
 }
