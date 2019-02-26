@@ -44,6 +44,7 @@ import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
@@ -257,13 +258,16 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     protected Control createDialogArea(Composite parent) {
         setMessage(DIALOG_MESSAGE);
         setTitle(DIALOG_TITLE);
-        Composite area = (Composite) super.createDialogArea(parent);
-
-        Composite composite = new Composite(area, SWT.NONE);
-        composite.setLayout(new GridLayout(1, false));
-        composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-
-        Group grpAppService = new Group(composite, SWT.NONE);
+        
+        ScrolledComposite scrolledComposite	= new ScrolledComposite(parent, SWT.V_SCROLL);
+        scrolledComposite.setLayout(new GridLayout(1, false));
+        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        
+        Group group = new Group(scrolledComposite, SWT.NONE);
+        group.setLayout(new GridLayout(1, false));
+        group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+        
+        Group grpAppService = new Group(group, SWT.NONE);
         grpAppService.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
         grpAppService.setLayout(new GridLayout(3, false));
 
@@ -302,11 +306,16 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         dec_comboSubscription = decorateContorolAndRegister(comboSubscription);
         comboSubscription.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
-        createRuntimeGroup(composite);
-        createASPGroup(composite);
-        createResourceGroup(composite);
-        createAppSettingGroup(composite);
-
+        createRuntimeGroup(group);
+        createASPGroup(group);
+        createResourceGroup(group);
+        createAppSettingGroup(group);
+        
+        scrolledComposite.setContent(group);
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
+        scrolledComposite.setMinSize(group.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+        
         fillLinuxRuntime();
         fillWebContainers();
         fillSubscriptions();
@@ -317,7 +326,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         fillAppServicePlanPricingTiers();
         fillJavaVersion();
 
-        return area;
+        return scrolledComposite;
     }
 
     private void createASPGroup(Composite composite) {
@@ -568,9 +577,9 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         group.setFont(boldFont);
         group.setText(GROUP_APPSETTING);
         group.setToolTipText(APPSETTINGS_TOOLTIP);
-        group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
         group.setLayout(new GridLayout());
-        Composite cpAppSettings = new Composite(composite, SWT.NONE);
+        Composite cpAppSettings = new Composite(group, SWT.NONE);
         cpAppSettings.setLayout(new GridLayout(2, false));
         GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gridData.heightHint = 150;
