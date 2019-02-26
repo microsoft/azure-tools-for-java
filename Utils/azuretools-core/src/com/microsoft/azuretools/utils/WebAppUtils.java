@@ -175,15 +175,28 @@ public class WebAppUtils {
         return uploadingTryCount;
     }
 
-    private static void ensureWebAppsFolderExist(FTPClient ftp) {
-        try {
-            ftp.getStatus(ftpWebAppsPath);
-            if (!FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
-                ftp.makeDirectory(ftpWebAppsPath);
+    private static void ensureWebAppsFolderExist(FTPClient ftp) throws IOException {
+        int count = 0;
+        while (count++ < FTP_MAX_TRY) {
+            try {
+                ftp.getStatus(ftpWebAppsPath);
+                if (FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
+                    return;
+                }
+                if (ftp.makeDirectory(ftpWebAppsPath)){
+                    return;
+                }
+                try {
+                    Thread.sleep(SLEEP_TIME);
+                } catch (InterruptedException ignore) {}
+            } catch (Exception e) {
+                if (count == FTP_MAX_TRY) {
+                    throw new IOException("FTP client can't make directory, reply code: " + ftp.getReplyCode(), e);
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
+        throw new IOException("FTP client can't make directory, reply code: " + ftp.getReplyCode());
     }
 
     public static void removeFtpDirectory(FTPClient ftpClient, String path, IProgressIndicator pi) throws IOException {

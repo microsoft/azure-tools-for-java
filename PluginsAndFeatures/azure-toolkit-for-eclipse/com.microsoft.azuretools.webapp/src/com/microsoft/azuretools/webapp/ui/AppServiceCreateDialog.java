@@ -219,7 +219,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     protected WebApp webApp;
     private String packaging = WebAppUtils.TYPE_WAR;
 
-    private String date = new SimpleDateFormat(DATE_FORMAT).format(new Date());
+    private final String date = new SimpleDateFormat(DATE_FORMAT).format(new Date());
     private static Map<String, List<AppServicePlan>> sidAspMap = new HashMap<>();
     private Map<String, String> appSettings = new HashMap<>();
     private List<ControlDecoration> decorations = new LinkedList<>();
