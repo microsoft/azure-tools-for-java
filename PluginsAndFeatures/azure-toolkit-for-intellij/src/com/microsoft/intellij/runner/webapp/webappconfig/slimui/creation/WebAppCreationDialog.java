@@ -40,6 +40,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -58,8 +59,9 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
     private static final String WARNING_MESSAGE = "<html><font size=\"3\" color=\"red\">%s</font></html>";
 
     public static final RuntimeStack DEFAULT_LINUX_RUNTIME = RuntimeStack.JAVA_8_JRE8;
-    public static final WebContainer DEFAULT_WINDOWS_CONTAINER = WebContainer.TOMCAT_8_5_NEWEST;
-    public static final JavaVersion DEFAULT_WINDOWS_JAVAVERSION = JavaVersion.JAVA_ZULU_1_8_0_144;
+    public static final JdkModel DEFAULT_WINDOWS_JAVAVERSION = JdkModel.JAVA_ZULU_1_8_0_102;
+    public static final WebAppUtils.WebContainerMod DEFAULT_WINDOWS_CONTAINER =
+        WebAppUtils.WebContainerMod.Newest_Tomcat_85;
     public static final PricingTier DEFAULT_PRICINGTIER = new PricingTier("Premium", "P1V2");
     public static final Region DEFAULT_REGION = Region.EUROPE_WEST;
 
@@ -328,15 +330,14 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
                 cbPricing.getSelectedItem().toString());
         } else {
             webAppConfiguration.setCreatingAppServicePlan(false);
-            AppServicePlan appServicePlan = (AppServicePlan) cbExistAppServicePlan.getSelectedItem();
-            if (appServicePlan != null) {
-                webAppConfiguration.setAppServicePlanId(appServicePlan.id());
-            }
+            webAppConfiguration.setAppServicePlanId(cbExistAppServicePlan.getSelectedItem() == null ? null :
+                ((AppServicePlan) cbExistAppServicePlan.getSelectedItem()).id());
         }
         // runtime
         if (rdoLinuxOS.isSelected()) {
             webAppConfiguration.setOS(OperatingSystem.LINUX);
-            RuntimeStack linuxRuntime = (RuntimeStack) cbRuntimeStack.getSelectedItem();
+            RuntimeStack linuxRuntime = cbRuntimeStack.getSelectedItem() == null ? null :
+                (RuntimeStack) cbRuntimeStack.getSelectedItem();
             if (linuxRuntime != null) {
                 webAppConfiguration.setStack(linuxRuntime.stack());
                 webAppConfiguration.setVersion(linuxRuntime.version());
@@ -344,12 +345,10 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         }
         if (rdoWindowsOS.isSelected()) {
             webAppConfiguration.setOS(OperatingSystem.WINDOWS);
-            JdkModel jdkModel = (JdkModel) cbJdkVersion.getSelectedItem();
-            if (jdkModel != null) {
-                webAppConfiguration.setJdkVersion(jdkModel.getJavaVersion());
-            }
-            WebAppUtils.WebContainerMod container = (WebAppUtils.WebContainerMod) cbWebContainer.getSelectedItem();
-            webAppConfiguration.setWebContainer(container == null ? "" : container.getValue());
+            webAppConfiguration.setJdkVersion(cbJdkVersion.getSelectedItem() == null ? null :
+                ((JdkModel) cbJdkVersion.getSelectedItem()).getJavaVersion());
+            webAppConfiguration.setWebContainer(cbWebContainer.getSelectedItem() == null ? null :
+                ((WebAppUtils.WebContainerMod) cbWebContainer.getSelectedItem()).getValue());
         }
         webAppConfiguration.setCreatingNew(true);
     }
@@ -390,20 +389,12 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
 
     @Override
     public void fillSubscription(@NotNull List<Subscription> subscriptions) {
-        cbSubscription.removeAllItems();
-        for (Subscription subscription : subscriptions) {
-            cbSubscription.addItem(subscription);
-        }
-        pack();
+        fillCombobox(this, cbSubscription, subscriptions, null);
     }
 
     @Override
     public void fillResourceGroup(@NotNull List<ResourceGroup> resourceGroups) {
-        cbExistResGrp.removeAllItems();
-        for (ResourceGroup resourceGroup : resourceGroups) {
-            cbExistResGrp.addItem(resourceGroup);
-        }
-        pack();
+        fillCombobox(this, cbExistResGrp, resourceGroups, null);
     }
 
     @Override
@@ -435,49 +426,30 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
 
     @Override
     public void fillPricingTier(@NotNull List<PricingTier> prices) {
-        cbPricing.removeAllItems();
-        for (PricingTier price : prices) {
-            cbPricing.addItem(price);
-            if (Comparing.equal(price.toString(), DEFAULT_PRICINGTIER.toString())) {
-                cbPricing.setSelectedItem(price);
-            }
-        }
-        pack();
+        fillCombobox(this, cbPricing, prices, DEFAULT_PRICINGTIER);
     }
 
     @Override
     public void fillWebContainer(@NotNull List<WebAppUtils.WebContainerMod> webContainers) {
-        cbRuntimeStack.removeAllItems();
-        for (WebAppUtils.WebContainerMod webContainer : webContainers) {
-            cbWebContainer.addItem(webContainer);
-            if (webContainer.toWebContainer().equals(DEFAULT_WINDOWS_CONTAINER)) {
-                cbWebContainer.setSelectedItem(webContainer);
-            }
-        }
-        pack();
+        fillCombobox(this, cbWebContainer, webContainers, DEFAULT_WINDOWS_CONTAINER);
     }
 
     @Override
     public void fillJdkVersion(@NotNull List<JdkModel> jdks) {
-        cbJdkVersion.removeAllItems();
-        for (JdkModel jdk : jdks) {
-            cbJdkVersion.addItem(jdk);
-            if(jdk.getJavaVersion().equals(DEFAULT_WINDOWS_JAVAVERSION)){
-                cbJdkVersion.setSelectedItem(jdk);
-            }
-        }
-        pack();
+        fillCombobox(this, cbJdkVersion, jdks, DEFAULT_WINDOWS_JAVAVERSION);
     }
 
     @Override
     public void fillLinuxRuntime(@NotNull List<RuntimeStack> linuxRuntimes) {
-        cbRuntimeStack.removeAllItems();
-        for (RuntimeStack runtimeStack : linuxRuntimes) {
-            cbRuntimeStack.addItem(runtimeStack);
-            if (runtimeStack.equals(DEFAULT_LINUX_RUNTIME)) {
-                cbRuntimeStack.setSelectedItem(runtimeStack);
-            }
+        fillCombobox(this, cbRuntimeStack, linuxRuntimes, DEFAULT_LINUX_RUNTIME);
+    }
+
+    public static <T> void fillCombobox(Window window, JComboBox<T> comboBox, List<T> values, T defaultValue) {
+        comboBox.removeAllItems();
+        values.forEach(value -> comboBox.addItem(value));
+        if (defaultValue != null && values.contains(defaultValue)) {
+            comboBox.setSelectedItem(defaultValue);
         }
-        pack();
+        window.pack();
     }
 }
