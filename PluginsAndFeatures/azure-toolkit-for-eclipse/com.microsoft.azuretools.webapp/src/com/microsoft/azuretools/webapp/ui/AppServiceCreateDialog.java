@@ -1237,6 +1237,8 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
             index = cbJavaVersion.getSelectionIndex();
             model.setJdkVersion(index < 0 ? null : javaVersions.get(index).getJavaVersion());
 
+            //Windows does not provider java se parameter, and the api here needs a parameter, so here just use TOMCAT_8.5_NEWEST.
+            //The App services itself start a jar file based on the web.config
             if (packaging.equals(WebAppUtils.TYPE_JAR)) {
                 model.setWebContainer(WebContainer.TOMCAT_8_5_NEWEST.toString());
             } else {
