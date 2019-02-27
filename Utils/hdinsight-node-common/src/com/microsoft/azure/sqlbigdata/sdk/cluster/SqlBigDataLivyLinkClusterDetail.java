@@ -5,18 +5,13 @@ import com.microsoft.azure.hdinsight.sdk.cluster.InternalUrlMapping;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.YarnCluster;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
-import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParamsBuilder;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
 
-import java.net.URISyntaxException;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -126,14 +121,5 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
         } else {
             return url;
         }
-    }
-
-    @Override
-    @NotNull
-    public String getArtifactUploadPath(String rootPath) throws URISyntaxException {
-        List<NameValuePair> params = new WebHdfsParamsBuilder("OPEN").build();
-        URIBuilder uriBuilder = new URIBuilder(rootPath);
-        uriBuilder.addParameters(params);
-        return uriBuilder.build().toString();
     }
 }

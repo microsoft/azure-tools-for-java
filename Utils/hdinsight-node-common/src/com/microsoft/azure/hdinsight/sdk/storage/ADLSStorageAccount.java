@@ -26,6 +26,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.model.ServiceTreeItem;
+import java.net.URI;
 
 public class ADLSStorageAccount implements IHDIStorageAccount, ServiceTreeItem {
     private final String name;
@@ -34,7 +35,7 @@ public class ADLSStorageAccount implements IHDIStorageAccount, ServiceTreeItem {
     private final IClusterDetail clusterDetail;
     private final ClusterIdentity clusterIdentity;
     private ADLSCertificateInfo certificateInfo;
-    private final String storageSchema;
+    private final String defaultStorageSchema;
 
     public ADLSStorageAccount(IClusterDetail clusterDetail, String name, boolean isDefault, String defaultRootPath, ClusterIdentity clusterIdentity, String storageSchema) {
         this.name = name;
@@ -42,7 +43,16 @@ public class ADLSStorageAccount implements IHDIStorageAccount, ServiceTreeItem {
         this.defaultRootFolderPath = defaultRootPath;
         this.clusterDetail = clusterDetail;
         this.clusterIdentity = clusterIdentity;
-        this.storageSchema = storageSchema;
+        this.defaultStorageSchema = storageSchema;
+    }
+
+    public ADLSStorageAccount(IClusterDetail clusterDetail, boolean isDefault, ClusterIdentity clusterIdentity, URI rootURI) {
+        this.name = getAccountName(rootURI);
+        this.isDefaultStorageAccount = isDefault;
+        this.defaultRootFolderPath = rootURI.getPath();
+        this.clusterDetail = clusterDetail;
+        this.clusterIdentity = clusterIdentity;
+        this.defaultStorageSchema = rootURI.getScheme();
     }
 
     @Override
@@ -76,8 +86,8 @@ public class ADLSStorageAccount implements IHDIStorageAccount, ServiceTreeItem {
     }
 
     @Override
-    public String getStorageSchema(){
-        return storageSchema;
+    public String getDefaultStorageSchema(){
+        return defaultStorageSchema;
     }
 
     @NotNull
@@ -97,5 +107,12 @@ public class ADLSStorageAccount implements IHDIStorageAccount, ServiceTreeItem {
         } else {
             return this.certificateInfo;
         }
+    }
+
+    @NotNull
+    private String getAccountName(URI root) {
+        //get xxx from host name xxx.azuredatalakestore.net
+        String host = root.getHost();
+        return host.substring(0, host.indexOf("."));
     }
 }

@@ -39,16 +39,23 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.InternalUrlMapping;
+import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager;
+import com.microsoft.azure.hdinsight.sdk.common.HDIException;
+import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
 import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction;
 import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfiguration;
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
+import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.apache.commons.lang3.StringUtils;
@@ -87,6 +94,8 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         IHDIStorageAccount storageAccount = null;
         String accessToken = null;
         String destinationRootPath = null;
+        HttpObservable httpObservable = null;
+        Deployable webHDFSDeploy = null;
         String clusterName = submitModel.getSubmissionParameter().getClusterName();
         IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
                 .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
@@ -141,13 +150,38 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                     log().warn("Error getting access token based on the given ADLS root path. " + ExceptionUtils.getStackTrace(ex));
                     throw new ExecutionException("Error getting access token based on the given ADLS root path");
                 }
+
                 break;
             case WEBHDFS:
                 destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
+
+                //create httpobservable and jobDeploy
+                try {
+                    if (clusterDetail instanceof ClusterDetail) {
+                        httpObservable = new AzureHttpObservable(clusterDetail.getSubscription().getTenantId(), ApiVersion.VERSION);
+                        webHDFSDeploy = clusterDetail.getStorageAccount().getAccountType() == StorageAccountTypeEnum.ADLS
+                                ? new ADLSGen1HDFSDeploy(clusterDetail, httpObservable)
+                                : null;
+                    } else if (clusterDetail instanceof SqlBigDataLivyLinkClusterDetail) {
+                        httpObservable = new HttpObservable(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
+                        webHDFSDeploy = new WebHDFSDeploy(clusterDetail, httpObservable);
+                    }
+                } catch (HDIException ignore) {
+                }
+
+                if (httpObservable == null || webHDFSDeploy == null) {
+                    throw new ExecutionException("Error preparing webhdfs uploading info based on the given cluster");
+                }
+
                 break;
         }
 
-        return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount, accessToken, destinationRootPath);
+        //TODO:use httpobservable to replace sparkbathsubmission and deprecate the old constructor.
+        if (httpObservable != null) {
+            return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount, accessToken, destinationRootPath, httpObservable, webHDFSDeploy);
+        } else {
+            return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount, accessToken, destinationRootPath);
+        }
     }
 
     @Nullable

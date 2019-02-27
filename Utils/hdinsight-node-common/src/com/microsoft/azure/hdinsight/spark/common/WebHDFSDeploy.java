@@ -27,21 +27,27 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
 import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParamsBuilder;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
+import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import rx.Observable;
+import rx.exceptions.Exceptions;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,7 +59,7 @@ import java.util.List;
 
 public class WebHDFSDeploy implements Deployable, ILogger {
     @NotNull
-    private IClusterDetail cluster;
+    IClusterDetail cluster;
 
     @Nullable
     private HttpObservable http;
@@ -84,7 +90,8 @@ public class WebHDFSDeploy implements Deployable, ILogger {
     }
 
 
-    public URI createUploadDir(@NotNull String rootPath) {
+    @Override
+    public URI getUploadDir(@NotNull String rootPath) {
         return URI.create(rootPath)
                 .resolve(JobUtils.getFormatPathByDate() + "/");
     }
@@ -101,7 +108,7 @@ public class WebHDFSDeploy implements Deployable, ILogger {
                 .doOnNext(
                         resp -> {
                             if (resp.getStatusLine().getStatusCode() != 200) {
-                                Observable.error(new UnknownServiceException("Can not create directory to save artifact using webHDFS storage type"));
+                                Exceptions.propagate(new UnknownServiceException("Can not create directory to save artifact using webHDFS storage type"));
                             }
                         }
                 )
@@ -110,7 +117,7 @@ public class WebHDFSDeploy implements Deployable, ILogger {
                 .map(resp -> resp.getFirstHeader("Location").getValue())
                 .doOnNext(redirectedUri -> {
                     if (StringUtils.isBlank(redirectedUri)) {
-                        Observable.error(new UnknownServiceException("Can not get valid redirect uri using webHDFS storage type"));
+                        Exceptions.propagate(new UnknownServiceException("Can not get valid redirect uri using webHDFS storage type"));
                     }
                 })
                 .map(redirectedUri -> new HttpPut(redirectedUri))
@@ -124,16 +131,25 @@ public class WebHDFSDeploy implements Deployable, ILogger {
 
                         return http.request(put, new BufferedHttpEntity(reqEntity), URLEncodedUtils.parse(put.getURI(), "UTF-8"), null);
                     } catch (IOException ex) {
-                        return Observable.error(new IllegalArgumentException("Can not get local artifact when uploading" + ex.toString()));
+                        throw new RuntimeException(new IllegalArgumentException("Can not get local artifact when uploading" + ex.toString()));
                     }
                 })
                 .map(ignored -> {
-                    try{
-                        return cluster.getArtifactUploadPath(dest.resolve(src.getName()).toString());
-                    } catch (URISyntaxException ex){
-                        throw new IllegalArgumentException("Can not get valid artifact upload path" + ex.toString());
+                    try {
+                        return getArtifactUploadedPath(dest.resolve(src.getName()).toString());
+                    } catch (URISyntaxException ex) {
+                        throw new RuntimeException(new IllegalArgumentException("Can not get valid artifact upload path" + ex.toString()));
                     }
                 });
+    }
+
+    @Override
+    @Nullable
+    public String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
+        List<NameValuePair> params = new WebHdfsParamsBuilder("OPEN").build();
+        URIBuilder uriBuilder = new URIBuilder(rootPath);
+        uriBuilder.addParameters(params);
+        return uriBuilder.build().toString();
     }
 }
 

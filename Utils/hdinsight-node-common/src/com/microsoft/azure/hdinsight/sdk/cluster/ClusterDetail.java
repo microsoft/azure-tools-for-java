@@ -31,13 +31,10 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import org.apache.http.client.utils.URIBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,10 +64,6 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     private String passWord;
     private IHDIStorageAccount defaultStorageAccount;
     private List<HDStorageAccount> additionalStorageAccounts;
-
-    @Nullable
-    private String storageAccountSchema;
-
     private boolean isConfigInfoAvailable = false;
 
     public ClusterDetail(SubscriptionDetail paramSubscription, ClusterRawInfo paramClusterRawInfo){
@@ -264,7 +257,9 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
             if(coresiteMap.containsKey(ADLS_HOME_MOUNTPOINT)) {
                 defaultRootPath = coresiteMap.get(ADLS_HOME_MOUNTPOINT);
             }
-            return new ADLSStorageAccount(this, accountName, true, defaultRootPath, clusterIdentity, schema);
+
+            URI rootURI = URI.create(String.format("%s://%s.azuredatalakestore.net", schema, accountName)).resolve(defaultRootPath);
+            return new ADLSStorageAccount(this,true, clusterIdentity, rootURI);
         } else if (Pattern.compile(StorageAccountNamePattern).matcher(containerAddress).matches()) {
             String storageAccountName = getStorageAccountName(containerAddress);
             if(storageAccountName == null){
@@ -368,14 +363,5 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
         } else {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithUnknown;
         }
-    }
-
-    @Override
-    @NotNull
-    public String getArtifactUploadPath(String rootPath) throws URISyntaxException {
-        // convert https://xx/webhdfs/v1/hdi-root/SparkSubmission/artifact.jar to adl://xx/hdi-root/SparkSubmission/artifact.jar
-        URIBuilder builder = new URIBuilder(rootPath.replace("/webhdfs/v1", ""));
-        builder.setScheme(getStorageAccount().getStorageSchema());
-        return builder.toString();
     }
 }

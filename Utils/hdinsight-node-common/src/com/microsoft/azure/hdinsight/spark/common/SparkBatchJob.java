@@ -56,6 +56,7 @@ import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
+import rx.exceptions.Exceptions;
 
 import java.io.File;
 import java.io.IOException;
@@ -175,13 +176,18 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Nullable
     private String destinationRootPath;
 
+    @Nullable
+    private HttpObservable httpObservable;
+
+    @Nullable
+    private Deployable jobDeploy;
+
     public SparkBatchJob(
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
         this(null, submissionParameter, sparkBatchSubmission, ctrlSubject, null, null, null);
     }
-
 
     public SparkBatchJob(
             @Nullable IClusterDetail cluster,
@@ -191,6 +197,19 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
             @Nullable IHDIStorageAccount storageAccount,
             @Nullable String accessToken,
             @Nullable String destinationRootPath) {
+        this(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject, storageAccount, accessToken, destinationRootPath, null, null);
+    }
+
+    public SparkBatchJob(
+            @Nullable IClusterDetail cluster,
+            SparkSubmissionParameter submissionParameter,
+            SparkBatchSubmission sparkBatchSubmission,
+            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
+            @Nullable IHDIStorageAccount storageAccount,
+            @Nullable String accessToken,
+            @Nullable String destinationRootPath,
+            @Nullable HttpObservable httpObservable,
+            @Nullable Deployable jobDeploy) {
         this.cluster = cluster;
         this.submissionParameter = submissionParameter;
         this.storageAccount = storageAccount;
@@ -198,6 +217,8 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         this.ctrlSubject = ctrlSubject;
         this.accessToken = accessToken;
         this.destinationRootPath = destinationRootPath;
+        this.httpObservable = httpObservable;
+        this.jobDeploy = jobDeploy;
     }
 
     /**
@@ -543,7 +564,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     /**
      * Get Spark Job Yarn application with retries
      *
-     * @param jbatchBaseUri the connection URI of HDInsight Livy batch job, http://livy:8998/batches, the function will help translate it to Yarn connection URI.
+     * @param batchBaseUri the connection URI of HDInsight Livy batch job, http://livy:8998/batches, the function will help translate it to Yarn connection URI.
      * @param applicationID the Yarn application ID
      * @return the Yarn application got
      * @throws IOException exceptions in transaction
@@ -1123,20 +1144,6 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         return ctrlSubject;
     }
 
-    private HttpObservable createHttpObservable(IClusterDetail cluster) {
-        if (cluster instanceof ClusterDetail) {
-            return new AzureHttpObservable(cluster.getSubscription().getTenantId(), ApiVersion.VERSION);
-        } else if (cluster instanceof SqlBigDataLivyLinkClusterDetail) {
-            try {
-                return new HttpObservable(cluster.getHttpUserName(), cluster.getHttpPassword());
-            } catch (HDIException e) {
-               return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
@@ -1149,9 +1156,12 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                     });
         } else if (destinationRootPath != null && destinationRootPath.matches(WebHDFSPathPattern)) {
             //use webhdfs
-            Deployable webHDFSDeploy = new WebHDFSDeploy(this.cluster, createHttpObservable(this.cluster));
-            URI dest = webHDFSDeploy.createUploadDir(destinationRootPath);
-            return webHDFSDeploy.deploy(new File(artifactPath), dest)
+            URI dest = jobDeploy.getUploadDir(destinationRootPath);
+            if (dest == null) {
+                return Observable.error(new IllegalArgumentException("Cannot get valid uploading artifact destination"));
+            }
+
+            return jobDeploy.deploy(new File(artifactPath), dest)
                     .map(redirectPath -> {
                         getSubmissionParameter().setFilePath(redirectPath);
                         return this;
