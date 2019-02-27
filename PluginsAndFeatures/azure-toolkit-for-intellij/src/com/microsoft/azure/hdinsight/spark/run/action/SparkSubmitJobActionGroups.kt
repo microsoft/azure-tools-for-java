@@ -37,5 +37,6 @@ class SparkSubmitJobActionGroups : QuickSwitchSchemeAction() {
         if (CommonSettings.isCosmosServerlessEnabled) {
             group.add(ActionManager.getInstance().getAction("Actions.SubmitCosmosServerlessSparkApplicationAction"))
         }
+        group.add(ActionManager.getInstance().getAction("Actions.SubmitArisSparkApplicationAction"))
     }
 }
