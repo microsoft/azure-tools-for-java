@@ -6,7 +6,6 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.util.Comparing;
-import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
@@ -50,8 +49,6 @@ import java.util.List;
 
 public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpView {
 
-    private static final String RESOURCE_GROUP = "Resource Group";
-    private static final String APP_SERVICE_PLAN = "App Service Plan";
     private static final String DIALOG_TITLE = "Create WebApp";
     private static final String NOT_APPLICABLE = "N/A";
     private static final String WARNING_MESSAGE = "<html><font size=\"3\" color=\"red\">%s</font></html>";
@@ -71,14 +68,10 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
     private JPanel pnlCreate;
     private JTextField txtWebAppName;
     private JComboBox cbSubscription;
-    private JPanel pnlResourceGroupHolder;
-    private JPanel pnlResourceGroup;
     private JRadioButton rdoUseExistResGrp;
     private JComboBox cbExistResGrp;
     private JRadioButton rdoCreateResGrp;
     private JTextField txtNewResGrp;
-    private JPanel pnlAppServicePlanHolder;
-    private JPanel pnlAppServicePlan;
     private JRadioButton rdoUseExistAppServicePlan;
     private JComboBox cbExistAppServicePlan;
     private JLabel lblLocation;
@@ -87,8 +80,6 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
     private JTextField txtCreateAppServicePlan;
     private JComboBox cbLocation;
     private JComboBox cbPricing;
-    private JPanel pnlJavaHolder;
-    private JPanel pnlJava;
     private JLabel lblJavaVersion;
     private JComboBox cbJdkVersion;
     private JLabel lblWebContainer;
@@ -181,16 +172,6 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
                 }
             }
         });
-
-        HideableDecorator resGrpDecorator = new HideableDecorator(pnlResourceGroupHolder,
-            RESOURCE_GROUP, true /*adjustWindow*/);
-        resGrpDecorator.setContentComponent(pnlResourceGroup);
-        resGrpDecorator.setOn(true);
-
-        HideableDecorator appServicePlanDecorator = new HideableDecorator(pnlAppServicePlanHolder,
-            APP_SERVICE_PLAN, true /*adjustWindow*/);
-        appServicePlanDecorator.setContentComponent(pnlAppServicePlan);
-        appServicePlanDecorator.setOn(true);
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
