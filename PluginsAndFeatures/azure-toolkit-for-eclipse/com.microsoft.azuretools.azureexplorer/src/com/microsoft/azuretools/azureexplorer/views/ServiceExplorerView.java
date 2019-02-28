@@ -240,8 +240,12 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             switch (e.getAction()) {
             case add:
                 // create child tree nodes for the new nodes
-                for(Node childNode : (Collection<Node>)e.getNewItems()) {
-                    treeNode.add(createTreeNode(childNode));
+                for (Node childNode : (Collection<Node>) e.getNewItems()) {
+                    //Dirty fix here, for issue https://github.com/Microsoft/azure-tools-for-java/issues/2791
+                    //Since we do not support slot, here should not let user see slot in the azure explorer
+                    if (!childNode.getName().toLowerCase().contains("slot")) {
+                        treeNode.add(createTreeNode(childNode));
+                    }
                 }
                 break;
             case remove:
