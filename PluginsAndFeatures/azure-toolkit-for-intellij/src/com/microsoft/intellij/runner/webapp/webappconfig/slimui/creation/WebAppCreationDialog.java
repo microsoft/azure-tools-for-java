@@ -423,7 +423,7 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         fillCombobox(this, cbRuntimeStack, linuxRuntimes, DEFAULT_LINUX_RUNTIME);
     }
 
-    public static <T> void fillCombobox(Window window, JComboBox<T> comboBox, List<T> values, T defaultValue) {
+    private static <T> void fillCombobox(Window window, JComboBox<T> comboBox, List<T> values, T defaultValue) {
         comboBox.removeAllItems();
         values.forEach(value -> comboBox.addItem(value));
         if (defaultValue != null && values.contains(defaultValue)) {
