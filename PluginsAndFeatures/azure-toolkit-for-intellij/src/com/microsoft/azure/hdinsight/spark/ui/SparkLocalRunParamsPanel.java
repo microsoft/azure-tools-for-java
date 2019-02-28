@@ -22,7 +22,6 @@
 package com.microsoft.azure.hdinsight.spark.ui;
 
 import com.intellij.application.options.ModuleDescriptionsComboBox;
-import com.intellij.execution.configurations.ConfigurationUtil;
 import com.intellij.execution.ui.ConfigurationModuleSelector;
 import com.intellij.execution.util.JreVersionDetector;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -31,12 +30,7 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.LabeledComponent;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.packaging.impl.elements.ManifestFileUtil;
-import com.intellij.psi.JavaCodeFragment;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.util.PsiMethodUtil;
 import com.intellij.ui.DocumentAdapter;
-import com.intellij.ui.EditorTextFieldWithBrowseButton;
 import com.intellij.ui.MacroAwareTextBrowseFolderListener;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.hdinsight.spark.common.SparkLocalRunConfigurableModel;
@@ -57,7 +51,6 @@ public class SparkLocalRunParamsPanel {
 
     private JPanel myWholePanel;
     private SparkLocalRunCommonParametersPanel myCommonProgramParameters;
-    private LabeledComponent<EditorTextFieldWithBrowseButton> myMainClass;
     private JCheckBox myParallelExecutionCheckbox;
     private TextFieldWithBrowseButton myWinutilsPathTextFieldWithBrowserButton;
     private TextFieldWithBrowseButton myDataRootDirectoryFieldWithBrowseButton;
@@ -80,7 +73,7 @@ public class SparkLocalRunParamsPanel {
         this.myProject = project;
         myVersionDetector = new JreVersionDetector();
 
-        myAnchor = UIUtil.mergeComponentsWithAnchor(myMainClass, myCommonProgramParameters, myClasspathModule);
+        myAnchor = UIUtil.mergeComponentsWithAnchor(myCommonProgramParameters, myClasspathModule);
 
         // Connect the workingDirectory update event with dataRootDirectory update
         myCommonProgramParameters.addWorkingDirectoryUpdateListener(new DocumentAdapter() {
@@ -148,31 +141,7 @@ public class SparkLocalRunParamsPanel {
 
     }
 
-    @NotNull
-    public EditorTextFieldWithBrowseButton getMainClassField() {
-        return myMainClass.getComponent();
-    }
-
     private void createUIComponents() {
-        myMainClass = new LabeledComponent<>();
-        myMainClass.setComponent(new EditorTextFieldWithBrowseButton(myProject, true, (declaration, place) -> {
-            if (declaration instanceof PsiClass) {
-                final PsiClass aClass = (PsiClass)declaration;
-                if (ConfigurationUtil.MAIN_CLASS.value(aClass) && PsiMethodUtil.findMainMethod(aClass) != null ||
-                        place.getParent() != null) {
-                    return JavaCodeFragment.VisibilityChecker.Visibility.VISIBLE;
-                }
-            }
-            return JavaCodeFragment.VisibilityChecker.Visibility.NOT_VISIBLE;
-        }));
-
-        myMainClass.getComponent().getButton().addActionListener( e -> {
-            PsiClass selected = ManifestFileUtil.selectMainClass(myProject, myMainClass.getComponent().getText());
-            if (selected != null) {
-                myMainClass.getComponent().setText(selected.getQualifiedName());
-            }
-        });
-
         modules = new ModuleDescriptionsComboBox();
         modules.setAllModulesFromProject(myProject);
         myClasspathModule = LabeledComponent.create(modules, "Use classpath of module:");
@@ -181,7 +150,6 @@ public class SparkLocalRunParamsPanel {
     public void setData(@NotNull SparkLocalRunConfigurableModel data) {
         // Data -> Component
         myParallelExecutionCheckbox.setSelected(data.isIsParallelExecution());
-        myMainClass.getComponent().setText(data.getRunClass());
         myCommonProgramParameters.reset(data);
 
         final String classpathModuleNameToSet = data.getClasspathModule();
@@ -200,7 +168,6 @@ public class SparkLocalRunParamsPanel {
     public void getData(@NotNull SparkLocalRunConfigurableModel data) {
         // Component -> Data
         data.setIsParallelExecution(myParallelExecutionCheckbox.isSelected());
-        data.setRunClass(myMainClass.getComponent().getText());
         myCommonProgramParameters.applyTo(data);
         data.setDataRootDirectory(myDataRootDirectoryFieldWithBrowseButton.getText());
 

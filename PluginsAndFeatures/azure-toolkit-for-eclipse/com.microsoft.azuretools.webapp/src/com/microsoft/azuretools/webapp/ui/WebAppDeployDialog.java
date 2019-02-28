@@ -2,6 +2,8 @@ package com.microsoft.azuretools.webapp.ui;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -413,6 +415,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             webAppDetailsMap.clear();
             table.removeAll();
 
+            List<WebAppDetails> webAppDetailsList = new ArrayList<>();
             for (SubscriptionDetail sd : srgMap.keySet()) {
                 if (!sd.isSelected() || srgMap.get(sd) == null) {
                     continue;
@@ -420,12 +423,6 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                 for (ResourceGroup rg : srgMap.get(sd)) {
                     for (WebApp webApp : rgwaMap.get(rg)) {
                         if (WebAppUtils.isJavaWebApp(webApp)) {
-                            TableItem item = new TableItem(table, SWT.NULL);
-                            item.setText(new String[] { webApp.name(),
-                                    webApp.javaVersion() != JavaVersion.OFF ? webApp.javaVersion().toString()
-                                            : WebAppUtils.getJavaRuntime(webApp),
-                                    WebAppUtils.getJavaRuntime(webApp), webApp.resourceGroupName() });
-
                             WebAppDetails webAppDetails = new WebAppDetails();
                             webAppDetails.webApp = webApp;
                             webAppDetails.subscriptionDetail = sd;
@@ -433,10 +430,20 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                             webAppDetails.appServicePlan = findAppSevicePlanByID(webApp.appServicePlanId(), rgaspMap);
                             webAppDetails.appServicePlanResourceGroup = findResouceGroupByName(
                                     webApp.resourceGroupName(), srgMap.get(sd));
-                            webAppDetailsMap.put(webApp.name(), webAppDetails);
+                            webAppDetailsList.add(webAppDetails);
                         }
                     }
                 }
+            }
+            Collections.sort(webAppDetailsList, (o1, o2) -> o1.webApp.name().compareTo(o2.webApp.name()));
+            for (WebAppDetails webAppDetails : webAppDetailsList) {
+                TableItem item = new TableItem(table, SWT.NULL);
+                WebApp webApp = webAppDetails.webApp;
+                item.setText(new String[]{webApp.name(),
+                        webApp.javaVersion() != JavaVersion.OFF ? webApp.javaVersion().toString()
+                                : WebAppUtils.getJavaRuntime(webApp),
+                        WebAppUtils.getJavaRuntime(webApp), webApp.resourceGroupName()});
+                webAppDetailsMap.put(webApp.name(), webAppDetails);
             }
 
         } catch (Exception e) {
