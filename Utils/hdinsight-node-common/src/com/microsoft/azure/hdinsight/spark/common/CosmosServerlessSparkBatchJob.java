@@ -311,6 +311,9 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                                     }
                                 })
                                 .repeatWhen(ob -> ob.delay(GET_LOG_REPEAT_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS))
+                                // FIXME:
+                                // For HDI spark job, the ending condition is `jobState != starting || appIdIsAllocated`
+                                // However, currently the response has no appId all the time so we ignored the app id check
                                 .takeUntil(logAndStatePair ->
                                         !logAndStatePair.getRight().toString()
                                                 .equalsIgnoreCase(SparkBatchJobState.STARTING.toString()))
@@ -339,7 +342,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                 });
     }
 
-    public void ctrlInfo(@NotNull String message) {
+    private void ctrlInfo(@NotNull String message) {
         getCtrlSubject().onNext(new AbstractMap.SimpleImmutableEntry<>(MessageInfoType.Info, message));
     }
 }
