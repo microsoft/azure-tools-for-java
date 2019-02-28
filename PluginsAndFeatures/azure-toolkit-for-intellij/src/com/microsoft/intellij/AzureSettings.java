@@ -38,7 +38,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
         name = "AzureSettings",
         storages = {
                 @Storage(file = "$PROJECT_FILE$"),
-                @Storage(file = "$PROJECT_CONFIG_DIR$/azureSettings.xml", scheme = StorageScheme.DIRECTORY_BASED)
+                @Storage(file = "$PROJECT_CONFIG_DIR$/azureSettings.xml")
         }
 )
 public class AzureSettings implements PersistentStateComponent<AzureSettings.State> {
