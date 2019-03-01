@@ -241,8 +241,8 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             case add:
                 // create child tree nodes for the new nodes
                 for (Node childNode : (Collection<Node>) e.getNewItems()) {
-                    //Dirty fix here, for issue https://github.com/Microsoft/azure-tools-for-java/issues/2791
-                    //Since we do not support slot, here should not let user see slot in the azure explorer
+                    // Dirty fix for issue https://github.com/Microsoft/azure-tools-for-java/issues/2791
+                    // Since we do not support slot, here should not let user see slot in the azure explorer
                     if (childNode.getName() == null || !childNode.getName().equals("Deployment Slots")) {
                         treeNode.add(createTreeNode(childNode));
                     }
