@@ -31,9 +31,11 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>spark-tools</artifactId>
-    <version>2.3_0.1.1</version>
+    <version>0.1.1_2.3</version>
+    <name>${project.artifactId}-${project.version}</name>
     <properties>
         <spark.version>2.3.0</spark.version>
+        <hadoop.version>2.6.5</hadoop.version>
     </properties>
 
     <build>
@@ -91,6 +93,16 @@
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-scala_2.11</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
