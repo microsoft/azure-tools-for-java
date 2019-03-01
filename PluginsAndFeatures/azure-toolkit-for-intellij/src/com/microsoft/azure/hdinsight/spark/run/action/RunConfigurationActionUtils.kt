@@ -33,7 +33,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger
 
 object RunConfigurationActionUtils: ILogger {
     fun runEnvironmentProfileWithCheckSettings(environment: ExecutionEnvironment) {
-        val runner = RunnerRegistry.getInstance().getRunner(environment.executor.id, environment.runProfile) ?: return
+        val runner = ProgramRunner.getRunner(environment.executor.id, environment.runProfile) ?: return
         val setting = environment.runnerAndConfigurationSettings ?: return
 
         try {

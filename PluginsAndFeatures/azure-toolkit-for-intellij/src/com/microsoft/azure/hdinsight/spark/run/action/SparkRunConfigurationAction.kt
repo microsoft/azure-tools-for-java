@@ -27,6 +27,7 @@ import com.intellij.execution.RunManagerEx
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.RunnerRegistry
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
+import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.roots.TestSourcesFilter.isTestSources
 import com.microsoft.azure.hdinsight.common.logger.ILogger
@@ -49,7 +50,7 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
 
     open fun canRun(setting: RunnerAndConfigurationSettings): Boolean =
             setting.configuration is LivySparkBatchJobRunConfiguration &&
-                    RunnerRegistry.getInstance().getRunner(runExecutor.id, setting.configuration)
+                    ProgramRunner.getRunner(runExecutor.id, setting.configuration)
                             ?.canRun(runExecutor.id, setting.configuration) == true
 
     override fun update(actionEvent: AnActionEvent) {
