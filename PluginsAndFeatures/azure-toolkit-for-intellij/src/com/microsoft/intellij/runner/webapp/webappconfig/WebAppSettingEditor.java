@@ -25,17 +25,23 @@ package com.microsoft.intellij.runner.webapp.webappconfig;
 import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.AzureSettingsEditor;
+import com.microsoft.intellij.runner.webapp.webappconfig.slimui.WebAppSlimSettingPanel;
 import com.microsoft.intellij.runner.webapp.webappconfig.ui.WebAppSettingPanel;
-
 import org.jetbrains.annotations.NotNull;
 
 public class WebAppSettingEditor extends AzureSettingsEditor<WebAppConfiguration> {
 
-    private final WebAppSettingPanel mainPanel;
+    private final AzureSettingPanel mainPanel;
+    private final WebAppConfiguration webAppConfiguration;
 
     public WebAppSettingEditor(Project project, @NotNull WebAppConfiguration webAppConfiguration) {
         super(project);
-        mainPanel = new WebAppSettingPanel(project, webAppConfiguration);
+        if (IntelliJWebAppSettingModel.NEW_UI.equals(webAppConfiguration.getUiVersion())) {
+            mainPanel = new WebAppSlimSettingPanel(project, webAppConfiguration);
+        } else {
+            mainPanel = new WebAppSettingPanel(project, webAppConfiguration);
+        }
+        this.webAppConfiguration = webAppConfiguration;
     }
 
     @Override
