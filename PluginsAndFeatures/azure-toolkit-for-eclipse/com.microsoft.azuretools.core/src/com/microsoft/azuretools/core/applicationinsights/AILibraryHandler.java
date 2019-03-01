@@ -226,27 +226,27 @@ public class AILibraryHandler {
 	}
 
 	/**
-     * WorkRound for issue https://github.com/Microsoft/azure-tools-for-java/issues/2122
-     */
-    public void setAIServletContextListener() {
-    	try {
-    		TelemetryUtils.setAIServletContextListener(webXMLDoc);
-    	} catch (Exception e) {
-    		Activator.getDefault().log(e.getMessage(), e);
-    	}
-    }
-    
-    
-    /**
-     * WorkRound for issue https://github.com/Microsoft/azure-tools-for-java/issues/2122
-     */
-    public void removeAIServletContextListener() {
-    	try {
-    		TelemetryUtils.removeAIServletContextListener(webXMLDoc);
-    	} catch (Exception e) {
-    		Activator.getDefault().log(e.getMessage(), e);
-    	}
-    }
+	 * Workaround for issue https://github.com/Microsoft/azure-tools-for-java/issues/2122
+	 */
+	public void setAIServletContextListener() {
+		try {
+			TelemetryUtils.setAIServletContextListener(webXMLDoc);
+		} catch (Exception e) {
+			Activator.getDefault().log(e.getMessage(), e);
+		}
+	}
+
+
+	/**
+	 * Workaround for issue https://github.com/Microsoft/azure-tools-for-java/issues/2122
+	 */
+	public void removeAIServletContextListener() {
+		try {
+			TelemetryUtils.removeAIServletContextListener(webXMLDoc);
+		} catch (Exception e) {
+			Activator.getDefault().log(e.getMessage(), e);
+		}
+	}
  
 	
 	public void disableAIFilterConfiguration(boolean disable) {

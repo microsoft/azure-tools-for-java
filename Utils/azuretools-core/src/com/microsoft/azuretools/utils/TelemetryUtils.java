@@ -41,16 +41,17 @@ public class TelemetryUtils {
 
         return ret;
     }
-    
-    /**
-     * This method add a servlet context listener in web.xml.
-     * This is a work round for issue https://github.com/Microsoft/azure-tools-for-java/issues/2122
-     * @throws XPathExpressionException 
-     */
-    public static void setAIServletContextListener(Document webXMLDoc) throws XPathExpressionException {
-        if (webXMLDoc == null) {
-            return;
-        }
+
+	/**
+	 * This method add a servlet context listener in web.xml.
+	 * This is a workaround for issue https://github.com/Microsoft/azure-tools-for-java/issues/2122
+	 *
+	 * @throws XPathExpressionException
+	 */
+	public static void setAIServletContextListener(Document webXMLDoc) throws XPathExpressionException {
+		if (webXMLDoc == null) {
+			return;
+		}
 		final XPath xpath = XPathFactory.newInstance().newXPath();
 		final Element eleListenerMapping = (Element) xpath.evaluate(EXPR_LISTENER, webXMLDoc, XPathConstants.NODE);
 		if (eleListenerMapping == null) {
@@ -65,14 +66,15 @@ public class TelemetryUtils {
 
 			webXMLDoc.getDocumentElement().insertBefore(listenerMapping, existingListenerNode);
 		}
-    }
-   
-    /**
-     * This method remove a servlet context listener in web.xml
-     * This is a work round for issue https://github.com/Microsoft/azure-tools-for-java/issues/2122
-     * @param webXMLDoc
-     * @throws XPathExpressionException
-     */
+	}
+
+	/**
+	 * This method remove a servlet context listener in web.xml
+	 * This is a workaround for issue https://github.com/Microsoft/azure-tools-for-java/issues/2122
+	 *
+	 * @param webXMLDoc
+	 * @throws XPathExpressionException
+	 */
 	public static void removeAIServletContextListener(Document webXMLDoc) throws XPathExpressionException {
 		if (webXMLDoc == null) {
 			return;
