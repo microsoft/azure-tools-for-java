@@ -86,7 +86,4 @@ public class TelemetryUtils {
 			eleListener.getParentNode().removeChild(eleListener);
 		}
 	}
-
-    
-
 }
