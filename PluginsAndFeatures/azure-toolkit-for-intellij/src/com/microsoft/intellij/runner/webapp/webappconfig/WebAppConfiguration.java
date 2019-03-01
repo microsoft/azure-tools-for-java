@@ -46,9 +46,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
-import static com.microsoft.intellij.runner.webapp.webappconfig.IntelliJWebAppSettingModel.NEW_UI;
-import static com.microsoft.intellij.runner.webapp.webappconfig.IntelliJWebAppSettingModel.OLD_UI;
-
 public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAppSettingModel> {
 
     // const string
@@ -82,7 +79,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     public void readExternal(Element element) throws InvalidDataException {
         super.readExternal(element);
         if (!existVersionConfiguration(element) && !isFirstTimeCreated()) {
-            this.setUiVersion(OLD_UI);
+            this.setUiVersion(IntelliJWebAppSettingModel.UIVersion.OLD);
         }
     }
 
@@ -146,7 +143,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
                     throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
                 }
             }
-            if (getUiVersion().equals(NEW_UI)) {
+            if (getUiVersion().equals(IntelliJWebAppSettingModel.UIVersion.NEW)) {
                 return;
             }
         } else {
@@ -353,11 +350,11 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         return webAppSettingModel.getTargetName();
     }
 
-    public String getUiVersion() {
+    public IntelliJWebAppSettingModel.UIVersion getUiVersion() {
         return webAppSettingModel.getUiVersion();
     }
 
-    public void setUiVersion(String uiVersion) {
+    public void setUiVersion(IntelliJWebAppSettingModel.UIVersion uiVersion) {
         webAppSettingModel.setUiVersion(uiVersion);
     }
 
@@ -370,18 +367,18 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     }
 
     public boolean isCompileBeforeDeploy() {
-        return webAppSettingModel.isCompileBeforeDeploy();
+        return webAppSettingModel.isForceBuild();
     }
 
     public void setCompileBeforeDeploy(boolean compileBeforeDeploy) {
-        webAppSettingModel.setCompileBeforeDeploy(compileBeforeDeploy);
+        webAppSettingModel.setForceBuild(compileBeforeDeploy);
     }
 
-    public boolean isSlotPanelVisiable() {
-        return webAppSettingModel.isSlotPanelVisiable();
+    public boolean isSlotPanelVisible() {
+        return webAppSettingModel.isSlotPanelVisible();
     }
 
-    public void setSlotPanelVisiable(boolean slotPanelVisiable) {
-        webAppSettingModel.setSlotPanelVisiable(slotPanelVisiable);
+    public void setSlotPanelVisible(boolean slotPanelVisible) {
+        webAppSettingModel.setSlotPanelVisible(slotPanelVisible);
     }
 }

@@ -36,7 +36,7 @@ public class WebAppSettingEditor extends AzureSettingsEditor<WebAppConfiguration
 
     public WebAppSettingEditor(Project project, @NotNull WebAppConfiguration webAppConfiguration) {
         super(project);
-        if (IntelliJWebAppSettingModel.NEW_UI.equals(webAppConfiguration.getUiVersion())) {
+        if (webAppConfiguration.getUiVersion() == IntelliJWebAppSettingModel.UIVersion.NEW) {
             mainPanel = new WebAppSlimSettingPanel(project, webAppConfiguration);
         } else {
             mainPanel = new WebAppSettingPanel(project, webAppConfiguration);

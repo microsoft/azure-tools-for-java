@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
-import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
@@ -64,7 +63,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -137,21 +135,21 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         return latch;
     }
 
-    private boolean isCompileBeforeBuild() {
+    private boolean shouldForceBuild() {
         String projectPath = String.join(File.separator, project.getBasePath(), MavenConstants.POM_XML);
         boolean existingMavenTask =
             webAppConfiguration.getBeforeRunTasks()
                 .stream().anyMatch(task -> task instanceof MavenBeforeRunTask &&
                 ((MavenBeforeRunTask) task).getGoal().contains(MAVEN_PACKAGE_GOAL) &&
                 ((MavenBeforeRunTask) task).getProjectPath().equals(projectPath));
-        return !existingMavenTask && webAppSettingModel.isCompileBeforeDeploy();
+        return !existingMavenTask && webAppSettingModel.isForceBuild();
     }
 
     @Nullable
     @Override
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
         , @NotNull Map<String, String> telemetryMap) throws Exception {
-        if (isCompileBeforeBuild()) {
+        if (shouldForceBuild()) {
             CountDownLatch countDownLatch = buildMavenProject(processHandler);
             countDownLatch.await();
         }

@@ -169,20 +169,11 @@
         <children>
           <component id="6dc28" class="javax.swing.JCheckBox" binding="chkToRoot">
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <selected value="true"/>
-              <text value="Deploy to Root"/>
-            </properties>
-          </component>
-          <component id="72180" class="javax.swing.JCheckBox" binding="chkBuild">
-            <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <selected value="true"/>
-              <text value="Build before deploy"/>
+              <text value="Deploy to Root"/>
             </properties>
           </component>
           <hspacer id="6dceb">
@@ -196,6 +187,15 @@
             </constraints>
             <properties>
               <text value="Open browser after deployment"/>
+            </properties>
+          </component>
+          <component id="72180" class="javax.swing.JCheckBox" binding="chkBuild">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <selected value="true"/>
+              <text value="Force build"/>
             </properties>
           </component>
         </children>

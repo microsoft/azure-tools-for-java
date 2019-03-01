@@ -99,10 +99,11 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         rbtNewSlot.addActionListener(e -> toggleSlotType(false));
 
         chkDeployToSlot.addActionListener(e -> toggleSlotPanel(chkDeployToSlot.isSelected()));
-//        chkBuild.addActionListener(e -> setBuildBeforeDeploy());
 
         cbxWebApp.addActionListener(e -> selectWebApp());
         cbxWebApp.setRenderer(new WebAppCombineBoxRender(cbxWebApp));
+        // Set the editor of combobox, otherwise it will use box render when popup is invisible, which may render the
+        // combobox to twoline
         cbxWebApp.setEditor(new ComboBoxEditor() {
             Object item;
             JLabel label = new JLabel();
@@ -169,13 +170,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             }
         });
 
-        // To make artifact in the front
-        pnlSlotHolder.setVisible(true);
-        pnlCheckBox.setVisible(true);
-
         slotDecorator = new HideableDecorator(pnlSlotHolder, DEPLOYMENT_SLOT, true);
         slotDecorator.setContentComponent(pnlSlot);
-        slotDecorator.setOn(webAppConfiguration.isSlotPanelVisiable());
+        slotDecorator.setOn(webAppConfiguration.isSlotPanelVisible());
     }
 
     private void selectWebApp() {
@@ -199,7 +196,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
     @Override
     public void disposeEditor() {
-
     }
 
     @Override
@@ -208,7 +204,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (configuration.getWebAppId() != null && webAppConfiguration.isDeployToSlot()) {
             toggleSlotPanel(true);
             chkDeployToSlot.setSelected(true);
-
             final boolean useNewDeploymentSlot = Comparing.equal(configuration.getSlotName(),
                 Constants.CREATE_NEW_SLOT);
             rbtNewSlot.setSelected(useNewDeploymentSlot);
@@ -227,7 +222,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         chkToRoot.setSelected(configuration.isDeployToRoot());
         chkBuild.setSelected(configuration.isCompileBeforeDeploy());
         chkOpenBrowser.setSelected(configuration.isOpenBrowserAfterDeployment());
-        slotDecorator.setOn(configuration.isSlotPanelVisiable());
+        slotDecorator.setOn(configuration.isSlotPanelVisible());
     }
 
     @Override
@@ -240,9 +235,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         configuration.setSubscriptionId(selectedWebApp == null ? null : selectedWebApp.getSubscriptionId());
         configuration.setDeployToSlot(chkDeployToSlot.isSelected());
         configuration.setCompileBeforeDeploy(chkBuild.isSelected());
-        configuration.setSlotPanelVisiable(slotDecorator.isExpanded());
-
+        configuration.setSlotPanelVisible(slotDecorator.isExpanded());
         chkToRoot.setVisible(isAbleToDeployToRoot(targetName));
+        chkBuild.setVisible(MavenRunTaskUtil.isMavenProject(project));
         toggleSlotPanel(configuration.isDeployToSlot() && selectedWebApp != null);
         if (chkDeployToSlot.isSelected()) {
             configuration.setDeployToSlot(true);
@@ -320,33 +315,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             }
         });
         dialog.setVisible(true);
-    }
-
-//    private void setBuildBeforeDeploy() {
-//        final String mavenGoalPath = webAppConfiguration.getProject().getBasePath() +
-//            project.getBasePath() + File.separator + MavenConstants.POM_XML;
-//        List<BeforeRunTask> tasks = new ArrayList<BeforeRunTask>(this.webAppConfiguration.getBeforeRunTasks());
-//        BeforeRunTask packageTask =
-//            tasks.stream().filter(beforeRunTask ->
-//                beforeRunTask instanceof MavenBeforeRunTask &&
-//                    ((MavenBeforeRunTask) beforeRunTask).getGoal().equals("package") &&
-//                    ((MavenBeforeRunTask) beforeRunTask).getProjectPath().equals(mavenGoalPath))
-//                .findFirst().orElse(null);
-//        if (chkBuild.isSelected() && packageTask == null) {
-//            tasks.add(getBuildTask());
-//        } else if (!chkBuild.isSelected() && packageTask != null) {
-//            tasks.remove(packageTask);
-//        }
-//        webAppConfiguration.setBeforeRunTasks(tasks);
-//    }
-
-    private BeforeRunTask getBuildTask() {
-        MavenBeforeRunTask task = new MavenBeforeRunTask();
-        task.setEnabled(true);
-        task.setProjectPath(webAppConfiguration.getProject().getBasePath() + File.separator
-            + MavenConstants.POM_XML);
-        task.setGoal("package");
-        return task;
     }
 
     private void toggleSlotPanel(boolean isDeployToSlot) {

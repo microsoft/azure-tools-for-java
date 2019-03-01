@@ -4,19 +4,21 @@ import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 
 public class IntelliJWebAppSettingModel extends WebAppSettingModel {
 
-    public static final String OLD_UI = "oldui";
-    public static final String NEW_UI = "newui";
+    public enum UIVersion{
+        OLD,
+        NEW
+    }
 
-    private String uiVersion = NEW_UI;
+    private UIVersion uiVersion = UIVersion.NEW;
+    private boolean forceBuild = true;
     private boolean openBrowserAfterDeployment = true;
-    private boolean compileBeforeDeploy = true;
-    private boolean slotPanelVisiable = false;
+    private boolean slotPanelVisible = false;
 
-    public String getUiVersion() {
+    public UIVersion getUiVersion() {
         return uiVersion;
     }
 
-    public void setUiVersion(String uiVersion) {
+    public void setUiVersion(UIVersion uiVersion) {
         this.uiVersion = uiVersion;
     }
 
@@ -28,19 +30,19 @@ public class IntelliJWebAppSettingModel extends WebAppSettingModel {
         this.openBrowserAfterDeployment = openBrowserAfterDeployment;
     }
 
-    public boolean isCompileBeforeDeploy() {
-        return compileBeforeDeploy;
+    public boolean isForceBuild() {
+        return forceBuild;
     }
 
-    public void setCompileBeforeDeploy(boolean compileBeforeDeploy) {
-        this.compileBeforeDeploy = compileBeforeDeploy;
+    public void setForceBuild(boolean forceBuild) {
+        this.forceBuild = forceBuild;
     }
 
-    public boolean isSlotPanelVisiable() {
-        return slotPanelVisiable;
+    public boolean isSlotPanelVisible() {
+        return slotPanelVisible;
     }
 
-    public void setSlotPanelVisiable(boolean slotPanelVisiable) {
-        this.slotPanelVisiable = slotPanelVisiable;
+    public void setSlotPanelVisible(boolean slotPanelVisible) {
+        this.slotPanelVisible = slotPanelVisible;
     }
 }
