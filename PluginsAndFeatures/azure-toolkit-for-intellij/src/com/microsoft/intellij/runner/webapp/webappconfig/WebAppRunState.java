@@ -28,8 +28,12 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentManager;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PublishingProfile;
@@ -101,7 +105,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     private static final int SLEEP_TIME = 5000; // milliseconds
     private static final int UPLOADING_MAX_TRY = 3;
-    private boolean signal = true;
 
     private WebAppConfiguration webAppConfiguration;
     private final IntelliJWebAppSettingModel webAppSettingModel;
@@ -152,8 +155,16 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         if (shouldForceBuild()) {
             CountDownLatch countDownLatch = buildMavenProject(processHandler);
             countDownLatch.await();
+            ApplicationManager.getApplication().invokeLater(()->{
+                // Switch run view from mvn package to webapp deployment
+                ContentManager contentManager =
+                    ToolWindowManager.getInstance(project).getToolWindow("Run").getContentManager();
+                for (Content content : contentManager.getContents()) {
+                    if(content.getDisplayName().equals(webAppConfiguration.getName())){
+                        contentManager.setSelectedContent(content);
+                    }
+                }});
         }
-
         File file = new File(webAppSettingModel.getTargetPath());
         if (!file.exists()) {
             throw new FileNotFoundException(String.format(NO_TARGET_FILE, webAppSettingModel.getTargetPath()));
