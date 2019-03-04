@@ -621,8 +621,14 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         btnAppSettingsDel.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
         btnAppSettingsDel.addListener(SWT.Selection, event -> onBtnDeleteItemSelection());
     }
+    
+    private void updateTableActionBtnStatus(boolean enabled) {
+    	btnAppSettingsNew.setEnabled(enabled);
+    	btnAppSettingsDel.setEnabled(enabled);
+    }
 
     private void onTblAppSettingMouseDoubleClick(Event event) {
+        updateTableActionBtnStatus(false);
         Rectangle clientArea = tblAppSettings.getClientArea();
         Point pt = new Point(event.x, event.y);
         int index = tblAppSettings.getTopIndex();
@@ -640,10 +646,12 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                 }
             }
             if (!visible) {
+                updateTableActionBtnStatus(true);
                 return;
             }
             index++;
         }
+        updateTableActionBtnStatus(true);
     }
 
     private void editingTableItem(TableItem item, int column) {
@@ -654,6 +662,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                     item.setText(column, text.getText());
                     text.dispose();
                     readTblAppSettings();
+                    updateTableActionBtnStatus(true);
                     break;
                 case SWT.Traverse:
                     switch (e.detail) {
@@ -664,6 +673,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                             text.dispose();
                             e.doit = false;
                             readTblAppSettings();
+                            updateTableActionBtnStatus(true);
                         default:
                     }
                     break;
@@ -682,7 +692,9 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         int seletedIndex = tblAppSettings.getSelectionIndex();
         int itemCount = tblAppSettings.getItemCount();
         if (seletedIndex >= 0 && seletedIndex < tblAppSettings.getItemCount()) {
+            updateTableActionBtnStatus(false);
             tblAppSettings.remove(seletedIndex);
+            updateTableActionBtnStatus(true);
             readTblAppSettings();
             if (tblAppSettings.getItemCount() > 0) {
                 if (seletedIndex == itemCount - 1) {
@@ -712,6 +724,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void onBtnNewItemSelection() {
+        updateTableActionBtnStatus(false);
         TableItem item = new TableItem(tblAppSettings, SWT.NONE);
         item.setText(new String[] {"<key>", "<value>"});
         tblAppSettings.setSelection(item);

@@ -32,6 +32,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.microsoft.azuretools.core.Activator;
+import com.microsoft.azuretools.utils.TelemetryUtils;
 
 
 public class AILibraryHandler {
@@ -224,6 +225,30 @@ public class AILibraryHandler {
 		}
 	}
 
+	/**
+	 * Workaround for issue https://github.com/Microsoft/azure-tools-for-java/issues/2122
+	 */
+	public void setAIServletContextListener() {
+		try {
+			TelemetryUtils.setAIServletContextListener(webXMLDoc);
+		} catch (Exception e) {
+			Activator.getDefault().log(e.getMessage(), e);
+		}
+	}
+
+
+	/**
+	 * Workaround for issue https://github.com/Microsoft/azure-tools-for-java/issues/2122
+	 */
+	public void removeAIServletContextListener() {
+		try {
+			TelemetryUtils.removeAIServletContextListener(webXMLDoc);
+		} catch (Exception e) {
+			Activator.getDefault().log(e.getMessage(), e);
+		}
+	}
+ 
+	
 	public void disableAIFilterConfiguration(boolean disable) {
 		if (aiConfXMLDoc != null) {
 			NodeList nodeList = aiConfXMLDoc.getElementsByTagName(DISABLE_TELEMETRY_NODE_NAME);
