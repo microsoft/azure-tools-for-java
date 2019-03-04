@@ -64,7 +64,6 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     private String passWord;
     private IHDIStorageAccount defaultStorageAccount;
     private List<HDStorageAccount> additionalStorageAccounts;
-
     private boolean isConfigInfoAvailable = false;
 
     public ClusterDetail(SubscriptionDetail paramSubscription, ClusterRawInfo paramClusterRawInfo){
@@ -245,17 +244,22 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
             throw new HDIException("Failed to get default storage account");
         }
 
+        String schema = URI.create(containerAddress).getScheme();
+
         //for adls
         if(ADL_HOME_PREFIX.equalsIgnoreCase(containerAddress)) {
             String accountName = "";
             String defaultRootPath = "";
+
             if(coresiteMap.containsKey(ADLS_HOME_HOST_NAME)) {
                 accountName = coresiteMap.get(ADLS_HOME_HOST_NAME).split("\\.")[0];
             }
             if(coresiteMap.containsKey(ADLS_HOME_MOUNTPOINT)) {
                 defaultRootPath = coresiteMap.get(ADLS_HOME_MOUNTPOINT);
             }
-            return new ADLSStorageAccount(this, accountName, true, defaultRootPath, clusterIdentity);
+
+            URI rootURI = URI.create(String.format("%s://%s.azuredatalakestore.net", schema, accountName)).resolve(defaultRootPath);
+            return new ADLSStorageAccount(this,true, clusterIdentity, rootURI);
         } else if (Pattern.compile(StorageAccountNamePattern).matcher(containerAddress).matches()) {
             String storageAccountName = getStorageAccountName(containerAddress);
             if(storageAccountName == null){

@@ -39,9 +39,13 @@ import org.apache.http.message.BasicNameValuePair;
 import rx.Observable;
 import rx.Observer;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -141,7 +145,8 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        return jobDeploy.deploy(artifactPath)
+        URI dest = URI.create(account.getStorageRootPath());
+        return jobDeploy.deploy(new File(artifactPath), dest)
                 .map(path -> {
                     ctrlInfo(String.format("Upload to Azure Datalake store %s successfully", path));
                     getSubmissionParameter().setFilePath(path);
