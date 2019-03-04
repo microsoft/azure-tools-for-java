@@ -366,14 +366,6 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         webAppSettingModel.setOpenBrowserAfterDeployment(openBrowserAfterDeployment);
     }
 
-    public boolean isCompileBeforeDeploy() {
-        return webAppSettingModel.isForceBuild();
-    }
-
-    public void setCompileBeforeDeploy(boolean compileBeforeDeploy) {
-        webAppSettingModel.setForceBuild(compileBeforeDeploy);
-    }
-
     public boolean isSlotPanelVisible() {
         return webAppSettingModel.isSlotPanelVisible();
     }

@@ -18,9 +18,12 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
+import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -45,7 +48,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpView {
 
@@ -356,14 +361,32 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
                 try {
                     progressIndicator.setIndeterminate(true);
                     result = AzureWebAppMvpModel.getInstance().createWebApp(webAppConfiguration.getModel());
+                    sendTelemetry(true, null);
                     dispose();
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null, "Create WebApp Failed : " + ex.getMessage(), "Create WebApp " +
                             "Failed",
                         JOptionPane.ERROR_MESSAGE);
+                    sendTelemetry(false, ex.getMessage());
                 }
             }
         });
+    }
+
+    private void sendTelemetry(boolean success, @Nullable String errorMsg) {
+        Map<String, String> telemetryMap = new HashMap<>();
+        telemetryMap.put("SubscriptionId", webAppConfiguration.getSubscriptionId());
+        telemetryMap.put("CreateNewApp", String.valueOf(webAppConfiguration.isCreatingNew()));
+        telemetryMap.put("CreateNewSP", String.valueOf(webAppConfiguration.isCreatingAppServicePlan()));
+        telemetryMap.put("CreateNewRGP", String.valueOf(webAppConfiguration.isCreatingResGrp()));
+        telemetryMap.put("FileType", MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName()));
+        telemetryMap.put("Success", String.valueOf(success));
+        if (!success) {
+            telemetryMap.put("ErrorMsg", errorMsg);
+        }
+        final String deploymentType = webAppConfiguration.isDeployToSlot() ? "DeploymentSlot" : "WebApp";
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Action
+            , deploymentType, "Deploy", telemetryMap);
     }
 
     @Override

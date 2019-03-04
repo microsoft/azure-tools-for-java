@@ -10,7 +10,6 @@ public class IntelliJWebAppSettingModel extends WebAppSettingModel {
     }
 
     private UIVersion uiVersion = UIVersion.NEW;
-    private boolean forceBuild = true;
     private boolean openBrowserAfterDeployment = true;
     private boolean slotPanelVisible = false;
 
@@ -28,14 +27,6 @@ public class IntelliJWebAppSettingModel extends WebAppSettingModel {
 
     public void setOpenBrowserAfterDeployment(boolean openBrowserAfterDeployment) {
         this.openBrowserAfterDeployment = openBrowserAfterDeployment;
-    }
-
-    public boolean isForceBuild() {
-        return forceBuild;
-    }
-
-    public void setForceBuild(boolean forceBuild) {
-        this.forceBuild = forceBuild;
     }
 
     public boolean isSlotPanelVisible() {

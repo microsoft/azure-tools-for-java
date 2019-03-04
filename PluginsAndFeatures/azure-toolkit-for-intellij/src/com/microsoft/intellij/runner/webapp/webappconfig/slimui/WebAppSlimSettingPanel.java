@@ -68,7 +68,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private JComboBox cbMavenProject;
     private JPanel pnlRoot;
     private JComboBox cbxWebApp;
-    private JCheckBox chkBuild;
     private JPanel pnlSlotDetails;
     private JRadioButton rbtNewSlot;
     private JRadioButton rbtExistingSlot;
@@ -220,7 +219,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             String.format(DEFAULT_SLOT_NAME, df.format(new Date())) : webAppConfiguration.getNewSlotName();
         txtNewSlotName.setText(defaultSlotName);
         chkToRoot.setSelected(configuration.isDeployToRoot());
-        chkBuild.setSelected(configuration.isCompileBeforeDeploy());
         chkOpenBrowser.setSelected(configuration.isOpenBrowserAfterDeployment());
         slotDecorator.setOn(configuration.isSlotPanelVisible());
     }
@@ -234,10 +232,8 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         configuration.setWebAppId(selectedWebApp == null ? null : selectedWebApp.getResource().id());
         configuration.setSubscriptionId(selectedWebApp == null ? null : selectedWebApp.getSubscriptionId());
         configuration.setDeployToSlot(chkDeployToSlot.isSelected());
-        configuration.setCompileBeforeDeploy(chkBuild.isSelected());
         configuration.setSlotPanelVisible(slotDecorator.isExpanded());
         chkToRoot.setVisible(isAbleToDeployToRoot(targetName));
-        chkBuild.setVisible(MavenRunTaskUtil.isMavenProject(project));
         toggleSlotPanel(configuration.isDeployToSlot() && selectedWebApp != null);
         if (chkDeployToSlot.isSelected()) {
             configuration.setDeployToSlot(true);
@@ -252,7 +248,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             configuration.setDeployToSlot(false);
         }
         configuration.setDeployToRoot(chkToRoot.isVisible() && chkToRoot.isSelected());
-        configuration.setCompileBeforeDeploy(chkBuild.isSelected());
         configuration.setOpenBrowserAfterDeployment(chkOpenBrowser.isSelected());
     }
 

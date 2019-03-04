@@ -22,18 +22,9 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
-import com.intellij.execution.runners.ProgramRunner;
-import com.intellij.execution.ui.RunContentDescriptor;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
-import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentManager;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PublishingProfile;
@@ -52,10 +43,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.maven.execution.MavenRunConfigurationType;
-import org.jetbrains.idea.maven.execution.MavenRunnerParameters;
 import org.jetbrains.idea.maven.model.MavenConstants;
-import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -65,14 +53,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
-    private static final String BUILDING_PROJECT = "Building project...";
     private static final String CREATE_WEBAPP = "Creating new Web App...";
     private static final String CREATE_DEPLOYMENT_SLOT = "Creating new Deployment Slot...";
     private static final String CREATE_FAILED = "Failed to create Web App. Error: %s ...";
@@ -101,7 +85,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     private static final String WEB_APP_BASE_PATH = BASE_PATH + "webapps/";
     private static final String CONTAINER_ROOT_PATH = WEB_APP_BASE_PATH + "ROOT";
     private static final String TEMP_FILE_PREFIX = "azuretoolkit";
-    private static final String MAVEN_PACKAGE_GOAL = "package";
 
     private static final int SLEEP_TIME = 5000; // milliseconds
     private static final int UPLOADING_MAX_TRY = 3;
@@ -118,53 +101,10 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         this.webAppSettingModel = webAppConfiguration.getModel();
     }
 
-    public CountDownLatch buildMavenProject(@NotNull RunProcessHandler processHandler) {
-        CountDownLatch latch = new CountDownLatch(1);
-        processHandler.setText(BUILDING_PROJECT);
-        final MavenRunnerParameters mavenRunnerParameters = new MavenRunnerParameters(true, project.getBasePath(),
-            MavenConstants.POM_XML, Arrays.asList(MAVEN_PACKAGE_GOAL), Collections.EMPTY_LIST);
-        MavenRunConfigurationType.runConfiguration(project, mavenRunnerParameters, new ProgramRunner.Callback() {
-            @Override
-            public void processStarted(RunContentDescriptor runContentDescriptor) {
-                ProcessHandler mavenProcessHandler = runContentDescriptor.getProcessHandler();
-                mavenProcessHandler.addProcessListener(new ProcessAdapter() {
-                    @Override
-                    public void processTerminated(@NotNull ProcessEvent event) {
-                        latch.countDown();
-                    }
-                });
-            }
-        });
-        return latch;
-    }
-
-    private boolean shouldForceBuild() {
-        String projectPath = String.join(File.separator, project.getBasePath(), MavenConstants.POM_XML);
-        boolean existingMavenTask =
-            webAppConfiguration.getBeforeRunTasks()
-                .stream().anyMatch(task -> task instanceof MavenBeforeRunTask &&
-                ((MavenBeforeRunTask) task).getGoal().contains(MAVEN_PACKAGE_GOAL) &&
-                ((MavenBeforeRunTask) task).getProjectPath().equals(projectPath));
-        return !existingMavenTask && webAppSettingModel.isForceBuild();
-    }
-
     @Nullable
     @Override
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
         , @NotNull Map<String, String> telemetryMap) throws Exception {
-        if (shouldForceBuild()) {
-            CountDownLatch countDownLatch = buildMavenProject(processHandler);
-            countDownLatch.await();
-            ApplicationManager.getApplication().invokeLater(()->{
-                // Switch run view from mvn package to webapp deployment
-                ContentManager contentManager =
-                    ToolWindowManager.getInstance(project).getToolWindow("Run").getContentManager();
-                for (Content content : contentManager.getContents()) {
-                    if(content.getDisplayName().equals(webAppConfiguration.getName())){
-                        contentManager.setSelectedContent(content);
-                    }
-                }});
-        }
         File file = new File(webAppSettingModel.getTargetPath());
         if (!file.exists()) {
             throw new FileNotFoundException(String.format(NO_TARGET_FILE, webAppSettingModel.getTargetPath()));
@@ -211,7 +151,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @Override
     protected void onSuccess(WebAppBase result, @NotNull RunProcessHandler processHandler) {
-        if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
+        if (AzureUIRefreshCore.listeners != null) {
             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
         }
         updateConfigurationDataModel(result);
