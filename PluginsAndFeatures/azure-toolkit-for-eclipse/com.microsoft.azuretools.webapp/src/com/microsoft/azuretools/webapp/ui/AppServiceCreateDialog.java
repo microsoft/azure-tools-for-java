@@ -628,7 +628,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void onTblAppSettingMouseDoubleClick(Event event) {
-    	  updateTableActionBtnStatus(false);
+        updateTableActionBtnStatus(false);
         Rectangle clientArea = tblAppSettings.getClientArea();
         Point pt = new Point(event.x, event.y);
         int index = tblAppSettings.getTopIndex();
@@ -646,7 +646,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                 }
             }
             if (!visible) {
-            	  updateTableActionBtnStatus(true);
+                updateTableActionBtnStatus(true);
                 return;
             }
             index++;
@@ -724,7 +724,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void onBtnNewItemSelection() {
-    	  updateTableActionBtnStatus(false);
+        updateTableActionBtnStatus(false);
         TableItem item = new TableItem(tblAppSettings, SWT.NONE);
         item.setText(new String[] {"<key>", "<value>"});
         tblAppSettings.setSelection(item);
