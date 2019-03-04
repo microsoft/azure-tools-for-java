@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="pnlRoot" layout-manager="GridLayoutManager" row-count="5" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="591" height="347"/>
+      <xy x="20" y="20" width="591" height="337"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -21,7 +21,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <grid id="304dd" binding="pnlSlotCheckBox" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="304dd" binding="pnlSlotCheckBox" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -42,6 +42,19 @@
                       <rolloverEnabled value="false"/>
                       <selected value="false"/>
                       <text value="Deploy To Slot"/>
+                    </properties>
+                  </component>
+                  <hspacer id="34f68">
+                    <constraints>
+                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                  </hspacer>
+                  <component id="e06ef" class="javax.swing.JLabel" binding="lblSlotHover" custom-create="true">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value=""/>
                     </properties>
                   </component>
                 </children>
@@ -110,7 +123,7 @@
                     <properties>
                       <enabled value="false"/>
                       <text value="Slot Configuration Source"/>
-                      <visible value="false"/>
+                      <visible value="true"/>
                     </properties>
                   </component>
                   <component id="cae1c" class="javax.swing.JComboBox" binding="cbxSlotConfigurationSource">
@@ -119,7 +132,7 @@
                     </constraints>
                     <properties>
                       <enabled value="false"/>
-                      <visible value="false"/>
+                      <visible value="true"/>
                     </properties>
                   </component>
                   <grid id="9cc82" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">

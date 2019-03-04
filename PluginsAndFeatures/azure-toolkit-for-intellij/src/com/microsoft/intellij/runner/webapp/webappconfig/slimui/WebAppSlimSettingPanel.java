@@ -1,6 +1,6 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.slimui;
 
-import com.intellij.execution.BeforeRunTask;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
@@ -22,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxEditor;
@@ -37,7 +36,6 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -51,7 +49,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private static final String DEFAULT_SLOT_NAME = "slot-%s";
     private static final String CREATE_NEW_WEBAPP = "Create New WebApp";
     private static final String REFRESHING_WEBAPP = "Refreshing...";
-
+    private static final String DEPLOYMENT_SLOT_HOVER = "Deployment slots are live apps with their own hostnames. App" +
+        " content and configurations elements can be swapped between two deployment slots, including the production " +
+        "slot.";
 
     private boolean refreshingWebApp = false;
     private ResourceEx<WebApp> selectedWebApp = null;
@@ -81,6 +81,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private JLabel lblSlotConfiguration;
     private HyperlinkLabel lblCreateWebApp;
     private JCheckBox chkOpenBrowser;
+    private JLabel lblSlotHover;
     private HideableDecorator slotDecorator;
 
     // presenter
@@ -215,9 +216,8 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             chkDeployToSlot.setSelected(false);
         }
         final DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
-        final String date = df.format(new Date());
-        final String defaultSlotName = webAppConfiguration.getNewSlotName() == null ? String.format(DEFAULT_SLOT_NAME,
-            date) : webAppConfiguration.getNewSlotName();
+        final String defaultSlotName = StringUtils.isEmpty(webAppConfiguration.getNewSlotName()) ?
+            String.format(DEFAULT_SLOT_NAME, df.format(new Date())) : webAppConfiguration.getNewSlotName();
         txtNewSlotName.setText(defaultSlotName);
         chkToRoot.setSelected(configuration.isDeployToRoot());
         chkBuild.setSelected(configuration.isCompileBeforeDeploy());
@@ -341,6 +341,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         // TODO: place custom component creation code here
         lblCreateWebApp = new HyperlinkLabel("No available webapp, create a new one");
         lblCreateWebApp.addHyperlinkListener(e -> createNewWebApp());
+
+        lblSlotHover = new JLabel(AllIcons.General.Information);
+        lblSlotHover.setToolTipText(DEPLOYMENT_SLOT_HOVER);
     }
 
     public void refreshWebApps(boolean force) {
@@ -386,7 +389,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         final List<String> deploymentSlots = new ArrayList<String>();
         configurationSources.add(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
         configurationSources.add(selectedWebApp.getResource().name());
-        slotList.stream().forEach(slot -> {
+        slotList.stream().filter(slot -> slot != null).forEach(slot -> {
             deploymentSlots.add(slot.name());
             configurationSources.add(slot.name());
         });
