@@ -68,6 +68,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
     val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
     private val jobUploadStorageTitle = "Job Upload Storage"
     private val invalidUploadPath = "<Invalid Upload Path>"
+    private val unsupportAccountType = "<Storage Account Type Is Not Supported>"
     private val uploadPathLabel = JLabel("Upload Path")
     private val uploadPathField = JTextField().apply {
         isEditable = false
@@ -144,7 +145,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                 // 1.select cluster -> set to default
                 // 2.reload config with not null type -> set to saved type
                 // 3.reload config with null storage type -> set to default
-                // 3.create config  -> set to default
+                // 4.create config  -> set to default
                 uploadStorage.deployStorageTypesModel = ImmutableComboBoxModel(optionTypes).apply {
                     if (checkEvent.preClusterName != null) {
                         // for case1, preClusterName is not null
@@ -268,6 +269,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                     uploadPath = invalidUploadPath
                                     errorMsg = "Selected ADLA account does not exist"
                                 }
+                            }
+                            SparkSubmitStorageType.NOT_SUPPORT_STORAGE_TYPE -> model.apply {
+                                uploadPath = unsupportAccountType
+                                errorMsg = "Storage type is not supported"
                             }
                             else -> model.apply {
                                 uploadPath = invalidUploadPath
