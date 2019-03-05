@@ -308,6 +308,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             }
             SparkSubmitStorageType.ADLS_GEN1 -> {
                 data.adlsRootPath = storagePanel.adlsCard.adlsRootPathField.text.trim()
+                data.subscriptionsModel = storagePanel.adlsCard.subscriptionsComboBox.comboBox.model as DefaultComboBoxModel<String>
+                data.selectedSubscription = storagePanel.adlsCard.subscriptionsComboBox.comboBox.selectedItem as? String
             }
             SparkSubmitStorageType.WEBHDFS -> {
                 data.webHdfsRootPath= storagePanel.webHdfsCard.webHdfsRootPathField.text.trim()
@@ -358,6 +360,12 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                         storagePanel.adlsCard.signOutCard.azureAccountLabel.text = AzureSparkClusterManager.getInstance().getAzureAccountEmail()
                     } else {
                         curLayout.show(storagePanel.adlsCard.azureAccountCards, storagePanel.adlsCard.signInCard.title)
+                    }
+
+                    if (data.subscriptionsModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedSubscription)) {
+                        storagePanel.adlsCard.subscriptionsComboBox.comboBox.model = DefaultComboBoxModel(arrayOf(data.selectedSubscription))
+                    } else {
+                        storagePanel.adlsCard.subscriptionsComboBox.comboBox.model = data.subscriptionsModel as DefaultComboBoxModel<Any>
                     }
                 }
                 SparkSubmitStorageType.WEBHDFS -> {

@@ -31,12 +31,14 @@ import com.intellij.ui.DocumentAdapter
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.storage.blob.BlobRequestOptions
+import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
 import com.microsoft.tooling.msservices.model.storage.BlobContainer
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount
@@ -47,6 +49,7 @@ import rx.schedulers.Schedulers
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
+import java.util.stream.Collectors
 import javax.swing.DefaultComboBoxModel
 import javax.swing.event.DocumentEvent
 
@@ -105,6 +108,60 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                         { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
             }
         }
+
+        //refresh subscriptions after refresh button is clicked
+        view.storagePanel.adlsCard.subscriptionsComboBox.button.addActionListener{
+            if (view.storagePanel.adlsCard.subscriptionsComboBox.button.isEnabled) {
+                view.storagePanel.adlsCard.subscriptionsComboBox.button.isEnabled = false
+                refreshSubscriptions()
+                        .doOnEach { view.storagePanel.adlsCard.subscriptionsComboBox.button.isEnabled = true }
+                        .subscribe(
+                                { },
+                                { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
+            }
+        }
+    }
+
+    private fun refreshSubscriptions(): Observable<SparkSubmitJobUploadStorageModel> {
+        return Observable.just(SparkSubmitJobUploadStorageModel())
+                .doOnNext(view::getData)
+                // set error message to prevent user from applying the change when refreshing is not completed
+                .map { it.apply { errorMsg = "refreshing subscriptions is not completed" } }
+                .doOnNext(view::setData)
+                .observeOn(Schedulers.io())
+                .map { toUpdate ->
+                    toUpdate.apply {
+                        if (!AzureSparkClusterManager.getInstance().isSignedIn) {
+                            errorMsg = "ADLS Gen 1 storage type requires user to sign in first"
+                        } else {
+                            try {
+                                val subscriptionManager = AuthMethodManager.getInstance().azureManager.subscriptionManager
+                                val subscriptionNameList = subscriptionManager.selectedSubscriptionDetails
+                                        .stream()
+                                        .map { subDetail -> subDetail.subscriptionName }
+                                        .collect(Collectors.toList<String>())
+
+                                if (subscriptionNameList.size > 0) {
+                                    subscriptionsModel = DefaultComboBoxModel(subscriptionNameList.toTypedArray())
+                                    subscriptionsModel.selectedItem = subscriptionsModel.getElementAt(0)
+                                    selectedSubscription = subscriptionsModel.getElementAt(0)
+                                    errorMsg = null
+                                } else {
+                                    errorMsg = "No subscriptions found in this storage account"
+                                }
+                            } catch (ex: Exception) {
+                                log().info("Refresh subscriptions error. " + ExceptionUtils.getStackTrace(ex))
+                                errorMsg = "Can't get subscriptions, check if subscriptions selected"
+                            }
+                        }
+                    }
+                }
+                .doOnNext { data ->
+                    if (data.errorMsg != null) {
+                        log().info("Refresh subscriptions error: " + data.errorMsg)
+                    }
+                    view.setData(data)
+                }
     }
 
     private fun refreshContainers(): Observable<SparkSubmitJobUploadStorageModel> {

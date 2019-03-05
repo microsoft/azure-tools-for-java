@@ -44,12 +44,17 @@ class SparkSubmitJobUploadStorageModel: ILogger {
 
     @get:Transient @set:Transient var containersModel: DefaultComboBoxModel<String> = DefaultComboBoxModel()
 
+    @get:Transient @set:Transient var subscriptionsModel: DefaultComboBoxModel<String> = DefaultComboBoxModel()
+
     @Attribute("upload_path")
     var uploadPath: String? = null
 
     // selectedContainer is saved to reconstruct a containersModel when we reopen the project
     @Attribute("selected_container")
     var selectedContainer: String? = null
+
+    @Attribute("selected_subscription")
+    var selectedSubscription: String? = null
 
     @Attribute("storage_account_type")
     var storageAccountType: SparkSubmitStorageType? = null
