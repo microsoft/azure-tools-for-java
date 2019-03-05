@@ -23,6 +23,7 @@
 package com.microsoft.intellij.runner.webapp;
 
 import com.intellij.execution.Executor;
+import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.runners.ProgramRunner;
@@ -41,6 +42,9 @@ import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import com.microsoft.intellij.AzureConfigurableProvider;
+import com.microsoft.intellij.runner.webapp.webappconfig.IntelliJWebAppSettingModel;
+import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.tooling.IntegrationTestBase;
 import com.microsoft.intellij.tooling.TestSchedulerProvider;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunState;
@@ -73,8 +77,8 @@ import static org.powermock.api.mockito.PowerMockito.whenNew;
 
 @PowerMockIgnore("javax.net.ssl.*")
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ AuthMethodManager.class, AzureManager.class, SubscriptionManager.class, DefaultLoader.class,
-        TextConsoleBuilderFactory.class, WebAppUtils.class, FTPClient.class })
+@PrepareForTest({AuthMethodManager.class, AzureManager.class, SubscriptionManager.class, DefaultLoader.class,
+    TextConsoleBuilderFactory.class, WebAppUtils.class, FTPClient.class})
 
 @Ignore
 public class WebAppIntegrationTest extends IntegrationTestBase {
@@ -117,6 +121,9 @@ public class WebAppIntegrationTest extends IntegrationTestBase {
     @Mock
     private FTPClient ftpClient;
 
+    @Mock
+    private ConfigurationFactory factory;
+
     private TestSchedulerProvider testSchedulerProvider = new TestSchedulerProvider();
     private String defaultSubscription;
     private URL targetFolder = WebAppIntegrationTest.class.getClassLoader().getResource(".");
@@ -140,14 +147,18 @@ public class WebAppIntegrationTest extends IntegrationTestBase {
         when(textConsoleBuilder.getConsole()).thenReturn(consoleView);
     }
 
+    private WebAppRunState getWebAppRunState(WebAppConfig webAppConfig) {
+        WebAppConfiguration configuration = new WebAppConfiguration(project, factory, null);
+        initialSetting(configuration.getModel(), webAppConfig);
+        return new WebAppRunState(project, configuration);
+    }
+
     @Test
     public void testNewWebApp() throws Exception {
         WebAppConfig webAppConfig = new WebAppConfig("barneytestapp1", "test.war", "Tomcat 7.0", "barneytestrg",
-                "barneytestplan1", "eastus", "Basic_B1", JavaVersion.JAVA_8_NEWEST, true, true, true, true,
-                "barneytestrg");
-        WebAppSettingModel settingModel = new WebAppSettingModel();
-        settingModel = initialSetting(settingModel, webAppConfig);
-        WebAppRunState runState = new WebAppRunState(project, settingModel);
+            "barneytestplan1", "eastus", "Basic_B1", JavaVersion.JAVA_8_NEWEST, true, true, true, true,
+            "barneytestrg");
+        WebAppRunState runState = getWebAppRunState(webAppConfig);
         runState.execute(executor, programRunner);
         testSchedulerProvider.triggerActions();
         WebApp selectedApp = getWebApp(webAppConfig.webAppName);
@@ -157,11 +168,9 @@ public class WebAppIntegrationTest extends IntegrationTestBase {
     @Test
     public void testNewWebAppWithExistedRgAndASP() throws Exception {
         WebAppConfig webAppConfig = new WebAppConfig("barneytestapp2", "test.war", "Tomcat 8.5", "barneytestrg",
-                "barneytestplan1", "eastus", "Basic_B1", JavaVersion.JAVA_7_NEWEST, true, true, false, false,
-                "barneytestrg");
-        WebAppSettingModel settingModel = new WebAppSettingModel();
-        settingModel = initialSetting(settingModel, webAppConfig);
-        WebAppRunState runState = new WebAppRunState(project, settingModel);
+            "barneytestplan1", "eastus", "Basic_B1", JavaVersion.JAVA_7_NEWEST, true, true, false, false,
+            "barneytestrg");
+        WebAppRunState runState = getWebAppRunState(webAppConfig);
         runState.execute(executor, programRunner);
         testSchedulerProvider.triggerActions();
         WebApp selectedApp = getWebApp(webAppConfig.webAppName);
@@ -172,11 +181,9 @@ public class WebAppIntegrationTest extends IntegrationTestBase {
     public void testNewWebAppWithExistedRg() throws Exception {
 
         WebAppConfig webAppConfig = new WebAppConfig("barneytestapp3", "test.war", "Jetty 9.3", "barneytestrg",
-                "barneytestplan2", "eastus", "Basic_B1", JavaVersion.JAVA_ZULU_1_8_0_92, false, true, false, true,
-                "barneytestrg");
-        WebAppSettingModel settingModel = new WebAppSettingModel();
-        settingModel = initialSetting(settingModel, webAppConfig);
-        WebAppRunState runState = new WebAppRunState(project, settingModel);
+            "barneytestplan2", "eastus", "Basic_B1", JavaVersion.JAVA_ZULU_1_8_0_92, false, true, false, true,
+            "barneytestrg");
+        WebAppRunState runState = getWebAppRunState(webAppConfig);
         runState.execute(executor, programRunner);
         testSchedulerProvider.triggerActions();
         WebApp selectedApp = getWebApp(webAppConfig.webAppName);
@@ -187,11 +194,9 @@ public class WebAppIntegrationTest extends IntegrationTestBase {
     public void testNewWebAppWithExistedASP() throws Exception {
 
         WebAppConfig webAppConfig = new WebAppConfig("barneytestapp4", "test.war", "Jetty 9.1", "barneytestrg2",
-                "barneytestplan2", "eastus", "Basic_B1", JavaVersion.JAVA_ZULU_1_8_0_102, false, true, true, false,
-                "barneytestrg");
-        WebAppSettingModel settingModel = new WebAppSettingModel();
-        settingModel = initialSetting(settingModel, webAppConfig);
-        WebAppRunState runState = new WebAppRunState(project, settingModel);
+            "barneytestplan2", "eastus", "Basic_B1", JavaVersion.JAVA_ZULU_1_8_0_102, false, true, true, false,
+            "barneytestrg");
+        WebAppRunState runState = getWebAppRunState(webAppConfig);
         runState.execute(executor, programRunner);
         testSchedulerProvider.triggerActions();
         WebApp selectedApp = getWebApp(webAppConfig.webAppName);
@@ -201,26 +206,23 @@ public class WebAppIntegrationTest extends IntegrationTestBase {
     @Test
     public void testNewWebAppWithJar() throws Exception {
         WebAppConfig webAppConfig = new WebAppConfig("barneytestapp6", "test.jar", "Tomcat 8.5", "barneytestrg3",
-                "barneytestplan3", "eastus", "Basic_B1", JavaVersion.JAVA_8_NEWEST, true, true, true, true,
-                "barneytestrg3");
-        WebAppSettingModel settingModel = new WebAppSettingModel();
-        settingModel = initialSetting(settingModel, webAppConfig);
-        WebAppRunState runState = new WebAppRunState(project, settingModel);
+            "barneytestplan3", "eastus", "Basic_B1", JavaVersion.JAVA_8_NEWEST, true, true, true, true,
+            "barneytestrg3");
+        WebAppRunState runState = getWebAppRunState(webAppConfig);
         runState.execute(executor, programRunner);
         testSchedulerProvider.triggerActions();
         WebApp selectedApp = getWebApp(webAppConfig.webAppName);
         assertNotNull(selectedApp);
     }
+
     @Test
     public void testExistedWebApp() throws Exception {
 
         WebAppConfig webAppConfig = new WebAppConfig("barneytestapp4", "test.war", "Jetty 9.1", "barneytestrg2",
-                "barneytestplan2", "eastus", "Basic_B1", JavaVersion.JAVA_ZULU_1_8_0_102, true, false, true, false,
-                "barneytestrg2");
-        WebAppSettingModel settingModel = new WebAppSettingModel();
-        settingModel = initialSetting(settingModel, webAppConfig);
+            "barneytestplan2", "eastus", "Basic_B1", JavaVersion.JAVA_ZULU_1_8_0_102, true, false, true, false,
+            "barneytestrg2");
+        WebAppRunState runState = getWebAppRunState(webAppConfig);
         WebApp existedApp = getWebApp(webAppConfig.webAppName);
-        WebAppRunState runState = new WebAppRunState(project, settingModel);
         runState.execute(executor, programRunner);
         testSchedulerProvider.triggerActions();
 
@@ -295,8 +297,10 @@ public class WebAppIntegrationTest extends IntegrationTestBase {
 
     private class WebAppConfig {
         public WebAppConfig(String webAppName, String targetName, String webContainer, String resourceGroup,
-                String appServicePlanName, String region, String pricing, JavaVersion jdkVersion, boolean deployToRoot,
-                boolean creatingNew, boolean creatingResGrp, boolean creatingAppServicePlan, String appPlanRg) {
+                            String appServicePlanName, String region, String pricing, JavaVersion jdkVersion,
+                            boolean deployToRoot,
+                            boolean creatingNew, boolean creatingResGrp, boolean creatingAppServicePlan,
+                            String appPlanRg) {
 
             String appPlanFormatString = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Web/serverfarms/%s";
             String webAppFormatString = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Web/sites/%s";
@@ -316,11 +320,11 @@ public class WebAppIntegrationTest extends IntegrationTestBase {
             this.AppServicePlanId = "";
             if (!this.creatingAppServicePlan) {
                 this.AppServicePlanId = String.format(appPlanFormatString, defaultSubscription, appPlanRg,
-                        this.appServicePlanName);
+                    this.appServicePlanName);
             }
             if (!this.creatingNew) {
                 this.webAppId = String.format(webAppFormatString, defaultSubscription, this.resourceGroup,
-                        this.webAppName);
+                    this.webAppName);
             }
         }
 

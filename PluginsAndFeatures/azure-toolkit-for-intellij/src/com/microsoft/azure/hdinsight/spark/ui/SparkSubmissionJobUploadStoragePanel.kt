@@ -51,6 +51,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
     val azureBlobCard = SparkSubmissionJobUploadStorageAzureBlobCard()
     val sparkInteractiveSessionCard = SparkSubmissionJobUploadStorageSparkInteractiveSessionCard()
     val clusterDefaultStorageCard = SparkSubmissionJobUploadStorageClusterDefaultStorageCard()
+    val notSupportStorageCard = SparkSubmissionJobUploadStorageClusterNotSupportStorageCard()
     val accountDefaultStorageCard = SparkSubmissionJobUploadStorageAccountDefaultStorageCard()
 
     val adlsCard = SparkSubmissionJobUploadStorageAdlsCard().apply {
@@ -103,6 +104,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
         add(azureBlobCard, azureBlobCard.title)
         add(sparkInteractiveSessionCard, sparkInteractiveSessionCard.title)
         add(clusterDefaultStorageCard, clusterDefaultStorageCard.title)
+        add(notSupportStorageCard, notSupportStorageCard.title)
         add(adlsCard, adlsCard.title)
         add(webHdfsCard, webHdfsCard.title)
         add(accountDefaultStorageCard, accountDefaultStorageCard.title)
