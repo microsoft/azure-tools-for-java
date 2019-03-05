@@ -1,6 +1,7 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation;
 
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -19,6 +20,8 @@ import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
@@ -189,7 +192,7 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         addValidationListener(contentPanel, e -> validateConfiguration());
         init();
     }
-    
+
     public WebApp getCreatedWebApp() {
         return this.result;
     }
@@ -427,12 +430,17 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
                 try {
                     progressIndicator.setIndeterminate(true);
                     result = AzureWebAppMvpModel.getInstance().createWebApp(webAppConfiguration.getModel());
-                    sendTelemetry(true, null);
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        sendTelemetry(true, null);
+                        if (AzureUIRefreshCore.listeners != null) {
+                            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
+                                null));
+                        }
+                    });
                     dispose();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(null, "Create WebApp Failed : " + ex.getMessage(), "Create WebApp " +
-                            "Failed",
-                        JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Create WebApp Failed : " + ex.getMessage(),
+                        "Create WebApp Failed", JOptionPane.ERROR_MESSAGE);
                     sendTelemetry(false, ex.getMessage());
                 }
             }

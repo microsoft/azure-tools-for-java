@@ -32,8 +32,6 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.azuretools.utils.AzureUIRefreshCore;
-import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
@@ -151,9 +149,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @Override
     protected void onSuccess(WebAppBase result, @NotNull RunProcessHandler processHandler) {
-        if (AzureUIRefreshCore.listeners != null) {
-            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
-        }
         updateConfigurationDataModel(result);
         AzureWebAppMvpModel.getInstance().listAllWebApps(true /*force*/);
 
