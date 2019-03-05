@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +77,16 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         getNodeActionByName(ACTION_STOP).setEnabled(running);
         getNodeActionByName(ACTION_RESTART).setEnabled(running);
 
-        return super.getNodeActions();
+        List<NodeAction> actions = super.getNodeActions();
+        // Dirty fix, should not show "refresh" in webapp node, since we do not support deploy slot
+        // Temp solution, after we support deploy slot, should remove this line.
+        List<NodeAction> webAppActions = new ArrayList<>();
+        for (NodeAction nodeAction : actions) {
+        	if (!nodeAction.getName().equals("Refresh")) {
+        		webAppActions.add(nodeAction);
+        	}
+        }
+        return webAppActions;
     }
 
     protected NodeActionListener createBackgroundActionListener(final String actionName, final Runnable runnable) {
