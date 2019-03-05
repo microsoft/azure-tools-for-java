@@ -27,6 +27,7 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.vfs.impl.jar.JarFileSystemImpl
 import com.intellij.packaging.impl.elements.ManifestFileUtil
 import com.intellij.uiDesigner.core.GridConstraints
+import com.microsoft.azure.hdinsight.common.DarkThemeManager
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.helpers.ManifestFileUtilsEx
 import javax.swing.JComponent
@@ -55,7 +56,13 @@ class SparkCommonRunParametersPanel(private val myProject: Project, private val 
         }
     }
 
-    private val submissionPanel : JPanel by lazy {
+    private val errorMessageLabel = JLabel("")
+            .apply {
+                foreground = DarkThemeManager.getInstance().errorMessageColor
+                isVisible = true
+            }
+
+    private val submissionPanel: JPanel by lazy {
         val formBuilder = panel {
             columnTemplate {
                 col {
@@ -68,28 +75,30 @@ class SparkCommonRunParametersPanel(private val myProject: Project, private val 
                     fill = GridConstraints.FILL_HORIZONTAL
                 }
             }
-            row { c(mainClassPrompt);                     c(mainClassTextField) }
+            row { c(mainClassPrompt); c(mainClassTextField) }
+            row { c(); c(errorMessageLabel) }
         }
 
         formBuilder.buildPanel()
     }
 
-    open val component: JComponent
+    val component: JComponent
         get() = submissionPanel
 
     fun setMainClassName(mainClassName: String) {
         mainClassTextField.text = mainClassName;
     }
 
-    fun getMainClassName() : String {
+    fun getMainClassName(): String {
         return mainClassTextField.text
     }
 
     @Throws(ConfigurationException::class)
     fun validateInputs() {
-        // Check for command arguments invisible chars
-        if (mainClassTextField.text.isNullOrBlank()) {
-            throw ConfigurationException("Main Class Name should not be null")
+        if(this.mainClassTextField.text.isNullOrBlank()) {
+            this.errorMessageLabel.text = "Main class name could not be null."
+        } else {
+            this.errorMessageLabel.text = ""
         }
     }
 }
