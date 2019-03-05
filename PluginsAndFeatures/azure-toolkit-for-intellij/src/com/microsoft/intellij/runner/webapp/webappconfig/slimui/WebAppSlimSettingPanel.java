@@ -175,19 +175,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         slotDecorator.setOn(webAppConfiguration.isSlotPanelVisible());
     }
 
-    private void selectWebApp() {
-        Object value = cbxWebApp.getSelectedItem();
-        if (Comparing.equal(CREATE_NEW_WEBAPP, value) && !refreshingWebApp) {
-            createNewWebApp();
-        } else if (value == null || value instanceof String) {
-            return;
-        } else {
-            chkDeployToSlot.setEnabled(true);
-            selectedWebApp = (ResourceEx<WebApp>) cbxWebApp.getSelectedItem();
-            presenter.onLoadDeploymentSlots(selectedWebApp);
-        }
-    }
-
     @NotNull
     @Override
     public String getPanelName() {
@@ -196,6 +183,90 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
     @Override
     public void disposeEditor() {
+    }
+
+    @Override
+    public synchronized void fillWebApps(List<ResourceEx<WebApp>> webAppLists) {
+        refreshingWebApp = true;
+        cbxWebApp.removeAllItems();
+        webAppLists = webAppLists.stream()
+            .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
+            .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
+            .collect(Collectors.toList());
+        if (webAppLists.size() == 0) {
+            lblCreateWebApp.setVisible(true);
+            cbxWebApp.setVisible(false);
+        } else {
+            lblCreateWebApp.setVisible(false);
+            cbxWebApp.setVisible(true);
+            cbxWebApp.addItem(CREATE_NEW_WEBAPP);
+            webAppLists.forEach(webAppResourceEx -> cbxWebApp.addItem(webAppResourceEx));
+            // Find webapp which id equals to configuration, or use the first available one.
+            final ResourceEx<WebApp> selectWebApp = webAppLists.stream()
+                .filter(webAppResourceEx -> webAppResourceEx.getResource().id().equals(webAppConfiguration.getWebAppId()))
+                .findFirst().orElse(webAppLists.get(0));
+            cbxWebApp.setSelectedItem(selectWebApp);
+        }
+        refreshingWebApp = false;
+        cbxWebApp.setEnabled(true);
+        selectWebApp();
+    }
+
+    @Override
+    public synchronized void fillDeploymentSlots(List<DeploymentSlot> slotList) {
+        cbxSlotName.removeAllItems();
+        cbxSlotConfigurationSource.removeAllItems();
+
+        final List<String> configurationSources = new ArrayList<String>();
+        final List<String> deploymentSlots = new ArrayList<String>();
+        configurationSources.add(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
+        configurationSources.add(selectedWebApp.getResource().name());
+        slotList.stream().filter(slot -> slot != null).forEach(slot -> {
+            deploymentSlots.add(slot.name());
+            configurationSources.add(slot.name());
+        });
+        deploymentSlots.forEach(s -> {
+            cbxSlotName.addItem(s);
+            if (Comparing.equal(s, webAppConfiguration.getSlotName())) {
+                cbxSlotName.setSelectedItem(s);
+            }
+        });
+        configurationSources.forEach(c -> {
+            cbxSlotConfigurationSource.addItem(c);
+            if (Comparing.equal(c, webAppConfiguration.getNewSlotConfigurationSource())) {
+                cbxSlotConfigurationSource.setSelectedItem(c);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public JPanel getMainPanel() {
+        return pnlRoot;
+    }
+
+    @NotNull
+    @Override
+    protected JComboBox<Artifact> getCbArtifact() {
+        return cbArtifact;
+    }
+
+    @NotNull
+    @Override
+    protected JLabel getLblArtifact() {
+        return lblArtifact;
+    }
+
+    @NotNull
+    @Override
+    protected JComboBox<MavenProject> getCbMavenProject() {
+        return cbMavenProject;
+    }
+
+    @NotNull
+    @Override
+    protected JLabel getLblMavenProject() {
+        return lblMavenProject;
     }
 
     @Override
@@ -251,6 +322,19 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         configuration.setOpenBrowserAfterDeployment(chkOpenBrowser.isSelected());
     }
 
+    private void selectWebApp() {
+        Object value = cbxWebApp.getSelectedItem();
+        if (Comparing.equal(CREATE_NEW_WEBAPP, value) && !refreshingWebApp) {
+            createNewWebApp();
+        } else if (value == null || value instanceof String) {
+            return;
+        } else {
+            chkDeployToSlot.setEnabled(true);
+            selectedWebApp = (ResourceEx<WebApp>) cbxWebApp.getSelectedItem();
+            presenter.onLoadDeploymentSlots(selectedWebApp);
+        }
+    }
+
     private boolean isAbleToDeployToRoot(final String targetName) {
         if (selectedWebApp == null) {
             return false;
@@ -260,36 +344,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             MavenRunTaskUtil.getFileType(targetName).equalsIgnoreCase(MavenConstants.TYPE_WAR);
         return isDeployingWar && (app.operatingSystem() == OperatingSystem.WINDOWS ||
             !Constants.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(app.linuxFxVersion()));
-    }
-
-    @NotNull
-    @Override
-    public JPanel getMainPanel() {
-        return pnlRoot;
-    }
-
-    @NotNull
-    @Override
-    protected JComboBox<Artifact> getCbArtifact() {
-        return cbArtifact;
-    }
-
-    @NotNull
-    @Override
-    protected JLabel getLblArtifact() {
-        return lblArtifact;
-    }
-
-    @NotNull
-    @Override
-    protected JComboBox<MavenProject> getCbMavenProject() {
-        return cbMavenProject;
-    }
-
-    @NotNull
-    @Override
-    protected JLabel getLblMavenProject() {
-        return lblMavenProject;
     }
 
     private void createNewWebApp() {
@@ -334,72 +388,18 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        lblCreateWebApp = new HyperlinkLabel("No available webapp, create a new one");
+        lblCreateWebApp = new HyperlinkLabel("No available webapp, click to create a new one");
         lblCreateWebApp.addHyperlinkListener(e -> createNewWebApp());
 
         lblSlotHover = new JLabel(AllIcons.General.Information);
         lblSlotHover.setToolTipText(DEPLOYMENT_SLOT_HOVER);
     }
 
-    public void refreshWebApps(boolean force) {
+    private void refreshWebApps(boolean force) {
         cbxWebApp.removeAllItems();
         cbxWebApp.setEnabled(false);
         cbxWebApp.addItem(REFRESHING_WEBAPP);
         presenter.loadWebApps(force);
-    }
-
-    @Override
-    public synchronized void fillWebApps(List<ResourceEx<WebApp>> webAppLists) {
-        refreshingWebApp = true;
-        cbxWebApp.removeAllItems();
-        webAppLists = webAppLists.stream()
-            .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
-            .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
-            .collect(Collectors.toList());
-        if (webAppLists.size() == 0) {
-            lblCreateWebApp.setVisible(true);
-            cbxWebApp.setVisible(false);
-        } else {
-            lblCreateWebApp.setVisible(false);
-            cbxWebApp.setVisible(true);
-            cbxWebApp.addItem(CREATE_NEW_WEBAPP);
-            webAppLists.forEach(webAppResourceEx -> cbxWebApp.addItem(webAppResourceEx));
-            // Find webapp which id equals to configuration, or use the first available one.
-            final ResourceEx<WebApp> selectWebApp = webAppLists.stream()
-                .filter(webAppResourceEx -> webAppResourceEx.getResource().id().equals(webAppConfiguration.getWebAppId()))
-                .findFirst().orElse(webAppLists.get(0));
-            cbxWebApp.setSelectedItem(selectWebApp);
-        }
-        refreshingWebApp = false;
-        cbxWebApp.setEnabled(true);
-        selectWebApp();
-    }
-
-    @Override
-    public synchronized void fillDeploymentSlots(List<DeploymentSlot> slotList) {
-        cbxSlotName.removeAllItems();
-        cbxSlotConfigurationSource.removeAllItems();
-
-        final List<String> configurationSources = new ArrayList<String>();
-        final List<String> deploymentSlots = new ArrayList<String>();
-        configurationSources.add(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
-        configurationSources.add(selectedWebApp.getResource().name());
-        slotList.stream().filter(slot -> slot != null).forEach(slot -> {
-            deploymentSlots.add(slot.name());
-            configurationSources.add(slot.name());
-        });
-        deploymentSlots.forEach(s -> {
-            cbxSlotName.addItem(s);
-            if (Comparing.equal(s, webAppConfiguration.getSlotName())) {
-                cbxSlotName.setSelectedItem(s);
-            }
-        });
-        configurationSources.forEach(c -> {
-            cbxSlotConfigurationSource.addItem(c);
-            if (Comparing.equal(c, webAppConfiguration.getNewSlotConfigurationSource())) {
-                cbxSlotConfigurationSource.setSelectedItem(c);
-            }
-        });
     }
 
     class WebAppCombineBoxRender extends ListCellRendererWrapper {

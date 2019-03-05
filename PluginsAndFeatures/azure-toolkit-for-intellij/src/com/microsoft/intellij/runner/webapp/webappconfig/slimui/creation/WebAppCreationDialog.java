@@ -189,6 +189,67 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         addValidationListener(contentPanel, e -> validateConfiguration());
         init();
     }
+    
+    public WebApp getCreatedWebApp() {
+        return this.result;
+    }
+
+    @Override
+    public void fillSubscription(@NotNull List<Subscription> subscriptions) {
+        fillCombobox(this, cbSubscription, subscriptions, null);
+    }
+
+    @Override
+    public void fillResourceGroup(@NotNull List<ResourceGroup> resourceGroups) {
+        fillCombobox(this, cbExistResGrp, resourceGroups, null);
+    }
+
+    @Override
+    public void fillAppServicePlan(@NotNull List<AppServicePlan> appServicePlans) {
+        cbExistAppServicePlan.removeAllItems();
+        appServicePlans.stream()
+            .filter(item -> Comparing.equal(item.operatingSystem(), webAppConfiguration.getOS()))
+            .sorted(Comparator.comparing(AppServicePlan::name))
+            .forEach((plan) -> {
+                cbExistAppServicePlan.addItem(plan);
+            });
+        selectAppServicePlan();
+        pack();
+    }
+
+    @Override
+    public void fillLocation(@NotNull List<Location> locations) {
+        cbLocation.removeAllItems();
+        locations.stream()
+            .sorted(Comparator.comparing(Location::displayName))
+            .forEach((location) -> {
+                cbLocation.addItem(location);
+                if (Comparing.equal(location.name(), DEFAULT_REGION.name())) {
+                    cbLocation.setSelectedItem(location);
+                }
+            });
+        pack();
+    }
+
+    @Override
+    public void fillPricingTier(@NotNull List<PricingTier> prices) {
+        fillCombobox(this, cbPricing, prices, DEFAULT_PRICINGTIER);
+    }
+
+    @Override
+    public void fillWebContainer(@NotNull List<WebAppUtils.WebContainerMod> webContainers) {
+        fillCombobox(this, cbWebContainer, webContainers, DEFAULT_WINDOWS_CONTAINER);
+    }
+
+    @Override
+    public void fillJdkVersion(@NotNull List<JdkModel> jdks) {
+        fillCombobox(this, cbJdkVersion, jdks, DEFAULT_WINDOWS_JAVAVERSION);
+    }
+
+    @Override
+    public void fillLinuxRuntime(@NotNull List<RuntimeStack> linuxRuntimes) {
+        fillCombobox(this, cbRuntimeStack, linuxRuntimes, DEFAULT_LINUX_RUNTIME);
+    }
 
     private void addValidationListener(Container parent, ActionListener actionListener) {
         for (Component component : parent.getComponents()) {
@@ -287,8 +348,13 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         createWebApp();
     }
 
-    public WebApp getCreatedWebApp() {
-        return this.result;
+    private static <T> void fillCombobox(Window window, JComboBox<T> comboBox, List<T> values, T defaultValue) {
+        comboBox.removeAllItems();
+        values.forEach(value -> comboBox.addItem(value));
+        if (defaultValue != null && values.contains(defaultValue)) {
+            comboBox.setSelectedItem(defaultValue);
+        }
+        window.pack();
     }
 
     private void updateConfiguration() {
@@ -389,69 +455,4 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
             , deploymentType, "Deploy", telemetryMap);
     }
 
-    @Override
-    public void fillSubscription(@NotNull List<Subscription> subscriptions) {
-        fillCombobox(this, cbSubscription, subscriptions, null);
-    }
-
-    @Override
-    public void fillResourceGroup(@NotNull List<ResourceGroup> resourceGroups) {
-        fillCombobox(this, cbExistResGrp, resourceGroups, null);
-    }
-
-    @Override
-    public void fillAppServicePlan(@NotNull List<AppServicePlan> appServicePlans) {
-        cbExistAppServicePlan.removeAllItems();
-        appServicePlans.stream()
-            .filter(item -> Comparing.equal(item.operatingSystem(), webAppConfiguration.getOS()))
-            .sorted(Comparator.comparing(AppServicePlan::name))
-            .forEach((plan) -> {
-                cbExistAppServicePlan.addItem(plan);
-            });
-        selectAppServicePlan();
-        pack();
-    }
-
-    @Override
-    public void fillLocation(@NotNull List<Location> locations) {
-        cbLocation.removeAllItems();
-        locations.stream()
-            .sorted(Comparator.comparing(Location::displayName))
-            .forEach((location) -> {
-                cbLocation.addItem(location);
-                if (Comparing.equal(location.name(), DEFAULT_REGION.name())) {
-                    cbLocation.setSelectedItem(location);
-                }
-            });
-        pack();
-    }
-
-    @Override
-    public void fillPricingTier(@NotNull List<PricingTier> prices) {
-        fillCombobox(this, cbPricing, prices, DEFAULT_PRICINGTIER);
-    }
-
-    @Override
-    public void fillWebContainer(@NotNull List<WebAppUtils.WebContainerMod> webContainers) {
-        fillCombobox(this, cbWebContainer, webContainers, DEFAULT_WINDOWS_CONTAINER);
-    }
-
-    @Override
-    public void fillJdkVersion(@NotNull List<JdkModel> jdks) {
-        fillCombobox(this, cbJdkVersion, jdks, DEFAULT_WINDOWS_JAVAVERSION);
-    }
-
-    @Override
-    public void fillLinuxRuntime(@NotNull List<RuntimeStack> linuxRuntimes) {
-        fillCombobox(this, cbRuntimeStack, linuxRuntimes, DEFAULT_LINUX_RUNTIME);
-    }
-
-    private static <T> void fillCombobox(Window window, JComboBox<T> comboBox, List<T> values, T defaultValue) {
-        comboBox.removeAllItems();
-        values.forEach(value -> comboBox.addItem(value));
-        if (defaultValue != null && values.contains(defaultValue)) {
-            comboBox.setSelectedItem(defaultValue);
-        }
-        window.pack();
-    }
 }

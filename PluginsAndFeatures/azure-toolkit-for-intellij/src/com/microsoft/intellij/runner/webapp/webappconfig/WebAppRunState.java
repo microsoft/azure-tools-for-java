@@ -64,8 +64,8 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     private static final String GETTING_DEPLOYMENT_CREDENTIAL = "Getting Deployment Credential...";
     private static final String CONNECTING_FTP = "Connecting to FTP server...";
     private static final String UPLOADING_ARTIFACT = "Uploading artifact to: %s ...";
-    private static final String UPLOADING_WEB_CONFIG = "Uploading web.config (check more details at: https://aka" +
-        ".ms/spring-boot)...";
+    private static final String UPLOADING_WEB_CONFIG = "Uploading web.config (check more details at: " +
+        "https://aka.ms/spring-boot)...";
     private static final String UPLOADING_SUCCESSFUL = "Uploading successfully...";
     private static final String STOP_WEB_APP = "Stopping Web App...";
     private static final String STOP_DEPLOYMENT_SLOT = "Stopping Deployment Slot...";
