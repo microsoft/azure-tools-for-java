@@ -36,6 +36,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
@@ -61,7 +62,6 @@ public class StorageAccountNode extends RefreshableNode implements TelemetryProp
     public StorageAccountNode(Node parent, @NotNull IHDIStorageAccount storageAccount, boolean isDefaultStorageAccount) {
        super(STORAGE_ACCOUNT_MODULE_ID, isDefaultStorageAccount ? storageAccount.getName() + DEFAULT_STORAGE_FLAG : storageAccount.getName(), parent, getIconPath(storageAccount));
         this.storageAccount = storageAccount;
-        load(false);
     }
 
     private Stream<BlobContainer> getBlobContainers(String connectionString) throws AzureCmdException {
@@ -101,22 +101,30 @@ public class StorageAccountNode extends RefreshableNode implements TelemetryProp
     }
 
     @Override
-    protected void refreshItems()
-            throws AzureCmdException {
-        if(storageAccount.getAccountType() == StorageAccountTypeEnum.BLOB) {
-            HDStorageAccount blobStorageAccount = (HDStorageAccount)storageAccount;
-            String defaultContainer = blobStorageAccount.getDefaultContainer();
-            final String connectionString = ((HDStorageAccount) storageAccount).getConnectionString();
-            try {
+    protected void refreshItems() {
+        try {
+            if (storageAccount.getAccountType() == StorageAccountTypeEnum.BLOB) {
+                HDStorageAccount blobStorageAccount = (HDStorageAccount) storageAccount;
+                String defaultContainer = blobStorageAccount.getDefaultContainer();
+                final String connectionString = ((HDStorageAccount) storageAccount).getConnectionString();
                 getBlobContainers(connectionString).forEach(blobContainer -> {
                     addChildNode(new BlobContainerNode(this, blobStorageAccount, blobContainer, !StringHelper.isNullOrWhiteSpace(defaultContainer) && defaultContainer.equals(blobContainer.getName())));
                 });
-            } catch (Exception ex) {
-                log().warn("refresh HDInsight storage account node failed. " + ExceptionUtils.getStackTrace(ex));
-                throw new AzureCmdException(ex.getCause().getMessage(), ex.getCause());
+            } else {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Can't refresh the storage account since unsupported storage account type: " + storageAccount.getAccountType() + "\n");
+                sb.append("Account name: " + storageAccount.getName() + "\n");
+                sb.append("Subscription ID: " + storageAccount.getSubscriptionId() + "\n");
+                sb.append("Default storage schema: " + storageAccount.getDefaultStorageSchema() + "\n");
+                sb.append("Default container or root path: " + storageAccount.getDefaultContainerOrRootPath() + "\n");
+                log().warn(sb.toString());
             }
-        } else if(storageAccount.getAccountType() == StorageAccountTypeEnum.ADLS) {
-            // TODO adls support
+        } catch (Exception ex) {
+            String exceptionMsg = ex.getCause() == null ? "" : ex.getCause().getMessage();
+            String errorHint =  String.format("Failed to load storage account %s. ", storageAccount.getName());
+            log().warn(errorHint + ExceptionUtils.getStackTrace(ex));
+
+            DefaultLoader.getUIHelper().showError(errorHint + exceptionMsg, "HDInsight Explorer");
         }
     }
 
