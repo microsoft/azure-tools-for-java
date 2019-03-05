@@ -151,15 +151,15 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
             if (Utils.isEmptyString(webAppSettingModel.getWebAppId())) {
                 throw new ConfigurationException(NEED_CHOOSE_WEB_APP);
             }
-            if (webAppSettingModel.isDeployToSlot() && webAppSettingModel.getSlotName() == Constants.CREATE_NEW_SLOT) {
-                if (Utils.isEmptyString(webAppSettingModel.getNewSlotName())) {
-                    throw new ConfigurationException(MISSING_SLOT_NAME);
-                }
-                if (!webAppSettingModel.getNewSlotName().matches(SLOT_NAME_REGEX)) {
-                    throw new ConfigurationException(INVALID_SLOT_NAME);
-                }
-            } else {
-                if (StringUtils.isEmpty(webAppSettingModel.getSlotName())) {
+            if (webAppSettingModel.isDeployToSlot()) {
+                if (webAppSettingModel.getSlotName() == Constants.CREATE_NEW_SLOT) {
+                    if (Utils.isEmptyString(webAppSettingModel.getNewSlotName())) {
+                        throw new ConfigurationException(MISSING_SLOT_NAME);
+                    }
+                    if (!webAppSettingModel.getNewSlotName().matches(SLOT_NAME_REGEX)) {
+                        throw new ConfigurationException(INVALID_SLOT_NAME);
+                    }
+                } else if (StringUtils.isEmpty(webAppSettingModel.getSlotName())) {
                     throw new ConfigurationException(MISSING_SLOT_NAME);
                 }
             }
