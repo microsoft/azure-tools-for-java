@@ -81,6 +81,8 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private HyperlinkLabel lblCreateWebApp;
     private JCheckBox chkOpenBrowser;
     private JLabel lblSlotHover;
+    private HyperlinkLabel lblNewSlot;
+    private JPanel pnlExistingSlot;
     private HideableDecorator slotDecorator;
 
     // presenter
@@ -217,26 +219,22 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         cbxSlotName.removeAllItems();
         cbxSlotConfigurationSource.removeAllItems();
 
-        final List<String> configurationSources = new ArrayList<String>();
-        final List<String> deploymentSlots = new ArrayList<String>();
-        configurationSources.add(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
-        configurationSources.add(selectedWebApp.getResource().name());
+        cbxSlotConfigurationSource.addItem(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
+        cbxSlotConfigurationSource.addItem(selectedWebApp.getResource().name());
         slotList.stream().filter(slot -> slot != null).forEach(slot -> {
-            deploymentSlots.add(slot.name());
-            configurationSources.add(slot.name());
-        });
-        deploymentSlots.forEach(s -> {
-            cbxSlotName.addItem(s);
-            if (Comparing.equal(s, webAppConfiguration.getSlotName())) {
-                cbxSlotName.setSelectedItem(s);
+            cbxSlotName.addItem(slot.name());
+            cbxSlotConfigurationSource.addItem(slot.name());
+            if (Comparing.equal(slot.name(), webAppConfiguration.getSlotName())) {
+                cbxSlotName.setSelectedItem(slot.name());
+            }
+            if (Comparing.equal(slot.name(), webAppConfiguration.getNewSlotConfigurationSource())) {
+                cbxSlotConfigurationSource.setSelectedItem(slot.name());
             }
         });
-        configurationSources.forEach(c -> {
-            cbxSlotConfigurationSource.addItem(c);
-            if (Comparing.equal(c, webAppConfiguration.getNewSlotConfigurationSource())) {
-                cbxSlotConfigurationSource.setSelectedItem(c);
-            }
-        });
+
+        boolean existDeploymentSlot = slotList.size() > 0;
+        lblNewSlot.setVisible(!existDeploymentSlot);
+        cbxSlotName.setVisible(existDeploymentSlot);
     }
 
     @NotNull
@@ -280,7 +278,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             rbtNewSlot.setSelected(useNewDeploymentSlot);
             rbtExistingSlot.setSelected(!useNewDeploymentSlot);
             toggleSlotType(!useNewDeploymentSlot);
-            presenter.onLoadDeploymentSlots(configuration.getSubscriptionId(), configuration.getWebAppId());
         } else {
             toggleSlotPanel(false);
             chkDeployToSlot.setSelected(false);
@@ -378,8 +375,8 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     }
 
     private void toggleSlotType(final boolean isExistingSlot) {
-        cbxSlotName.setVisible(isExistingSlot);
-        cbxSlotName.setEnabled(isExistingSlot);
+        pnlExistingSlot.setVisible(isExistingSlot);
+        pnlExistingSlot.setEnabled(isExistingSlot);
         txtNewSlotName.setVisible(!isExistingSlot);
         txtNewSlotName.setEnabled(!isExistingSlot);
         lblSlotConfiguration.setVisible(!isExistingSlot);
@@ -390,6 +387,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         // TODO: place custom component creation code here
         lblCreateWebApp = new HyperlinkLabel("No available webapp, click to create a new one");
         lblCreateWebApp.addHyperlinkListener(e -> createNewWebApp());
+
+        lblNewSlot = new HyperlinkLabel("No available deployment slot, click to create a new one");
+        lblNewSlot.addHyperlinkListener(e -> rbtNewSlot.doClick());
 
         lblSlotHover = new JLabel(AllIcons.General.Information);
         lblSlotHover.setToolTipText(DEPLOYMENT_SLOT_HOVER);

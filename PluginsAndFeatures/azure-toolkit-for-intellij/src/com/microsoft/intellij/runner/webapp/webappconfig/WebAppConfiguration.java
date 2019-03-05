@@ -40,6 +40,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.webapp.Constants;
+import org.apache.commons.lang.StringUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -156,6 +157,10 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
                 }
                 if (!webAppSettingModel.getNewSlotName().matches(SLOT_NAME_REGEX)) {
                     throw new ConfigurationException(INVALID_SLOT_NAME);
+                }
+            } else {
+                if (StringUtils.isEmpty(webAppSettingModel.getSlotName())) {
+                    throw new ConfigurationException(MISSING_SLOT_NAME);
                 }
             }
         }
