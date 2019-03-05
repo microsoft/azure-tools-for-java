@@ -31,6 +31,6 @@ class ArisSparkConfiguration(name: String, val module: ArisSparkConfigurationMod
     }
 
     override fun getSuggestedNamePrefix(): String {
-        return "[Spark on Aris]"
+        return "[Spark on SQL]"
     }
 }
