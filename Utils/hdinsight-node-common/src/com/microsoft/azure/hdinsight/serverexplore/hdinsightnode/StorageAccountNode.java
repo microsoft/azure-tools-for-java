@@ -110,8 +110,14 @@ public class StorageAccountNode extends RefreshableNode implements TelemetryProp
                 getBlobContainers(connectionString).forEach(blobContainer -> {
                     addChildNode(new BlobContainerNode(this, blobStorageAccount, blobContainer, !StringHelper.isNullOrWhiteSpace(defaultContainer) && defaultContainer.equals(blobContainer.getName())));
                 });
-            } else if (storageAccount.getAccountType() == StorageAccountTypeEnum.ADLS) {
-                // TODO adls support
+            } else {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Can't refresh the storage account since unsupported storage account type: " + storageAccount.getAccountType() + "\n");
+                sb.append("Account name: " + storageAccount.getName() + "\n");
+                sb.append("Subscription ID: " + storageAccount.getSubscriptionId() + "\n");
+                sb.append("Default storage schema: " + storageAccount.getDefaultStorageSchema() + "\n");
+                sb.append("Default container or root path: " + storageAccount.getDefaultContainerOrRootPath() + "\n");
+                log().warn(sb.toString());
             }
         } catch (Exception ex) {
             String exceptionMsg = ex.getCause() == null ? "" : ex.getCause().getMessage();
