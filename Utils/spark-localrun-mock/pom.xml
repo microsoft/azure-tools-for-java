@@ -21,7 +21,7 @@
         <testSourceDirectory>test</testSourceDirectory>
         <testResources>
             <testResource>
-                <directory>test/resources</directory>
+                <directory>Test/resources</directory>
             </testResource>
         </testResources>
         <defaultGoal>install</defaultGoal>
