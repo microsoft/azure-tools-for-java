@@ -193,7 +193,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         cbxWebApp.removeAllItems();
         webAppLists = webAppLists.stream()
             .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
-            .sorted((a, b) -> a.getSubscriptionId().compareToIgnoreCase(b.getSubscriptionId()))
+            .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
             .collect(Collectors.toList());
         if (webAppLists.size() == 0) {
             lblCreateWebApp.setVisible(true);
