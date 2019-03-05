@@ -484,7 +484,7 @@
     </group>
     <action class="com.microsoft.azuretools.ijidea.actions.GithubSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback..." />
     <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
-            text="Run on Web App" description="Run on Web App"
+            text="Deploy to Azure" description="Deploy to Azure"
             icon="/icons/PublishWebApp_16.png">
     </action>
     <action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.AddDockerSupportAction"
