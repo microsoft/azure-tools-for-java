@@ -22,7 +22,8 @@
 package com.microsoft.azure.hdinsight.spark.mock;
 
 
-import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import mockit.Invocation;
 import mockit.Mock;
 import mockit.MockUp;
@@ -35,10 +36,14 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
-public class SparkLocalRunner implements ILogger {
+public class SparkLocalRunner {
     private String master;
     private String jobClassName;
     private List<String> jobArguments;
+
+    private Logger log() {
+        return LoggerFactory.getLogger(this.getClass());
+    }
 
     public static void main(String[] args) {
         SparkLocalRunner localRunner = new SparkLocalRunner();

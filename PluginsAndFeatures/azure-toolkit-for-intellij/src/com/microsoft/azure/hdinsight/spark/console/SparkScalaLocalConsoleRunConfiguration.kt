@@ -39,13 +39,18 @@ import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.NewLibraryConfiguration
 import com.intellij.openapi.roots.ui.configuration.libraryEditor.NewLibraryEditor
+import com.intellij.openapi.ui.Messages
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.search.ProjectScope
+import com.intellij.util.PathUtil.getJarPathForClass
+import com.microsoft.azure.hdinsight.spark.mock.SparkLocalConsoleMockFsAgent
+import com.microsoft.azure.hdinsight.spark.mock.SparkLocalRunner
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchLocalRunState
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azuretools.ijidea.ui.ErrorWindow
 import com.microsoft.intellij.util.runInWriteAction
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfiguration
+import java.nio.file.Paths
 import javax.swing.Action
 
 class SparkScalaLocalConsoleRunConfiguration(
@@ -62,8 +67,17 @@ class SparkScalaLocalConsoleRunConfiguration(
     override fun mainClass(): String = "org.apache.spark.deploy.SparkSubmit"
 
     override fun createParams(): JavaParameters {
+        var isMockFs = false
+        if (Messages.YES == Messages.showYesNoDialog(
+                        project,
+                        "Do you want to use a mocked file system?",
+                        "Setting file system",
+                        Messages.getQuestionIcon())) {
+            isMockFs = true
+        }
+
         val localRunParams = SparkBatchLocalRunState(project, batchRunConfiguration.model.localRunConfigurableModel)
-                .createParams(hasJmockit = false, hasMainClass = false, hasClassPath = false)
+                .createParams(hasJmockit = isMockFs, hasMainClass = false, hasClassPath = false)
         val params = super.createParams()
         params.classPath.clear()
         val replLibraryCoord = findReplCoord() ?: throw ExecutionException("""
@@ -91,6 +105,10 @@ class SparkScalaLocalConsoleRunConfiguration(
 
         params.vmParametersList.addAll(localRunParams.vmParametersList.parameters)
 
+        if (isMockFs) {
+            params.vmParametersList.add("-javaagent:${getJarPathForClass(SparkLocalConsoleMockFsAgent::class.java)}")
+        }
+
         // FIXME!!! To support local mock filesystem
         // params.mainClass = localRunParams.mainClass
         //
@@ -98,6 +116,7 @@ class SparkScalaLocalConsoleRunConfiguration(
         //         .forEach { params.programParametersList.add(it) }
         // params.programParametersList.add(mainClass())
 
+        params.workingDirectory = Paths.get(batchRunConfiguration.model.localRunConfigurableModel.dataRootDirectory, "__default__", "user", "current").toString()
         params.programParametersList.add("--class", "org.apache.spark.repl.Main")
         params.programParametersList.add("--name", "Spark shell")
         params.programParametersList.add("spark-shell")

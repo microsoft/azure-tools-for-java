@@ -7,7 +7,8 @@
         <version>3.18.0</version>
     </parent>
     <groupId>com.microsoft.azuretools</groupId>
-    <artifactId>hdinsight-node-common</artifactId>
+    <artifactId>spark-localrun-mock</artifactId>
+    <version>0.1.0</version>
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
         <hdinsight.htmlcopy.enabled>false</hdinsight.htmlcopy.enabled>
@@ -15,69 +16,12 @@
         <scala.version>2.11.11</scala.version>
         <spark.version>2.1.0</spark.version>
     </properties>
-
-    <profiles>
-        <profile>
-            <!-- trigger when ${html.build.enabled} set to true-->
-            <id>html.ant.build</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>hdinsight.htmlcopy.enabled</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.3</version>
-                        <configuration>
-                            <source>1.8</source>
-                            <target>1.8</target>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.8</version>
-                        <executions>
-                            <execution>
-                                <phase>install</phase>
-                                <configuration>
-                                    <target>
-                                        <copy todir="${basedir}/target">
-                                            <fileset dir="${basedir}/resources">
-                                                <exclude name="/htmlResources/**"/>
-                                                <type type="file"/>
-                                            </fileset>
-                                        </copy>
-                                        <zip destfile="${project.basedir}/target/hdinsight_jobview_html.zip" basedir="${basedir}/resources/htmlResources" />
-                                        <copy file="${project.basedir}/target/hdinsight_jobview_html.zip" tofile="${basedir}/../../PluginsAndFeatures/azure-toolkit-for-eclipse/com.microsoft.azuretools.hdinsight/resources/hdinsight_jobview_html.zip" overwrite="true" />
-                                        <copy file="${project.basedir}/target/hdinsight_jobview_html.zip" tofile="${basedir}/../../PluginsAndFeatures/azure-toolkit-for-intellij/resources/hdinsight_jobview_html.zip" overwrite="true" />
-                                    </target>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
     <build>
-        <sourceDirectory>src</sourceDirectory>
-        <testSourceDirectory>Test/java</testSourceDirectory>
-        <resources>
-            <resource>
-                <directory>resources</directory>
-            </resource>
-        </resources>
+        <sourceDirectory>src/main</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
         <testResources>
             <testResource>
-                <directory>Test/resources</directory>
+                <directory>test/resources</directory>
             </testResource>
         </testResources>
         <defaultGoal>install</defaultGoal>
@@ -115,6 +59,16 @@
                         <goals>
                             <goal>test-compile</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>clone-winutils</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>script</goal>
+                        </goals>
+                        <configuration>
+                            <scriptFile>./build-tools/cloneWinutils.kts</scriptFile>
+                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
@@ -164,6 +118,18 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Premain-Class>com.microsoft.azure.hdinsight.spark.mock.SparkLocalConsoleMockFsAgent</Premain-Class>
+                        </manifestEntries>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>
@@ -277,7 +243,7 @@
         <dependency>
             <groupId>net.sourceforge.htmlunit</groupId>
             <artifactId>htmlunit</artifactId>
-         </dependency>
+        </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
@@ -374,11 +340,6 @@
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azuretools</groupId>
-            <artifactId>spark-localrun-mock</artifactId>
-            <version>0.1.0</version>
         </dependency>
     </dependencies>
 </project>
