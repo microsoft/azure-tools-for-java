@@ -330,11 +330,11 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                     Node node = ((TreeNode) selection.getFirstElement()).node;
                     if (node.hasNodeActions()) {
                         for (final NodeAction nodeAction : node.getNodeActions()) {
-                        	// Dirty fix, should not show "refresh" in webapp node, since we do not support deploy slot
+                            // Dirty fix, should not show "refresh" in webapp node, since we do not support deploy slot
                             // Temp solution, after we support deploy slot, should remove this line.
-                        	if (nodeAction.getName().equals("Refresh")) {
-                        		continue;
-                        	}
+                            if (nodeAction.getName().equals("Refresh")) {
+                                continue;
+                            }
                             ImageDescriptor imageDescriptor = nodeAction.getIconPath() != null ? Activator.getImageDescriptor("icons/" + nodeAction.getIconPath()) : null;
                             Action action = new Action(nodeAction.getName(), imageDescriptor) {
                                 @Override
