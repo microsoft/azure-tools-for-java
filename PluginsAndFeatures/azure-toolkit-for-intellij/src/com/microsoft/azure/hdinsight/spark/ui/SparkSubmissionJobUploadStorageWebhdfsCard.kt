@@ -34,9 +34,9 @@ import javax.swing.JTextField
 
 class SparkSubmissionJobUploadStorageWebHdfsCard: SparkSubmissionJobUploadStorageBasicCard() {
     override val title: String =  SparkSubmitStorageType.WEBHDFS.description
-    private val webHdfsRootPathTip = "e.g. http://hdfsnamenode:port/webhdfs/v1/"
+    private val webHdfsRootPathTip = "http|https://hdfsnamenode:port/webhdfs/v1/<cluster root directory>"
     private val webHdfsRootPathLabel = JLabel("WEBHDFS Root Path").apply { toolTipText = webHdfsRootPathTip }
-    val webHdfsRootPathField = JTextField().apply { toolTipText = webHdfsRootPathTip }
+    val webHdfsRootPathField = JTextField().apply { text = webHdfsRootPathTip }
 
     private val authMethodLabel = JLabel("Authentication Method")
     private val authMethodComboBox = ComboBox<String>(arrayOf("Basic Authorization"))
