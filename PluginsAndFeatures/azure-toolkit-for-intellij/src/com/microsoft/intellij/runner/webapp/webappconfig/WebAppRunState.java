@@ -152,7 +152,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     @Override
     protected void onSuccess(WebAppBase result, @NotNull RunProcessHandler processHandler) {
         if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
-            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,null));
+            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
         }
         updateConfigurationDataModel(result);
         AzureWebAppMvpModel.getInstance().listAllWebApps(true /*force*/);
