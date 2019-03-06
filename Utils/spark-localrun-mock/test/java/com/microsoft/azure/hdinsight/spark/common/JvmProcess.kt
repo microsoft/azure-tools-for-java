@@ -31,7 +31,7 @@ open class JvmProcess {
 
     private var classpath: String = System.getProperty("java.class.path")
 
-    private var jvm: String = File(System.getProperty("java.home"), "bin/java").path
+    private var jvm: String = File(System.getProperty("java.home")).resolve( "bin").resolve("java").path
 
     val additionalEnv = HashMap<String, String>()
 
