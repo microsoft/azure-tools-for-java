@@ -23,22 +23,31 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.ComboboxWithBrowseButton
 import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azuretools.ijidea.ui.HintTextField
+import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.intellij.forms.dsl.panel
 import java.awt.CardLayout
 import javax.swing.JLabel
 import javax.swing.JPanel
 
 class SparkSubmissionJobUploadStorageAdlsCard: SparkSubmissionJobUploadStorageBasicCard() {
+    private val refreshButtonIconPath = "/icons/refresh.png"
     override val title: String = SparkSubmitStorageType.ADLS_GEN1.description
     private val adlsRootPathTip = "e.g. adl://myaccount.azuredatalakestore.net/root/path"
     private val adlsRootPathLabel = JLabel("ADLS Root Path").apply { toolTipText = adlsRootPathTip }
     val adlsRootPathField = HintTextField(adlsRootPathTip)
     private val authMethodLabel = JLabel("Authentication Method")
     private val authMethodComboBox = ComboBox<String>(arrayOf("Azure Account"))
+    private val subscriptionsLabel = JLabel("Subscription List")
+    val subscriptionsComboBox  = ComboboxWithBrowseButton().apply {
+        button.toolTipText = "Refresh"
+        button.icon = StreamUtil.getImageResourceFile(refreshButtonIconPath)
+    }
+
     val signInCard = SparkSubmissionJobUploadStorageAdlsSignInCard()
     val signOutCard = SparkSubmissionJobUploadStorageAdlsSignOutCard()
     val azureAccountCards = JPanel(CardLayout()).apply {
@@ -66,6 +75,9 @@ class SparkSubmissionJobUploadStorageAdlsCard: SparkSubmissionJobUploadStorageBa
             }
             row {
                 c(); c(azureAccountCards)
+            }
+            row {
+                c(subscriptionsLabel); c(subscriptionsComboBox)
             }
         }
         layout = formBuilder.createGridLayoutManager()
