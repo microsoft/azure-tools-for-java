@@ -1,28 +1,19 @@
 package com.microsoft.azuretools.webapp.ui;
 
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.JavaVersion;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PublishingProfile;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
-import com.microsoft.azuretools.core.ui.ErrorWindow;
-import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
-import com.microsoft.azuretools.core.utils.MavenUtils;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.core.utils.ProgressDialog;
-import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.azuretools.utils.AzureModel;
-import com.microsoft.azuretools.utils.AzureModelController;
-import com.microsoft.azuretools.utils.CanceledByUserException;
-import com.microsoft.azuretools.utils.WebAppUtils;
-import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+
+import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azuretools.webapp.Activator;
 
+import com.microsoft.azuretools.utils.*;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.ILog;
@@ -32,7 +23,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jst.j2ee.datamodel.properties.IJ2EEComponentExportDataModelProperties;
 import org.eclipse.jst.j2ee.internal.web.archive.operations.WebComponentExportDataModelProvider;
@@ -53,11 +43,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -66,13 +54,19 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.core.ui.ErrorWindow;
+import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
+import com.microsoft.azuretools.core.utils.MavenUtils;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.core.utils.ProgressDialog;
+import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
+
 
 @SuppressWarnings("restriction")
 public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
@@ -91,6 +85,10 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
     final String ftpLinkString = "ShowFtpCredentials";
 
     private static final String WEB_CONFIG_DEFAULT = "web.config";
+    private static final String WEB_CONFIG_PACKAGE_PATH = "/webapp/web.config";
+    private static final String WEB_CONFIG_REMOTE_PATH = "/site/wwwroot/web.config";
+    private static final String TYPE_JAR = "jar";
+
     private static final String WEB_CONFIG_LINK_FORMAT = "<a href=\"https://%s/dev/wwwroot/web.config\">web.config</a>";
 
     private Map<String, WebAppDetails> webAppDetailsMap = new HashMap<>();
@@ -204,6 +202,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                 if (lnkWebConfig != null) {
                     lnkWebConfig.setText(WEB_CONFIG_DEFAULT);
                 }
+                AppServiceCreateDialog.initAspCache();
             }
         });
         btnRefresh.setText("Refresh");
@@ -292,24 +291,16 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             e.printStackTrace();
         }
 
-        table.addListener(SWT.Selection, new Listener() {
-            @Override
-            public void handleEvent(Event e) {
-                fillAppServiceDetails();
-            }
-        });
-
+        table.addListener(SWT.Selection, (e) -> fillAppServiceDetails());
         return area;
     }
 
     @Override
     public void create() {
         super.create();
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                fillTable();
-            }
+        Display.getDefault().asyncExec(() -> {
+            fillTable();
+            AppServiceCreateDialog.initAspCache();
         });
     }
 
@@ -388,92 +379,102 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
     private void updateAndFillTable() {
         try {
             ProgressDialog.get(getShell(), "Update Azure Local Cache Progress").run(true, true,
-                    new IRunnableWithProgress() {
-                        @Override
-                        public void run(IProgressMonitor monitor)
-                                throws InvocationTargetException, InterruptedException {
-                            monitor.beginTask("Updating Azure local cache...", IProgressMonitor.UNKNOWN);
-                            try {
-                                if (monitor.isCanceled()) {
-                                    throw new CanceledByUserException();
-                                }
-
-                                AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));
-
-                                Display.getDefault().asyncExec(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        doFillTable();
-                                    }
-                                });
-                            } catch (CanceledByUserException ex) {
-                                Display.getDefault().asyncExec(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        System.out.println("updateAndFillTable(): Canceled by user");
-                                        cancelPressed();
-                                    }
-                                });
-
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                                LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                                        "run@ProgressDialog@updateAndFillTable@AppServiceCreateDialog", ex));
+                    (monitor) -> {
+                        monitor.beginTask("Updating Azure local cache...", IProgressMonitor.UNKNOWN);
+                        try {
+                            if (monitor.isCanceled()) {
+                                throw new CanceledByUserException();
                             }
-                            monitor.done();
+                            AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));
+                            Display.getDefault().asyncExec(() -> doFillTable());
+                        } catch (CanceledByUserException ex) {
+                            Display.getDefault().asyncExec(() -> {
+                                System.out.println("updateAndFillTable(): Canceled by user");
+                                cancelPressed();
+                            });
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                                    "run@ProgressDialog@updateAndFillTable@AppServiceCreateDialog", ex));
                         }
+                        monitor.done();
                     });
-        } catch (InvocationTargetException | InterruptedException ex) {
-            ex.printStackTrace();
+        } catch (Exception ex) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "updateAndFillTable@AppServiceCreateDialog", ex));
         }
     }
 
     private void doFillTable() {
-        Map<SubscriptionDetail, List<ResourceGroup>> srgMap = AzureModel.getInstance()
-                .getSubscriptionToResourceGroupMap();
-        Map<ResourceGroup, List<WebApp>> rgwaMap = AzureModel.getInstance().getResourceGroupToWebAppMap();
-        Map<ResourceGroup, List<AppServicePlan>> rgaspMap = AzureModel.getInstance()
-                .getResourceGroupToAppServicePlanMap();
+        try {
+            Map<SubscriptionDetail, List<ResourceGroup>> srgMap = AzureModel.getInstance()
+                    .getSubscriptionToResourceGroupMap();
+            Map<ResourceGroup, List<WebApp>> rgwaMap = AzureModel.getInstance().getResourceGroupToWebAppMap();
+            Map<ResourceGroup, List<AppServicePlan>> rgaspMap = AzureModel.getInstance()
+                    .getResourceGroupToAppServicePlanMap();
 
-        webAppDetailsMap.clear();
-        table.removeAll();
+            webAppDetailsMap.clear();
+            table.removeAll();
 
-        for (SubscriptionDetail sd : srgMap.keySet()) {
-            if (!sd.isSelected() || srgMap.get(sd) == null) {
-                continue;
-            }
-
-            Map<String, WebAppUtils.AspDetails> aspMap = new HashMap<>();
-            for (ResourceGroup rg : srgMap.get(sd)) {
-                if (rgaspMap.get(rg) != null) {
-                    for (AppServicePlan asp : rgaspMap.get(rg)) {
-                        aspMap.put(asp.id(), new WebAppUtils.AspDetails(asp, rg));
-                    }
+            List<WebAppDetails> webAppDetailsList = new ArrayList<>();
+            for (SubscriptionDetail sd : srgMap.keySet()) {
+                if (!sd.isSelected() || srgMap.get(sd) == null) {
+                    continue;
                 }
-            }
-
-            for (ResourceGroup rg : srgMap.get(sd)) {
-                if (rgwaMap.get(rg) != null) {
-                    for (WebApp wa : rgwaMap.get(rg)) {
-                        if (wa.operatingSystem().equals(OperatingSystem.WINDOWS) && wa.javaVersion() != JavaVersion.OFF
-                                && aspMap.get(wa.appServicePlanId()) != null) {
-                            TableItem item = new TableItem(table, SWT.NULL);
-                            item.setText(new String[] { wa.name(), wa.javaVersion().toString(),
-                                    wa.javaContainer() + " " + wa.javaContainerVersion(), wa.resourceGroupName() });
-
+                for (ResourceGroup rg : srgMap.get(sd)) {
+                    for (WebApp webApp : rgwaMap.get(rg)) {
+                        if (WebAppUtils.isJavaWebApp(webApp)) {
                             WebAppDetails webAppDetails = new WebAppDetails();
-                            webAppDetails.webApp = wa;
+                            webAppDetails.webApp = webApp;
                             webAppDetails.subscriptionDetail = sd;
                             webAppDetails.resourceGroup = rg;
-                            webAppDetails.appServicePlan = aspMap.get(wa.appServicePlanId()).getAsp();
-                            webAppDetails.appServicePlanResourceGroup = aspMap.get(wa.appServicePlanId()).getRg();
-                            webAppDetailsMap.put(wa.name(), webAppDetails);
+                            webAppDetails.appServicePlan = findAppSevicePlanByID(webApp.appServicePlanId(), rgaspMap);
+                            webAppDetails.appServicePlanResourceGroup = findResouceGroupByName(
+                                    webApp.resourceGroupName(), srgMap.get(sd));
+                            webAppDetailsList.add(webAppDetails);
                         }
                     }
                 }
             }
+            Collections.sort(webAppDetailsList, (o1, o2) -> o1.webApp.name().compareTo(o2.webApp.name()));
+            for (WebAppDetails webAppDetails : webAppDetailsList) {
+                TableItem item = new TableItem(table, SWT.NULL);
+                WebApp webApp = webAppDetails.webApp;
+                item.setText(new String[]{webApp.name(),
+                        webApp.javaVersion() != JavaVersion.OFF ? webApp.javaVersion().toString()
+                                : WebAppUtils.getJavaRuntime(webApp),
+                        WebAppUtils.getJavaRuntime(webApp), webApp.resourceGroupName()});
+                webAppDetailsMap.put(webApp.name(), webAppDetails);
+            }
+
+        } catch (Exception e) {
+            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "updateAndFillTable@AppServiceCreateDialog", e));
         }
+    }
+
+    private AppServicePlan findAppSevicePlanByID(String id, Map<ResourceGroup, List<AppServicePlan>> rgaspMap) {
+        if (rgaspMap == null) {
+            return null;
+        }
+        for (List<AppServicePlan> appServicePlans : rgaspMap.values()) {
+            for (AppServicePlan appServicePlan :appServicePlans) {
+                if (appServicePlan.id().equals(id)) {
+                    return appServicePlan;
+                }
+            }
+        }
+        return null;
+    }
+
+    private ResourceGroup findResouceGroupByName(String rgName, List<ResourceGroup> rgs) {
+        if (rgs == null) {
+            return null;
+        }
+        for (ResourceGroup rg :rgs) {
+            if (rg.name().equals(rgName)) {
+                return rg;
+            }
+        }
+        return null;
     }
 
     private void createAppService(IProject project) {
@@ -498,7 +499,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         }
         String appServiceName = table.getItems()[selectedRow].getText(0);
         WebAppDetails wad = webAppDetailsMap.get(appServiceName);
-        if (wad != null && wad.webApp != null && wad.webApp.javaVersion() == JavaVersion.OFF) {
+        if (wad != null && wad.webApp != null && !WebAppUtils.isJavaWebApp(wad.webApp)) {
             setErrorMessage("Select java based App Service");
             okButton.setEnabled(false);
             return false;
@@ -578,11 +579,11 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                 String cancelMessage = "Interrupted by user";
                 String successMessage = "";
                 String errorMessage = "Error";
-                Map<String, String> postEventProperties = new HashMap<String, String>();
+                Map<String, String> postEventProperties = new HashMap<>();
                 postEventProperties.put("Java App Name", project.getName());
                 try {
                     boolean isJar = MavenUtils.isMavenProject(project) && MavenUtils.getPackaging(project).equals(WebAppUtils.TYPE_JAR);
-                    postEventProperties.put("FileType", isJar?"jar":"war");
+                    postEventProperties.put("FileType", isJar ? "jar" : "war");
                 } catch (Exception e) {}
 
                 monitor.beginTask(message, IProgressMonitor.UNKNOWN);
@@ -594,10 +595,26 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     message = "Deploying Web App...";
                     monitor.setTaskName(message);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 35, message);
-                    webApp.stop();
                     PublishingProfile pp = webApp.getPublishingProfile();
-                    int uploadingTryCount = WebAppUtils.deployArtifact(artifactName, artifactPath, pp, isDeployToRoot,
-                            new UpdateProgressIndicator(monitor));
+                    boolean isJar = isJarBaseOnFileName(artifactPath);
+                    int uploadingTryCount;
+                    webApp.stop();
+                    if (isJar) {
+                        if (webApp.operatingSystem() == OperatingSystem.WINDOWS) {
+                            // We use root.jar in web.config before, now we use app.jar
+                            // for backward compatibility, here need upload web.config when we deploy the code.
+                            try (InputStream webConfigInput = WebAppUtils.class
+                                    .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
+                                WebAppUtils.uploadToRemoteServer(webApp, WEB_CONFIG_DEFAULT, webConfigInput,
+                                        new UpdateProgressIndicator(monitor), WEB_CONFIG_REMOTE_PATH);
+                            } catch (Exception ignore){}
+                        }
+                        uploadingTryCount = WebAppUtils.deployArtifactForJavaSE(artifactPath, pp,
+                                new UpdateProgressIndicator(monitor));
+                    } else {
+                        uploadingTryCount = WebAppUtils.deployArtifact(artifactName, artifactPath, pp, isDeployToRoot,
+                                new UpdateProgressIndicator(monitor));
+                    }
                     postEventProperties.put("uploadingTryCount", String.valueOf(uploadingTryCount));
                     webApp.start();
 
@@ -614,35 +631,33 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     // to make warn up cancelable
                     int stepLimit = 5;
                     int sleepMs = 1000;
-                    Thread thread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                for (int step = 0; step < stepLimit; ++step) {
-                                    if (WebAppUtils.isUrlAccessible(sitePath)) { // warm up
-                                        break;
-                                    }
-                                    Thread.sleep(sleepMs);
+                    CountDownLatch countDownLatch = new CountDownLatch(1);
+                    new Thread(() -> {
+                        try {
+                            for (int step = 0; step < stepLimit; ++step) {
+                                if (monitor.isCanceled() || WebAppUtils.isUrlAccessible(sitePath)) { // warm up
+                                    break;
                                 }
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                                LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                                        "run@Thread@run@ProgressDialog@deploy@AppServiceCreateDialog@SingInDialog",
-                                        ex));
-                            } catch (InterruptedException ex) {
-                                System.out.println("The thread is interupted");
+                                Thread.sleep(sleepMs);
                             }
+                        } catch (Exception ex) {
+                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                                    "run@Thread@run@ProgressDialog@deploy@AppServiceCreateDialog@SingInDialog",
+                                    ex));
+                        } finally {
+                            countDownLatch.countDown();
                         }
-                    });
-                    thread.start();
-                    while (thread.isAlive()) {
-                        if (monitor.isCanceled()) {
-                            // it's published but not warmed up yet - consider as success
-                            AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 100,
-                                    successMessage);
-                            return Status.CANCEL_STATUS;
-                        } else
-                            Thread.sleep(sleepMs);
+                    }).start();
+
+                    try {
+                        countDownLatch.await();
+                    } catch (Exception ignore) {}
+
+                    if (monitor.isCanceled()) {
+                        // it's published but not warmed up yet - consider as success
+                        AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 100,
+                                successMessage);
+                        return Status.CANCEL_STATUS;
                     }
 
                     monitor.done();
@@ -650,23 +665,25 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                             successMessage);
                 } catch (Exception ex) {
                     postEventProperties.put("PublishError", ex.getMessage());
-                    ex.printStackTrace();
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
                             "run@ProgressDialog@deploy@AppServiceCreateDialog", ex));
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1, errorMessage);
                     webApp.start();
-                    Display.getDefault().asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            ErrorWindow.go(parentShell, ex.getMessage(), errTitle);
-                        }
-                    });
+                    Display.getDefault().asyncExec(() -> ErrorWindow.go(parentShell, ex.getMessage(), errTitle));
                 }
                 AppInsightsClient.create("Deploy as WebApp", "", postEventProperties);
                 return Status.OK_STATUS;
             }
         };
         job.schedule();
+    }
+
+    private boolean isJarBaseOnFileName(String filePath) {
+        int index = filePath.lastIndexOf(".");
+        if (index < 0) {
+            return false;
+        }
+        return filePath.substring(index + 1).equals(TYPE_JAR);
     }
 
     private void deleteAppService() {
@@ -686,33 +703,18 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         String errTitle = "Delete App Service Error";
         try {
             ProgressDialog.get(this.getShell(), "Delete App Service Progress").run(true, true,
-                    new IRunnableWithProgress() {
-                        @Override
-                        public void run(IProgressMonitor monitor) {
-                            monitor.beginTask("Deleting App Service...", IProgressMonitor.UNKNOWN);
-
-                            try {
-                                WebAppUtils.deleteAppService(wad);
-                                Display.getDefault().asyncExec(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        table.remove(selectedRow);
-                                        fillAppServiceDetails();
-                                    };
-                                });
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                                LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                                        "run@ProgressDialog@deleteAppService@AppServiceCreateDialog", ex));
-                                Display.getDefault().asyncExec(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        ErrorWindow.go(getShell(), ex.getMessage(), errTitle);
-                                        ;
-                                    }
-                                });
-
-                            }
+                    (monitor) -> {
+                        monitor.beginTask("Deleting App Service...", IProgressMonitor.UNKNOWN);
+                        try {
+                            WebAppUtils.deleteAppService(wad);
+                            Display.getDefault().asyncExec(() -> {
+                                table.remove(selectedRow);
+                                fillAppServiceDetails();
+                            });
+                        } catch (Exception ex) {
+                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                                    "run@ProgressDialog@deleteAppService@AppServiceCreateDialog", ex));
+                            Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
                         }
                     });
         } catch (Exception ex) {

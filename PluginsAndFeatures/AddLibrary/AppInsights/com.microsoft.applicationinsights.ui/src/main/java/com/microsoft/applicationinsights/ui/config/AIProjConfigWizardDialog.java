@@ -359,6 +359,7 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
             try {
                 handler.disableAIFilterConfiguration(true);
                 handler.removeAIFilterDef();
+                handler.removeAIServletContextListener();
                 handler.save();
             } catch (Exception e) {
                 MessageDialog.openError(getShell(), Messages.aiErrTitle,
@@ -396,6 +397,7 @@ public class AIProjConfigWizardDialog extends AzureTitleAreaDialogWrapper {
         if (proj.getFile(webxmlPath).exists()) {
             handler.parseWebXmlPath(proj.getFile(webxmlPath).getLocation().toOSString());
             handler.setAIFilterConfig();
+            handler.setAIServletContextListener();
         } else { // create web.xml
             boolean choice = MessageDialog.openQuestion(this.getShell(), Messages.depDescTtl, Messages.depDescMsg);
             if (choice) {

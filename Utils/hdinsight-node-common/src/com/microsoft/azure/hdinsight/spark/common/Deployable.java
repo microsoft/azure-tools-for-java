@@ -23,16 +23,31 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import rx.Observable;
+
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public interface Deployable {
     /**
      * Deploy the job artifact into cluster
      *
-     * @param artifactPath the artifact to deploy
+     * @param src the artifact to deploy
      * @return Observable: upload path
      *         Observable Error: IOException;
      */
     @NotNull
-    Observable<String> deploy(@NotNull String artifactPath);
+    Observable<String> deploy(@NotNull File src, @NotNull URI dest);
+
+    @Nullable
+    default URI getUploadDir(String rootPath){
+        return null;
+    }
+
+    @Nullable
+    default String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
+        return null;
+    }
 }

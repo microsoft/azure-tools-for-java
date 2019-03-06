@@ -26,6 +26,9 @@ import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import rx.Observable;
 
+import java.io.File;
+import java.net.URI;
+
 public class AdlsDeploy implements Deployable {
     @NotNull
     private String adlsRootPath;
@@ -39,7 +42,7 @@ public class AdlsDeploy implements Deployable {
     }
 
     @NotNull
-    public Observable<String> deploy(@NotNull String artifactPath) {
-        return JobUtils.deployArtifactToADLS(artifactPath, adlsRootPath, accessToken);
+    public Observable<String> deploy(@NotNull File src, @NotNull URI dest)  {
+        return JobUtils.deployArtifactToADLS(src.getAbsolutePath(), adlsRootPath, accessToken);
     }
 }

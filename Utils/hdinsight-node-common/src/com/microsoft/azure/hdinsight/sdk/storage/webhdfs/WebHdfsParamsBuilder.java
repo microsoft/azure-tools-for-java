@@ -40,6 +40,11 @@ public class WebHdfsParamsBuilder {
         return this;
     }
 
+    public WebHdfsParamsBuilder setPermission(@NotNull String value) {
+        params.add(new BasicNameValuePair("permission", value));
+        return this;
+    }
+
     public List<NameValuePair> build() {
         return params;
     }

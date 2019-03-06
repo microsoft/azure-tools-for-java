@@ -22,11 +22,6 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
-import java.io.IOException;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
@@ -36,16 +31,22 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Comparing;
+import com.intellij.openapi.util.InvalidDataException;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.webapp.Constants;
+import org.jdom.Element;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSettingModel> {
+import java.io.IOException;
+
+public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAppSettingModel> {
 
     // const string
     private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
@@ -60,21 +61,35 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
     private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
     private static final String MISSING_ARTIFACT = "A web archive (.war|.jar) artifact has not been configured.";
     private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
-            + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
-            + "the digits '0' through '9', '.', '-' and '_'.";
+        + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
+        + "the digits '0' through '9', '.', '-' and '_'.";
 
     private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
     private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
-    private static final String INVALID_SLOT_NAME = "The slot name is invalid, it needs to match the pattern " + SLOT_NAME_REGEX;
-    private final WebAppSettingModel webAppSettingModel;
+    private static final String INVALID_SLOT_NAME =
+        "The slot name is invalid, it needs to match the pattern " + SLOT_NAME_REGEX;
+    private final IntelliJWebAppSettingModel webAppSettingModel;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
-        webAppSettingModel = new WebAppSettingModel();
+        webAppSettingModel = new IntelliJWebAppSettingModel();
     }
 
     @Override
-    public WebAppSettingModel getModel() {
+    public void readExternal(Element element) throws InvalidDataException {
+        super.readExternal(element);
+        if (!existVersionConfiguration(element) && !isFirstTimeCreated()) {
+            this.setUiVersion(IntelliJWebAppSettingModel.UIVersion.OLD);
+        }
+    }
+
+    private boolean existVersionConfiguration(Element configuration) {
+        return configuration.getChildren().stream()
+            .filter(element -> Comparing.equal(element.getAttributeValue("name"), "uiVersion")).count() > 0;
+    }
+
+    @Override
+    public IntelliJWebAppSettingModel getModel() {
         return this.webAppSettingModel;
     }
 
@@ -87,8 +102,8 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
     @Nullable
     @Override
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment)
-            throws ExecutionException {
-        return new WebAppRunState(getProject(), this.webAppSettingModel);
+        throws ExecutionException {
+        return new WebAppRunState(getProject(), this);
     }
 
     @Override
@@ -127,6 +142,9 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
                 if (Utils.isEmptyString(webAppSettingModel.getAppServicePlanId())) {
                     throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
                 }
+            }
+            if (getUiVersion().equals(IntelliJWebAppSettingModel.UIVersion.NEW)) {
+                return;
             }
         } else {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppId())) {
@@ -205,6 +223,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
     public void setNewSlotConfigurationSource(final String newSlotConfigurationSource) {
         webAppSettingModel.setNewSlotConfigurationSource(newSlotConfigurationSource);
     }
+
     public boolean isCreatingNew() {
         return webAppSettingModel.isCreatingNew();
     }
@@ -329,5 +348,29 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<WebAppSetting
     @Override
     public String getTargetName() {
         return webAppSettingModel.getTargetName();
+    }
+
+    public IntelliJWebAppSettingModel.UIVersion getUiVersion() {
+        return webAppSettingModel.getUiVersion();
+    }
+
+    public void setUiVersion(IntelliJWebAppSettingModel.UIVersion uiVersion) {
+        webAppSettingModel.setUiVersion(uiVersion);
+    }
+
+    public boolean isOpenBrowserAfterDeployment() {
+        return webAppSettingModel.isOpenBrowserAfterDeployment();
+    }
+
+    public void setOpenBrowserAfterDeployment(boolean openBrowserAfterDeployment) {
+        webAppSettingModel.setOpenBrowserAfterDeployment(openBrowserAfterDeployment);
+    }
+
+    public boolean isSlotPanelVisible() {
+        return webAppSettingModel.isSlotPanelVisible();
+    }
+
+    public void setSlotPanelVisible(boolean slotPanelVisible) {
+        webAppSettingModel.setSlotPanelVisible(slotPanelVisible);
     }
 }

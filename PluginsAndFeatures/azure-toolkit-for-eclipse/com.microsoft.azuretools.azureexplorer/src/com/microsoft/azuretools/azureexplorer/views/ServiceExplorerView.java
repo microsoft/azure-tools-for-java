@@ -19,12 +19,22 @@
  */
 package com.microsoft.azuretools.azureexplorer.views;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
+import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.azureexplorer.AzureModuleImpl;
+import com.microsoft.azuretools.core.handlers.SelectSubsriptionsCommandHandler;
+import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
+import com.microsoft.azuretools.core.handlers.SignOutCommandHandler;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.helpers.collections.ListChangeListener;
+import com.microsoft.tooling.msservices.helpers.collections.ListChangedEvent;
+import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -55,21 +65,11 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
-import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azureexplorer.Activator;
-import com.microsoft.azuretools.azureexplorer.AzureModuleImpl;
-import com.microsoft.azuretools.core.handlers.SelectSubsriptionsCommandHandler;
-import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
-import com.microsoft.azuretools.core.handlers.SignOutCommandHandler;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.collections.ListChangeListener;
-import com.microsoft.tooling.msservices.helpers.collections.ListChangedEvent;
-import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class ServiceExplorerView extends ViewPart implements PropertyChangeListener {
 
@@ -240,8 +240,12 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             switch (e.getAction()) {
             case add:
                 // create child tree nodes for the new nodes
-                for(Node childNode : (Collection<Node>)e.getNewItems()) {
-                    treeNode.add(createTreeNode(childNode));
+                for (Node childNode : (Collection<Node>) e.getNewItems()) {
+                    // Dirty fix for issue https://github.com/Microsoft/azure-tools-for-java/issues/2791
+                    // Since we do not support slot, here should not let user see slot in the azure explorer
+                    if (childNode.getName() == null || !childNode.getName().equals("Deployment Slots")) {
+                        treeNode.add(createTreeNode(childNode));
+                    }
                 }
                 break;
             case remove:
@@ -326,6 +330,12 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                     Node node = ((TreeNode) selection.getFirstElement()).node;
                     if (node.hasNodeActions()) {
                         for (final NodeAction nodeAction : node.getNodeActions()) {
+                            // Dirty fix, should not show "refresh" in webapp node, since we do not support deploy slot
+                            // Temp solution, after we support deploy slot, should remove this line.
+                            if (node.getClass().getName().equals(WebAppNode.class.getName())
+                                    && nodeAction.getName().equals("Refresh")) {
+                                continue;
+                            }
                             ImageDescriptor imageDescriptor = nodeAction.getIconPath() != null ? Activator.getImageDescriptor("icons/" + nodeAction.getIconPath()) : null;
                             Action action = new Action(nodeAction.getName(), imageDescriptor) {
                                 @Override

@@ -703,8 +703,8 @@ public class ContainerRegistryExplorerEditor extends EditorPart implements Conta
         progressBar.setVisible(true);
     }
 
-    private void fillList(@NotNull List<String> list, @NotNull org.eclipse.swt.widgets.List widget) {
-        if (list.size() > 0) {
+    private void fillList(List<String> list, @NotNull org.eclipse.swt.widgets.List widget) {
+        if (list != null && list.size() > 0) {
             Collections.sort(list);
             for (String item : list) {
                 widget.add(item);

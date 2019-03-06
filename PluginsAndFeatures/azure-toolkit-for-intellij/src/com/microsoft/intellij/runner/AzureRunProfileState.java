@@ -62,8 +62,8 @@ public abstract class AzureRunProfileState <T> implements RunProfileState {
                 return this.executeSteps(processHandler, telemetryMap);
             }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
             (res) -> {
-                this.onSuccess(res, processHandler);
                 this.sendTelemetry(telemetryMap, true, null);
+                this.onSuccess(res, processHandler);
             },
             (err) -> {
                 err.printStackTrace();

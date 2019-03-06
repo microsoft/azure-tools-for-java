@@ -1,0 +1,62 @@
+package com.microsoft.intellij.runner.webapp.webappconfig.slimui;
+
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.lang3.StringUtils;
+import rx.Observable;
+
+import java.util.List;
+
+public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> extends MvpPresenter<V> {
+
+    private static final String CANNOT_LIST_WEB_APP = "Failed to list web apps.";
+    private static final String CANNOT_GET_DEPLOYMENT_SLOTS = "Failed to get the deployment slots.";
+
+    public void onLoadDeploymentSlots(final String subscriptionId, final String webAppId) {
+        if (StringUtils.isEmpty(subscriptionId) || StringUtils.isEmpty(webAppId)) {
+            return;
+        }
+        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().getDeploymentSlots(subscriptionId, webAppId))
+            .subscribeOn(getSchedulerProvider().io())
+            .subscribe(slots -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
+                getMvpView().fillDeploymentSlots(slots);
+            }), e -> errorHandler(CANNOT_GET_DEPLOYMENT_SLOTS, (Exception) e));
+    }
+
+    public void onLoadDeploymentSlots(final ResourceEx<WebApp> selectedWebApp) {
+        if (selectedWebApp == null) {
+            return;
+        }
+        onLoadDeploymentSlots(selectedWebApp.getSubscriptionId(), selectedWebApp.getResource().id());
+    }
+
+    public void loadWebApps(boolean forceRefresh) {
+        Observable.fromCallable(() -> {
+                List<ResourceEx<WebApp>> result = AzureWebAppMvpModel.getInstance().listAllWebApps(forceRefresh);
+                return result;
+            }
+        )
+            .subscribeOn(getSchedulerProvider().io())
+            .subscribe(webAppList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
+                getMvpView().fillWebApps(webAppList);
+            }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
+    }
+
+    private void errorHandler(String msg, Exception e) {
+        DefaultLoader.getIdeHelper().invokeLater(() -> {
+            if (isViewDetached()) {
+                return;
+            }
+            getMvpView().onErrorWithException(msg, e);
+        });
+    }
+}

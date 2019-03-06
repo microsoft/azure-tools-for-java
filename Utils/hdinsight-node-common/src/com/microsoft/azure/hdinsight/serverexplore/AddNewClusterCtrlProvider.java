@@ -59,7 +59,7 @@ public class AddNewClusterCtrlProvider {
             "The cluster certificate is invalid.";
     private static final String InvalidCertificateInfoMsg =
             "If you want to bypass certificate verification for SQL Server Big Data clusters, " +
-            "check the option in menu option: \"Tools | Azure | Experimental | Disable SSL Certificate Verification\"";
+            "check the option in menu option: \"Tools | Azure | Validate Spark Cluster SSL Certificate | Disable\"";
 
     @NotNull
     private SettableControl<AddNewClusterModel> controllableView;

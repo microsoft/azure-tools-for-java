@@ -204,8 +204,7 @@ public class AzureModelController {
                     public void call(Subscriber<? super RgDepParams> subscriber) {
                         List<WebApp> wal = azure.webApps().listByResourceGroup(rg.name());
                         List<AppServicePlan> aspl = azure.appServices().appServicePlans().listByResourceGroup(rg.name())
-                                .stream().filter(item -> OperatingSystem.WINDOWS.equals(item.operatingSystem()))
-                                .collect(Collectors.toList());
+                                .stream().collect(Collectors.toList());
                         subscriber.onNext(new RgDepParams(rg, wal, aspl));
                         subscriber.onCompleted();
                     }

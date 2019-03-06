@@ -25,7 +25,6 @@ package com.microsoft.azure.hdinsight.spark.common;
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.azure.datalake.store.ADLStoreClient;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
-import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.CreateSparkBatchJobParameters;
@@ -35,18 +34,22 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import rx.Observable;
 import rx.Observer;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.*;
 import java.util.AbstractMap;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.hdinsight.common.MessageInfoType.Error;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
 import static rx.exceptions.Exceptions.propagate;
 
@@ -134,13 +137,16 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                                 return Observable.error(new IOException(errorMsg));
                             }
                         })
+                // For HDInsight job , we can get batch ID immediatelly after we submit job,
+                // but for Serverless job, some time are needed for environment setup before batch ID is available
                 .map(sparkBatchJob -> this);
     }
 
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        return jobDeploy.deploy(artifactPath)
+        URI dest = URI.create(account.getStorageRootPath());
+        return jobDeploy.deploy(new File(artifactPath), dest)
                 .map(path -> {
                     ctrlInfo(String.format("Upload to Azure Datalake store %s successfully", path));
                     getSubmissionParameter().setFilePath(path);
@@ -153,9 +159,9 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
         return getAccount().killSparkBatchJobRequest(getJobUuid())
                 .map(resp -> this)
                 .onErrorReturn(err -> {
-                    String errMsg = String.format("Failed to stop spark job. %s", ExceptionUtils.getStackTrace(err));
-                    ctrlInfo(errMsg);
-                    log().warn(errMsg);
+                    String errHint = "Failed to stop spark job.";
+                    ctrlInfo(errHint + " " + err.getMessage());
+                    log().warn(errHint + ExceptionUtils.getStackTrace(err));
                     return this;
                 });
     }
@@ -253,10 +259,15 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                                                            int batchId,
                                                            int startIndex,
                                                            int maxLinePerGet) {
-        String requestUrl = String.format("%s/%d/log?from=%d&size=%d", livyUrl, batchId, startIndex, maxLinePerGet);
+        String requestUrl = String.format("%s/batches/%d/log", livyUrl, batchId);
+        // TODO: To test if adlaAccountName is necessary
+        List<NameValuePair> parameters = Arrays.asList(
+                new BasicNameValuePair("adlaAccountName", getAccount().getName()),
+                new BasicNameValuePair("from", String.valueOf(startIndex)),
+                new BasicNameValuePair("size", String.valueOf(maxLinePerGet)));
         return getHttp()
                 .withUuidUserAgent()
-                .get(requestUrl, null, null, SparkJobLog.class);
+                .get(requestUrl, parameters, null, SparkJobLog.class);
     }
 
     @NotNull
@@ -276,44 +287,43 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                 .filter(sparkBatchJob -> sparkBatchJob.properties() != null
                         && StringUtils.isNotEmpty(sparkBatchJob.properties().livyServerAPI()))
                 .map(sparkBatchJob -> sparkBatchJob.properties().livyServerAPI())
-                .map(url -> url + "?adlaAccountName=" + getAccount().getName())
                 .doOnNext(url -> {
                     ctrlInfo("Successfully get livy URL: " + url);
                     ctrlInfo("Trying to retrieve livy submission logs...");
                 })
-                // Get submission log
+                // get batch id before get submission log
                 .flatMap(livyUrl ->
                         getResponsePayloadWithState()
-                                // get batch id before get submission log
+                                // TODO: To test if we need retry mechanism to get batch ID
                                 .doOnNext(responsePayload -> setBatchId(responsePayload.getId()))
-                                .flatMap(responsePayload ->
-                                        // TODO: I wonder whether it's possible to replace logStartIndex with Rxjava scan operator
-                                        getSubmissionLogRequest(livyUrl, getBatchId(), getLogStartIndex(), MAX_LOG_LINES_PER_REQUEST))
-                                .map(sparkJobLog ->
-                                        sparkJobLog.getLog() == null
-                                                ? Collections.<String>emptyList()
-                                                : sparkJobLog.getLog())
+                                .map(responsePayload -> livyUrl))
+                // Get submission log
+                .flatMap(livyUrl ->
+                        Observable.defer(() -> getSubmissionLogRequest(livyUrl, getBatchId(), getLogStartIndex(), MAX_LOG_LINES_PER_REQUEST))
+                                .map(sparkJobLog -> Optional.ofNullable(sparkJobLog.getLog()).orElse(Collections.<String>emptyList()))
                                 .doOnNext(logs -> setLogStartIndex(getLogStartIndex() + logs.size()))
                                 .map(logs -> logs.stream()
                                         .filter(logLine -> !ignoredEmptyLines.contains(logLine.trim().toLowerCase()))
                                         .collect(Collectors.toList()))
                                 .flatMap(logLines -> {
                                     if (logLines.size() > 0) {
-                                        // If logs we get is not empty, we send onNext() message
-                                        // so that these logs can be printed on console view later
-                                        return Observable.from(logLines)
-                                                .map(line -> new AbstractMap.SimpleImmutableEntry<>(Log, line));
+                                        return Observable.just(Pair.of(logLines, SparkBatchJobState.STARTING));
                                     } else {
-                                        // If logs we get is empty, we send an onError() message,
-                                        // which will get into RetryWhen and then retry with limited times
-                                        String errorMsg = "Livy submission log is empty.";
-                                        log().warn(errorMsg);
-                                        ctrlInfo(errorMsg);
-                                        return Observable.error(new SparkJobException(errorMsg));
+                                        return getResponsePayloadWithState()
+                                                .flatMap(responsePayload ->
+                                                        Observable.just(Pair.of(logLines, responsePayload.getState()))
+                                                        .delay(getDelaySeconds(), TimeUnit.SECONDS));
                                     }
                                 })
-                                // repeat getting submission log until job started
                                 .repeatWhen(ob -> ob.delay(GET_LOG_REPEAT_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS))
+                                // FIXME:
+                                // For HDI spark job, the ending condition is `jobState != starting || appIdIsAllocated`
+                                // However, currently the response has no appId all the time so we ignored the app id check
+                                .takeUntil(logAndStatePair ->
+                                        !logAndStatePair.getRight().toString()
+                                                .equalsIgnoreCase(SparkBatchJobState.STARTING.toString()))
+                                .flatMap(logAndStatePair -> Observable.from(logAndStatePair.getLeft()))
+                                .map(line -> new AbstractMap.SimpleImmutableEntry<>(Log, line))
                                 .retryWhen(error -> error.flatMap(exception -> {
                                     if (exception instanceof SparkJobFinishedException) {
                                         throw propagate(exception);
@@ -325,26 +335,16 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                                                 .delay(getDelaySeconds(), TimeUnit.SECONDS);
                                     }
                                 }))
-                                .flatMap(logEntry ->
-                                        getResponsePayloadWithState()
-                                                .map(responsePayload -> Pair.of(logEntry, responsePayload.getState())))
-                                // FIXME:
-                                // For HDI spark job, the ending condition is `jobState != starting || appIdIsAllocated`
-                                // However, currently the response has no appId all the time so we ignored the app id check
-                                .takeUntil(logEntryAndStatePair ->
-                                        !logEntryAndStatePair.getRight().equalsIgnoreCase(SparkBatchJobState.STARTING.toString()))
-                                .doOnNext(ob -> ctrlInfo("Successfully retrieved livy submission log."))
-                                .map(logEntryAndStatePair -> logEntryAndStatePair.getLeft()))
+                )
                 .onErrorResumeNext(err -> {
                     if (err instanceof SparkJobFinishedException || err.getCause() instanceof SparkJobFinishedException) {
                         return Observable.error(err);
                     } else {
-                        String errHint = "Error retrieving livy submission log. ";
+                        String errHint = "Error retrieving livy submission log.";
                         log().warn(errHint + " " + ExceptionUtils.getStackTrace(err));
                         return Observable.just(new AbstractMap.SimpleImmutableEntry<>(Error, errHint + " " + err.getMessage()));
                     }
                 });
-
     }
 
     private void ctrlInfo(@NotNull String message) {

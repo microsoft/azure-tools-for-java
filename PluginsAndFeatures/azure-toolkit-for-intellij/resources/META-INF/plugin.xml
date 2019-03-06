@@ -409,6 +409,7 @@
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.LivySparkRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessRunConfigurationProducer"/>
+    <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkRunConfigurationProducer"/>
     <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkBatchRunner" />
@@ -469,6 +470,9 @@
     <action id="Actions.SubmitCosmosServerlessSparkApplicationAction"
             class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSelectAndSubmitAction" text="Spark on Cosmos Serverless"
             description="Submit Spark on Cosmos Serverless Application" icon="/icons/Spark.png"/>
+    <action id="Actions.SubmitArisSparkApplicationAction"
+            class="com.microsoft.azure.hdinsight.spark.actions.ArisSparkSelectAndSubmitAction" text="Spark on SQL Server Big Data Cluster"
+            description="Submit Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
@@ -480,7 +484,7 @@
     </group>
     <action class="com.microsoft.azuretools.ijidea.actions.GithubSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback..." />
     <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
-            text="Run on Web App" description="Run on Web App"
+            text="Deploy to Azure" description="Deploy to Azure"
             icon="/icons/PublishWebApp_16.png">
     </action>
     <action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.AddDockerSupportAction"
@@ -591,6 +595,9 @@
       <action id="Actions.SelectCosmosServerlessSparkType"
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosServerlessSparkTypeAction" text="Spark on Cosmos Serverless" >
       </action>
+      <action id="Actions.SelectArisSparkType"
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectArisSparkTypeAction" text="Spark on SQL Server Big Data Cluster" >
+      </action>
     </group>
 
     <action id="Actions.SparkSubmitJobActionGroups" class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups" text="Submit Spark Application"/>
@@ -605,6 +612,9 @@
     <action id="Actions.RunCosmosSparkConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLivyConsoleAction" text="Spark on Cosmos"
             description="Start an interactive console for Spark on Cosmos Application" icon="/icons/Spark.png"/>
+    <action id="Actions.RunArisSparkConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLivyConsoleAction" text="Spark on SQL Server Big Data Cluster"
+            description="Start an interactive console for Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
 
     <action id="Actions.RunLivySparkLocalConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLocalConsoleAction" text="Spark on HDInsight"
@@ -612,6 +622,9 @@
     <action id="Actions.RunCosmosSparkLocalConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLocalConsoleAction" text="Spark on Cosmos"
             description="Start a Spark local console for Spark on Cosmos Application" icon="/icons/Spark.png"/>
+    <action id="Actions.RunArisSparkLocalConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLocalConsoleAction" text="Spark on SQL Server Big Data Cluster"
+            description="Start a Spark local console for Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
     </actions>
     <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
 </idea-plugin>
