@@ -154,6 +154,9 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 break;
             case WEBHDFS:
                 destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
+                if(StringUtils.isBlank(destinationRootPath) || !destinationRootPath.matches(SparkBatchJob.WebHDFSPathPattern)){
+                    throw new ExecutionException("Invalid webhdfs root path input");
+                }
 
                 //create httpobservable and jobDeploy
                 try {
