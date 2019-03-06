@@ -11,7 +11,8 @@
           <li>Azure Web App Workflow: You can run your web applications on Azure Web App with One-Click experience using Azure Toolkits for IntelliJ.</li>
           <li>Azure Container Workflow: You can dockerize and run your web application on Azure Web App (Linux) via Azure Container Registry.</li>
           <li>Azure Explorer: You can view and manage your cloud resources on Azure with Azure Explorer in Azure Toolkits for IntelliJ.</li>
-          <li>Azure HDInsight: Use Azure HDInsight tool to submit Spark jobs to HDInsight cluster, monitor and debug Spark or Hadoop Hive jobs easily.</li>
+          <li>Azure HDInsight: Create a Spark project, author and submit Spark jobs to HDInsight cluster; Monitor and debug Spark jobs easily. </li>
+          <li>SQL Server Big Data Cluster: Link to SQL Server Big Data Cluster; Create a Spark project, author and submit Spark jobs to cluster; Monitor and debug Spark jobs easily</li>
         </ul>
       </html>
     ]]></description>
@@ -23,12 +24,19 @@
       <h4>Added</h4>
       <ul>
         <li>Support open browser after Web App deployment.</li>
+        <li>Support to link SQL Server Big Data cluster and submit Spark jobs.</li>
+        <li>Support WebHDFS storage type to submit job to HDInsight cluster with ADLS Gen 1 storage account.</li>
       </ul>
       <h4>Changed</h4>
       <ul>
         <li>Update UI of Web App creation and deployment</li>
+        <li>Subscription ID need to be specified for ADLS Gen 1 storage type</li>
       </ul>
       <h4>Fixed</h4>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2840" rel="nofollow">#2840</a> Submit successfully with invalid path for WebHDFS storage type issue.</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2747" rel="nofollow">#2747</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2801" rel="nofollow">#2801</a> Error loadig HDInsight node issue.</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2714" rel="nofollow">#2714</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2688" rel="nofollow">#2688</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2669" rel="nofollow">#2669</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2728" rel="nofollow">#2728</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2807" rel="nofollow">#2807</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2808" rel="nofollow">#2808</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2811" rel="nofollow">#2811</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2831" rel="nofollow">#2831</a>Spark Run Configuration validation issues.</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2810" rel="nofollow">#2810</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2760" rel="nofollow">#2760</a> Spark Run Configuration issues when created from context menu.</li>
       <ul>
       </ul>
     <h3>[3.18.0]</h3>
