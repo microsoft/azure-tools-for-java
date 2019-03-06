@@ -56,6 +56,7 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfigurat
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.apache.commons.lang3.StringUtils;
@@ -69,6 +70,7 @@ import java.io.IOException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -101,6 +103,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
 
         SparkSubmitStorageType storageAcccountType = submitModel.getJobUploadStorageModel().getStorageAccountType();
+        String subscription = submitModel.getJobUploadStorageModel().getSelectedSubscription();
         switch (storageAcccountType) {
             case BLOB:
                 String storageAccountName = submitModel.getJobUploadStorageModel().getStorageAccount();
@@ -137,15 +140,24 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 destinationRootPath = rawRootPath.endsWith("/") ? rawRootPath : rawRootPath + "/";
                 // e.g. for adl://john.azuredatalakestore.net/root/path, adlsAccountName is john
                 String adlsAccountName =  destinationRootPath.split("\\.")[0].split("//")[1];
-                SubscriptionDetail subscriptionDetail =
-                        AzureSparkClusterManager.getInstance().getSubscriptionDetailByStoreAccountName(adlsAccountName)
-                                .toBlocking().singleOrDefault(null);
-                if (subscriptionDetail == null) {
-                    throw new ExecutionException(String.format("Error getting subscription info by ADLS root path. Please check if the ADLS account is %s's storage account", submitModel.getClusterName()));
+
+                Optional<SubscriptionDetail> subscriptionDetail =  Optional.empty();
+                try{
+                    subscriptionDetail = AuthMethodManager.getInstance().getAzureManager().getSubscriptionManager()
+                            .getSelectedSubscriptionDetails()
+                            .stream()
+                            .filter((detail) -> detail.getSubscriptionName().equals(subscription))
+                            .findFirst();
+
+                }catch (Exception ignore){
+                }
+
+                if (!subscriptionDetail.isPresent()) {
+                    throw new ExecutionException("Error getting subscription info. Please select correct subscription");
                 }
                 // get Access Token
                 try {
-                    accessToken = AzureSparkClusterManager.getInstance().getAccessToken(subscriptionDetail.getTenantId());
+                    accessToken = AzureSparkClusterManager.getInstance().getAccessToken(subscriptionDetail.get().getTenantId());
                 } catch (IOException ex) {
                     log().warn("Error getting access token based on the given ADLS root path. " + ExceptionUtils.getStackTrace(ex));
                     throw new ExecutionException("Error getting access token based on the given ADLS root path");
@@ -154,6 +166,9 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 break;
             case WEBHDFS:
                 destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
+                if(StringUtils.isBlank(destinationRootPath) || !destinationRootPath.matches(SparkBatchJob.WebHDFSPathPattern)){
+                    throw new ExecutionException("Invalid webhdfs root path input");
+                }
 
                 //create httpobservable and jobDeploy
                 try {
