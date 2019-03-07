@@ -95,7 +95,7 @@ EFFET JURIDIQUE. Le présent contrat décrit certains droits juridiques. Vous p
 </license>
 
    <requires>
-      <import feature="com.microsoft.azuretools.sdk.feature" version="3.18.0.qualifier"/>
+      <import feature="com.microsoft.azuretools.sdk.feature" version="3.12.0.qualifier"/>
    </requires>
 
    <plugin
