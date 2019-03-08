@@ -27,11 +27,12 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 public class Activator extends AbstractUIPlugin {
+
     public static final String PLUGIN_ID = "com.microsoft.azuretools.webapp";
 
     // The shared instance
     private static Activator plugin;
-    
+
     public Activator() {
     }
 
@@ -52,7 +53,7 @@ public class Activator extends AbstractUIPlugin {
         plugin = null;
         super.stop(context);
     }
-    
+
     /**
      * Returns the shared instance
      *
@@ -61,7 +62,7 @@ public class Activator extends AbstractUIPlugin {
     public static Activator getDefault() {
         return plugin;
     }
-    
+
     public void log(String message, Exception excp) {
         getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, message, excp));
     }
