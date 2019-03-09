@@ -18,7 +18,3 @@ intellij {
 
     plugins 'terminal', dep_plugins_rider
 }
-
-instrumentCode {
-    javac2(file("libs/javac2.jar"))
-}

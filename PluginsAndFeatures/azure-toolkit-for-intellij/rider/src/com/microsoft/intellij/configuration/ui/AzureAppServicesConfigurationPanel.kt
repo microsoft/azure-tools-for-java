@@ -24,7 +24,9 @@ package com.microsoft.intellij.configuration.ui
 
 import com.intellij.ide.util.PropertiesComponent
 import com.microsoft.intellij.configuration.AzureRiderSettings
-import javax.swing.*
+import net.miginfocom.swing.MigLayout
+import javax.swing.JCheckBox
+import javax.swing.JPanel
 
 class AzureAppServicesConfigurationPanel : AzureRiderAbstractConfigurablePanel {
 
@@ -34,16 +36,15 @@ class AzureAppServicesConfigurationPanel : AzureRiderAbstractConfigurablePanel {
 
     private val properties = PropertiesComponent.getInstance()
 
-    private lateinit var pnlRoot: JPanel
-    private lateinit var pnlWebAppPublishConfiguration: JPanel
-    lateinit var checkBoxOpenInBrowser: JCheckBox
+    private val pnlRoot = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1"))
+    private val checkBoxOpenInBrowser = JCheckBox("Open Azure Web App in browser after publish")
 
     init {
-        val currentValue = properties.getBoolean(
-                AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
-                AzureRiderSettings.openInBrowserDefaultValue)
+        initOpenInBrowserCheckBox()
 
-        checkBoxOpenInBrowser.isSelected = currentValue
+        pnlRoot.apply {
+            add(checkBoxOpenInBrowser)
+        }
     }
 
     override val panel = pnlRoot
@@ -54,4 +55,12 @@ class AzureAppServicesConfigurationPanel : AzureRiderAbstractConfigurablePanel {
                     AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
                     checkBoxOpenInBrowser.isSelected,
                     AzureRiderSettings.openInBrowserDefaultValue)
+
+    private fun initOpenInBrowserCheckBox() {
+        val currentValue = properties.getBoolean(
+                AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
+                AzureRiderSettings.openInBrowserDefaultValue)
+
+        checkBoxOpenInBrowser.isSelected = currentValue
+    }
 }
