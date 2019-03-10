@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -20,34 +20,19 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.database
+package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice
 
-import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode
 
-/**
- * General node presenter for a SQL Database structure:
- *
- * SQL Database:
- *   - SQL Server 1
- *     - DB 1
- *     - DB 2
- *   - SQL Server 2
- *   - ...
- */
-class AzureDatabaseModulePresenter : MvpPresenter<AzureDatabaseModule>() {
+class AzureAppServiceModulePresenter : MvpPresenter<AzureAppServiceModule>() {
 
     fun onModuleRefresh() {
         mvpView ?: return
 
-        val sqlServerList = AzureSqlServerMvpModel.listSqlServers(true)
-
-        for (sqlServerRes in sqlServerList) {
-            val subscriptionId = sqlServerRes.subscriptionId
-            val sqlServer = sqlServerRes.resource
-            val sqlServerNode = SqlServerNode(mvpView, subscriptionId, sqlServer.id(), sqlServer.name(), sqlServer.state())
-            mvpView.addChildNode(sqlServerNode)
+        mvpView.childNodes.forEach { node ->
+            val subModule = (node as? RefreshableNode) ?: return@forEach
+            subModule.load(true)
         }
     }
 }

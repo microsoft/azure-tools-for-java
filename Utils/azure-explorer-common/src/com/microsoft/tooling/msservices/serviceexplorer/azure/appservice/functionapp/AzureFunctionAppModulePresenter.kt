@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -20,34 +20,25 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.database
+package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp
 
-import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
+import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
 
-/**
- * General node presenter for a SQL Database structure:
- *
- * SQL Database:
- *   - SQL Server 1
- *     - DB 1
- *     - DB 2
- *   - SQL Server 2
- *   - ...
- */
-class AzureDatabaseModulePresenter : MvpPresenter<AzureDatabaseModule>() {
+class AzureFunctionAppModulePresenter : MvpPresenter<AzureFunctionAppModule>() {
 
     fun onModuleRefresh() {
         mvpView ?: return
 
-        val sqlServerList = AzureSqlServerMvpModel.listSqlServers(true)
+        val azureFunctionsList = AzureFunctionAppMvpModel.listAllFunctionApps(true)
 
-        for (sqlServerRes in sqlServerList) {
-            val subscriptionId = sqlServerRes.subscriptionId
-            val sqlServer = sqlServerRes.resource
-            val sqlServerNode = SqlServerNode(mvpView, subscriptionId, sqlServer.id(), sqlServer.name(), sqlServer.state())
-            mvpView.addChildNode(sqlServerNode)
+        for (function in azureFunctionsList) {
+            val subscriptionId = function.subscriptionId
+            val appId = function.resource.id()
+            val appName = function.resource.name()
+            val state = function.resource.state()
+            val hostName = function.resource.defaultHostName()
+            mvpView.addChildNode(FunctionAppNode(mvpView, subscriptionId, appId, appName, state, hostName))
         }
     }
 }

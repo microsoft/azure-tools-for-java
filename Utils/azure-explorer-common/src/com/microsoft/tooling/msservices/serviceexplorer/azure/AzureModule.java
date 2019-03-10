@@ -35,13 +35,13 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.AzureAppServiceModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureDatabaseModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,8 +59,6 @@ public class AzureModule extends AzureRefreshableNode {
     private RedisCacheModule redisCacheModule;
     @NotNull
     private StorageModule storageModule;
-    @NotNull
-    private WebAppModule webAppModule;
     @Nullable
     private HDInsightRootModule hdInsightModule;
     @Nullable
@@ -71,6 +69,8 @@ public class AzureModule extends AzureRefreshableNode {
     private ContainerRegistryModule containerRegistryModule;
     @NotNull
     private AzureDatabaseModule azureDatabaseModule;
+    @NotNull
+    private AzureAppServiceModule azureAppServiceModule;
 
     /**
      * Constructor.
@@ -81,13 +81,14 @@ public class AzureModule extends AzureRefreshableNode {
         super(AZURE_SERVICE_MODULE_ID, composeName(), null, ICON_PATH);
         this.project = project;
         storageModule = new StorageModule(this);
-        webAppModule = new WebAppModule(this);
         //hdInsightModule = new HDInsightRootModule(this);
         vmArmServiceModule = new VMArmModule(this);
         redisCacheModule = new RedisCacheModule(this);
         dockerHostModule = new DockerHostModule(this);
         containerRegistryModule = new ContainerRegistryModule(this);
         azureDatabaseModule = new AzureDatabaseModule(this);
+        azureAppServiceModule = new AzureAppServiceModule(this);
+
         try {
             SignInOutListener signInOutListener = new SignInOutListener();
             AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
@@ -146,9 +147,6 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(storageModule)) {
             addChildNode(storageModule);
         }
-        if (!isDirectChild(webAppModule)) {
-            addChildNode(webAppModule);
-        }
         if (hdInsightModule != null && !isDirectChild(hdInsightModule)) {
             addChildNode(hdInsightModule);
         }
@@ -168,6 +166,9 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(azureDatabaseModule)) {
             addChildNode(azureDatabaseModule);
         }
+        if (!isDirectChild(azureAppServiceModule)) {
+            addChildNode(azureAppServiceModule);
+        }
     }
 
     @Override
@@ -182,7 +183,6 @@ public class AzureModule extends AzureRefreshableNode {
                 vmArmServiceModule.load(true);
                 redisCacheModule.load(true);
                 storageModule.load(true);
-                webAppModule.load(true);
 
                 if (hdInsightModule != null) {
                     hdInsightModule.load(true);
@@ -196,6 +196,7 @@ public class AzureModule extends AzureRefreshableNode {
                 containerRegistryModule.load(true);
 
                 azureDatabaseModule.load(true);
+                azureAppServiceModule.load(true);
             }
         } catch (Exception e) {
             throw new AzureCmdException("Error loading Azure Explorer modules", e);
