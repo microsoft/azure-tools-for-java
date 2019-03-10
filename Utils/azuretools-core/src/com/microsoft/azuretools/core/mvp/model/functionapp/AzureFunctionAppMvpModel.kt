@@ -75,7 +75,7 @@ object AzureFunctionAppMvpModel {
 
     fun getAzureFunctionAppsBySubscriptionId(subscriptionId: String) =
             AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().functionApps()
-                    .list()
+                    .list() ?: emptyList<FunctionApp>()
 
     fun getAzureFunctionAppsByResourceGroup(subscriptionId: String, resourceGroupName: String) =
             AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().functionApps()
@@ -104,5 +104,9 @@ object AzureFunctionAppMvpModel {
             logger.warning("Error deleting Azure Function App: $t")
             throw t
         }
+    }
+
+    fun clearSubscriptionIdToFunctionMap() {
+        subscriptionIdToFunctionAppsMap.clear()
     }
 }
