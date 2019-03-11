@@ -21,6 +21,31 @@
  */
 package com.microsoft.azuretools.webapp.ui;
 
+import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.RuntimeStack;
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebContainer;
+import com.microsoft.azure.management.resources.Location;
+import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
+import com.microsoft.azuretools.core.ui.ErrorWindow;
+import com.microsoft.azuretools.core.utils.MavenUtils;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.core.utils.ProgressDialog;
+import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
+import com.microsoft.azuretools.utils.AzureModel;
+import com.microsoft.azuretools.utils.AzureModelController;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import com.microsoft.azuretools.utils.WebAppUtils;
+import com.microsoft.azuretools.webapp.Activator;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -28,10 +53,15 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-
-import com.microsoft.azure.management.appservice.*;
+import java.util.Map;
+import java.util.Set;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -57,30 +87,24 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-
-import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
-import com.microsoft.azuretools.core.ui.ErrorWindow;
-import com.microsoft.azuretools.core.utils.MavenUtils;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.core.utils.ProgressDialog;
-import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
-import com.microsoft.azuretools.utils.AzureModel;
-import com.microsoft.azuretools.utils.AzureModelController;
-import com.microsoft.azuretools.utils.AzureUIRefreshCore;
-import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import com.microsoft.azuretools.utils.WebAppUtils;
-import com.microsoft.azuretools.webapp.Activator;
 
 public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
 
@@ -96,10 +120,14 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     private static final String SELECT_A_VALID_SUBSCRIPTION = "Select a valid subscription.";
     private static final String ENTER_APP_SERVICE_PLAN_NAME = "Enter a valid App Service Plan name.";
     private static final String NAME_ALREADY_TAKEN = "The name is already taken";
-    private static final String APP_SERVICE_PLAN_NAME_MUST_UNUQUE = "App service plan name must be unuque in each subscription.";
-    private static final String APP_SERVICE_PLAN_NAME_INVALID_MSG = "App Service Plan name can only include alphanumeric characters and hyphens.";
-    private static final String RESOURCE_GROUP_NAME_INVALID_MSG = "Resounce group name can only include alphanumeric characters, periods, underscores, hyphens, and parenthesis and can't end in a period.";
-    private static final String WEB_APP_NAME_INVALID_MSG = "The name can contain letters, numbers and hyphens but the first and last characters must be a letter or number. The length must be between 2 and 60 characters.";
+    private static final String APP_SERVICE_PLAN_NAME_MUST_UNUQUE = "App service plan name must be unuque in each "
+        + "subscription.";
+    private static final String APP_SERVICE_PLAN_NAME_INVALID_MSG = "App Service Plan name can only include "
+        + "alphanumeric characters and hyphens.";
+    private static final String RESOURCE_GROUP_NAME_INVALID_MSG = "Resounce group name can only include alphanumeric "
+        + "characters, periods, underscores, hyphens, and parenthesis and can't end in a period.";
+    private static final String WEB_APP_NAME_INVALID_MSG = "The name can contain letters, numbers and hyphens but the"
+        + " first and last characters must be a letter or number. The length must be between 2 and 60 characters.";
 
     // validation regex
     private static final String WEB_APP_NAME_REGEX = "^[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$";
@@ -149,7 +177,8 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     private static final String DIALOG_MESSAGE = "Create Azure App Service";
 
     // tooltip
-    private static final String APPSETTINGS_TOOLTIP = "You can configure application setting here, such as \"JAVA_OPTS\"";
+    private static final String APPSETTINGS_TOOLTIP = "You can configure application setting here, such as "
+        + "\"JAVA_OPTS\"";
 
 
     private static ILog LOG = Activator.getDefault().getLog();
@@ -258,15 +287,15 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     protected Control createDialogArea(Composite parent) {
         setMessage(DIALOG_MESSAGE);
         setTitle(DIALOG_TITLE);
-        
-        ScrolledComposite scrolledComposite	= new ScrolledComposite(parent, SWT.V_SCROLL);
+
+        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
         scrolledComposite.setLayout(new GridLayout(1, false));
         scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        
+
         Group group = new Group(scrolledComposite, SWT.NONE);
         group.setLayout(new GridLayout(1, false));
         group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-        
+
         Group grpAppService = new Group(group, SWT.NONE);
         grpAppService.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
         grpAppService.setLayout(new GridLayout(3, false));
@@ -310,12 +339,12 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         createASPGroup(group);
         createResourceGroup(group);
         createAppSettingGroup(group);
-        
+
         scrolledComposite.setContent(group);
         scrolledComposite.setExpandHorizontal(true);
         scrolledComposite.setExpandVertical(true);
         scrolledComposite.setMinSize(group.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-        
+
         fillLinuxRuntime();
         fillWebContainers();
         fillSubscriptions();
@@ -333,7 +362,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         Group group = new Group(composite, SWT.NONE);
         FontDescriptor boldDescriptor = FontDescriptor.createFrom(group.getFont()).setStyle(SWT.BOLD);
         Font boldFont = boldDescriptor.createFont(group.getDisplay());
-        group.setFont( boldFont );
+        group.setFont(boldFont);
         group.setText(GROUP_APP_SERVICE_PLAN);
         group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         group.setLayout(new FillLayout());
@@ -450,7 +479,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                     PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(PRICING_URL));
                 } catch (PartInitException | MalformedURLException ex) {
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                            "widgetSelected@SelectionAdapter@linkAppServicePricing@AppServiceCreateDialog", ex));
+                        "widgetSelected@SelectionAdapter@linkAppServicePricing@AppServiceCreateDialog", ex));
                 }
             }
         });
@@ -461,7 +490,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         Group group = new Group(composite, SWT.NONE);
         FontDescriptor boldDescriptor = FontDescriptor.createFrom(group.getFont()).setStyle(SWT.BOLD);
         Font boldFont = boldDescriptor.createFont(group.getDisplay());
-        group.setFont( boldFont );
+        group.setFont(boldFont);
         group.setText(GROUP_RESOURCE_GROUP);
         group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         group.setLayout(new FillLayout());
@@ -621,10 +650,10 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         btnAppSettingsDel.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
         btnAppSettingsDel.addListener(SWT.Selection, event -> onBtnDeleteItemSelection());
     }
-    
+
     private void updateTableActionBtnStatus(boolean enabled) {
-    	btnAppSettingsNew.setEnabled(enabled);
-    	btnAppSettingsDel.setEnabled(enabled);
+        btnAppSettingsNew.setEnabled(enabled);
+        btnAppSettingsDel.setEnabled(enabled);
     }
 
     private void onTblAppSettingMouseDoubleClick(Event event) {
@@ -726,7 +755,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     private void onBtnNewItemSelection() {
         updateTableActionBtnStatus(false);
         TableItem item = new TableItem(tblAppSettings, SWT.NONE);
-        item.setText(new String[] {"<key>", "<value>"});
+        item.setText(new String[]{"<key>", "<value>"});
         tblAppSettings.setSelection(item);
         editingTableItem(item, 0);
     }
@@ -849,12 +878,12 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                     Display.getDefault().asyncExec(() -> doFillSubscriptions());
                 } catch (Exception ex) {
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                            "run@ProgressDialog@updateAndFillSubscriptions@AppServiceCreateDialog", ex));
+                        "run@ProgressDialog@updateAndFillSubscriptions@AppServiceCreateDialog", ex));
                 }
             });
         } catch (InvocationTargetException | InterruptedException ex) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "updateAndFillSubscriptions@AppServiceCreateDialog",
-                    ex));
+                ex));
         }
     }
 
@@ -890,7 +919,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         }
 
         List<ResourceGroup> rgl = AzureModel.getInstance().getSubscriptionToResourceGroupMap()
-                .get(binderSubscriptionDetails.get(i));
+            .get(binderSubscriptionDetails.get(i));
         if (rgl == null) {
             return;
         }
@@ -914,7 +943,8 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
             return;
         }
 
-        List<AppServicePlan> appServicePlans = getAppservicePlanBySID(binderSubscriptionDetails.get(i).getSubscriptionId());
+        List<AppServicePlan> appServicePlans = getAppservicePlanBySID(
+            binderSubscriptionDetails.get(i).getSubscriptionId());
         if (appServicePlans == null) {
             return;
         }
@@ -947,7 +977,8 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
             if (sidAspMap.containsKey(sid)) {
                 return sidAspMap.get(sid);
             }
-            List<AppServicePlan> appServicePlans = AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionId(sid);
+            List<AppServicePlan> appServicePlans = AzureWebAppMvpModel.getInstance()
+                .listAppServicePlanBySubscriptionId(sid);
             sidAspMap.put(sid, appServicePlans);
             return appServicePlans;
         } catch (Exception e) {
@@ -959,12 +990,14 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         try {
             Map<String, List<AppServicePlan>> map = new HashMap<>();
             Set<SubscriptionDetail> sdl = AzureModel.getInstance().getSubscriptionToResourceGroupMap().keySet();
-            for (SubscriptionDetail subscriptionDetail :sdl) {
-                List<AppServicePlan> appServicePlans = AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionId(subscriptionDetail.getSubscriptionId());
+            for (SubscriptionDetail subscriptionDetail : sdl) {
+                List<AppServicePlan> appServicePlans = AzureWebAppMvpModel.getInstance()
+                    .listAppServicePlanBySubscriptionId(subscriptionDetail.getSubscriptionId());
                 map.put(subscriptionDetail.getSubscriptionId(), appServicePlans);
             }
             sidAspMap = map;
-        } catch (Exception ignore){}
+        } catch (Exception ignore) {
+        }
     }
 
     protected void fillAppServicePlansDetails() {
@@ -1018,7 +1051,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
             }
         } catch (Exception ex) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                    "fillAppServicePlanPricingTiers@AppServiceCreateDialog", ex));
+                "fillAppServicePlanPricingTiers@AppServiceCreateDialog", ex));
         }
     }
 
@@ -1049,43 +1082,43 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         collectData();
         try {
             ProgressDialog.get(this.getShell(), CREATE_APP_SERVICE_PROGRESS_TITLE).run(true, true,
-                    (monitor) -> {
-                        monitor.beginTask(VALIDATING_FORM_FIELDS, IProgressMonitor.UNKNOWN);
-                        if (!validated()) {
-                            return;
+                (monitor) -> {
+                    monitor.beginTask(VALIDATING_FORM_FIELDS, IProgressMonitor.UNKNOWN);
+                    if (!validated()) {
+                        return;
+                    }
+                    monitor.setTaskName(CREATING_APP_SERVICE);
+                    if (monitor.isCanceled()) {
+                        AzureModel.getInstance().setResourceGroupToWebAppMap(null);
+                        Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.cancelPressed());
+                    }
+                    try {
+                        webApp = AzureWebAppMvpModel.getInstance().createWebApp(model);
+                        if (!appSettings.isEmpty()) {
+                            webApp.update().withAppSettings(appSettings).apply();
                         }
-                        monitor.setTaskName(CREATING_APP_SERVICE);
-                        if (monitor.isCanceled()) {
-                            AzureModel.getInstance().setResourceGroupToWebAppMap(null);
-                            Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.cancelPressed());
+                        if (webApp != null && packaging.equals(WebAppUtils.TYPE_JAR) && chooseWin) {
+                            webApp.stop();
+                            try (InputStream webConfigInput = WebAppUtils.class
+                                .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
+                                WebAppUtils.uploadWebConfig(webApp, webConfigInput,
+                                    new UpdateProgressIndicator(monitor));
+                            }
+                            webApp.start();
                         }
-                        try {
-                            webApp = AzureWebAppMvpModel.getInstance().createWebApp(model);
-                            if (!appSettings.isEmpty()) {
-                                webApp.update().withAppSettings(appSettings).apply();
-                            }
-                            if (webApp != null && packaging.equals(WebAppUtils.TYPE_JAR) && chooseWin) {
-                                webApp.stop();
-                                try (InputStream webConfigInput = WebAppUtils.class
-                                        .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
-                                    WebAppUtils.uploadWebConfig(webApp, webConfigInput,
-                                            new UpdateProgressIndicator(monitor));
-                                }
-                                webApp.start();
-                            }
-                            monitor.setTaskName(UPDATING_AZURE_LOCAL_CACHE);
-                            AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));
-                            Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.okPressed());
-                            if (AzureUIRefreshCore.listeners != null) {
-                                AzureUIRefreshCore.execute(
-                                        new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
-                            }
-                        } catch (Exception ex) {
-                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                                    "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));
-                            Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
+                        monitor.setTaskName(UPDATING_AZURE_LOCAL_CACHE);
+                        AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));
+                        Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.okPressed());
+                        if (AzureUIRefreshCore.listeners != null) {
+                            AzureUIRefreshCore.execute(
+                                new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
                         }
-                    });
+                    } catch (Exception ex) {
+                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                            "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));
+                        Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
+                    }
+                });
         } catch (Exception ex) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@AppServiceCreateDialog", ex));
             ErrorWindow.go(getShell(), ex.getMessage(), errTitle);
@@ -1095,7 +1128,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     protected ControlDecoration decorateContorolAndRegister(Control c) {
         ControlDecoration d = new ControlDecoration(c, SWT.TOP | SWT.LEFT);
         FieldDecoration fieldDecoration = FieldDecorationRegistry.getDefault()
-                .getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
+            .getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
         Image img = fieldDecoration.getImage();
         d.setImage(img);
         d.hide();
@@ -1150,14 +1183,14 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                 }
                 // App service plan name must be unique in each subscription
                 List<ResourceGroup> rgl = AzureMvpModel.getInstance()
-                        .getResourceGroupsBySubscriptionId(model.getSubscriptionId());
+                    .getResourceGroupsBySubscriptionId(model.getSubscriptionId());
                 for (ResourceGroup rg : rgl) {
                     List<AppServicePlan> aspl = AzureWebAppMvpModel.getInstance()
-                            .listAppServicePlanBySubscriptionIdAndResourceGroupName(model.getSubscriptionId(),
-                                    rg.name());
+                        .listAppServicePlanBySubscriptionIdAndResourceGroupName(model.getSubscriptionId(),
+                            rg.name());
                     for (AppServicePlan asp : aspl) {
                         if (asp != null
-                                && asp.name().toLowerCase().equals(model.getAppServicePlanName().toLowerCase())) {
+                            && asp.name().toLowerCase().equals(model.getAppServicePlanName().toLowerCase())) {
                             setError(dec_textAppSevicePlanName, APP_SERVICE_PLAN_NAME_MUST_UNUQUE);
                             return false;
                         }
@@ -1185,7 +1218,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                 return false;
             }
             for (ResourceGroup rg : AzureMvpModel.getInstance()
-                    .getResourceGroupsBySubscriptionId(model.getSubscriptionId())) {
+                .getResourceGroupsBySubscriptionId(model.getSubscriptionId())) {
                 if (rg != null && rg.name().toLowerCase().equals(model.getResourceGroup().toLowerCase())) {
                     setError(dec_textNewResGrName, NAME_ALREADY_TAKEN);
                     return false;
@@ -1250,7 +1283,8 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
             index = cbJavaVersion.getSelectionIndex();
             model.setJdkVersion(index < 0 ? null : javaVersions.get(index).getJavaVersion());
 
-            //Windows does not provider java se parameter, and the api here needs a parameter, so here just use TOMCAT_8.5_NEWEST.
+            //Windows does not provider java se parameter, and the api here needs a parameter, so here just use
+            // TOMCAT_8.5_NEWEST.
             //The App services itself start a jar file based on the web.config
             if (packaging.equals(WebAppUtils.TYPE_JAR)) {
                 model.setWebContainer(WebContainer.TOMCAT_8_5_NEWEST.toString());

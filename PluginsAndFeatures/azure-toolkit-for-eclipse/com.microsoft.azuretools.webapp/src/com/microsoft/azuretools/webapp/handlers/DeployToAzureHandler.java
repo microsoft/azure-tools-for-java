@@ -28,7 +28,6 @@ import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.webapp.ui.WebAppDeployDialog;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IContainer;
