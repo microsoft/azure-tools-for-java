@@ -43,7 +43,6 @@ class SparkLocalRunnerITScenario {
     @Given("^locally run job '(.*)' with args")
     fun localRunJob(mainClass: String, jobArgs: List<String>) {
         val args = arrayOf("--master local[1]", mainClass) + jobArgs
-
         sparkLocalJob = jvmProcess.createProcess("", SparkLocalRunner::class.java, args)
     }
 

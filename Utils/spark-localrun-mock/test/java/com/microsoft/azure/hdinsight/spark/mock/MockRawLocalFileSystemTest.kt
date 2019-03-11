@@ -22,24 +22,13 @@
 
 package com.microsoft.azure.hdinsight.spark.mock
 
-import cucumber.api.java.en.Given
-import cucumber.api.java.en.Then
-import org.apache.hadoop.fs.Path
-import org.assertj.core.api.Assertions.assertThat
-import java.io.File
+import cucumber.api.CucumberOptions
+import cucumber.api.junit.Cucumber
+import org.junit.runner.RunWith
 
-class MockRawLocalFileSystemScenario {
-    var workDir = ""
-
-    @Given("^set mocked file system local working directory to '(.*)'")
-    fun setWorkingDirectory(workDir: String) {
-        this.workDir = workDir
-        System.setProperty("user.dir", workDir)
-    }
-
-    @Then("^convert mocked file system path '(.*)' to File should be '(.*)'")
-    fun verifyPathToFile(path: String, expected: String) {
-        assertThat(MockRawLocalFileSystem().pathToFile(Path(path)).toURI())
-                .isEqualTo(File(expected).toURI())
-    }
-}
+@RunWith(Cucumber::class)
+@CucumberOptions(
+        plugin = ["html:target/cucumber"],
+        name = ["Mock File System Unit Test"]
+)
+class MockRawLocalFileSystemTest
