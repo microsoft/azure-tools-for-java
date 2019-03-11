@@ -259,7 +259,7 @@
           factoryClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactory"
           id="Azure Activity Log"
           canCloseContents="true"
-          icon="/icons/RoleFolder.svg"
+          icon="/icons/toolWindowAzureLog.svg"
           conditionClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactoryCondition"/>
 
     <projectService serviceInterface="com.microsoft.intellij.AzureSettings"
@@ -280,7 +280,7 @@
           factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"
           id="Azure Explorer"
           canCloseContents="false"
-          icon="/icons/AzureExplorer.svg"
+          icon="/icons/toolWindowAzure.svg"
           order="after Project" />
   </extensions>
 
