@@ -204,7 +204,8 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sendTelemetry("REFRESH");
-                TelemetryUtil.sendTelemetryOpEnd("refresh", buildProperties());
+                TelemetryUtil.sendTelemetryOpStart("refresh", buildProperties());
+                long timeS = System.currentTimeMillis();
                 table.removeAll();
                 fillAppServiceDetails();
                 AzureModel.getInstance().setResourceGroupToWebAppMap(null);
@@ -213,6 +214,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     lnkWebConfig.setText(WEB_CONFIG_DEFAULT);
                 }
                 AppServiceCreateDialog.initAspCache();
+                TelemetryUtil.sendTelemetryOpEnd("refresh", buildProperties(), System.currentTimeMillis() - timeS);
             }
         });
         btnRefresh.setText("Refresh");
@@ -606,6 +608,8 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     if (!MavenUtils.isMavenProject(project)) {
                         export(artifactName, artifactPath);
                     }
+                    long timeS = System.currentTimeMillis();
+                    TelemetryUtil.sendTelemetryOpStart("Deploy as WebApp", postEventProperties);
                     message = "Deploying Web App...";
                     monitor.setTaskName(message);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 35, message);
@@ -632,7 +636,8 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     }
                     postEventProperties.put("uploadingTryCount", String.valueOf(uploadingTryCount));
                     webApp.start();
-
+                    TelemetryUtil.sendTelemetryOpEnd("Deploy as WebApp", postEventProperties,
+                        System.currentTimeMillis() - timeS);
                     if (monitor.isCanceled()) {
                         AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1,
                             cancelMessage);
@@ -680,7 +685,6 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 100,
                         successMessage);
                     AppInsightsClient.create("Deploy as WebApp", "", postEventProperties);
-                    TelemetryUtil.sendTelemetryOpEnd("Deploy as WebApp", postEventProperties);
                 } catch (Exception ex) {
                     postEventProperties.put("PublishError", ex.getMessage());
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
