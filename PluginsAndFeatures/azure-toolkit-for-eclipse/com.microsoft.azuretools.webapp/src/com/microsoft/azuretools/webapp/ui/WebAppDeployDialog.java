@@ -16,12 +16,14 @@ import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
 import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.AppInsightsClient.ErrorType;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.CanceledByUserException;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
 import com.microsoft.azuretools.webapp.Activator;
+import com.microsoft.azuretools.webapp.utils.TelemetryUtil;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -177,6 +179,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sendTelemetry("CREATE");
+                TelemetryUtil.sendTelemetryOpEnd("open create webapp diag", buildProperties());
                 createAppService(project);
             }
         });
@@ -189,6 +192,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sendTelemetry("DELETE");
+                TelemetryUtil.sendTelemetryOpEnd("delete app service", buildProperties());
                 deleteAppService();
             }
         });
@@ -200,6 +204,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sendTelemetry("REFRESH");
+                TelemetryUtil.sendTelemetryOpEnd("refresh", buildProperties());
                 table.removeAll();
                 fillAppServiceDetails();
                 AzureModel.getInstance().setResourceGroupToWebAppMap(null);
@@ -674,6 +679,8 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     monitor.done();
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 100,
                         successMessage);
+                    AppInsightsClient.create("Deploy as WebApp", "", postEventProperties);
+                    TelemetryUtil.sendTelemetryOpEnd("Deploy as WebApp", postEventProperties);
                 } catch (Exception ex) {
                     postEventProperties.put("PublishError", ex.getMessage());
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
@@ -681,8 +688,9 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1, errorMessage);
                     webApp.start();
                     Display.getDefault().asyncExec(() -> ErrorWindow.go(parentShell, ex.getMessage(), errTitle));
+                    TelemetryUtil.sendTelemetryOpError("Deploy webapp", ErrorType.SystemError, ex.getMessage(), postEventProperties);
                 }
-                AppInsightsClient.create("Deploy as WebApp", "", postEventProperties);
+
                 return Status.OK_STATUS;
             }
         };
@@ -741,5 +749,12 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         properties.put("Title", this.getShell().getText());
         AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, this.getClass().getSimpleName(), action,
             properties);
+    }
+
+    private Map<String, String> buildProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("Window", this.getClass().getSimpleName());
+        properties.put("Title", this.getShell().getText());
+        return properties;
     }
 }
