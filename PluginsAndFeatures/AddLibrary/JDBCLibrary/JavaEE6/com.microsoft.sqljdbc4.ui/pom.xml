@@ -7,7 +7,7 @@
     <relativePath>../../../../azure-toolkit-for-eclipse/pom.xml</relativePath>
     <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
     <artifactId>parent</artifactId>
-    <version>${eclipse.version}</version>
+    <version>${azuretool.eclipse.version}</version>
   </parent>
   <artifactId>com.microsoft.sqljdbc4.ui</artifactId>
   <version>6.1.0.jre8</version>

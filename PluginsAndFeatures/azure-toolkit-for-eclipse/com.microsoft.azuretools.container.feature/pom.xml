@@ -6,7 +6,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
         <artifactId>parent</artifactId>
-        <version>${eclipse.version}</version>
+        <version>${azuretool.eclipse.version}</version>
     </parent>
     <artifactId>com.microsoft.azuretools.container.feature</artifactId>
     <packaging>eclipse-feature</packaging>

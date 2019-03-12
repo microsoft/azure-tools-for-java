@@ -6,7 +6,7 @@
 	<relativePath>../../../azure-toolkit-for-eclipse/pom.xml</relativePath>
     <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
     <artifactId>parent</artifactId>
-    <version>${eclipse.version}</version>
+    <version>${azuretool.eclipse.version}</version>
   </parent>
   <!--
   <groupId>com.microsoft.azuretools.wap4ej.build</groupId>
