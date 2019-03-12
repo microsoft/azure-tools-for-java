@@ -36,6 +36,7 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HideableDecorator;
 import com.microsoft.azure.cosmosspark.common.IntegerWithErrorHintedField;
 import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri;
+import com.microsoft.azure.cosmosspark.common.JsonEnvPropertiesField;
 import com.microsoft.azure.cosmosspark.common.TextWithErrorHintedField;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionCtrlProvider;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionSettingsModel;
@@ -102,6 +103,8 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
     protected JPanel availalableAUPanel;
     private JPanel auRequiredPanel;
     protected JLabel auWarningLabel;
+    protected JsonEnvPropertiesField extendedPropertiesField;
+    protected JLabel extendedPropertiesLabel;
     protected ConsoleViewImpl consoleViewPanel;
     protected HideableDecorator errorMessageDecorator;
     @NotNull
@@ -250,6 +253,7 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
         data.setClusterName(clusterNameField.getText())
                 .setAdlAccount(adlAccountField.getText())
                 .setSparkEvents(sparkEventsField.getText())
+                .setExtendedProperties(extendedPropertiesField.getEnvs())
                 .setAvailableAU(NumberUtils.toInt(availableAUNumberLabel.getText()))
                 .setTotalAU(NumberUtils.toInt(totalAUNumberLabel.getText()))
                 .setCalculatedAU(NumberUtils.toInt(calculatedAUNumberLabel.getText()))

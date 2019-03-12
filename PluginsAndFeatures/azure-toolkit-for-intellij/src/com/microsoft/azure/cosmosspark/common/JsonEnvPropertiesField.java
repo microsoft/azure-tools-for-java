@@ -23,13 +23,9 @@
 package com.microsoft.azure.cosmosspark.common;
 
 import com.google.common.collect.ImmutableMap;
-import com.intellij.execution.ExecutionBundle;
 import com.intellij.execution.configuration.EnvironmentVariablesData;
-import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.util.EnvVariablesTable;
 import com.intellij.execution.util.EnvironmentVariable;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.IdeBundle;
 import com.intellij.idea.ActionsBundle;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -39,6 +35,7 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.AnActionButtonRunnable;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.UserActivityProviderComponent;
 import com.intellij.ui.table.JBTable;
 import com.intellij.ui.table.TableView;
@@ -47,6 +44,7 @@ import com.intellij.util.EnvironmentUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.ListTableModel;
+import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
 import net.miginfocom.swing.MigLayout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,25 +57,28 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 // This file is based on code in IntelliJ-Community repository, please refer to link below.
 // https://github.com/JetBrains/intellij-community/blob/898213c96ec4d4a9b21d98347c7bd3196f76cdd9/platform/lang-impl/src/com/intellij/execution/configuration/EnvironmentVariablesTextFieldWithBrowseButton.java
-// Just renamed it to EnvironmentVariablesField
-public class EnvironmentVariablesField extends TextFieldWithBrowseButton implements UserActivityProviderComponent {
-
+// We removed system environment variables related codes and did some field format changes.
+public class JsonEnvPropertiesField extends TextFieldWithBrowseButton implements UserActivityProviderComponent {
     private EnvironmentVariablesData myData = EnvironmentVariablesData.DEFAULT;
     private final Map<String, String> myParentDefaults = new LinkedHashMap<>();
     private final List<ChangeListener> myListeners = ContainerUtil.createLockFreeCopyOnWriteList();
+    private static final String EMPTY_JSON_STRING_PROPERTY = "";
 
-    public EnvironmentVariablesField() {
+    public JsonEnvPropertiesField() {
         super();
+        setEditable(false);
         addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                setEnvs(EnvVariablesTable.parseEnvsFromText(getText()));
-                new EnvironmentVariablesField.MyEnvironmentVariablesDialog().show();
+                setEnvs(ObjectConvertUtils.<String, String>convertJsonToMap(getText()).orElse(new HashMap<>()));
+                new JsonEnvPropertiesField.MyEnvironmentVariablesDialog().show();
             }
         });
     }
@@ -115,26 +116,9 @@ public class EnvironmentVariablesField extends TextFieldWithBrowseButton impleme
     @NotNull
     private static String stringifyEnvs(@NotNull Map<String, String> envs) {
         if (envs.isEmpty()) {
-            return "";
+            return EMPTY_JSON_STRING_PROPERTY;
         }
-        StringBuilder buf = new StringBuilder();
-        for (Map.Entry<String, String> entry : envs.entrySet()) {
-            if (buf.length() > 0) {
-                buf.append(";");
-            }
-            buf.append(StringUtil.escapeChar(entry.getKey(), ';'))
-                    .append("=")
-                    .append(StringUtil.escapeChar(entry.getValue(), ';'));
-        }
-        return buf.toString();
-    }
-
-    public boolean isPassParentEnvs() {
-        return myData.isPassParentEnvs();
-    }
-
-    public void setPassParentEnvs(boolean passParentEnvs) {
-        setData(EnvironmentVariablesData.create(myData.getEnvs(), passParentEnvs));
+        return ObjectConvertUtils.convertObjectToJsonString(envs).orElse(EMPTY_JSON_STRING_PROPERTY);
     }
 
     @Override
@@ -163,50 +147,21 @@ public class EnvironmentVariablesField extends TextFieldWithBrowseButton impleme
     }
 
     private class MyEnvironmentVariablesDialog extends DialogWrapper {
+        private static final String TITLE = "Extended Properties";
         private final EnvVariablesTable myUserTable;
-        private final EnvVariablesTable mySystemTable;
-        private final JCheckBox myIncludeSystemVarsCb;
         private final JPanel myWholePanel;
 
         protected MyEnvironmentVariablesDialog() {
-            super(EnvironmentVariablesField.this, true);
+            super(JsonEnvPropertiesField.this, true);
             Map<String, String> userMap = new LinkedHashMap<>(myData.getEnvs());
-            Map<String, String> parentMap = new TreeMap<>(new GeneralCommandLine().getParentEnvironment());
-
-            myParentDefaults.putAll(parentMap);
-            for (Iterator<Map.Entry<String, String>> iterator = userMap.entrySet().iterator(); iterator.hasNext(); ) {
-                Map.Entry<String, String> entry = iterator.next();
-                if (parentMap.containsKey(entry.getKey())) { //User overrides system variable, we have to show it in 'parent' table as bold
-                    parentMap.put(entry.getKey(), entry.getValue());
-                    iterator.remove();
-                }
-            }
 
             List<EnvironmentVariable> userList = convertToVariables(userMap, false);
-            List<EnvironmentVariable> systemList = convertToVariables(parentMap, true);
-            myUserTable = new EnvironmentVariablesField.MyEnvVariablesTable(userList, true);
-
-            mySystemTable = new EnvironmentVariablesField.MyEnvVariablesTable(systemList, false);
-
-            myIncludeSystemVarsCb = new JCheckBox(ExecutionBundle.message("env.vars.system.title"));
-            myIncludeSystemVarsCb.setSelected(isPassParentEnvs());
-            myIncludeSystemVarsCb.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    updateSysTableState();
-                }
-            });
-            JLabel label = new JLabel(ExecutionBundle.message("env.vars.user.title"));
-            label.setLabelFor(myUserTable.getTableView().getComponent());
+            myUserTable = new JsonEnvPropertiesField.MyEnvVariablesTable(userList, true);
 
             myWholePanel = new JPanel(new MigLayout("fill, ins 0, gap 0, hidemode 3"));
-            myWholePanel.add(label, "hmax pref, wrap");
             myWholePanel.add(myUserTable.getComponent(), "push, grow, wrap, gaptop 5");
-            myWholePanel.add(myIncludeSystemVarsCb, "hmax pref, wrap, gaptop 5");
-            myWholePanel.add(mySystemTable.getComponent(), "push, grow, wrap, gaptop 5");
 
-            updateSysTableState();
-            setTitle(ExecutionBundle.message("environment.variables.dialog.title"));
+            setTitle(TITLE);
             init();
         }
 
@@ -214,10 +169,6 @@ public class EnvironmentVariablesField extends TextFieldWithBrowseButton impleme
         @Override
         protected String getDimensionServiceKey() {
             return "EnvironmentVariablesDialog";
-        }
-
-        private void updateSysTableState() {
-            mySystemTable.getTableView().setEnabled(myIncludeSystemVarsCb.isSelected());
         }
 
         @Nullable
@@ -233,8 +184,8 @@ public class EnvironmentVariablesField extends TextFieldWithBrowseButton impleme
                 String name = variable.getName(), value = variable.getValue();
                 if (StringUtil.isEmpty(name) && StringUtil.isEmpty(value)) continue;
 
-                if (!EnvironmentUtil.isValidName(name)) return new ValidationInfo(IdeBundle.message("run.configuration.invalid.env.name", name));
-                if (!EnvironmentUtil.isValidValue(value)) return new ValidationInfo(IdeBundle.message("run.configuration.invalid.env.value", name, value));
+                if (!EnvironmentUtil.isValidName(name)) return new ValidationInfo("Illegal property name: " + name);
+                if (!EnvironmentUtil.isValidValue(value)) return new ValidationInfo("Illegal property value: " + value);
             }
             return super.doValidate();
         }
@@ -247,13 +198,7 @@ public class EnvironmentVariablesField extends TextFieldWithBrowseButton impleme
                 if (StringUtil.isEmpty(variable.getName()) && StringUtil.isEmpty(variable.getValue())) continue;
                 envs.put(variable.getName(), variable.getValue());
             }
-            for (EnvironmentVariable variable : mySystemTable.getEnvironmentVariables()) {
-                if (isModifiedSysEnv(variable)) {
-                    envs.put(variable.getName(), variable.getValue());
-                }
-            }
             setEnvs(envs);
-            setPassParentEnvs(myIncludeSystemVarsCb.isSelected());
             super.doOKAction();
         }
     }
@@ -317,7 +262,7 @@ public class EnvironmentVariablesField extends TextFieldWithBrowseButton impleme
 
         @Override
         protected ListTableModel createListModel() {
-            return new ListTableModel(new EnvironmentVariablesField.MyEnvVariablesTable.MyNameColumnInfo(), new EnvironmentVariablesField.MyEnvVariablesTable.MyValueColumnInfo());
+            return new ListTableModel(new JsonEnvPropertiesField.MyEnvVariablesTable.MyNameColumnInfo(), new JsonEnvPropertiesField.MyEnvVariablesTable.MyValueColumnInfo());
         }
 
         protected class MyNameColumnInfo extends EnvVariablesTable.NameColumnInfo {
@@ -352,7 +297,9 @@ public class EnvironmentVariablesField extends TextFieldWithBrowseButton impleme
                     Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     component.setFont(component.getFont().deriveFont(Font.BOLD));
                     if (!hasFocus && !isSelected) {
-                        component.setForeground(JBUI.CurrentTheme.Link.linkColor());
+                        Color linkColor = JBColor.namedColor("Link.activeForeground", JBColor.namedColor("link.foreground", 0x589df6));
+                        // TODO: We can replace the linkColor with JBUI.CurrentTheme.Link.linkColor() when IntelliJ upgrade to 2019.1
+                        component.setForeground(linkColor);
                     }
                     return component;
                 }

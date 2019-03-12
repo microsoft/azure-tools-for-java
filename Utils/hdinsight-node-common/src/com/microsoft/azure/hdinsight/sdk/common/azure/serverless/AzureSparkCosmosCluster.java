@@ -49,9 +49,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class AzureSparkCosmosCluster extends SparkCluster
                                          implements ProvisionableCluster,
@@ -166,6 +164,8 @@ public class AzureSparkCosmosCluster extends SparkCluster
         private String userStorageAccount = "";
         @NotNull
         private String sparkEventsPath = "";
+        @NotNull
+        private Map<String, String> extendedProperties = new HashMap<>();
         private int masterInstances = 1;
         private int masterPerInstanceCores = 4;
         private int masterPerInstanceMemory = 12;
@@ -204,6 +204,12 @@ public class AzureSparkCosmosCluster extends SparkCluster
 
         public Builder sparkEventsPath(@NotNull String eventsPath) {
             this.sparkEventsPath = eventsPath;
+
+            return this;
+        }
+
+        public Builder extendedProperties(@NotNull Map<String, String> properties) {
+            this.extendedProperties = properties;
 
             return this;
         }
@@ -252,6 +258,7 @@ public class AzureSparkCosmosCluster extends SparkCluster
             cluster.sparkVersion = this.sparkVersion;
             cluster.userStorageAccount = this.userStorageAccount;
             cluster.sparkEventsPath = this.sparkEventsPath;
+            cluster.extendedProperties = this.extendedProperties;
             cluster.state = "unprovisioned";
             cluster.isConfigInfoAvailable = true;
 
@@ -304,6 +311,8 @@ public class AzureSparkCosmosCluster extends SparkCluster
     private String userStorageAccount = "";
     @NotNull
     private String sparkEventsPath = "";
+    @NotNull
+    private Map<String, String> extendedProperties = new HashMap<>();
 
     @Nullable
     private SparkResource master;
@@ -723,6 +732,7 @@ public class AzureSparkCosmosCluster extends SparkCluster
                        .withSparkVersion(this.sparkVersion)
                        // FIXME!! UserStorageAccount is missing
                        .withSparkEventsDirectoryPath(this.getAccount().getStorageRootPath() + this.sparkEventsPath)
+                       .withExtendedProperties(extendedProperties)
                        .withSparkResourceCollection(Arrays.asList(
                                new CreateSparkResourcePoolItemParameters()
                                        .withName(SparkNodeType.SPARK_MASTER)

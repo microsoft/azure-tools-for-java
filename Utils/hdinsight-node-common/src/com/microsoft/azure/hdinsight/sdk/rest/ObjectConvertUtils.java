@@ -23,17 +23,17 @@ package com.microsoft.azure.hdinsight.sdk.rest;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.helpers.azure.rest.RestServiceManager;
 import org.apache.http.HttpEntity;
-import org.apache.http.entity.ContentType;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -81,6 +81,16 @@ public final class ObjectConvertUtils {
     public static <T> Optional<List<T>> convertJsonToList(@NotNull String jsonString, Class<T> tClass) throws IOException {
         List<T> myLists = objectMapper.readValue(jsonString, TypeFactory.defaultInstance().constructCollectionType(List.class, tClass));
         return Optional.ofNullable(myLists);
+    }
+
+    public static <K, V> Optional<Map<K, V>> convertJsonToMap(@NotNull String jsonString) {
+        try {
+            Map<K, V> map = objectMapper.readValue(jsonString, new TypeReference<Map<K, V>>() {
+            });
+            return Optional.ofNullable(map);
+        } catch (Exception ignore) {
+            return Optional.empty();
+        }
     }
 
     public static <T> Optional<List<T>> convertXmlToList(@NotNull String jsonString, Class<T> tClass) throws IOException {
