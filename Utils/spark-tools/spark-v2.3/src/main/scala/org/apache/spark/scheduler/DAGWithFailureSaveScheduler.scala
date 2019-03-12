@@ -23,6 +23,7 @@
 package org.apache.spark.scheduler
 
 import java.io._
+import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.{Base64, Date}
 
@@ -31,15 +32,12 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.network.buffer.ManagedBuffer
-import org.apache.spark.network.shuffle.BlockFetchingListener
 import org.apache.spark.rdd.RDD
-import org.apache.spark.storage.{BlockId, BlockManagerId, BlockManagerMaster, ShuffleIndexBlockId}
-import org.apache.spark.util.{Clock, SystemClock, ThreadUtils, Utils}
+import org.apache.spark.storage._
+import org.apache.spark.util.{Clock, SystemClock, Utils}
 import org.json4s.jackson.Serialization.write
 
 import scala.collection.mutable
-import scala.concurrent.Promise
-import scala.concurrent.duration.Duration
 import scala.language.postfixOps
 import scala.util.control.NonFatal
 
@@ -70,7 +68,9 @@ class DAGWithFailureSaveScheduler(
   private val driverBlockManager = SparkEnv.get.blockManager
 //  private val mapOutputTracker = sc.env.mapOutputTracker.asInstanceOf[MapOutputTrackerMaster]
   val failedEvents: mutable.HashMap[Int, CompletionEvent] = new mutable.HashMap()
-  val fs = org.apache.hadoop.fs.FileSystem.get(sc.hadoopConfiguration)
+  private val wd = org.apache.hadoop.fs.FileSystem.get(sc.hadoopConfiguration).getWorkingDirectory
+  private val failureEventsDir = sc.eventLogDir.getOrElse(wd.toUri)
+  private val fs = Utils.getHadoopFileSystem(failureEventsDir, sc.hadoopConfiguration)
   private val minSizeForBroadcast =
     sc.conf.getSizeAsBytes("spark.shuffle.mapOutput.minSizeForBroadcast", "512k").toInt
 
@@ -103,32 +103,14 @@ class DAGWithFailureSaveScheduler(
     }
   }
 
-  def fetchShuffleSync(host: String, port: Int, execId: String, blockId: String): ManagedBuffer = {
-    //    val driverBlockManager = SparkEnv.get.blockManager
-
-    // A monitor for the thread to wait on.
-    val result = Promise[ManagedBuffer]()
-    driverBlockManager.blockTransferService.fetchBlocks(host, port, execId, Array(blockId),
-      new BlockFetchingListener {
-        override def onBlockFetchFailure(blockId: String, exception: Throwable): Unit = {
-          result.failure(exception)
-        }
-        override def onBlockFetchSuccess(blockId: String, data: ManagedBuffer): Unit = {
-          data.retain()
-          result.success(data)
-        }
-      }, null)
-
-    ThreadUtils.awaitResult(result.future, Duration.Inf)
-  }
 
   // from remote or local
   def getShuffleBuffer(blockManagerId: BlockManagerId, blockId: BlockId): (BlockId, Option[ManagedBuffer]) = {
     logDebug(s"Getting shuffle block $blockId from $blockManagerId")
 
     try {
-      val buffer = fetchShuffleSync(
-        blockManagerId.host, blockManagerId.port, blockManagerId.executorId, blockId.toString)
+      val buffer = driverBlockManager.blockTransferService.fetchBlockSync(
+        blockManagerId.host, blockManagerId.port, blockManagerId.executorId, blockId.toString(), null)
 
       (blockId, Some(buffer))
     } catch {
@@ -141,9 +123,9 @@ class DAGWithFailureSaveScheduler(
 
   def saveFailureTask(task: Task[_], stageId: Int, taskId: String, attemptId: Int, timestamp: String): Unit = {
     def getFailureSavingPath(fileName: String = null): Path = {
-      val appFolderName = sc.applicationId + sc.applicationAttemptId.map(attemptId => s"[${attemptId}]@").getOrElse("@") + timestamp
-
-      val savingBase: Path = new Path(".spark-failures", appFolderName)
+      val appFolderName = sc.applicationId + sc.applicationAttemptId.map(attemptId => s"_attempt_${attemptId}_").getOrElse("_") + timestamp
+      
+      val savingBase: Path = new Path(new Path(new Path(failureEventsDir), ".spark-failures"), appFolderName)
 
       if (fileName != null) {
         new Path(savingBase, fileName)
@@ -253,8 +235,8 @@ class DAGWithFailureSaveScheduler(
     writer.write(json)
     writer.close()
 
-    val fullSavingFolderUri = new Path(fs.getWorkingDirectory, getFailureSavingPath())
-    logInfo("Failure task has been saved into " + fullSavingFolderUri)
+    logInfo(s"The working directory is ${fs.getWorkingDirectory.toUri}")
+    logInfo("Failure task has been saved into " + failureContextFile.getParent)
   }
 
   override private[scheduler] def handleTaskCompletion(event: CompletionEvent): Unit = {
