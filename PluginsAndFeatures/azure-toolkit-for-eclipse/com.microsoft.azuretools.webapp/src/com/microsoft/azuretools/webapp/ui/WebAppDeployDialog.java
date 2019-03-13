@@ -594,6 +594,9 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                 String successMessage = "";
                 String errorMessage = "Error";
                 Map<String, String> postEventProperties = new HashMap<>();
+                postEventProperties.put("runtime",
+                    webApp.operatingSystem() == OperatingSystem.LINUX ? "linux-" + webApp.linuxFxVersion()
+                        : "windows-" + webApp.javaContainer());
                 postEventProperties.put("Java App Name", project.getName());
                 try {
                     boolean isJar = MavenUtils.isMavenProject(project) && MavenUtils.getPackaging(project)
@@ -692,7 +695,8 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1, errorMessage);
                     webApp.start();
                     Display.getDefault().asyncExec(() -> ErrorWindow.go(parentShell, ex.getMessage(), errTitle));
-                    TelemetryUtil.sendTelemetryOpError("Deploy webapp", ErrorType.SystemError, ex.getMessage(), postEventProperties);
+                    TelemetryUtil.sendTelemetryOpError("Deploy webapp", ErrorType.SystemError, ex.getMessage(),
+                        postEventProperties);
                 }
 
                 return Status.OK_STATUS;

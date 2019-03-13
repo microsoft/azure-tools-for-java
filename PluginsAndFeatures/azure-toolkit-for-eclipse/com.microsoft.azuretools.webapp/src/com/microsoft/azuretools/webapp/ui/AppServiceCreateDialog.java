@@ -1084,8 +1084,8 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
         collectData();
         Map<String, String> properties = new HashMap<>();
         properties.put("runtime",
-            model.getOS() == OperatingSystem.LINUX ? model.getLinuxRuntime().toString()
-                : model.getWebContainer());
+            model.getOS() == OperatingSystem.LINUX ? "Linux-" + model.getLinuxRuntime().toString()
+                : "windows-" + model.getWebContainer());
         try {
             ProgressDialog.get(this.getShell(), CREATE_APP_SERVICE_PROGRESS_TITLE).run(true, true,
                 (monitor) -> {
@@ -1098,7 +1098,6 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                         AzureModel.getInstance().setResourceGroupToWebAppMap(null);
                         Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.cancelPressed());
                     }
-                    
                     try {
                         TelemetryUtil.sendTelemetryOpStart("create web app", properties);
                         long timeS = System.currentTimeMillis();
