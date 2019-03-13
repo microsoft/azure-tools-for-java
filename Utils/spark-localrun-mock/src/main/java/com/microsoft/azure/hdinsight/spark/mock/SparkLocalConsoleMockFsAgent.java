@@ -17,18 +17,32 @@
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.mock
+package com.microsoft.azure.hdinsight.spark.mock;
 
-import cucumber.api.CucumberOptions
-import cucumber.api.junit.Cucumber
-import org.junit.runner.RunWith
+import mockit.Invocation;
+import mockit.Mock;
+import mockit.MockUp;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
-@RunWith(Cucumber::class)
-@CucumberOptions(
-        plugin = arrayOf("html:target/cucumber"),
-        name = arrayOf("Mock File System Unit Test")
-)
-class MockRawLocalFileSystemTest
+public class SparkLocalConsoleMockFsAgent {
+    public static void premain(String arg) {
+        SparkLocalConsoleMockFsAgent agent = new SparkLocalConsoleMockFsAgent();
+        agent.setUp();
+    }
+
+    private void setUp() {
+        new MockUp<FileSystem>() {
+            @Mock
+            public Class getFileSystemClass(Invocation invocation, String scheme, Configuration conf) {
+                return MockDfs.class;
+            }
+
+            @Mock
+            public void checkPath(Path path) {}
+        };
+    }
+}

@@ -7,7 +7,8 @@
         <version>3.19.0</version>
     </parent>
     <groupId>com.microsoft.azuretools</groupId>
-    <artifactId>hdinsight-node-common</artifactId>
+    <artifactId>spark-localrun-mock</artifactId>
+    <version>0.1.0</version>
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
         <hdinsight.htmlcopy.enabled>false</hdinsight.htmlcopy.enabled>
@@ -15,66 +16,9 @@
         <scala.version>2.11.11</scala.version>
         <spark.version>2.1.0</spark.version>
     </properties>
-
-    <profiles>
-        <profile>
-            <!-- trigger when ${html.build.enabled} set to true-->
-            <id>html.ant.build</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>hdinsight.htmlcopy.enabled</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.3</version>
-                        <configuration>
-                            <source>1.8</source>
-                            <target>1.8</target>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.8</version>
-                        <executions>
-                            <execution>
-                                <phase>install</phase>
-                                <configuration>
-                                    <target>
-                                        <copy todir="${basedir}/target">
-                                            <fileset dir="${basedir}/resources">
-                                                <exclude name="/htmlResources/**"/>
-                                                <type type="file"/>
-                                            </fileset>
-                                        </copy>
-                                        <zip destfile="${project.basedir}/target/hdinsight_jobview_html.zip" basedir="${basedir}/resources/htmlResources" />
-                                        <copy file="${project.basedir}/target/hdinsight_jobview_html.zip" tofile="${basedir}/../../PluginsAndFeatures/azure-toolkit-for-eclipse/com.microsoft.azuretools.hdinsight/resources/hdinsight_jobview_html.zip" overwrite="true" />
-                                        <copy file="${project.basedir}/target/hdinsight_jobview_html.zip" tofile="${basedir}/../../PluginsAndFeatures/azure-toolkit-for-intellij/resources/hdinsight_jobview_html.zip" overwrite="true" />
-                                    </target>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
     <build>
-        <sourceDirectory>src</sourceDirectory>
-        <testSourceDirectory>Test/java</testSourceDirectory>
-        <resources>
-            <resource>
-                <directory>resources</directory>
-            </resource>
-        </resources>
+        <sourceDirectory>src/main</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
         <testResources>
             <testResource>
                 <directory>Test/resources</directory>
@@ -115,6 +59,16 @@
                         <goals>
                             <goal>test-compile</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>clone-winutils</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>script</goal>
+                        </goals>
+                        <configuration>
+                            <scriptFile>./build-tools/cloneWinutils.kts</scriptFile>
+                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
@@ -166,6 +120,18 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Premain-Class>com.microsoft.azure.hdinsight.spark.mock.SparkLocalConsoleMockFsAgent</Premain-Class>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -201,46 +167,6 @@
             <version>${azuretool.version}</version>
         </dependency>
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-mgmt-storage</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch</artifactId>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -259,32 +185,6 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-templates</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-data-lake-store-sdk</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
-            <artifactId>htmlunit</artifactId>
-         </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -374,11 +274,6 @@
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azuretools</groupId>
-            <artifactId>spark-localrun-mock</artifactId>
-            <version>0.1.0</version>
         </dependency>
     </dependencies>
 </project>
