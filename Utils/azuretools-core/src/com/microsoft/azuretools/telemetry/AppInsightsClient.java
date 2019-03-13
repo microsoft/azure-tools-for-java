@@ -215,15 +215,10 @@ public class AppInsightsClient {
 
 
     public static void sendOpEnd(EventType eventType, String operName, Map<String, String> properties) {
-        sendOpEnd2(eventType, operName, properties, null);
+        sendOpEnd(eventType, operName, properties, null);
     }
 
     public static void sendOpEnd(EventType eventType, String operName, Map<String, String> properties,
-        Map<String, Double> metrics) {
-        sendOpEnd2(eventType, operName, properties, metrics);
-    }
-
-    private static void sendOpEnd2(EventType eventType, String operName, Map<String, String> properties,
         Map<String, Double> metrics) {
         properties.put(OPERATION_NAME, operName);
         properties.put(OPERATION_ID, UUID.randomUUID().toString());
@@ -242,17 +237,11 @@ public class AppInsightsClient {
 
     public static void sendError(EventType eventType, String operName, ErrorType errorType, String errMsg,
         Map<String, String> properties) {
-        sendError2(eventType, operName, errorType, errMsg, properties, null);
+        sendError(eventType, operName, errorType, errMsg, properties, null);
     }
 
     public static void sendError(EventType eventType, String operName, ErrorType errorType, String errMsg,
         Map<String, String> properties, Map<String, Double> metrics) {
-        sendError2(eventType, operName, errorType, errMsg, properties, metrics);
-    }
-
-    private static void sendError2(EventType eventType, String operName, ErrorType errorType, String errMsg,
-        Map<String, String> properties, Map<String, Double> metrics) {
-
         properties.put(OPERATION_NAME, operName);
         properties.put(OPERATION_ID, UUID.randomUUID().toString());
         properties.put(ERROR_CODE, "1");

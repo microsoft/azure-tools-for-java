@@ -1100,7 +1100,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                     }
                     try {
                         TelemetryUtil.sendTelemetryOpStart("create web app", properties);
-                        long timeS = System.currentTimeMillis();
+                        long timeStart = System.currentTimeMillis();
                         webApp = AzureWebAppMvpModel.getInstance().createWebApp(model);
                         if (!appSettings.isEmpty()) {
                             webApp.update().withAppSettings(appSettings).apply();
@@ -1122,7 +1122,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                                 new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
                         }
                         TelemetryUtil
-                            .sendTelemetryOpEnd("create web app", properties, System.currentTimeMillis() - timeS);
+                            .sendTelemetryOpEnd("create web app", properties, System.currentTimeMillis() - timeStart);
                     } catch (Exception ex) {
                         TelemetryUtil
                             .sendTelemetryOpError("create web app", ErrorType.userError, ex.getMessage(), properties);

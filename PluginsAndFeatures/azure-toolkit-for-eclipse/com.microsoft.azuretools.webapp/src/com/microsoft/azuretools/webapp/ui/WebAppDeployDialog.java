@@ -611,7 +611,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     if (!MavenUtils.isMavenProject(project)) {
                         export(artifactName, artifactPath);
                     }
-                    long timeS = System.currentTimeMillis();
+                    long timeStart = System.currentTimeMillis();
                     TelemetryUtil.sendTelemetryOpStart("Deploy as WebApp", postEventProperties);
                     message = "Deploying Web App...";
                     monitor.setTaskName(message);
@@ -640,7 +640,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     postEventProperties.put("uploadingTryCount", String.valueOf(uploadingTryCount));
                     webApp.start();
                     TelemetryUtil.sendTelemetryOpEnd("Deploy as WebApp", postEventProperties,
-                        System.currentTimeMillis() - timeS);
+                        System.currentTimeMillis() - timeStart);
                     if (monitor.isCanceled()) {
                         AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1,
                             cancelMessage);
