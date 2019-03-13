@@ -115,20 +115,7 @@ public class AppInsightsClient {
     }
 
     public static void create(String eventName, String version, @Nullable Map<String, String> myProperties, boolean force) {
-        if (!isAppInsightsClientAvailable())
-            return;
-
-        if (configuration.validated()) {
-            String prefValue = configuration.preferenceVal();
-            if (prefValue == null || prefValue.isEmpty() || prefValue.equalsIgnoreCase("true") || force) {
-                TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry();
-                Map<String, String> properties = buildProperties(version, myProperties);
-                synchronized (TelemetryClientSingleton.class) {
-                    telemetry.trackEvent(eventName, properties, null);
-                    telemetry.flush();
-                }
-            }
-        }
+        create(eventName, version, myProperties, null, force);
     }
 
     private static void create(String eventName, String version, @Nullable Map<String, String> myProperties,
