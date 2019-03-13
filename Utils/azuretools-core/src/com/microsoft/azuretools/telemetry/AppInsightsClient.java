@@ -32,13 +32,11 @@ import java.util.UUID;
 
 public class AppInsightsClient {
     private static final String EVENT_SPLIT = "/";
-    private static final String OPERATION_ID = "operationid";
-    private static final String OPERATION_NAME = "operationname";
+    private static final String OPERATION_ID = "operationId";
+    private static final String OPERATION_NAME = "operationName";
     private static final String ERROR_CODE = "errorCode";
     private static final String ERROR_MSG = "message";
     private static final String ERROR_TYPE = "errorType";
-
-
     static AppInsightsConfiguration configuration;
 
     public enum EventType {
@@ -62,7 +60,7 @@ public class AppInsightsClient {
 
     public enum ErrorType {
         userError,
-        SystemError
+        systemError
     }
 
     public static void setAppInsightsConfiguration(AppInsightsConfiguration appInsightsConfiguration) {

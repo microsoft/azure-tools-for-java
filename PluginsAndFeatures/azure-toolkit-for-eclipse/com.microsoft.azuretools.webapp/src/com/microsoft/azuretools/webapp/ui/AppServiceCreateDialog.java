@@ -1133,7 +1133,7 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                 });
         } catch (Exception ex) {
             TelemetryUtil
-                .sendTelemetryOpError("create web app", ErrorType.SystemError, ex.getMessage(), properties);
+                .sendTelemetryOpError("create web app", ErrorType.systemError, ex.getMessage(), properties);
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@AppServiceCreateDialog", ex));
             ErrorWindow.go(getShell(), ex.getMessage(), errTitle);
         }

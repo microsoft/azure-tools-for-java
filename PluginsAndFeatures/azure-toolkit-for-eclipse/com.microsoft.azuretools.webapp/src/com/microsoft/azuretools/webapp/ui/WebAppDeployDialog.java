@@ -695,10 +695,9 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1, errorMessage);
                     webApp.start();
                     Display.getDefault().asyncExec(() -> ErrorWindow.go(parentShell, ex.getMessage(), errTitle));
-                    TelemetryUtil.sendTelemetryOpError("Deploy webapp", ErrorType.SystemError, ex.getMessage(),
+                    TelemetryUtil.sendTelemetryOpError("Deploy webapp", ErrorType.systemError, ex.getMessage(),
                         postEventProperties);
                 }
-
                 return Status.OK_STATUS;
             }
         };
