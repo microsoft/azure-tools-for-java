@@ -35,8 +35,10 @@ import com.intellij.packaging.artifacts.Artifact
 import com.intellij.packaging.impl.artifacts.ArtifactUtil
 import com.intellij.ui.ListCellRendererWrapper
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.ui.table.JBTable
 import com.intellij.uiDesigner.core.GridConstraints.*
+import com.intellij.util.execution.ParametersListUtil
 import com.microsoft.azure.hdinsight.common.DarkThemeManager
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
@@ -207,7 +209,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         toolTipText = "Command line arguments used in your main class; multiple arguments should be split by space."
     }
 
-    private val commandLineTextField: JTextField = JTextField().apply {
+    private val commandLineTextField: ExpandableTextField = ExpandableTextField().apply {
         toolTipText = commandLineArgsPrompt.toolTipText
     }
 
@@ -215,7 +217,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         toolTipText = "Files to be placed on the java classpath; The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;)"
     }
 
-    private val referencedJarsTextField: JTextField = JTextField().apply {
+    private val referencedJarsTextField: ExpandableTextField = ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER, ParametersListUtil.COLON_LINE_JOINER).apply {
         toolTipText = refJarsPrompt.toolTipText
     }
 
@@ -223,7 +225,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         toolTipText = "Files to be placed in executor working directory. The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;) "
     }
 
-    private val referencedFilesTextField: JTextField = JTextField().apply {
+    private val referencedFilesTextField: ExpandableTextField = ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER, ParametersListUtil.COLON_LINE_JOINER).apply {
         toolTipText = refFilesPrompt.toolTipText
     }
 
