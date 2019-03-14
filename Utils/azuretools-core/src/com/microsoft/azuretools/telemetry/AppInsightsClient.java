@@ -149,12 +149,12 @@ public class AppInsightsClient {
             properties.put("Library Version", version);
         }
         String pluginVersion = configuration.pluginVersion();
-        if (pluginVersion != null && !pluginVersion.isEmpty()) {
+        if (!StringUtils.isNullOrEmpty(pluginVersion)) {
             properties.put("Plugin Version", pluginVersion);
         }
 
         String instID = configuration.installationId();
-        if (instID != null && !instID.isEmpty()) {
+        if (!StringUtils.isNullOrEmpty(instID)) {
             properties.put("Installation ID", instID);
         }
         return properties;
