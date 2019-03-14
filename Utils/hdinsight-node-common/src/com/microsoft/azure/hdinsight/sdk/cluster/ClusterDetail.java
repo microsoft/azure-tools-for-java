@@ -49,7 +49,6 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     private final String DefaultFS = "fs.defaultFS";
     private final String FSDefaultName = "fs.default.name";
     private final String StorageAccountKeyPrefix = "fs.azure.account.key.";
-    private final String AdlsGen2Schema = "abfs";
     private final String StorageAccountNamePattern = "^(abfs[s]?|wasb[s]?)://(.*)@(.*)$";
     private final String ResourceGroupStartTag = "resourceGroups/";
     private final String ResourceGroupEndTag = "/providers/";
@@ -242,7 +241,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
             throw new HDIException("Failed to get default storage account");
         }
 
-        String schema = URI.create(containerAddress).getScheme();
+        String scheme = URI.create(containerAddress).getScheme();
 
         //for adls
         if(ADL_HOME_PREFIX.equalsIgnoreCase(containerAddress)) {
@@ -256,7 +255,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
                 defaultRootPath = coresiteMap.get(ADLS_HOME_MOUNTPOINT);
             }
 
-            URI rootURI = URI.create(String.format("%s://%s.azuredatalakestore.net", schema, accountName)).resolve(defaultRootPath);
+            URI rootURI = URI.create(String.format("%s://%s.azuredatalakestore.net", scheme, accountName)).resolve(defaultRootPath);
             return new ADLSStorageAccount(this,true, clusterIdentity, rootURI);
         } else if (Pattern.compile(StorageAccountNamePattern).matcher(containerAddress).matches()) {
             String storageAccountName = getStorageAccountName(containerAddress);
@@ -272,12 +271,12 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
                 storageAccountKey = coresiteMap.get(keyNameOfDefaultStorageAccountKey);
             }
 
-            if (!schema.startsWith(AdlsGen2Schema) && storageAccountKey == null) {
+            if (!scheme.startsWith(ADLSGen2StorageAccount.DefaultScheme) && storageAccountKey == null) {
                 throw new HDIException("Failed to get default storage account key");
             }
 
-            if (schema.startsWith(AdlsGen2Schema)) {
-                return new ADLSGen2StorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName);
+            if (scheme.startsWith(ADLSGen2StorageAccount.DefaultScheme)) {
+                return new ADLSGen2StorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName, scheme);
             } else {
                 return new HDStorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName);
             }

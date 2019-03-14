@@ -76,6 +76,7 @@ import static rx.exceptions.Exceptions.propagate;
 public class SparkBatchJob implements ISparkBatchJob, ILogger {
     public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
     public static final String AdlsPathPattern = "^adl://([^/.\\s]+\\.)+[^/.\\s]+(/[^/.\\s]+)*/?$";
+    public static final String AdlsGen2RestfulPathPattern = "^(https://)([^/.\\s]+\\.)(dfs\\.core\\.windows\\.net)(/[^/.\\s]+)*/?$";
 
     @Nullable
     private String currentLogUrl;
@@ -1152,6 +1153,18 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
             return JobUtils.deployArtifactToADLS(artifactPath, destinationRootPath, accessToken)
                     .map(path -> {
                         getSubmissionParameter().setFilePath(path);
+                        return this;
+                    });
+        } else if(destinationRootPath != null && destinationRootPath.matches(AdlsGen2RestfulPathPattern) && accessToken != null) {
+            //use ADLS GEN2
+            URI dest = jobDeploy.getUploadDir(destinationRootPath);
+            if (dest == null) {
+                return Observable.error(new IllegalArgumentException("Cannot get valid uploading artifact destination"));
+            }
+
+            return jobDeploy.deploy(new File(artifactPath), dest)
+                    .map(redirectPath -> {
+                        getSubmissionParameter().setFilePath(redirectPath);
                         return this;
                     });
         } else if (destinationRootPath != null && destinationRootPath.matches(WebHDFSPathPattern)) {
