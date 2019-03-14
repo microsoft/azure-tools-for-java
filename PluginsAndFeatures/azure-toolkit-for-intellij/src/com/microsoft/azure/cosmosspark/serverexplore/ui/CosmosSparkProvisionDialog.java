@@ -36,7 +36,7 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HideableDecorator;
 import com.microsoft.azure.cosmosspark.common.IntegerWithErrorHintedField;
 import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri;
-import com.microsoft.azure.cosmosspark.common.JsonEnvPropertiesField;
+import com.microsoft.intellij.ui.components.JsonEnvPropertiesField;
 import com.microsoft.azure.cosmosspark.common.TextWithErrorHintedField;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionCtrlProvider;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionSettingsModel;

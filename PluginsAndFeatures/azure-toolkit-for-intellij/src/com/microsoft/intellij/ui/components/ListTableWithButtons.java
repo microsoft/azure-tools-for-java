@@ -20,11 +20,10 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.cosmosspark.common;
+package com.microsoft.intellij.ui.components;
 
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.ui.*;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.containers.ContainerUtil;

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.cosmosspark.common;
+package com.microsoft.intellij.ui.components;
 
 import com.google.common.collect.ImmutableMap;
 import com.intellij.execution.configuration.EnvironmentVariablesData;
@@ -40,9 +40,7 @@ import com.intellij.ui.UserActivityProviderComponent;
 import com.intellij.ui.table.JBTable;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ArrayUtil;
-import com.intellij.util.EnvironmentUtil;
 import com.intellij.util.containers.ContainerUtil;
-import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.ListTableModel;
 import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
 import net.miginfocom.swing.MigLayout;
@@ -62,9 +60,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-// This file is based on code in IntelliJ-Community repository, please refer to link below.
-// https://github.com/JetBrains/intellij-community/blob/898213c96ec4d4a9b21d98347c7bd3196f76cdd9/platform/lang-impl/src/com/intellij/execution/configuration/EnvironmentVariablesTextFieldWithBrowseButton.java
-// We removed system environment variables related codes and did some field format changes.
+/**
+ * This file is based on code in IntelliJ-Community repository, please refer to link below.
+ * https://github.com/JetBrains/intellij-community/blob/898213c96ec4d4a9b21d98347c7bd3196f76cdd9/platform/lang-impl/src/com/intellij/execution/configuration/EnvironmentVariablesTextFieldWithBrowseButton.java
+ * We removed system environment variables related codes and did some field format changes.
+ */
 public class JsonEnvPropertiesField extends TextFieldWithBrowseButton implements UserActivityProviderComponent {
     private EnvironmentVariablesData myData = EnvironmentVariablesData.DEFAULT;
     private final Map<String, String> myParentDefaults = new LinkedHashMap<>();

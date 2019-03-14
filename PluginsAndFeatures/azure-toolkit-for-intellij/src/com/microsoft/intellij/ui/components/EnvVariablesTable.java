@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.cosmosspark.common;
+package com.microsoft.intellij.ui.components;
 
 import com.intellij.execution.util.EnvironmentVariable;
 import com.intellij.execution.util.StringWithNewLinesCellEditor;
@@ -35,6 +35,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.AnActionButton;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.ListTableModel;
+import com.microsoft.intellij.ui.components.ListTableWithButtons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
