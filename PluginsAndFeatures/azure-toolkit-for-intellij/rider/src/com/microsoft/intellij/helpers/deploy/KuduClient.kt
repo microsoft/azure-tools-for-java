@@ -26,7 +26,7 @@ import com.jetbrains.rider.util.idea.getLogger
 import com.microsoft.azure.management.appservice.PublishingProfile
 import com.microsoft.intellij.helpers.UiConstants
 import com.microsoft.intellij.runner.RunProcessHandler
-import com.microsoft.intellij.runner.utils.WebAppDeploySession
+import com.microsoft.intellij.runner.utils.AppDeploySession
 import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUtil
 import okhttp3.Response
 import java.io.File
@@ -56,7 +56,7 @@ object KuduClient {
      */
     fun kuduZipDeploy(zipFile: File, publishingProfile: PublishingProfile, appName: String, processHandler: RunProcessHandler) {
 
-        val session = WebAppDeploySession(publishingProfile.gitUsername(), publishingProfile.gitPassword())
+        val session = AppDeploySession(publishingProfile.gitUsername(), publishingProfile.gitPassword())
 
         var success = false
         var uploadCount = 0

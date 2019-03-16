@@ -20,26 +20,23 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp
+package com.microsoft.azuretools.core.mvp.model.functionapp.functions
 
-import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
-import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
+import com.microsoft.azure.management.appservice.FunctionApp
+import com.microsoft.azure.management.appservice.implementation.AppServiceManager
+import com.microsoft.azure.management.appservice.implementation.SiteInner
+import com.microsoft.azure.management.resources.fluentcore.arm.models.GroupableResource
+import com.microsoft.azure.management.resources.fluentcore.arm.models.HasName
+import com.microsoft.azure.management.resources.fluentcore.arm.models.HasParent
+import com.microsoft.azure.management.resources.fluentcore.model.Refreshable
 
-class AzureFunctionAppModulePresenter : MvpPresenter<AzureFunctionAppModule>() {
+interface Function :
+        HasName,
+        GroupableResource<AppServiceManager, SiteInner>,
+        Refreshable<Function>,
+        HasParent<FunctionApp> {
 
-    fun onModuleRefresh() {
-        mvpView ?: return
-
-        val azureFunctionsList = AzureFunctionAppMvpModel.listAllFunctionApps(true)
-
-        for (functionApp in azureFunctionsList) {
-            val subscriptionId    = functionApp.subscriptionId
-            val appId             = functionApp.resource.id()
-            val appName           = functionApp.resource.name()
-            val state             = functionApp.resource.state()
-            val hostName          = functionApp.resource.defaultHostName()
-
-            mvpView.addChildNode(FunctionAppNode(mvpView, subscriptionId, appId, appName, state, hostName))
-        }
-    }
+    // This is currently the placeholder until issue is fixed - https://github.com/Azure/azure-functions-host/issues/2623
+    // There is no strict way to define current azure function status
+    fun isEnabled(): Boolean
 }

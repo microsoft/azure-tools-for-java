@@ -20,26 +20,33 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp
+package com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest
 
-import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
-import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
+class FunctionAppServiceFunctions(val value: List<Value>?) {
 
-class AzureFunctionAppModulePresenter : MvpPresenter<AzureFunctionAppModule>() {
+    class Value(val id: String?,
+                val name: String?,
+                val type: String?,
+                val location: String?,
+                val properties: Properties?)
 
-    fun onModuleRefresh() {
-        mvpView ?: return
+    class Properties(val name: String?,
+                     val function_app_id: String?,
+                     val config: Config?,
+                     val files: Files?,
+                     val testData: String?)
 
-        val azureFunctionsList = AzureFunctionAppMvpModel.listAllFunctionApps(true)
+    class Config(val generatedBy: String?,
+                 val configurationSource: String?,
+                 val bindings: List<Binding>?,
+                 val disabled: String?,
+                 val scriptFile: String?,
+                 val entryPoint: String?)
 
-        for (functionApp in azureFunctionsList) {
-            val subscriptionId    = functionApp.subscriptionId
-            val appId             = functionApp.resource.id()
-            val appName           = functionApp.resource.name()
-            val state             = functionApp.resource.state()
-            val hostName          = functionApp.resource.defaultHostName()
+    class Binding(val type: String?,
+                  val methods: List<String>?,
+                  val authLevel: String?,
+                  val name: String?)
 
-            mvpView.addChildNode(FunctionAppNode(mvpView, subscriptionId, appId, appName, state, hostName))
-        }
-    }
+    class Files
 }

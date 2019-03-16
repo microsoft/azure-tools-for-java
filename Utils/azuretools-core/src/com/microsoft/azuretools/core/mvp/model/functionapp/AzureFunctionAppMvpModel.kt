@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.core.mvp.model.functionapp
 
+import com.microsoft.azure.AzureEnvironment
 import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.storage.SkuName
@@ -31,6 +32,10 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.model.appserviceplan.AzureAppServicePlanMvpModel
+import com.microsoft.azuretools.core.mvp.model.functionapp.functions.Function
+import com.microsoft.azuretools.core.mvp.model.functionapp.functions.FunctionImpl
+import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.FunctionAppService
+import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.getRetrofitClient
 import com.microsoft.azuretools.core.mvp.model.storage.AzureStorageAccountMvpModel
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
@@ -218,6 +223,50 @@ object AzureFunctionAppMvpModel {
 
     fun clearSubscriptionIdToFunctionMap() {
         subscriptionIdToFunctionAppsMap.clear()
+    }
+
+    fun listFunctionsForAppWithId(subscriptionId: String, functionAppId: String): List<Function> {
+        val functionApp = getFunctionAppById(subscriptionId, functionAppId)
+        return listFunctionsForAppWithId(functionApp)
+    }
+
+    fun listFunctionsForAppWithId(functionApp: FunctionApp): List<Function> {
+        val azureManager = AuthMethodManager.getInstance().azureManager
+        val subscriptionId = functionApp.manager().subscriptionId()
+
+        val tenantId = azureManager.subscriptionManager.subscriptionDetails
+                .asSequence()
+                .find { it.subscriptionId == subscriptionId }?.tenantId
+                ?: throw Exception("Cannot get functions for App '${functionApp.name()}'. TenantId is not defined")
+
+        val retrofitClient = azureManager.getRetrofitClient(
+                azureManager.environment.azureEnvironment,
+                AzureEnvironment.Endpoint.RESOURCE_MANAGER,
+                FunctionAppService::class.java,
+                tenantId)
+
+        val resourceGroupName = functionApp.resourceGroupName()
+        val functionAppName = functionApp.name()
+
+        val response = retrofitClient
+                .getFunctions(subscriptionId, resourceGroupName, functionAppName)
+                .execute()
+
+        val rawFunctions = response.body()
+
+        val functions = mutableListOf<Function>()
+
+        rawFunctions.value?.forEach { function ->
+            functions.add(FunctionImpl(
+                    parent            = functionApp,
+                    name              = function.properties?.name ?: throw Exception("Cannot get Function name for App '${functionApp.name()}'"),
+                    id                = function.id ?: throw Exception("Cannot get Function ID for App '${functionApp.name()}'"),
+                    resourceGroupName = resourceGroupName,
+                    regionName        = functionApp.regionName(),
+                    isEnabled         = true))
+        }
+
+        return functions
     }
 
     private fun createFunctionAppDefinition(subscriptionId: String, name: String) =

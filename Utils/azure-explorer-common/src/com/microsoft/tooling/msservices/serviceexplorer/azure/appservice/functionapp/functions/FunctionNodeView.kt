@@ -20,26 +20,11 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp
+package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.functions
 
-import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
-import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView
 
-class AzureFunctionAppModulePresenter : MvpPresenter<AzureFunctionAppModule>() {
+interface FunctionNodeView : MvpView {
 
-    fun onModuleRefresh() {
-        mvpView ?: return
-
-        val azureFunctionsList = AzureFunctionAppMvpModel.listAllFunctionApps(true)
-
-        for (functionApp in azureFunctionsList) {
-            val subscriptionId    = functionApp.subscriptionId
-            val appId             = functionApp.resource.id()
-            val appName           = functionApp.resource.name()
-            val state             = functionApp.resource.state()
-            val hostName          = functionApp.resource.defaultHostName()
-
-            mvpView.addChildNode(FunctionAppNode(mvpView, subscriptionId, appId, appName, state, hostName))
-        }
-    }
+    fun renderNode(isEnabled: Boolean)
 }

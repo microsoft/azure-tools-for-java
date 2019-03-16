@@ -20,26 +20,18 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp
+package com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest
 
-import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
-import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
+import retrofit2.Call
+import retrofit2.http.GET
+import retrofit2.http.Headers
+import retrofit2.http.Path
 
-class AzureFunctionAppModulePresenter : MvpPresenter<AzureFunctionAppModule>() {
+interface FunctionAppService {
 
-    fun onModuleRefresh() {
-        mvpView ?: return
-
-        val azureFunctionsList = AzureFunctionAppMvpModel.listAllFunctionApps(true)
-
-        for (functionApp in azureFunctionsList) {
-            val subscriptionId    = functionApp.subscriptionId
-            val appId             = functionApp.resource.id()
-            val appName           = functionApp.resource.name()
-            val state             = functionApp.resource.state()
-            val hostName          = functionApp.resource.defaultHostName()
-
-            mvpView.addChildNode(FunctionAppNode(mvpView, subscriptionId, appId, appName, state, hostName))
-        }
-    }
+    @GET("/subscriptions/{subscription}/resourceGroups/{resourceGroup}/providers/Microsoft.Web/sites/{name}/functions?api-version=2016-08-01")
+    @Headers("Accept: application/json")
+    fun getFunctions(@Path("subscription") subscriptionId: String,
+                     @Path("resourceGroup") resourceGroupName: String,
+                     @Path("name") functionAppName: String): Call<FunctionAppServiceFunctions>
 }

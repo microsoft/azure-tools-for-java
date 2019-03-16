@@ -24,13 +24,11 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functi
 
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode
+import com.microsoft.tooling.msservices.serviceexplorer.*
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.base.FunctionAppBaseNodeView
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.base.FunctionAppState
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.functions.FunctionNode
 import java.util.logging.Logger
 
 class FunctionAppNode(parent: AzureFunctionAppModule,
@@ -44,8 +42,6 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
         FunctionAppBaseNodeView {
 
     companion object {
-        private val logger = Logger.getLogger(FunctionAppNode::class.java.name)
-
         private const val ACTION_START = "Start"
         private const val ACTION_STOP = "Stop"
         private const val ACTION_RESTART = "Restart"
@@ -68,6 +64,8 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
                 if (FunctionAppState.fromString(state) == FunctionAppState.RUNNING) ICON_FUNCTION_APP_RUNNING
                 else ICON_FUNCTION_APP_STOPPED
     }
+
+    private val logger = Logger.getLogger(FunctionAppNode::class.java.name)
 
     private val presenter = FunctionAppNodePresenter<FunctionAppNode>()
     private val startAction: NodeAction
@@ -100,6 +98,15 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
     }
 
     override fun refreshItems() {
+        val functions = AzureFunctionAppMvpModel.listFunctionsForAppWithId(subscriptionId, functionAppId)
+
+        for (function in functions) {
+            val functionId = function.id()
+            val functionName = function.name()
+            val isEnabled = function.isEnabled()
+
+            addChildNode(FunctionNode(this, subscriptionId, isEnabled, functionId, functionName))
+        }
     }
 
     override fun renderNode(state: FunctionAppState) {

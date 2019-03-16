@@ -48,7 +48,7 @@ import java.util.*
 
 object FunctionAppDeployStateUtil {
 
-    private val LOG = getLogger<FunctionAppDeployStateUtil>()
+    private val logger = getLogger<FunctionAppDeployStateUtil>()
 
     private val activityNotifier = AzureDeploymentProgressNotification(null)
 
@@ -65,10 +65,25 @@ object FunctionAppDeployStateUtil {
                 ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)
 
         if (!model.isCreatingNewApp) {
+            logger.info("Use existing Function App with id: '${model.appId}'")
             processHandler.setText(String.format(UiConstants.FUNCTION_APP_GET_EXISTING, model.appId))
             return AzureFunctionAppMvpModel.getFunctionAppById(subscriptionId, model.appId)
         }
 
+        val functionModelLog = StringBuilder("Create a new Function App with name '${model.appName}', ")
+                .append("isCreateResourceGroup: ")   .append(model.isCreatingResourceGroup) .append(", ")
+                .append("resourceGroupName: ")       .append(model.resourceGroupName)       .append(", ")
+                .append("isCreatingAppServicePlan: ").append(model.isCreatingAppServicePlan).append(", ")
+                .append("appServicePlanId: ")        .append(model.appServicePlanId)        .append(", ")
+                .append("appServicePlanName: ")      .append(model.appServicePlanName)      .append(", ")
+                .append("location: ")                .append(model.location)                .append(", ")
+                .append("pricingTier: ")             .append(model.pricingTier)             .append(", ")
+                .append("isCreatingStorageAccount: ").append(model.isCreatingStorageAccount).append(", ")
+                .append("storageAccountId: ")        .append(model.storageAccountId)        .append(", ")
+                .append("storageAccountName: ")      .append(model.storageAccountName)      .append(", ")
+                .append("storageAccountType: ")      .append(model.storageAccountType)
+
+        logger.info(functionModelLog.toString())
         processHandler.setText(String.format(UiConstants.FUNCTION_APP_CREATE, model.appName))
 
         if (model.appName.isEmpty()) throw RuntimeException(UiConstants.FUNCTION_APP_NAME_NOT_DEFINED)
@@ -146,7 +161,7 @@ object FunctionAppDeployStateUtil {
                 FileUtil.delete(zipFile)
             }
         } catch (e: Throwable) {
-            LOG.error(e)
+            logger.error(e)
             processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: $e")
             throw RuntimeException(UiConstants.ZIP_DEPLOY_PUBLISH_FAIL, e)
         }

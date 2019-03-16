@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -35,7 +35,7 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-class WebAppDeploySession(username: String, password: String) {
+class AppDeploySession(username: String, password: String) {
 
     private val credentials = BasicAuthenticationCredentials(username, password)
 
