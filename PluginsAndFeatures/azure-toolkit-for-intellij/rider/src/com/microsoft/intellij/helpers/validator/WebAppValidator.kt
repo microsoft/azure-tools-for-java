@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -25,69 +25,25 @@ package com.microsoft.intellij.helpers.validator
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 
-object WebAppValidator : AzureResourceValidator() {
+object WebAppValidator : AppValidator("Web") {
 
-    private const val WEB_APP_NOT_DEFINED = "Please select an existing Web App."
-    private const val WEB_APP_NAME_NOT_DEFINED = "Web App name not provided."
-    private const val WEB_APP_NAME_CANNOT_START_END_WITH_DASH = "Web App name cannot begin or end with '-' symbol."
-    private const val WEB_APP_NAME_INVALID = "Web App name cannot contain characters: %s."
     private const val WEB_APP_ALREADY_EXISTS = "Web App with name '%s' already exists."
-
     private const val CONNECTION_STRING_NAME_ALREADY_EXISTS = "Connection String with name '%s' already exists."
-    private const val CONNECTION_STRING_NAME_NOT_DEFINED = "Connection string not set."
-
-    private val webAppNameRegex = "[^\\p{L}0-9-]".toRegex()
-    private const val WEB_APP_NAME_MIN_LENGTH = 2
-    private const val WEB_APP_NAME_MAX_LENGTH = 60
-    private const val WEB_APP_NAME_LENGTH_ERROR =
-            "Web App name should be from $WEB_APP_NAME_MIN_LENGTH to $WEB_APP_NAME_MAX_LENGTH characters."
 
     // Please see for details -
     // https://docs.microsoft.com/en-us/azure/app-service/app-service-web-get-started-dotnet?toc=%2Fen-us%2Fdotnet%2Fapi%2Fazure_ref_toc%2Ftoc.json&bc=%2Fen-us%2Fdotnet%2Fazure_breadcrumb%2Ftoc.json&view=azure-dotnet#create-an-app-service-plan
     fun validateWebAppName(name: String): ValidationResult {
-
-        val status = checkWebAppNameIsSet(name)
+        val status = validateAppName(name)
         if (!status.isValid) return status
 
-        status.merge(checkWebAppExists(name))
-        if (!status.isValid) return status
-
-        return status
-                .merge(checkStartsEndsWithDash(name))
-                .merge(checkNameMinLength(name))
-                .merge(checkNameMaxLength(name))
-                .merge(checkInvalidCharacters(name))
+        return status.merge(checkWebAppExists(name))
     }
-
-    fun checkWebAppIdIsSet(webAppId: String?) =
-            checkValueIsSet(webAppId, WEB_APP_NOT_DEFINED)
-
-    fun checkWebAppNameIsSet(name: String) =
-            checkValueIsSet(name, WEB_APP_NAME_NOT_DEFINED)
-
-    fun checkStartsEndsWithDash(name: String): ValidationResult {
-        val status = ValidationResult()
-        if (name.startsWith('-') || name.endsWith('-')) status.setInvalid(WEB_APP_NAME_CANNOT_START_END_WITH_DASH)
-        return status
-    }
-
-    fun checkNameMaxLength(name: String) =
-            checkNameMaxLength(name, WEB_APP_NAME_MAX_LENGTH, WEB_APP_NAME_LENGTH_ERROR)
-
-    fun checkNameMinLength(name: String) =
-            checkNameMinLength(name, WEB_APP_NAME_MIN_LENGTH, WEB_APP_NAME_LENGTH_ERROR)
-
-    fun checkInvalidCharacters(name: String) =
-            validateResourceNameRegex(name, webAppNameRegex, WEB_APP_NAME_INVALID)
 
     fun checkWebAppExists(name: String): ValidationResult {
         val status = ValidationResult()
         if (isWebAppExist(name)) return status.setInvalid(String.format(WEB_APP_ALREADY_EXISTS, name))
         return status
     }
-
-    fun checkConnectionStringNameIsSet(name: String) =
-            checkValueIsSet(name, CONNECTION_STRING_NAME_NOT_DEFINED)
 
     fun checkConnectionStringNameExistence(name: String, webAppId: String): ValidationResult {
         val status = checkConnectionStringNameIsSet(name)

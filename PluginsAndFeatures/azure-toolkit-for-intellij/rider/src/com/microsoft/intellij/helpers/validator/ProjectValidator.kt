@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -39,6 +39,9 @@ object ProjectValidator : AzureResourceValidator() {
     private const val PROJECT_TARGETS_NOT_DEFINED =
             "Selected project '%s' cannot be published. Required target '%s' was not found."
 
+    private const val PROJECT_NOT_FUNCTION_APP =
+            "Selected project '%s' cannot be published. Please select a Function App"
+
     private const val WEB_APP_TARGET_NAME = "Microsoft.WebApplication.targets"
 
     private val timeouts = RpcTimeouts(500L, 2000L)
@@ -49,17 +52,15 @@ object ProjectValidator : AzureResourceValidator() {
      * Note: for .NET web apps we ned to check for the "WebApplication" targets
      *       that contains tasks for generating publishable package
      */
-    fun validateProject(publishableProject: PublishableProjectModel?): ValidationResult {
-
+    fun validateProjectForWebApp(publishableProject: PublishableProjectModel?): ValidationResult {
         val status = ValidationResult()
-
         publishableProject ?: return status.setInvalid(PROJECT_NOT_DEFINED)
 
         if (!publishableProject.isWeb)
             return status.setInvalid(
                     String.format(PROJECT_PUBLISHING_NOT_SUPPORTED, publishableProject.projectName))
 
-        if (!isPublishSupported(publishableProject))
+        if (!isPublishToWebAppSupported(publishableProject))
             return status.setInvalid(
                     String.format(PROJECT_PUBLISHING_OS_NOT_SUPPORTED, publishableProject.projectName, SystemInfo.OS_NAME))
 
@@ -70,8 +71,22 @@ object ProjectValidator : AzureResourceValidator() {
         return status
     }
 
-    private fun isPublishSupported(publishableProject: PublishableProjectModel) =
+    fun validateProjectForFunctionApp(publishableProject: PublishableProjectModel?): ValidationResult {
+        val status = ValidationResult()
+        publishableProject ?: return status.setInvalid(PROJECT_NOT_DEFINED)
+
+        if (!isPublishToFunctionAppSupported(publishableProject))
+            return status.setInvalid(
+                    String.format(PROJECT_NOT_FUNCTION_APP, publishableProject.projectName))
+
+        return status
+    }
+
+    private fun isPublishToWebAppSupported(publishableProject: PublishableProjectModel) =
             publishableProject.isWeb && (publishableProject.isDotNetCore || SystemInfo.isWindows)
+
+    private fun isPublishToFunctionAppSupported(publishableProject: PublishableProjectModel) =
+            publishableProject.isAzureFunction
 
     /**
      * Check whether necessary targets exists in a project that are necessary for web app deployment

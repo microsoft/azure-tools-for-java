@@ -22,19 +22,25 @@
 
 package com.microsoft.azuretools.core.mvp.model.functionapp
 
-import com.microsoft.azure.management.appservice.FunctionApp
+import com.microsoft.azure.management.appservice.*
+import com.microsoft.azure.management.resources.fluentcore.arm.Region
+import com.microsoft.azure.management.storage.SkuName
+import com.microsoft.azure.management.storage.StorageAccount
+import com.microsoft.azure.management.storage.StorageAccountSkuType
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
+import com.microsoft.azuretools.core.mvp.model.appserviceplan.AzureAppServicePlanMvpModel
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
 
 object AzureFunctionAppMvpModel {
 
-    private val logger = Logger.getLogger(this::class.java.name)
+    private val logger = Logger.getLogger(AzureFunctionAppMvpModel::class.java.name)
 
     private val subscriptionIdToFunctionAppsMap = ConcurrentHashMap<String, List<FunctionApp>>()
+    private val appToConnectionStringsMap = ConcurrentHashMap<FunctionApp, List<ConnectionString>>()
 
     fun listAllFunctionApps(force: Boolean = false): List<ResourceEx<FunctionApp>> {
         if (!force && subscriptionIdToFunctionAppsMap.isNotEmpty())
@@ -81,20 +87,20 @@ object AzureFunctionAppMvpModel {
             AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().functionApps()
                     .listByResourceGroup(resourceGroupName)
 
-    fun startFunctionApp(subscriptionId: String, functionAppId: String) {
-        val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-        azure.appServices().functionApps().getById(functionAppId).start()
-    }
+    fun getFunctionAppById(subscriptionId: String, appId: String) =
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().functionApps().getById(appId)
 
-    fun restartFunctionApp(subscriptionId: String, functionAppId: String) {
-        val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-        azure.appServices().functionApps().getById(functionAppId).restart()
-    }
+    fun startFunctionApp(subscriptionId: String, functionAppId: String) =
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId)
+                    .appServices().functionApps().getById(functionAppId).start()
 
-    fun stopFunctionApp(subscriptionId: String, functionAppId: String) {
-        val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
-        azure.appServices().functionApps().getById(functionAppId).stop()
-    }
+    fun restartFunctionApp(subscriptionId: String, functionAppId: String) =
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId)
+                    .appServices().functionApps().getById(functionAppId).restart()
+
+    fun stopFunctionApp(subscriptionId: String, functionAppId: String) =
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId)
+                    .appServices().functionApps().getById(functionAppId).stop()
 
     fun deleteFunctionApp(subscriptionId: String, functionAppId: String) {
         try {
@@ -106,7 +112,112 @@ object AzureFunctionAppMvpModel {
         }
     }
 
+    fun createFunctionApp(subscriptionId: String,
+                          appName: String,
+                          isCreateResourceGroup: Boolean,
+                          resourceGroupName: String,
+                          isCreateAppServicePlan: Boolean,
+                          appServicePlanId: String,
+                          appServicePlanName: String,
+                          region: Region,
+                          pricingTier: PricingTier,
+                          isCreateStorageAccount: Boolean,
+                          storageAccount: StorageAccount?,
+                          storageAccountName: String,
+                          storageAccountType: StorageAccountSkuType): FunctionApp {
+
+        val definition = createFunctionAppDefinition(subscriptionId, appName)
+
+        val withPlan =
+                if (isCreateAppServicePlan) {
+                    val withRegion = definition.withRegion(region)
+
+                    val withResourceGroup =
+                            if (isCreateResourceGroup) withRegion.withNewResourceGroup(resourceGroupName)
+                            else withRegion.withExistingResourceGroup(resourceGroupName)
+
+                    val planWithRegion =
+                            AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().appServicePlans()
+                                    .define(appServicePlanName)
+                                    .withRegion(region)
+
+                    val planWithResourceGroup =
+                            if (isCreateResourceGroup) planWithRegion.withNewResourceGroup(resourceGroupName)
+                            else planWithRegion.withExistingResourceGroup(resourceGroupName)
+
+                    val planCreatable = planWithResourceGroup
+                            .withPricingTier(pricingTier)
+                            .withOperatingSystem(OperatingSystem.WINDOWS)
+
+                    withResourceGroup.withNewAppServicePlan(planCreatable)
+                } else {
+                    val appServicePlan = AzureAppServicePlanMvpModel.getAppServicePlanById(subscriptionId, appServicePlanId)
+                    val withPlan = definition.withExistingAppServicePlan(appServicePlan)
+
+                    val withResourceGroup =
+                            if (isCreateResourceGroup) withPlan.withNewResourceGroup(resourceGroupName)
+                            else withPlan.withExistingResourceGroup(resourceGroupName)
+
+                    withResourceGroup
+                }
+
+        val withAppStorage = withStorageAccount(withPlan, isCreateStorageAccount, storageAccount, storageAccountName, storageAccountType.name())
+
+        return withAppStorage
+                .withLatestRuntimeVersion()
+                .create()
+    }
+
+    fun checkFunctionAppNameExists(subscriptionId: String, nameToCheck: String, force: Boolean = false): Boolean {
+        if (!force && subscriptionIdToFunctionAppsMap.containsKey(subscriptionId)) {
+            return subscriptionIdToFunctionAppsMap[subscriptionId]!!.any { app -> app.name() == nameToCheck }
+        }
+
+        val functionApps = listAllFunctionApps(force = true)
+        return functionApps.any { app -> app.resource.name() == nameToCheck }
+    }
+
+    fun getConnectionStrings(app: FunctionApp, force: Boolean): List<ConnectionString> {
+        if (!force && appToConnectionStringsMap.containsKey(app)) {
+            val connectionStrings = appToConnectionStringsMap[app]
+            if (connectionStrings != null)
+                return connectionStrings
+        }
+
+        val connectionStrings = app.connectionStrings.values.toList()
+        appToConnectionStringsMap[app] = connectionStrings
+
+        return connectionStrings
+    }
+
+    fun checkConnectionStringNameExists(app: FunctionApp, connectionStringName: String, force: Boolean = false): Boolean {
+        if (!force) {
+            if (!appToConnectionStringsMap.containsKey(app)) return false
+            return appToConnectionStringsMap[app]?.any { it.name() == connectionStringName } ?: false
+        }
+
+        val connectionStrings = getConnectionStrings(app, true)
+        return connectionStrings.any { it.name() == connectionStringName }
+    }
+
+    fun refreshSubscriptionToFunctionAppMap() {
+        listAllFunctionApps(true)
+    }
+
     fun clearSubscriptionIdToFunctionMap() {
         subscriptionIdToFunctionAppsMap.clear()
+    }
+
+    private fun createFunctionAppDefinition(subscriptionId: String, name: String) =
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().functionApps().define(name)
+
+    private fun withStorageAccount(definition: FunctionApp.DefinitionStages.WithCreate,
+                                   isCreateNew: Boolean,
+                                   storageAccount: StorageAccount?,
+                                   name: String,
+                                   skuName: SkuName): FunctionApp.DefinitionStages.WithCreate {
+
+        return if (isCreateNew) definition.withNewStorageAccount(name, skuName)
+        else definition.withExistingStorageAccount(storageAccount)
     }
 }

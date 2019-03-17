@@ -8,9 +8,9 @@
       <html>
         <p>Rider plugin for integration with Azure cloud services. Allow to create, configure, and deploy .Net Core and .Net Web Apps to Azure from Rider on all supported platforms.</p>
         <ul>
-          <li>Azure App Services: Create and deploy your .Net Core Web applications on Azure Web App on any platform, and .Net Web application on Windows</li>
+          <li>Azure App Services: Create and deploy your Function Apps and .Net Core Web applications on Azure Web App on any platform, and .Net Web application on Windows</li>
           <li>SQL Database: Create and deploy SQL Database and SQL Servers while publishing a web app. The web app will be linked with created database
-          <li>Azure Explorer: View and manage your Azure resources (web apps, sql databases, virtual machines, storage accounts, redis caches, docker hosts, container registries)</li>
+          <li>Azure Explorer: View and manage your Azure resources (web and function apps, sql databases, virtual machines, storage accounts, redis caches, docker hosts, container registries)</li>
           <li>Azure Cloud Shell: Use a Cloud Shell terminal (select subscription to run, upload to cloud shell action, intercept download command and open browser to fetch file from cloud shell)</li>
         </ul>
       </html>
@@ -27,8 +27,13 @@
               <li>Create SQL Database from Azure Explorer (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/135">#135</a>)</li>
             </ul>
           </li>
+          <li>Azure Function Apps
+            <ul>
+              <li>Publish Function Apps with run configuration or from a project explorer context menu (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/150">#150</a>)</li>
+            </ul>
+          </li>
         </ul>
-      
+
         <p>[3.14.0-2018.3.1]</p>
         <ul>
           <li>Various bugfixes:</li>
@@ -106,9 +111,13 @@
                          provider="com.microsoft.intellij.configuration.AzureRiderConfigurableProvider"
                          dynamic="true"/>
 
-    <configurationType implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppConfigurationType"/>
-    <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.RiderWebAppRunner"/>
-    <rider.publishConfigurationProvider implementation="com.microsoft.intellij.runner.webapp.AzureDotNetWebAppContextPublishProvider" order="last" />
+    <configurationType implementation="com.microsoft.intellij.runner.webapp.config.RiderWebAppConfigurationType"/>
+    <programRunner implementation="com.microsoft.intellij.runner.webapp.config.RiderWebAppRunner"/>
+    <rider.publishConfigurationProvider implementation="com.microsoft.intellij.runner.webapp.WebAppContextPublishProvider" order="last" />
+
+    <configurationType implementation="com.microsoft.intellij.runner.functionapp.config.FunctionAppConfigurationType"/>
+    <programRunner implementation="com.microsoft.intellij.runner.functionapp.config.FunctionAppRunner"/>
+    <rider.publishConfigurationProvider implementation="com.microsoft.intellij.runner.functionapp.FunctionAppContextPublishProvider" order="last" />
 
     <stepsBeforeRunProvider implementation="org.jetbrains.plugins.azure.functions.buildTasks.BuildFunctionsProjectBeforeRunTaskProvider"/>
     <configurationType implementation="org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostConfigurationType"/>

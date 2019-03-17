@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -37,7 +37,7 @@ object AppServicePlanValidator : AzureResourceValidator() {
     private const val APP_SERVICE_PLAN_NAME_MIN_LENGTH = 1
     private const val APP_SERVICE_PLAN_NAME_MAX_LENGTH = 40
     private const val APP_SERVICE_PLAN_NAME_LENGTH_ERROR =
-            "Web App name should be from $APP_SERVICE_PLAN_NAME_MIN_LENGTH to $APP_SERVICE_PLAN_NAME_MAX_LENGTH characters."
+            "App Service Plan name should be from $APP_SERVICE_PLAN_NAME_MIN_LENGTH to $APP_SERVICE_PLAN_NAME_MAX_LENGTH characters."
 
     fun validateAppServicePlanName(name: String): ValidationResult {
 

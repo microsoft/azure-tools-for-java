@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -46,12 +46,12 @@ import com.microsoft.intellij.component.AzureComponent
 import com.microsoft.intellij.component.AzureResourceGroupSelector
 import com.microsoft.intellij.component.AzureResourceNameComponent
 import com.microsoft.intellij.component.AzureSubscriptionsSelector
-import com.microsoft.intellij.component.extension.createDefaultRenderer
+import com.microsoft.intellij.component.extension.setDefaultRenderer
 import com.microsoft.intellij.component.extension.getSelectedValue
 import com.microsoft.intellij.component.extension.initValidationWithResult
 import com.microsoft.intellij.component.extension.setComponentsEnabled
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
-import com.microsoft.intellij.deploy.NotificationConstant
+import org.jetbrains.plugins.azure.deploy.NotificationConstant
 import com.microsoft.intellij.helpers.defaults.AzureDefaults
 import com.microsoft.intellij.helpers.validator.LocationValidator
 import com.microsoft.intellij.helpers.validator.SqlServerValidator
@@ -181,7 +181,7 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
                         subscriptionId,
                         sqlServerName,
                         cbLocation.getSelectedValue()!!.region(),
-                        pnlResourceGroup.rdoCreateResourceGroup.isSelected,
+                        pnlResourceGroup.rdoCreateNew.isSelected,
                         pnlResourceGroup.cbResourceGroup.getSelectedValue()!!.name(),
                         txtAdminLoginValue.text,
                         passAdminPassword.password)
@@ -230,10 +230,10 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
         }
 
         if (resourceGroups.isEmpty()) {
-            pnlResourceGroup.rdoCreateResourceGroup.doClick()
+            pnlResourceGroup.rdoCreateNew.doClick()
             pnlResourceGroup.lastSelectedResourceGroup = null
         }
-        setComponentsEnabled(true, pnlResourceGroup.cbResourceGroup, pnlResourceGroup.rdoExistingResourceGroup)
+        setComponentsEnabled(true, pnlResourceGroup.cbResourceGroup, pnlResourceGroup.rdoUseExisting)
     }
 
     override fun fillLocation(locations: List<Location>) {
@@ -299,8 +299,7 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
     }
 
     private fun initLocationComboBox() {
-        cbLocation.renderer =
-                cbLocation.createDefaultRenderer(EMPTY_LOCATION_MESSAGE) { it.displayName() }
+        cbLocation.setDefaultRenderer(EMPTY_LOCATION_MESSAGE) { it.displayName() }
     }
 
     private fun updateAzureModelInBackground(project: Project) {

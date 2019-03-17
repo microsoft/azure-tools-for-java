@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -21,6 +21,8 @@
  */
 
 package com.microsoft.intellij.runner.webapp.model
+
+import com.microsoft.intellij.runner.database.model.DatabasePublishModel
 
 class DotNetWebAppSettingModel {
     val webAppModel = WebAppPublishModel()

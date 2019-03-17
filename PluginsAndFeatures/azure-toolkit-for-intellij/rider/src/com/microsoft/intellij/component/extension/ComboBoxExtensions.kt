@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -26,10 +26,9 @@ import com.intellij.ui.ListCellRendererWrapper
 import javax.swing.Icon
 import javax.swing.JComboBox
 import javax.swing.JList
-import javax.swing.ListCellRenderer
 
 fun <T>JComboBox<T>.getSelectedValue(): T? {
-    val index = selectedIndex
+    val index = this.selectedIndex
     if (index == -1) return null
     return getItemAt(index)
 }
@@ -49,15 +48,15 @@ fun <T>JComboBox<T>.fillComboBox(elements: List<T>, defaultComparator: (T) -> Bo
     elements.forEach {
         addItem(it)
         if (defaultComparator(it))
-            selectedItem = it
+            this.selectedItem = it
     }
 }
 
-fun <T>JComboBox<T>.createDefaultRenderer(errorMessage: String,
-                                          icon: Icon? = null,
-                                          getValueString: (T) -> String): ListCellRenderer<T> {
+fun <T>JComboBox<T>.setDefaultRenderer(errorMessage: String,
+                                       icon: Icon? = null,
+                                       getValueString: (T) -> String) {
 
-    return object : ListCellRendererWrapper<T>() {
+    this.renderer = object : ListCellRendererWrapper<T>() {
         override fun customize(list: JList<*>, value: T?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
             if (value == null) {
                 setText(errorMessage)

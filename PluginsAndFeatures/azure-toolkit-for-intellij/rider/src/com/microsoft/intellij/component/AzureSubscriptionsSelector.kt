@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -27,7 +27,7 @@ import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.components.Label
 import com.intellij.util.ui.UIUtil
 import com.microsoft.azure.management.resources.Subscription
-import com.microsoft.intellij.component.extension.createDefaultRenderer
+import com.microsoft.intellij.component.extension.setDefaultRenderer
 import com.microsoft.intellij.component.extension.fillComboBox
 import com.microsoft.intellij.component.extension.getSelectedValue
 import com.microsoft.intellij.helpers.validator.SubscriptionValidator
@@ -72,7 +72,7 @@ class AzureSubscriptionsSelector :
     }
 
     private fun initSubscriptionComboBox() {
-        cbSubscription.renderer = cbSubscription.createDefaultRenderer(EMPTY_SUBSCRIPTION_MESSAGE) { it.displayName() }
+        cbSubscription.setDefaultRenderer(EMPTY_SUBSCRIPTION_MESSAGE) { it.displayName() }
 
         cbSubscription.addActionListener {
             val subscription = cbSubscription.getSelectedValue() ?: return@addActionListener

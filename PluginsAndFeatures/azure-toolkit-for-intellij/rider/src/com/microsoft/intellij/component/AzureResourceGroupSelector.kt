@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,7 +24,7 @@ package com.microsoft.intellij.component
 
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ValidationInfo
-import com.jetbrains.rd.util.lifetime.LifetimeDefinition
+import com.jetbrains.rd.util.lifetime.Lifetime
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.intellij.component.extension.*
 import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
@@ -35,7 +35,7 @@ import javax.swing.JPanel
 import javax.swing.JRadioButton
 import javax.swing.JTextField
 
-class AzureResourceGroupSelector(private val lifetimeDef: LifetimeDefinition) :
+class AzureResourceGroupSelector(private val lifetime: Lifetime) :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
         AzureComponent {
 
@@ -43,10 +43,10 @@ class AzureResourceGroupSelector(private val lifetimeDef: LifetimeDefinition) :
         private const val EMPTY_RESOURCE_GROUP_MESSAGE = "No existing Azure Resource Groups"
     }
 
-    val rdoExistingResourceGroup = JRadioButton("Use Existing", true)
+    val rdoUseExisting = JRadioButton("Use Existing", true)
     val cbResourceGroup = ComboBox<ResourceGroup>()
 
-    val rdoCreateResourceGroup = JRadioButton("Create New")
+    val rdoCreateNew = JRadioButton("Create New")
     val txtResourceGroupName = JTextField("")
 
     var lastSelectedResourceGroup: ResourceGroup? = null
@@ -60,10 +60,10 @@ class AzureResourceGroupSelector(private val lifetimeDef: LifetimeDefinition) :
         initResourceGroupComboBox()
         initResourceGroupButtonGroup()
 
-        add(rdoExistingResourceGroup)
+        add(rdoUseExisting)
         add(cbResourceGroup, "growx")
 
-        add(rdoCreateResourceGroup)
+        add(rdoCreateNew)
         add(txtResourceGroupName, "growx")
 
         initComponentValidation()
@@ -71,7 +71,7 @@ class AzureResourceGroupSelector(private val lifetimeDef: LifetimeDefinition) :
 
     override fun validateComponent(): List<ValidationInfo> {
         if (!isEnabled) return emptyList()
-        if (rdoExistingResourceGroup.isSelected)
+        if (rdoUseExisting.isSelected)
             return listOfNotNull(ResourceGroupValidator.checkResourceGroupIsSet(cbResourceGroup.getSelectedValue())
                     .toValidationInfo(cbResourceGroup))
 
@@ -82,13 +82,13 @@ class AzureResourceGroupSelector(private val lifetimeDef: LifetimeDefinition) :
 
     override fun initComponentValidation() {
         txtResourceGroupName.initValidationWithResult(
-                lifetimeDef,
+                lifetime.createNested(),
                 textChangeValidationAction = {
-                    if (!isEnabled || rdoExistingResourceGroup.isSelected) return@initValidationWithResult ValidationResult()
+                    if (!isEnabled || rdoUseExisting.isSelected) return@initValidationWithResult ValidationResult()
                     ResourceGroupValidator.checkNameMaxLength(txtResourceGroupName.text)
                             .merge(ResourceGroupValidator.checkInvalidCharacters(txtResourceGroupName.text)) },
                 focusLostValidationAction = {
-                    if (!isEnabled || rdoExistingResourceGroup.isSelected) return@initValidationWithResult ValidationResult()
+                    if (!isEnabled || rdoUseExisting.isSelected) return@initValidationWithResult ValidationResult()
                     ResourceGroupValidator.checkEndsWithPeriod(txtResourceGroupName.text) })
     }
 
@@ -97,7 +97,7 @@ class AzureResourceGroupSelector(private val lifetimeDef: LifetimeDefinition) :
         cbResourceGroup.fillComboBox(resourceGroups.sortedBy { it.name() }, defaultComparator)
 
         if (resourceGroups.isEmpty()) {
-            rdoCreateResourceGroup.doClick()
+            rdoCreateNew.doClick()
             lastSelectedResourceGroup = null
         }
     }
@@ -108,7 +108,7 @@ class AzureResourceGroupSelector(private val lifetimeDef: LifetimeDefinition) :
     }
 
     private fun initResourceGroupComboBox() {
-        cbResourceGroup.renderer = cbResourceGroup.createDefaultRenderer(EMPTY_RESOURCE_GROUP_MESSAGE) { it.name() }
+        cbResourceGroup.setDefaultRenderer(EMPTY_RESOURCE_GROUP_MESSAGE) { it.name() }
 
         cbResourceGroup.addActionListener {
             val resourceGroup = cbResourceGroup.getSelectedValue() ?: return@addActionListener
@@ -122,11 +122,11 @@ class AzureResourceGroupSelector(private val lifetimeDef: LifetimeDefinition) :
     private fun initResourceGroupButtonGroup() {
         val resourceGroupButtons = ButtonGroup()
 
-        resourceGroupButtons.add(rdoExistingResourceGroup)
-        resourceGroupButtons.add(rdoCreateResourceGroup)
+        resourceGroupButtons.add(rdoUseExisting)
+        resourceGroupButtons.add(rdoCreateNew)
 
-        rdoExistingResourceGroup.addActionListener { toggleResourceGroupPanel(false) }
-        rdoCreateResourceGroup.addActionListener { toggleResourceGroupPanel(true) }
+        rdoUseExisting.addActionListener { toggleResourceGroupPanel(false) }
+        rdoCreateNew.addActionListener { toggleResourceGroupPanel(true) }
 
         toggleResourceGroupPanel(false)
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -25,7 +25,6 @@ package com.microsoft.intellij.runner.webapp.model
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.resources.Subscription
-import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.intellij.helpers.defaults.AzureDefaults
 
 class WebAppPublishModel {
@@ -41,9 +40,9 @@ class WebAppPublishModel {
 
     var subscription: Subscription? = null
 
-    var isCreatingWebApp = false
-    var webAppId = ""
-    var webAppName = ""
+    var isCreatingNewApp = false
+    var appId = ""
+    var appName = ""
 
     var isCreatingResourceGroup = false
     var resourceGroupName = ""
@@ -62,14 +61,14 @@ class WebAppPublishModel {
      * Reset the model with values after creating a new instance
      */
     fun resetOnPublish(webApp: WebApp) {
-        isCreatingWebApp = false
-        webAppId = webApp.id()
-        webAppName = ""
+        isCreatingNewApp = false
+        appId = webApp.id()
+        appName = ""
 
         isCreatingResourceGroup = false
+        resourceGroupName = ""
 
         isCreatingAppServicePlan = false
-        appServicePlanId = webApp.appServicePlanId()
         appServicePlanName = ""
     }
 }

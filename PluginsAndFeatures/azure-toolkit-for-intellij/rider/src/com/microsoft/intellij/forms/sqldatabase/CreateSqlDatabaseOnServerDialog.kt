@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -46,7 +46,7 @@ import com.microsoft.intellij.component.AzureResourceNameComponent
 import com.microsoft.intellij.component.AzureSubscriptionsSelector
 import com.microsoft.intellij.component.extension.*
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
-import com.microsoft.intellij.deploy.NotificationConstant
+import org.jetbrains.plugins.azure.deploy.NotificationConstant
 import com.microsoft.intellij.helpers.defaults.AzureDefaults
 import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
 import com.microsoft.intellij.helpers.validator.SqlDatabaseValidator
@@ -298,16 +298,13 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     }
 
     private fun initResourceGroupComboBox() {
-        cbResourceGroup.renderer =
-                cbResourceGroup.createDefaultRenderer(EMPTY_RESOURCE_GROUP_MESSAGE) { it.name() }
-
+        cbResourceGroup.setDefaultRenderer(EMPTY_RESOURCE_GROUP_MESSAGE) { it.name() }
         setComponentsEnabled(false, cbResourceGroup)
     }
 
     private fun initSqlServerComboBox() {
+        cbSqlServer.setDefaultRenderer("") { "${it.name()} (${it.resourceGroupName()})" }
         cbSqlServer.apply {
-            renderer = cbSqlServer.createDefaultRenderer("") { "${it.name()} (${it.resourceGroupName()})" }
-
             removeAllItems()
             addItem(sqlServer)
         }
@@ -316,9 +313,8 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     }
 
     private fun initDatabaseEditionsComboBox() {
+        cbDatabaseEdition.setDefaultRenderer(EMPTY_DATABASE_EDITIONS_MESSAGE) { it.toString() }
         cbDatabaseEdition.apply {
-            renderer = cbDatabaseEdition.createDefaultRenderer(EMPTY_DATABASE_EDITIONS_MESSAGE) { it.toString() }
-
             addActionListener {
                 val edition = cbDatabaseEdition.getSelectedValue() ?: return@addActionListener
                 if (edition == lastSelectedDatabaseEdition) return@addActionListener
@@ -331,8 +327,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     }
 
     private fun initDatabaseComputeSizeComboBox() {
-        cbDatabaseComputeSize.renderer =
-                cbDatabaseComputeSize.createDefaultRenderer(EMPTY_COMPUTE_SIZE_MESSAGE) { it.toString() }
+        cbDatabaseComputeSize.setDefaultRenderer(EMPTY_COMPUTE_SIZE_MESSAGE) { it.toString() }
     }
 
     private fun validationSqlDatabaseName() =
