@@ -119,12 +119,10 @@ public class DefaultProducer implements Producer {
 
     private Map<String, String> mergeProperties(Map<String, String> properties) {
         Map<String, String> commonProperties = TelemetryManager.getInstance().getCommonProperties();
-        Map<String, String> merged = new HashMap<>();
-        if (properties == null) {
-            properties = new HashMap<>();
+        Map<String, String> merged = new HashMap<>(commonProperties);
+        if (properties != null) {
+            merged.putAll(properties);
         }
-        merged.putAll(commonProperties);
-        merged.putAll(properties);
         return merged;
     }
 
