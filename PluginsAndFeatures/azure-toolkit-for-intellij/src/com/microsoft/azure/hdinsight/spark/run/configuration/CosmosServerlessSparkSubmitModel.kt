@@ -14,7 +14,7 @@ import java.util.stream.Stream
 class CosmosServerlessSparkSubmitModel(project: Project) : SparkSubmitModel(project,
         CreateSparkBatchJobParameters()
                 .withSparkEventsDirectoryPath("spark-events")
-                .withExtendedProperties(emptyMap())) {
+                .withExtendedProperties(mutableMapOf())) {
     constructor(): this(DummyProject.getInstance())
 
     @get:Transient @set:Transient var sparkEventsDirectoryPrefix: String = "adl://*.azuredatalakestore.net/"
@@ -38,7 +38,7 @@ class CosmosServerlessSparkSubmitModel(project: Project) : SparkSubmitModel(proj
     @Tag("extended_properties_field")
     @XCollection(style = XCollection.Style.v2)
     fun setExtendedProperties(extendedProperties: Map<String, String>?) {
-        (submissionParameter as CreateSparkBatchJobParameters).withExtendedProperties(extendedProperties ?: emptyMap())
+        (submissionParameter as CreateSparkBatchJobParameters).withExtendedProperties(extendedProperties ?: mutableMapOf())
     }
 
     override fun getDefaultParameters(): Stream<Pair<String, out Any>> {
