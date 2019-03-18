@@ -47,6 +47,11 @@ public class CosmosSparkClusterUpdateDialog extends CosmosSparkProvisionDialog i
         this.setTitle("Update Cluster");
         this.auWarningLabel.setToolTipText(AU_WARNING_TIP);
         disableUneditableFields();
+
+        // Hide extended properties field
+        extendedPropertiesLabel.setVisible(false);
+        extendedPropertiesField.setVisible(false);
+
         ctrlProvider = new CosmosSparkClusterUpdateCtrlProvider(
                 this, new IdeaSchedulers((Project)clusterNode.getProject()), cluster);
         this.getWindow().addWindowListener(new WindowAdapter() {
