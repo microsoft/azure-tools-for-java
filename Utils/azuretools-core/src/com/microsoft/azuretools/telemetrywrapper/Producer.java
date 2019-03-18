@@ -29,8 +29,6 @@ import java.util.Map;
  *   send info                  |
  *   send error                 |
  *   end a transaction          v
- *
- *
  */
 public interface Producer {
 

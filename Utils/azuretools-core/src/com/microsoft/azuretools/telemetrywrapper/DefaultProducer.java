@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 
 public class DefaultProducer implements Producer {
-
     private static ThreadLocal<String> operIDS = new ThreadLocal<>();
     private static final String OPERATION_NAME = "operationName";
     private static final String OPERATION_ID = "operationId";

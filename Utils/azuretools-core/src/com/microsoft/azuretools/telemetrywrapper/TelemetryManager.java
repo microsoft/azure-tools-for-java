@@ -6,14 +6,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TelemetryManager {
-
     private TelemetryClient telemetryClient;
     private String eventNamePrefix = "";
     private Map<String, String> commonProperties = Collections.unmodifiableMap(new HashMap<>());
     private Producer producer = new DefaultProducer();
 
     private static final class SingletonHolder {
-
         private static final TelemetryManager INSTANCE = new TelemetryManager();
     }
 
