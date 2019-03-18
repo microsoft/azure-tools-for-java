@@ -40,7 +40,8 @@ import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
 import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
-import com.microsoft.azuretools.telemetry.AppInsightsClient.ErrorType;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -1098,9 +1099,9 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                         AzureModel.getInstance().setResourceGroupToWebAppMap(null);
                         Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.cancelPressed());
                     }
+                    long timeStart = System.currentTimeMillis();
                     try {
-                        TelemetryUtil.sendTelemetryOpStart("create web app", properties);
-                        long timeStart = System.currentTimeMillis();
+                        TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.CREATE_WEB_APP, properties);
                         webApp = AzureWebAppMvpModel.getInstance().createWebApp(model);
                         if (!appSettings.isEmpty()) {
                             webApp.update().withAppSettings(appSettings).apply();
@@ -1121,19 +1122,20 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                             AzureUIRefreshCore.execute(
                                 new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
                         }
-                        TelemetryUtil
-                            .sendTelemetryOpEnd("create web app", properties, System.currentTimeMillis() - timeStart);
                     } catch (Exception ex) {
                         TelemetryUtil
-                            .sendTelemetryOpError("create web app", ErrorType.userError, ex.getMessage(), properties);
+                            .sendTelemetryOpError(TelemetryConstants.CREATE_WEB_APP, ErrorType.userError,
+                                ex.getMessage(), properties);
                         LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
                             "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));
                         Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
+                    } finally {
+                        TelemetryUtil
+                            .sendTelemetryOpEnd(TelemetryConstants.CREATE_WEB_APP, properties,
+                                System.currentTimeMillis() - timeStart);
                     }
                 });
         } catch (Exception ex) {
-            TelemetryUtil
-                .sendTelemetryOpError("create web app", ErrorType.systemError, ex.getMessage(), properties);
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@AppServiceCreateDialog", ex));
             ErrorWindow.go(getShell(), ex.getMessage(), errTitle);
         }
