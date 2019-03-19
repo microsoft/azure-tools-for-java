@@ -638,7 +638,8 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                         uploadingTryCount = WebAppUtils.deployArtifact(artifactName, artifactPath, pp, isDeployToRoot,
                             new UpdateProgressIndicator(monitor));
                     }
-                    postEventProperties.put(TelemetryConstants.ARTIFACT_UPLOAD_COUNT, String.valueOf(uploadingTryCount));
+                    postEventProperties
+                        .put(TelemetryConstants.ARTIFACT_UPLOAD_COUNT, String.valueOf(uploadingTryCount));
                     webApp.start();
                     if (monitor.isCanceled()) {
                         AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1,
