@@ -24,16 +24,16 @@ package com.microsoft.azuretools.telemetry;
 
 public class TelemetryConstants {
     // production name
-    public static final String PRODUCTION_NAME_WEBAPP = "webapp";
-    public static final String PRODUCTION_NAME_ACR = "acr";
-    public static final String PRODUCTION_NAME_DOCKER = "docker";
+    public static final String WEBAPP = "webapp";
+    public static final String ACR = "acr";
+    public static final String DOCKER = "docker";
 
     // operation name
-    public static final String CREATE_WEB_APP = "create-webapp";
-    public static final String DELETE_WEB_APP = "delete-webapp";
-    public static final String DEPLOY_WEB_APP = "deploy-webapp";
-    public static final String DEPLOY_DEPLOYMENT_SLOT = "deploy-webapp-slot";
-    public static final String CREATE_DEPLOYMENT_SLOT = "create-webapp-slot";
+    public static final String CREATE_WEBAPP = "create-webapp";
+    public static final String DELETE_WEBAPP = "delete-webapp";
+    public static final String DEPLOY_WEBAPP = "deploy-webapp";
+    public static final String DEPLOY_WEBAPP_SLOT = "deploy-webapp-slot";
+    public static final String CREATE_WEBAPP_SLOT = "create-webapp-slot";
     public static final String OPEN_CREATEWEBAPP_DIALOG = "open-create-webapp-dialog";
     public static final String REFRESH_METADATA = "refresh";
 }

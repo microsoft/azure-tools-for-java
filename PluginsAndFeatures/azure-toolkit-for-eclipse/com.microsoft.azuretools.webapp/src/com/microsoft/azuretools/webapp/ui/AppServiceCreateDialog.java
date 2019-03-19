@@ -1099,9 +1099,8 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                         AzureModel.getInstance().setResourceGroupToWebAppMap(null);
                         Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.cancelPressed());
                     }
-                    long timeStart = System.currentTimeMillis();
                     try {
-                        TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.CREATE_WEB_APP, properties);
+                        TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.CREATE_WEBAPP, properties);
                         webApp = AzureWebAppMvpModel.getInstance().createWebApp(model);
                         if (!appSettings.isEmpty()) {
                             webApp.update().withAppSettings(appSettings).apply();
@@ -1124,15 +1123,12 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
                         }
                     } catch (Exception ex) {
                         TelemetryUtil
-                            .sendTelemetryOpError(TelemetryConstants.CREATE_WEB_APP, ErrorType.userError,
-                                ex.getMessage(), properties);
+                            .sendTelemetryOpError(ErrorType.userError, ex.getMessage(), properties);
                         LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
                             "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));
                         Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
                     } finally {
-                        TelemetryUtil
-                            .sendTelemetryOpEnd(TelemetryConstants.CREATE_WEB_APP, properties,
-                                System.currentTimeMillis() - timeStart);
+                        TelemetryUtil.sendTelemetryOpEnd(properties);
                     }
                 });
         } catch (Exception ex) {

@@ -29,10 +29,13 @@ import java.util.Map;
  * Each time when you start a transaction, we will generate a operationId(the operationId will store in thread local),
  * then you can send info,warn,error with this operationId, you need to end this transaction.
  * If you start a new transaction without close the previous one, we just generate a new operationId.
- * If you send info, error, warn or end transaction without start a transaction, we just give you a new operationId.
+ * If you send info, error, warn or end transaction without start a transaction, we will ignore this operation.
  * Take care, each time when you start a transaction you need to end it. Or you cannot correctly trace the operation.
  *
- * The snappy code just like this:
+ * If you just want to record an event or error, you do not want to trace the transaction. Please directly use logevent
+ * or logerror.
+ *
+ * For transaction, the snappy code just like this:
  *   try {
  *       startTransaction();
  *       doSomething();
@@ -43,6 +46,11 @@ import java.util.Map;
  *       endTransaction();
  *   }
  *
+ *   For independent event, the snappy code just like this:
+ *   dosomething1();
+ *   logEvent();
+ *   dosomething2();
+ *   logEvent();
  *
  *   Sequence Diagram:
  *
@@ -55,17 +63,22 @@ import java.util.Map;
  */
 public interface Producer {
 
-    void startTransaction(String eventName, String operName, Map<String, String> properties);
+    void startTransaction(String eventName, String operName, Map<String, String> properties,
+        Map<String, Double> metrics);
 
-    void endTransaction(String eventName, String operName, Map<String, String> properties, long time);
+    void endTransaction(Map<String, String> properties, Map<String, Double> metrics);
 
-    void sendError(String eventName, String operName, ErrorType errorType, String errMsg,
-        Map<String, String> properties);
+    void sendError(ErrorType errorType, String errMsg, Map<String, String> properties, Map<String, Double> metrics);
 
-    void sendInfo(String eventName, String operName, Map<String, String> properties);
+    void sendInfo(Map<String, String> properties, Map<String, Double> metrics);
 
-    void sendWarn(String eventName, String operName, Map<String, String> properties);
+    void sendWarn(Map<String, String> properties, Map<String, Double> metrics);
+
+    void logEvent(EventType eventType, String eventName, String operName, Map<String, String> properties,
+        Map<String, Double> metrics);
+
+    void logError(String eventName, String operName, ErrorType errorType, String errMsg,
+        Map<String, String> properties, Map<String, Double> metrics);
 
     void setTelemetryClient(TelemetryClient client);
-
 }

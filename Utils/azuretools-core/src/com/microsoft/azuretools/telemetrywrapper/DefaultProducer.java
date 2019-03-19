@@ -28,8 +28,10 @@ import java.util.Map;
 import java.util.UUID;
 
 public class DefaultProducer implements Producer {
-    private static ThreadLocal<String> operIDS = new ThreadLocal<>();
-    private static ThreadLocal<Map<String, String>> errorInfo = new ThreadLocal<>();
+    private static ThreadLocal<String> operIDTL = new ThreadLocal<>();
+    private static ThreadLocal<Long> startTimeTL = new ThreadLocal<>();
+    private static ThreadLocal<Map<String, String>> errorInfoTL = new ThreadLocal<>();
+    private static ThreadLocal<EventAndOper> eventAndOperTL = new ThreadLocal<>();
     private static final String OPERATION_NAME = "operationName";
     private static final String OPERATION_ID = "operationId";
     private static final String ERROR_CODE = "errorCode";
@@ -39,66 +41,118 @@ public class DefaultProducer implements Producer {
     private TelemetryClient client;
 
     @Override
-    public void startTransaction(String eventName, String operName, Map<String, String> properties) {
+    public void startTransaction(String eventName, String operName, Map<String, String> properties,
+        Map<String, Double> metrics) {
         try {
-            operIDS.remove();
-            operIDS.set(UUID.randomUUID().toString());
-            sendTelemetry(EventType.opStart, eventName, mergeProperties(addOperNameAndId(properties, operName)), null);
+            if (operIDTL.get() != null) {
+                clearThreadLocal();
+            }
+            operIDTL.set(UUID.randomUUID().toString());
+            startTimeTL.set(System.currentTimeMillis());
+            eventAndOperTL.set(new EventAndOper(eventName, operName));
+            sendTelemetry(EventType.opStart, eventName, mergeProperties(addOperNameAndId(properties, operName)),
+                metrics);
         } catch (Exception ignore) {
         }
     }
 
     @Override
-    public void endTransaction(String eventName, String operName, Map<String, String> properties, long time) {
+    public void endTransaction(Map<String, String> properties, Map<String, Double> metrics) {
         try {
-            Map<String, Double> metrics = new HashMap<>();
-            metrics.put(DURATION, Double.valueOf(time));
-            Map<String, String> mergedProperty = mergeProperties(addOperNameAndId(properties, operName));
-            if (errorInfo.get() != null) {
-                mergedProperty.putAll(errorInfo.get());
+            EventAndOper eventAndOper = eventAndOperTL.get();
+            if (eventAndOper == null) {
+                return;
             }
-            sendTelemetry(EventType.opEnd, eventName, mergedProperty, metrics);
+            if (metrics == null) {
+                metrics = new HashMap<>();
+            }
+            Long time = startTimeTL.get();
+            long timeDuration = time == null ? 0 : System.currentTimeMillis() - time;
+            metrics.put(DURATION, Double.valueOf(timeDuration));
+            Map<String, String> mergedProperty = mergeProperties(addOperNameAndId(properties, eventAndOper.operName));
+
+            Map<String, String> errorInfo = errorInfoTL.get();
+            if (errorInfo != null) {
+                mergedProperty.putAll(errorInfo);
+            }
+            sendTelemetry(EventType.opEnd, eventAndOper.eventName, mergedProperty, metrics);
         } catch (Exception ignore) {
         } finally {
-            errorInfo.remove();
-            operIDS.remove();
+            clearThreadLocal();
         }
     }
 
     @Override
-    public void sendError(String eventName, String operName, ErrorType errorType, String errMsg,
-        Map<String, String> properties) {
+    public void sendError(ErrorType errorType, String errMsg, Map<String, String> properties,
+        Map<String, Double> metrics) {
         try {
+            EventAndOper eventAndOper = eventAndOperTL.get();
+            if (eventAndOper == null) {
+                return;
+            }
             Map<String, String> errorMap = new HashMap<>();
             errorMap.put(ERROR_CODE, "1");
             errorMap.put(ERROR_MSG, errMsg);
             errorMap.put(ERROR_TYPE, errorType.name());
             // we need to save errorinfo, and then write the error info when we end the transaction, by this way we
             // can quickly get the operation result from opend
-            errorInfo.remove();
-            errorInfo.set(errorMap);
-
-            Map<String, String> newProperties = addOperNameAndId(properties, operName);
+            errorInfoTL.set(errorMap);
+            Map<String, String> newProperties = addOperNameAndId(properties, eventAndOper.operName);
             newProperties.putAll(errorMap);
-            sendTelemetry(EventType.error, eventName, mergeProperties(newProperties), null);
+            sendTelemetry(EventType.error, eventAndOper.eventName, mergeProperties(newProperties), metrics);
         } catch (Exception ignore) {
         }
     }
 
     @Override
-    public void sendInfo(String eventName, String operName, Map<String, String> properties) {
+    public void sendInfo(Map<String, String> properties, Map<String, Double> metrics) {
         try {
-            sendTelemetry(EventType.info, eventName, mergeProperties(addOperNameAndId(properties, operName)), null);
+            EventAndOper eventAndOper = eventAndOperTL.get();
+            if (eventAndOper == null) {
+                return;
+            }
+            sendTelemetry(EventType.info, eventAndOper.eventName,
+                mergeProperties(addOperNameAndId(properties, eventAndOper.operName)), metrics);
         } catch (Exception ignore) {
         }
     }
 
     @Override
-    public void sendWarn(String eventName, String operName, Map<String, String> properties) {
+    public void sendWarn(Map<String, String> properties, Map<String, Double> metrics) {
         try {
-            sendTelemetry(EventType.warn, eventName, mergeProperties(addOperNameAndId(properties, operName)), null);
+            EventAndOper eventAndOper = eventAndOperTL.get();
+            if (eventAndOper == null) {
+                return;
+            }
+            sendTelemetry(EventType.warn, eventAndOper.eventName,
+                mergeProperties(addOperNameAndId(properties, eventAndOper.operName)), metrics);
         } catch (Exception ignore) {
         }
+    }
+
+    @Override
+    public void logEvent(EventType eventType, String eventName, String operName, Map<String, String> properties,
+        Map<String, Double> metrics) {
+        if (properties == null) {
+            properties = new HashMap<>();
+        }
+        properties.put(OPERATION_NAME, operName);
+        properties.put(OPERATION_ID, UUID.randomUUID().toString());
+        sendTelemetry(eventType, eventName, mergeProperties(properties), metrics);
+    }
+
+    @Override
+    public void logError(String eventName, String operName, ErrorType errorType, String errMsg,
+        Map<String, String> properties, Map<String, Double> metrics) {
+        if (properties == null) {
+            properties = new HashMap<>();
+        }
+        properties.put(OPERATION_NAME, operName);
+        properties.put(OPERATION_ID, UUID.randomUUID().toString());
+        properties.put(ERROR_CODE, "1");
+        properties.put(ERROR_MSG, errMsg);
+        properties.put(ERROR_TYPE, errorType.name());
+        sendTelemetry(EventType.error, eventName, mergeProperties(properties), metrics);
     }
 
     @Override
@@ -112,7 +166,7 @@ public class DefaultProducer implements Producer {
             result.putAll(properties);
         }
         result.put(OPERATION_NAME, operName);
-        String operId = operIDS.get();
+        String operId = operIDTL.get();
         result.put(OPERATION_ID, operId == null ? UUID.randomUUID().toString() : operId);
         return result;
     }
@@ -136,5 +190,22 @@ public class DefaultProducer implements Producer {
 
     private String getFullEventName(String eventName, EventType eventType) {
         return TelemetryManager.getInstance().getEventNamePrefix() + eventName + "/" + eventType.name();
+    }
+
+    private void clearThreadLocal() {
+        errorInfoTL.remove();
+        operIDTL.remove();
+        startTimeTL.remove();
+        eventAndOperTL.remove();
+    }
+
+    private static class EventAndOper {
+        String eventName;
+        String operName;
+
+        public EventAndOper(String eventName, String operName) {
+            this.eventName = eventName;
+            this.operName = operName;
+        }
     }
 }
