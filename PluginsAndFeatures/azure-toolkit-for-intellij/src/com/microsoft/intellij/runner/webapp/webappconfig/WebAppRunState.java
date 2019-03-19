@@ -32,6 +32,7 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
@@ -39,6 +40,7 @@ import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.intellij.util.TelemetryUtil;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.jetbrains.annotations.NotNull;
@@ -147,6 +149,16 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         } catch (Exception e) {
             processHandler.println(e.getMessage(), ProcessOutputTypes.STDERR);
         }
+    }
+
+    @Override
+    protected void sendOperStart() {
+        TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.WEBAPP, TelemetryConstants.DEPLOY_WEBAPP);
+    }
+
+    @Override
+    protected void sendOperInfo(Map<String, String> properties) {
+        TelemetryUtil.sendTelemetryInfo(TelemetryUtil.buildProperties(properties, webAppSettingModel));
     }
 
     @Override

@@ -20,11 +20,14 @@ import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.intellij.util.TelemetryUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -427,8 +430,11 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         ProgressManager.getInstance().run(new Task.Modal(null, "Creating New WebApp...", true) {
             @Override
             public void run(ProgressIndicator progressIndicator) {
+                Map<String, String> properties = TelemetryUtil.buildProperties(null, webAppConfiguration.getModel());
                 try {
                     progressIndicator.setIndeterminate(true);
+                    TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.WEBAPP, TelemetryConstants.CREATE_WEBAPP);
+                    TelemetryUtil.sendTelemetryInfo(properties);
                     result = AzureWebAppMvpModel.getInstance().createWebApp(webAppConfiguration.getModel());
                     ApplicationManager.getApplication().invokeLater(() -> {
                         sendTelemetry(true, null);
@@ -441,7 +447,10 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null, "Create WebApp Failed : " + ex.getMessage(),
                         "Create WebApp Failed", JOptionPane.ERROR_MESSAGE);
+                    TelemetryUtil.sendTelemetryOpError(ErrorType.systemError, ex.getMessage(), properties);
                     sendTelemetry(false, ex.getMessage());
+                } finally {
+                    TelemetryUtil.sendTelemetryOpEnd();
                 }
             }
         });

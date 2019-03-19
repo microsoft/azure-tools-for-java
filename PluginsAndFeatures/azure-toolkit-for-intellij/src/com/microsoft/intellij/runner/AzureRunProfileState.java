@@ -33,12 +33,13 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.intellij.util.TelemetryUtil;
+import java.util.HashMap;
+import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public abstract class AzureRunProfileState <T> implements RunProfileState {
     protected final Project project;
@@ -59,18 +60,38 @@ public abstract class AzureRunProfileState <T> implements RunProfileState {
         Map<String, String> telemetryMap = new HashMap<>();
         Observable.fromCallable(
             () -> {
+                sendOperStart();
+                sendOperInfo(telemetryMap);
                 return this.executeSteps(processHandler, telemetryMap);
             }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
             (res) -> {
+                sendOperEnd();
                 this.sendTelemetry(telemetryMap, true, null);
                 this.onSuccess(res, processHandler);
             },
             (err) -> {
                 err.printStackTrace();
+                sendOperError(ErrorType.systemError, err.getMessage(), telemetryMap);
+                sendOperEnd();
                 this.onFail(err.getMessage(), processHandler);
                 this.sendTelemetry(telemetryMap, false, err.getMessage());
             });
         return new DefaultExecutionResult(consoleView, processHandler);
+    }
+
+    protected void sendOperStart(){
+    }
+
+    protected void sendOperInfo(Map<String, String> properties) {
+        TelemetryUtil.sendTelemetryInfo(properties);
+    }
+
+    protected void sendOperError(ErrorType errorType, String errMsg, Map<String, String> properties) {
+        TelemetryUtil.sendTelemetryOpError(errorType, errMsg, properties);
+    }
+
+    private void sendOperEnd() {
+        TelemetryUtil.sendTelemetryOpEnd();
     }
 
     protected void updateTelemetryMap(@NotNull  Map<String, String> telemetryMap){}

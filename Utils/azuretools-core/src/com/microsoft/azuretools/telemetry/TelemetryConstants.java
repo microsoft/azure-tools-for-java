@@ -28,7 +28,7 @@ public class TelemetryConstants {
     public static final String ACR = "acr";
     public static final String DOCKER = "docker";
 
-    // operation name
+    // operation value
     public static final String CREATE_WEBAPP = "create-webapp";
     public static final String DELETE_WEBAPP = "delete-webapp";
     public static final String DEPLOY_WEBAPP = "deploy-webapp";
@@ -36,4 +36,15 @@ public class TelemetryConstants {
     public static final String CREATE_WEBAPP_SLOT = "create-webapp-slot";
     public static final String OPEN_CREATEWEBAPP_DIALOG = "open-create-webapp-dialog";
     public static final String REFRESH_METADATA = "refresh";
+
+    // property name
+    public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";
+    public static final String RUNTIME = "runtime";
+    public static final String CREATE_NEWASP = "createNewAsp";
+    public static final String CREATE_NEWWEBAPP = "createNewWebapp";
+    public static final String CREATE_NEWRG = "createNewRg";
+    public static final String SUBSCRIPTIONID = "subscriptionId";
+    public static final String FILETYPE = "fileType";
+    public static final String ARTIFACT_UPLOAD_COUNT = "artifactUploadCount";
+    public static final String JAVA_APPNAME = "javaAppName";
 }

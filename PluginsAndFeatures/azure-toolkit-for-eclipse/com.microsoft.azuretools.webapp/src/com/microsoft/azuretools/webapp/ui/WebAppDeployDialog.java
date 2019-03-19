@@ -596,14 +596,14 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                 String successMessage = "";
                 String errorMessage = "Error";
                 Map<String, String> postEventProperties = new HashMap<>();
-                postEventProperties.put("runtime",
+                postEventProperties.put(TelemetryConstants.RUNTIME,
                     webApp.operatingSystem() == OperatingSystem.LINUX ? "linux-" + webApp.linuxFxVersion()
                         : "windows-" + webApp.javaContainer());
-                postEventProperties.put("Java App Name", project.getName());
+                postEventProperties.put(TelemetryConstants.JAVA_APPNAME, project.getName());
                 try {
                     boolean isJar = MavenUtils.isMavenProject(project) && MavenUtils.getPackaging(project)
                         .equals(WebAppUtils.TYPE_JAR);
-                    postEventProperties.put("FileType", isJar ? "jar" : "war");
+                    postEventProperties.put(TelemetryConstants.FILETYPE, isJar ? "jar" : "war");
                 } catch (Exception e) {
                 }
 
@@ -638,7 +638,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                         uploadingTryCount = WebAppUtils.deployArtifact(artifactName, artifactPath, pp, isDeployToRoot,
                             new UpdateProgressIndicator(monitor));
                     }
-                    postEventProperties.put("uploadingTryCount", String.valueOf(uploadingTryCount));
+                    postEventProperties.put(TelemetryConstants.ARTIFACT_UPLOAD_COUNT, String.valueOf(uploadingTryCount));
                     webApp.start();
                     if (monitor.isCanceled()) {
                         AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1,
