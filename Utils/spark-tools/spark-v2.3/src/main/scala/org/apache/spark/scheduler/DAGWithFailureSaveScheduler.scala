@@ -23,12 +23,11 @@
 package org.apache.spark.scheduler
 
 import java.io._
-import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.{Base64, Date}
 
 import org.apache.commons.io.IOUtils
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FileUtil, Path}
 import org.apache.spark._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.network.buffer.ManagedBuffer
@@ -237,6 +236,27 @@ class DAGWithFailureSaveScheduler(
 
     logInfo(s"The working directory is ${fs.getWorkingDirectory.toUri}")
     logInfo("Failure task has been saved into " + failureContextFile.getParent)
+
+    // Save runtime files
+    val runtimeFolder = getFailureSavingPath("runtime/")
+    sc.runtimeFiles
+      .orElse({
+        val schedulingMode = sc.getSchedulingMode.toString
+        val addedJarPaths = sc.addedJars.keys.toSeq
+        val addedFilePaths = sc.addedFiles.keys.toSeq
+        val environmentDetails = SparkEnv.environmentDetails(sc.conf, schedulingMode, addedJarPaths,
+          addedFilePaths)
+
+        environmentDetails.get("Classpath Entries").map(pairs => pairs.map(_._1))
+      })
+      .foreach(_.foreach(runtimeFile => {
+        val srcUri = Utils.resolveURI(runtimeFile)
+        val srcPath = new Path(srcUri)
+        val srcFs = Utils.getHadoopFileSystem(srcUri, sc.hadoopConfiguration)
+        val dstPath = new Path(runtimeFolder, srcPath.getName)
+        FileUtil.copy(srcFs, srcPath, fs, dstPath, false, sc.hadoopConfiguration)
+        logInfo(s"Runtime $srcPath has been saved into $dstPath")
+      }))
   }
 
   override private[scheduler] def handleTaskCompletion(event: CompletionEvent): Unit = {

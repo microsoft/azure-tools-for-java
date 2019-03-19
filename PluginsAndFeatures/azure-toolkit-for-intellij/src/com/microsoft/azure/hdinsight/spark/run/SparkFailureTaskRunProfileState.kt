@@ -32,6 +32,7 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.util.JavaParametersUtil
+import com.intellij.util.PathUtil
 import com.microsoft.azure.hdinsight.spark.common.SparkFailureTaskDebugConfigurableModel
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView
 import com.microsoft.azuretools.telemetry.AppInsightsClient
@@ -97,6 +98,9 @@ open class SparkFailureTaskRunProfileState(val name: String,
 
         // Additional VM parameters
         additionalVmParameters.forEach { params.vmParametersList.add(it) }
+
+        // Put failure context runtime at beginning, after JDK6, the classpath support <dir>/*
+        params.classPath.addFirst("${PathUtil.getCanonicalPath(settingsConfigModel.workingDirectory)}/runtime/*")
 
         // Helper Main class
         params.mainClass = settingsConfigModel.runClass

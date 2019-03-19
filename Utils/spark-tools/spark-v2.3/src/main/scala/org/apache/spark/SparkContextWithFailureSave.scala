@@ -101,6 +101,17 @@ class SparkContextWithFailureSave(conf: SparkConf) extends SparkContext(conf) {
 
   private[spark] var bcIdMap: immutable.Map[Long, Broadcast[_]] = Map()
 
+  var runtimeFiles: Option[Seq[String]] = Option.empty
+  // TODO: Find a way to put the environment listener before the update event is sent
+  //
+  //  private val sparkEnvListener = new SparkListener {
+  //    override def onEnvironmentUpdate(environmentUpdate: SparkListenerEnvironmentUpdate) {
+  //      runtimeFiles = environmentUpdate.environmentDetails.get("Classpath Entries").map(pairs => pairs.map(_._1))
+  //    }
+  //  }
+  //
+  //  listenerBus.addToEventLogQueue(sparkEnvListener)
+
   this.dagScheduler = new DAGWithFailureSaveScheduler(this)
 
   override def broadcast[T: ClassTag](value: T): Broadcast[T] = {
