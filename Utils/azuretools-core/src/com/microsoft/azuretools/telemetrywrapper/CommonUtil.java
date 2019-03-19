@@ -23,52 +23,36 @@
 package com.microsoft.azuretools.telemetrywrapper;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TelemetryManager {
-    private String eventNamePrefix = "";
-    private Map<String, String> commonProperties = Collections.unmodifiableMap(new HashMap<>());
-    private Producer producer = new DefaultProducer();
+public class CommonUtil {
+    public static final String OPERATION_NAME = "operationName";
+    public static final String OPERATION_ID = "operationId";
+    public static final String ERROR_CODE = "errorCode";
+    public static final String ERROR_MSG = "message";
+    public static final String ERROR_TYPE = "errorType";
+    public static final String DURATION = "duration";
+    public static TelemetryClient client;
 
-    private static final class SingletonHolder {
-        private static final TelemetryManager INSTANCE = new TelemetryManager();
+    public static Map<String, String> mergeProperties(Map<String, String> properties) {
+        Map<String, String> commonProperties = TelemetryManager.getInstance().getCommonProperties();
+        Map<String, String> merged = new HashMap<>(commonProperties);
+        if (properties != null) {
+            merged.putAll(properties);
+        }
+        return merged;
     }
 
-    private TelemetryManager() {
-    }
-
-    public static TelemetryManager getInstance() {
-        return SingletonHolder.INSTANCE;
-    }
-
-    public void setTelemetryClient(TelemetryClient telemetryClient) {
-        CommonUtil.client = telemetryClient;
-    }
-
-    public String getEventNamePrefix() {
-        return eventNamePrefix;
-    }
-
-    public void setEventNamePrefix(String eventNamePrefix) {
-        this.eventNamePrefix = eventNamePrefix;
-    }
-
-    public Map<String, String> getCommonProperties() {
-        return commonProperties;
-    }
-
-    public synchronized void setCommonProperties(Map<String, String> commonProperties) {
-        if (commonProperties != null) {
-            this.commonProperties = Collections.unmodifiableMap(commonProperties);
+    public synchronized static void sendTelemetry(EventType eventType, String eventName, Map<String, String> properties,
+        Map<String, Double> metrics) {
+        if (client != null) {
+            client.trackEvent(getFullEventName(eventName, eventType), properties, metrics);
+            client.flush();
         }
     }
 
-    public synchronized Producer getProducer() {
-        if (producer == null) {
-            producer = new DefaultProducer();
-        }
-        return producer;
+    private static String getFullEventName(String eventName, EventType eventType) {
+        return TelemetryManager.getInstance().getEventNamePrefix() + eventName + "/" + eventType.name();
     }
 }

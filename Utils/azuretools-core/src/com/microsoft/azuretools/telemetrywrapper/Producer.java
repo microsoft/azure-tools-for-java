@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import java.util.Map;
 
 /**
@@ -32,8 +31,8 @@ import java.util.Map;
  * If you send info, error, warn or end transaction without start a transaction, we will ignore this operation.
  * Take care, each time when you start a transaction you need to end it. Or you cannot correctly trace the operation.
  *
- * If you just want to record an event or error, you do not want to trace the transaction. Please directly use logevent
- * or logerror.
+ * If you just want to record an event or error, you do not want to trace the transaction. Please directly use
+ * EventUtil.logevent or EventUtil.logerror.
  *
  * For transaction, the snappy code just like this:
  *   try {
@@ -63,22 +62,13 @@ import java.util.Map;
  */
 public interface Producer {
 
-    void startTransaction(String eventName, String operName, Map<String, String> properties,
-        Map<String, Double> metrics);
+    void startTransaction(String eventName, String operName);
 
-    void endTransaction(Map<String, String> properties, Map<String, Double> metrics);
+    void endTransaction();
 
     void sendError(ErrorType errorType, String errMsg, Map<String, String> properties, Map<String, Double> metrics);
 
     void sendInfo(Map<String, String> properties, Map<String, Double> metrics);
 
     void sendWarn(Map<String, String> properties, Map<String, Double> metrics);
-
-    void logEvent(EventType eventType, String eventName, String operName, Map<String, String> properties,
-        Map<String, Double> metrics);
-
-    void logError(String eventName, String operName, ErrorType errorType, String errMsg,
-        Map<String, String> properties, Map<String, Double> metrics);
-
-    void setTelemetryClient(TelemetryClient client);
 }

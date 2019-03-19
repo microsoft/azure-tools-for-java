@@ -22,7 +22,9 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.mergeProperties;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.sendTelemetry;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -32,17 +34,9 @@ public class DefaultProducer implements Producer {
     private static ThreadLocal<Long> startTimeTL = new ThreadLocal<>();
     private static ThreadLocal<Map<String, String>> errorInfoTL = new ThreadLocal<>();
     private static ThreadLocal<EventAndOper> eventAndOperTL = new ThreadLocal<>();
-    private static final String OPERATION_NAME = "operationName";
-    private static final String OPERATION_ID = "operationId";
-    private static final String ERROR_CODE = "errorCode";
-    private static final String ERROR_MSG = "message";
-    private static final String ERROR_TYPE = "errorType";
-    private static final String DURATION = "duration";
-    private TelemetryClient client;
 
     @Override
-    public void startTransaction(String eventName, String operName, Map<String, String> properties,
-        Map<String, Double> metrics) {
+    public void startTransaction(String eventName, String operName) {
         try {
             if (operIDTL.get() != null) {
                 clearThreadLocal();
@@ -50,26 +44,23 @@ public class DefaultProducer implements Producer {
             operIDTL.set(UUID.randomUUID().toString());
             startTimeTL.set(System.currentTimeMillis());
             eventAndOperTL.set(new EventAndOper(eventName, operName));
-            sendTelemetry(EventType.opStart, eventName, mergeProperties(addOperNameAndId(properties, operName)),
-                metrics);
+            sendTelemetry(EventType.opStart, eventName, mergeProperties(addOperNameAndId(null, operName)), null);
         } catch (Exception ignore) {
         }
     }
 
     @Override
-    public void endTransaction(Map<String, String> properties, Map<String, Double> metrics) {
+    public void endTransaction() {
         try {
             EventAndOper eventAndOper = eventAndOperTL.get();
             if (eventAndOper == null) {
                 return;
             }
-            if (metrics == null) {
-                metrics = new HashMap<>();
-            }
+            HashMap<String, Double> metrics = new HashMap<>();
             Long time = startTimeTL.get();
             long timeDuration = time == null ? 0 : System.currentTimeMillis() - time;
-            metrics.put(DURATION, Double.valueOf(timeDuration));
-            Map<String, String> mergedProperty = mergeProperties(addOperNameAndId(properties, eventAndOper.operName));
+            metrics.put(CommonUtil.DURATION, Double.valueOf(timeDuration));
+            Map<String, String> mergedProperty = mergeProperties(addOperNameAndId(null, eventAndOper.operName));
 
             Map<String, String> errorInfo = errorInfoTL.get();
             if (errorInfo != null) {
@@ -91,9 +82,9 @@ public class DefaultProducer implements Producer {
                 return;
             }
             Map<String, String> errorMap = new HashMap<>();
-            errorMap.put(ERROR_CODE, "1");
-            errorMap.put(ERROR_MSG, errMsg);
-            errorMap.put(ERROR_TYPE, errorType.name());
+            errorMap.put(CommonUtil.ERROR_CODE, "1");
+            errorMap.put(CommonUtil.ERROR_MSG, errMsg);
+            errorMap.put(CommonUtil.ERROR_TYPE, errorType.name());
             // we need to save errorinfo, and then write the error info when we end the transaction, by this way we
             // can quickly get the operation result from opend
             errorInfoTL.set(errorMap);
@@ -130,66 +121,15 @@ public class DefaultProducer implements Producer {
         }
     }
 
-    @Override
-    public void logEvent(EventType eventType, String eventName, String operName, Map<String, String> properties,
-        Map<String, Double> metrics) {
-        if (properties == null) {
-            properties = new HashMap<>();
-        }
-        properties.put(OPERATION_NAME, operName);
-        properties.put(OPERATION_ID, UUID.randomUUID().toString());
-        sendTelemetry(eventType, eventName, mergeProperties(properties), metrics);
-    }
-
-    @Override
-    public void logError(String eventName, String operName, ErrorType errorType, String errMsg,
-        Map<String, String> properties, Map<String, Double> metrics) {
-        if (properties == null) {
-            properties = new HashMap<>();
-        }
-        properties.put(OPERATION_NAME, operName);
-        properties.put(OPERATION_ID, UUID.randomUUID().toString());
-        properties.put(ERROR_CODE, "1");
-        properties.put(ERROR_MSG, errMsg);
-        properties.put(ERROR_TYPE, errorType.name());
-        sendTelemetry(EventType.error, eventName, mergeProperties(properties), metrics);
-    }
-
-    @Override
-    public void setTelemetryClient(TelemetryClient client) {
-        this.client = client;
-    }
-
     private Map<String, String> addOperNameAndId(Map<String, String> properties, String operName) {
         Map<String, String> result = new HashMap<>();
         if (properties != null) {
             result.putAll(properties);
         }
-        result.put(OPERATION_NAME, operName);
+        result.put(CommonUtil.OPERATION_NAME, operName);
         String operId = operIDTL.get();
-        result.put(OPERATION_ID, operId == null ? UUID.randomUUID().toString() : operId);
+        result.put(CommonUtil.OPERATION_ID, operId == null ? UUID.randomUUID().toString() : operId);
         return result;
-    }
-
-    private Map<String, String> mergeProperties(Map<String, String> properties) {
-        Map<String, String> commonProperties = TelemetryManager.getInstance().getCommonProperties();
-        Map<String, String> merged = new HashMap<>(commonProperties);
-        if (properties != null) {
-            merged.putAll(properties);
-        }
-        return merged;
-    }
-
-    private synchronized void sendTelemetry(EventType eventType, String eventName, Map<String, String> properties,
-        Map<String, Double> metrics) {
-        if (client != null) {
-            client.trackEvent(getFullEventName(eventName, eventType), properties, metrics);
-            client.flush();
-        }
-    }
-
-    private String getFullEventName(String eventName, EventType eventType) {
-        return TelemetryManager.getInstance().getEventNamePrefix() + eventName + "/" + eventType.name();
     }
 
     private void clearThreadLocal() {
