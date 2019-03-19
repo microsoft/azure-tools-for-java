@@ -158,7 +158,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @Override
     protected void sendOperInfo(Map<String, String> properties) {
-        TelemetryUtil.sendTelemetryInfo(TelemetryUtil.buildProperties(properties, webAppSettingModel));
+        TelemetryUtil.sendTelemetryInfo(TelemetryUtil.buildWebappProperties(properties, webAppSettingModel));
     }
 
     @Override

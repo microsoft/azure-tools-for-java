@@ -430,7 +430,8 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         ProgressManager.getInstance().run(new Task.Modal(null, "Creating New WebApp...", true) {
             @Override
             public void run(ProgressIndicator progressIndicator) {
-                Map<String, String> properties = TelemetryUtil.buildProperties(null, webAppConfiguration.getModel());
+                Map<String, String> properties = TelemetryUtil
+                    .buildWebappProperties(null, webAppConfiguration.getModel());
                 try {
                     progressIndicator.setIndeterminate(true);
                     TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.WEBAPP, TelemetryConstants.CREATE_WEBAPP);

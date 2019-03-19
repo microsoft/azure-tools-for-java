@@ -47,7 +47,7 @@ public class TelemetryUtil {
         TelemetryManager.getInstance().getProducer().sendInfo(properties, null);
     }
 
-    public static Map<String, String> buildProperties(Map<String, String> properties,
+    public static Map<String, String> buildWebappProperties(Map<String, String> properties,
         IntelliJWebAppSettingModel webAppSettingModel) {
         Map<String, String> result = new HashMap<>();
         try {
