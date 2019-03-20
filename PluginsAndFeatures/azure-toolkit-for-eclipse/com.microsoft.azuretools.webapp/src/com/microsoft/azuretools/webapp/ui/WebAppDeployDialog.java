@@ -148,12 +148,21 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         gd_container.widthHint = 750;
         container.setLayoutData(gd_container);
 
+        createAppGroup(container);
+        createButton(container);
+        createAppDetailGroup(container);
+
+        return area;
+    }
+
+    private void createAppGroup(Composite container) {
         table = new Table(container, SWT.BORDER | SWT.FULL_SELECTION);
         GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
         gd_table.heightHint = 300;
         table.setLayoutData(gd_table);
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
+        table.addListener(SWT.Selection, (e) -> fillAppServiceDetails());
 
         TableColumn tblclmnName = new TableColumn(table, SWT.LEFT);
         tblclmnName.setWidth(230);
@@ -170,7 +179,9 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         TableColumn tblclmnResourceGroup = new TableColumn(table, SWT.LEFT);
         tblclmnResourceGroup.setWidth(190);
         tblclmnResourceGroup.setText("Resource group");
+    }
 
+    private void createButton(Composite container) {
         Composite composite = new Composite(container, SWT.NONE);
         composite.setLayout(new RowLayout(SWT.VERTICAL));
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
@@ -220,7 +231,9 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             }
         });
         btnRefresh.setText("Refresh");
+    }
 
+    private void createAppDetailGroup(Composite container) {
         Group grpAppServiceDetails = new Group(container, SWT.NONE);
         grpAppServiceDetails.setLayout(new FillLayout(SWT.HORIZONTAL));
         GridData gd_grpAppServiceDetails = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
@@ -229,7 +242,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         grpAppServiceDetails.setText("App service details");
 
         browserAppServiceDetailes = new Browser(grpAppServiceDetails, SWT.NONE);
-        FontData browserFontData = btnRefresh.getFont().getFontData()[0];
+        FontData browserFontData = container.getFont().getFontData()[0];
         browserFontStyle = String.format("font-family: '%s'; font-size: 9pt;", browserFontData.getName());
         browserAppServiceDetailes.addLocationListener(new LocationListener() {
             @Override
@@ -305,9 +318,6 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "WebAppDeployDialog", e));
             e.printStackTrace();
         }
-
-        table.addListener(SWT.Selection, (e) -> fillAppServiceDetails());
-        return area;
     }
 
     @Override
