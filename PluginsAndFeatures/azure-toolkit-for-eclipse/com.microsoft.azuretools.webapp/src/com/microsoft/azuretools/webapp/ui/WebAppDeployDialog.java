@@ -59,17 +59,25 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -130,6 +138,9 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     private static final String SELECT_SLOT_CLONE_SETTING = "Select a valid slot clone settings";
     private static final String INVALID_SLOT_NAME =
         "The slot name is invalid, it needs to match the pattern " + SLOT_NAME_REGEX;
+    private static final String DEPLOYMENT_SLOT_HOVER = "Deployment slots are live apps with their own hostnames. App" +
+        " content and configurations elements can be swapped between two deployment slots, including the production " +
+        "slot.";
 
     private Map<String, WebAppDetails> webAppDetailsMap = new HashMap<>();
     private WebAppSettingModel webAppSettingModel;
@@ -177,22 +188,29 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     protected Control createDialogArea(Composite parent) {
         setMessage("Select App Service to deploy to:");
         setTitle("Deploy Web App");
-        Composite area = (Composite) super.createDialogArea(parent);
-        Composite container = new Composite(area, SWT.NONE);
+
+        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
+        scrolledComposite.setLayout(new GridLayout(2, false));
+        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        Group container = new Group(scrolledComposite, SWT.NONE);
         container.setLayout(new GridLayout(2, false));
-        GridData gd_container = new GridData(GridData.FILL_BOTH);
-        gd_container.widthHint = 750;
-        container.setLayoutData(gd_container);
+        GridData gdContainer = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+        gdContainer.widthHint = 750;
+        gdContainer.heightHint = 1000;
+        container.setLayoutData(gdContainer);
 
         createAppGroup(container);
         createButton(container);
         createAppDetailGroup(container);
-        new Label(container, SWT.NONE); // for padded
-        createDeployGroup(container);
-        new Label(container, SWT.NONE); // for padded
+        new Label(container, SWT.NONE);
         createSlotGroup(container);
 
-        return area;
+        scrolledComposite.setContent(container);
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
+        scrolledComposite.setMinSize(container.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+        return scrolledComposite;
     }
 
     private void createAppGroup(Composite container) {
@@ -208,19 +226,19 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         });
 
         TableColumn tblclmnName = new TableColumn(table, SWT.LEFT);
-        tblclmnName.setWidth(230);
+        tblclmnName.setWidth(200);
         tblclmnName.setText("Name");
 
         TableColumn tblclmnJdk = new TableColumn(table, SWT.LEFT);
-        tblclmnJdk.setWidth(60);
+        tblclmnJdk.setWidth(80);
         tblclmnJdk.setText("JDK");
 
         TableColumn tblclmnWebContainer = new TableColumn(table, SWT.LEFT);
-        tblclmnWebContainer.setWidth(110);
+        tblclmnWebContainer.setWidth(120);
         tblclmnWebContainer.setText("Web container");
 
         TableColumn tblclmnResourceGroup = new TableColumn(table, SWT.LEFT);
-        tblclmnResourceGroup.setWidth(190);
+        tblclmnResourceGroup.setWidth(180);
         tblclmnResourceGroup.setText("Resource group");
     }
 
@@ -275,14 +293,19 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             }
         });
         btnRefresh.setText("Refresh");
+
+        btnDeployToRoot = new Button(composite, SWT.CHECK);
+        btnDeployToRoot.setSelection(true);
+        btnDeployToRoot.setLayoutData(new RowData(120, SWT.DEFAULT));
+        btnDeployToRoot.setText("Deploy to root");
     }
 
     private void createAppDetailGroup(Composite container) {
         Group grpAppServiceDetails = new Group(container, SWT.NONE);
         grpAppServiceDetails.setLayout(new FillLayout(SWT.HORIZONTAL));
-        GridData gd_grpAppServiceDetails = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_grpAppServiceDetails.heightHint = 100;
-        grpAppServiceDetails.setLayoutData(gd_grpAppServiceDetails);
+        GridData gdGrpAppServiceDetails = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gdGrpAppServiceDetails.heightHint = 100;
+        grpAppServiceDetails.setLayoutData(gdGrpAppServiceDetails);
         grpAppServiceDetails.setText("App service details");
 
         browserAppServiceDetailes = new Browser(grpAppServiceDetails, SWT.NONE);
@@ -315,6 +338,9 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         try {
             if (MavenUtils.isMavenProject(project) && MavenUtils.getPackaging(project).equals(WebAppUtils.TYPE_JAR)) {
+                btnDeployToRoot.setSelection(true);
+                btnDeployToRoot.setVisible(false);
+                ((RowData) btnDeployToRoot.getLayoutData()).exclude = true;
                 Composite southComposite = new Composite(container, SWT.NONE);
                 GridLayout glSouthComposite = new GridLayout(3, false);
                 glSouthComposite.horizontalSpacing = 0;
@@ -349,6 +375,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 lblSuffix.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
                 lblSuffix.setText(" file used to deploy this JAR executable.");
                 container.layout(false);
+                new Label(container, SWT.NONE);
             }
         } catch (Exception e) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "WebAppDeployDialog", e));
@@ -356,20 +383,21 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         }
     }
 
-    private void createDeployGroup(Composite container) {
-        Group grpDeploy = new Group(container, SWT.NONE);
-        grpDeploy.setLayout(new FillLayout(SWT.HORIZONTAL));
+    private void createSlotGroup(Composite container) {
+        ScrolledComposite scrolledComposite = new ScrolledComposite(container, SWT.V_SCROLL);
+        scrolledComposite.setLayout(new FillLayout(SWT.HORIZONTAL));
         GridData gdGrpSlot = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        grpDeploy.setLayoutData(gdGrpSlot);
+        gdGrpSlot.heightHint = 140;
+        scrolledComposite.setLayoutData(gdGrpSlot);
 
-        Composite compositeDeploy = new Composite(grpDeploy, SWT.NONE);
-        compositeDeploy.setLayout(new GridLayout(2, false));
+        Group grpSlot = new Group(scrolledComposite, SWT.NONE);
+        grpSlot.setLayout(new FillLayout(SWT.HORIZONTAL));
+        grpSlot.setLayoutData(gdGrpSlot);
+        grpSlot.setText("Deployment Slot");
+        Composite compositeSlot = new Composite(grpSlot, SWT.NONE);
+        compositeSlot.setLayout(new GridLayout(2, false));
 
-        btnDeployToRoot = new Button(compositeDeploy, SWT.CHECK);
-        btnDeployToRoot.setSelection(true);
-        btnDeployToRoot.setText("Deploy to root");
-
-        btnDeployToSlot = new Button(compositeDeploy, SWT.CHECK);
+        btnDeployToSlot = new Button(compositeSlot, SWT.CHECK);
         btnDeployToSlot.setSelection(false);
         btnDeployToSlot.setText("Deploy to Slot");
         btnDeployToSlot.addSelectionListener(new SelectionAdapter() {
@@ -380,26 +408,18 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             }
         });
 
-        try {
-            if (MavenUtils.isMavenProject(project) && MavenUtils.getPackaging(project).equals(WebAppUtils.TYPE_JAR)) {
-                btnDeployToRoot.setSelection(true);
-                btnDeployToRoot.setVisible(false);
-                ((GridData) btnDeployToRoot.getLayoutData()).exclude = true;
+        Label label = new Label(compositeSlot, SWT.NONE);
+        label.setText("");
+        label.setImage(
+            scaleImage(compositeSlot.getDisplay(), compositeSlot.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 20,
+                20));
+        label.setToolTipText(DEPLOYMENT_SLOT_HOVER);
+        label.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e) {
+                Program.launch("https://docs.microsoft.com/en-us/azure/app-service/deploy-staging-slots");
             }
-        } catch (Exception e) {
-            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "WebAppDeployDialog", e));
-        }
-    }
-
-    private void createSlotGroup(Composite container) {
-        Group grpSlot = new Group(container, SWT.NONE);
-        grpSlot.setLayout(new FillLayout(SWT.HORIZONTAL));
-        GridData gdGrpSlot = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gdGrpSlot.heightHint = 90;
-        grpSlot.setLayoutData(gdGrpSlot);
-        grpSlot.setText("Deployment Slot");
-        Composite compositeSlot = new Composite(grpSlot, SWT.NONE);
-        compositeSlot.setLayout(new GridLayout(2, false));
+        });
 
         btnSlotUseExisting = new Button(compositeSlot, SWT.RADIO);
         btnSlotUseExisting.addSelectionListener(new SelectionAdapter() {
@@ -466,8 +486,47 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         });
         decComboSlotConf = decorateContorolAndRegister(comboSlotConf);
 
+        scrolledComposite.setContent(grpSlot);
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
+        scrolledComposite.setMinSize(grpSlot.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+
         fillSlot();
         radioSlotLogic();
+    }
+
+    private Image scaleImage(Device device, Image orig, int scaledWidth, int scaledHeight) {
+        try {
+            Rectangle origBounds = orig.getBounds();
+            if (origBounds.width == scaledWidth && origBounds.height == scaledHeight) {
+                return orig;
+            }
+
+            ImageData origData = orig.getImageData();
+            ImageData imData = new ImageData(scaledWidth, scaledHeight, origData.depth, origData.palette);
+            if (origData.alphaData != null) {
+                imData.alphaData = new byte[imData.width * imData.height];
+                for (int row = 0; row < imData.height; row++) {
+                    for (int col = 0; col < imData.width; col++) {
+                        int origRow = row * origData.height / imData.height;
+                        int origCol = col * origData.width / imData.width;
+                        byte origAlpha = origData.alphaData[origRow * origData.width + origCol];
+                        imData.alphaData[row * imData.width + col] = origAlpha;
+                    }
+                }
+            }
+            final Image scaled = new Image(device, imData);
+            GC gc = new GC(scaled);
+            gc.setAntialias(SWT.ON);
+            gc.setInterpolation(SWT.HIGH);
+            gc.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+            gc.fillRectangle(0, 0, scaledWidth, scaledHeight);
+            gc.drawImage(orig, 0, 0, origBounds.width, origBounds.height, 0, 0, scaledWidth, scaledHeight);
+            gc.dispose();
+            return scaled;
+        } catch (Exception ignore) {
+            return orig;
+        }
     }
 
     @Override
