@@ -66,7 +66,7 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Device;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -304,7 +304,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         Group grpAppServiceDetails = new Group(container, SWT.NONE);
         grpAppServiceDetails.setLayout(new FillLayout(SWT.HORIZONTAL));
         GridData gdGrpAppServiceDetails = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gdGrpAppServiceDetails.heightHint = 100;
+        gdGrpAppServiceDetails.heightHint = 150;
         grpAppServiceDetails.setLayoutData(gdGrpAppServiceDetails);
         grpAppServiceDetails.setText("App service details");
 
@@ -410,9 +410,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         Label label = new Label(compositeSlot, SWT.NONE);
         label.setText("");
-        label.setImage(
-            scaleImage(compositeSlot.getDisplay(), compositeSlot.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 20,
-                20));
+        label.setImage(scaleImage(compositeSlot.getDisplay(), compositeSlot.getBackground(), 
+                compositeSlot.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 20, 20));
         label.setToolTipText(DEPLOYMENT_SLOT_HOVER);
         label.addMouseListener(new MouseAdapter() {
             @Override
@@ -495,7 +494,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         radioSlotLogic();
     }
 
-    private Image scaleImage(Device device, Image orig, int scaledWidth, int scaledHeight) {
+    private Image scaleImage(Display device, Color color, Image orig, int scaledWidth, int scaledHeight) {
         try {
             Rectangle origBounds = orig.getBounds();
             if (origBounds.width == scaledWidth && origBounds.height == scaledHeight) {
@@ -519,7 +518,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             GC gc = new GC(scaled);
             gc.setAntialias(SWT.ON);
             gc.setInterpolation(SWT.HIGH);
-            gc.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+            gc.setBackground(color);
             gc.fillRectangle(0, 0, scaledWidth, scaledHeight);
             gc.drawImage(orig, 0, 0, origBounds.width, origBounds.height, 0, 0, scaledWidth, scaledHeight);
             gc.dispose();
