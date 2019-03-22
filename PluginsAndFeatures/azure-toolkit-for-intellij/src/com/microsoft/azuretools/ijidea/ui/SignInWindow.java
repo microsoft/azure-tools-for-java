@@ -138,6 +138,7 @@ public class SignInWindow extends AzureDialogWrapper {
             }
         });
 
+        deviceLoginRadioButton.setSelected(true);
         refreshAuthControlElements();
 
         init();

@@ -23,7 +23,7 @@
               <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Automated"/>
+              <text value="Service Principal"/>
             </properties>
           </component>
           <grid id="9ade3" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -80,7 +80,8 @@
                   </grid>
                 </constraints>
                 <properties>
-                  <text value="&lt;html&gt;An authentication file with credentials for an Azure Active Directory service principal will be used for automated sign ins.&lt;/html&gt;"/>
+                  <enabled value="true"/>
+                  <text value="An authentication file with credentials for an Azure Active Directory service principal will be used for sign in."/>
                 </properties>
               </component>
             </children>
@@ -90,10 +91,10 @@
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <enabled value="false"/>
-              <selected value="false"/>
-              <text value="Device Flow (Experimental)"/>
-              <visible value="false"/>
+              <enabled value="true"/>
+              <selected value="true"/>
+              <text value="Device Login"/>
+              <visible value="true"/>
             </properties>
           </component>
           <grid id="f334d" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -111,8 +112,9 @@
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <enabled value="true"/>
                   <text value="You will need to open an external browser and sign in with a generated device code."/>
-                  <visible value="false"/>
+                  <visible value="true"/>
                 </properties>
               </component>
             </children>
@@ -122,8 +124,10 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <enabled value="false"/>
               <selected value="true"/>
               <text value="Interactive"/>
+              <visible value="false"/>
             </properties>
           </component>
           <grid id="3be92" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -141,7 +145,9 @@
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <enabled value="false"/>
                   <text value="You will sign in using your Azure credentials in a popup window. "/>
+                  <visible value="false"/>
                 </properties>
               </component>
             </children>
