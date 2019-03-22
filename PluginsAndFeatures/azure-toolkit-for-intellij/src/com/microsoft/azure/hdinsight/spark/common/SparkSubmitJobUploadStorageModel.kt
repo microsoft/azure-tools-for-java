@@ -31,16 +31,24 @@ import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.Transient
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum
 import javax.swing.DefaultComboBoxModel
 
 @Tag("job_upload_storage")
 class SparkSubmitJobUploadStorageModel: ILogger {
-    @get:Transient val SERVICE_NAME_PREFIX = "Azure IntelliJ Plugin Job Upload Storage Azure Blob - "
+    @get:Transient val SERVICE_NAME_PREFIX_BLOB = "Azure IntelliJ Plugin Job Upload Storage Azure Blob - "
+
+    @get:Transient val SERVICE_NAME_PREFIX_GEN2 = "Azure IntelliJ Plugin Job Upload Storage Azure ADLSGen2 - "
 
     @Attribute("storage_account")
     var storageAccount: String? = null
 
+    @Attribute("adls_gen2_account")
+    var gen2Account: String? = null
+
     @get:Transient @set:Transient var storageKey: String? = null
+
+    @get:Transient @set:Transient var accessKey: String? = null
 
     @get:Transient @set:Transient var containersModel: DefaultComboBoxModel<String> = DefaultComboBoxModel()
 
@@ -72,5 +80,12 @@ class SparkSubmitJobUploadStorageModel: ILogger {
     @Attribute("auth_user_for_webhdfs")
     var webHdfsAuthUser:String? = null
 
-    fun getCredentialAzureBlobAccount(): String? = storageAccount?.let{ SERVICE_NAME_PREFIX + storageAccount }
+    fun getCredentialAccount(account: String?, type: SparkSubmitStorageType?): String? {
+        when (type) {
+            SparkSubmitStorageType.BLOB -> return account?.let { SERVICE_NAME_PREFIX_BLOB + account }
+            SparkSubmitStorageType.ADLS_GEN2 -> return account?.let { SERVICE_NAME_PREFIX_GEN2 + account }
+        }
+
+        return null;
+    }
 }
