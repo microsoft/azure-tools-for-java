@@ -102,6 +102,17 @@ open class SparkFailureTaskRunProfileState(val name: String,
         // Put failure context runtime at beginning, after JDK6, the classpath support <dir>/*
         params.classPath.addFirst("${PathUtil.getCanonicalPath(settingsConfigModel.workingDirectory)}/runtime/*")
 
+        // Prepare log4j.properties file
+        settingsConfigModel.log4jProperties?.also { log4jProp ->
+            val log4jPropertiesFile = File("${PathUtil.getCanonicalPath(settingsConfigModel.workingDirectory)}/conf/log4j.properties")
+                    .apply {
+                        parentFile.mkdir()
+                        writeText(log4jProp)
+                    }
+
+            params.vmParametersList.add("-Dlog4j.configuration=$log4jPropertiesFile")
+        }
+
         // Helper Main class
         params.mainClass = settingsConfigModel.runClass
 
