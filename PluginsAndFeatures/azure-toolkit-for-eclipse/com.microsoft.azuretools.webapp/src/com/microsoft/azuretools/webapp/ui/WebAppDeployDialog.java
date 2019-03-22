@@ -138,9 +138,9 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     private static final String SELECT_SLOT_CLONE_SETTING = "Select a valid slot clone settings";
     private static final String INVALID_SLOT_NAME =
         "The slot name is invalid, it needs to match the pattern " + SLOT_NAME_REGEX;
-    private static final String DEPLOYMENT_SLOT_HOVER = "Deployment slots are live apps with their own hostnames. App" +
-        " content and configurations elements can be swapped between two deployment slots, including the production " +
-        "slot.";
+    private static final String DEPLOYMENT_SLOT_HOVER = "Deployment slots are live apps with their own hostnames. App"
+        + " content and configurations elements can be swapped between two deployment slots, including the production "
+        + "slot.";
 
     private Map<String, WebAppDetails> webAppDetailsMap = new HashMap<>();
     private WebAppSettingModel webAppSettingModel;
@@ -410,8 +410,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         Label label = new Label(compositeSlot, SWT.NONE);
         label.setText("");
-        label.setImage(scaleImage(compositeSlot.getDisplay(), compositeSlot.getBackground(), 
-                compositeSlot.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 20, 20));
+        label.setImage(scaleImage(compositeSlot.getDisplay(), compositeSlot.getBackground(),
+            compositeSlot.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 20, 20));
         label.setToolTipText(DEPLOYMENT_SLOT_HOVER);
         label.addMouseListener(new MouseAdapter() {
             @Override
