@@ -1,40 +1,35 @@
 package com.microsoft.azuretools.webapp.utils;
 
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.azuretools.telemetry.AppInsightsClient.ErrorType;
-import com.microsoft.azuretools.telemetry.AppInsightsClient.EventType;
-import java.util.HashMap;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import java.util.Map;
 
 public class TelemetryUtil {
 
-    public static void sendTelemetryOpStart(String operationName, Map<String, String> properties) {
-        AppInsightsClient.sendOpStart(EventType.WebApp, operationName, properties);
+    public static void sendTelemetryOpStart(String operationName) {
+        TelemetryManager.getInstance().getProducer().startTransaction(TelemetryConstants.WEBAPP, operationName);
     }
 
-    public static void sendTelemetryOpEnd(String operationName, Map<String, String> properties) {
-        AppInsightsClient.sendOpEnd(EventType.WebApp, operationName, properties);
+    public static void sendTelemetryOpEnd() {
+        TelemetryManager.getInstance().getProducer().endTransaction();
     }
 
-    public static void sendTelemetryOpEnd(String operationName, Map<String, String> properties,
-        long time) {
-        AppInsightsClient.sendOpEnd(EventType.WebApp, operationName, properties, buildMetrics(time));
+    public static void sendTelemetryInfo(Map<String, String> properties) {
+        TelemetryManager.getInstance().getProducer().sendInfo(properties, null);
     }
 
-    public static void sendTelemetryOpError(String operationName, ErrorType errorType, String errMsg,
-        Map<String, String> properties) {
-        AppInsightsClient.sendError(EventType.WebApp, operationName, errorType, errMsg, properties);
+    public static void sendTelemetryOpError(ErrorType errorType, String errMsg, Map<String, String> properties) {
+        TelemetryManager.getInstance().getProducer().sendError(errorType, errMsg, properties, null);
     }
 
-    public static void sendTelemetryOpError(String operationName, ErrorType errorType, String errMsg,
-        Map<String, String> properties, long time) {
-        AppInsightsClient.sendError(EventType.WebApp, operationName, errorType, errMsg, properties, buildMetrics(time));
+    public static void logEvent(EventType eventType, String operName, Map<String, String> properties) {
+        EventUtil.logEvent(eventType, TelemetryConstants.WEBAPP, operName, properties, null);
     }
 
-    private static Map<String, Double> buildMetrics(long time) {
-        Map<String, Double> metrics = new HashMap<>();
-        metrics.put("duration", (double) time);
-        return metrics;
+    public static void logError(String operName, ErrorType errorType, String errMsg, Map<String, String> properties) {
+        EventUtil.logError(TelemetryConstants.WEBAPP, operName, errorType, errMsg, properties, null);
     }
-
 }

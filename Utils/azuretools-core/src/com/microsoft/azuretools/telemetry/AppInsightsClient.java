@@ -25,18 +25,12 @@ package com.microsoft.azuretools.telemetry;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.UUID;
 
 public class AppInsightsClient {
-    private static final String EVENT_SPLIT = "/";
-    private static final String OPERATION_ID = "operationId";
-    private static final String OPERATION_NAME = "operationName";
-    private static final String ERROR_CODE = "errorCode";
-    private static final String ERROR_MSG = "message";
-    private static final String ERROR_TYPE = "errorType";
     static AppInsightsConfiguration configuration;
 
     public enum EventType {
@@ -52,21 +46,11 @@ public class AppInsightsClient {
         Azure
     }
 
-    public enum EventName {
-        opStart,
-        opEnd,
-        error
-    }
-
-    public enum ErrorType {
-        userError,
-        systemError
-    }
-
     public static void setAppInsightsConfiguration(AppInsightsConfiguration appInsightsConfiguration) {
         if (appInsightsConfiguration == null)
             throw new NullPointerException("AppInsights configuration cannot be null.");
         configuration = appInsightsConfiguration;
+        initTelemetryManager();
     }
 
     @Nullable
@@ -198,50 +182,13 @@ public class AppInsightsClient {
         return configuration != null;
     }
 
-
-    public static void sendOpEnd(EventType eventType, String operName, Map<String, String> properties) {
-        sendOpEnd(eventType, operName, properties, null);
-    }
-
-    public static void sendOpEnd(EventType eventType, String operName, Map<String, String> properties,
-        Map<String, Double> metrics) {
-        properties.put(OPERATION_NAME, operName);
-        properties.put(OPERATION_ID, UUID.randomUUID().toString());
-
-        String eventName = getEventName(eventType, EventName.opEnd);
-        create(eventName, null, properties, metrics, false);
-    }
-
-    public static void sendOpStart(EventType eventType, String operName, Map<String, String> properties) {
-        properties.put(OPERATION_NAME, operName);
-        properties.put(OPERATION_ID, UUID.randomUUID().toString());
-
-        String eventName = getEventName(eventType, EventName.opStart);
-        create(eventName, null, properties, false);
-    }
-
-    public static void sendError(EventType eventType, String operName, ErrorType errorType, String errMsg,
-        Map<String, String> properties) {
-        sendError(eventType, operName, errorType, errMsg, properties, null);
-    }
-
-    public static void sendError(EventType eventType, String operName, ErrorType errorType, String errMsg,
-        Map<String, String> properties, Map<String, Double> metrics) {
-        properties.put(OPERATION_NAME, operName);
-        properties.put(OPERATION_ID, UUID.randomUUID().toString());
-        properties.put(ERROR_CODE, "1");
-        properties.put(ERROR_MSG, errMsg);
-        properties.put(ERROR_TYPE, errorType.name());
-
-        String eventName = getEventName(eventType, EventName.error);
-        create(eventName, null, properties, metrics, false);
-    }
-
-    private static String getEventName(EventType eventType, EventName eventName) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(configuration.eventNamePrefix()).append(eventType.name()).append(EVENT_SPLIT)
-            .append(eventName.name());
-        return stringBuilder.toString();
+    private static void initTelemetryManager() {
+        try {
+            TelemetryManager.getInstance().setCommonProperties(buildProperties("", new HashMap<>()));
+            TelemetryManager.getInstance().setTelemetryClient(TelemetryClientSingleton.getTelemetry());
+            TelemetryManager.getInstance().setEventNamePrefix(configuration.eventNamePrefix());
+        } catch (Exception ignore) {
+        }
     }
 
 }
