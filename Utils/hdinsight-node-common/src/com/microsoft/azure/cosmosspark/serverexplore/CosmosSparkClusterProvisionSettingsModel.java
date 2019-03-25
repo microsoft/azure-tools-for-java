@@ -24,6 +24,8 @@ package com.microsoft.azure.cosmosspark.serverexplore;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
+import java.util.Map;
+
 public class CosmosSparkClusterProvisionSettingsModel {
     @NotNull
     private String clusterName;
@@ -31,6 +33,8 @@ public class CosmosSparkClusterProvisionSettingsModel {
     private String adlAccount;
     @NotNull
     private String sparkEvents;
+    @NotNull
+    private Map<String, String> extendedProperties;
     private int masterCores;
     private int masterMemory;
     private int workerCores;
@@ -100,6 +104,17 @@ public class CosmosSparkClusterProvisionSettingsModel {
     @NotNull
     public CosmosSparkClusterProvisionSettingsModel setSparkEvents(@NotNull String sparkEvents) {
         this.sparkEvents = sparkEvents;
+        return this;
+    }
+
+    @NotNull
+    public Map<String, String> getExtendedProperties() {
+        return extendedProperties;
+    }
+
+    @NotNull
+    public CosmosSparkClusterProvisionSettingsModel setExtendedProperties(@NotNull Map<String, String> extendedProperties) {
+        this.extendedProperties = extendedProperties;
         return this;
     }
 

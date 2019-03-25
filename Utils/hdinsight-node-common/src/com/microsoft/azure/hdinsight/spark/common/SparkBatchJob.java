@@ -33,25 +33,32 @@ import com.gargoylesoftware.htmlunit.html.HtmlTableBody;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.YarnCluster;
+import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
+import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.App;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttempt;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttemptsResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppResponse;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
+import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
+import rx.exceptions.Exceptions;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.UnknownServiceException;
@@ -69,6 +76,7 @@ import static rx.exceptions.Exceptions.propagate;
 public class SparkBatchJob implements ISparkBatchJob, ILogger {
     public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
     public static final String AdlsPathPattern = "^adl://([^/.\\s]+\\.)+[^/.\\s]+(/[^/.\\s]+)*/?$";
+    public static final String AdlsGen2RestfulPathPattern = "^(https://)([^/.\\s]+\\.)(dfs\\.core\\.windows\\.net)(/[^/.\\s]+)*/?$";
 
     @Nullable
     private String currentLogUrl;
@@ -169,13 +177,18 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Nullable
     private String destinationRootPath;
 
+    @Nullable
+    private HttpObservable httpObservable;
+
+    @Nullable
+    private Deployable jobDeploy;
+
     public SparkBatchJob(
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
         this(null, submissionParameter, sparkBatchSubmission, ctrlSubject, null, null, null);
     }
-
 
     public SparkBatchJob(
             @Nullable IClusterDetail cluster,
@@ -185,6 +198,19 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
             @Nullable IHDIStorageAccount storageAccount,
             @Nullable String accessToken,
             @Nullable String destinationRootPath) {
+        this(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject, storageAccount, accessToken, destinationRootPath, null, null);
+    }
+
+    public SparkBatchJob(
+            @Nullable IClusterDetail cluster,
+            SparkSubmissionParameter submissionParameter,
+            SparkBatchSubmission sparkBatchSubmission,
+            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
+            @Nullable IHDIStorageAccount storageAccount,
+            @Nullable String accessToken,
+            @Nullable String destinationRootPath,
+            @Nullable HttpObservable httpObservable,
+            @Nullable Deployable jobDeploy) {
         this.cluster = cluster;
         this.submissionParameter = submissionParameter;
         this.storageAccount = storageAccount;
@@ -192,22 +218,8 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         this.ctrlSubject = ctrlSubject;
         this.accessToken = accessToken;
         this.destinationRootPath = destinationRootPath;
-    }
-
-    private void tryInitAuthInfo() {
-        try {
-            String clusterName = getSubmissionParameter().getClusterName();
-            IClusterDetail clusterDetail = getCluster() != null
-                    ? getCluster()
-                    : ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
-                    .orElseThrow(() -> new HDIException("No cluster name matched selection: " + clusterName));
-
-            if (!StringUtils.isEmpty(clusterDetail.getHttpUserName()) && !StringUtils.isEmpty(clusterDetail.getHttpPassword())) {
-                submission.setUsernamePasswordCredential(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
-            }
-        } catch (Exception ex) {
-            log().warn("try to set authorization info fail: " + ex.toString());
-        }
+        this.httpObservable = httpObservable;
+        this.jobDeploy = jobDeploy;
     }
 
     /**
@@ -1143,10 +1155,26 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                         getSubmissionParameter().setFilePath(path);
                         return this;
                     });
+        } else if(destinationRootPath != null && destinationRootPath.matches(AdlsGen2RestfulPathPattern) && accessToken != null) {
+            //use ADLS GEN2
+            URI dest = jobDeploy.getUploadDir(destinationRootPath);
+            if (dest == null) {
+                return Observable.error(new IllegalArgumentException("Cannot get valid uploading artifact destination"));
+            }
+
+            return jobDeploy.deploy(new File(artifactPath), dest)
+                    .map(redirectPath -> {
+                        getSubmissionParameter().setFilePath(redirectPath);
+                        return this;
+                    });
         } else if (destinationRootPath != null && destinationRootPath.matches(WebHDFSPathPattern)) {
             //use webhdfs
-            tryInitAuthInfo();
-            return JobUtils.deployArtifact(this.getSubmission(), destinationRootPath, artifactPath)
+            URI dest = jobDeploy.getUploadDir(destinationRootPath);
+            if (dest == null) {
+                return Observable.error(new IllegalArgumentException("Cannot get valid uploading artifact destination"));
+            }
+
+            return jobDeploy.deploy(new File(artifactPath), dest)
                     .map(redirectPath -> {
                         getSubmissionParameter().setFilePath(redirectPath);
                         return this;

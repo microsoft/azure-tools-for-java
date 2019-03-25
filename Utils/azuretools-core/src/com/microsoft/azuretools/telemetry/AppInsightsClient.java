@@ -25,11 +25,10 @@ package com.microsoft.azuretools.telemetry;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.UUID;
 
 public class AppInsightsClient {
     static AppInsightsConfiguration configuration;
@@ -51,6 +50,7 @@ public class AppInsightsClient {
         if (appInsightsConfiguration == null)
             throw new NullPointerException("AppInsights configuration cannot be null.");
         configuration = appInsightsConfiguration;
+        initTelemetryManager();
     }
 
     @Nullable
@@ -99,43 +99,49 @@ public class AppInsightsClient {
     }
 
     public static void create(String eventName, String version, @Nullable Map<String, String> myProperties, boolean force) {
-        if (!isAppInsightsClientAvailable())
-            return;
+        create(eventName, version, myProperties, null, force);
+    }
 
-        if (configuration.validated()) {
+    private static void create(String eventName, String version, @Nullable Map<String, String> myProperties,
+        Map<String, Double> metrics, boolean force) {
+        if (isAppInsightsClientAvailable() && configuration.validated()) {
             String prefValue = configuration.preferenceVal();
             if (prefValue == null || prefValue.isEmpty() || prefValue.equalsIgnoreCase("true") || force) {
                 TelemetryClient telemetry = TelemetryClientSingleton.getTelemetry();
-
-                Map<String, String> properties = myProperties == null ? new HashMap<String, String>() : new HashMap<String, String>(myProperties);
-                properties.put("SessionId", configuration.sessionId());
-                properties.put("IDE", configuration.ide());
-
-                // Telemetry client doesn't accept null value for ConcurrentHashMap doesn't accept null as key or value..
-                for (Iterator<Map.Entry<String, String>> iter = properties.entrySet().iterator(); iter.hasNext(); ) {
-                    Map.Entry<String, String> entry = iter.next();
-                    if (StringUtils.isNullOrEmpty(entry.getKey()) || StringUtils.isNullOrEmpty(entry.getValue())) {
-                        iter.remove();
-                    }
-                }
-                if (version != null && !version.isEmpty()) {
-                    properties.put("Library Version", version);
-                }
-                String pluginVersion = configuration.pluginVersion();
-                if (pluginVersion != null && !pluginVersion.isEmpty()) {
-                    properties.put("Plugin Version", pluginVersion);
-                }
-
-                String instID = configuration.installationId();
-                if (instID != null && !instID.isEmpty()) {
-                    properties.put("Installation ID", instID);
-                }
-                synchronized(TelemetryClientSingleton.class){
-                    telemetry.trackEvent(eventName, properties, null);
+                Map<String, String> properties = buildProperties(version, myProperties);
+                synchronized (TelemetryClientSingleton.class) {
+                    telemetry.trackEvent(eventName, properties, metrics);
                     telemetry.flush();
                 }
             }
         }
+    }
+
+    private static Map<String, String> buildProperties(String version, Map<String, String> myProperties) {
+        Map<String, String> properties = myProperties == null ? new HashMap<>() : new HashMap<>(myProperties);
+        properties.put("SessionId", configuration.sessionId());
+        properties.put("IDE", configuration.ide());
+
+        // Telemetry client doesn't accept null value for ConcurrentHashMap doesn't accept null as key or value..
+        for (Iterator<Map.Entry<String, String>> iter = properties.entrySet().iterator(); iter.hasNext(); ) {
+            Map.Entry<String, String> entry = iter.next();
+            if (StringUtils.isNullOrEmpty(entry.getKey()) || StringUtils.isNullOrEmpty(entry.getValue())) {
+                iter.remove();
+            }
+        }
+        if (version != null && !version.isEmpty()) {
+            properties.put("Library Version", version);
+        }
+        String pluginVersion = configuration.pluginVersion();
+        if (!StringUtils.isNullOrEmpty(pluginVersion)) {
+            properties.put("Plugin Version", pluginVersion);
+        }
+
+        String instID = configuration.installationId();
+        if (!StringUtils.isNullOrEmpty(instID)) {
+            properties.put("Installation ID", instID);
+        }
+        return properties;
     }
 
     public static void createFTPEvent(String eventName, String uri, String appName, String subId) {
@@ -175,4 +181,14 @@ public class AppInsightsClient {
     private static boolean isAppInsightsClientAvailable() {
         return configuration != null;
     }
+
+    private static void initTelemetryManager() {
+        try {
+            TelemetryManager.getInstance().setCommonProperties(buildProperties("", new HashMap<>()));
+            TelemetryManager.getInstance().setTelemetryClient(TelemetryClientSingleton.getTelemetry());
+            TelemetryManager.getInstance().setEventNamePrefix(configuration.eventNamePrefix());
+        } catch (Exception ignore) {
+        }
+    }
+
 }

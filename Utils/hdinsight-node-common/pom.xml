@@ -4,7 +4,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.18.0</version>
+        <version>3.19.0</version>
     </parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>hdinsight-node-common</artifactId>
@@ -115,16 +115,6 @@
                         <goals>
                             <goal>test-compile</goal>
                         </goals>
-                    </execution>
-                    <execution>
-                        <id>clone-winutils</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>script</goal>
-                        </goals>
-                        <configuration>
-                            <scriptFile>build-tools/cloneWinutils.kts</scriptFile>
-                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
@@ -384,6 +374,11 @@
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azuretools</groupId>
+            <artifactId>spark-localrun-mock</artifactId>
+            <version>0.1.0</version>
         </dependency>
     </dependencies>
 </project>

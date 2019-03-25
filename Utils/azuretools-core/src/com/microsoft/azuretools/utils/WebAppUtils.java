@@ -25,11 +25,13 @@ package com.microsoft.azuretools.utils;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.Constants;
@@ -38,6 +40,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 
+import java.util.ArrayList;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -369,7 +372,8 @@ public class WebAppUtils {
         }
     }
 
-    public static int uploadToRemoteServer(WebApp webApp, String fileName, InputStream ins, IProgressIndicator indicator, String targetPath) throws IOException {
+    public static int uploadToRemoteServer(WebAppBase webApp, String fileName, InputStream ins,
+        IProgressIndicator indicator, String targetPath) throws IOException {
         FTPClient ftp = null;
         try {
             PublishingProfile pp = webApp.getPublishingProfile();
@@ -497,6 +501,17 @@ public class WebAppUtils {
             default:
                 return DEFAULT_VALUE_WHEN_VERSION_INVALID;
         }
+    }
+
+    public static List<DeploymentSlot> getDeployments(WebApp webApp) {
+        if (webApp == null || webApp.deploymentSlots() == null || webApp.deploymentSlots().list() == null) {
+            return new ArrayList<>();
+        }
+        List<DeploymentSlot> result = new ArrayList<>();
+        for (DeploymentSlot deploymentSlot : webApp.deploymentSlots().list()) {
+            result.add(deploymentSlot);
+        }
+        return result;
     }
 
     public static List<RuntimeStack> getAllJavaLinuxRuntimeStacks() {

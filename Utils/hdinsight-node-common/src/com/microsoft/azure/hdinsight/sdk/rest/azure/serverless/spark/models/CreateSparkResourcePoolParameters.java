@@ -24,6 +24,7 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -56,6 +57,12 @@ public class CreateSparkResourcePoolParameters {
      */
     @JsonProperty(value = "sparkResourceCollection")
     private List<CreateSparkResourcePoolItemParameters> sparkResourceCollection;
+
+    /**
+     * Special properties that will allow choosing/targeting of features (runtime, gp version etc) on server side.
+     */
+    @JsonProperty(value = "extendedProperties")
+    private Map<String, String> extendedProperties;
 
     /**
      * Get version of the template used while deploying the resource pool.
@@ -134,6 +141,26 @@ public class CreateSparkResourcePoolParameters {
      */
     public CreateSparkResourcePoolParameters withSparkResourceCollection(List<CreateSparkResourcePoolItemParameters> sparkResourceCollection) {
         this.sparkResourceCollection = sparkResourceCollection;
+        return this;
+    }
+
+    /**
+     * Get special properties that will allow choosing/targeting of features (runtime, gp version etc) on server side.
+     *
+     * @return the extendedProperties value
+     */
+    public Map<String, String> extendedProperties() {
+        return this.extendedProperties;
+    }
+
+    /**
+     * Set special properties that will allow choosing/targeting of features (runtime, gp version etc) on server side.
+     *
+     * @param extendedProperties the extendedProperties value to set
+     * @return the CreateSparkResourcePoolParameters object itself.
+     */
+    public CreateSparkResourcePoolParameters withExtendedProperties(Map<String, String> extendedProperties) {
+        this.extendedProperties = extendedProperties;
         return this;
     }
 

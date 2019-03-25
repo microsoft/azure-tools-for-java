@@ -51,7 +51,9 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
     val azureBlobCard = SparkSubmissionJobUploadStorageAzureBlobCard()
     val sparkInteractiveSessionCard = SparkSubmissionJobUploadStorageSparkInteractiveSessionCard()
     val clusterDefaultStorageCard = SparkSubmissionJobUploadStorageClusterDefaultStorageCard()
+    val notSupportStorageCard = SparkSubmissionJobUploadStorageClusterNotSupportStorageCard()
     val accountDefaultStorageCard = SparkSubmissionJobUploadStorageAccountDefaultStorageCard()
+    val adlsGen2Card = SparkSubmissionJobUploadStorageGen2Card()
 
     val adlsCard = SparkSubmissionJobUploadStorageAdlsCard().apply {
         // handle sign in/out action when sign in/out link is clicked
@@ -103,7 +105,9 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
         add(azureBlobCard, azureBlobCard.title)
         add(sparkInteractiveSessionCard, sparkInteractiveSessionCard.title)
         add(clusterDefaultStorageCard, clusterDefaultStorageCard.title)
+        add(notSupportStorageCard, notSupportStorageCard.title)
         add(adlsCard, adlsCard.title)
+        add(adlsGen2Card, adlsGen2Card.title)
         add(webHdfsCard, webHdfsCard.title)
         add(accountDefaultStorageCard, accountDefaultStorageCard.title)
     }

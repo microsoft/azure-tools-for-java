@@ -23,10 +23,7 @@ package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
-import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.hdinsight.sdk.storage.*;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -52,7 +49,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     private final String DefaultFS = "fs.defaultFS";
     private final String FSDefaultName = "fs.default.name";
     private final String StorageAccountKeyPrefix = "fs.azure.account.key.";
-    private final String StorageAccountNamePattern = "^wasb[s]?://(.*)@(.*)$";
+    private final String StorageAccountNamePattern = "^(abfs[s]?|wasb[s]?)://(.*)@(.*)$";
     private final String ResourceGroupStartTag = "resourceGroups/";
     private final String ResourceGroupEndTag = "/providers/";
 
@@ -64,7 +61,6 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     private String passWord;
     private IHDIStorageAccount defaultStorageAccount;
     private List<HDStorageAccount> additionalStorageAccounts;
-
     private boolean isConfigInfoAvailable = false;
 
     public ClusterDetail(SubscriptionDetail paramSubscription, ClusterRawInfo paramClusterRawInfo){
@@ -245,17 +241,22 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
             throw new HDIException("Failed to get default storage account");
         }
 
+        String scheme = URI.create(containerAddress).getScheme();
+
         //for adls
         if(ADL_HOME_PREFIX.equalsIgnoreCase(containerAddress)) {
             String accountName = "";
             String defaultRootPath = "";
+
             if(coresiteMap.containsKey(ADLS_HOME_HOST_NAME)) {
                 accountName = coresiteMap.get(ADLS_HOME_HOST_NAME).split("\\.")[0];
             }
             if(coresiteMap.containsKey(ADLS_HOME_MOUNTPOINT)) {
                 defaultRootPath = coresiteMap.get(ADLS_HOME_MOUNTPOINT);
             }
-            return new ADLSStorageAccount(this, accountName, true, defaultRootPath, clusterIdentity);
+
+            URI rootURI = URI.create(String.format("%s://%s.azuredatalakestore.net", scheme, accountName)).resolve(defaultRootPath);
+            return new ADLSStorageAccount(this,true, clusterIdentity, rootURI);
         } else if (Pattern.compile(StorageAccountNamePattern).matcher(containerAddress).matches()) {
             String storageAccountName = getStorageAccountName(containerAddress);
             if(storageAccountName == null){
@@ -270,11 +271,16 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
                 storageAccountKey = coresiteMap.get(keyNameOfDefaultStorageAccountKey);
             }
 
-            if(storageAccountKey == null){
+            if (!scheme.startsWith(ADLSGen2StorageAccount.DefaultScheme) && storageAccountKey == null) {
                 throw new HDIException("Failed to get default storage account key");
             }
 
-            return new HDStorageAccount(this, storageAccountName, storageAccountKey,true, defaultContainerName);
+            if (scheme.startsWith(ADLSGen2StorageAccount.DefaultScheme)) {
+                return new ADLSGen2StorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName, scheme);
+            } else {
+                return new HDStorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName);
+            }
+
         } else {
             return null;
         }
@@ -307,7 +313,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
         Matcher m = r.matcher(containerAddress);
         if(m.find())
         {
-            return m.group(2);
+            return m.group(3);
         }
 
         return null;
@@ -318,7 +324,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
         Matcher m = r.matcher(containerAddress);
         if(m.find())
         {
-            return m.group(1);
+            return m.group(2);
         }
 
         return null;
@@ -334,7 +340,10 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
 
     @Override
     public SparkSubmitStorageType getDefaultStorageType() {
-        return SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT;
+        SparkSubmitStorageType type = getStorageOptionsType().getOptionTypes().length == 0
+                ? null
+                : getStorageOptionsType().getOptionTypes()[0];
+        return type;
     }
 
     @Override
@@ -356,6 +365,8 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithAdls;
         } else if (type == StorageAccountTypeEnum.BLOB) {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithBlob;
+        } else if(type == StorageAccountTypeEnum.ADLSGen2){
+           return SparkSubmitStorageTypeOptionsForCluster.ClusterWithAdlsGen2;
         } else {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithUnknown;
         }

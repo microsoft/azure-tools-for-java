@@ -10,11 +10,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkSubmitModel
 import com.microsoft.intellij.forms.dsl.panel
 import org.apache.commons.lang3.exception.ExceptionUtils
-import java.awt.FlowLayout
 import javax.swing.JComponent
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JTextField
 
 open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
     : SparkSubmissionContentPanel(project, "Cosmos Serverless Spark") {
@@ -27,8 +23,9 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
         super.getData(data)
 
         (data as? CosmosServerlessSparkSubmitModel)?.apply {
-            setSparkEventsDirectoryPath(sparkEventsDirectoryField.text)
-            sparkEventsDirectoryPrefix = sparkEventsDirectoryPrefixField.text
+            setSparkEventsDirectoryPath(additionalFieldsPanel.sparkEventsDirectoryField.text)
+            sparkEventsDirectoryPrefix = additionalFieldsPanel.sparkEventsDirectoryPrefixField.text
+            setExtendedProperties(additionalFieldsPanel.extendedPropertiesField.envs)
         }
     }
 
@@ -36,29 +33,14 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
         super.setData(data)
         ApplicationManager.getApplication().invokeAndWait({
             (data as? CosmosServerlessSparkSubmitModel)?.apply {
-                sparkEventsDirectoryField.text = getSparkEventsDirectoryPath()
-                sparkEventsDirectoryPrefixField.text = sparkEventsDirectoryPrefix
+                additionalFieldsPanel.sparkEventsDirectoryField.text = getSparkEventsDirectoryPath()
+                additionalFieldsPanel.sparkEventsDirectoryPrefixField.text = sparkEventsDirectoryPrefix
+                additionalFieldsPanel.extendedPropertiesField.envs = getExtendedProperties()
             }
         }, ModalityState.any())
     }
 
-    private val sparkEventsPrompt = JLabel("Spark Events:").apply {
-        toolTipText = "Spark events root path"
-    }
-
-    private val sparkEventsDirectoryPrefixField = JLabel("<Root Path>/").apply {
-        toolTipText = "Spark events root path"
-    }
-
-    private val sparkEventsDirectoryField = JTextField("spark-events/").apply {
-        toolTipText = sparkEventsPrompt.toolTipText
-    }
-
-    private var sparkEventsDirectory = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
-        add(sparkEventsPrompt)
-        add(sparkEventsDirectoryPrefixField)
-        add(sparkEventsDirectoryField)
-    }
+    private val additionalFieldsPanel = CosmosServerlessSparkAdditionalFieldsPanel()
 
     override fun getErrorMessageClusterNameNull(isSignedIn : Boolean) : String {
         return when {
@@ -73,16 +55,12 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
             columnTemplate {
                 col {
                     anchor = GridConstraints.ANCHOR_WEST
-                    fill = GridConstraints.FILL_NONE
-                }
-                col {
-                    anchor = GridConstraints.ANCHOR_WEST
                     hSizePolicy = GridConstraints.SIZEPOLICY_WANT_GROW
                     fill = GridConstraints.FILL_HORIZONTAL
                 }
             }
-            row { c(super.component);}
-            row { c(sparkEventsDirectory) }
+            row { c(super.component) }
+            row { c(additionalFieldsPanel) }
         }
 
         formBuilder.buildPanel()
@@ -102,7 +80,7 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
 
                         setData(model.apply {
                             sparkEventsDirectoryPrefix = (cluster as? AzureSparkServerlessAccount)?.storageRootPath
-                                    ?: "<Root Path>/"
+                                    ?: "adl://*.azuredatalakestore.net/"
                         })
                     }, { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
         }

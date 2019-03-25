@@ -156,6 +156,7 @@ public class CosmosSparkClusterProvisionCtrlProvider implements ILogger {
                 .workerPerInstanceMemory(toUpdate.getWorkerMemory())
                 .workerInstances(toUpdate.getWorkerNumberOfContainers())
                 .sparkEventsPath(toUpdate.getSparkEvents())
+                .extendedProperties(toUpdate.getExtendedProperties())
                 .userStorageAccount(account.getDetailResponse().defaultDataLakeStoreAccount())
                 .build());
     }

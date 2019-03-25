@@ -35,7 +35,9 @@ import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
+import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
@@ -62,12 +64,13 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         val isCheckPassed: Boolean
         val resultMessage: String?
         fun getUploadPath(account: IHDIStorageAccount): String?
-        fun getAzureBlobStoragePath(fullStorageBlobName: String?, container: String?): String?
+        fun getAzureBlobStoragePath(fullStorageBlobName: String?, container: String?, schema: String): String?
     }
 
     val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
     private val jobUploadStorageTitle = "Job Upload Storage"
     private val invalidUploadPath = "<Invalid Upload Path>"
+    private val unsupportAccountType = "<Storage Account Type Is Not Supported>"
     private val uploadPathLabel = JLabel("Upload Path")
     private val uploadPathField = JTextField().apply {
         isEditable = false
@@ -144,7 +147,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                 // 1.select cluster -> set to default
                 // 2.reload config with not null type -> set to saved type
                 // 3.reload config with null storage type -> set to default
-                // 3.create config  -> set to default
+                // 4.create config  -> set to default
                 uploadStorage.deployStorageTypesModel = ImmutableComboBoxModel(optionTypes).apply {
                     if (checkEvent.preClusterName != null) {
                         // for case1, preClusterName is not null
@@ -168,7 +171,12 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         private fun validateStorageInfo(checkEvent:StorageCheckEvent): Observable<SparkSubmitJobUploadStorageModel> {
             val cluster = clusterSelectedSubject.value ?: return empty()
 
-            return just(SparkSubmitJobUploadStorageModel())
+            return just(SparkSubmitJobUploadStorageModel()
+                    .apply {
+                        gen2Account = cluster.storageAccount?.name.takeIf {
+                            cluster.storageAccount?.accountType == StorageAccountTypeEnum.ADLSGen2
+                        }
+                    })
                     .doOnNext { model -> run {
                         getData(model)
                         setDefaultStorageType(checkEvent, cluster, model)
@@ -216,7 +224,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                 } else {
                                     uploadPath = control.getAzureBlobStoragePath(
                                             ClusterManagerEx.getInstance().getBlobFullName(storageAccount),
-                                            containersModel.selectedItem as String
+                                            containersModel.selectedItem as String,
+                                            HDStorageAccount.DefaultScheme
                                     )
                                     errorMsg = null
                                 }
@@ -235,6 +244,22 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                         val formatAdlsRootPath = if (adlsRootPath?.endsWith("/") == true) adlsRootPath else "$adlsRootPath/"
                                         uploadPath = "${formatAdlsRootPath}SparkSubmission/"
                                         errorMsg = null
+                                    }
+                                }
+                            }
+                            SparkSubmitStorageType.ADLS_GEN2 -> model.apply{
+                                val defaultStorageAccount = cluster.storageAccount
+                                if (defaultStorageAccount == null) {
+                                    errorMsg = "Cluster have no storage account"
+                                    uploadPath = invalidUploadPath
+                                } else {
+                                    val path = control.getUploadPath(defaultStorageAccount)
+                                    if (path == null) {
+                                        errorMsg = "Error getting upload path from storage account"
+                                        uploadPath = invalidUploadPath
+                                    } else {
+                                        errorMsg = null
+                                        uploadPath = path
                                     }
                                 }
                             }
@@ -268,6 +293,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                     uploadPath = invalidUploadPath
                                     errorMsg = "Selected ADLA account does not exist"
                                 }
+                            }
+                            SparkSubmitStorageType.NOT_SUPPORT_STORAGE_TYPE -> model.apply {
+                                uploadPath = unsupportAccountType
+                                errorMsg = "Storage type is not supported"
                             }
                             else -> model.apply {
                                 uploadPath = invalidUploadPath
@@ -303,9 +332,15 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             }
             SparkSubmitStorageType.ADLS_GEN1 -> {
                 data.adlsRootPath = storagePanel.adlsCard.adlsRootPathField.text.trim()
+                data.subscriptionsModel = storagePanel.adlsCard.subscriptionsComboBox.comboBox.model as DefaultComboBoxModel<String>
+                data.selectedSubscription = storagePanel.adlsCard.subscriptionsComboBox.comboBox.selectedItem as? String
             }
             SparkSubmitStorageType.WEBHDFS -> {
                 data.webHdfsRootPath= storagePanel.webHdfsCard.webHdfsRootPathField.text.trim()
+            }
+            SparkSubmitStorageType.ADLS_GEN2 -> {
+                data.gen2Account = storagePanel.adlsGen2Card.gen2AccountField.text.trim()
+                data.accessKey = storagePanel.adlsGen2Card.storageKeyField.text.trim()
             }
             else -> {}
         }
@@ -327,7 +362,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             when (data.storageAccountType) {
                 SparkSubmitStorageType.BLOB -> {
                     storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
-                    val credentialAccount = data.getCredentialAzureBlobAccount()
+                    val credentialAccount = data.getCredentialAccount(data.storageAccount, SparkSubmitStorageType.BLOB)
                     storagePanel.azureBlobCard.storageKeyField.text =
                             if (StringUtils.isEmpty(data.errorMsg) && StringUtils.isEmpty(data.storageKey)) {
                                 credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.storageAccount) }
@@ -354,6 +389,12 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                     } else {
                         curLayout.show(storagePanel.adlsCard.azureAccountCards, storagePanel.adlsCard.signInCard.title)
                     }
+
+                    if (data.subscriptionsModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedSubscription)) {
+                        storagePanel.adlsCard.subscriptionsComboBox.comboBox.model = DefaultComboBoxModel(arrayOf(data.selectedSubscription))
+                    } else {
+                        storagePanel.adlsCard.subscriptionsComboBox.comboBox.model = data.subscriptionsModel as DefaultComboBoxModel<Any>
+                    }
                 }
                 SparkSubmitStorageType.WEBHDFS -> {
                     if (storagePanel.webHdfsCard.webHdfsRootPathField.text != data.webHdfsRootPath) {
@@ -364,6 +405,16 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                     val curLayout = storagePanel.webHdfsCard.authAccountForWebHdfsCards.layout as CardLayout
                     curLayout.show(storagePanel.webHdfsCard.authAccountForWebHdfsCards, storagePanel.webHdfsCard.signOutCard.title)
                     storagePanel.webHdfsCard.signOutCard.authUserNameLabel.text = data.webHdfsAuthUser
+                }
+                SparkSubmitStorageType.ADLS_GEN2 -> {
+                    storagePanel.adlsGen2Card.gen2AccountField.text = data.gen2Account
+                    val credentialAccount = data.getCredentialAccount(data.gen2Account, SparkSubmitStorageType.ADLS_GEN2)
+                    storagePanel.adlsGen2Card.storageKeyField.text =
+                            if (StringUtils.isEmpty(data.accessKey)) {
+                                credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.gen2Account) ?: "" }
+                            } else {
+                                data.accessKey
+                            }
                 }
             }
         }

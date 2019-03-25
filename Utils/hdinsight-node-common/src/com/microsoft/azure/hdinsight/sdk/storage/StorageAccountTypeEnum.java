@@ -24,5 +24,6 @@ package com.microsoft.azure.hdinsight.sdk.storage;
 public enum StorageAccountTypeEnum {
     BLOB,
     ADLS,
+    ADLSGen2,
     UNKNOWN
 }

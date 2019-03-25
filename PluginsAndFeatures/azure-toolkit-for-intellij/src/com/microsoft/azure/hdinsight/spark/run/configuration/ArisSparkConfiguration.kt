@@ -29,4 +29,8 @@ class ArisSparkConfiguration(name: String, val module: ArisSparkConfigurationMod
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
         return LivySparkRunConfigurationSettingsEditor(ArisSparkConfigurable(module.project))
     }
+
+    override fun getSuggestedNamePrefix(): String {
+        return "[Spark on SQL]"
+    }
 }

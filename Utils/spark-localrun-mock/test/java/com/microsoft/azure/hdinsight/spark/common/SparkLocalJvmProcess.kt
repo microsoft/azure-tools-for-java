@@ -24,20 +24,15 @@ package com.microsoft.azure.hdinsight.spark.common
 
 import mockit.integration.junit4.JMockit
 import java.io.File
-import java.nio.file.Paths
 import kotlin.test.fail
 
 class SparkLocalJvmProcess : JvmProcess() {
-    val targetDir = File(javaClass.protectionDomain.codeSource.location.file).parentFile
-    val projectDir = targetDir.parentFile
-    val dataRootDir = Paths.get(
-                targetDir.path,
-                "data"
-            ).toFile()
+    private val targetDir = File(javaClass.protectionDomain.codeSource.location.file).parentFile
+    private val dataRootDir: File = targetDir.resolve("data")
 
-    val userDefaultDir = Paths.get(dataRootDir.path, "__default__", "user", "current").toFile()
+    val userDefaultDir: String = dataRootDir.resolve("__default__").resolve("user").resolve("current").path
 
-    override var workingDirectory: String = userDefaultDir.path
+    override var workingDirectory: String = userDefaultDir
 
     override fun createProcess(jvmOptions: String, mainClass: String, arguments: Array<String>): ProcessBuilder {
         val jMockitClass = JMockit::class.java

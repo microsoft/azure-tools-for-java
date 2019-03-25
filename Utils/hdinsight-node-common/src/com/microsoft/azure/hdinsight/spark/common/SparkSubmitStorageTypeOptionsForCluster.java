@@ -37,7 +37,13 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
     // or AzureSparkCosmosCluster using adls
     ClusterWithAdls(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
-            SparkSubmitStorageType.ADLS_GEN1
+            SparkSubmitStorageType.ADLS_GEN1,
+            SparkSubmitStorageType.WEBHDFS
+    }),
+
+    // cluster detail using adls gen2 as default storage type
+    ClusterWithAdlsGen2(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.ADLS_GEN2
     }),
 
     // cluster detail with unknown storage type

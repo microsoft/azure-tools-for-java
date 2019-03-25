@@ -26,8 +26,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
+import com.microsoft.azuretools.securestore.SecureStore;
+import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -42,17 +45,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AzureSettingPanel <T extends AzureRunConfigurationBase> {
+public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     protected final Project project;
     private boolean isCbArtifactInited;
     private boolean isArtifact;
     private boolean telemetrySent;
     private Artifact lastSelectedArtifact;
-
+    protected SecureStore secureStore;
 
     public AzureSettingPanel(@NotNull Project project) {
         this.project = project;
         this.isCbArtifactInited = false;
+        this.secureStore = ServiceManager.getServiceProvider(SecureStore.class);
     }
 
     public void reset(@NotNull T configuration) {
@@ -66,6 +70,25 @@ public abstract class AzureSettingPanel <T extends AzureRunConfigurationBase> {
 
         resetFromConfig(configuration);
         sendTelemetry(configuration.getSubscriptionId(), configuration.getTargetName());
+    }
+
+    protected void savePassword(String serviceName, String userName, String password) {
+        if (StringUtils.isEmpty(serviceName) || StringUtils.isEmpty(userName) || StringUtils.isEmpty(password)) {
+            return;
+        }
+        this.secureStore.savePassword(serviceName, userName, password);
+    }
+
+    protected String loadPassword(String serviceName, String userName) {
+        if (StringUtils.isEmpty(serviceName) || StringUtils.isEmpty(userName)) {
+            return StringUtils.EMPTY;
+        }
+        try {
+            return this.secureStore.loadPassword(serviceName, userName);
+        } catch (java.lang.IllegalArgumentException e) {
+            // Return empty string if no such password
+            return StringUtils.EMPTY;
+        }
     }
 
     protected boolean isMavenProject() {
@@ -108,11 +131,11 @@ public abstract class AzureSettingPanel <T extends AzureRunConfigurationBase> {
         if (!Comparing.equal(lastSelectedArtifact, selectArtifact)) {
             if (lastSelectedArtifact != null && isCbArtifactInited) {
                 BuildArtifactsBeforeRunTaskProvider
-                        .setBuildArtifactBeforeRunOption(pnlRoot, project, lastSelectedArtifact, false);
+                    .setBuildArtifactBeforeRunOption(pnlRoot, project, lastSelectedArtifact, false);
             }
             if (selectArtifact != null && isCbArtifactInited) {
                 BuildArtifactsBeforeRunTaskProvider
-                        .setBuildArtifactBeforeRunOption(pnlRoot, project, selectArtifact, true);
+                    .setBuildArtifactBeforeRunOption(pnlRoot, project, selectArtifact, true);
             }
             lastSelectedArtifact = selectArtifact;
         }
@@ -120,18 +143,25 @@ public abstract class AzureSettingPanel <T extends AzureRunConfigurationBase> {
 
     @NotNull
     public abstract String getPanelName();
+
     public abstract void disposeEditor();
 
     protected abstract void resetFromConfig(@NotNull T configuration);
+
     protected abstract void apply(@NotNull T configuration);
+
     @NotNull
     public abstract JPanel getMainPanel();
+
     @NotNull
     protected abstract JComboBox<Artifact> getCbArtifact();
+
     @NotNull
     protected abstract JLabel getLblArtifact();
+
     @NotNull
     protected abstract JComboBox<MavenProject> getCbMavenProject();
+
     @NotNull
     protected abstract JLabel getLblMavenProject();
 
@@ -174,19 +204,19 @@ public abstract class AzureSettingPanel <T extends AzureRunConfigurationBase> {
         }
         Observable.fromCallable(() -> {
             Map<String, String> map = new HashMap<>();
-            map.put("SubscriptionId", subId !=null ? subId : "");
+            map.put("SubscriptionId", subId != null ? subId : "");
             if (targetName != null) {
                 map.put("FileType", MavenRunTaskUtil.getFileType(targetName));
             }
             AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog,
-                    getPanelName(),
-                    "Open" /*action*/,
-                    map
+                getPanelName(),
+                "Open" /*action*/,
+                map
             );
             return true;
         }).subscribeOn(Schedulers.io()).subscribe(
-                (res) -> telemetrySent = true,
-                (err) -> telemetrySent = true
+            (res) -> telemetrySent = true,
+            (err) -> telemetrySent = true
         );
     }
 }

@@ -27,6 +27,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 
+import java.util.Map;
+
 /**
  * To leverage Livy(HDInsight) Spark Batch Job codes, some fields are commented
  * since they can be inherited from the base class SparkSubmissionParameter
@@ -135,6 +137,12 @@ public class CreateSparkBatchJobParameters extends SparkSubmissionParameter {
      */
 //    @JsonProperty(value = "conf")
 //    private Map<String, String> conf;
+
+    /**
+     * Special properties that will allow choosing/targeting of features (runtime, gp version etc) on server side.
+     */
+    @JsonProperty(value = "extendedProperties")
+    private Map<String, String> extendedProperties;
 
     public String adlAccountName() {
         return adlAccountName;
@@ -445,4 +453,23 @@ public class CreateSparkBatchJobParameters extends SparkSubmissionParameter {
 //        return this;
 //    }
 
+    /**
+     * Get special properties that will allow choosing/targeting of features (runtime, gp version etc) on server side.
+     *
+     * @return the extendedProperties value
+     */
+    public Map<String, String> extendedProperties() {
+        return this.extendedProperties;
+    }
+
+    /**
+     * Set special properties that will allow choosing/targeting of features (runtime, gp version etc) on server side.
+     *
+     * @param extendedProperties the extendedProperties value to set
+     * @return the CreateSparkBatchJobParameters object itself.
+     */
+    public CreateSparkBatchJobParameters withExtendedProperties(Map<String, String> extendedProperties) {
+        this.extendedProperties = extendedProperties;
+        return this;
+    }
 }

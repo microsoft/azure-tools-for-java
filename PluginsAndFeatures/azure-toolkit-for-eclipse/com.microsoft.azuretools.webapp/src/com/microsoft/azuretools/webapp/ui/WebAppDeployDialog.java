@@ -1,19 +1,47 @@
 package com.microsoft.azuretools.webapp.ui;
 
+import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
+import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.PublishingProfile;
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azuretools.adauth.StringUtils;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
+import com.microsoft.azuretools.core.ui.ErrorWindow;
+import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
+import com.microsoft.azuretools.core.utils.MavenUtils;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.core.utils.ProgressDialog;
+import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.utils.AzureModel;
+import com.microsoft.azuretools.utils.AzureModelController;
+import com.microsoft.azuretools.utils.CanceledByUserException;
+import com.microsoft.azuretools.utils.WebAppUtils;
+import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
+import com.microsoft.azuretools.webapp.Activator;
+import com.microsoft.azuretools.webapp.utils.TelemetryUtil;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-
-import com.microsoft.azure.management.appservice.*;
-import com.microsoft.azuretools.webapp.Activator;
-
-import com.microsoft.azuretools.utils.*;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.ILog;
@@ -23,6 +51,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jst.j2ee.datamodel.properties.IJ2EEComponentExportDataModelProperties;
 import org.eclipse.jst.j2ee.internal.web.archive.operations.WebComponentExportDataModelProvider;
@@ -30,16 +59,27 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -50,26 +90,15 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
-import com.microsoft.azuretools.core.ui.ErrorWindow;
-import com.microsoft.azuretools.core.ui.views.AzureDeploymentProgressNotification;
-import com.microsoft.azuretools.core.utils.MavenUtils;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.core.utils.ProgressDialog;
-import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
-
 
 @SuppressWarnings("restriction")
-public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
+public class WebAppDeployDialog extends AppServiceBaseDialog {
+
     private static ILog LOG = Activator.getDefault().getLog();
 
     private Table table;
@@ -78,20 +107,47 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
     private String browserFontStyle;
     private Button btnDelete;
     private Link lnkWebConfig;
+    private Button btnDeployToSlot;
+    private Combo comboSlot;
+    private Combo comboSlotConf;
+    private Button btnSlotUseExisting;
+    private Button btnSlotCreateNew;
+    private Text textSlotName;
+    private Label lblSlotConf;
+    private ControlDecoration decComboSlotConf;
+    private ControlDecoration decComboSlot;
+    private ControlDecoration decTextSlotName;
 
     private IProject project;
     private Shell parentShell;
 
-    final String ftpLinkString = "ShowFtpCredentials";
-
+    private static final String ftpLinkString = "ShowFtpCredentials";
     private static final String WEB_CONFIG_DEFAULT = "web.config";
     private static final String WEB_CONFIG_PACKAGE_PATH = "/webapp/web.config";
     private static final String WEB_CONFIG_REMOTE_PATH = "/site/wwwroot/web.config";
     private static final String TYPE_JAR = "jar";
-
     private static final String WEB_CONFIG_LINK_FORMAT = "<a href=\"https://%s/dev/wwwroot/web.config\">web.config</a>";
+    private static final String DATE_FORMAT = "yyMMddHHmmss";
+    private static final String date = new SimpleDateFormat(DATE_FORMAT).format(new Date());
+
+    private static final String DONOT_CLONE_SLOT_CONF = "Do not clone settings";
+    private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
+    private static final String NAME_ALREADY_TAKEN = "The name is already taken";
+    private static final String ENTER_VALID_SLOT_NAME = "Enter a valid slot name.";
+    private static final String SELECT_SLOT_NAME = "Select a valid slot name.";
+    private static final String SELECT_SLOT_CLONE_SETTING = "Select a valid slot clone settings";
+    private static final String INVALID_SLOT_NAME =
+        "The slot name is invalid, it needs to match the pattern " + SLOT_NAME_REGEX;
+    private static final String DEPLOYMENT_SLOT_HOVER = "Deployment slots are live apps with their own hostnames. App"
+        + " content and configurations elements can be swapped between two deployment slots, including the production "
+        + "slot.";
 
     private Map<String, WebAppDetails> webAppDetailsMap = new HashMap<>();
+    private WebAppSettingModel webAppSettingModel;
+    private boolean isDeployToSlot = false;
+    private boolean isCreateNewSlot = false;
+
+    private Map<String, List<DeploymentSlot>> slotMap = new ConcurrentHashMap<>();
 
     /**
      * Create the dialog.
@@ -132,36 +188,61 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
     protected Control createDialogArea(Composite parent) {
         setMessage("Select App Service to deploy to:");
         setTitle("Deploy Web App");
-        Composite area = (Composite) super.createDialogArea(parent);
-        Composite container = new Composite(area, SWT.NONE);
-        container.setLayout(new GridLayout(2, false));
-        GridData gd_container = new GridData(GridData.FILL_BOTH);
-        gd_container.widthHint = 750;
-        container.setLayoutData(gd_container);
 
+        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
+        scrolledComposite.setLayout(new GridLayout(2, false));
+        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        Group container = new Group(scrolledComposite, SWT.NONE);
+        container.setLayout(new GridLayout(2, false));
+        GridData gdContainer = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+        gdContainer.widthHint = 750;
+        gdContainer.heightHint = 1000;
+        container.setLayoutData(gdContainer);
+
+        createAppGroup(container);
+        createButton(container);
+        createAppDetailGroup(container);
+        new Label(container, SWT.NONE);
+        createSlotGroup(container);
+
+        scrolledComposite.setContent(container);
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
+        scrolledComposite.setMinSize(container.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+        return scrolledComposite;
+    }
+
+    private void createAppGroup(Composite container) {
         table = new Table(container, SWT.BORDER | SWT.FULL_SELECTION);
         GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-        gd_table.heightHint = 300;
+        gd_table.heightHint = 250;
         table.setLayoutData(gd_table);
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
+        table.addListener(SWT.Selection, (e) -> {
+            fillAppServiceDetails();
+            fillSlot();
+        });
 
         TableColumn tblclmnName = new TableColumn(table, SWT.LEFT);
-        tblclmnName.setWidth(230);
+        tblclmnName.setWidth(200);
         tblclmnName.setText("Name");
 
         TableColumn tblclmnJdk = new TableColumn(table, SWT.LEFT);
-        tblclmnJdk.setWidth(60);
+        tblclmnJdk.setWidth(80);
         tblclmnJdk.setText("JDK");
 
         TableColumn tblclmnWebContainer = new TableColumn(table, SWT.LEFT);
-        tblclmnWebContainer.setWidth(110);
+        tblclmnWebContainer.setWidth(120);
         tblclmnWebContainer.setText("Web container");
 
         TableColumn tblclmnResourceGroup = new TableColumn(table, SWT.LEFT);
-        tblclmnResourceGroup.setWidth(190);
+        tblclmnResourceGroup.setWidth(180);
         tblclmnResourceGroup.setText("Resource group");
+    }
 
+    private void createButton(Composite container) {
         Composite composite = new Composite(container, SWT.NONE);
         composite.setLayout(new RowLayout(SWT.VERTICAL));
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
@@ -172,6 +253,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sendTelemetry("CREATE");
+                TelemetryUtil.logEvent(EventType.info, TelemetryConstants.OPEN_CREATEWEBAPP_DIALOG, buildProperties());
                 createAppService(project);
             }
         });
@@ -195,27 +277,39 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sendTelemetry("REFRESH");
+                Map<String, String> properties = buildProperties();
+                TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.REFRESH_METADATA);
+                TelemetryUtil.sendTelemetryInfo(properties);
                 table.removeAll();
                 fillAppServiceDetails();
                 AzureModel.getInstance().setResourceGroupToWebAppMap(null);
                 fillTable();
+                slotMap.clear();
                 if (lnkWebConfig != null) {
                     lnkWebConfig.setText(WEB_CONFIG_DEFAULT);
                 }
                 AppServiceCreateDialog.initAspCache();
+                TelemetryUtil.sendTelemetryOpEnd();
             }
         });
         btnRefresh.setText("Refresh");
 
+        btnDeployToRoot = new Button(composite, SWT.CHECK);
+        btnDeployToRoot.setSelection(true);
+        btnDeployToRoot.setLayoutData(new RowData(120, SWT.DEFAULT));
+        btnDeployToRoot.setText("Deploy to root");
+    }
+
+    private void createAppDetailGroup(Composite container) {
         Group grpAppServiceDetails = new Group(container, SWT.NONE);
         grpAppServiceDetails.setLayout(new FillLayout(SWT.HORIZONTAL));
-        GridData gd_grpAppServiceDetails = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_grpAppServiceDetails.heightHint = 150;
-        grpAppServiceDetails.setLayoutData(gd_grpAppServiceDetails);
+        GridData gdGrpAppServiceDetails = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gdGrpAppServiceDetails.heightHint = 150;
+        grpAppServiceDetails.setLayoutData(gdGrpAppServiceDetails);
         grpAppServiceDetails.setText("App service details");
 
         browserAppServiceDetailes = new Browser(grpAppServiceDetails, SWT.NONE);
-        FontData browserFontData = btnRefresh.getFont().getFontData()[0];
+        FontData browserFontData = container.getFont().getFontData()[0];
         browserFontStyle = String.format("font-family: '%s'; font-size: 9pt;", browserFontData.getName());
         browserAppServiceDetailes.addLocationListener(new LocationListener() {
             @Override
@@ -228,12 +322,12 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     if (event.location.contains("http")) {
                         event.doit = false;
                         PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
-                                .openURL(new URL(event.location));
+                            .openURL(new URL(event.location));
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                            "changing@LocationListener@browserAppServiceDetailes@AppServiceCreateDialog", ex));
+                        "changing@LocationListener@browserAppServiceDetailes@AppServiceCreateDialog", ex));
                 }
             }
 
@@ -242,16 +336,11 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             }
         });
 
-        btnDeployToRoot = new Button(container, SWT.CHECK);
-        btnDeployToRoot.setSelection(true);
-        btnDeployToRoot.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-        btnDeployToRoot.setText("Deploy to root");
-
         try {
             if (MavenUtils.isMavenProject(project) && MavenUtils.getPackaging(project).equals(WebAppUtils.TYPE_JAR)) {
                 btnDeployToRoot.setSelection(true);
                 btnDeployToRoot.setVisible(false);
-                ((GridData)btnDeployToRoot.getLayoutData()).exclude = true;
+                ((RowData) btnDeployToRoot.getLayoutData()).exclude = true;
                 Composite southComposite = new Composite(container, SWT.NONE);
                 GridLayout glSouthComposite = new GridLayout(3, false);
                 glSouthComposite.horizontalSpacing = 0;
@@ -273,7 +362,8 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                     @Override
                     public void widgetSelected(SelectionEvent event) {
                         try {
-                            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(event.text));
+                            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
+                                .openURL(new URL(event.text));
                         } catch (Exception ex) {
                             ex.printStackTrace();
                             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "WebAppDeployDialog", ex));
@@ -285,14 +375,157 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                 lblSuffix.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
                 lblSuffix.setText(" file used to deploy this JAR executable.");
                 container.layout(false);
+                new Label(container, SWT.NONE);
             }
         } catch (Exception e) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "WebAppDeployDialog", e));
             e.printStackTrace();
         }
+    }
 
-        table.addListener(SWT.Selection, (e) -> fillAppServiceDetails());
-        return area;
+    private void createSlotGroup(Composite container) {
+        ScrolledComposite scrolledComposite = new ScrolledComposite(container, SWT.V_SCROLL);
+        scrolledComposite.setLayout(new FillLayout(SWT.HORIZONTAL));
+        GridData gdGrpSlot = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gdGrpSlot.heightHint = 140;
+        scrolledComposite.setLayoutData(gdGrpSlot);
+
+        Group grpSlot = new Group(scrolledComposite, SWT.NONE);
+        grpSlot.setLayout(new FillLayout(SWT.HORIZONTAL));
+        grpSlot.setLayoutData(gdGrpSlot);
+        grpSlot.setText("Deployment Slot");
+        Composite compositeSlot = new Composite(grpSlot, SWT.NONE);
+        compositeSlot.setLayout(new GridLayout(2, false));
+
+        btnDeployToSlot = new Button(compositeSlot, SWT.CHECK);
+        btnDeployToSlot.setSelection(false);
+        btnDeployToSlot.setText("Deploy to Slot");
+        btnDeployToSlot.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                radioSlotLogic();
+                fillSlot();
+            }
+        });
+
+        Label label = new Label(compositeSlot, SWT.NONE);
+        label.setText("");
+        label.setImage(scaleImage(compositeSlot.getDisplay(), compositeSlot.getBackground(),
+            compositeSlot.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 20, 20));
+        label.setToolTipText(DEPLOYMENT_SLOT_HOVER);
+        label.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e) {
+                Program.launch("https://docs.microsoft.com/en-us/azure/app-service/deploy-staging-slots");
+            }
+        });
+
+        btnSlotUseExisting = new Button(compositeSlot, SWT.RADIO);
+        btnSlotUseExisting.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                radioSlotLogic();
+            }
+        });
+
+        btnSlotUseExisting.setSelection(true);
+        btnSlotUseExisting.setText("Use existing");
+        comboSlot = new Combo(compositeSlot, SWT.READ_ONLY);
+        comboSlot.setEnabled(false);
+        comboSlot.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        comboSlot.setBounds(0, 0, 26, 22);
+        comboSlot.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                cleanError();
+            }
+        });
+
+        decComboSlot = decorateContorolAndRegister(comboSlot);
+
+        btnSlotCreateNew = new Button(compositeSlot, SWT.RADIO);
+        btnSlotCreateNew.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                radioSlotLogic();
+            }
+        });
+        btnSlotCreateNew.setText("Create new");
+
+        textSlotName = new Text(compositeSlot, SWT.BORDER);
+        textSlotName.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                cleanError();
+            }
+        });
+        textSlotName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        textSlotName.setBounds(0, 0, 64, 19);
+        textSlotName.setMessage("Slot Name");
+        textSlotName.setText("slot-" + date);
+        textSlotName.setEnabled(false);
+        decTextSlotName = decorateContorolAndRegister(textSlotName);
+
+        lblSlotConf = new Label(compositeSlot, SWT.NONE);
+        lblSlotConf.setEnabled(false);
+        GridData gdLblSlotConf = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdLblSlotConf.horizontalIndent = 20;
+        lblSlotConf.setLayoutData(gdLblSlotConf);
+        lblSlotConf.setText("Clone settings from");
+
+        comboSlotConf = new Combo(compositeSlot, SWT.READ_ONLY);
+        comboSlotConf.setEnabled(false);
+        comboSlotConf.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        comboSlotConf.setBounds(0, 0, 26, 22);
+        comboSlotConf.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                cleanError();
+            }
+        });
+        decComboSlotConf = decorateContorolAndRegister(comboSlotConf);
+
+        scrolledComposite.setContent(grpSlot);
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
+        scrolledComposite.setMinSize(grpSlot.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+
+        fillSlot();
+        radioSlotLogic();
+    }
+
+    private Image scaleImage(Display device, Color color, Image orig, int scaledWidth, int scaledHeight) {
+        try {
+            Rectangle origBounds = orig.getBounds();
+            if (origBounds.width == scaledWidth && origBounds.height == scaledHeight) {
+                return orig;
+            }
+
+            ImageData origData = orig.getImageData();
+            ImageData imData = new ImageData(scaledWidth, scaledHeight, origData.depth, origData.palette);
+            if (origData.alphaData != null) {
+                imData.alphaData = new byte[imData.width * imData.height];
+                for (int row = 0; row < imData.height; row++) {
+                    for (int col = 0; col < imData.width; col++) {
+                        int origRow = row * origData.height / imData.height;
+                        int origCol = col * origData.width / imData.width;
+                        byte origAlpha = origData.alphaData[origRow * origData.width + origCol];
+                        imData.alphaData[row * imData.width + col] = origAlpha;
+                    }
+                }
+            }
+            final Image scaled = new Image(device, imData);
+            GC gc = new GC(scaled);
+            gc.setAntialias(SWT.ON);
+            gc.setInterpolation(SWT.HIGH);
+            gc.setBackground(color);
+            gc.fillRectangle(0, 0, scaledWidth, scaledHeight);
+            gc.drawImage(orig, 0, 0, origBounds.width, origBounds.height, 0, 0, scaledWidth, scaledHeight);
+            gc.dispose();
+            return scaled;
+        } catch (Exception ignore) {
+            return orig;
+        }
     }
 
     @Override
@@ -323,10 +556,6 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         w.open();
     }
 
-    private void cleanError() {
-        setErrorMessage(null);
-    }
-
     private void fillAppServiceDetails() {
         validated();
         int selectedRow = table.getSelectionIndex();
@@ -355,11 +584,11 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         sb.append("<div style=\"margin: 7px 7px 7px 7px; " + browserFontStyle + "\">");
         sb.append(String.format("App Service name:&nbsp;<b>%s</b>;<br/>", appServiceName));
         sb.append(String.format("Subscription name:&nbsp;<b>%s</b>;&nbsp;id:&nbsp;<b>%s</b>;<br/>",
-                sd.getSubscriptionName(), sd.getSubscriptionId()));
+            sd.getSubscriptionName(), sd.getSubscriptionId()));
         String aspName = asp == null ? "N/A" : asp.name();
         String aspPricingTier = asp == null ? "N/A" : asp.pricingTier().toString();
         sb.append(String.format("App Service Plan name:&nbsp;<b>%s</b>;&nbsp;Pricing tier:&nbsp;<b>%s</b>;<br/>",
-                aspName, aspPricingTier));
+            aspName, aspPricingTier));
 
         String link = buildSiteLink(wad.webApp, null);
         sb.append(String.format("Link:&nbsp;<a href=\"%s\">%s</a><br/>", link, link));
@@ -368,37 +597,38 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         browserAppServiceDetailes.setText(sb.toString());
     }
 
-    private static String buildSiteLink(WebApp webApp, String artifactName) {
+    private static String buildSiteLink(WebAppBase webApp, String artifactName) {
         String appServiceLink = "https://" + webApp.defaultHostName();
-        if (artifactName != null && !artifactName.isEmpty())
+        if (artifactName != null && !artifactName.isEmpty()) {
             return appServiceLink + "/" + artifactName;
-        else
+        } else {
             return appServiceLink;
+        }
     }
 
     private void updateAndFillTable() {
         try {
             ProgressDialog.get(getShell(), "Update Azure Local Cache Progress").run(true, true,
-                    (monitor) -> {
-                        monitor.beginTask("Updating Azure local cache...", IProgressMonitor.UNKNOWN);
-                        try {
-                            if (monitor.isCanceled()) {
-                                throw new CanceledByUserException();
-                            }
-                            AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));
-                            Display.getDefault().asyncExec(() -> doFillTable());
-                        } catch (CanceledByUserException ex) {
-                            Display.getDefault().asyncExec(() -> {
-                                System.out.println("updateAndFillTable(): Canceled by user");
-                                cancelPressed();
-                            });
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                                    "run@ProgressDialog@updateAndFillTable@AppServiceCreateDialog", ex));
+                (monitor) -> {
+                    monitor.beginTask("Updating Azure local cache...", IProgressMonitor.UNKNOWN);
+                    try {
+                        if (monitor.isCanceled()) {
+                            throw new CanceledByUserException();
                         }
-                        monitor.done();
-                    });
+                        AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));
+                        Display.getDefault().asyncExec(() -> doFillTable());
+                    } catch (CanceledByUserException ex) {
+                        Display.getDefault().asyncExec(() -> {
+                            System.out.println("updateAndFillTable(): Canceled by user");
+                            cancelPressed();
+                        });
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                            "run@ProgressDialog@updateAndFillTable@AppServiceCreateDialog", ex));
+                    }
+                    monitor.done();
+                });
         } catch (Exception ex) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "updateAndFillTable@AppServiceCreateDialog", ex));
         }
@@ -407,10 +637,10 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
     private void doFillTable() {
         try {
             Map<SubscriptionDetail, List<ResourceGroup>> srgMap = AzureModel.getInstance()
-                    .getSubscriptionToResourceGroupMap();
+                .getSubscriptionToResourceGroupMap();
             Map<ResourceGroup, List<WebApp>> rgwaMap = AzureModel.getInstance().getResourceGroupToWebAppMap();
             Map<ResourceGroup, List<AppServicePlan>> rgaspMap = AzureModel.getInstance()
-                    .getResourceGroupToAppServicePlanMap();
+                .getResourceGroupToAppServicePlanMap();
 
             webAppDetailsMap.clear();
             table.removeAll();
@@ -429,7 +659,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                             webAppDetails.resourceGroup = rg;
                             webAppDetails.appServicePlan = findAppSevicePlanByID(webApp.appServicePlanId(), rgaspMap);
                             webAppDetails.appServicePlanResourceGroup = findResouceGroupByName(
-                                    webApp.resourceGroupName(), srgMap.get(sd));
+                                webApp.resourceGroupName(), srgMap.get(sd));
                             webAppDetailsList.add(webAppDetails);
                         }
                     }
@@ -440,9 +670,9 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                 TableItem item = new TableItem(table, SWT.NULL);
                 WebApp webApp = webAppDetails.webApp;
                 item.setText(new String[]{webApp.name(),
-                        webApp.javaVersion() != JavaVersion.OFF ? webApp.javaVersion().toString()
-                                : WebAppUtils.getJavaRuntime(webApp),
-                        WebAppUtils.getJavaRuntime(webApp), webApp.resourceGroupName()});
+                    webApp.javaVersion() != JavaVersion.OFF ? webApp.javaVersion().toString()
+                        : WebAppUtils.getJavaRuntime(webApp),
+                    WebAppUtils.getJavaRuntime(webApp), webApp.resourceGroupName()});
                 webAppDetailsMap.put(webApp.name(), webAppDetails);
             }
 
@@ -451,12 +681,99 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         }
     }
 
+    private void fillSlot() {
+        if (!isDeployToSlot) {
+            return;
+        }
+        int selectedRow = table.getSelectionIndex();
+        comboSlot.removeAll();
+        comboSlotConf.removeAll();
+        if (selectedRow < 0) {
+            return;
+        }
+        String appServiceName = table.getItems()[selectedRow].getText(0);
+        WebAppDetails webAppDetail = webAppDetailsMap.get(appServiceName);
+        if (webAppDetail == null || webAppDetail.webApp == null) {
+            return;
+        }
+        WebApp webApp = webAppDetail.webApp;
+        List<DeploymentSlot> deploymentSlots;
+        if (slotMap.containsKey(webApp.name())) {
+            deploymentSlots = slotMap.get(webApp.name());
+        } else {
+            deploymentSlots = WebAppUtils.getDeployments(webApp);
+            slotMap.put(webApp.name(), deploymentSlots);
+        }
+
+        for (DeploymentSlot deploymentSlot : deploymentSlots) {
+            comboSlot.add(deploymentSlot.name());
+            comboSlotConf.add(deploymentSlot.name());
+        }
+        if (comboSlot.getItemCount() > 0) {
+            comboSlot.select(0);
+        }
+
+        comboSlotConf.add(webApp.name());
+        comboSlotConf.add(DONOT_CLONE_SLOT_CONF);
+        comboSlotConf.select(0);
+    }
+
+    private boolean validate() {
+        cleanError();
+        if (!isDeployToSlot) {
+            return true;
+        }
+        if (isCreateNewSlot) {
+            String slotName = webAppSettingModel.getNewSlotName();
+            if (StringUtils.isNullOrWhiteSpace(slotName)) {
+                setError(decTextSlotName, ENTER_VALID_SLOT_NAME);
+                return false;
+            }
+            if (!slotName.matches(SLOT_NAME_REGEX)) {
+                setError(decTextSlotName, INVALID_SLOT_NAME);
+                return false;
+            }
+            for (String slot : comboSlot.getItems()) {
+                if (slotName.equals(slot)) {
+                    setError(decTextSlotName, NAME_ALREADY_TAKEN);
+                    return false;
+                }
+            }
+            if (StringUtils.isNullOrWhiteSpace(webAppSettingModel.getNewSlotConfigurationSource())) {
+                setError(decComboSlotConf, SELECT_SLOT_CLONE_SETTING);
+                return false;
+            }
+        } else {
+            if (StringUtils.isNullOrWhiteSpace(webAppSettingModel.getSlotName())) {
+                setError(decComboSlot, SELECT_SLOT_NAME);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void radioSlotLogic() {
+        cleanError();
+        boolean enable = btnDeployToSlot.getSelection();
+        boolean enableUseExisting = btnSlotUseExisting.getSelection();
+
+        btnSlotUseExisting.setEnabled(enable);
+        btnSlotCreateNew.setEnabled(enable);
+        comboSlot.setEnabled(enable && enableUseExisting);
+        comboSlotConf.setEnabled(enable && !enableUseExisting);
+        textSlotName.setEnabled(enable && !enableUseExisting);
+        lblSlotConf.setEnabled(enable && !enableUseExisting);
+
+        isDeployToSlot = enable;
+        isCreateNewSlot = btnSlotCreateNew.getSelection();
+    }
+
     private AppServicePlan findAppSevicePlanByID(String id, Map<ResourceGroup, List<AppServicePlan>> rgaspMap) {
         if (rgaspMap == null) {
             return null;
         }
         for (List<AppServicePlan> appServicePlans : rgaspMap.values()) {
-            for (AppServicePlan appServicePlan :appServicePlans) {
+            for (AppServicePlan appServicePlan : appServicePlans) {
                 if (appServicePlan.id().equals(id)) {
                     return appServicePlan;
                 }
@@ -469,7 +786,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         if (rgs == null) {
             return null;
         }
-        for (ResourceGroup rg :rgs) {
+        for (ResourceGroup rg : rgs) {
             if (rg.name().equals(rgName)) {
                 return rg;
             }
@@ -490,7 +807,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private boolean validated() {
-        cleanError();
+        setErrorMessage(null);
         int selectedRow = table.getSelectionIndex();
         Button okButton = getButton(IDialogConstants.OK_ID);
         if (selectedRow < 0) {
@@ -519,6 +836,10 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
             } else {
                 artifactName = project.getName();
                 destinationPath = project.getLocation() + "/" + artifactName + ".war";
+            }
+            collectData();
+            if (!validate()) {
+                return;
             }
             deploy(artifactName, destinationPath);
         } catch (Exception ex) {
@@ -564,13 +885,10 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         int selectedRow = table.getSelectionIndex();
         String appServiceName = table.getItems()[selectedRow].getText(0);
         WebAppDetails wad = webAppDetailsMap.get(appServiceName);
-        WebApp webApp = wad.webApp;
-        boolean isDeployToRoot = btnDeployToRoot.getSelection();
-        String errTitle = "Deploy Web App Error";
-        String sitePath = buildSiteLink(wad.webApp, isDeployToRoot ? null : artifactName);
-        String jobDescription = String.format("Web App '%s' deployment", webApp.name());
+        String jobDescription = String.format("Web App '%s' deployment", wad.webApp.name());
         String deploymentName = UUID.randomUUID().toString();
         AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(deploymentName, jobDescription);
+        boolean isDeployToRoot = btnDeployToRoot.getSelection();
 
         Job job = new Job(jobDescription) {
             @Override
@@ -580,47 +898,59 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                 String successMessage = "";
                 String errorMessage = "Error";
                 Map<String, String> postEventProperties = new HashMap<>();
-                postEventProperties.put("Java App Name", project.getName());
                 try {
-                    boolean isJar = MavenUtils.isMavenProject(project) && MavenUtils.getPackaging(project).equals(WebAppUtils.TYPE_JAR);
+                    boolean isJar = MavenUtils.isMavenProject(project) && MavenUtils.getPackaging(project)
+                        .equals(WebAppUtils.TYPE_JAR);
+                    postEventProperties.put("Java App Name", project.getName());
                     postEventProperties.put("FileType", isJar ? "jar" : "war");
-                } catch (Exception e) {}
+                    postEventProperties.put("runtime",
+                        wad.webApp.operatingSystem() == OperatingSystem.LINUX ? "linux-" + wad.webApp.linuxFxVersion()
+                            : "windows-" + wad.webApp.javaContainer());
+                } catch (Exception e) {
+                }
 
+                String errTitle = "Deploy Web App Error";
                 monitor.beginTask(message, IProgressMonitor.UNKNOWN);
+                WebAppBase webApp = null;
                 try {
+                    webApp = getRealWebApp(wad, this, monitor, deploymentName);
+                    String sitePath = buildSiteLink(webApp, isDeployToRoot ? null : artifactName);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 5, message);
                     if (!MavenUtils.isMavenProject(project)) {
                         export(artifactName, artifactPath);
                     }
+                    TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.DEPLOY_WEBAPP);
                     message = "Deploying Web App...";
                     monitor.setTaskName(message);
-                    AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 35, message);
+                    AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 30, message);
                     PublishingProfile pp = webApp.getPublishingProfile();
                     boolean isJar = isJarBaseOnFileName(artifactPath);
                     int uploadingTryCount;
                     webApp.stop();
+
                     if (isJar) {
                         if (webApp.operatingSystem() == OperatingSystem.WINDOWS) {
                             // We use root.jar in web.config before, now we use app.jar
                             // for backward compatibility, here need upload web.config when we deploy the code.
                             try (InputStream webConfigInput = WebAppUtils.class
-                                    .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
+                                .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
                                 WebAppUtils.uploadToRemoteServer(webApp, WEB_CONFIG_DEFAULT, webConfigInput,
-                                        new UpdateProgressIndicator(monitor), WEB_CONFIG_REMOTE_PATH);
-                            } catch (Exception ignore){}
+                                    new UpdateProgressIndicator(monitor), WEB_CONFIG_REMOTE_PATH);
+                            } catch (Exception ignore) {
+                            }
                         }
                         uploadingTryCount = WebAppUtils.deployArtifactForJavaSE(artifactPath, pp,
-                                new UpdateProgressIndicator(monitor));
+                            new UpdateProgressIndicator(monitor));
                     } else {
                         uploadingTryCount = WebAppUtils.deployArtifact(artifactName, artifactPath, pp, isDeployToRoot,
-                                new UpdateProgressIndicator(monitor));
+                            new UpdateProgressIndicator(monitor));
                     }
                     postEventProperties.put("uploadingTryCount", String.valueOf(uploadingTryCount));
                     webApp.start();
 
                     if (monitor.isCanceled()) {
                         AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1,
-                                cancelMessage);
+                            cancelMessage);
                         return Status.CANCEL_STATUS;
                     }
 
@@ -642,8 +972,8 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
                             }
                         } catch (Exception ex) {
                             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                                    "run@Thread@run@ProgressDialog@deploy@AppServiceCreateDialog@SingInDialog",
-                                    ex));
+                                "run@Thread@run@ProgressDialog@deploy@AppServiceCreateDialog@SingInDialog",
+                                ex));
                         } finally {
                             countDownLatch.countDown();
                         }
@@ -651,31 +981,79 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
 
                     try {
                         countDownLatch.await();
-                    } catch (Exception ignore) {}
+                    } catch (Exception ignore) {
+                    }
 
                     if (monitor.isCanceled()) {
                         // it's published but not warmed up yet - consider as success
                         AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 100,
-                                successMessage);
+                            successMessage);
                         return Status.CANCEL_STATUS;
                     }
 
                     monitor.done();
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 100,
-                            successMessage);
+                        successMessage);
+                    AppInsightsClient.create("Deploy as WebApp", "", postEventProperties);
                 } catch (Exception ex) {
                     postEventProperties.put("PublishError", ex.getMessage());
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                            "run@ProgressDialog@deploy@AppServiceCreateDialog", ex));
+                        "run@ProgressDialog@deploy@AppServiceCreateDialog", ex));
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1, errorMessage);
-                    webApp.start();
+                    if (webApp != null) {
+                        webApp.start();
+                    }
                     Display.getDefault().asyncExec(() -> ErrorWindow.go(parentShell, ex.getMessage(), errTitle));
+                    TelemetryUtil
+                        .sendTelemetryOpError(ErrorType.systemError, ex.getMessage(), postEventProperties);
+                } finally {
+                    TelemetryUtil.sendTelemetryInfo(postEventProperties);
+                    TelemetryUtil.sendTelemetryOpEnd();
                 }
-                AppInsightsClient.create("Deploy as WebApp", "", postEventProperties);
                 return Status.OK_STATUS;
             }
         };
         job.schedule();
+    }
+
+    private WebAppBase getRealWebApp(WebAppDetails webAppDetails, Object parent, IProgressMonitor monitor,
+        String deploymentName) throws Exception {
+        if (isDeployToSlot) {
+            if (isCreateNewSlot) {
+                monitor.setTaskName(String.format("create deployment slot"));
+                AzureDeploymentProgressNotification
+                    .notifyProgress(parent, deploymentName, "", 5, "create deployment slot");
+                return createDeploymentSlot(webAppDetails);
+            } else {
+                return webAppDetails.webApp.deploymentSlots().getByName(webAppSettingModel.getSlotName());
+            }
+        } else {
+            return webAppDetails.webApp;
+        }
+    }
+
+    private DeploymentSlot createDeploymentSlot(WebAppDetails webAppDetails) throws Exception {
+        try {
+            webAppSettingModel.setSubscriptionId(webAppDetails.subscriptionDetail.getSubscriptionId());
+            webAppSettingModel.setWebAppId(webAppDetails.webApp.id());
+            return AzureWebAppMvpModel.getInstance().createDeploymentSlot(webAppSettingModel);
+        } catch (Exception e) {
+            throw new Exception("create slot failed", e);
+        }
+    }
+
+    private void collectData() {
+        if (isDeployToSlot) {
+            webAppSettingModel = new WebAppSettingModel();
+            if (isCreateNewSlot) {
+                int index = comboSlotConf.getSelectionIndex();
+                webAppSettingModel.setNewSlotConfigurationSource(index < 0 ? "" : comboSlotConf.getItem(index));
+                webAppSettingModel.setNewSlotName(textSlotName.getText() == null ? "" : textSlotName.getText().trim());
+            } else {
+                int index = comboSlot.getSelectionIndex();
+                webAppSettingModel.setSlotName(index < 0 ? "" : comboSlot.getItem(index));
+            }
+        }
     }
 
     private boolean isJarBaseOnFileName(String filePath) {
@@ -695,7 +1073,7 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         WebAppDetails wad = webAppDetailsMap.get(appServiceName);
 
         boolean confirmed = MessageDialog.openConfirm(getShell(), "Delete App Service",
-                "Do you really want to delete the App Service '" + appServiceName + "'?");
+            "Do you really want to delete the App Service '" + appServiceName + "'?");
         if (!confirmed) {
             return;
         }
@@ -703,20 +1081,26 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         String errTitle = "Delete App Service Error";
         try {
             ProgressDialog.get(this.getShell(), "Delete App Service Progress").run(true, true,
-                    (monitor) -> {
-                        monitor.beginTask("Deleting App Service...", IProgressMonitor.UNKNOWN);
-                        try {
-                            WebAppUtils.deleteAppService(wad);
-                            Display.getDefault().asyncExec(() -> {
-                                table.remove(selectedRow);
-                                fillAppServiceDetails();
-                            });
-                        } catch (Exception ex) {
-                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                                    "run@ProgressDialog@deleteAppService@AppServiceCreateDialog", ex));
-                            Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
-                        }
-                    });
+                (monitor) -> {
+                    monitor.beginTask("Deleting App Service...", IProgressMonitor.UNKNOWN);
+                    try {
+                        TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.DELETE_WEBAPP);
+                        WebAppUtils.deleteAppService(wad);
+                        Display.getDefault().asyncExec(() -> {
+                            table.remove(selectedRow);
+                            fillAppServiceDetails();
+                            fillSlot();
+                            slotMap.remove(wad.webApp.name());
+                        });
+                    } catch (Exception ex) {
+                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                            "run@ProgressDialog@deleteAppService@AppServiceCreateDialog", ex));
+                        Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
+                        TelemetryUtil.sendTelemetryOpError(ErrorType.userError, ex.getMessage(), null);
+                    } finally {
+                        TelemetryUtil.sendTelemetryOpEnd();
+                    }
+                });
         } catch (Exception ex) {
             ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "deleteAppService@AppServiceCreateDialog", ex));
@@ -729,6 +1113,13 @@ public class WebAppDeployDialog extends AzureTitleAreaDialogWrapper {
         properties.put("Window", this.getClass().getSimpleName());
         properties.put("Title", this.getShell().getText());
         AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, this.getClass().getSimpleName(), action,
-                properties);
+            properties);
+    }
+
+    private Map<String, String> buildProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("Window", this.getClass().getSimpleName());
+        properties.put("Title", this.getShell().getText());
+        return properties;
     }
 }

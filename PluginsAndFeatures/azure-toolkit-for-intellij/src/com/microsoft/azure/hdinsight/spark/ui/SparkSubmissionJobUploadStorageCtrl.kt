@@ -31,15 +31,17 @@ import com.intellij.ui.DocumentAdapter
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster
-import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
-import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
-import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.*
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.storage.blob.BlobRequestOptions
+import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
 import com.microsoft.tooling.msservices.model.storage.BlobContainer
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount
+import com.sun.javaws.exceptions.InvalidArgumentException
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import rx.Observable
@@ -47,6 +49,7 @@ import rx.schedulers.Schedulers
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
+import java.util.stream.Collectors
 import javax.swing.DefaultComboBoxModel
 import javax.swing.event.DocumentEvent
 
@@ -105,6 +108,86 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                         { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
             }
         }
+
+        //refresh subscriptions after refresh button is clicked
+        view.storagePanel.adlsCard.subscriptionsComboBox.button.addActionListener{
+            if (view.storagePanel.adlsCard.subscriptionsComboBox.button.isEnabled) {
+                view.storagePanel.adlsCard.subscriptionsComboBox.button.isEnabled = false
+                refreshSubscriptions()
+                        .doOnEach { view.storagePanel.adlsCard.subscriptionsComboBox.button.isEnabled = true }
+                        .subscribe(
+                                { },
+                                { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
+            }
+        }
+
+        //save access key after access key text change
+        view.storagePanel.adlsGen2Card.storageKeyField.addFocusListener(object : FocusAdapter() {
+            override fun focusLost(e: FocusEvent?) {
+                saveAccesKey().subscribe(
+                        { model -> log().info("save new access key for account" + model.gen2Account) },
+                        {}
+                )
+            }
+        })
+    }
+
+    private fun saveAccesKey(): Observable<SparkSubmitJobUploadStorageModel> {
+        return Observable.just(SparkSubmitJobUploadStorageModel())
+                .doOnNext(view::getData)
+                .map { model ->
+                    model.apply {
+                        if (!StringUtils.isEmpty(accessKey) && !StringUtils.isEmpty(gen2Account)) {
+                            val credentialAccount = getCredentialAccount(gen2Account, SparkSubmitStorageType.ADLS_GEN2)
+                            credentialAccount?.let {
+                                view.secureStore?.savePassword(credentialAccount, gen2Account, accessKey)
+                            }
+                        }
+                    }
+                }
+                .doOnNext(view::setData)
+    }
+
+    private fun refreshSubscriptions(): Observable<SparkSubmitJobUploadStorageModel> {
+        return Observable.just(SparkSubmitJobUploadStorageModel())
+                .doOnNext(view::getData)
+                // set error message to prevent user from applying the change when refreshing is not completed
+                .map { it.apply { errorMsg = "refreshing subscriptions is not completed" } }
+                .doOnNext(view::setData)
+                .observeOn(Schedulers.io())
+                .map { toUpdate ->
+                    toUpdate.apply {
+                        if (!AzureSparkClusterManager.getInstance().isSignedIn) {
+                            errorMsg = "ADLS Gen 1 storage type requires user to sign in first"
+                        } else {
+                            try {
+                                val subscriptionManager = AuthMethodManager.getInstance().azureManager.subscriptionManager
+                                val subscriptionNameList = subscriptionManager.selectedSubscriptionDetails
+                                        .stream()
+                                        .map { subDetail -> subDetail.subscriptionName }
+                                        .collect(Collectors.toList<String>())
+
+                                if (subscriptionNameList.size > 0) {
+                                    subscriptionsModel = DefaultComboBoxModel(subscriptionNameList.toTypedArray())
+                                    subscriptionsModel.selectedItem = subscriptionsModel.getElementAt(0)
+                                    selectedSubscription = subscriptionsModel.getElementAt(0)
+                                    errorMsg = null
+                                } else {
+                                    errorMsg = "No subscriptions found in this storage account"
+                                }
+                            } catch (ex: Exception) {
+                                log().info("Refresh subscriptions error. " + ExceptionUtils.getStackTrace(ex))
+                                errorMsg = "Can't get subscriptions, check if subscriptions selected"
+                            }
+                        }
+                    }
+                }
+                .doOnNext { data ->
+                    if (data.errorMsg != null) {
+                        log().info("Refresh subscriptions error: " + data.errorMsg)
+                    }
+                    view.setData(data)
+                }
     }
 
     private fun refreshContainers(): Observable<SparkSubmitJobUploadStorageModel> {
@@ -122,7 +205,7 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                             try {
                                 val clientStorageAccount = ClientStorageAccount(toUpdate.storageAccount)
                                         .apply { primaryKey = toUpdate.storageKey }
-                                val credentialAccount = getCredentialAzureBlobAccount()
+                                val credentialAccount = getCredentialAccount(toUpdate.storageAccount,  SparkSubmitStorageType.BLOB)
                                 credentialAccount?.let {
                                     view.secureStore?.savePassword(credentialAccount, storageAccount, storageKey) }
 
@@ -138,7 +221,7 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                                     containersModel = DefaultComboBoxModel(containers)
                                     containersModel.selectedItem = containersModel.getElementAt(0)
                                     selectedContainer = containersModel.getElementAt(0)
-                                    uploadPath = getAzureBlobStoragePath(ClusterManagerEx.getInstance().getBlobFullName(storageAccount), selectedContainer)
+                                    uploadPath = getAzureBlobStoragePath(ClusterManagerEx.getInstance().getBlobFullName(storageAccount), selectedContainer, HDStorageAccount.DefaultScheme)
 
                                 errorMsg = null
                             } else {
@@ -172,7 +255,7 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                 } else {
                     toUpdate.apply {
                         val selectedContainer = toUpdate.containersModel.selectedItem as String
-                        uploadPath = getAzureBlobStoragePath(ClusterManagerEx.getInstance().getBlobFullName(storageAccount), selectedContainer)
+                        uploadPath = getAzureBlobStoragePath(ClusterManagerEx.getInstance().getBlobFullName(storageAccount), selectedContainer, HDStorageAccount.DefaultScheme)
                         errorMsg = null
                     }
                 }
@@ -185,14 +268,16 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
             }
     }
 
-    override fun getAzureBlobStoragePath(fullStorageBlobName: String?, container: String?): String? {
-        return if (StringUtils.isBlank(fullStorageBlobName) || StringUtils.isBlank(container)) null else
-            "wasbs://$container@$fullStorageBlobName/SparkSubmission/"
+    override fun getAzureBlobStoragePath(fullStorageBlobName: String?, container: String?, scheme: String): String? {
+        return if (StringUtils.isBlank(fullStorageBlobName) || StringUtils.isBlank(container) || scheme.isNullOrBlank())
+            throw IllegalArgumentException("Blob Name ,container and scheme name cannot be empty")
+        else if (scheme!!.startsWith(ADLSGen2StorageAccount.DefaultScheme)) "https://$fullStorageBlobName/$container/SparkSubmission/"
+        else "$scheme://$container@$fullStorageBlobName/SparkSubmission/"
     }
 
     override fun getUploadPath(account: IHDIStorageAccount): String? =
             when (account) {
-                is HDStorageAccount -> getAzureBlobStoragePath(account.fullStorageBlobName, account.defaultContainer)
+                is HDStorageAccount -> getAzureBlobStoragePath(account.fullStorageBlobName, account.defaultContainer, account.scheme)
                 is ADLSStorageAccount ->
                     if (StringUtils.isBlank(account.name) || StringUtils.isBlank(account.defaultContainerOrRootPath)) null
                     else "adl://${account.name}.azuredatalakestore.net${account.defaultContainerOrRootPath}SparkSubmission/"

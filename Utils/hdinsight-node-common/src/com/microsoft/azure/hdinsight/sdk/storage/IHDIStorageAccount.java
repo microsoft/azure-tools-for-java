@@ -21,11 +21,18 @@
  */
 package com.microsoft.azure.hdinsight.sdk.storage;
 
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+
 public interface IHDIStorageAccount {
     String getName();
     StorageAccountTypeEnum getAccountType();
     String getDefaultContainerOrRootPath();
     String getSubscriptionId();
+
+    @Nullable
+    default String getDefaultStorageSchema(){
+        return null;
+    }
 }
 
 

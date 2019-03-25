@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.18.0</version>
+  <version>3.19.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -11,7 +11,8 @@
           <li>Azure Web App Workflow: You can run your web applications on Azure Web App with One-Click experience using Azure Toolkits for IntelliJ.</li>
           <li>Azure Container Workflow: You can dockerize and run your web application on Azure Web App (Linux) via Azure Container Registry.</li>
           <li>Azure Explorer: You can view and manage your cloud resources on Azure with Azure Explorer in Azure Toolkits for IntelliJ.</li>
-          <li>Azure HDInsight: Use Azure HDInsight tool to submit Spark jobs to HDInsight cluster, monitor and debug Spark or Hadoop Hive jobs easily.</li>
+          <li>Azure HDInsight: Create a Spark project, author and submit Spark jobs to HDInsight cluster; Monitor and debug Spark jobs easily. </li>
+          <li>SQL Server Big Data Cluster: Link to SQL Server Big Data Cluster; Create a Spark project, author and submit Spark jobs to cluster; Monitor and debug Spark jobs easily</li>
         </ul>
       </html>
     ]]></description>
@@ -19,6 +20,25 @@
   <change-notes>
     <![CDATA[
     <html>
+    <h3>[3.19.0]</h3>
+      <h4>Added</h4>
+      <ul>
+        <li>Support open browser after Web App deployment.</li>
+        <li>Support to link SQL Server Big Data cluster and submit Spark jobs.</li>
+        <li>Support WebHDFS storage type to submit job to HDInsight cluster with ADLS Gen 1 storage account.</li>
+      </ul>
+      <h4>Changed</h4>
+      <ul>
+        <li>Update UI of Web App creation and deployment</li>
+        <li>Subscription ID need to be specified for ADLS Gen 1 storage type</li>
+      </ul>
+      <h4>Fixed</h4>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2840" rel="nofollow">#2840</a> Submit successfully with invalid path for WebHDFS storage type issue.</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2747" rel="nofollow">#2747</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2801" rel="nofollow">#2801</a> Error loadig HDInsight node issue.</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2714" rel="nofollow">#2714</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2688" rel="nofollow">#2688</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2669" rel="nofollow">#2669</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2728" rel="nofollow">#2728</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2807" rel="nofollow">#2807</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2808" rel="nofollow">#2808</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2811" rel="nofollow">#2811</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2831" rel="nofollow">#2831</a>Spark Run Configuration validation issues.</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2810" rel="nofollow">#2810</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2760" rel="nofollow">#2760</a> Spark Run Configuration issues when created from context menu.</li>
+      <ul>
+      </ul>
     <h3>[3.18.0]</h3>
       <h4>Added</h4>
       <ul>
@@ -237,43 +257,43 @@
         <li>Supported to fix Spark job configuration in run configuration before Spark job submission.</li>
         <li>Updated Application Insights library to v2.1.2.</li>
         <li>Fixed some bugs.</li>
-      <ul>
+      </ul>
       <h3>[3.9.0]</h3>
       <ul>
         <li>Added Spark 2.3 support.</li>
         <li>Spark in Azure Data Lake private preview refresh and bug fix.</li>
         <li>Fixed some bugs.</li>
-      <ul>
+      </ul>
       <h3>[3.8.0]</h3>
       <ul>
         <li>Supported to run Spark jobs in Azure Data Lake cluster (in private preview).</li>
         <li>Fixed some bugs.</li>
-      <ul>
+      </ul>
       <h3>[3.7.0]</h3>
       <ul>
         <li>Users do not need to login again in interactive login mode, if Azure refresh token is still validated.</li>
         <li>Updated ApplicationInsights version to v2.1.0.</li>
         <li>Fixed some bugs.</li>
-      <ul>
+      </ul>
       <h3>[3.6.0]</h3>
       <ul>
         <li>Updated ApplicationInsights version to v2.0.2.</li>
         <li>Added Spark 2.2 templates for HDInsight.</li>
         <li>Added SSH password expiration check.</li>
         <li>Fixed some bugs.</li>
-      <ul>
+      </ul>
       <h3>[3.5.0]</h3>
       <ul>
         <li>Added open Azure Storage Explorer for exploring data in HDInsight cluster (blob or ADLS).</li>
         <li>Improved Spark remote debugging.</li>
         <li>Improved Spark job submission correctness check.</li>
         <li>Fixed an login issue.</li>
-      <ul>
+      </ul>
       <h3>[3.4.0]</h3>
       <ul>
         <li>Users can use Ambari username/password to submit Spark job to HDInsight cluster, in additional to Azure subscription based authentication. This means users without Azure subscription permission can still use Ambari credentials to submit/debug their Spark jobs in HDInsight clusters.</li>
         <li>The dependency on storage permission is removed and users do not need to provide storage credentials for Spark job submission any more (storage credential is still needed if users want to use storage explorer).</li>
-      <ul>
+      </ul>
       <h3>[3.3.0]</h3>
       <ul>
         <li>Added support of Enterprise Security Package HDInsight Spark cluster.</li>
@@ -484,7 +504,7 @@
     </group>
     <action class="com.microsoft.azuretools.ijidea.actions.GithubSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback..." />
     <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
-            text="Run on Web App" description="Run on Web App"
+            text="Deploy to Azure" description="Deploy to Azure"
             icon="/icons/PublishWebApp_16.png">
     </action>
     <action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.AddDockerSupportAction"

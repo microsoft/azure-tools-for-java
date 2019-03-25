@@ -27,11 +27,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>utils</artifactId>
-    <version>3.18.0</version>
+    <version>3.19.0</version>
     <packaging>pom</packaging>
     <name>${project.artifactId}-${project.version}</name>
     <properties>
-        <azuretool.version>3.18.0</azuretool.version>
+        <azuretool.version>3.19.0</azuretool.version>
         <kotlin.version>1.2.50</kotlin.version>
         <kotlin.jvmTargetVersion>1.8</kotlin.jvmTargetVersion>
     </properties>
@@ -41,6 +41,7 @@
         <module>./azure-explorer-common</module>
         <module>./spark-tools</module>
         <module>./hdinsight-node-common</module>
+        <module>./spark-localrun-mock</module>
     </modules>
     <profiles>
         <!-- Jenkins by default defines a property BUILD_NUMBER which is used to enable the profile. -->

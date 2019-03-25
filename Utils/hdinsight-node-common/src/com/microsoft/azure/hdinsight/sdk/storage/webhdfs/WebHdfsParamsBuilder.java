@@ -29,7 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WebHdfsParamsBuilder {
-    private List<NameValuePair> params = new ArrayList<>();
+    public List<NameValuePair> params = new ArrayList<>();
+
+    public WebHdfsParamsBuilder() {
+    }
 
     public WebHdfsParamsBuilder(@NotNull String operation) {
         params.add(new BasicNameValuePair("op", operation));
@@ -37,6 +40,11 @@ public class WebHdfsParamsBuilder {
 
     public WebHdfsParamsBuilder setOverwrite(@NotNull String value) {
         params.add(new BasicNameValuePair("overwrite", value));
+        return this;
+    }
+
+    public WebHdfsParamsBuilder setPermission(@NotNull String value) {
+        params.add(new BasicNameValuePair("permission", value));
         return this;
     }
 

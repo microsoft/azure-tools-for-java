@@ -1,6 +1,7 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation;
 
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -18,9 +19,14 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
+import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -45,7 +51,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpView {
 
@@ -185,6 +193,67 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         init();
     }
 
+    public WebApp getCreatedWebApp() {
+        return this.result;
+    }
+
+    @Override
+    public void fillSubscription(@NotNull List<Subscription> subscriptions) {
+        fillCombobox(this, cbSubscription, subscriptions, null);
+    }
+
+    @Override
+    public void fillResourceGroup(@NotNull List<ResourceGroup> resourceGroups) {
+        fillCombobox(this, cbExistResGrp, resourceGroups, null);
+    }
+
+    @Override
+    public void fillAppServicePlan(@NotNull List<AppServicePlan> appServicePlans) {
+        cbExistAppServicePlan.removeAllItems();
+        appServicePlans.stream()
+            .filter(item -> Comparing.equal(item.operatingSystem(), webAppConfiguration.getOS()))
+            .sorted(Comparator.comparing(AppServicePlan::name))
+            .forEach((plan) -> {
+                cbExistAppServicePlan.addItem(plan);
+            });
+        selectAppServicePlan();
+        pack();
+    }
+
+    @Override
+    public void fillLocation(@NotNull List<Location> locations) {
+        cbLocation.removeAllItems();
+        locations.stream()
+            .sorted(Comparator.comparing(Location::displayName))
+            .forEach((location) -> {
+                cbLocation.addItem(location);
+                if (Comparing.equal(location.name(), DEFAULT_REGION.name())) {
+                    cbLocation.setSelectedItem(location);
+                }
+            });
+        pack();
+    }
+
+    @Override
+    public void fillPricingTier(@NotNull List<PricingTier> prices) {
+        fillCombobox(this, cbPricing, prices, DEFAULT_PRICINGTIER);
+    }
+
+    @Override
+    public void fillWebContainer(@NotNull List<WebAppUtils.WebContainerMod> webContainers) {
+        fillCombobox(this, cbWebContainer, webContainers, DEFAULT_WINDOWS_CONTAINER);
+    }
+
+    @Override
+    public void fillJdkVersion(@NotNull List<JdkModel> jdks) {
+        fillCombobox(this, cbJdkVersion, jdks, DEFAULT_WINDOWS_JAVAVERSION);
+    }
+
+    @Override
+    public void fillLinuxRuntime(@NotNull List<RuntimeStack> linuxRuntimes) {
+        fillCombobox(this, cbRuntimeStack, linuxRuntimes, DEFAULT_LINUX_RUNTIME);
+    }
+
     private void addValidationListener(Container parent, ActionListener actionListener) {
         for (Component component : parent.getComponents()) {
             if (component instanceof AbstractButton) {
@@ -282,8 +351,13 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         createWebApp();
     }
 
-    public WebApp getCreatedWebApp() {
-        return this.result;
+    private static <T> void fillCombobox(Window window, JComboBox<T> comboBox, List<T> values, T defaultValue) {
+        comboBox.removeAllItems();
+        values.forEach(value -> comboBox.addItem(value));
+        if (defaultValue != null && values.contains(defaultValue)) {
+            comboBox.setSelectedItem(defaultValue);
+        }
+        window.pack();
     }
 
     private void updateConfiguration() {
@@ -356,79 +430,37 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
                 try {
                     progressIndicator.setIndeterminate(true);
                     result = AzureWebAppMvpModel.getInstance().createWebApp(webAppConfiguration.getModel());
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        sendTelemetry(true, null);
+                        if (AzureUIRefreshCore.listeners != null) {
+                            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
+                                null));
+                        }
+                    });
                     dispose();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(null, "Create WebApp Failed : " + ex.getMessage(), "Create WebApp " +
-                            "Failed",
-                        JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Create WebApp Failed : " + ex.getMessage(),
+                        "Create WebApp Failed", JOptionPane.ERROR_MESSAGE);
+                    sendTelemetry(false, ex.getMessage());
                 }
             }
         });
     }
 
-    @Override
-    public void fillSubscription(@NotNull List<Subscription> subscriptions) {
-        fillCombobox(this, cbSubscription, subscriptions, null);
-    }
-
-    @Override
-    public void fillResourceGroup(@NotNull List<ResourceGroup> resourceGroups) {
-        fillCombobox(this, cbExistResGrp, resourceGroups, null);
-    }
-
-    @Override
-    public void fillAppServicePlan(@NotNull List<AppServicePlan> appServicePlans) {
-        cbExistAppServicePlan.removeAllItems();
-        appServicePlans.stream()
-            .filter(item -> Comparing.equal(item.operatingSystem(), webAppConfiguration.getOS()))
-            .sorted(Comparator.comparing(AppServicePlan::name))
-            .forEach((plan) -> {
-                cbExistAppServicePlan.addItem(plan);
-            });
-        selectAppServicePlan();
-        pack();
-    }
-
-    @Override
-    public void fillLocation(@NotNull List<Location> locations) {
-        cbLocation.removeAllItems();
-        locations.stream()
-            .sorted(Comparator.comparing(Location::displayName))
-            .forEach((location) -> {
-                cbLocation.addItem(location);
-                if (Comparing.equal(location.name(), DEFAULT_REGION.name())) {
-                    cbLocation.setSelectedItem(location);
-                }
-            });
-        pack();
-    }
-
-    @Override
-    public void fillPricingTier(@NotNull List<PricingTier> prices) {
-        fillCombobox(this, cbPricing, prices, DEFAULT_PRICINGTIER);
-    }
-
-    @Override
-    public void fillWebContainer(@NotNull List<WebAppUtils.WebContainerMod> webContainers) {
-        fillCombobox(this, cbWebContainer, webContainers, DEFAULT_WINDOWS_CONTAINER);
-    }
-
-    @Override
-    public void fillJdkVersion(@NotNull List<JdkModel> jdks) {
-        fillCombobox(this, cbJdkVersion, jdks, DEFAULT_WINDOWS_JAVAVERSION);
-    }
-
-    @Override
-    public void fillLinuxRuntime(@NotNull List<RuntimeStack> linuxRuntimes) {
-        fillCombobox(this, cbRuntimeStack, linuxRuntimes, DEFAULT_LINUX_RUNTIME);
-    }
-
-    private static <T> void fillCombobox(Window window, JComboBox<T> comboBox, List<T> values, T defaultValue) {
-        comboBox.removeAllItems();
-        values.forEach(value -> comboBox.addItem(value));
-        if (defaultValue != null && values.contains(defaultValue)) {
-            comboBox.setSelectedItem(defaultValue);
+    private void sendTelemetry(boolean success, @Nullable String errorMsg) {
+        Map<String, String> telemetryMap = new HashMap<>();
+        telemetryMap.put("SubscriptionId", webAppConfiguration.getSubscriptionId());
+        telemetryMap.put("CreateNewApp", String.valueOf(webAppConfiguration.isCreatingNew()));
+        telemetryMap.put("CreateNewSP", String.valueOf(webAppConfiguration.isCreatingAppServicePlan()));
+        telemetryMap.put("CreateNewRGP", String.valueOf(webAppConfiguration.isCreatingResGrp()));
+        telemetryMap.put("FileType", MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName()));
+        telemetryMap.put("Success", String.valueOf(success));
+        if (!success) {
+            telemetryMap.put("ErrorMsg", errorMsg);
         }
-        window.pack();
+        final String deploymentType = webAppConfiguration.isDeployToSlot() ? "DeploymentSlot" : "WebApp";
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Action
+            , deploymentType, "Deploy", telemetryMap);
     }
+
 }
