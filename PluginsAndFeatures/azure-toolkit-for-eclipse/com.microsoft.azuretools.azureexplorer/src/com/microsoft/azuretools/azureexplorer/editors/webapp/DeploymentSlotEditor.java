@@ -22,13 +22,14 @@
 
 package com.microsoft.azuretools.azureexplorer.editors.webapp;
 
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotPropertyViewPresenter;
 
-public class WebAppPropertyEditor extends WebAppBasePropertyEditor {
-    public static final String ID = "com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor";
+public class DeploymentSlotEditor extends WebAppBasePropertyEditor {
 
-    public WebAppPropertyEditor() {
-        super(new WebAppPropertyViewPresenter());
+    public static final String ID = "com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotEditor";
+
+    public DeploymentSlotEditor() {
+        super(new DeploymentSlotPropertyViewPresenter());
     }
 
 }

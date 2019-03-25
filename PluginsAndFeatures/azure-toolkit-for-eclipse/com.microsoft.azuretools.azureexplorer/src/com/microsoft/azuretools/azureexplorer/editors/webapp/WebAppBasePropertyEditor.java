@@ -92,6 +92,7 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
     private Table tblAppSettings;
     private String subscriptionId;
     private String webAppId;
+    private String slotName;
     private Link lnkUrl;
     private Label lblContainerVersion;
     private Label lblContainer;
@@ -172,8 +173,8 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
             @Override
             protected void handleEventFunc(Event event) {
                 setBtnEnableStatus(false);
-                webAppBasePropertyViewPresenter.onUpdateWebAppProperty(subscriptionId, webAppId, null, cachedAppSettings,
-                    editedAppSettings);
+                webAppBasePropertyViewPresenter
+                    .onUpdateWebAppProperty(subscriptionId, webAppId, slotName, cachedAppSettings, editedAppSettings);
             }
         });
 
@@ -456,7 +457,7 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
         if (firstPath != null) {
             setBtnEnableStatus(false);
             webAppBasePropertyViewPresenter
-                .onGetPublishingProfileXmlWithSecrets(subscriptionId, webAppId, null, firstPath);
+                .onGetPublishingProfileXmlWithSecrets(subscriptionId, webAppId, slotName, firstPath);
         }
     }
 
@@ -481,6 +482,13 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
             this.subscriptionId = webappInput.getSubscriptionId();
             this.webAppId = webappInput.getId();
             this.webAppBasePropertyViewPresenter.onLoadWebAppProperty(subscriptionId, webAppId, null);
+        } else if (input instanceof DeploymentSlotPropertyEditorInput) {
+            DeploymentSlotPropertyEditorInput slotInput = (DeploymentSlotPropertyEditorInput) input;
+            this.setPartName(slotInput.getName());
+            this.subscriptionId = slotInput.getSubscriptionId();
+            this.webAppId = slotInput.getWebappId();
+            this.slotName = slotInput.getName();
+            this.webAppBasePropertyViewPresenter.onLoadWebAppProperty(subscriptionId, webAppId, slotName);
         }
 
         IWorkbench workbench = PlatformUI.getWorkbench();

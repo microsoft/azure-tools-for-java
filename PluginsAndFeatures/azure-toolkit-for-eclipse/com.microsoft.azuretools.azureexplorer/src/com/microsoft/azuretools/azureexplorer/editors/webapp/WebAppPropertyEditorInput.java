@@ -66,4 +66,5 @@ public class WebAppPropertyEditorInput extends WebAppBasePropertyEditorInput {
     public String getSubscriptionId() {
         return subscriptionId;
     }
+
 }

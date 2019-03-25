@@ -57,4 +57,5 @@ public abstract class WebAppBasePropertyEditorInput implements IEditorInput {
     public <T> T getAdapter(Class<T> aClass) {
         return null;
     }
+
 }
