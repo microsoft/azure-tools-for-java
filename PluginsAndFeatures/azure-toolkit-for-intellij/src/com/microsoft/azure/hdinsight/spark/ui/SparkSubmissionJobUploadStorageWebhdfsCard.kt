@@ -34,7 +34,7 @@ import javax.swing.JPanel
 
 class SparkSubmissionJobUploadStorageWebHdfsCard: SparkSubmissionJobUploadStorageBasicCard() {
     override val title: String =  SparkSubmitStorageType.WEBHDFS.description
-    private val webHdfsRootPathTip = "e.g. http://hdfsnamenode:port/webhdfs/v1/<cluster root directory>"
+    private val webHdfsRootPathTip = "e.g. http(s)://hdfsnamenode:port/webhdfs/v1/<cluster root directory>"
     private val webHdfsRootPathLabel = JLabel("WEBHDFS Root Path").apply { toolTipText = webHdfsRootPathTip }
     val webHdfsRootPathField = HintTextField(webHdfsRootPathTip)
 
