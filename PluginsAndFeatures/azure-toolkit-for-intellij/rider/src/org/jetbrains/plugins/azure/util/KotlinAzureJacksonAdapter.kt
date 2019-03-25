@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -20,14 +20,19 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.configuration
+package org.jetbrains.plugins.azure.util
 
-object AzureRiderSettings {
-    // Web Apps
-    const val PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME = "AzureOpenWebAppInBrowser"
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.microsoft.azure.serializer.AzureJacksonAdapter
+import com.microsoft.rest.protocol.SerializerAdapter
+import com.microsoft.rest.serializer.JacksonAdapter
 
-    const val openInBrowserDefaultValue = false
-
-    // Functions
-    const val PROPERTY_FUNCTIONS_CORETOOLS_PATH = "AzureFunctionsCoreToolsPath"
+/**
+ * A serialization helper class overriding [AzureJacksonAdapter] with support for Kotlin
+ */
+class KotlinAzureJacksonAdapter : JacksonAdapter(), SerializerAdapter<ObjectMapper> {
+    init {
+        serializer().registerModule(KotlinModule())
+    }
 }

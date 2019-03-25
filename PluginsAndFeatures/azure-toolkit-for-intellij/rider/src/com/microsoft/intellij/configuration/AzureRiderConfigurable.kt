@@ -26,6 +26,7 @@ import com.intellij.application.options.OptionsContainingConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.SearchableConfigurable
 import com.microsoft.intellij.configuration.ui.AzureAppServicesConfigurationPanel
+import com.microsoft.intellij.configuration.ui.AzureFunctionsConfigurationPanel
 
 class AzureRiderConfigurable :
         SearchableConfigurable.Parent.Abstract(), OptionsContainingConfigurable {
@@ -42,7 +43,10 @@ class AzureRiderConfigurable :
     override fun getDisplayName() = AZURE_CONFIGURATION_NAME
 
     override fun buildConfigurables(): Array<Configurable> {
-        val panels = listOf<Configurable>(AzureRiderAbstractConfigurable(AzureAppServicesConfigurationPanel()))
+        val panels = listOf<Configurable>(
+                AzureRiderAbstractConfigurable(AzureAppServicesConfigurationPanel()),
+                AzureRiderAbstractConfigurable(AzureFunctionsConfigurationPanel())
+        )
         myPanels = panels
         return panels.toTypedArray()
     }

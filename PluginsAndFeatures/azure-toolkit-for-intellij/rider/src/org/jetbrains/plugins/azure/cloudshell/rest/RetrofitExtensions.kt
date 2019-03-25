@@ -34,6 +34,7 @@ import com.microsoft.rest.credentials.ServiceClientCredentials
 import com.microsoft.rest.protocol.Environment
 import com.microsoft.rest.protocol.SerializerAdapter
 import com.microsoft.rest.serializer.JacksonAdapter
+import org.jetbrains.plugins.azure.util.KotlinAzureJacksonAdapter
 import java.util.concurrent.TimeUnit
 
 fun <T> AzureManager.getRetrofitClient(environment: Environment, endpoint: Environment.Endpoint, className: Class<T>, tenantId: String): T =
@@ -50,12 +51,3 @@ fun <T> AzureManager.getRetrofitClient(environment: Environment, endpoint: Envir
                 .build()
                 .retrofit()
                 .create(className)
-
-/**
- * A serialization helper class overriding [AzureJacksonAdapter] with support for Kotlin
- */
-class KotlinAzureJacksonAdapter : JacksonAdapter(), SerializerAdapter<ObjectMapper> {
-    init {
-        serializer().registerModule(KotlinModule())
-    }
-}

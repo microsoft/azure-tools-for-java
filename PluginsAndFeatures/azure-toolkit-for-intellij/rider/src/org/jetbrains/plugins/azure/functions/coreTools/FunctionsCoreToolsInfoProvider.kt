@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -20,14 +20,32 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.configuration
+package org.jetbrains.plugins.azure.functions.coreTools
 
-object AzureRiderSettings {
-    // Web Apps
-    const val PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME = "AzureOpenWebAppInBrowser"
+import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.util.SystemInfo
+import com.microsoft.intellij.configuration.AzureRiderSettings
+import java.io.File
 
-    const val openInBrowserDefaultValue = false
+data class FunctionsCoreToolsInfo(val coreToolsPath: String, var coreToolsExecutable: String)
 
-    // Functions
-    const val PROPERTY_FUNCTIONS_CORETOOLS_PATH = "AzureFunctionsCoreToolsPath"
+object FunctionsCoreToolsInfoProvider {
+    fun build(): FunctionsCoreToolsInfo? {
+        val funcCoreToolsPath = PropertiesComponent.getInstance().getValue(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH)
+        if (funcCoreToolsPath.isNullOrEmpty() || !File(funcCoreToolsPath).exists()) {
+            return null
+        }
+
+        val coreToolsExecutablePath = if (SystemInfo.isWindows) {
+            File(funcCoreToolsPath + File.separator + "func.exe")
+        } else {
+            File(funcCoreToolsPath + File.separator + "func")
+        }
+
+        if (!coreToolsExecutablePath.exists()) {
+            return null
+        }
+
+        return FunctionsCoreToolsInfo(funcCoreToolsPath!!, coreToolsExecutablePath.path)
+    }
 }

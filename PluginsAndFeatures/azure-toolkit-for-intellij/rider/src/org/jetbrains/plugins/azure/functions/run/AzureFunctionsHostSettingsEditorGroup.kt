@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -20,14 +20,13 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.configuration
+package org.jetbrains.plugins.azure.functions.run
 
-object AzureRiderSettings {
-    // Web Apps
-    const val PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME = "AzureOpenWebAppInBrowser"
+import com.intellij.openapi.options.SettingsEditorGroup
+import com.intellij.openapi.project.Project
 
-    const val openInBrowserDefaultValue = false
-
-    // Functions
-    const val PROPERTY_FUNCTIONS_CORETOOLS_PATH = "AzureFunctionsCoreToolsPath"
+class AzureFunctionsHostSettingsEditorGroup(project: Project) : SettingsEditorGroup<AzureFunctionsHostConfiguration>() {
+    init {
+        addEditor("Configuration", AzureFunctionsHostConfigurationEditor(project))
+    }
 }

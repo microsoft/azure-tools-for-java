@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <g id="AzureFunctionAppRunConfiguration" fill="none" fill-rule="evenodd">
+    <polygon id="Fill-3" fill="#9AA7B0" points="4.2 4.9 3 4 0 8 3 12 4.2 11.099 1.875 8" opacity=".8"/>
+    <polygon id="Fill-7" fill="#388a34" points="10 16 16 12.5 10 9"/>
+    <polygon id="Fill-8" fill="#9AA7B0" points="12.952 9.563 14.257 10.325 16 8.001 13 4 11.8 4.901 14.125 8.001" opacity=".8"/>
+    <path id="Fill-11" fill="#D9A343" d="M9,9 C9,8.642 9.191,8.312 9.502,8.133 C9.656,8.044 9.828,8 10,8 C10.174,8 10.348,8.046 10.504,8.136 L10.531,8.151 L11,7.5 L7.2,7 L12,1 L7.2,1 L4,8.5 L7.188,9 L4.8,15 L5.6,15 L9,10.277 L9,9 Z" opacity=".8"/>
+  </g>
+</svg>
