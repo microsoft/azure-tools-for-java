@@ -30,7 +30,6 @@ import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
@@ -72,8 +71,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.fieldassist.ControlDecoration;
-import org.eclipse.jface.fieldassist.FieldDecoration;
-import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -109,7 +106,7 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
+public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
     private static final String WEB_CONFIG_PACKAGE_PATH = "/webapp/web.config";
 
@@ -169,7 +166,6 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     private static final String DATE_FORMAT = "yyMMddHHmmss";
 
     // dialog
-    private static final String FORM_VALIDATION_ERROR = "Form validation error.";
     private static final String CREATING_APP_SERVICE = "Creating App Service....";
     private static final String VALIDATING_FORM_FIELDS = "Validating Form Fields....";
     private static final String CREATE_APP_SERVICE_PROGRESS_TITLE = "Create App Service Progress";
@@ -255,7 +251,6 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
     private final String date = new SimpleDateFormat(DATE_FORMAT).format(new Date());
     private static Map<String, List<AppServicePlan>> sidAspMap = new HashMap<>();
     private Map<String, String> appSettings = new HashMap<>();
-    private List<ControlDecoration> decorations = new LinkedList<>();
     protected WebAppSettingModel model = new WebAppSettingModel();
 
     public WebApp getWebApp() {
@@ -1136,32 +1131,6 @@ public class AppServiceCreateDialog extends AzureTitleAreaDialogWrapper {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@AppServiceCreateDialog", ex));
             ErrorWindow.go(getShell(), ex.getMessage(), errTitle);
         }
-    }
-
-    protected ControlDecoration decorateContorolAndRegister(Control c) {
-        ControlDecoration d = new ControlDecoration(c, SWT.TOP | SWT.LEFT);
-        FieldDecoration fieldDecoration = FieldDecorationRegistry.getDefault()
-            .getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
-        Image img = fieldDecoration.getImage();
-        d.setImage(img);
-        d.hide();
-        decorations.add(d);
-        return d;
-    }
-
-    protected void setError(ControlDecoration d, String message) {
-        Display.getDefault().asyncExec(() -> {
-            d.setDescriptionText(message);
-            setErrorMessage(FORM_VALIDATION_ERROR);
-            d.show();
-        });
-    }
-
-    protected void cleanError() {
-        for (ControlDecoration d : decorations) {
-            d.hide();
-        }
-        setErrorMessage(null);
     }
 
     protected boolean validated() {
